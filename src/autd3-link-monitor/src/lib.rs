@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 17/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,13 @@ mod error;
 #[cfg(feature = "gpu")]
 mod gpu;
 
-use std::{ffi::OsStr, marker::PhantomData, path::Path, time::Duration};
+use std::{
+    cell::{Cell, RefCell},
+    ffi::OsString,
+    marker::PhantomData,
+    path::Path,
+    time::Duration,
+};
 
 use autd3_core::{
     acoustics::{propagate, Complex, Directivity, Sphere},
@@ -24,7 +30,7 @@ use autd3_core::{
     float,
     geometry::{Geometry, Transducer, Vector3},
     link::Link,
-    RxDatagram, TxDatagram, PI,
+    CPUControlFlags, RxDatagram, TxDatagram, PI,
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -37,6 +43,9 @@ pub struct Monitor<D: Directivity> {
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
     _d: PhantomData<D>,
+    animate: Cell<bool>,
+    animate_is_stm: Cell<bool>,
+    animate_drives: RefCell<Vec<Vec<(u16, u16)>>>,
     #[cfg(feature = "gpu")]
     gpu_compute: Option<gpu::FieldCompute>,
 }
@@ -62,6 +71,106 @@ pub struct PlotConfig {
     pub cmap: String,
     #[pyo3(get)]
     pub show: bool,
+    #[pyo3(get)]
+    pub fname: OsString,
+    #[pyo3(get)]
+    pub interval: i32,
+}
+
+#[derive(Clone, Debug)]
+pub struct PlotRange {
+    pub x_range: std::ops::Range<float>,
+    pub y_range: std::ops::Range<float>,
+    pub z_range: std::ops::Range<float>,
+    pub resolution: float,
+}
+
+impl PlotRange {
+    fn n(range: &std::ops::Range<float>, resolution: float) -> usize {
+        ((range.end - range.start) / resolution).floor() as usize + 1
+    }
+
+    fn nx(&self) -> usize {
+        Self::n(&self.x_range, self.resolution)
+    }
+
+    fn ny(&self) -> usize {
+        Self::n(&self.y_range, self.resolution)
+    }
+
+    fn nz(&self) -> usize {
+        Self::n(&self.z_range, self.resolution)
+    }
+
+    pub fn is_1d(&self) -> bool {
+        match (self.nx(), self.ny(), self.nz()) {
+            (_, 1, 1) => true,
+            (1, _, 1) => true,
+            (1, 1, _) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_2d(&self) -> bool {
+        if self.is_1d() {
+            return false;
+        }
+
+        match (self.nx(), self.ny(), self.nz()) {
+            (1, _, _) => true,
+            (_, 1, _) => true,
+            (_, _, 1) => true,
+            _ => false,
+        }
+    }
+
+    pub fn observe(n: usize, start: float, resolution: float) -> Vec<float> {
+        (0..n).map(|i| start + resolution * i as float).collect()
+    }
+
+    pub fn observe_x(&self) -> Vec<float> {
+        Self::observe(self.nx(), self.x_range.start, self.resolution)
+    }
+
+    pub fn observe_y(&self) -> Vec<float> {
+        Self::observe(self.ny(), self.y_range.start, self.resolution)
+    }
+
+    pub fn observe_z(&self) -> Vec<float> {
+        Self::observe(self.nz(), self.z_range.start, self.resolution)
+    }
+
+    pub fn observe_points(&self) -> Vec<Vector3> {
+        match (self.nx(), self.ny(), self.nz()) {
+            (_, 1, 1) => self
+                .observe_x()
+                .iter()
+                .map(|&x| Vector3::new(x, self.y_range.start, self.z_range.start))
+                .collect(),
+            (1, _, 1) => self
+                .observe_y()
+                .iter()
+                .map(|&y| Vector3::new(self.x_range.start, y, self.z_range.start))
+                .collect(),
+            (1, 1, _) => self
+                .observe_z()
+                .iter()
+                .map(|&z| Vector3::new(self.x_range.start, self.y_range.start, z))
+                .collect(),
+            (_, _, 1) => itertools::iproduct!(self.observe_y(), self.observe_x())
+                .map(|(y, x)| Vector3::new(x, y, self.z_range.start))
+                .collect(),
+            (_, 1, _) => itertools::iproduct!(self.observe_x(), self.observe_z())
+                .map(|(x, z)| Vector3::new(x, self.y_range.start, z))
+                .collect(),
+            (1, _, _) => itertools::iproduct!(self.observe_z(), self.observe_y())
+                .map(|(z, y)| Vector3::new(self.x_range.start, y, z))
+                .collect(),
+            (_, _, _) => itertools::iproduct!(self.observe_z(), self.observe_y(), self.observe_x())
+                .map(|(z, y, x)| Vector3::new(x, y, z))
+                .collect(),
+        }
+    }
 }
 
 impl Default for PlotConfig {
@@ -76,6 +185,8 @@ impl Default for PlotConfig {
             ticks_step: 10.,
             cmap: "jet".to_string(),
             show: false,
+            fname: OsString::new(),
+            interval: 100,
         }
     }
 }
@@ -87,6 +198,9 @@ impl Monitor<Sphere> {
             timeout: Duration::ZERO,
             cpus: Vec::new(),
             _d: PhantomData,
+            animate: Cell::new(false),
+            animate_is_stm: Cell::new(false),
+            animate_drives: RefCell::new(Vec::new()),
             #[cfg(feature = "gpu")]
             gpu_compute: None,
         }
@@ -140,12 +254,11 @@ impl<D: Directivity> Monitor<D> {
         self.cpus
             .iter()
             .flat_map(|cpu| {
-                let (_, phase) = cpu.fpga().drives(idx);
-                let cycle = cpu.fpga().cycles();
-                phase
+                cpu.fpga()
+                    .duties_and_phases(idx)
                     .iter()
-                    .zip(cycle.iter())
-                    .map(|(&p, &c)| 2. * PI * p as float / c as float)
+                    .zip(cpu.fpga().cycles().iter())
+                    .map(|(&d, &c)| 2. * PI * d.1 as float / c as float)
                     .collect::<Vec<_>>()
             })
             .collect()
@@ -155,11 +268,11 @@ impl<D: Directivity> Monitor<D> {
         self.cpus
             .iter()
             .flat_map(|cpu| {
-                let (duty, _) = cpu.fpga().drives(idx);
-                let cycle = cpu.fpga().cycles();
-                duty.iter()
-                    .zip(cycle.iter())
-                    .map(|(&d, &c)| (PI * d as float / c as float).sin())
+                cpu.fpga()
+                    .duties_and_phases(idx)
+                    .iter()
+                    .zip(cpu.fpga().cycles().iter())
+                    .map(|(&d, &c)| (PI * d.0 as float / c as float).sin())
                     .collect::<Vec<_>>()
             })
             .collect()
@@ -189,8 +302,7 @@ impl<D: Directivity> Monitor<D> {
             .collect()
     }
 
-    fn plot_1d(
-        path: &OsStr,
+    fn plot_1d_impl(
         observe_points: Vec<float>,
         acoustic_pressures: Vec<Complex>,
         resolution: float,
@@ -216,30 +328,26 @@ import numpy as np
 
 def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
     plot = axes.plot(acoustic_pressures)
-
     x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
     x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
     x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
     axes.set_xticks(np.array(x_ticks), minor=False)
     axes.set_xticklabels(x_labels, minor=False)
-
     return plot
 
-def plot(observe, acoustic_pressures, resolution, x_label, path, config):
+def plot(observe, acoustic_pressures, resolution, x_label, config):
     plt.rcParams["font.size"] = config.fontsize
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
     ax = fig.add_subplot(111)
     plot_acoustic_field_1d(ax, acoustic_pressures, observe, resolution, config)
-
     ax.set_xlabel(x_label)
     ax.set_ylabel("Amplitude [-]")
-
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
     if config.show:
         plt.show()
-    plt.close()
-                "#,
+    plt.close()"#,
                 "",
                 "",
             )?
@@ -249,7 +357,6 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
                 acoustic_pressures,
                 resolution,
                 x_label,
-                path,
                 config,
             ))?;
             Ok(())
@@ -259,8 +366,7 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn plot_2d(
-        path: &OsStr,
+    fn plot_2d_impl(
         observe_x: Vec<float>,
         observe_y: Vec<float>,
         acoustic_pressures: Vec<Complex>,
@@ -281,15 +387,14 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
 
         Python::with_gil(|py| -> PyResult<()> {
             let fun = PyModule::from_code(
-                py,
-                r#"
+                    py,
+r#"
 import matplotlib.pyplot as plt
 import numpy as np
 import mpl_toolkits.axes_grid1
 
 def plot_acoustic_field_2d(axes, acoustic_pressures, observe_x, observe_y, resolution, config):
     heatmap = axes.pcolor(acoustic_pressures, cmap=config.cmap)
-
     x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
     y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
     x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
@@ -300,9 +405,7 @@ def plot_acoustic_field_2d(axes, acoustic_pressures, observe_x, observe_y, resol
     axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
     axes.set_xticklabels(x_labels, minor=False)
     axes.set_yticklabels(y_labels, minor=False)
-
     return heatmap
-
 
 def add_colorbar(fig, axes, mappable, config):
     divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
@@ -310,32 +413,24 @@ def add_colorbar(fig, axes, mappable, config):
     cbar = fig.colorbar(mappable, cax=cax)
     cbar.ax.set_ylabel("Amplitude [-]")
 
-def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, path, config):
+def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
     plt.rcParams["font.size"] = config.fontsize
-
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
     ax = fig.add_subplot(111, aspect="equal")
-
     nx = len(observe_x)
     ny = len(observe_y)
     acoustic_pressures = np.array(acoustic_pressures).reshape((ny, nx))
-    
     heatmap = plot_acoustic_field_2d(ax, acoustic_pressures, observe_x, observe_y, resolution, config)
     add_colorbar(fig, ax, heatmap, config)
-
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')      
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
     if config.show:
         plt.show()
-    plt.close()
-                "#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
+    plt.close()"#, "", "")?
+                .getattr("plot")?;
             fun.call1((
                 observe_x,
                 observe_y,
@@ -343,7 +438,6 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
                 resolution,
                 x_label,
                 y_label,
-                path,
                 config,
             ))?;
             Ok(())
@@ -352,8 +446,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
         Ok(())
     }
 
-    fn plot_modulation(
-        path: &OsStr,
+    fn plot_modulation_impl(
         modulation: Vec<float>,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
@@ -369,61 +462,92 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot(modulation, path, config):
+def plot(modulation, config):
     plt.rcParams["font.size"] = config.fontsize
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
     ax = fig.add_subplot(111)
-
     ax.plot(modulation)
-
     ax.set_ylim(0, 1)
-
     ax.set_xlabel("Index")
     ax.set_ylabel("Modulation")
-
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
     if config.show:
         plt.show()
-    plt.close()      
-                "#,
+    plt.close()"#,
                 "",
                 "",
             )?
             .getattr("plot")?;
-            fun.call1((modulation, path, config))?;
+            fun.call1((modulation, config))?;
             Ok(())
         })?;
 
         Ok(())
     }
 
-    pub fn calc_field<T: Transducer, I: Iterator<Item = Vector3>>(
+    pub fn calc_field<T: Transducer, I: IntoIterator<Item = Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
     ) -> Vec<Complex> {
+        self.calc_field_of::<T, I>(observe_points, geometry, 0)
+    }
+
+    pub fn calc_field_of<T: Transducer, I: IntoIterator<Item = Vector3>>(
+        &self,
+        observe_points: I,
+        geometry: &Geometry<T>,
+        idx: usize,
+    ) -> Vec<Complex> {
         #[cfg(feature = "gpu")]
         {
             if let Some(gpu) = &self.gpu_compute {
-                return gpu.calc_field::<T, D>(observe_points.collect(), geometry, &self.cpus);
+                let sound_speed = geometry.sound_speed;
+                let source_drive = self
+                    .cpus
+                    .iter()
+                    .enumerate()
+                    .flat_map(|(i, cpu)| {
+                        cpu.fpga()
+                            .drives(idx)
+                            .iter()
+                            .zip(geometry.transducers_of(i).map(|t| t.cycle()))
+                            .zip(
+                                geometry
+                                    .transducers_of(i)
+                                    .map(|t| t.wavenumber(sound_speed)),
+                            )
+                            .map(|((d, c), w)| {
+                                let amp = (std::f32::consts::PI * d.0 as f32 / c as f32).sin();
+                                let phase = 2. * std::f32::consts::PI * d.1 as f32 / c as f32;
+                                [amp, phase, 0., w as f32]
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>();
+                return gpu.calc_field_of::<T, D>(
+                    observe_points.into_iter().collect(),
+                    geometry,
+                    source_drive,
+                );
             }
         }
         let sound_speed = geometry.sound_speed;
         observe_points
+            .into_iter()
             .map(|target| {
                 self.cpus
                     .iter()
                     .enumerate()
                     .fold(Complex::new(0., 0.), |acc, (i, cpu)| {
-                        let (duty, phase) = cpu.fpga().drives(0);
-                        acc + geometry
-                            .transducers_of(i)
-                            .zip(duty.iter())
-                            .zip(phase.iter())
-                            .fold(Complex::new(0., 0.), |acc, ((t, &d), &p)| {
-                                let amp = (PI * d as float / t.cycle() as float).sin();
-                                let phase = 2. * PI * p as float / t.cycle() as float;
+                        let drives = cpu.fpga().duties_and_phases(idx);
+                        acc + geometry.transducers_of(i).zip(drives.iter()).fold(
+                            Complex::new(0., 0.),
+                            |acc, (t, d)| {
+                                let amp = (PI * d.0 as float / t.cycle() as float).sin();
+                                let phase = 2. * PI * d.1 as float / t.cycle() as float;
                                 acc + propagate::<D>(
                                     t.position(),
                                     &t.z_direction(),
@@ -431,12 +555,447 @@ def plot(modulation, path, config):
                                     t.wavenumber(sound_speed),
                                     &target,
                                 ) * Complex::from_polar(amp, phase)
-                            })
+                            },
+                        )
                     })
             })
             .collect()
     }
 
+    pub fn plot_field<T: Transducer>(
+        &self,
+        range: PlotRange,
+        config: PlotConfig,
+        geometry: &Geometry<T>,
+    ) -> Result<(), MonitorError> {
+        self.plot_field_of(range, config, geometry, 0)
+    }
+
+    pub fn plot_field_of<T: Transducer>(
+        &self,
+        range: PlotRange,
+        config: PlotConfig,
+        geometry: &Geometry<T>,
+        idx: usize,
+    ) -> Result<(), MonitorError> {
+        let observe_points = range.observe_points();
+        let acoustic_pressures = self.calc_field_of(observe_points, geometry, idx);
+        if range.is_1d() {
+            let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, 1, 1) => (range.observe_x(), "x [mm]"),
+                (1, _, 1) => (range.observe_y(), "y [mm]"),
+                (1, 1, _) => (range.observe_z(), "z [mm]"),
+                _ => unreachable!(),
+            };
+            Self::plot_1d_impl(observe, acoustic_pressures, range.resolution, label, config)
+        } else if range.is_2d() {
+            let (observe_x, x_label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, _, 1) => (range.observe_x(), "x [mm]"),
+                (1, _, _) => (range.observe_y(), "y [mm]"),
+                (_, 1, _) => (range.observe_z(), "z [mm]"),
+                _ => unreachable!(),
+            };
+            let (observe_y, y_label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, _, 1) => (range.observe_y(), "y [mm]"),
+                (1, _, _) => (range.observe_z(), "z [mm]"),
+                (_, 1, _) => (range.observe_x(), "x [mm]"),
+                _ => unreachable!(),
+            };
+            Self::plot_2d_impl(
+                observe_x,
+                observe_y,
+                acoustic_pressures,
+                range.resolution,
+                x_label,
+                y_label,
+                config,
+            )
+        } else {
+            Err(MonitorError::InvalidPlotRange)
+        }
+    }
+
+    pub fn plot_phase<T: Transducer>(
+        &self,
+        config: PlotConfig,
+        geometry: &Geometry<T>,
+    ) -> Result<(), MonitorError> {
+        self.plot_phase_of(config, geometry, 0)
+    }
+
+    pub fn plot_phase_of<T: Transducer>(
+        &self,
+        config: PlotConfig,
+        geometry: &Geometry<T>,
+        idx: usize,
+    ) -> Result<(), MonitorError> {
+        #[cfg(target_os = "windows")]
+        {
+            Self::initialize_python()?;
+        }
+
+        let trans_x = geometry
+            .transducers()
+            .map(|t| t.position().x)
+            .collect::<Vec<_>>();
+        let trans_y = geometry
+            .transducers()
+            .map(|t| t.position().y)
+            .collect::<Vec<_>>();
+        let trans_phase = self.phases_of(idx);
+
+        Python::with_gil(|py| -> PyResult<()> {
+            let fun = PyModule::from_code(
+                    py,
+r#"
+import matplotlib.pyplot as plt
+import numpy as np
+import mpl_toolkits.axes_grid1
+
+def adjust_marker_size(fig, axes, scat, radius):
+    fig.canvas.draw()
+    r_pix = axes.transData.transform((radius, radius)) - axes.transData.transform((0, 0))
+    sizes = (2 * r_pix * 72 / fig.dpi)**2
+    scat.set_sizes(sizes)
+
+def add_colorbar(fig, axes, mappable, config):
+    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
+    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
+    cbar = fig.colorbar(mappable, cax=cax)
+    cbar.ax.set_ylim((0, 2 * np.pi))
+    cbar.ax.set_yticks([0, np.pi, 2 * np.pi])
+    cbar.ax.set_yticklabels(['0', '$\\pi$', '$2\\pi$'])
+
+def plot_phase_2d(fig, axes, trans_x, trans_y, trans_phase, trans_size, config, cmap='jet', marker='o'):
+    scat = axes.scatter(trans_x, trans_y, c=trans_phase, cmap=cmap, s=0,
+                        marker=marker, vmin=0, vmax=2 * np.pi,
+                        clip_on=False)
+    add_colorbar(fig, axes, scat, config)
+    adjust_marker_size(fig, axes, scat, trans_size / 2)
+    return scat
+
+def plot(trans_x, trans_y, trans_phase, config, trans_size):
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    trans_x = np.array(trans_x)
+    trans_y = np.array(trans_y)
+    x_min = np.min(trans_x) - trans_size / 2
+    x_max = np.max(trans_x) + trans_size / 2
+    y_min = np.min(trans_y) - trans_size / 2
+    y_max = np.max(trans_y) + trans_size / 2
+    ax.set_xlim((x_min, x_max))
+    ax.set_ylim((y_min, y_max))
+    scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
+    plt.tight_layout()
+    if config.fname != '':
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()"#, "", "")?
+                .getattr("plot")?;
+            fun.call1((
+                trans_x,
+                trans_y,
+                trans_phase,
+                config,
+                autd3_core::autd3_device::TRANS_SPACING,
+            ))?;
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    pub fn plot_modulation(&self, config: PlotConfig) -> Result<(), MonitorError> {
+        Self::plot_modulation_impl(self.modulation(), config)?;
+        Ok(())
+    }
+
+    pub fn plot_modulation_raw(&self, config: PlotConfig) -> Result<(), MonitorError> {
+        Self::plot_modulation_impl(self.modulation_raw(), config)?;
+        Ok(())
+    }
+
+    pub fn begin_animation(&self) {
+        self.animate.set(true);
+        self.animate_drives.borrow_mut().clear();
+    }
+
+    fn calc_field_from_drive<T: Transducer>(
+        &self,
+        range: PlotRange,
+        drives: &[(u16, u16)],
+        geometry: &Geometry<T>,
+    ) -> Vec<Complex> {
+        let observe_points = range.observe_points();
+
+        #[cfg(feature = "gpu")]
+        {
+            if let Some(gpu) = &self.gpu_compute {
+                let sound_speed = geometry.sound_speed;
+                let source_drive = drives
+                    .iter()
+                    .zip(geometry)
+                    .map(|(d, t)| {
+                        let c = t.cycle();
+                        let w = t.wavenumber(sound_speed);
+                        let amp = (std::f32::consts::PI * d.0 as f32 / c as f32).sin();
+                        let phase = 2. * std::f32::consts::PI * d.1 as f32 / c as f32;
+                        [amp, phase, 0., w as f32]
+                    })
+                    .collect::<Vec<_>>();
+                return gpu.calc_field_of::<T, D>(
+                    observe_points.into_iter().collect(),
+                    geometry,
+                    source_drive,
+                );
+            }
+        }
+        let sound_speed = geometry.sound_speed;
+        observe_points
+            .into_iter()
+            .map(|target| {
+                drives
+                    .iter()
+                    .zip(geometry)
+                    .fold(Complex::new(0., 0.), |acc, (d, t)| {
+                        let amp = (PI * d.0 as float / t.cycle() as float).sin();
+                        let phase = 2. * PI * d.1 as float / t.cycle() as float;
+                        acc + propagate::<D>(
+                            t.position(),
+                            &t.z_direction(),
+                            0.0,
+                            t.wavenumber(sound_speed),
+                            &target,
+                        ) * Complex::from_polar(amp, phase)
+                    })
+            })
+            .collect()
+    }
+
+    fn animate_1d_impl(
+        observe_points: Vec<float>,
+        acoustic_pressures: Vec<Vec<Complex>>,
+        resolution: float,
+        x_label: &str,
+        config: PlotConfig,
+    ) -> Result<(), MonitorError> {
+        #[cfg(target_os = "windows")]
+        {
+            Self::initialize_python()?;
+        }
+
+        let acoustic_pressures = acoustic_pressures
+            .iter()
+            .flat_map(|x| x.iter().map(|&x| x.norm()))
+            .collect::<Vec<_>>();
+
+        Python::with_gil(|py| -> PyResult<()> {
+            let fun = PyModule::from_code(
+                py,
+                r#"
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation
+
+def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
+    plot = axes.plot(acoustic_pressures)
+    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    axes.set_xticks(np.array(x_ticks), minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    return plot
+
+def plot(observe, acoustic_pressures, resolution, x_label, config):
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111)
+
+    nx = len(observe)
+    size = len(acoustic_pressures) // nx
+    acoustic_pressures = np.array(acoustic_pressures)
+    max_p = np.max(acoustic_pressures)
+    acoustic_pressures = acoustic_pressures.reshape((size, nx))
+    
+    def plot_frame(frame):
+        ax.cla()
+        plot_acoustic_field_1d(ax, acoustic_pressures[frame], observe, resolution, config)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel("Amplitude [-]")
+        ax.set_ylim([0, max_p*1.1])
+        plt.tight_layout()
+    
+    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
+    if config.fname != "":
+        ani.save(config.fname, dpi=fig.dpi)
+
+    if config.show:
+        plt.show()
+    plt.close()"#,
+                "",
+                "",
+            )?
+            .getattr("plot")?;
+            fun.call1((
+                observe_points,
+                acoustic_pressures,
+                resolution,
+                x_label,
+                config,
+            ))?;
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn animate_2d_impl(
+        observe_x: Vec<float>,
+        observe_y: Vec<float>,
+        acoustic_pressures: Vec<Vec<Complex>>,
+        resolution: float,
+        x_label: &str,
+        y_label: &str,
+        config: PlotConfig,
+    ) -> Result<(), MonitorError> {
+        #[cfg(target_os = "windows")]
+        {
+            Self::initialize_python()?;
+        }
+
+        let acoustic_pressures = acoustic_pressures
+            .iter()
+            .flat_map(|x| x.iter().map(|&x| x.norm()))
+            .collect::<Vec<_>>();
+
+        Python::with_gil(|py| -> PyResult<()> {
+            let fun = PyModule::from_code(
+                py,
+                r#"
+from matplotlib.animation import FuncAnimation
+import matplotlib.pyplot as plt
+import numpy as np
+import mpl_toolkits.axes_grid1
+
+def config_heatmap(axes, observe_x, observe_y, resolution, config):
+    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
+    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
+    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
+    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
+    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    axes.set_yticklabels(y_labels, minor=False)
+
+def add_colorbar(fig, axes, mappable, config):
+    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
+    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
+    cbar = fig.colorbar(mappable, cax=cax)
+    cbar.ax.set_ylabel("Amplitude [-]")
+
+def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111, aspect="equal")
+    nx = len(observe_x)
+    ny = len(observe_y)
+    size = len(acoustic_pressures) // (nx * ny)
+    acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
+
+    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap)
+    config_heatmap(ax, observe_x, observe_y, resolution, config)
+    add_colorbar(fig, ax, heatmap, config)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    plt.tight_layout()
+
+    def plot_frame(frame):
+        heatmap.set_array(acoustic_pressures[frame].flatten())
+        
+    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
+    if config.fname != "":
+        ani.save(config.fname, dpi=fig.dpi)
+    if config.show:
+        plt.show()
+    plt.close()"#,
+                "",
+                "",
+            )?
+            .getattr("plot")?;
+            fun.call1((
+                observe_x,
+                observe_y,
+                acoustic_pressures,
+                resolution,
+                x_label,
+                y_label,
+                config,
+            ))?;
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    pub fn end_animation<T: Transducer>(
+        &self,
+        range: PlotRange,
+        config: PlotConfig,
+        geometry: &Geometry<T>,
+    ) -> Result<(), MonitorError> {
+        self.animate.set(false);
+
+        let acoustic_pressures = self
+            .animate_drives
+            .borrow()
+            .iter()
+            .map(|d| self.calc_field_from_drive(range.clone(), d, geometry))
+            .collect::<Vec<_>>();
+        let res = if range.is_1d() {
+            let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, 1, 1) => (range.observe_x(), "x [mm]"),
+                (1, _, 1) => (range.observe_y(), "y [mm]"),
+                (1, 1, _) => (range.observe_z(), "z [mm]"),
+                _ => unreachable!(),
+            };
+            Self::animate_1d_impl(observe, acoustic_pressures, range.resolution, label, config)
+        } else if range.is_2d() {
+            let (observe_x, x_label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, _, 1) => (range.observe_x(), "x [mm]"),
+                (1, _, _) => (range.observe_y(), "y [mm]"),
+                (_, 1, _) => (range.observe_z(), "z [mm]"),
+                _ => unreachable!(),
+            };
+            let (observe_y, y_label) = match (range.nx(), range.ny(), range.nz()) {
+                (_, _, 1) => (range.observe_y(), "y [mm]"),
+                (1, _, _) => (range.observe_z(), "z [mm]"),
+                (_, 1, _) => (range.observe_x(), "x [mm]"),
+                _ => unreachable!(),
+            };
+            Self::animate_2d_impl(
+                observe_x,
+                observe_y,
+                acoustic_pressures,
+                range.resolution,
+                x_label,
+                y_label,
+                config,
+            )
+        } else {
+            Err(MonitorError::InvalidPlotRange)
+        };
+
+        self.animate_drives.borrow_mut().clear();
+
+        res
+    }
+
+    #[deprecated(since = "11.3.0", note = "Use plot_field instead")]
     #[allow(clippy::too_many_arguments)]
     pub fn save_field<P: AsRef<Path>, T: Transducer>(
         &self,
@@ -451,7 +1010,9 @@ def plot(modulation, path, config):
         let nx = ((x_range.end - x_range.start) / resolution).floor() as usize + 1;
         let ny = ((y_range.end - y_range.start) / resolution).floor() as usize + 1;
         let nz = ((z_range.end - z_range.start) / resolution).floor() as usize + 1;
-        let path = path.as_ref().as_os_str();
+        let fname = path.as_ref().into();
+
+        let config = PlotConfig { fname, ..config };
 
         match (nx, ny, nz) {
             (nx, 1, 1) => {
@@ -464,14 +1025,7 @@ def plot(modulation, path, config):
                         .map(|&x| Vector3::new(x, y_range.start, z_range.start)),
                     geometry,
                 );
-                Self::plot_1d(
-                    path,
-                    observe,
-                    acoustic_pressures,
-                    resolution,
-                    "x [mm]",
-                    config,
-                )?;
+                Self::plot_1d_impl(observe, acoustic_pressures, resolution, "x [mm]", config)?;
             }
             (1, ny, 1) => {
                 let observe = (0..ny)
@@ -483,14 +1037,7 @@ def plot(modulation, path, config):
                         .map(|&y| Vector3::new(x_range.start, y, z_range.start)),
                     geometry,
                 );
-                Self::plot_1d(
-                    path,
-                    observe,
-                    acoustic_pressures,
-                    resolution,
-                    "y [mm]",
-                    config,
-                )?;
+                Self::plot_1d_impl(observe, acoustic_pressures, resolution, "y [mm]", config)?;
             }
             (1, 1, nz) => {
                 let observe = (0..nz)
@@ -502,14 +1049,7 @@ def plot(modulation, path, config):
                         .map(|&z| Vector3::new(x_range.start, y_range.start, z)),
                     geometry,
                 );
-                Self::plot_1d(
-                    path,
-                    observe,
-                    acoustic_pressures,
-                    resolution,
-                    "z [mm]",
-                    config,
-                )?;
+                Self::plot_1d_impl(observe, acoustic_pressures, resolution, "z [mm]", config)?;
             }
             (nx, ny, 1) => {
                 let observe_x = (0..nx)
@@ -523,8 +1063,7 @@ def plot(modulation, path, config):
                         .map(|(&y, &x)| Vector3::new(x, y, z_range.start)),
                     geometry,
                 );
-                Self::plot_2d(
-                    path,
+                Self::plot_2d_impl(
                     observe_x,
                     observe_y,
                     acoustic_pressures,
@@ -546,8 +1085,7 @@ def plot(modulation, path, config):
                         .map(|(&x, &z)| Vector3::new(x, y_range.start, z)),
                     geometry,
                 );
-                Self::plot_2d(
-                    path,
+                Self::plot_2d_impl(
                     observe_z,
                     observe_x,
                     acoustic_pressures,
@@ -569,8 +1107,7 @@ def plot(modulation, path, config):
                         .map(|(&z, &y)| Vector3::new(x_range.start, y, z)),
                     geometry,
                 );
-                Self::plot_2d(
-                    path,
+                Self::plot_2d_impl(
                     observe_y,
                     observe_z,
                     acoustic_pressures,
@@ -586,6 +1123,7 @@ def plot(modulation, path, config):
         Ok(())
     }
 
+    #[deprecated(since = "11.3.0", note = "Use plot_phase instead")]
     pub fn save_phase<P: AsRef<Path>, T: Transducer>(
         &self,
         path: P,
@@ -597,7 +1135,8 @@ def plot(modulation, path, config):
             Self::initialize_python()?;
         }
 
-        let path = path.as_ref().as_os_str();
+        let fname = path.as_ref().into();
+        let config = PlotConfig { fname, ..config };
 
         let trans_x = geometry
             .transducers()
@@ -611,18 +1150,16 @@ def plot(modulation, path, config):
 
         Python::with_gil(|py| -> PyResult<()> {
             let fun = PyModule::from_code(
-                py,
-                r#"
+                    py,
+r#"
 import matplotlib.pyplot as plt
 import numpy as np
 import mpl_toolkits.axes_grid1
 
 def adjust_marker_size(fig, axes, scat, radius):
     fig.canvas.draw()
-
     r_pix = axes.transData.transform((radius, radius)) - axes.transData.transform((0, 0))
     sizes = (2 * r_pix * 72 / fig.dpi)**2
-
     scat.set_sizes(sizes)
 
 def add_colorbar(fig, axes, mappable, config):
@@ -632,18 +1169,16 @@ def add_colorbar(fig, axes, mappable, config):
     cbar.ax.set_ylim((0, 2 * np.pi))
     cbar.ax.set_yticks([0, np.pi, 2 * np.pi])
     cbar.ax.set_yticklabels(['0', '$\\pi$', '$2\\pi$'])
-    
+
 def plot_phase_2d(fig, axes, trans_x, trans_y, trans_phase, trans_size, config, cmap='jet', marker='o'):
     scat = axes.scatter(trans_x, trans_y, c=trans_phase, cmap=cmap, s=0,
                         marker=marker, vmin=0, vmax=2 * np.pi,
                         clip_on=False)
-
     add_colorbar(fig, axes, scat, config)
     adjust_marker_size(fig, axes, scat, trans_size / 2)
-
     return scat
 
-def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
+def plot(trans_x, trans_y, trans_phase, config, trans_size):
     plt.rcParams["font.size"] = config.fontsize
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
     ax = fig.add_subplot(111, aspect='equal')
@@ -657,20 +1192,16 @@ def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
     ax.set_ylim((y_min, y_max))
     scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.fname != '':
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
     if config.show:
         plt.show()
-    plt.close()
-                "#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
+    plt.close()"#, "", "")?
+                .getattr("plot")?;
             fun.call1((
                 trans_x,
                 trans_y,
                 trans_phase,
-                path,
                 config,
                 autd3_core::autd3_device::TRANS_SPACING,
             ))?;
@@ -680,23 +1211,27 @@ def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
         Ok(())
     }
 
+    #[deprecated(since = "11.3.0", note = "Use plot_modulation instead")]
     pub fn save_modulation<P: AsRef<Path>>(
         &self,
         path: P,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
-        let path = path.as_ref().as_os_str();
-        Self::plot_modulation(path, self.modulation(), config)?;
+        let fname = path.as_ref().into();
+        let config = PlotConfig { fname, ..config };
+        Self::plot_modulation_impl(self.modulation(), config)?;
         Ok(())
     }
 
+    #[deprecated(since = "11.3.0", note = "Use plot_modulation_raw instead")]
     pub fn save_modulation_raw<P: AsRef<Path>>(
         &self,
         path: P,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
-        let path = path.as_ref().as_os_str();
-        Self::plot_modulation(path, self.modulation_raw(), config)?;
+        let fname = path.as_ref().into();
+        let config = PlotConfig { fname, ..config };
+        Self::plot_modulation_impl(self.modulation_raw(), config)?;
         Ok(())
     }
 }
@@ -739,6 +1274,32 @@ impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
 
         for cpu in &mut self.cpus {
             cpu.send(tx);
+        }
+
+        if self.animate.get() {
+            if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
+                self.animate_is_stm.set(true);
+            }
+            if self.animate_is_stm.get() {
+                if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
+                    self.animate_is_stm.set(false);
+                    self.animate_drives.borrow_mut().extend(
+                        (0..self.cpus[0].fpga().stm_cycle()).map(|idx| {
+                            self.cpus
+                                .iter()
+                                .flat_map(|cpu| cpu.fpga().duties_and_phases(idx))
+                                .collect()
+                        }),
+                    );
+                }
+            } else {
+                self.animate_drives.borrow_mut().push(
+                    self.cpus
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().duties_and_phases(0))
+                        .collect(),
+                );
+            }
         }
 
         Ok(true)
