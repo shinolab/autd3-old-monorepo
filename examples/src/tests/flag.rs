@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,9 +40,9 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bo
                 let states = autd.fpga_info().unwrap();
                 println!("{} FPGA Status...", prompts[idx / 1000 % prompts.len()]);
                 idx += 1;
-                for (i, state) in states.iter().enumerate() {
+                states.iter().enumerate().for_each(|(i, state)| {
                     println!("\x1b[0K[{}]: thermo = {}", i, state.is_thermal_assert());
-                }
+                });
                 print!("\x1b[{}A", states.len() + 1);
             }
         });

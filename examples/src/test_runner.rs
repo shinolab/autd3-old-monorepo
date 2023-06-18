@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -48,9 +48,9 @@ pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Res
     }
 
     loop {
-        for (i, (name, _)) in examples.iter().enumerate() {
+        examples.iter().enumerate().for_each(|(i, (name, _))| {
             println!("[{}]: {}", i, name);
-        }
+        });
         println!("[Others]: Finish");
         print!("{}", "Choose number: ".green().bold());
         io::stdout().flush()?;

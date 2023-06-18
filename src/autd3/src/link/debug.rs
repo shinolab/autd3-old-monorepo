@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -110,9 +110,9 @@ impl<T: Transducer> Link<T> for Debug {
             return Ok(false);
         }
 
-        for cpu in &mut self.cpus {
+        self.cpus.iter_mut().for_each(|cpu| {
             cpu.send(tx);
-        }
+        });
 
         match tx.header().msg_id {
             MSG_CLEAR => {
@@ -166,7 +166,7 @@ impl<T: Transducer> Link<T> for Debug {
                     );
                     if self.logger.should_log(Level::Trace) {
                         let cycles = fpga.cycles();
-                        for j in 0..fpga.stm_cycle() {
+                        ( 0..fpga.stm_cycle()).for_each(|j| {
                             trace!(logger: self.logger,"\tSTM[{}]:", j);
                             trace!(logger: self.logger,
                                 "{}",
@@ -179,7 +179,7 @@ impl<T: Transducer> Link<T> for Debug {
                                     .collect::<Vec<_>>()
                                     .join("")
                             );
-                        }
+                        });
                     }
                 }
             } else if fpga.is_legacy_mode() {
@@ -231,10 +231,10 @@ impl<T: Transducer> Link<T> for Debug {
             return Ok(false);
         }
 
-        for cpu in &mut self.cpus {
+        self.cpus.iter_mut().for_each(|cpu| {
             rx.messages_mut()[cpu.id()].ack = cpu.ack();
             rx.messages_mut()[cpu.id()].msg_id = cpu.msg_id();
-        }
+        });
 
         Ok(true)
     }

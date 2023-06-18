@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -359,11 +359,11 @@ impl ImGuiRenderer {
                 if let Some(tab) = ui.tab_item("Config") {
                     ui.text("Device index: show");
 
-                    for i in 0..settings.shows.len() {
+                    (0..settings.shows.len()).for_each(|i| {
                         ui.text(format!("Device {}: ", i));
                         ui.same_line();
                         if ui.checkbox(format!("##show{}", i), &mut settings.shows[i]) {}
-                    }
+                    });
                     ui.separator();
 
                     unsafe {
@@ -390,7 +390,7 @@ impl ImGuiRenderer {
                     ui.text(format!("FPS: {:4.2}", fps));
                     ui.separator();
 
-                    for (i, (pos, rot)) in pos_rot.iter().enumerate() {
+                    pos_rot.iter().enumerate().for_each(|(i, (pos, rot))| {
                         ui.text(format!("Device {}: ", i));
                         ui.text(format!(
                             "  x: {:.2}, y: {:.2}, z: {:.2}",
@@ -400,7 +400,7 @@ impl ImGuiRenderer {
                             "  rw: {:.2}, rx: {:.2}, ry: {:.2}, rx: {:.2}",
                             rot.s, rot.v.x, rot.v.y, rot.v.z
                         ));
-                    }
+                    });
 
                     tab.end()
                 }

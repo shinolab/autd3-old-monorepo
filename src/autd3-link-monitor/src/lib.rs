@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,25 +103,20 @@ impl PlotRange {
     }
 
     pub fn is_1d(&self) -> bool {
-        match (self.nx(), self.ny(), self.nz()) {
-            (_, 1, 1) => true,
-            (1, _, 1) => true,
-            (1, 1, _) => true,
-            _ => false,
-        }
+        matches!(
+            (self.nx(), self.ny(), self.nz()),
+            (_, 1, 1) | (1, _, 1) | (1, 1, _)
+        )
     }
 
     pub fn is_2d(&self) -> bool {
         if self.is_1d() {
             return false;
         }
-
-        match (self.nx(), self.ny(), self.nz()) {
-            (1, _, _) => true,
-            (_, 1, _) => true,
-            (_, _, 1) => true,
-            _ => false,
-        }
+        matches!(
+            (self.nx(), self.ny(), self.nz()),
+            (1, _, _) | (_, 1, _) | (_, _, 1)
+        )
     }
 
     pub fn observe(n: usize, start: float, resolution: float) -> Vec<float> {
@@ -467,6 +462,7 @@ def plot(modulation, config):
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
     ax = fig.add_subplot(111)
     ax.plot(modulation)
+    ax.set_xlim(0, len(modulation))
     ax.set_ylim(0, 1)
     ax.set_xlabel("Index")
     ax.set_ylabel("Modulation")
@@ -1272,9 +1268,9 @@ impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
             return Ok(false);
         }
 
-        for cpu in &mut self.cpus {
+        self.cpus.iter_mut().for_each(|cpu| {
             cpu.send(tx);
-        }
+        });
 
         if self.animate.get() {
             if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
@@ -1310,10 +1306,10 @@ impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
             return Ok(false);
         }
 
-        for cpu in &mut self.cpus {
+        self.cpus.iter_mut().for_each(|cpu| {
             rx.messages_mut()[cpu.id()].ack = cpu.ack();
             rx.messages_mut()[cpu.id()].msg_id = cpu.msg_id();
-        }
+        });
 
         Ok(true)
     }
