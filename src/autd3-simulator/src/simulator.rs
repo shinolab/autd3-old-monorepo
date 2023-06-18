@@ -413,11 +413,34 @@ impl Simulator {
                     *control_flow = ControlFlow::Exit;
                 }
                 Event::WindowEvent {
-                    event: WindowEvent::Resized(..) | WindowEvent::ScaleFactorChanged { .. },
-                    ..
-                } => {
+                    event: WindowEvent::Resized(..),
+                    window_id,
+                } if window_id == render.window().id() => {
                     render.resize();
                     imgui.resized(render.window(), &event);
+                }
+                Event::WindowEvent {
+                    event:
+                        WindowEvent::ScaleFactorChanged {
+                            scale_factor,
+                            new_inner_size,
+                        },
+                    window_id,
+                } if window_id == render.window().id() => {
+                    *new_inner_size = render
+                        .window()
+                        .inner_size()
+                        .to_logical::<u32>(render.window().scale_factor())
+                        .to_physical(scale_factor);
+                    render.resize();
+                    let event_imgui: Event<'_, ()> = Event::WindowEvent {
+                        window_id,
+                        event: WindowEvent::ScaleFactorChanged {
+                            scale_factor,
+                            new_inner_size,
+                        },
+                    };
+                    imgui.resized(render.window(), &event_imgui);
                 }
                 Event::MainEventsCleared => {
                     imgui.prepare_frame(render.window());
