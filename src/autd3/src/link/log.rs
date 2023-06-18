@@ -4,14 +4,18 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{marker::PhantomData, time::Duration};
+use std::{
+    marker::PhantomData,
+    ops::{Deref, DerefMut},
+    time::Duration,
+};
 
 use crate::core::{
     error::AUTDInternalError, link::Link, CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR,
@@ -24,15 +28,39 @@ use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
-pub struct Log<T: Transducer, L: Link<T>> {
+pub struct LinkLog<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
     synchronized: bool,
     _trans: PhantomData<T>,
 }
 
-impl<T: Transducer, L: Link<T>> Log<T, L> {
-    pub fn new(link: L) -> Self {
+pub trait Log<T: Transducer, L: Link<T>> {
+    fn with_log(self) -> LinkLog<T, L>;
+}
+
+impl<T: Transducer, L: Link<T>> Log<T, L> for L {
+    fn with_log(self) -> LinkLog<T, L> {
+        LinkLog::new(self)
+    }
+}
+
+impl<T: Transducer, L: Link<T>> Deref for LinkLog<T, L> {
+    type Target = L;
+
+    fn deref(&self) -> &Self::Target {
+        &self.link
+    }
+}
+
+impl<T: Transducer, L: Link<T>> DerefMut for LinkLog<T, L> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.link
+    }
+}
+
+impl<T: Transducer, L: Link<T>> LinkLog<T, L> {
+    fn new(link: L) -> Self {
         let logger = crate::core::link::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
         Self {
@@ -43,7 +71,7 @@ impl<T: Transducer, L: Link<T>> Log<T, L> {
         }
     }
 
-    pub fn with_level(self, level: LevelFilter) -> Self {
+    pub fn with_log_level(self, level: LevelFilter) -> Self {
         self.logger.set_level_filter(level);
         self
     }
@@ -53,7 +81,7 @@ impl<T: Transducer, L: Link<T>> Log<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
+impl<T: Transducer, L: Link<T>> Link<T> for LinkLog<T, L> {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
