@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -235,6 +235,7 @@ import os"
         }
 
         let mut used_ty = HashSet::new();
+
         for f in &self.functions {
             for arg in &f.args {
                 if let Type::Custom(ref s) = arg.ty {

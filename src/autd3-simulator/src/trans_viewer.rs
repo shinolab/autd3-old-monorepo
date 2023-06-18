@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -365,14 +365,13 @@ impl TransViewer {
 
     fn update_color_instance_data(&mut self, sources: &SoundSources) {
         if let Some(data) = &mut self.color_instance_data {
-            let mut data = data.write().unwrap();
-            for (d, (drive, &v)) in data
+            data.write()
+                .unwrap()
                 .iter_mut()
                 .zip(sources.drives().zip(sources.visibilities()))
-            {
-                let color = (self.coloring_method)(drive.phase / (2.0 * PI), drive.amp, v);
-                d.color = color;
-            }
+                .for_each(|(d, (drive, &v))| {
+                    d.color = (self.coloring_method)(drive.phase / (2.0 * PI), drive.amp, v);
+                });
         }
     }
 }

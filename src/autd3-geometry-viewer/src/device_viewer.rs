@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -123,51 +123,51 @@ impl DeviceViewer {
 
         let (view, proj) = view_proj;
 
-        for (&(pos, rot), s) in pos_rot.iter().zip(setting.shows.iter()) {
-            if !s {
-                continue;
-            }
+        pos_rot
+            .iter()
+            .zip(setting.shows.iter())
+            .filter(|&(_, &s)| s)
+            .for_each(|(&(pos, rot), _)| {
+                model.primitives.iter().for_each(|primitive| {
+                    let material = &model.materials[primitive.material_index];
 
-            for primitive in &model.primitives {
-                let material = &model.materials[primitive.material_index];
+                    let pcf = fs::PushConsts {
+                        proj_view: (proj * view).into(),
+                        model: (Matrix4::from_translation(pos) * Matrix4::from(rot)).into(),
+                        lightPos: [
+                            setting.light_pos_x * GL_SCALE,
+                            setting.light_pos_y * GL_SCALE,
+                            setting.light_pos_z * GL_SCALE,
+                            1.,
+                        ],
+                        viewPos: [
+                            setting.camera_pos_x * GL_SCALE,
+                            setting.camera_pos_y * GL_SCALE,
+                            setting.camera_pos_z * GL_SCALE,
+                            1.,
+                        ],
+                        ambient: setting.ambient,
+                        specular: setting.specular,
+                        lightPower: setting.light_power,
+                        metallic: material.metallic_factor,
+                        roughness: material.roughness_factor,
+                        baseColorR: material.base_color_factor[0],
+                        baseColorG: material.base_color_factor[1],
+                        baseColorB: material.base_color_factor[2],
+                        hasTexture: if material.base_color_texture_idx.is_some() {
+                            1
+                        } else {
+                            0
+                        },
+                    };
 
-                let pcf = fs::PushConsts {
-                    proj_view: (proj * view).into(),
-                    model: (Matrix4::from_translation(pos) * Matrix4::from(rot)).into(),
-                    lightPos: [
-                        setting.light_pos_x * GL_SCALE,
-                        setting.light_pos_y * GL_SCALE,
-                        setting.light_pos_z * GL_SCALE,
-                        1.,
-                    ],
-                    viewPos: [
-                        setting.camera_pos_x * GL_SCALE,
-                        setting.camera_pos_y * GL_SCALE,
-                        setting.camera_pos_z * GL_SCALE,
-                        1.,
-                    ],
-                    ambient: setting.ambient,
-                    specular: setting.specular,
-                    lightPower: setting.light_power,
-                    metallic: material.metallic_factor,
-                    roughness: material.roughness_factor,
-                    baseColorR: material.base_color_factor[0],
-                    baseColorG: material.base_color_factor[1],
-                    baseColorB: material.base_color_factor[2],
-                    hasTexture: if material.base_color_texture_idx.is_some() {
-                        1
-                    } else {
-                        0
-                    },
-                };
-
-                builder
-                    .bind_pipeline_graphics(self.pipeline.clone())
-                    .push_constants(self.pipeline.layout().clone(), 0, pcf)
-                    .draw_indexed(primitive.index_count, 1, primitive.first_index, 0, 0)
-                    .unwrap();
-            }
-        }
+                    builder
+                        .bind_pipeline_graphics(self.pipeline.clone())
+                        .push_constants(self.pipeline.layout().clone(), 0, pcf)
+                        .draw_indexed(primitive.index_count, 1, primitive.first_index, 0, 0)
+                        .unwrap();
+                });
+            });
     }
 
     fn create_vertices(renderer: &Renderer, vertices: &[ModelVertex]) -> Subbuffer<[ModelVertex]> {

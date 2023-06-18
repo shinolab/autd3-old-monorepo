@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
     let g = Focus::new(center);
-    let m = Sine::new(150);
+    let m = Square::new(150);
 
     autd.send((m, g))?;
 

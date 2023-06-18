@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -336,7 +336,7 @@ impl ImGuiRenderer {
                     };
                     let mut selected = &items[selected_idx];
                     if let Some(cb) = ui.begin_combo("Coloring", selected) {
-                        for cur in &items {
+                        items.iter().for_each(|cur| {
                             if selected == cur {
                                 ui.set_item_default_focus();
                             }
@@ -345,7 +345,7 @@ impl ImGuiRenderer {
                             if clicked {
                                 selected = cur;
                             }
-                        }
+                        });
                         match *selected {
                             "Viridis" => {
                                 settings.color_map_type = ColorMapType::Viridis;
@@ -541,17 +541,18 @@ impl ImGuiRenderer {
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
                             0,
                         ) {
-                            for (dev, cpu) in cpus.iter().enumerate() {
-                                let cycles = cpu.fpga().cycles();
+                            cpus.iter().for_each(|cpu| {
                                 sources
                                     .drives_mut()
-                                    .skip(dev * NUM_TRANS_IN_UNIT)
-                                    .enumerate()
-                                    .for_each(|(i, s)| {
-                                        let freq = FPGA_CLK_FREQ as f32 / cycles[i] as f32;
-                                        s.set_wave_number(freq, settings.sound_speed);
+                                    .skip(cpu.id() * NUM_TRANS_IN_UNIT)
+                                    .zip(cpu.fpga().cycles())
+                                    .for_each(|(s, c)| {
+                                        s.set_wave_number(
+                                            FPGA_CLK_FREQ as f32 / c as f32,
+                                            settings.sound_speed,
+                                        );
                                     });
-                            }
+                            });
                             update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
                         }
                     }
@@ -574,7 +575,7 @@ impl ImGuiRenderer {
 
                     ui.text("Device index: show/enable/overheat");
 
-                    for (i, cpu) in cpus.iter_mut().enumerate() {
+                    cpus.iter_mut().enumerate().for_each(|(i, cpu)| {
                         ui.text(format!("Device {}: ", i));
                         ui.same_line();
                         if ui.checkbox(format!("##show{}", i), &mut self.visible[i]) {
@@ -603,7 +604,7 @@ impl ImGuiRenderer {
                                 cpu.fpga_mut().deassert_thermal_sensor();
                             }
                         }
-                    }
+                    });
                     ui.separator();
 
                     ui.color_picker4("Background", &mut settings.background);

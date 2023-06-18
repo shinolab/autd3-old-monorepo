@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -73,11 +73,15 @@ impl<'a, T: Transducer> Grouped<'a, T> {
 
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let mut drives = HashMap::new();
-        for (&i, gain) in &mut self.gain_map {
-            let d = gain.calc(geometry)?;
-            drives.insert(i, d);
-        }
-        Self::calc_impl(drives, geometry)
+        Self::calc_impl(
+            self.gain_map
+                .iter_mut()
+                .map(|(&i, gain)| -> Result<_, AUTDInternalError> {
+                    let d = gain.calc(geometry)?;
+                    Ok((i, d))
+                })
+                .collect::<Result<HashMap<_, _>, _>>()?,
+            geometry,
+        )
     }
 }

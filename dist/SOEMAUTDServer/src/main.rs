@@ -215,9 +215,9 @@ fn main_() -> anyhow::Result<()> {
                 .map(|adapter| adapter.name().len())
                 .max()
                 .unwrap_or(0);
-            for adapter in &adapters {
+            adapters.iter().for_each(|adapter| {
                 println!("\t{:name_len$}\t{}", adapter.name(), adapter.desc());
-            }
+            });
         }
         Commands::Run(args) => {
             let port = args.port;

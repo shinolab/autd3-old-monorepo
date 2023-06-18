@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -324,9 +324,9 @@ impl Simulator {
                                 header_size,
                             );
                         }
-                        for cpu in &mut cpus {
+                        cpus.iter_mut().for_each(|cpu| {
                             cpu.send(&tx);
-                        }
+                        });
 
                         is_source_update = true;
                     }
@@ -335,7 +335,7 @@ impl Simulator {
                             let mut cursor: *const u8 = buf[1..].as_ptr();
                             let dev_num = std::ptr::read(cursor as *const u32) as usize;
                             cursor = cursor.add(std::mem::size_of::<u32>());
-                            for _ in 0..dev_num {
+                            (0..dev_num).for_each(|_| {
                                 let mut p = cursor as *const f32;
                                 let x = std::ptr::read(p);
                                 p = p.add(1);
@@ -359,26 +359,32 @@ impl Simulator {
                                         qw as _, qx as _, qy as _, qz as _,
                                     ),
                                 );
-                                for (_, p, r) in AUTD3::with_quaternion(pos, rot).get_transducers(0)
-                                {
-                                    sources.add(
-                                        to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
-                                        to_gl_rot(Quaternion::new(
-                                            r.w as _, r.i as _, r.j as _, r.k as _,
-                                        )),
-                                        Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
-                                        1.0,
-                                    );
-                                }
-                            }
+                                AUTD3::with_quaternion(pos, rot)
+                                    .get_transducers(0)
+                                    .iter()
+                                    .for_each(|(_, p, r)| {
+                                        sources.add(
+                                            to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                            to_gl_rot(Quaternion::new(
+                                                r.w as _, r.i as _, r.j as _, r.k as _,
+                                            )),
+                                            Drive::new(
+                                                1.0,
+                                                0.0,
+                                                1.0,
+                                                40e3,
+                                                self.settings.sound_speed,
+                                            ),
+                                            1.0,
+                                        );
+                                    });
+                            });
                         }
                         sender_s2c.send(vec![GEOMETRY_CONFIG]).unwrap();
 
-                        for i in 0..sources.len() / NUM_TRANS_IN_UNIT {
-                            let mut cpu = CPUEmulator::new(i, NUM_TRANS_IN_UNIT);
-                            cpu.init();
-                            cpus.push(cpu);
-                        }
+                        cpus = (0..sources.len() / NUM_TRANS_IN_UNIT)
+                            .map(|i| CPUEmulator::new(i, NUM_TRANS_IN_UNIT))
+                            .collect();
 
                         field_compute_pipeline.init(&render, &sources);
                         trans_viewer.init(&render, &sources);
@@ -477,7 +483,7 @@ impl Simulator {
                             }
 
                             if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
-                                for cpu in &cpus {
+                                cpus.iter().for_each(|cpu| {
                                     let cycles = cpu.fpga().cycles();
                                     let drives = cpu.fpga().duties_and_phases(imgui.stm_idx());
                                     let m = if self.settings.mod_enable {
@@ -485,19 +491,23 @@ impl Simulator {
                                     } else {
                                         1.
                                     };
-                                    for (i, d) in sources
+                                    sources
                                         .drives_mut()
                                         .skip(cpu.id() * NUM_TRANS_IN_UNIT)
                                         .take(NUM_TRANS_IN_UNIT)
                                         .enumerate()
-                                    {
-                                        d.amp =
-                                            (PI * drives[i].0 as f32 * m / cycles[i] as f32).sin();
-                                        d.phase = 2. * PI * drives[i].1 as f32 / cycles[i] as f32;
-                                        let freq = FPGA_CLK_FREQ as f32 / cycles[i] as f32;
-                                        d.set_wave_number(freq, self.settings.sound_speed);
-                                    }
-                                }
+                                        .for_each(|(i, d)| {
+                                            d.amp = (PI * drives[i].0 as f32 * m
+                                                / cycles[i] as f32)
+                                                .sin();
+                                            d.phase =
+                                                2. * PI * drives[i].1 as f32 / cycles[i] as f32;
+                                            d.set_wave_number(
+                                                FPGA_CLK_FREQ as f32 / cycles[i] as f32,
+                                                self.settings.sound_speed,
+                                            );
+                                        });
+                                });
                             }
 
                             field_compute_pipeline.update(
@@ -522,18 +532,19 @@ impl Simulator {
                                     / self.settings.slice_pixel_size)
                                     as u32;
                                 let mut img_buf = image::ImageBuffer::new(img_x, img_y);
-                                for ((_, _, pixel), [r, g, b, a]) in img_buf
+                                img_buf
                                     .enumerate_pixels_mut()
                                     .zip(image_buffer_content.iter())
-                                {
-                                    let r = (r * 255.0) as u8;
-                                    let g = (g * 255.0) as u8;
-                                    let b = (b * 255.0) as u8;
-                                    let a = (a * 255.0) as u8;
-                                    *pixel = image::Rgba([r, g, b, a]);
-                                }
-                                let img_buf = image::imageops::flip_vertical(&img_buf);
-                                img_buf.save(&self.settings.image_save_path).unwrap();
+                                    .for_each(|((_, _, pixel), [r, g, b, a])| {
+                                        let r = (r * 255.0) as u8;
+                                        let g = (g * 255.0) as u8;
+                                        let b = (b * 255.0) as u8;
+                                        let a = (a * 255.0) as u8;
+                                        *pixel = image::Rgba([r, g, b, a]);
+                                    });
+                                image::imageops::flip_vertical(&img_buf)
+                                    .save(&self.settings.image_save_path)
+                                    .unwrap();
                             }
 
                             let config = Config {
