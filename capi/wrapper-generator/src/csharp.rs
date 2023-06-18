@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -249,46 +249,52 @@ namespace AUTD3Sharp
             crate_name.replace('-', "_"),
         )?;
 
-        for constant in self.constants {
-            writeln!(
-                w,
-                r"
+        self.constants
+            .iter()
+            .map(|constant| {
+                writeln!(
+                    w,
+                    r"
             public const {} {} = {};",
-                Self::to_return_ty(&constant.ty),
-                Self::to_pascal(&constant.name),
-                if Self::to_return_ty(&constant.ty) == "float" {
-                    format!("{}f", constant.value)
+                    Self::to_return_ty(&constant.ty),
+                    Self::to_pascal(&constant.name),
+                    if Self::to_return_ty(&constant.ty) == "float" {
+                        format!("{}f", constant.value)
+                    } else {
+                        constant.value.to_string()
+                    }
+                )
+            })
+            .try_collect()?;
+
+        self.functions
+            .iter()
+            .map(|function| {
+                let args = function
+                    .args
+                    .iter()
+                    .map(|arg| format!("{} {}", Self::to_arg_ty(arg), Self::to_camel(&arg.name)))
+                    .join(", ");
+
+                let attr = "[DllImport(DLL, CallingConvention = CallingConvention.Cdecl)]";
+                let ret_attr = if function.return_ty == Type::Bool {
+                    "[return: MarshalAs(UnmanagedType.U1)]"
                 } else {
-                    constant.value.to_string()
-                }
-            )?;
-        }
+                    ""
+                };
 
-        for function in self.functions {
-            let args = function
-                .args
-                .iter()
-                .map(|arg| format!("{} {}", Self::to_arg_ty(arg), Self::to_camel(&arg.name)))
-                .join(", ");
-
-            let attr = "[DllImport(DLL, CallingConvention = CallingConvention.Cdecl)]";
-            let ret_attr = if function.return_ty == Type::Bool {
-                "[return: MarshalAs(UnmanagedType.U1)]"
-            } else {
-                ""
-            };
-
-            writeln!(
-                w,
-                r"
+                writeln!(
+                    w,
+                    r"
             {}{} public static extern {} {}({});",
-                attr,
-                ret_attr,
-                Self::to_return_ty(&function.return_ty),
-                function.name,
-                args
-            )?;
-        }
+                    attr,
+                    ret_attr,
+                    Self::to_return_ty(&function.return_ty),
+                    function.name,
+                    args
+                )
+            })
+            .try_collect()?;
 
         writeln!(
             w,
@@ -296,51 +302,55 @@ namespace AUTD3Sharp
     }}"
         )?;
 
-        for e in self.enums {
-            write!(
-                w,
-                r"
+        self.enums
+            .iter()
+            .map(|e| {
+                write!(
+                    w,
+                    r"
     public enum {} : {}",
-                e.name,
-                Self::to_return_ty(&e.ty)
-            )?;
+                    e.name,
+                    Self::to_return_ty(&e.ty)
+                )?;
 
-            writeln!(
-                w,
-                r"
+                writeln!(
+                    w,
+                    r"
     {{",
-            )?;
+                )?;
 
-            for (i, v) in &e.values {
-                writeln!(w, r"        {} = {},", Self::to_pascal(i), v)?;
-            }
+                e.values
+                    .iter()
+                    .map(|(i, v)| writeln!(w, r"        {} = {},", Self::to_pascal(i), v))
+                    .try_collect()?;
 
-            writeln!(w, r"    }}",)?;
-        }
+                writeln!(w, r"    }}",)
+            })
+            .try_collect()?;
 
-        for e in self.ptr_tuple {
-            if !e.name.ends_with("Ptr") {
-                continue;
-            }
-
-            write!(
-                w,
-                r"
+        self.ptr_tuple
+            .iter()
+            .filter(|e| e.name.ends_with("Ptr"))
+            .map(|e| {
+                write!(
+                    w,
+                    r"
     [StructLayout(LayoutKind.Sequential)]
     public struct {}",
-                e.name,
-            )?;
+                    e.name,
+                )?;
 
-            writeln!(
-                w,
-                r"
+                writeln!(
+                    w,
+                    r"
     {{",
-            )?;
+                )?;
 
-            writeln!(w, r"        public IntPtr _0;")?;
+                writeln!(w, r"        public IntPtr _0;")?;
 
-            writeln!(w, r"    }}",)?;
-        }
+                writeln!(w, r"    }}",)
+            })
+            .try_collect()?;
 
         writeln!(
             w,

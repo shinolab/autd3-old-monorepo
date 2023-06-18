@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -52,12 +52,9 @@ impl<T: Transducer> Geometry<T> {
         sound_speed: float,
         attenuation: float,
     ) -> Result<Geometry<T>, AUTDInternalError> {
-        for &transducers in &device_map {
-            if transducers > 256 {
-                return Err(AUTDInternalError::TooManyTransducers);
-            }
+        if device_map.iter().any(|&t| t > 256) {
+            return Err(AUTDInternalError::TooManyTransducers);
         }
-
         Ok(Geometry {
             transducers,
             device_map,

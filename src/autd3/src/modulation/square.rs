@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -85,14 +85,14 @@ impl Modulation for Square {
         let k = gcd(sf, freq);
         let n = sf / k;
         let d = freq / k;
-
-        let mut buffer = vec![self.low; n];
-        let mut cursor = 0;
-        for i in 0..d {
-            let size = (n + i) / d;
-            buffer[cursor..cursor + (size as float * self.duty) as usize].fill(self.high);
-            cursor += size;
-        }
-        Ok(buffer)
+        Ok((0..d)
+            .map(|i| (n + i) / d)
+            .flat_map(|size| {
+                let n_high = (size as float * self.duty) as usize;
+                vec![self.high; n_high]
+                    .into_iter()
+                    .chain(vec![self.low; size - n_high])
+            })
+            .collect())
     }
 }

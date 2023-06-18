@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/05/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -88,13 +88,16 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                 return true;
             }
 
-            for slave in ec_slave.iter().skip(1).take(ec_slavecount as usize) {
-                if slave.islost != 0 {
-                    if let Some(f) = &self.on_lost {
-                        f(&msg);
-                    }
-                    return false;
+            if ec_slave
+                .iter()
+                .skip(1)
+                .take(ec_slavecount as usize)
+                .any(|slave| slave.islost != 0)
+            {
+                if let Some(f) = &self.on_lost {
+                    f(&msg);
                 }
+                return false;
             }
             true
         }
