@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -232,8 +232,8 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx.messages_mut()[cpu.id()].ack = cpu.ack();
-            rx.messages_mut()[cpu.id()].msg_id = cpu.msg_id();
+            rx[cpu.id()].ack = cpu.ack();
+            rx[cpu.id()].msg_id = cpu.msg_id();
         });
 
         Ok(true)

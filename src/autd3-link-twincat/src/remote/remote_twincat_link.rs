@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
+    RxDatagram, RxMessage, TxDatagram,
 };
 
 use crate::{error::AdsError, remote::native_methods::*};
@@ -186,8 +186,8 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
                 &addr as _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE_READ,
-                std::mem::size_of_val(rx.messages()) as _,
-                rx.messages_mut().as_mut_ptr() as _,
+                (std::mem::size_of::<RxMessage>() * rx.len()) as _,
+                rx.as_mut_ptr() as _,
                 &mut receive_bytes as _,
             )
         };
