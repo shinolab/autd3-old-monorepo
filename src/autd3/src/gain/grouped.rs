@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -83,5 +83,41 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
                 .collect::<Result<HashMap<_, _>, _>>()?,
             geometry,
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use autd3_core::autd3_device::AUTD3;
+    use autd3_core::geometry::LegacyTransducer;
+
+    use super::*;
+
+    use crate::prelude::{Null, Plane};
+    use crate::tests::GeometryBuilder;
+
+    #[test]
+    fn test_grouped() {
+        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::new(10.0, 0.0, 0.0), Vector3::zeros()))
+            .build()
+            .unwrap();
+
+        let mut grouped_gain = Grouped::new();
+        grouped_gain = grouped_gain.add(0, Null::new());
+        grouped_gain = grouped_gain.add(1, Plane::new(Vector3::zeros()));
+
+        let drives = grouped_gain.calc(&geometry).unwrap();
+
+        for (i, drive) in drives.iter().enumerate() {
+            if i < geometry.device_map()[0] {
+                assert_eq!(drive.phase, 0.0);
+                assert_eq!(drive.amp, 0.0);
+            } else {
+                assert_eq!(drive.phase, 0.0);
+                assert_eq!(drive.amp, 1.0);
+            }
+        }
     }
 }

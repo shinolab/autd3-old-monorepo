@@ -79,20 +79,37 @@ impl DerefMut for CacheImpl {
     }
 }
 
-impl<'a> IntoIterator for &'a Cache {
-    type Item = &'a Drive;
-    type IntoIter = std::slice::Iter<'a, Drive>;
+#[cfg(test)]
+mod tests {
+    use autd3_core::autd3_device::AUTD3;
+    use autd3_core::geometry::LegacyTransducer;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.cache.iter()
-    }
-}
+    use super::*;
 
-impl<'a> IntoIterator for &'a mut Cache {
-    type Item = &'a mut Drive;
-    type IntoIter = std::slice::IterMut<'a, Drive>;
+    use crate::prelude::Plane;
+    use crate::tests::GeometryBuilder;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.cache.iter_mut()
+    #[test]
+    fn test_cache() {
+        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .build()
+            .unwrap();
+
+        let mut gain = Plane::new(Vector3::zeros()).with_cache(&geometry).unwrap();
+
+        for drive in gain.calc(&geometry).unwrap() {
+            assert_eq!(drive.phase, 0.0);
+            assert_eq!(drive.amp, 1.0);
+        }
+
+        for drive in gain.iter_mut() {
+            drive.phase = 1.0;
+        }
+
+        for drive in gain.calc(&geometry).unwrap() {
+            assert_eq!(drive.phase, 1.0);
+            assert_eq!(drive.amp, 1.0);
+        }
     }
 }

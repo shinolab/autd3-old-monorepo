@@ -27,3 +27,7 @@ default = []
 single_float = ["autd3-core/single_float"]
 use_meter = ["autd3-core/use_meter"]
 parallel = ["autd3-core/parallel"]
+
+[dev-dependencies]
+assert_approx_eq = "1.1.0"
+rand = "0.8.5"
