@@ -4,12 +4,14 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
+
+use std::sync::atomic::AtomicBool;
 
 use super::{error::TimerError, NativeTimerWrapper};
 #[cfg(target_os = "macos")]
@@ -22,6 +24,7 @@ pub trait TimerCallback {
 }
 
 pub struct Timer<F: TimerCallback> {
+    lock: AtomicBool,
     native_timer: NativeTimerWrapper,
     cb: F,
 }
@@ -29,6 +32,7 @@ pub struct Timer<F: TimerCallback> {
 impl<F: TimerCallback> Timer<F> {
     pub fn start(cb: F, period_ns: u32) -> Result<Box<Self>, TimerError> {
         let mut timer = Box::new(Self {
+            lock: AtomicBool::new(false),
             native_timer: NativeTimerWrapper::new(),
             cb,
         });
@@ -52,9 +56,18 @@ impl<F: TimerCallback> Timer<F> {
         _dw1: usize,
         _dw2: usize,
     ) {
+        use atomic::Ordering;
+
         let ptr = dw_user as *mut Self;
         if let Some(timer) = ptr.as_mut() {
-            timer.cb.rt_thread();
+            if let Ok(false) =
+                timer
+                    .lock
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            {
+                timer.cb.rt_thread();
+                timer.lock.store(false, Ordering::Release);
+            }
         }
     }
 
@@ -63,7 +76,14 @@ impl<F: TimerCallback> Timer<F> {
         let ptr = Self::get_ptr(si);
         let ptr = ptr as *mut Self;
         if let Some(timer) = ptr.as_mut() {
-            timer.cb.rt_thread();
+            if let Ok(false) =
+                timer
+                    .lock
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            {
+                timer.cb.rt_thread();
+                timer.lock.store(false, Ordering::Release);
+            }
         }
     }
 
@@ -80,7 +100,44 @@ impl<F: TimerCallback> Timer<F> {
     unsafe extern "C" fn rt_thread(ptr: *const c_void) {
         let ptr = ptr as *mut Self;
         if let Some(timer) = ptr.as_mut() {
-            timer.cb.rt_thread();
+            if let Ok(false) =
+                timer
+                    .lock
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            {
+                timer.cb.rt_thread();
+                timer.lock.store(false, Ordering::Release);
+            }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    struct CountCallback {
+        count: usize,
+    }
+
+    impl TimerCallback for CountCallback {
+        fn rt_thread(&mut self) {
+            self.count += 1;
+        }
+    }
+
+    #[test]
+    fn test_timer() {
+        let timer = Timer::start(CountCallback { count: 0 }, 1000 * 1000 * 1).unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        let count = timer.cb.count;
+        assert!(90 < count && count < 110);
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        assert!(180 < timer.cb.count && timer.cb.count < 220);
+        let cb = timer.close().unwrap();
+        let count = cb.count;
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        assert_eq!(cb.count, count);
     }
 }
