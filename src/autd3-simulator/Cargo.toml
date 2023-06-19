@@ -25,7 +25,7 @@ vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
 vulkano-win = "0.33.0"
 winit = "0.28.6"
-imgui-vulkano-renderer = { git = "https://github.com/sssssssuzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
+imgui-vulkano-renderer = { git = "https://github.com/s5suzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
 spdlog-rs = "0.3.8"
 crossbeam-channel = "0.5.8"
 anyhow = "1.0.71"
