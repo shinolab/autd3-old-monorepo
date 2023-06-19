@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -303,7 +303,7 @@ mod tests {
             unsafe { *(&b as *const _ as *const i32) as float * FOCUS_STM_FIXED_NUM_UNIT }
         };
 
-        for _ in 0..10000 {
+        (0..10000).for_each(|_| {
             let x = rng.gen_range(min..max);
             let y = rng.gen_range(min..max);
             let z = rng.gen_range(min..max);
@@ -334,7 +334,7 @@ mod tests {
             let v = v >> 18;
             let s = (v & 0xFF) as u8;
             assert_eq!(s, shift);
-        }
+        });
     }
 
     #[test]
@@ -377,9 +377,9 @@ mod tests {
         assert_eq!(d[11], 0x76);
         assert_eq!(d[12], 0x10);
         assert_eq!(d[13], 0x32);
-        for i in 0..point_size * size_of::<STMFocus>() {
+        (0..point_size * size_of::<STMFocus>()).for_each(|i| {
             assert_eq!(d[14 + i], i as u8);
-        }
+        });
     }
 
     #[test]
@@ -406,9 +406,9 @@ mod tests {
 
         assert_eq!(d[0], (point_size & 0xFF) as _);
         assert_eq!(d[1], (point_size >> 8) as _);
-        for i in 0..point_size * size_of::<STMFocus>() {
+        (0..point_size * size_of::<STMFocus>()).for_each(|i| {
             assert_eq!(d[2 + i], i as u8);
-        }
+        });
     }
 
     #[test]

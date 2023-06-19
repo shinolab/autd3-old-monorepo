@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -150,9 +150,12 @@ mod test {
             .contains(CPUControlFlags::CONFIG_SILENCER));
 
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-        for (d, cycle) in tx.body_raw_mut().iter().zip(cycles.iter()) {
-            assert_eq!(d, cycle);
-        }
+        tx.body_raw_mut()
+            .iter()
+            .zip(cycles.iter())
+            .for_each(|(d, cycle)| {
+                assert_eq!(d, cycle);
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();
@@ -193,9 +196,12 @@ mod test {
             .contains(CPUControlFlags::CONFIG_SILENCER));
 
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-        for (d, cycle) in tx.body_raw_mut().iter().zip(cycles.iter()) {
-            assert_eq!(d, cycle);
-        }
+        tx.body_raw_mut()
+            .iter()
+            .zip(cycles.iter())
+            .for_each(|(d, cycle)| {
+                assert_eq!(d, cycle);
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();

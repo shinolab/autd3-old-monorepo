@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -361,10 +361,13 @@ mod test {
             .fpga_flag
             .contains(FPGAControlFlags::LEGACY_MODE));
         assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
-        for (&d, drive) in tx.body_raw_mut().iter().zip(drives.iter()) {
-            assert_eq!((d & 0xFF) as u8, LegacyDrive::to_phase(drive));
-            assert_eq!((d >> 8) as u8, LegacyDrive::to_duty(drive));
-        }
+        tx.body_raw_mut()
+            .iter()
+            .zip(drives.iter())
+            .for_each(|(&d, drive)| {
+                assert_eq!((d & 0xFF) as u8, LegacyDrive::to_phase(drive));
+                assert_eq!((d >> 8) as u8, LegacyDrive::to_duty(drive));
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -419,12 +422,12 @@ mod test {
             .fpga_flag
             .contains(FPGAControlFlags::LEGACY_MODE));
         assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
-        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+        (0..NUM_TRANS_IN_UNIT * 10).for_each(|i| {
             assert_eq!(
                 tx.body_raw_mut()[i],
                 AdvancedDrivePhase::to_phase(&drives[i], cycles[i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -436,12 +439,12 @@ mod test {
             .fpga_flag
             .contains(FPGAControlFlags::LEGACY_MODE));
         assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
-        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+        (0..NUM_TRANS_IN_UNIT * 10).for_each(|i| {
             assert_eq!(
                 tx.body_raw_mut()[i],
                 AdvancedDriveDuty::to_duty(&drives[i], cycles[i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -497,12 +500,12 @@ mod test {
             .fpga_flag
             .contains(FPGAControlFlags::LEGACY_MODE));
         assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
-        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+        (0..NUM_TRANS_IN_UNIT * 10).for_each(|i| {
             assert_eq!(
                 tx.body_raw_mut()[i],
                 AdvancedDrivePhase::to_phase(&drives[i], cycles[i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -558,12 +561,12 @@ mod test {
             .fpga_flag
             .contains(FPGAControlFlags::LEGACY_MODE));
         assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
-        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+        (0..NUM_TRANS_IN_UNIT * 10).for_each(|i| {
             assert_eq!(
                 tx.body_raw_mut()[i],
                 AdvancedDriveDuty::to_duty(&drives[i], cycles[i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -134,9 +134,14 @@ mod test {
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
         assert_eq!(tx.header().size as usize, MOD_HEADER_INITIAL_DATA_SIZE);
         assert_eq!(tx.header().mod_initial().freq_div, 4096);
-        for (&h, &d) in tx.header().mod_initial().data.iter().zip(mod_data.iter()) {
-            assert_eq!(h, Modulation::to_duty(d));
-        }
+        tx.header()
+            .mod_initial()
+            .data
+            .iter()
+            .zip(mod_data.iter())
+            .for_each(|(&h, &d)| {
+                assert_eq!(h, Modulation::to_duty(d));
+            });
 
         op.pack(&mut tx).unwrap();
         assert!(!op.is_finished());
@@ -144,12 +149,12 @@ mod test {
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
         assert_eq!(tx.header().size as usize, MOD_HEADER_SUBSEQUENT_DATA_SIZE);
-        for i in 0..MOD_HEADER_SUBSEQUENT_DATA_SIZE {
+        (0..MOD_HEADER_SUBSEQUENT_DATA_SIZE).for_each(|i| {
             assert_eq!(
                 tx.header().mod_subsequent().data[i],
                 Modulation::to_duty(mod_data[MOD_HEADER_INITIAL_DATA_SIZE + i])
             );
-        }
+        });
 
         op.pack(&mut tx).unwrap();
         assert!(op.is_finished());
@@ -157,14 +162,14 @@ mod test {
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
         assert_eq!(tx.header().size as usize, 1);
-        for i in 0..1 {
+        (0..1).for_each(|i| {
             assert_eq!(
                 tx.header().mod_subsequent().data[i],
                 Modulation::to_duty(
                     mod_data[MOD_HEADER_INITIAL_DATA_SIZE + MOD_HEADER_SUBSEQUENT_DATA_SIZE + i]
                 )
             );
-        }
+        });
 
         op.init();
         assert!(!op.is_finished());
