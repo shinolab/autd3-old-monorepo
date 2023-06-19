@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -732,7 +732,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
                 let sound_speed = geometry.sound_speed;
                 let source_drive = drives
                     .iter()
-                    .zip(geometry)
+                    .zip(geometry.iter())
                     .map(|(d, t)| {
                         let c = t.cycle();
                         let w = t.wavenumber(sound_speed);
@@ -754,7 +754,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
             .map(|target| {
                 drives
                     .iter()
-                    .zip(geometry)
+                    .zip(geometry.iter())
                     .fold(Complex::new(0., 0.), |acc, (d, t)| {
                         let amp = (PI * d.0 as float / t.cycle() as float).sin();
                         let phase = 2. * PI * d.1 as float / t.cycle() as float;
@@ -1307,8 +1307,8 @@ impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx.messages_mut()[cpu.id()].ack = cpu.ack();
-            rx.messages_mut()[cpu.id()].msg_id = cpu.msg_id();
+            rx[cpu.id()].ack = cpu.ack();
+            rx[cpu.id()].msg_id = cpu.msg_id();
         });
 
         Ok(true)

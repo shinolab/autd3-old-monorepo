@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
+    RxDatagram, RxMessage, TxDatagram,
 };
 
 #[repr(C)]
@@ -164,8 +164,8 @@ impl<T: Transducer> Link<T> for TwinCAT {
                 &self.send_addr as *const _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE_READ,
-                std::mem::size_of_val(rx.messages()) as u32,
-                rx.messages_mut().as_mut_ptr() as *mut c_void,
+                (std::mem::size_of::<RxMessage>() * rx.len()) as _,
+                rx.as_mut_ptr() as *mut c_void,
                 &mut read_bytes as *mut u32,
             );
 
