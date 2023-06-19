@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -125,9 +125,9 @@ mod tests {
         assert_eq!(buf[1], 0x45);
         assert_eq!(buf[2], 0x23);
         assert_eq!(buf[3], 0x01);
-        for i in 0..MOD_HEADER_INITIAL_DATA_SIZE {
+        (0..MOD_HEADER_INITIAL_DATA_SIZE).for_each(|i| {
             assert_eq!(buf[4 + i], i as u8);
-        }
+        });
     }
 
     #[test]
@@ -177,8 +177,8 @@ mod tests {
         assert_eq!(buf[1], 1 << 4);
         assert_eq!(buf[2], 1 << 2);
         assert_eq!(buf[3], 0x02);
-        for i in 0..124 {
+        (0..124).for_each(|i| {
             assert_eq!(buf[4 + i], i as u8);
-        }
+        });
     }
 }

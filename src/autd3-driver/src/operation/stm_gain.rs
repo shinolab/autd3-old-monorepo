@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -451,14 +451,14 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).gain_stm_initial();
             assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);
             assert_eq!(stm.data[5], 1);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -483,7 +483,7 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             assert_eq!(
                 (tx.body_raw_mut()[i] & 0xFF) as u8,
                 LegacyDrive::to_phase(&drives[0][i])
@@ -492,7 +492,7 @@ mod test {
                 (tx.body_raw_mut()[i] >> 8) as u8,
                 LegacyDrive::to_duty(&drives[0][i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -517,7 +517,7 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             assert_eq!(
                 (tx.body_raw_mut()[i] & 0xFF) as u8,
                 LegacyDrive::to_phase(&drives[1][i])
@@ -526,7 +526,7 @@ mod test {
                 (tx.body_raw_mut()[i] >> 8) as u8,
                 LegacyDrive::to_duty(&drives[1][i])
             );
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();
@@ -647,14 +647,14 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).gain_stm_initial();
             assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);
             assert_eq!(stm.data[5], 1);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -680,14 +680,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[0].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -713,14 +712,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[0].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -746,14 +744,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[1].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -779,14 +776,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[1].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();
@@ -907,14 +903,14 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).gain_stm_initial();
             assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);
             assert_eq!(stm.data[5], 1);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -940,14 +936,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[0].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -973,14 +968,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for ((&d, drive), &cycle) in tx
-            .body_raw_mut()
+        tx.body_raw_mut()
             .iter()
             .zip(drives[1].iter())
             .zip(cycles.iter())
-        {
-            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
-        }
+            .for_each(|((&d, drive), &cycle)| {
+                assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();
