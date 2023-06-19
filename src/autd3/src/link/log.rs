@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
-pub struct LinkLog<T: Transducer, L: Link<T>> {
+pub struct LogImpl<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
     synchronized: bool,
@@ -36,16 +36,16 @@ pub struct LinkLog<T: Transducer, L: Link<T>> {
 }
 
 pub trait Log<T: Transducer, L: Link<T>> {
-    fn with_log(self) -> LinkLog<T, L>;
+    fn with_log(self) -> LogImpl<T, L>;
 }
 
 impl<T: Transducer, L: Link<T>> Log<T, L> for L {
-    fn with_log(self) -> LinkLog<T, L> {
-        LinkLog::new(self)
+    fn with_log(self) -> LogImpl<T, L> {
+        LogImpl::new(self)
     }
 }
 
-impl<T: Transducer, L: Link<T>> Deref for LinkLog<T, L> {
+impl<T: Transducer, L: Link<T>> Deref for LogImpl<T, L> {
     type Target = L;
 
     fn deref(&self) -> &Self::Target {
@@ -53,13 +53,13 @@ impl<T: Transducer, L: Link<T>> Deref for LinkLog<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> DerefMut for LinkLog<T, L> {
+impl<T: Transducer, L: Link<T>> DerefMut for LogImpl<T, L> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.link
     }
 }
 
-impl<T: Transducer, L: Link<T>> LinkLog<T, L> {
+impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
     fn new(link: L) -> Self {
         let logger = crate::core::link::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
@@ -81,7 +81,7 @@ impl<T: Transducer, L: Link<T>> LinkLog<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> Link<T> for LinkLog<T, L> {
+impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
