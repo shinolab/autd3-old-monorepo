@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,9 @@ pub use crate::{
     modulation::{Sine, SineLegacy, SinePressure, Square, Static},
 };
 
+pub use crate::gain::Cache as GainCache;
+pub use crate::modulation::Cache as ModulationCache;
+
 pub use autd3_core::{
     amplitude::Amplitudes,
     autd3_device::{
@@ -28,6 +31,7 @@ pub use autd3_core::{
         TRANS_SPACING_MM,
     },
     clear::Clear,
+    datagram::DatagramT,
     delay::ModDelay,
     float,
     fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},
