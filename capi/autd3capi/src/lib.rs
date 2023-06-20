@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -499,6 +499,33 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramBodyPtr 
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDGainCalc(
+    gain: GainPtr,
+    geometry: GeometryPtr,
+    amp: *mut float,
+    phase: *mut float,
+    err: *mut c_char,
+) -> i32 {
+    let res = try_or_return!(
+        Box::from_raw(gain.0 as *mut Box<G>).calc(cast!(geometry.0, Geo)),
+        err,
+        AUTD3_ERR
+    );
+
+    let mut amp_ptr = amp;
+    let mut phase_ptr = phase;
+    (0..res.len()).for_each(|i| {
+        *amp_ptr = res[i].amp;
+        amp_ptr = amp_ptr.add(1);
+        *phase_ptr = res[i].phase;
+        phase_ptr = phase_ptr.add(1);
+    });
+
+    AUTD3_TRUE
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationStatic() -> ModulationPtr {
     ModulationPtr::new(Static::new())
 }
@@ -685,6 +712,24 @@ pub unsafe extern "C" fn AUTDModulationSamplingFrequency(m: ModulationPtr) -> fl
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> DatagramHeaderPtr {
     DatagramHeaderPtr::new(*Box::from_raw(m.0 as *mut Box<M>))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationSize(m: ModulationPtr, err: *mut c_char) -> i32 {
+    try_or_return!(Box::from_raw(m.0 as *mut Box<M>).calc(), err, AUTD3_ERR).len() as i32
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationCalc(
+    m: ModulationPtr,
+    buffer: *mut float,
+    err: *mut c_char,
+) -> i32 {
+    let res = try_or_return!(Box::from_raw(m.0 as *mut Box<M>).calc(), err, AUTD3_ERR);
+    std::ptr::copy_nonoverlapping(res.as_ptr(), buffer, res.len());
+    AUTD3_TRUE
 }
 
 #[no_mangle]

@@ -110,6 +110,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, GeometryPtr geometry, out double amp, out double phase, byte[] err);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStatic();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
@@ -157,6 +159,10 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDModulationSamplingFrequency(ModulationPtr m);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramHeaderPtr AUTDModulationIntoDatagram(ModulationPtr m);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDModulationSize(ModulationPtr m, byte[] err);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDModulationCalc(ModulationPtr m, out double buffer, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern STMPropsPtr AUTDSTMProps(double freq);
 
