@@ -41,3 +41,23 @@ impl<M: Modulation, F: Fn(usize, &float) -> float> Modulation for TransformImpl<
         Ok(m.iter().enumerate().map(|(i, x)| (self.f)(i, x)).collect())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::Sine;
+
+    use super::*;
+
+    #[test]
+    fn test_transform_impl() {
+        let mut m = Sine::new(100).with_amp(0.5);
+        let mut m_transformed = m.with_transform(|i, x| i as float * x);
+
+        let vec = m.calc().unwrap();
+        let vec_transformed = m_transformed.calc().unwrap();
+
+        for (i, (&x, &y)) in vec.iter().zip(&vec_transformed).enumerate() {
+            assert_approx_eq::assert_approx_eq!(y, i as float * x);
+        }
+    }
+}

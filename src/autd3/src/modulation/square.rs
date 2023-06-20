@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -94,5 +94,59 @@ impl Modulation for Square {
                     .chain(vec![self.low; size - n_high])
             })
             .collect())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_square() {
+        let expect = [
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        ];
+        let mut m = Square::new(150);
+        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
+        assert_eq!(expect.len(), m.calc().unwrap().len());
+        expect
+            .iter()
+            .zip(m.calc().unwrap().iter())
+            .for_each(|(e, a)| {
+                assert_approx_eq::assert_approx_eq!(e, a);
+            });
+    }
+
+    #[test]
+    fn test_square_with_low() {
+        let mut m = Square::new(150).with_low(1.0);
+        m.calc().unwrap().iter().for_each(|a| {
+            assert_approx_eq::assert_approx_eq!(a, 1.0);
+        });
+    }
+
+    #[test]
+    fn test_square_with_high() {
+        let mut m = Square::new(150).with_high(0.0);
+        m.calc().unwrap().iter().for_each(|a| {
+            assert_approx_eq::assert_approx_eq!(a, 0.0);
+        });
+    }
+
+    #[test]
+    fn test_square_with_duty() {
+        let mut m = Square::new(150).with_duty(0.0);
+        m.calc().unwrap().iter().for_each(|a| {
+            assert_approx_eq::assert_approx_eq!(a, 0.0);
+        });
+
+        let mut m = Square::new(150).with_duty(1.0);
+        m.calc().unwrap().iter().for_each(|a| {
+            assert_approx_eq::assert_approx_eq!(a, 1.0);
+        });
     }
 }
