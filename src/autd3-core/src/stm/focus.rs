@@ -1,10 +1,10 @@
 /*
- * File: point.rs
+ * File: focus.rs
  * Project: stm
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,11 @@
 
 use crate::{datagram::Datagram, error::AUTDInternalError, geometry::*};
 
-use autd3_driver::*;
+use autd3_driver::float;
 
 use super::STMProps;
 
+#[derive(Clone, Debug, Copy)]
 pub struct ControlPoint {
     point: Vector3,
     shift: u8,
@@ -52,6 +53,19 @@ impl From<(Vector3, u8)> for ControlPoint {
     }
 }
 
+impl From<&Vector3> for ControlPoint {
+    fn from(point: &Vector3) -> Self {
+        Self::new(*point)
+    }
+}
+
+impl From<&(Vector3, u8)> for ControlPoint {
+    fn from((point, shift): &(Vector3, u8)) -> Self {
+        Self::with_shift(*point, *shift)
+    }
+}
+
+#[derive(Clone)]
 pub struct FocusSTM {
     control_points: Vec<ControlPoint>,
     props: STMProps,
@@ -110,7 +124,7 @@ impl<T: Transducer> Datagram<T> for FocusSTM {
                     .iter()
                     .map(|p| {
                         let lp = trans_inv * (p.point() - origin);
-                        STMFocus::new(lp.x, lp.y, lp.z, p.shift())
+                        autd3_driver::STMFocus::new(lp.x, lp.y, lp.z, p.shift())
                     })
                     .collect()
             })
@@ -192,6 +206,7 @@ impl FocusSTM {
 mod tests {
     use super::*;
     use assert_approx_eq::assert_approx_eq;
+    use autd3_driver::FPGA_SUB_CLK_FREQ;
 
     #[test]
     fn freq() {
