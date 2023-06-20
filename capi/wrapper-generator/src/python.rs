@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -234,28 +234,29 @@ import os"
             writeln!(w, r"from typing import Any")?;
         }
 
-        let mut used_ty = HashSet::new();
-
-        for f in &self.functions {
-            for arg in &f.args {
-                if let Type::Custom(ref s) = arg.ty {
-                    if self.enums.iter().any(|e| &e.name == s)
-                        || self.ptr_tuple.iter().any(|e| &e.name == s)
-                    {
-                        continue;
-                    }
-                    used_ty.insert(s.to_string());
-                }
-            }
-            if let Type::Custom(ref s) = &f.return_ty {
+        let owns = |ty: &Type| {
+            if let Type::Custom(ref s) = ty {
                 if self.enums.iter().any(|e| &e.name == s)
                     || self.ptr_tuple.iter().any(|e| &e.name == s)
                 {
-                    continue;
+                    return None;
                 }
-                used_ty.insert(s.to_string());
+                Some(s.to_string())
+            } else {
+                None
             }
-        }
+        };
+        let used_ty: HashSet<_> = self
+            .functions
+            .iter()
+            .flat_map(|f| {
+                f.args
+                    .iter()
+                    .filter_map(|arg| owns(&arg.ty))
+                    .chain([&f.return_ty].iter().filter_map(|&ty| owns(ty)))
+                    .collect::<Vec<_>>()
+            })
+            .collect();
 
         if crate_name != "autd3capi-def" && !used_ty.is_empty() {
             writeln!(
@@ -270,53 +271,63 @@ import os"
             writeln!(w, r"from enum import IntEnum")?;
         }
 
-        for e in self.enums {
-            writeln!(
-                w,
-                r"
+        self.enums
+            .iter()
+            .map(|e| {
+                writeln!(
+                    w,
+                    r"
 class {}(IntEnum):",
-                e.name
-            )?;
+                    e.name
+                )?;
 
-            for (i, v) in &e.values {
-                writeln!(w, r"    {} = {}", i, v)?;
-            }
+                e.values
+                    .iter()
+                    .map(|(i, v)| writeln!(w, r"    {} = {}", i, v))
+                    .try_collect()?;
 
-            writeln!(
-                w,
-                r"
+                writeln!(
+                    w,
+                    r"
     @classmethod
     def from_param(cls, obj):
         return int(obj)
 "
-            )?;
-        }
+                )
+            })
+            .try_collect()?;
 
-        for p in self.ptr_tuple {
-            writeln!(
-                w,
-                r"
+        self.ptr_tuple
+            .iter()
+            .map(|p| {
+                writeln!(
+                    w,
+                    r"
 class {}(ctypes.Structure):",
-                p.name
-            )?;
+                    p.name
+                )?;
 
-            writeln!(
-                w,
-                "    _fields_ = [(\"_0\", ctypes.c_void_p)]
+                writeln!(
+                    w,
+                    "    _fields_ = [(\"_0\", ctypes.c_void_p)]
 "
-            )?;
-        }
+                )
+            })
+            .try_collect()?;
 
-        for constant in self.constants {
-            write!(
-                w,
-                r"
+        self.constants
+            .iter()
+            .map(|constant| {
+                write!(
+                    w,
+                    r"
 {}: {} = {}",
-                constant.name,
-                Self::to_python_ty(&constant.ty),
-                constant.value
-            )?;
-        }
+                    constant.name,
+                    Self::to_python_ty(&constant.ty),
+                    constant.value
+                )
+            })
+            .try_collect()?;
 
         if crate_name == "autd3capi-def" {
             writeln!(w)?;
@@ -353,70 +364,76 @@ class NativeMethods(metaclass=Singleton):",
             crate_name.replace('-', "_")
         )?;
 
-        for function in self.functions.iter() {
-            writeln!(w)?;
-            let args = function.args.iter().map(Self::to_arg).join(", ");
-            write!(
-                w,
-                r"
+        self.functions
+            .iter()
+            .map(|function| {
+                writeln!(w)?;
+                let args = function.args.iter().map(Self::to_arg).join(", ");
+                write!(
+                    w,
+                    r"
         self.dll.{}.argtypes = [{}]{}",
-                function.name,
-                args,
-                if function
+                    function.name,
+                    args,
+                    if function
+                        .args
+                        .iter()
+                        .any(|arg| matches!(arg.ty, Type::Custom(_)))
+                    {
+                        "  # type: ignore"
+                    } else {
+                        ""
+                    }
+                )?;
+                write!(
+                    w,
+                    r" 
+        self.dll.{}.restype = {}",
+                    function.name,
+                    Self::to_return_ty(&function.return_ty)
+                )
+            })
+            .try_collect()?;
+
+        self.functions
+            .iter()
+            .map(|function| {
+                writeln!(w)?;
+                let args = function
                     .args
                     .iter()
-                    .any(|arg| matches!(arg.ty, Type::Custom(_)))
-                {
-                    "  # type: ignore"
-                } else {
-                    ""
-                }
-            )?;
-            write!(
-                w,
-                r" 
-        self.dll.{}.restype = {}",
-                function.name,
-                Self::to_return_ty(&function.return_ty)
-            )?;
-        }
+                    .map(|arg| {
+                        format!(
+                            "{}: {}",
+                            Self::sub_reserve(arg.name.to_owned()),
+                            Self::to_python_arg(arg)
+                        )
+                    })
+                    .join(", ");
+                let arg_names = function
+                    .args
+                    .iter()
+                    .map(|arg| Self::sub_reserve(arg.name.to_owned()))
+                    .join(", ");
 
-        for function in self.functions.iter() {
-            writeln!(w)?;
-            let args = function
-                .args
-                .iter()
-                .map(|arg| {
-                    format!(
-                        "{}: {}",
-                        Self::sub_reserve(arg.name.to_owned()),
-                        Self::to_python_arg(arg)
-                    )
-                })
-                .join(", ");
-            let arg_names = function
-                .args
-                .iter()
-                .map(|arg| Self::sub_reserve(arg.name.to_owned()))
-                .join(", ");
-
-            write!(
-                w,
-                r"
+                write!(
+                    w,
+                    r"
     def {}(self{}{}) -> {}:
         return self.dll.{}({})",
-                Self::to_python_func_name(&function.name),
-                if function.args.is_empty() { "" } else { ", " },
-                args,
-                if function.return_ty == Type::Void {
-                    "None".to_string()
-                } else {
-                    Self::to_return_ty(&function.return_ty)
-                },
-                function.name,
-                arg_names
-            )?;
-        }
+                    Self::to_python_func_name(&function.name),
+                    if function.args.is_empty() { "" } else { ", " },
+                    args,
+                    if function.return_ty == Type::Void {
+                        "None".to_string()
+                    } else {
+                        Self::to_return_ty(&function.return_ty)
+                    },
+                    function.name,
+                    arg_names
+                )
+            })
+            .try_collect()?;
 
         writeln!(w)?;
 
