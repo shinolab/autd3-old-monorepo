@@ -48,3 +48,24 @@ from datetime import timedelta
 ```
 
 デフォルトは各Linkに対して適当な値が設定されている.
+
+
+### Log
+
+`with_log`でログを有効にした`Link`を生成できる.
+
+```rust,should_panic
+# use autd3::prelude::*;
+use autd3::link::Log;
+use autd3_link_soem::SOEM;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#            .open_with(
+SOEM::new().with_log()
+# )?;
+# Ok(())
+# }
+```
