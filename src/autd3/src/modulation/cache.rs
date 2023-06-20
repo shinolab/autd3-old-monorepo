@@ -79,3 +79,27 @@ impl DerefMut for CacheImpl {
         &mut self.cache
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::Static;
+
+    use super::*;
+
+    #[test]
+    fn test_cache() {
+        let mut m = Static::new().with_cache().unwrap();
+
+        for d in m.calc().unwrap() {
+            assert_eq!(d, 1.0);
+        }
+
+        for d in m.iter_mut() {
+            *d = 0.0;
+        }
+
+        for d in m.calc().unwrap() {
+            assert_eq!(d, 0.0);
+        }
+    }
+}

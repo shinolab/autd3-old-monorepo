@@ -94,14 +94,73 @@ impl<M: Modulation> Modulation for FIRImpl<M> {
         let coeff = self.fir.taps();
         Ok((0..m.len())
             .map(|i| {
-                m.iter()
-                    .cycle()
-                    .skip(i)
-                    .take(coeff.len())
-                    .zip(coeff.iter())
-                    .map(|(x, y)| x * y)
-                    .sum()
+                let left = i as isize - (coeff.len() - 1) as isize / 2;
+                let right = left + coeff.len() as isize;
+                (left..right).enumerate().fold(0., |acc, (k, j)| {
+                    acc + m[j.rem_euclid(m.len() as isize) as usize] * coeff[coeff.len() - 1 - k]
+                })
             })
             .collect())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use autd3_core::PI;
+
+    use super::*;
+
+    #[derive(Modulation)]
+    pub struct TestModulation {
+        data: Vec<float>,
+        freq_div: u32,
+    }
+
+    impl TestModulation {
+        pub fn new(data: Vec<float>) -> Self {
+            Self {
+                data,
+                freq_div: 5120, // 4kHz
+            }
+        }
+    }
+
+    impl Modulation for TestModulation {
+        fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+            Ok(self.data.clone())
+        }
+    }
+
+    #[test]
+    fn test_fir_impl_lowpass() {
+        let fs = 4e3;
+        let t = 1. / fs;
+        let f_high = 1000.;
+        let f_low = 100.;
+        let mod_data: Vec<float> = (0..1000)
+            .map(|i| {
+                (2.0 * PI * f_high * i as float * t).sin()
+                    + (2.0 * PI * f_low * i as float * t).sin()
+            })
+            .collect();
+
+        let n_taps = 199;
+        let mut fir_modulation =
+            TestModulation::new(mod_data).with_low_pass(n_taps, (f_high + f_low) / 2.0);
+
+        fir_modulation
+            .calc()
+            .unwrap()
+            .iter()
+            .enumerate()
+            .for_each(|(i, &val)| {
+                assert!(
+                    (val - (2.0 * PI * f_low * i as float * t).sin()).abs() < 0.1,
+                    "Filtered value at index {} was not as expected. Expected {}, got {}",
+                    i,
+                    (2.0 * PI * f_low * i as float * t).sin(),
+                    val
+                );
+            });
     }
 }
