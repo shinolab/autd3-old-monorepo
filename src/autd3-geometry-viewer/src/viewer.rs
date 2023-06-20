@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,22 +49,9 @@ impl GeometryViewer {
         }
     }
 
-    #[deprecated(since = "11.1.0", note = "Use with_window_size instead")]
-    pub fn window_size(mut self, width: u32, height: u32) -> Self {
-        self.window_width = width;
-        self.window_height = height;
-        self
-    }
-
     pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = width;
         self.window_height = height;
-        self
-    }
-
-    #[deprecated(since = "11.1.0", note = "Use with_vsync instead")]
-    pub fn vsync(mut self, vsync: bool) -> Self {
-        self.vsync = vsync;
         self
     }
 

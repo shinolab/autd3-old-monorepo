@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,9 +32,6 @@ impl<T: Transducer> Datagram<T> for UpdateFlags {
         Ok((Self::H::default(), Self::B::default()))
     }
 }
-
-#[deprecated(since = "11.1.0", note = "Use UpdateFlags instead")]
-pub use UpdateFlags as UpdateFlag;
 
 #[cfg(test)]
 mod tests {

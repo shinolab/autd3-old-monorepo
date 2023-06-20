@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,6 +46,3 @@ pub use autd3_core::{
     update_flag::UpdateFlags,
     Mode, METER, MILLIMETER, PI,
 };
-
-#[deprecated(since = "11.1.0", note = "Use UpdateFlags instead")]
-pub use UpdateFlags as UpdateFlag;
