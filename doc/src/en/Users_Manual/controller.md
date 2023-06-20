@@ -121,7 +121,7 @@ Send the data to the device.
 
 ### Timeout
 
-You can specify the timeout time with `send`.
+You can specify the timeout time with `with_timeout`.
 If you omit this, the timeout time set by [Link](./link.md) will be used.
 
 ```rust
@@ -131,7 +131,7 @@ If you omit this, the timeout time set by [Link](./link.md) will be used.
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let m = Static::new();
 # let g = Null::new();
-autd.send((m, g, std::time::Duration::from_millis(20)))?;
+autd.send((m, g).with_timeout(std::time::Duration::from_millis(20)))?;
 # Ok(())
 # }
 ```
