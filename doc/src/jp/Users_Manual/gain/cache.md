@@ -2,7 +2,7 @@
 
 `with_cache`によって`Gain`の計算結果をキャッシュする`Gain`を生成できる.
 
-また, 振幅データを変更する事もできる.
+また, 振幅/位相データを変更する事もできる.
 
 ```rust
 # use autd3::prelude::*;
@@ -16,4 +16,11 @@ let mut g = Null::new().with_cache(autd.geometry())?;
 g[0].phase = 0.;
 # Ok(())
 # }
+```
+
+```cpp
+// gは何らかのGain
+autd3::gain::Cache c(g, autd.geometry());
+
+c[0].phase = 0;
 ```

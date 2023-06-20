@@ -17,3 +17,10 @@ m[0] = 0.;
 # Ok(())
 # }
 ```
+
+```cpp
+// mは何らかのModulation
+autd3::modulation::Cache c(m);
+
+c[0] = 0;
+```
