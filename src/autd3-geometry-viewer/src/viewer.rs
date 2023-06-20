@@ -76,7 +76,7 @@ impl GeometryViewer {
         let num_dev = geometry.num_devices();
 
         let geo: Vec<_> = geometry
-            .into_iter()
+            .iter()
             .step_by(NUM_TRANS_IN_UNIT)
             .map(|tr| {
                 let pos = tr.position();
