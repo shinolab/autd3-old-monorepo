@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/06/2023
+// Last Modified: 21/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "autd3/internal/def.hpp"
+#include "autd3/internal/exception.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -145,6 +146,49 @@ class Gain : public internal::Gain {
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), func);
     return drives;
   }
+};
+
+class Cache : public internal::Gain {
+ public:
+  template <class G>
+  Cache(G&& g, const internal::Geometry& geometry) {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    std::vector<double> amps;
+    amps.resize(geometry.num_transducers());
+    std::vector<double> phases;
+    phases.resize(geometry.num_transducers());
+    if (char err[256]{};
+        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), amps.data(), phases.data(), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
+    _drives.reserve(geometry.num_transducers());
+    std::transform(amps.begin(), amps.end(), phases.begin(), std::back_inserter(_drives), [](const double amp, const double phase) {
+      return Drive{phase, amp};
+    });
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+    const auto size = static_cast<uint64_t>(_drives.size());
+    std::vector<double> amps;
+    amps.reserve(_drives.size());
+    std::transform(_drives.begin(), _drives.end(), std::back_inserter(amps), [](const auto& d) { return d.amp; });
+    std::vector<double> phases;
+    phases.reserve(_drives.size());
+    std::transform(_drives.begin(), _drives.end(), std::back_inserter(phases), [](const auto& d) { return d.phase; });
+    return internal::native_methods::AUTDGainCustom(amps.data(), phases.data(), size);
+  }
+
+  [[nodiscard]] const std::vector<Drive>& drives() const { return _drives; }
+  std::vector<Drive>& drives() { return _drives; }
+
+  [[nodiscard]] std::vector<Drive>::const_iterator begin() const noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<Drive>::const_iterator end() const noexcept { return _drives.end(); }
+  [[nodiscard]] std::vector<Drive>::iterator begin() noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<Drive>::iterator end() noexcept { return _drives.end(); }
+  [[nodiscard]] const Drive& operator[](const size_t i) const { return _drives[i]; }
+  [[nodiscard]] Drive& operator[](const size_t i) { return _drives[i]; }
+
+ private:
+  std::vector<Drive> _drives;
 };
 
 }  // namespace autd3::gain
