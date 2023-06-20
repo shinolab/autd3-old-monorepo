@@ -4,14 +4,14 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use super::{error::TimerError, NativeTimerWrapper};
 #[cfg(target_os = "macos")]
@@ -56,8 +56,6 @@ impl<F: TimerCallback> Timer<F> {
         _dw1: usize,
         _dw2: usize,
     ) {
-        use atomic::Ordering;
-
         let ptr = dw_user as *mut Self;
         if let Some(timer) = ptr.as_mut() {
             if let Ok(false) =
