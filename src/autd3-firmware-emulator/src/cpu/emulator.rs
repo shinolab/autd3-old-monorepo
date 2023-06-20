@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -617,12 +617,7 @@ impl CPUEmulator {
     fn clear(&mut self) {
         let freq_div_4k = 40960;
 
-        let ctl_reg = FPGAControlFlags::LEGACY_MODE;
-        self.bram_write(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_CTL_REG,
-            ctl_reg.bits() as _,
-        );
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, 0x0000);
 
         self.bram_cpy(
             BRAM_SELECT_CONTROLLER,
