@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,6 +55,10 @@ impl Debug {
 
     pub fn with_logger(self, logger: Logger) -> Self {
         Self { logger, ..self }
+    }
+
+    pub fn emulators(&self) -> &[CPUEmulator] {
+        &self.cpus
     }
 }
 
