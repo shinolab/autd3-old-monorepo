@@ -1,6 +1,6 @@
 # Cache
 
-`Cache`は`Modulation`の計算結果をキャッシュしておくための`Modulation`である.
+`with_cache`で計算結果をキャッシュしておくための`Modulation`を生成できる.
 
 また, 変調データを変更する事もできる.
 
@@ -12,7 +12,7 @@
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .open_with(Debug::new())?;
-let mut m = autd3::modulation::Cache::new(Static::new())?;
+let mut m = Static::new().with_cache()?;
 m[0] = 0.;
 # Ok(())
 # }
