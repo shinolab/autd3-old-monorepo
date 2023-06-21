@@ -100,6 +100,21 @@ jobs:
         cargo build --all --release --exclude autd3capi-backend-cuda
         cargo test --all --release --exclude autd3capi-backend-cuda
         cargo clean
+    - name: Build dist on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd dist
+        cd SOEMAUTDServer
+        cargo build --all --release
+        cargo test --release
+        cargo clippy --all --release -- -D warnings
+        cargo clean
+        cd ..
+        cd simulator
+        cargo build --all --release
+        cargo test --release
+        cargo clippy --all --release -- -D warnings
+        cargo clean
 
   lint:
     runs-on: ubuntu-latest
