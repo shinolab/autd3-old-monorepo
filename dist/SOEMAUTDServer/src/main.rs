@@ -173,7 +173,7 @@ fn run(soem: SOEM, port: u16) -> anyhow::Result<()> {
                             )?;
                             unsafe {
                                 std::ptr::copy_nonoverlapping(
-                                    rx.messages().as_ptr() as *const u8,
+                                    rx.as_ptr() as *const u8,
                                     rx_buf.as_mut_ptr(),
                                     rx_buf_size,
                                 );
@@ -215,7 +215,7 @@ fn main_() -> anyhow::Result<()> {
                 .map(|adapter| adapter.name().len())
                 .max()
                 .unwrap_or(0);
-            adapters.iter().for_each(|adapter| {
+            adapters.into_iter().for_each(|adapter| {
                 println!("\t{:name_len$}\t{}", adapter.name(), adapter.desc());
             });
         }

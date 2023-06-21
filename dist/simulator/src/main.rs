@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -89,22 +89,22 @@ fn main() -> anyhow::Result<()> {
         Default::default()
     };
 
-    let mut simulator = Simulator::new().settings(settings);
+    let mut simulator = Simulator::new().with_settings(settings);
 
     if let Some(port) = port {
-        simulator = simulator.port(port);
+        simulator = simulator.with_port(port);
     }
 
     if let Some(gpu_idx) = gpu_idx {
-        simulator = simulator.gpu_idx(gpu_idx);
+        simulator = simulator.with_gpu_idx(gpu_idx);
     }
 
     if let Some((width, height)) = window_size {
-        simulator = simulator.window_size(width, height);
+        simulator = simulator.with_window_size(width, height);
     }
 
     if let Some(vsync) = vsync {
-        simulator = simulator.vsync(vsync);
+        simulator = simulator.with_vsync(vsync);
     }
 
     simulator.run();
