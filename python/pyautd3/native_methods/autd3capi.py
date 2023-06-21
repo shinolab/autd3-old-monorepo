@@ -182,6 +182,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
         self.dll.AUTDGainIntoDatagram.restype = DatagramBodyPtr
 
+        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGainCalc.restype = ctypes.c_int32
+
         self.dll.AUTDModulationStatic.argtypes = [] 
         self.dll.AUTDModulationStatic.restype = ModulationPtr
 
@@ -253,6 +256,12 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDModulationIntoDatagram.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationIntoDatagram.restype = DatagramHeaderPtr
+
+        self.dll.AUTDModulationSize.argtypes = [ModulationPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDModulationSize.restype = ctypes.c_int32
+
+        self.dll.AUTDModulationCalc.argtypes = [ModulationPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDModulationCalc.restype = ctypes.c_int32
 
         self.dll.AUTDSTMProps.argtypes = [ctypes.c_double] 
         self.dll.AUTDSTMProps.restype = STMPropsPtr
@@ -479,6 +488,9 @@ class NativeMethods(metaclass=Singleton):
     def gain_into_datagram(self, gain: GainPtr) -> DatagramBodyPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, amp: Any, phase: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGainCalc(gain, geometry, amp, phase, err)
+
     def modulation_static(self) -> ModulationPtr:
         return self.dll.AUTDModulationStatic()
 
@@ -550,6 +562,12 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_into_datagram(self, m: ModulationPtr) -> DatagramHeaderPtr:
         return self.dll.AUTDModulationIntoDatagram(m)
+
+    def modulation_size(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDModulationSize(m, err)
+
+    def modulation_calc(self, m: ModulationPtr, buffer: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDModulationCalc(m, buffer, err)
 
     def stm_props(self, freq: float) -> STMPropsPtr:
         return self.dll.AUTDSTMProps(freq)

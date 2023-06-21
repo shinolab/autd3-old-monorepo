@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,23 +75,23 @@ impl Model {
         vertices: &mut Vec<ModelVertex>,
         primitives: &mut Vec<Primitive>,
     ) {
-        for child in node.children() {
+        node.children().for_each(|child| {
             Self::load_node(child, buffers, indices, vertices, primitives);
-        }
+        });
 
         if let Some(mesh) = node.mesh() {
-            for primitive in mesh.primitives() {
+            primitives.extend(mesh.primitives().map(|primitive| {
                 let first_index = indices.len() as _;
                 let vertex_start = vertices.len() as _;
                 Self::load_vertices(&primitive, buffers, vertices);
                 let index_count =
                     Self::load_indices(&primitive, vertex_start, buffers, indices) as _;
-                primitives.push(Primitive {
+                Primitive {
                     first_index,
                     index_count,
                     material_index: primitive.material().index().unwrap(),
-                });
-            }
+                }
+            }));
         }
     }
 
@@ -124,7 +124,7 @@ impl Model {
             let normals_buffer = load(Semantic::Normals);
             let tex_coords_buffer = load(Semantic::TexCoords(0));
 
-            for v in 0..vertex_count {
+            vertices.extend((0..vertex_count).map(|v| {
                 let position = [
                     std::ptr::read(position_buffer.add(v * 3)) / 100.,
                     std::ptr::read(position_buffer.add(v * 3 + 1)) / 100.,
@@ -150,8 +150,8 @@ impl Model {
                     [0., 0.]
                 };
 
-                vertices.push(ModelVertex { position, norm, uv })
-            }
+                ModelVertex { position, norm, uv }
+            }));
         }
     }
 
@@ -169,41 +169,29 @@ impl Model {
         let offset = offset + buffer_view.offset();
 
         let data = &buffers[buffer_idx].0;
-
         unsafe {
             match component_type {
                 gltf::accessor::DataType::U8 => {
-                    let mut buf = vec![0u8; count];
-                    std::ptr::copy_nonoverlapping(
-                        data[offset..].as_ptr() as _,
-                        buf.as_mut_ptr(),
-                        count,
+                    indices.extend(
+                        data[offset..]
+                            .iter()
+                            .take(count)
+                            .map(|&b| b as u32 + vertex_start),
                     );
-                    for b in buf {
-                        indices.push(b as u32 + vertex_start);
-                    }
                 }
                 gltf::accessor::DataType::U16 => {
-                    let mut buf = vec![0u16; count];
-                    std::ptr::copy_nonoverlapping(
-                        data[offset..].as_ptr() as _,
-                        buf.as_mut_ptr(),
-                        count,
+                    indices.extend(
+                        std::slice::from_raw_parts(data[offset..].as_ptr() as *const u16, count)
+                            .iter()
+                            .map(|&b| b as u32 + vertex_start),
                     );
-                    for b in buf {
-                        indices.push(b as u32 + vertex_start);
-                    }
                 }
                 gltf::accessor::DataType::U32 => {
-                    let mut buf = vec![0u32; count];
-                    std::ptr::copy_nonoverlapping(
-                        data[offset..].as_ptr() as _,
-                        buf.as_mut_ptr(),
-                        count,
+                    indices.extend(
+                        std::slice::from_raw_parts(data[offset..].as_ptr() as *const u32, count)
+                            .iter()
+                            .map(|&b| b + vertex_start),
                     );
-                    for b in buf {
-                        indices.push(b + vertex_start);
-                    }
                 }
                 _ => unimplemented!(),
             }

@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -55,5 +55,45 @@ impl<T: Transducer> Gain<T> for TransducerTest {
                 }
             }
         }))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use autd3_core::autd3_device::AUTD3;
+    use autd3_core::geometry::{LegacyTransducer, Vector3};
+    use rand::Rng;
+
+    use super::*;
+
+    use crate::tests::GeometryBuilder;
+
+    #[test]
+    fn test_transducer_test() {
+        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .build()
+            .unwrap();
+
+        let mut transducer_test = TransducerTest::new();
+
+        let mut rng = rand::thread_rng();
+        let test_id = rng.gen_range(0..geometry.num_transducers());
+        let test_phase = rng.gen_range(-1.0..1.0);
+        let test_amp = rng.gen_range(-1.0..1.0);
+
+        transducer_test = transducer_test.set(test_id, test_phase, test_amp);
+
+        let drives = transducer_test.calc(&geometry).unwrap();
+
+        drives.iter().enumerate().for_each(|(idx, drive)| {
+            if idx == test_id {
+                assert_eq!(drive.phase, test_phase);
+                assert_eq!(drive.amp, test_amp);
+            } else {
+                assert_eq!(drive.phase, 0.0);
+                assert_eq!(drive.amp, 0.0);
+            }
+        });
     }
 }

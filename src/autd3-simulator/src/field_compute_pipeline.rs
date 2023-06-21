@@ -4,7 +4,7 @@
  * Created Date: 28/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -131,13 +131,17 @@ impl FieldComputePipeline {
                 array_layers: 1,
             };
             let alpha = (settings.slice_alpha * 255.) as u8;
-            let mut texels = Vec::with_capacity(color_map.len());
-            for color in color_map {
-                texels.push((color.r * 255.) as u8);
-                texels.push((color.g * 255.) as u8);
-                texels.push((color.b * 255.) as u8);
-                texels.push(alpha);
-            }
+            let texels = color_map
+                .iter()
+                .flat_map(|color| {
+                    [
+                        (color.r * 255.) as u8,
+                        (color.g * 255.) as u8,
+                        (color.b * 255.) as u8,
+                        alpha,
+                    ]
+                })
+                .collect::<Vec<_>>();
 
             let image = ImmutableImage::from_iter(
                 renderer.memory_allocator(),
@@ -310,10 +314,13 @@ impl FieldComputePipeline {
 
     fn update_source(&mut self, sources: &SoundSources) {
         if let Some(data) = &mut self.source_drive_buf {
-            let mut data = data.write().unwrap();
-            for (d, &drive) in data.iter_mut().zip(sources.drives()) {
-                *d = drive;
-            }
+            data.write()
+                .unwrap()
+                .iter_mut()
+                .zip(sources.drives())
+                .for_each(|(d, &drive)| {
+                    *d = drive;
+                });
         }
     }
 }

@@ -122,7 +122,7 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 ### タイムアウト
 
-`send`ではタイムアウト時間を指定できる.
+`with_timeout`でタイムアウト時間を指定できる.
 これを省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
 
 ```rust
@@ -132,7 +132,7 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let m = Static::new();
 # let g = Null::new();
-autd.send((m, g, std::time::Duration::from_millis(20)))?;
+autd.send((m, g).with_timeout(std::time::Duration::from_millis(20)))?;
 # Ok(())
 # }
 ```

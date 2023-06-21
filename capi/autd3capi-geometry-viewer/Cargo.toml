@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-geometry-viewer"
-version = "11.2.0"
+version = "12.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="11.2.0"}
-autd3-geometry-viewer = {path="../../src/autd3-geometry-viewer", version="11.2.0"}
+autd3capi-def = {path="../autd3capi-def", version="12.0.0"}
+autd3-geometry-viewer = {path="../../src/autd3-geometry-viewer", version="12.0.0"}
 
 [build-dependencies]
 wrapper-generator = {path="../wrapper-generator"}

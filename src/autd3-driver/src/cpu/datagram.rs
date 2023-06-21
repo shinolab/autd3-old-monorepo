@@ -4,12 +4,14 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::ops::{Deref, DerefMut};
 
 use crate::{
     cpu::{Body, GlobalHeader, LegacyPhaseFull, LegacyPhaseHalf},
@@ -212,16 +214,30 @@ impl RxDatagram {
         }
     }
 
-    pub fn messages(&self) -> &[RxMessage] {
-        &self.data
-    }
-
-    pub fn messages_mut(&mut self) -> &mut [RxMessage] {
-        &mut self.data
-    }
-
     pub fn is_msg_processed(&self, msg_id: u8) -> bool {
         self.data.iter().all(|msg| msg.msg_id == msg_id)
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+}
+
+impl Deref for RxDatagram {
+    type Target = [RxMessage];
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl DerefMut for RxDatagram {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
     }
 }
 
@@ -252,10 +268,10 @@ mod tests {
                 tx.body_raw_mut().as_ptr() as *const u8
             );
             let mut cursor = tx.data().as_ptr().add(128);
-            for (i, dev) in device_map.iter().enumerate() {
+            device_map.iter().enumerate().for_each(|(i, dev)| {
                 assert_eq!(cursor, tx.body(i) as *const _ as *const u8);
                 cursor = cursor.add(size_of::<u16>() * dev);
-            }
+            });
         }
     }
 
@@ -267,12 +283,12 @@ mod tests {
 
         assert!(!rx.is_msg_processed(1));
 
-        rx.messages_mut()[0].msg_id = 1;
+        rx[0].msg_id = 1;
         assert!(!rx.is_msg_processed(1));
 
-        for msg in rx.messages_mut() {
+        rx.iter_mut().for_each(|msg| {
             msg.msg_id = 1;
-        }
+        });
         assert!(rx.is_msg_processed(1));
         assert!(!rx.is_msg_processed(2));
     }

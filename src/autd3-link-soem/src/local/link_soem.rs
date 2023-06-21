@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,6 @@ use crate::local::{
 };
 
 struct SoemCallback {
-    lock: AtomicBool,
     wkc: Arc<AtomicI32>,
     receiver: Receiver<TxDatagram>,
     io_map: Arc<Mutex<IOMap>>,
@@ -55,24 +54,17 @@ struct SoemCallback {
 impl TimerCallback for SoemCallback {
     fn rt_thread(&mut self) {
         unsafe {
-            if let Ok(false) =
-                self.lock
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-            {
-                ec_send_processdata();
-                self.wkc.store(
-                    ec_receive_processdata(EC_TIMEOUTRET as i32),
-                    Ordering::Release,
-                );
+            ec_send_processdata();
+            self.wkc.store(
+                ec_receive_processdata(EC_TIMEOUTRET as i32),
+                Ordering::Release,
+            );
 
-                if let Ok(tx) = self.receiver.try_recv() {
-                    self.io_map.lock().unwrap().copy_from(&tx);
-                }
-
-                ec_send_processdata();
-
-                self.lock.store(false, Ordering::Release);
+            if let Ok(tx) = self.receiver.try_recv() {
+                self.io_map.lock().unwrap().copy_from(&tx);
             }
+
+            ec_send_processdata();
         }
     }
 }
@@ -303,7 +295,6 @@ impl SOEM {
                 TimerStrategy::NativeTimer => {
                     self.timer_handle = Some(Timer::start(
                         SoemCallback {
-                            lock: AtomicBool::new(false),
                             wkc: wkc_clone,
                             receiver: tx_receiver,
                             io_map,
@@ -480,8 +471,8 @@ impl<T: Transducer> Link<T> for SOEM {
         unsafe {
             std::ptr::copy_nonoverlapping(
                 self.io_map.lock().unwrap().input(),
-                rx.messages_mut().as_mut_ptr(),
-                rx.messages().len(),
+                rx.as_mut_ptr(),
+                rx.len(),
             );
         }
         Ok(true)

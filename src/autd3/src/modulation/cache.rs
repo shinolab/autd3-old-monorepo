@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,15 +14,25 @@
 use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_traits::Modulation;
 
-use std::ops::{Index, IndexMut};
+use std::ops::{Deref, DerefMut};
 
 #[derive(Modulation)]
-pub struct Cache {
+pub struct CacheImpl {
     cache: Vec<float>,
     freq_div: u32,
 }
 
-impl Clone for Cache {
+pub trait Cache<M: Modulation> {
+    fn with_cache(self) -> Result<CacheImpl, AUTDInternalError>;
+}
+
+impl<M: Modulation> Cache<M> for M {
+    fn with_cache(self) -> Result<CacheImpl, AUTDInternalError> {
+        CacheImpl::new(self)
+    }
+}
+
+impl Clone for CacheImpl {
     fn clone(&self) -> Self {
         Self {
             cache: self.cache.clone(),
@@ -31,7 +41,7 @@ impl Clone for Cache {
     }
 }
 
-impl Cache {
+impl CacheImpl {
     /// constructor
     pub fn new<M: Modulation>(mut modulation: M) -> Result<Self, AUTDInternalError> {
         let freq_div = modulation.sampling_frequency_division();
@@ -50,39 +60,46 @@ impl Cache {
     }
 }
 
-impl Modulation for Cache {
+impl Modulation for CacheImpl {
     fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
         Ok(self.cache.clone())
     }
 }
 
-impl Index<usize> for Cache {
-    type Output = float;
-    fn index(&self, idx: usize) -> &Self::Output {
-        &self.cache[idx]
+impl Deref for CacheImpl {
+    type Target = [float];
+
+    fn deref(&self) -> &Self::Target {
+        &self.cache
     }
 }
 
-impl IndexMut<usize> for Cache {
-    fn index_mut(&mut self, idx: usize) -> &mut float {
-        &mut self.cache[idx]
+impl DerefMut for CacheImpl {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.cache
     }
 }
 
-impl<'a> IntoIterator for &'a Cache {
-    type Item = &'a float;
-    type IntoIter = std::slice::Iter<'a, float>;
+#[cfg(test)]
+mod tests {
+    use crate::prelude::Static;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.cache.iter()
-    }
-}
+    use super::*;
 
-impl<'a> IntoIterator for &'a mut Cache {
-    type Item = &'a mut float;
-    type IntoIter = std::slice::IterMut<'a, float>;
+    #[test]
+    fn test_cache() {
+        let mut m = Static::new().with_cache().unwrap();
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.cache.iter_mut()
+        for d in m.calc().unwrap() {
+            assert_eq!(d, 1.0);
+        }
+
+        for d in m.iter_mut() {
+            *d = 0.0;
+        }
+
+        for d in m.calc().unwrap() {
+            assert_eq!(d, 0.0);
+        }
     }
 }

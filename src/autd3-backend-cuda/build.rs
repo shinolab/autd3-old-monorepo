@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,9 +42,9 @@ fn main() {
             find_cuda_windows().display()
         );
     } else {
-        for path in find_cuda() {
-            println!("cargo:rustc-link-search=native={}", path.display());
-        }
+        find_cuda()
+            .iter()
+            .for_each(|path| println!("cargo:rustc-link-search=native={}", path.display()));
     };
 
     println!("cargo:rerun-if-changed=cuda_src/kernel.cu");

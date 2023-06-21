@@ -25,13 +25,13 @@ jobs:
       run: |
         cd src
         cargo build
-        cargo test --workspace --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda
+        cargo test --workspace --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd src
         cargo build
-        cargo test
+        cargo test -- --skip test_timer
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |

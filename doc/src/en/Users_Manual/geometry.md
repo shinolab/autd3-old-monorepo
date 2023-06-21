@@ -433,7 +433,7 @@ Or, you can use an iterator.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-for tr in autd.geometry() {
+for tr in autd.geometry().iter() {
   // do something
 }
 # Ok(())

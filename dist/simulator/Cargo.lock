@@ -762,7 +762,7 @@ dependencies = [
 [[package]]
 name = "imgui-vulkano-renderer"
 version = "0.9.0"
-source = "git+https://github.com/sssssssuzuki/imgui-vulkano-renderer.git?branch=vulkano-0.33.0#0d2189d5e365ba36a36f7460921a9f206e545a64"
+source = "git+https://github.com/s5suzuki/imgui-vulkano-renderer.git?branch=vulkano-0.33.0#0d2189d5e365ba36a36f7460921a9f206e545a64"
 dependencies = [
  "bytemuck",
  "imgui",

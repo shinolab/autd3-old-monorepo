@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -149,11 +149,11 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
         &mut self,
         geometry: &Geometry<T>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let mut drives = Vec::with_capacity(self.gains.len());
-        for gain in &mut self.gains {
-            let drive = gain.calc(geometry)?;
-            drives.push(drive);
-        }
+        let drives = self
+            .gains
+            .iter_mut()
+            .map(|g| g.calc(geometry))
+            .collect::<Result<Vec<_>, _>>()?;
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.sampling_frequency_division(),

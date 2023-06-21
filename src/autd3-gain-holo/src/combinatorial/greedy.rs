@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 18/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -58,15 +58,15 @@ impl Greedy {
         foci: &[Vector3],
         res: &mut [Complex],
     ) {
-        for i in 0..foci.len() {
-            res[i] = propagate::<Sphere>(
+        res.iter_mut().zip(foci.iter()).for_each(|(r, f)| {
+            *r = propagate::<Sphere>(
                 trans.position(),
                 &trans.z_direction(),
                 attenuation,
                 trans.wavenumber(sound_speed),
-                &foci[i],
+                f,
             ) * phase;
-        }
+        });
     }
 }
 
@@ -91,37 +91,33 @@ impl<T: Transducer> Gain<T> for Greedy {
         let mut rng = rand::thread_rng();
         tr_idx.shuffle(&mut rng);
 
-        for i in tr_idx {
-            let trans = &geometry[i];
-
-            let mut min_idx = 0;
-            let mut min_v = float::INFINITY;
-            for (idx, &phase) in phase_candidates.iter().enumerate() {
-                Self::transfer_foci(
-                    trans,
-                    phase,
-                    sound_speed,
-                    attenuation,
-                    &self.foci,
-                    &mut tmp[idx],
-                );
-                let mut v = 0.0;
-                for (j, c) in cache.iter().enumerate() {
-                    v += (self.amps[j] - (tmp[idx][j] + c).abs()).abs();
-                }
-
-                if v < min_v {
-                    min_v = v;
-                    min_idx = idx;
-                }
-            }
-
-            for (j, c) in cache.iter_mut().enumerate() {
+        tr_idx.iter().for_each(|&i| {
+            let (min_idx, _) = phase_candidates.iter().enumerate().fold(
+                (0usize, float::INFINITY),
+                |acc, (idx, &phase)| {
+                    Self::transfer_foci(
+                        &geometry[i],
+                        phase,
+                        sound_speed,
+                        attenuation,
+                        &self.foci,
+                        &mut tmp[idx],
+                    );
+                    let v = cache.iter().enumerate().fold(0., |acc, (j, c)| {
+                        acc + (self.amps[j] - (tmp[idx][j] + c).abs()).abs()
+                    });
+                    if v < acc.1 {
+                        (idx, v)
+                    } else {
+                        acc
+                    }
+                },
+            );
+            cache.iter_mut().enumerate().for_each(|(j, c)| {
                 *c += tmp[min_idx][j];
-            }
-
+            });
             res[i].phase = phase_candidates[min_idx].argument() + PI;
-        }
+        });
 
         Ok(res)
     }

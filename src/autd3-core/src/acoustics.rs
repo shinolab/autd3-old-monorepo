@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -151,9 +151,9 @@ mod tests {
             0.18688, 0.184898, 0.183031, 0.18125, 0.179526, 0.177831,
         ];
 
-        for (i, expect) in expects.iter().enumerate() {
+        expects.iter().enumerate().for_each(|(i, expect)| {
             assert_approx_eq!(T4010A1::directivity(i as float), expect);
-        }
+        });
     }
 
     #[test]

@@ -50,7 +50,7 @@ Note that frequency configuratino must be done before sending `Synchronize`.
 #                  .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #        .open_with(Debug::new())?;
-for tr in autd.geometry_mut() {
+for tr in autd.geometry_mut().iter_mut() {
   tr.set_frequency(70e3)?;
 }
 #    Ok(())
