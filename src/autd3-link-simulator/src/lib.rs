@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -81,12 +81,17 @@ impl<T: Transducer> Link<T> for Simulator {
             std::ptr::write(cursor as *mut u32, geometry.num_devices() as u32);
             cursor = cursor.add(std::mem::size_of::<u32>());
 
-            for dev in 0..geometry.num_devices() {
-                if geometry.device_map()[dev] != NUM_TRANS_IN_UNIT {
-                    return Err(AUTDInternalError::LinkError(
-                        "Simulator does not support non-AUTD3 device".to_string(),
-                    ));
-                }
+            if geometry
+                .device_map()
+                .iter()
+                .any(|&d| d != NUM_TRANS_IN_UNIT)
+            {
+                return Err(AUTDInternalError::LinkError(
+                    "Simulator does not support non-AUTD3 device".to_string(),
+                ));
+            }
+
+            (0..geometry.num_devices()).for_each(|dev| {
                 let mut p = cursor as *mut f32;
                 let tr = &geometry[dev * NUM_TRANS_IN_UNIT];
                 let origin = tr.position();
@@ -105,7 +110,7 @@ impl<T: Transducer> Link<T> for Simulator {
                 p = p.add(1);
                 std::ptr::write(p, rot.k as _);
                 cursor = cursor.add(std::mem::size_of::<f32>() * 7);
-            }
+            });
         }
 
         if let Err(e) = self.socket.as_mut().unwrap().write(&geometry_buf) {
@@ -200,7 +205,7 @@ impl<T: Transducer> Link<T> for Simulator {
             unsafe {
                 std::ptr::copy_nonoverlapping(
                     self.rx_buf.as_ptr(),
-                    rx.messages_mut().as_mut_ptr() as *mut u8,
+                    rx.as_mut_ptr() as *mut u8,
                     self.rx_buf.len(),
                 );
             }

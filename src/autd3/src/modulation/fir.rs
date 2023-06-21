@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 20/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,40 +24,39 @@ use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_traits::Modulation;
 
 #[derive(Modulation)]
-pub struct ModulationFIR<M: Modulation> {
+pub struct FIRImpl<M: Modulation> {
     m: M,
     freq_div: u32,
     fir: sdr_rs::fir::FIR<f32>,
 }
 
 pub trait FIR<M: Modulation> {
-    fn with_low_pass(self, n_taps: usize, cutoff: float) -> ModulationFIR<M>;
-    fn with_high_pass(self, n_taps: usize, cutoff: float) -> ModulationFIR<M>;
-    fn with_band_pass(self, n_taps: usize, f_low: float, f_high: float) -> ModulationFIR<M>;
-    fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> ModulationFIR<M>;
-    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize)
-        -> ModulationFIR<M>;
+    fn with_low_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M>;
+    fn with_high_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M>;
+    fn with_band_pass(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
+    fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
+    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M>;
 }
 
 impl<M: Modulation> FIR<M> for M {
-    fn with_low_pass(self, n_taps: usize, cutoff: float) -> ModulationFIR<M> {
-        ModulationFIR {
+    fn with_low_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M> {
+        FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::lowpass(n_taps, cutoff / self.sampling_frequency()),
             m: self,
         }
     }
 
-    fn with_high_pass(self, n_taps: usize, cutoff: f64) -> ModulationFIR<M> {
-        ModulationFIR {
+    fn with_high_pass(self, n_taps: usize, cutoff: f64) -> FIRImpl<M> {
+        FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::highpass(n_taps, cutoff / self.sampling_frequency()),
             m: self,
         }
     }
 
-    fn with_band_pass(self, n_taps: usize, f_low: f64, f_high: f64) -> ModulationFIR<M> {
-        ModulationFIR {
+    fn with_band_pass(self, n_taps: usize, f_low: f64, f_high: f64) -> FIRImpl<M> {
+        FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::bandpass(
                 n_taps,
@@ -68,8 +67,8 @@ impl<M: Modulation> FIR<M> for M {
         }
     }
 
-    fn with_band_stop(self, n_taps: usize, f_low: f64, f_high: f64) -> ModulationFIR<M> {
-        ModulationFIR {
+    fn with_band_stop(self, n_taps: usize, f_low: f64, f_high: f64) -> FIRImpl<M> {
+        FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::bandstop(
                 n_taps,
@@ -80,13 +79,8 @@ impl<M: Modulation> FIR<M> for M {
         }
     }
 
-    fn with_resampler(
-        self,
-        n_taps: usize,
-        decimate: usize,
-        interpolate: usize,
-    ) -> ModulationFIR<M> {
-        ModulationFIR {
+    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M> {
+        FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::resampler(n_taps, decimate, interpolate),
             m: self,
@@ -94,20 +88,79 @@ impl<M: Modulation> FIR<M> for M {
     }
 }
 
-impl<M: Modulation> Modulation for ModulationFIR<M> {
+impl<M: Modulation> Modulation for FIRImpl<M> {
     fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
         let m = self.m.calc()?;
         let coeff = self.fir.taps();
         Ok((0..m.len())
             .map(|i| {
-                m.iter()
-                    .cycle()
-                    .skip(i)
-                    .take(coeff.len())
-                    .zip(coeff.iter())
-                    .map(|(x, y)| x * y)
-                    .sum()
+                let left = i as isize - (coeff.len() - 1) as isize / 2;
+                let right = left + coeff.len() as isize;
+                (left..right).enumerate().fold(0., |acc, (k, j)| {
+                    acc + m[j.rem_euclid(m.len() as isize) as usize] * coeff[coeff.len() - 1 - k]
+                })
             })
             .collect())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use autd3_core::PI;
+
+    use super::*;
+
+    #[derive(Modulation)]
+    pub struct TestModulation {
+        data: Vec<float>,
+        freq_div: u32,
+    }
+
+    impl TestModulation {
+        pub fn new(data: Vec<float>) -> Self {
+            Self {
+                data,
+                freq_div: 5120, // 4kHz
+            }
+        }
+    }
+
+    impl Modulation for TestModulation {
+        fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+            Ok(self.data.clone())
+        }
+    }
+
+    #[test]
+    fn test_fir_impl_lowpass() {
+        let fs = 4e3;
+        let t = 1. / fs;
+        let f_high = 1000.;
+        let f_low = 100.;
+        let mod_data: Vec<float> = (0..1000)
+            .map(|i| {
+                (2.0 * PI * f_high * i as float * t).sin()
+                    + (2.0 * PI * f_low * i as float * t).sin()
+            })
+            .collect();
+
+        let n_taps = 199;
+        let mut fir_modulation =
+            TestModulation::new(mod_data).with_low_pass(n_taps, (f_high + f_low) / 2.0);
+
+        fir_modulation
+            .calc()
+            .unwrap()
+            .iter()
+            .enumerate()
+            .for_each(|(i, &val)| {
+                assert!(
+                    (val - (2.0 * PI * f_low * i as float * t).sin()).abs() < 0.1,
+                    "Filtered value at index {} was not as expected. Expected {}, got {}",
+                    i,
+                    (2.0 * PI * f_low * i as float * t).sin(),
+                    val
+                );
+            });
     }
 }

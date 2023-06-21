@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -214,45 +214,6 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(true)
     }
 
-    #[deprecated(since = "11.1.0", note = "Use send instead")]
-    pub fn send_with_timeout<S: Datagram<T>>(
-        &mut self,
-        s: S,
-        timeout: Option<Duration>,
-    ) -> Result<bool, AUTDError> {
-        let mut s = s;
-        let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
-
-        op_header.init();
-        op_body.init();
-
-        self.force_fan.pack(&mut self.tx_buf);
-        self.reads_fpga_info.pack(&mut self.tx_buf);
-
-        let timeout = timeout.unwrap_or(s.timeout().unwrap_or(self.link.timeout()));
-
-        loop {
-            self.tx_buf.header_mut().msg_id = self.get_id();
-
-            op_header.pack(&mut self.tx_buf)?;
-            op_body.pack(&mut self.tx_buf)?;
-
-            if !self
-                .link
-                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)?
-            {
-                return Ok(false);
-            }
-            if op_header.is_finished() && op_body.is_finished() {
-                break;
-            }
-            if timeout.is_zero() {
-                std::thread::sleep(Duration::from_millis(1));
-            }
-        }
-        Ok(true)
-    }
-
     pub fn close(&mut self) -> Result<bool, AUTDError> {
         let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
@@ -266,34 +227,19 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         op.pack(&mut self.tx_buf);
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let cpu_versions = self
-            .rx_buf
-            .messages()
-            .iter()
-            .map(|rx| rx.ack)
-            .collect::<Vec<_>>();
+        let cpu_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAVersionMajor::default();
         op.pack(&mut self.tx_buf);
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let fpga_versions = self
-            .rx_buf
-            .messages()
-            .iter()
-            .map(|rx| rx.ack)
-            .collect::<Vec<_>>();
+        let fpga_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAFunctions::default();
         op.pack(&mut self.tx_buf);
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let fpga_functions = self
-            .rx_buf
-            .messages()
-            .iter()
-            .map(|rx| rx.ack)
-            .collect::<Vec<_>>();
+        let fpga_functions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAVersionMinor::default();
         op.pack(&mut self.tx_buf);
@@ -302,12 +248,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
                 .link
                 .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
             {
-                Ok(_) => self
-                    .rx_buf
-                    .messages()
-                    .iter()
-                    .map(|rx| rx.ack)
-                    .collect::<Vec<_>>(),
+                Ok(_) => self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>(),
                 _ => vec![0x00; self.geometry.num_devices()],
             };
 
@@ -318,12 +259,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
                 .link
                 .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
             {
-                Ok(_) => self
-                    .rx_buf
-                    .messages()
-                    .iter()
-                    .map(|rx| rx.ack)
-                    .collect::<Vec<_>>(),
+                Ok(_) => self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>(),
                 _ => vec![0x00; self.geometry.num_devices()],
             };
 
@@ -343,7 +279,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 
     pub fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
         self.link.receive(&mut self.rx_buf)?;
-        Ok(self.rx_buf.messages().iter().map(FPGAInfo::from).collect())
+        Ok(self.rx_buf.iter().map(FPGAInfo::from).collect())
     }
 }
 
@@ -369,76 +305,851 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 mod tests {
 
     use autd3_core::{
-        autd3_device::AUTD3, geometry::Vector3, silencer_config::SilencerConfig,
+        acoustics::Complex,
+        amplitude::Amplitudes,
+        autd3_device::{AUTD3, DEVICE_WIDTH},
+        gain::Gain,
+        geometry::Vector3,
+        modulation::Modulation,
+        silencer_config::SilencerConfig,
+        stm::{FocusSTM, GainSTM},
         synchronize::Synchronize,
+        FPGAControlFlags, Mode, PI,
     };
 
-    use crate::prelude::{Focus, Sine};
+    use spdlog::LevelFilter;
+
+    use crate::{
+        link::Debug,
+        prelude::{Focus, Sine},
+    };
 
     use super::*;
-
-    struct EmulatorLink {
-        is_open: bool,
-    }
-
-    impl EmulatorLink {
-        pub fn new() -> Self {
-            Self { is_open: false }
-        }
-    }
-
-    impl<T: Transducer> Link<T> for EmulatorLink {
-        fn open(
-            &mut self,
-            _geometry: &Geometry<T>,
-        ) -> Result<(), autd3_core::error::AUTDInternalError> {
-            self.is_open = true;
-            Ok(())
-        }
-
-        fn close(&mut self) -> Result<(), autd3_core::error::AUTDInternalError> {
-            self.is_open = false;
-            Ok(())
-        }
-
-        fn send(&mut self, _tx: &TxDatagram) -> Result<bool, autd3_core::error::AUTDInternalError> {
-            Ok(true)
-        }
-
-        fn receive(
-            &mut self,
-            _rx: &mut RxDatagram,
-        ) -> Result<bool, autd3_core::error::AUTDInternalError> {
-            Ok(true)
-        }
-
-        fn is_open(&self) -> bool {
-            self.is_open
-        }
-
-        fn timeout(&self) -> Duration {
-            std::time::Duration::ZERO
-        }
-    }
 
     #[test]
     fn basic_usage() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(EmulatorLink::new())
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
             .unwrap();
-
-        let _firm_infos = autd.firmware_infos().unwrap();
 
         autd.send(Clear::new()).unwrap();
         autd.send(Synchronize::new()).unwrap();
 
+        let firm_infos = autd.firmware_infos().unwrap();
+        assert_eq!(firm_infos.len(), autd.geometry().num_devices());
+        firm_infos.iter().for_each(|f| {
+            assert_eq!(f.cpu_version(), "v2.9.0");
+            assert_eq!(f.fpga_version(), "v2.9.0");
+        });
+
+        assert!(autd.link().emulators().iter().all(|cpu| {
+            cpu.fpga()
+                .duties_and_phases(0)
+                .iter()
+                .all(|&(d, p)| d == 0x0000 && p == 0x0000)
+        }));
+        assert!(autd.link().emulators().iter().all(|cpu| cpu
+            .fpga()
+            .cycles()
+            .iter()
+            .all(|&c| c == 0x1000)));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| cpu.fpga().modulation_cycle() == 2
+                && cpu.fpga().modulation_frequency_division() == 40960
+                && cpu.fpga().modulation().iter().all(|&m| m == 0x00)));
+
         let silencer = SilencerConfig::default();
         autd.send(silencer).unwrap();
 
+        let f = autd.geometry().center() + Vector3::new(0.0, 0.0, 150.0);
         let m = Sine::new(150);
-        let g = Focus::new(autd.geometry().center() + Vector3::new(0.0, 0.0, 150.0));
+        let g = Focus::new(f);
 
         autd.send((m, g)).unwrap();
+
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { cpu.fpga_flags().contains(FPGAControlFlags::LEGACY_MODE) }));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { !cpu.fpga_flags().contains(FPGAControlFlags::STM_MODE) }));
+
+        let base_tr = &autd.geometry()[0];
+        let expect = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+            base_tr.position(),
+            &base_tr.z_direction(),
+            0.,
+            base_tr.wavenumber(autd.geometry().sound_speed),
+            &f,
+        ) * Complex::new(
+            0.,
+            2. * PI * autd.link().emulators()[0].fpga().duties_and_phases(0)[0].1 as float
+                / autd.link().emulators()[0].fpga().cycles()[0] as float,
+        )
+        .exp())
+        .arg();
+
+        autd.geometry()
+            .iter()
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().duties_and_phases(0)),
+            )
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().cycles()),
+            )
+            .for_each(|((tr, (d, p)), c)| {
+                let p = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+                    tr.position(),
+                    &tr.z_direction(),
+                    0.,
+                    tr.wavenumber(autd.geometry().sound_speed),
+                    &f,
+                ) * Complex::new(0., 2. * PI * p as float / c as float).exp())
+                .arg();
+                assert_eq!(d, c >> 1);
+                assert_approx_eq::assert_approx_eq!(p, expect, 2. * PI / 256.);
+            });
+
+        let expect_mod = {
+            let mut m = m;
+            m.calc()
+                .unwrap()
+                .iter()
+                .map(|d| (d.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8)
+                .collect::<Vec<_>>()
+        };
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().modulation().len(), expect_mod.len());
+            cpu.fpga()
+                .modulation()
+                .iter()
+                .zip(expect_mod.iter())
+                .for_each(|(a, b)| assert_eq!(a, b));
+        });
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().silencer_step(), 10);
+        });
+
+        autd.send(Stop::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, _)| {
+                assert_eq!(d, 0x0000);
+            })
+        });
+
+        autd.send(Clear::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, p)| {
+                assert_eq!(d, 0x0000);
+                assert_eq!(p, 0x0000);
+            });
+            cpu.fpga().cycles().iter().for_each(|&c| {
+                assert_eq!(c, 0x1000);
+            });
+            assert_eq!(cpu.fpga().modulation_cycle(), 2);
+            assert_eq!(cpu.fpga().modulation_frequency_division(), 40960);
+            cpu.fpga().modulation().iter().for_each(|&m| {
+                assert_eq!(m, 0x00);
+            });
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn freq_config() {
+        let mut autd = Controller::builder()
+            .advanced()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        for tr in autd.geometry_mut().iter_mut() {
+            tr.set_cycle(2341).unwrap();
+        }
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga()
+                .cycles()
+                .iter()
+                .for_each(|&c| assert_eq!(c, 2341))
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn basic_usage_advanced() {
+        let mut autd = Controller::builder()
+            .advanced()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(
+                Vector3::new(DEVICE_WIDTH, 0., 0.),
+                Vector3::zeros(),
+            ))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        assert!(autd.link().emulators().iter().all(|cpu| {
+            cpu.fpga()
+                .duties_and_phases(0)
+                .iter()
+                .all(|&(d, p)| d == 0x0000 && p == 0x0000)
+        }));
+        assert!(autd.link().emulators().iter().all(|cpu| cpu
+            .fpga()
+            .cycles()
+            .iter()
+            .all(|&c| c == 0x1000)));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| cpu.fpga().modulation_cycle() == 2
+                && cpu.fpga().modulation_frequency_division() == 40960
+                && cpu.fpga().modulation().iter().all(|&m| m == 0x00)));
+
+        let silencer = SilencerConfig::default();
+        autd.send(silencer).unwrap();
+
+        let f = autd.geometry().center() + Vector3::new(0.0, 0.0, 150.0);
+        let m = Sine::new(150);
+        let g = Focus::new(f);
+
+        autd.send((m, g)).unwrap();
+
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { !cpu.fpga_flags().contains(FPGAControlFlags::LEGACY_MODE) }));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { !cpu.fpga_flags().contains(FPGAControlFlags::STM_MODE) }));
+
+        let base_tr = &autd.geometry()[0];
+        let expect = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+            base_tr.position(),
+            &base_tr.z_direction(),
+            0.,
+            base_tr.wavenumber(autd.geometry().sound_speed),
+            &f,
+        ) * Complex::new(
+            0.,
+            2. * PI * autd.link().emulators()[0].fpga().duties_and_phases(0)[0].1 as float
+                / autd.link().emulators()[0].fpga().cycles()[0] as float,
+        )
+        .exp())
+        .arg();
+
+        autd.geometry()
+            .iter()
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().duties_and_phases(0)),
+            )
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().cycles()),
+            )
+            .for_each(|((tr, (d, p)), c)| {
+                let p = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+                    tr.position(),
+                    &tr.z_direction(),
+                    0.,
+                    tr.wavenumber(autd.geometry().sound_speed),
+                    &f,
+                ) * Complex::new(0., 2. * PI * p as float / c as float).exp())
+                .arg();
+                assert_eq!(d, c >> 1);
+                assert_approx_eq::assert_approx_eq!(p, expect, 2. * PI / 256.);
+            });
+
+        let expect_mod = {
+            let mut m = m;
+            m.calc()
+                .unwrap()
+                .iter()
+                .map(|d| (d.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8)
+                .collect::<Vec<_>>()
+        };
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().modulation().len(), expect_mod.len());
+            cpu.fpga()
+                .modulation()
+                .iter()
+                .zip(expect_mod.iter())
+                .for_each(|(a, b)| assert_eq!(a, b));
+        });
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().silencer_step(), 10);
+        });
+
+        autd.send(Stop::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, _)| {
+                assert_eq!(d, 0x0000);
+            })
+        });
+
+        autd.send(Clear::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, p)| {
+                assert_eq!(d, 0x0000);
+                assert_eq!(p, 0x0000);
+            });
+            cpu.fpga().cycles().iter().for_each(|&c| {
+                assert_eq!(c, 0x1000);
+            });
+            assert_eq!(cpu.fpga().modulation_cycle(), 2);
+            assert_eq!(cpu.fpga().modulation_frequency_division(), 40960);
+            cpu.fpga().modulation().iter().for_each(|&m| {
+                assert_eq!(m, 0x00);
+            });
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn basic_usage_advanced_phase() {
+        let mut autd = Controller::builder()
+            .advanced_phase()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(
+                Vector3::new(DEVICE_WIDTH, 0., 0.),
+                Vector3::zeros(),
+            ))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        assert!(autd.link().emulators().iter().all(|cpu| {
+            cpu.fpga()
+                .duties_and_phases(0)
+                .iter()
+                .all(|&(d, p)| d == 0x0000 && p == 0x0000)
+        }));
+        assert!(autd.link().emulators().iter().all(|cpu| cpu
+            .fpga()
+            .cycles()
+            .iter()
+            .all(|&c| c == 0x1000)));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| cpu.fpga().modulation_cycle() == 2
+                && cpu.fpga().modulation_frequency_division() == 40960
+                && cpu.fpga().modulation().iter().all(|&m| m == 0x00)));
+
+        let silencer = SilencerConfig::default();
+        autd.send(silencer).unwrap();
+
+        let amp = Amplitudes::uniform(1.);
+        autd.send(amp).unwrap();
+
+        let f = autd.geometry().center() + Vector3::new(0.0, 0.0, 150.0);
+        let m = Sine::new(150);
+        let g = Focus::new(f);
+
+        autd.send((m, g)).unwrap();
+
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { !cpu.fpga_flags().contains(FPGAControlFlags::LEGACY_MODE) }));
+        assert!(autd
+            .link()
+            .emulators()
+            .iter()
+            .all(|cpu| { !cpu.fpga_flags().contains(FPGAControlFlags::STM_MODE) }));
+
+        let base_tr = &autd.geometry()[0];
+        let expect = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+            base_tr.position(),
+            &base_tr.z_direction(),
+            0.,
+            base_tr.wavenumber(autd.geometry().sound_speed),
+            &f,
+        ) * Complex::new(
+            0.,
+            2. * PI * autd.link().emulators()[0].fpga().duties_and_phases(0)[0].1 as float
+                / autd.link().emulators()[0].fpga().cycles()[0] as float,
+        )
+        .exp())
+        .arg();
+
+        autd.geometry()
+            .iter()
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().duties_and_phases(0)),
+            )
+            .zip(
+                autd.link()
+                    .emulators()
+                    .iter()
+                    .flat_map(|cpu| cpu.fpga().cycles()),
+            )
+            .for_each(|((tr, (d, p)), c)| {
+                let p = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+                    tr.position(),
+                    &tr.z_direction(),
+                    0.,
+                    tr.wavenumber(autd.geometry().sound_speed),
+                    &f,
+                ) * Complex::new(0., 2. * PI * p as float / c as float).exp())
+                .arg();
+                assert_eq!(d, c >> 1);
+                assert_approx_eq::assert_approx_eq!(p, expect, 2. * PI / 256.);
+            });
+
+        let expect_mod = {
+            let mut m = m;
+            m.calc()
+                .unwrap()
+                .iter()
+                .map(|d| (d.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8)
+                .collect::<Vec<_>>()
+        };
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().modulation().len(), expect_mod.len());
+            cpu.fpga()
+                .modulation()
+                .iter()
+                .zip(expect_mod.iter())
+                .for_each(|(a, b)| assert_eq!(a, b));
+        });
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().silencer_step(), 10);
+        });
+
+        autd.send(Stop::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, _)| {
+                assert_eq!(d, 0x0000);
+            })
+        });
+
+        autd.send(Clear::new()).unwrap();
+        autd.link().emulators().iter().for_each(|cpu| {
+            cpu.fpga().duties_and_phases(0).iter().for_each(|&(d, p)| {
+                assert_eq!(d, 0x0000);
+                assert_eq!(p, 0x0000);
+            });
+            cpu.fpga().cycles().iter().for_each(|&c| {
+                assert_eq!(c, 0x1000);
+            });
+            assert_eq!(cpu.fpga().modulation_cycle(), 2);
+            assert_eq!(cpu.fpga().modulation_frequency_division(), 40960);
+            cpu.fpga().modulation().iter().for_each(|&m| {
+                assert_eq!(m, 0x00);
+            });
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn focus_stm() {
+        let mut autd = Controller::builder()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        let center = autd.geometry().center();
+        let size = 200;
+        let points = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.)
+            })
+            .collect::<Vec<_>>();
+        let stm = FocusSTM::new(1.).add_foci_from_iter(&points);
+
+        autd.send(stm.clone()).unwrap();
+
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
+
+        let base_tr = &autd.geometry()[0];
+        (0..size).for_each(|k| {
+            let f = points[k];
+            let expect = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+                base_tr.position(),
+                &base_tr.z_direction(),
+                0.,
+                base_tr.wavenumber(autd.geometry().sound_speed),
+                &f,
+            ) * Complex::new(
+                0.,
+                2. * PI * autd.link().emulators()[0].fpga().duties_and_phases(k)[0].1 as float
+                    / autd.link().emulators()[0].fpga().cycles()[0] as float,
+            )
+            .exp())
+            .arg();
+            autd.geometry()
+                .iter()
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().duties_and_phases(k)),
+                )
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|((tr, (d, p)), c)| {
+                    let p = (autd3_core::acoustics::propagate::<autd3_core::acoustics::Sphere>(
+                        tr.position(),
+                        &tr.z_direction(),
+                        0.,
+                        tr.wavenumber(autd.geometry().sound_speed),
+                        &f,
+                    ) * Complex::new(0., 2. * PI * p as float / c as float).exp())
+                    .arg();
+                    assert_eq!(d, c >> 1);
+                    assert_approx_eq::assert_approx_eq!(p, expect, 2. * PI / 100.);
+                });
+        });
+
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(stm).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn gain_stm_legacy() {
+        let mut autd = Controller::builder()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        let center = autd.geometry().center();
+        let size = 30;
+
+        let mut gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
+
+        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+
+        autd.send(&mut stm).unwrap();
+
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .for_each(|((d, p), g)| {
+                    assert_eq!(
+                        d,
+                        ((autd3_core::LegacyDrive::to_duty(&g) as u16) << 3) + 0x08
+                    );
+                    assert_eq!(p, (autd3_core::LegacyDrive::to_phase(&g) as u16) << 4);
+                });
+        });
+
+        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&mut stm).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&mut stm).unwrap();
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, c >> 1);
+                    assert_eq!(p, (autd3_core::LegacyDrive::to_phase(&g) as u16) << 4);
+                });
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseHalf);
+        autd.send(&mut stm).unwrap();
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, c >> 1);
+                    let phase = (autd3_core::LegacyDrive::to_phase(&g) as u16) >> 4;
+                    let phase = ((phase << 4) + phase) << 4;
+                    assert_eq!(p, phase);
+                });
+        });
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn gain_stm_advanced() {
+        let mut autd = Controller::builder()
+            .advanced()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        let center = autd.geometry().center();
+        let size = 30;
+
+        let mut gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
+
+        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+
+        autd.send(&mut stm).unwrap();
+
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, autd3_core::AdvancedDriveDuty::to_duty(&g, c));
+                    assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
+                });
+        });
+
+        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&mut stm).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&mut stm).unwrap();
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, c >> 1);
+                    assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
+                });
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseHalf);
+        assert!(autd.send(&mut stm).is_err());
+
+        autd.close().unwrap();
+    }
+
+    #[test]
+    fn gain_stm_advanced_phase() {
+        let mut autd = Controller::builder()
+            .advanced_phase()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        autd.send(Amplitudes::none()).unwrap();
+
+        let center = autd.geometry().center();
+        let size = 30;
+
+        let mut gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
+
+        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        autd.send(&mut stm).unwrap();
+
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, c >> 1);
+                    assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
+                });
+        });
+
+        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&mut stm).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&mut stm).unwrap();
+
+        (0..size).for_each(|k| {
+            autd.link()
+                .emulators()
+                .iter()
+                .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
+                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(
+                    autd.link()
+                        .emulators()
+                        .iter()
+                        .flat_map(|cpu| cpu.fpga().cycles()),
+                )
+                .for_each(|(((d, p), g), c)| {
+                    assert_eq!(d, c >> 1);
+                    assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
+                });
+        });
+
+        let mut stm = stm.with_mode(Mode::PhaseHalf);
+        assert!(autd.send(&mut stm).is_err());
+
+        autd.close().unwrap();
     }
 }
