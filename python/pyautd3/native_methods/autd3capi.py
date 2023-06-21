@@ -344,6 +344,15 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkDebugWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDLinkDebugWithTimeout.restype = LinkPtr
 
+        self.dll.AUTDLinkLog.argtypes = [LinkPtr]  # type: ignore 
+        self.dll.AUTDLinkLog.restype = LinkPtr
+
+        self.dll.AUTDLinkLogWithLogLevel.argtypes = [LinkPtr, Level]  # type: ignore 
+        self.dll.AUTDLinkLogWithLogLevel.restype = LinkPtr
+
+        self.dll.AUTDLinkLogWithLogFunc.argtypes = [LinkPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDLinkLogWithLogFunc.restype = LinkPtr
+
     def create_controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDCreateControllerBuilder()
 
@@ -649,3 +658,12 @@ class NativeMethods(metaclass=Singleton):
 
     def link_debug_with_timeout(self, debug: LinkPtr, timeout_ns: int) -> LinkPtr:
         return self.dll.AUTDLinkDebugWithTimeout(debug, timeout_ns)
+
+    def link_log(self, link: LinkPtr) -> LinkPtr:
+        return self.dll.AUTDLinkLog(link)
+
+    def link_log_with_log_level(self, log: LinkPtr, level: Level) -> LinkPtr:
+        return self.dll.AUTDLinkLogWithLogLevel(log, level)
+
+    def link_log_with_log_func(self, log: LinkPtr, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> LinkPtr:
+        return self.dll.AUTDLinkLogWithLogFunc(log, out_func, flush_func)

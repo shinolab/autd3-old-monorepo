@@ -289,6 +289,12 @@ int32_t AUTDSendSpecial(ControllerPtr cnt,
 
 [[nodiscard]] LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, uint64_t timeout_ns);
 
+[[nodiscard]] LinkPtr AUTDLinkLog(LinkPtr link);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, void* out_func, void* flush_func);
+
 } // extern "C"
 
 } // namespace autd3::internal::native_methods
