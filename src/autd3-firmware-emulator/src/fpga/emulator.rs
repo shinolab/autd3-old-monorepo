@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -235,166 +235,122 @@ impl FPGAEmulator {
             return false;
         }
         if !self.is_stm_mode() {
-            let (duty, _) = self.drives(0);
+            let drives = self.duties_and_phases(0);
             return if self.is_legacy_mode() {
-                duty.iter().any(|&d| d > 8)
+                drives.iter().any(|&d| d.0 > 8)
             } else {
-                duty.iter().any(|&d| d != 0)
+                drives.iter().any(|&d| d.0 != 0)
             };
         }
         true
     }
 
-    pub fn drives(&self, idx: usize) -> (Vec<u16>, Vec<u16>) {
+    pub fn duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
         if self.is_stm_mode() {
             if self.is_stm_gain_mode() {
                 if self.is_legacy_mode() {
-                    self.gain_stm_legacy_drives(idx)
+                    self.gain_stm_legacy_duties_and_phases(idx)
                 } else {
-                    self.gain_stm_advanced_drives(idx)
+                    self.gain_stm_advanced_duties_and_phases(idx)
                 }
             } else {
-                self.focus_stm_drives(idx)
+                self.focus_stm_duties_and_phases(idx)
             }
         } else if self.is_legacy_mode() {
-            self.legacy_drive()
+            self.legacy_duties_and_phases()
         } else {
-            self.advanced_drive()
+            self.advanced_duties_and_phases()
         }
     }
 
-    fn legacy_drive(&self) -> (Vec<u16>, Vec<u16>) {
-        (
-            self.normal_op_bram
-                .iter()
-                .step_by(2)
-                .take(self.num_transducers)
-                .map(|d| {
-                    let duty = (d >> 8) & 0xFF;
-                    ((duty << 3) | 0x07) + 1
-                })
-                .collect(),
-            self.normal_op_bram
-                .iter()
-                .step_by(2)
-                .take(self.num_transducers)
-                .map(|d| {
-                    let phase = d & 0xFF;
-                    phase << 4
-                })
-                .collect(),
-        )
+    fn legacy_duties_and_phases(&self) -> Vec<(u16, u16)> {
+        self.normal_op_bram
+            .iter()
+            .step_by(2)
+            .take(self.num_transducers)
+            .map(|d| {
+                let duty = (d >> 8) & 0xFF;
+                let duty = ((duty << 3) | 0x07) + 1;
+                let phase = d & 0xFF;
+                let phase = phase << 4;
+                (duty, phase)
+            })
+            .collect()
     }
 
-    fn advanced_drive(&self) -> (Vec<u16>, Vec<u16>) {
-        (
-            self.normal_op_bram
-                .iter()
-                .skip(1)
-                .step_by(2)
-                .take(self.num_transducers)
-                .copied()
-                .collect(),
-            self.normal_op_bram
-                .iter()
-                .step_by(2)
-                .take(self.num_transducers)
-                .copied()
-                .collect(),
-        )
+    fn advanced_duties_and_phases(&self) -> Vec<(u16, u16)> {
+        self.normal_op_bram
+            .chunks(2)
+            .take(self.num_transducers)
+            .map(|x| (x[1], x[0]))
+            .collect()
     }
 
-    fn gain_stm_advanced_drives(&self, idx: usize) -> (Vec<u16>, Vec<u16>) {
-        (
-            self.stm_op_bram
-                .iter()
-                .skip(512 * idx + 1)
-                .step_by(2)
-                .take(self.num_transducers)
-                .copied()
-                .collect(),
-            self.stm_op_bram
-                .iter()
-                .skip(512 * idx)
-                .step_by(2)
-                .take(self.num_transducers)
-                .copied()
-                .collect(),
-        )
+    fn gain_stm_advanced_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+        self.stm_op_bram
+            .chunks(2)
+            .skip(256 * idx)
+            .take(self.num_transducers)
+            .map(|x| (x[1], x[0]))
+            .collect()
     }
 
-    fn gain_stm_legacy_drives(&self, idx: usize) -> (Vec<u16>, Vec<u16>) {
-        (
-            self.stm_op_bram
-                .iter()
-                .skip(256 * idx)
-                .take(self.num_transducers)
-                .map(|&d| {
-                    let duty = (d >> 8) & 0xFF;
-                    ((duty << 3) | 0x07) + 1
-                })
-                .collect(),
-            self.stm_op_bram
-                .iter()
-                .skip(256 * idx)
-                .take(self.num_transducers)
-                .map(|d| {
-                    let phase = d & 0xFF;
-                    phase << 4
-                })
-                .collect(),
-        )
+    fn gain_stm_legacy_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+        self.stm_op_bram
+            .iter()
+            .skip(256 * idx)
+            .take(self.num_transducers)
+            .map(|&d| {
+                let duty = (d >> 8) & 0xFF;
+                let duty = ((duty << 3) | 0x07) + 1;
+                let phase = d & 0xFF;
+                let phase = phase << 4;
+                (duty, phase)
+            })
+            .collect()
     }
 
-    pub fn focus_stm_drives(&self, idx: usize) -> (Vec<u16>, Vec<u16>) {
+    pub fn focus_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
         let ultrasound_cycles = self.cycles();
         let sound_speed = self.sound_speed() as u64;
         let duty_shift = (self.stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
-        (
-            ultrasound_cycles
-                .iter()
-                .map(|&cycle| cycle >> duty_shift)
-                .collect(),
-            {
-                let mut x = (self.stm_op_bram[8 * idx + 1] as u32) << 16 & 0x30000;
-                x |= self.stm_op_bram[8 * idx] as u32;
-                let x = if (x & 0x20000) != 0 {
-                    -131072 + (x & 0x1FFFF) as i32
-                } else {
-                    x as i32
-                };
-                let mut y = (self.stm_op_bram[8 * idx + 2] as u32) << 14 & 0x3C000;
-                y |= self.stm_op_bram[8 * idx + 1] as u32 >> 2;
-                let y = if (y & 0x20000) != 0 {
-                    -131072 + (y & 0x1FFFF) as i32
-                } else {
-                    y as i32
-                };
-                let mut z = (self.stm_op_bram[8 * idx + 3] as u32) << 12 & 0x3F000;
-                z |= self.stm_op_bram[8 * idx + 2] as u32 >> 4;
-                let z = if (z & 0x20000) != 0 {
-                    -131072 + (z & 0x1FFFF) as i32
-                } else {
-                    z as i32
-                };
-                self.tr_pos
-                    .iter()
-                    .zip(ultrasound_cycles.iter())
-                    .map(|(&tr, &cycle)| {
-                        let tr_z = (tr >> 32 & 0xFFFF) as i32;
-                        let tr_x = (tr >> 16 & 0xFFFF) as i32;
-                        let tr_y = (tr & 0xFFFF) as i32;
-                        let d2 = (x - tr_x) * (x - tr_x)
-                            + (y - tr_y) * (y - tr_y)
-                            + (z - tr_z) * (z - tr_z);
-                        let dist = d2.sqrt() as u64;
-                        let q = (dist << 22) / sound_speed;
-                        let p = q % cycle as u64;
-                        p as u16
-                    })
-                    .collect()
-            },
-        )
+
+        let mut x = (self.stm_op_bram[8 * idx + 1] as u32) << 16 & 0x30000;
+        x |= self.stm_op_bram[8 * idx] as u32;
+        let x = if (x & 0x20000) != 0 {
+            -131072 + (x & 0x1FFFF) as i32
+        } else {
+            x as i32
+        };
+        let mut y = (self.stm_op_bram[8 * idx + 2] as u32) << 14 & 0x3C000;
+        y |= self.stm_op_bram[8 * idx + 1] as u32 >> 2;
+        let y = if (y & 0x20000) != 0 {
+            -131072 + (y & 0x1FFFF) as i32
+        } else {
+            y as i32
+        };
+        let mut z = (self.stm_op_bram[8 * idx + 3] as u32) << 12 & 0x3F000;
+        z |= self.stm_op_bram[8 * idx + 2] as u32 >> 4;
+        let z = if (z & 0x20000) != 0 {
+            -131072 + (z & 0x1FFFF) as i32
+        } else {
+            z as i32
+        };
+        self.tr_pos
+            .iter()
+            .zip(ultrasound_cycles.iter())
+            .map(|(&tr, &cycle)| {
+                let tr_z = (tr >> 32 & 0xFFFF) as i32;
+                let tr_x = (tr >> 16 & 0xFFFF) as i32;
+                let tr_y = (tr & 0xFFFF) as i32;
+                let d2 =
+                    (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
+                let dist = d2.sqrt() as u64;
+                let q = (dist << 22) / sound_speed;
+                let p = q % cycle as u64;
+                (cycle >> duty_shift, p as u16)
+            })
+            .collect()
     }
 
     pub fn configure_local_trans_pos(

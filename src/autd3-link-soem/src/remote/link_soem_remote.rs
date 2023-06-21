@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -125,7 +125,7 @@ impl<T: Transducer> Link<T> for RemoteSOEM {
             unsafe {
                 std::ptr::copy_nonoverlapping(
                     self.rx_buf.as_ptr(),
-                    rx.messages_mut().as_mut_ptr() as *mut u8,
+                    rx.as_mut_ptr() as *mut u8,
                     self.rx_buf.len(),
                 );
             }

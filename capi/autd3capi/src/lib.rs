@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -148,7 +148,7 @@ pub unsafe extern "C" fn AUTDSetSoundSpeedFromTemp(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGetTransFrequency(geo: GeometryPtr, idx: u32) -> float {
-    cast!(geo.0, Geo)[idx as _].frequency()
+    cast!(geo.0, Geo)[idx as usize].frequency()
 }
 
 #[no_mangle]
@@ -160,7 +160,7 @@ pub unsafe extern "C" fn AUTDSetTransFrequency(
     err: *mut c_char,
 ) -> bool {
     try_or_return!(
-        cast_mut!(geo.0, Geo)[idx as _].set_frequency(value),
+        cast_mut!(geo.0, Geo)[idx as usize].set_frequency(value),
         err,
         false
     );
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn AUTDSetTransFrequency(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGetTransCycle(geo: GeometryPtr, idx: u32) -> u16 {
-    cast!(geo.0, Geo)[idx as _].cycle()
+    cast!(geo.0, Geo)[idx as usize].cycle()
 }
 
 #[no_mangle]
@@ -181,7 +181,11 @@ pub unsafe extern "C" fn AUTDSetTransCycle(
     value: u16,
     err: *mut c_char,
 ) -> bool {
-    try_or_return!(cast_mut!(geo.0, Geo)[idx as _].set_cycle(value), err, false);
+    try_or_return!(
+        cast_mut!(geo.0, Geo)[idx as usize].set_cycle(value),
+        err,
+        false
+    );
     true
 }
 
@@ -193,7 +197,7 @@ pub unsafe extern "C" fn AUTDGetWavelength(
     sound_speed: float,
 ) -> float {
     let geometry = cast!(geo.0, Geo);
-    geometry[idx as _].wavelength(sound_speed)
+    geometry[idx as usize].wavelength(sound_speed)
 }
 
 #[no_mangle]
@@ -240,7 +244,7 @@ pub unsafe extern "C" fn AUTDGeometryCenterOf(
     y: *mut float,
     z: *mut float,
 ) {
-    let center = cast!(geo.0, Geo).center_of(dev_idx as _);
+    let center = cast!(geo.0, Geo).center_of(dev_idx as usize);
     *x = center.x;
     *y = center.y;
     *z = center.z;
@@ -254,7 +258,7 @@ pub unsafe extern "C" fn AUTDTransPosition(
     y: *mut float,
     z: *mut float,
 ) {
-    let pos = cast!(geo.0, Geo)[tr_idx as _].position();
+    let pos = cast!(geo.0, Geo)[tr_idx as usize].position();
     *x = pos.x;
     *y = pos.y;
     *z = pos.z;
@@ -269,7 +273,7 @@ pub unsafe extern "C" fn AUTDTransRotation(
     y: *mut float,
     z: *mut float,
 ) {
-    let rot = cast!(geo.0, Geo)[tr_idx as _].rotation();
+    let rot = cast!(geo.0, Geo)[tr_idx as usize].rotation();
     *w = rot.w;
     *x = rot.i;
     *y = rot.j;
@@ -284,7 +288,7 @@ pub unsafe extern "C" fn AUTDTransXDirection(
     y: *mut float,
     z: *mut float,
 ) {
-    let dir = cast!(geo.0, Geo)[tr_idx as _].x_direction();
+    let dir = cast!(geo.0, Geo)[tr_idx as usize].x_direction();
     *x = dir.x;
     *y = dir.y;
     *z = dir.z;
@@ -298,7 +302,7 @@ pub unsafe extern "C" fn AUTDTransYDirection(
     y: *mut float,
     z: *mut float,
 ) {
-    let dir = cast!(geo.0, Geo)[tr_idx as _].y_direction();
+    let dir = cast!(geo.0, Geo)[tr_idx as usize].y_direction();
     *x = dir.x;
     *y = dir.y;
     *z = dir.z;
@@ -312,7 +316,7 @@ pub unsafe extern "C" fn AUTDTransZDirection(
     y: *mut float,
     z: *mut float,
 ) {
-    let dir = cast!(geo.0, Geo)[tr_idx as _].z_direction();
+    let dir = cast!(geo.0, Geo)[tr_idx as usize].z_direction();
     *x = dir.x;
     *y = dir.y;
     *z = dir.z;
@@ -321,12 +325,12 @@ pub unsafe extern "C" fn AUTDTransZDirection(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGetTransModDelay(geo: GeometryPtr, tr_idx: u32) -> u16 {
-    cast!(geo.0, Geo)[tr_idx as _].mod_delay()
+    cast!(geo.0, Geo)[tr_idx as usize].mod_delay()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetTransModDelay(geo: GeometryPtr, tr_idx: u32, delay: u16) {
-    cast_mut!(geo.0, Geo)[tr_idx as _].set_mod_delay(delay)
+    cast_mut!(geo.0, Geo)[tr_idx as usize].set_mod_delay(delay)
 }
 
 #[no_mangle]
@@ -491,6 +495,33 @@ pub unsafe extern "C" fn AUTDGainCustom(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramBodyPtr {
     DatagramBodyPtr::new(*Box::from_raw(gain.0 as *mut Box<G>))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGainCalc(
+    gain: GainPtr,
+    geometry: GeometryPtr,
+    amp: *mut float,
+    phase: *mut float,
+    err: *mut c_char,
+) -> i32 {
+    let res = try_or_return!(
+        Box::from_raw(gain.0 as *mut Box<G>).calc(cast!(geometry.0, Geo)),
+        err,
+        AUTD3_ERR
+    );
+
+    let mut amp_ptr = amp;
+    let mut phase_ptr = phase;
+    (0..res.len()).for_each(|i| {
+        *amp_ptr = res[i].amp;
+        amp_ptr = amp_ptr.add(1);
+        *phase_ptr = res[i].phase;
+        phase_ptr = phase_ptr.add(1);
+    });
+
+    AUTD3_TRUE
 }
 
 #[no_mangle]
@@ -685,6 +716,24 @@ pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> Datagra
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDModulationSize(m: ModulationPtr, err: *mut c_char) -> i32 {
+    try_or_return!(Box::from_raw(m.0 as *mut Box<M>).calc(), err, AUTD3_ERR).len() as i32
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationCalc(
+    m: ModulationPtr,
+    buffer: *mut float,
+    err: *mut c_char,
+) -> i32 {
+    let res = try_or_return!(Box::from_raw(m.0 as *mut Box<M>).calc(), err, AUTD3_ERR);
+    std::ptr::copy_nonoverlapping(res.as_ptr(), buffer, res.len());
+    AUTD3_TRUE
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSTMProps(freq: float) -> STMPropsPtr {
     STMPropsPtr::new(STMProps::new(freq))
 }
@@ -708,7 +757,7 @@ pub unsafe extern "C" fn AUTDSTMPropsWithStartIdx(props: STMPropsPtr, idx: i32) 
     STMPropsPtr::new(if idx < 0 {
         props.with_start_idx(None)
     } else {
-        props.with_start_idx(Some(idx as _))
+        props.with_start_idx(Some(idx as u16))
     })
 }
 
@@ -719,7 +768,7 @@ pub unsafe extern "C" fn AUTDSTMPropsWithFinishIdx(props: STMPropsPtr, idx: i32)
     STMPropsPtr::new(if idx < 0 {
         props.with_finish_idx(None)
     } else {
-        props.with_finish_idx(Some(idx as _))
+        props.with_finish_idx(Some(idx as u16))
     })
 }
 
@@ -748,7 +797,7 @@ pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequencyDivision(
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsStartIdx(props: STMPropsPtr) -> i32 {
     if let Some(idx) = cast!(props.0, STMProps).start_idx() {
-        idx as _
+        idx as i32
     } else {
         -1
     }
@@ -758,7 +807,7 @@ pub unsafe extern "C" fn AUTDSTMPropsStartIdx(props: STMPropsPtr) -> i32 {
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsFinishIdx(props: STMPropsPtr) -> i32 {
     if let Some(idx) = cast!(props.0, STMProps).finish_idx() {
-        idx as _
+        idx as i32
     } else {
         -1
     }
@@ -1080,7 +1129,7 @@ mod tests {
             if firm_p.0 == NULL {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
-            for i in 0..num_devices {
+            (0..num_devices).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
                 let mut is_valid = false;
                 let mut is_supported = false;
@@ -1094,7 +1143,7 @@ mod tests {
                 dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
                 dbg!(is_valid);
                 dbg!(is_supported);
-            }
+            });
             AUTDFreeFirmwareInfoListPointer(firm_p);
 
             {

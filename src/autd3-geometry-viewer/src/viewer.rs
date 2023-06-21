@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 21/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,22 +49,9 @@ impl GeometryViewer {
         }
     }
 
-    #[deprecated(since = "11.1.0", note = "Use with_window_size instead")]
-    pub fn window_size(mut self, width: u32, height: u32) -> Self {
-        self.window_width = width;
-        self.window_height = height;
-        self
-    }
-
     pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = width;
         self.window_height = height;
-        self
-    }
-
-    #[deprecated(since = "11.1.0", note = "Use with_vsync instead")]
-    pub fn vsync(mut self, vsync: bool) -> Self {
-        self.vsync = vsync;
         self
     }
 
@@ -89,7 +76,7 @@ impl GeometryViewer {
         let num_dev = geometry.num_devices();
 
         let geo: Vec<_> = geometry
-            .into_iter()
+            .iter()
             .step_by(NUM_TRANS_IN_UNIT)
             .map(|tr| {
                 let pos = tr.position();
@@ -118,11 +105,34 @@ impl GeometryViewer {
                     *control_flow = ControlFlow::Exit;
                 }
                 Event::WindowEvent {
-                    event: WindowEvent::Resized(..) | WindowEvent::ScaleFactorChanged { .. },
-                    ..
-                } => {
+                    event: WindowEvent::Resized(..),
+                    window_id,
+                } if window_id == render.window().id() => {
                     render.resize();
                     imgui.resized(render.window(), &event);
+                }
+                Event::WindowEvent {
+                    event:
+                        WindowEvent::ScaleFactorChanged {
+                            scale_factor,
+                            new_inner_size,
+                        },
+                    window_id,
+                } if window_id == render.window().id() => {
+                    *new_inner_size = render
+                        .window()
+                        .inner_size()
+                        .to_logical::<u32>(render.window().scale_factor())
+                        .to_physical(scale_factor);
+                    render.resize();
+                    let event_imgui: Event<'_, ()> = Event::WindowEvent {
+                        window_id,
+                        event: WindowEvent::ScaleFactorChanged {
+                            scale_factor,
+                            new_inner_size,
+                        },
+                    };
+                    imgui.resized(render.window(), &event_imgui);
                 }
                 Event::MainEventsCleared => {
                     imgui.prepare_frame(render.window());

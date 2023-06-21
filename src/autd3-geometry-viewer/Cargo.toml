@@ -1,6 +1,6 @@
 [package]
 name = "autd3-geometry-viewer"
-version = "11.2.0"
+version = "12.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ readme = "../README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="11.2.0"}
-autd3-model = {path="../autd3-model", version="11.2.0"}
+autd3-core = {path="../autd3-core", version="12.0.0"}
+autd3-model = {path="../autd3-model", version="12.0.0"}
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"
@@ -23,7 +23,7 @@ vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
 vulkano-win = "0.33.0"
 winit = "0.28.6"
-imgui-vulkano-renderer = { git = "https://github.com/sssssssuzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
+imgui-vulkano-renderer = { git = "https://github.com/s5suzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
 gltf = "1.1.0"
 
 [features]

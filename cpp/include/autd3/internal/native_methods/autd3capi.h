@@ -148,6 +148,13 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
 
 [[nodiscard]] DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
+[[nodiscard]]
+int32_t AUTDGainCalc(GainPtr gain,
+                     GeometryPtr geometry,
+                     double *amp,
+                     double *phase,
+                     char *err);
+
 [[nodiscard]] ModulationPtr AUTDModulationStatic();
 
 [[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
@@ -208,6 +215,10 @@ ModulationPtr AUTDModulationCustom(uint32_t freq_div,
 [[nodiscard]] double AUTDModulationSamplingFrequency(ModulationPtr m);
 
 [[nodiscard]] DatagramHeaderPtr AUTDModulationIntoDatagram(ModulationPtr m);
+
+[[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
+
+[[nodiscard]] int32_t AUTDModulationCalc(ModulationPtr m, double *buffer, char *err);
 
 [[nodiscard]] STMPropsPtr AUTDSTMProps(double freq);
 

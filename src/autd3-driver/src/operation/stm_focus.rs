@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -233,14 +233,14 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).focus_stm_initial();
             assert_eq!(stm.data[0], 60);
             assert_eq!((stm.data[2] as u32) << 16 | stm.data[1] as u32, 4096);
             assert_eq!((stm.data[4] as u32) << 16 | stm.data[3] as u32, sp);
             assert_eq!(stm.data[5], 1);
             assert_eq!(stm.data[6], 2);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -261,10 +261,10 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).focus_stm_subsequent();
             assert_eq!(stm.data[0], 62);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();
@@ -285,10 +285,10 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
+        (0..10).for_each(|i| {
             let stm = tx.body(i).focus_stm_subsequent();
             assert_eq!(stm.data[0], 28);
-        }
+        });
         assert_eq!(tx.num_bodies, 10);
 
         op.pack(&mut tx).unwrap();

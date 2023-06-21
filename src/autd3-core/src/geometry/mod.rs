@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,11 +28,12 @@ pub type Matrix3 = nalgebra::Matrix3<float>;
 pub type Matrix4 = nalgebra::Matrix4<float>;
 pub type Affine = nalgebra::Affine3<float>;
 
+use std::ops::{Deref, DerefMut};
+
 pub use advanced_phase_transducer::*;
 pub use advanced_transducer::*;
 pub use device::*;
 pub use legacy_transducer::*;
-use std::ops::{Index, IndexMut};
 pub use transducer::*;
 
 use crate::error::AUTDInternalError;
@@ -52,12 +53,9 @@ impl<T: Transducer> Geometry<T> {
         sound_speed: float,
         attenuation: float,
     ) -> Result<Geometry<T>, AUTDInternalError> {
-        for &transducers in &device_map {
-            if transducers > 256 {
-                return Err(AUTDInternalError::TooManyTransducers);
-            }
+        if device_map.iter().any(|&t| t > 256) {
+            return Err(AUTDInternalError::TooManyTransducers);
         }
-
         Ok(Geometry {
             transducers,
             device_map,
@@ -156,45 +154,28 @@ impl<T: Transducer> Geometry<T> {
     }
 }
 
-impl<T: Transducer> Index<usize> for Geometry<T> {
-    type Output = T;
-    fn index(&self, idx: usize) -> &Self::Output {
-        &self.transducers[idx]
+impl<T: Transducer> Deref for Geometry<T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        &self.transducers
     }
 }
 
-impl<T: Transducer> IndexMut<usize> for Geometry<T> {
-    fn index_mut(&mut self, idx: usize) -> &mut T {
-        &mut self.transducers[idx]
-    }
-}
-
-impl<'a, T: Transducer> IntoIterator for &'a Geometry<T> {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
-
-    fn into_iter(self) -> std::slice::Iter<'a, T> {
-        self.transducers()
-    }
-}
-
-impl<'a, T: Transducer> IntoIterator for &'a mut Geometry<T> {
-    type Item = &'a mut T;
-    type IntoIter = std::slice::IterMut<'a, T>;
-
-    fn into_iter(self) -> std::slice::IterMut<'a, T> {
-        self.transducers.iter_mut()
+impl<T: Transducer> DerefMut for Geometry<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.transducers
     }
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use std::marker::PhantomData;
 
     use assert_approx_eq::assert_approx_eq;
     use autd3_driver::PI;
 
-    use crate::autd3_device::{AUTD3, NUM_TRANS_IN_UNIT};
+    use crate::autd3_device::{AUTD3, NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y};
 
     use super::*;
 
@@ -275,17 +256,12 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut expected = Vector3::zeros();
-        for i in 0..18 {
-            for j in 0..14 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                expected +=
-                    10.16 * Vector3::new(i as float, j as float, 0.) + Vector3::new(10., 20., 30.);
-            }
-        }
-        expected /= 249.;
+        let expected = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .fold(Vector3::zeros(), |acc, (y, x)| {
+                acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.)
+            })
+            / 249.;
 
         assert_vec3_approx_eq!(geometry.center(), expected);
     }
@@ -298,30 +274,22 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut expected_0 = Vector3::zeros();
-        for i in 0..18 {
-            for j in 0..14 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                expected_0 +=
-                    10.16 * Vector3::new(i as float, j as float, 0.) + Vector3::new(10., 20., 30.);
-            }
-        }
-        expected_0 /= 249.;
+        let expected_0 = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .fold(Vector3::zeros(), |acc, (y, x)| {
+                acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.)
+            })
+            / 249.;
+
         assert_vec3_approx_eq!(geometry.center_of(0), expected_0);
 
-        let mut expected_1 = Vector3::zeros();
-        for i in 0..18 {
-            for j in 0..14 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                expected_1 +=
-                    10.16 * Vector3::new(i as float, j as float, 0.) + Vector3::new(40., 50., 60.);
-            }
-        }
-        expected_1 /= 249.;
+        let expected_1 = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .fold(Vector3::zeros(), |acc, (y, x)| {
+                acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(40., 50., 60.)
+            })
+            / 249.;
+
         assert_vec3_approx_eq!(geometry.center_of(1), expected_1);
     }
 
@@ -565,29 +533,22 @@ mod tests {
         let t = Vector3::new(40., 50., 60.);
         geometry.translate(t);
 
-        let mut idx = 0;
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(i as float, j as float, 0.) + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(i as float, j as float, 0.)
-                    + Vector3::new(10., 20., 30.)
-                    + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
+        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
+            .chain(
+                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                    .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+                    .map(|(y, x)| {
+                        10.16 * Vector3::new(x as float, y as float, 0.)
+                            + Vector3::new(10., 20., 30.)
+                            + t
+                    }),
+            )
+            .zip(geometry.iter())
+            .for_each(|(expect, tr)| {
+                assert_vec3_approx_eq!(expect, tr.position());
+            });
     }
 
     #[test]
@@ -600,55 +561,39 @@ mod tests {
 
         let t = Vector3::new(40., 50., 60.);
         geometry.translate_of(0, t);
-
-        let mut idx = 0;
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(i as float, j as float, 0.) + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect =
-                    10.16 * Vector3::new(i as float, j as float, 0.) + Vector3::new(10., 20., 30.);
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
+        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
+            .chain(
+                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                    .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+                    .map(|(y, x)| {
+                        10.16 * Vector3::new(x as float, y as float, 0.)
+                            + Vector3::new(10., 20., 30.)
+                    }),
+            )
+            .zip(geometry.iter())
+            .for_each(|(expect, tr)| {
+                assert_vec3_approx_eq!(expect, tr.position());
+            });
 
         geometry.translate_of(1, t);
-
-        let mut idx = 0;
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(i as float, j as float, 0.) + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(i as float, j as float, 0.)
-                    + Vector3::new(10., 20., 30.)
-                    + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
+        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
+            .chain(
+                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                    .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+                    .map(|(y, x)| {
+                        10.16 * Vector3::new(x as float, y as float, 0.)
+                            + Vector3::new(10., 20., 30.)
+                            + t
+                    }),
+            )
+            .zip(geometry.iter())
+            .for_each(|(expect, tr)| {
+                assert_vec3_approx_eq!(expect, tr.position());
+            });
     }
 
     #[test]
@@ -666,11 +611,11 @@ mod tests {
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
         let expect_z = Vector3::new(0., 0., 1.);
-        for tr in &geometry {
+        geometry.iter().for_each(|tr| {
             assert_vec3_approx_eq!(expect_x, tr.x_direction());
             assert_vec3_approx_eq!(expect_y, tr.y_direction());
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
-        }
+        });
 
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI / 2.)
             * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
@@ -679,11 +624,11 @@ mod tests {
         let expect_x = Vector3::new(0., 0., 1.);
         let expect_y = Vector3::new(-1., 0., 0.);
         let expect_z = Vector3::new(0., -1., 0.);
-        for tr in &geometry {
+        geometry.iter().for_each(|tr| {
             assert_vec3_approx_eq!(expect_x, tr.x_direction());
             assert_vec3_approx_eq!(expect_y, tr.y_direction());
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
-        }
+        });
     }
 
     #[test]
@@ -701,23 +646,23 @@ mod tests {
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
         let expect_z = Vector3::new(0., 0., 1.);
-        for tr in geometry.transducers_of(0) {
+        geometry.transducers_of(0).for_each(|tr| {
             assert_vec3_approx_eq!(expect_x, tr.x_direction());
             assert_vec3_approx_eq!(expect_y, tr.y_direction());
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
-        }
-        for tr in geometry.transducers_of(1) {
+        });
+        geometry.transducers_of(1).for_each(|tr| {
             assert_vec3_approx_eq!(Vector3::x_axis(), tr.x_direction());
             assert_vec3_approx_eq!(Vector3::y_axis(), tr.y_direction());
             assert_vec3_approx_eq!(Vector3::z_axis(), tr.z_direction());
-        }
+        });
 
         geometry.rotate_of(1, rot);
-        for tr in &geometry {
+        geometry.iter().for_each(|tr| {
             assert_vec3_approx_eq!(expect_x, tr.x_direction());
             assert_vec3_approx_eq!(expect_y, tr.y_direction());
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
-        }
+        });
     }
 
     #[test]
@@ -737,33 +682,27 @@ mod tests {
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
         let expect_z = Vector3::new(0., 0., 1.);
-        for tr in &geometry {
+        geometry.iter().for_each(|tr| {
             assert_vec3_approx_eq!(expect_x, tr.x_direction());
             assert_vec3_approx_eq!(expect_y, tr.y_direction());
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
-        }
-        let mut idx = 0;
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(-j as float, i as float, 0.) + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
-        for j in 0..14 {
-            for i in 0..18 {
-                if AUTD3::is_missing_transducer(i, j) {
-                    continue;
-                }
-                let expect = 10.16 * Vector3::new(-j as float, i as float, 0.)
-                    + Vector3::new(-20., 10., 30.)
-                    + t;
-                assert_vec3_approx_eq!(expect, geometry[idx].position());
-                idx += 1;
-            }
-        }
+        });
+
+        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+            .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+            .map(|(y, x)| 10.16 * Vector3::new(-(y as float), x as float, 0.) + t)
+            .chain(
+                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                    .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
+                    .map(|(y, x)| {
+                        10.16 * Vector3::new(-(y as float), x as float, 0.)
+                            + Vector3::new(-20., 10., 30.)
+                            + t
+                    }),
+            )
+            .zip(geometry.iter())
+            .for_each(|(expect, tr)| {
+                assert_vec3_approx_eq!(expect, tr.position());
+            });
     }
 }

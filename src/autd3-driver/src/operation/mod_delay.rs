@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/05/2023
+ * Last Modified: 19/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -102,9 +102,12 @@ mod test {
         assert!(op.is_finished());
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_DELAY));
-        for (d, delay) in tx.body_raw_mut().iter().zip(delays.iter()) {
-            assert_eq!(d, delay);
-        }
+        tx.body_raw_mut()
+            .iter()
+            .zip(delays.iter())
+            .for_each(|(d, delay)| {
+                assert_eq!(d, delay);
+            });
         assert_eq!(tx.num_bodies, 10);
 
         op.init();

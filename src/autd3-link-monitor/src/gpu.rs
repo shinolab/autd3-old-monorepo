@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 16/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@ use autd3_core::{
     float,
     geometry::{Geometry, Transducer, Vector3},
 };
-use autd3_firmware_emulator::CPUEmulator;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},
     command_buffer::{
@@ -131,11 +130,11 @@ impl FieldCompute {
         }
     }
 
-    pub fn calc_field<'a, T: Transducer, D: autd3_core::acoustics::Directivity>(
+    pub fn calc_field_of<'a, T: Transducer, D: autd3_core::acoustics::Directivity>(
         &self,
         observe_points: Vec<Vector3>,
         geometry: &Geometry<T>,
-        cpus: &[CPUEmulator],
+        source_drive: Vec<[f32; 4]>,
     ) -> Vec<Complex> {
         let pipeline_layout = self.pipeline.layout();
         let layout = pipeline_layout.set_layouts().get(0).unwrap();
@@ -189,28 +188,6 @@ impl FieldCompute {
         )
         .unwrap();
 
-        let sound_speed = geometry.sound_speed;
-        let source_drive = cpus
-            .iter()
-            .enumerate()
-            .flat_map(|(i, cpu)| {
-                let (duty, phase) = cpu.fpga().drives(0);
-                duty.iter()
-                    .zip(phase.iter())
-                    .zip(geometry.transducers_of(i).map(|t| t.cycle()))
-                    .zip(
-                        geometry
-                            .transducers_of(i)
-                            .map(|t| t.wavenumber(sound_speed)),
-                    )
-                    .map(|(((&d, &p), c), w)| {
-                        let amp = (std::f32::consts::PI * d as f32 / c as f32).sin();
-                        let phase = 2. * std::f32::consts::PI * p as f32 / c as f32;
-                        [amp, phase, 0., w as f32]
-                    })
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
         let source_drive_buffer = Buffer::from_iter(
             &self.memory_allocator,
             BufferCreateInfo {
