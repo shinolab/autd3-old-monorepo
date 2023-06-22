@@ -205,5 +205,6 @@ class Geometry:
         return self._ptr
 
     def _configure(self):
-        size = self.num_transducers
-        self._transducers = [Transducer(i, self._ptr) for i in range(size)]
+        self._transducers = list(
+            map(lambda i: Transducer(i, self._ptr), range(self.num_transducers))
+        )

@@ -146,7 +146,7 @@ autd.Send(m, g, TimeSpan.FromMilliseconds(20));
 ```
 
 ```python
-autd.send(m, g, timeout=timedelta(milliseconds=20))
+autd.send((m, g), timeout=timedelta(milliseconds=20))
 ```
 
 タイムアウトの値が0より大きい場合, 送信時に送信データがデバイスで処理されるか, 指定したタイムアウト時間が経過するまで待機する.

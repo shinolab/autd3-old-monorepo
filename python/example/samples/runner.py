@@ -40,17 +40,15 @@ def run(autd: Controller):
             f"\033[93mWARN: You are using old firmware. Please consider updating to {FirmwareInfo.latest_version()}.\033[0m"
         )
     print(
-        "================================== Firmware information ===================================="
+        "========================================= Firmware information ==========================================="
     )
-    for firm in firm_info_list:
-        print(firm)
+    print("\n".join([str(firm) for firm in firm_info_list]))
     print(
-        "============================================================================================"
+        "=========================================================================================================="
     )
 
     while True:
-        for i, (_, name) in enumerate(samples):
-            print(f"[{i}]: {name}")
+        print("\n".join([f"[{i}]: {name}" for i, (_, name) in enumerate(samples)]))
         print("[Other]: finish")
 
         idx = input("choose number: ")

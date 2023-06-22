@@ -12,7 +12,9 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 from abc import ABCMeta, abstractmethod
-from typing import Optional, List
+import functools
+from typing import Optional, List, Tuple, Union
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -23,7 +25,6 @@ from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import (
     GainSTMMode,
     DatagramBodyPtr,
-    GainPtr,
     STMPropsPtr,
 )
 
@@ -115,11 +116,23 @@ class FocusSTM(STM):
     def from_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
         return FocusSTM(None, None, sampling_freq_div)
 
-    def add_focus(self, point: np.ndarray, duty_shift: int = 0):
+    def add_focus(self, point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
         self._points.append(point[0])
         self._points.append(point[1])
         self._points.append(point[2])
         self._duty_shifts.append(duty_shift)
+        return self
+
+    def add_foci_from_iter(
+        self, iterable: Union[Iterable[np.ndarray], Iterable[Tuple[np.ndarray, int]]]
+    ) -> "FocusSTM":
+        return functools.reduce(
+            lambda acc, x: acc.add_focus(x)
+            if isinstance(x, np.ndarray)
+            else acc.add_focus(x[0], x[1]),
+            iterable,
+            self,
+        )
 
     @property
     def frequency(self) -> float:
@@ -157,14 +170,13 @@ class GainSTM(STM):
         self._mode = None
 
     def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
-        ptr = (
+        return functools.reduce(
+            lambda acc, gain: Base().gain_stm_add_gain(acc, gain.gain_ptr(geometry)),
+            self._gains,
             Base().gain_stm(self.props())
             if self._mode is None
-            else Base().gain_stm_with_mode(self.props(), self._mode)
+            else Base().gain_stm_with_mode(self.props(), self._mode),
         )
-        for gain in self._gains:
-            ptr = Base().gain_stm_add_gain(ptr, gain.gain_ptr(geometry))
-        return ptr
 
     @staticmethod
     def from_sampling_frequency(sampling_freq: float) -> "GainSTM":
@@ -174,8 +186,13 @@ class GainSTM(STM):
     def from_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
         return GainSTM(None, None, sampling_freq_div)
 
-    def add_gain(self, gain: IGain):
+    def add_gain(self, gain: IGain) -> "GainSTM":
         self._gains.append(gain)
+        return self
+
+    def add_gains_from_iter(self, iter: Iterable[IGain]) -> "GainSTM":
+        self._gains.extend(iter)
+        return self
 
     @property
     def frequency(self) -> float:
