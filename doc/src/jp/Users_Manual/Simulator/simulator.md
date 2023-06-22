@@ -8,9 +8,26 @@ Windows 64bitのみビルド済みの実行ファイルが配布されている�
 ## 使い方
 
 シミュレータを実行すると接続待ちの状態になる.
+
+<figure>
+  <img src="../../fig/sim_waiting.jpg"/>
+  <figcaption>接続待ち</figcaption>
+</figure>
+
 この状態で, `Simulator`リンクを使って`Controller`を`open`すると, シミュレータ上には, 振動子の位置に円と, 画面中央に黒いパネルが表示される.
+
+<figure>
+  <img src="../../fig/sim_init.jpg"/>
+  <figcaption>初期状態</figcaption>
+</figure>
+
 この黒いパネルを"Slice"と呼び, この"Slice"を使って任意の位置の音場を可視化できる.
 また, その時, 振動子の位相が色相で, 振幅が色強度で表される.
+
+<figure>
+  <img src="../../fig/sim_focus.jpg"/>
+  <figcaption>焦点音場</figcaption>
+</figure>
 
 なお, シミュレータで表示される音場はシンプルな球面波の重ね合わせであり, 指向性や非線形効果などは考慮されない.
 
