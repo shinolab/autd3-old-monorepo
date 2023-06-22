@@ -52,15 +52,12 @@ public class SampleRunner
         }
 
         Console.WriteLine("==================================== Firmware information ======================================");
-        foreach (var firm in firmList)
-            Console.WriteLine($"{firm}");
+        Console.WriteLine(string.Join("\n", firmList));
         Console.WriteLine("================================================================================================");
 
         while (true)
         {
-            for (var i = 0; i < examples.Count; i++)
-                Console.WriteLine($"[{i}]: {examples[i].Item2}");
-
+            Console.WriteLine(string.Join("\n", examples.Select((example, i )=> $"[{i}]: {example.Item2}")));
             Console.WriteLine("[Others]: finish");
             Console.Write("Choose number: ");
 

@@ -52,6 +52,6 @@ public class AdvancedTest
         var g = new UniformGain();
         var m = new Burst(4000);
 
-        autd.Send(m, g);
+        autd.Send((m, g));
     }
 }

@@ -29,15 +29,14 @@ internal static class FocusSTMTest
         autd.Send(mod);
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
-        var stm = new FocusSTM(1);
         const int pointNum = 200;
-        for (var i = 0; i < pointNum; i++)
+        const double radius = 30.0;
+        var stm = new FocusSTM(1).AddFociFromIter(Enumerable.Range(0, pointNum).Select(i =>
         {
-            const double radius = 30.0;
             var theta = 2.0 * Math.PI * i / pointNum;
-            var p = radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0);
-            stm.AddFocus(center + p);
-        }
+            return center + radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0);
+        }));
+
         Console.WriteLine($"Actual frequency is {stm.Frequency}");
         autd.Send(stm);
     }

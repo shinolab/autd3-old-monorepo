@@ -27,12 +27,12 @@ internal static class GainHoloTest
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 
-        var gain = new GSPAT().WithConstraint(new Uniform());
-        gain.AddFocus(center + 20.0 * Vector3d.UnitX, 1.0);
-        gain.AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
+        var g = new GSPAT().WithConstraint(new Uniform());
+        g.AddFocus(center + 20.0 * Vector3d.UnitX, 1.0);
+        g.AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
 
-        var mod = new Sine(150);
+        var m = new Sine(150);
 
-        autd.Send(mod, gain);
+        autd.Send(m, g);
     }
 }

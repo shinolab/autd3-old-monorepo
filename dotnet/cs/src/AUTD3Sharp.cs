@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 23/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -465,6 +465,20 @@ namespace AUTD3Sharp
             }
             return res == Def.Autd3True;
         }
+
+        public bool Send((IHeader, IBody) data, TimeSpan? timeout = null)
+        {
+            var (header, body) = data;
+            if (header == null) throw new ArgumentNullException(nameof(header));
+            if (body == null) throw new ArgumentNullException(nameof(body));
+            var err = new byte[256];
+            var res = Base.AUTDSend(Ptr, _mode, header.Ptr(), body.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
+            if (res == Def.Autd3Err)
+            {
+                throw new AUTDException(err);
+            }
+            return res == Def.Autd3True;
+        }
     }
 
     public sealed class UpdateFlags : ISpecialData
@@ -575,12 +589,7 @@ namespace AUTD3Sharp
 
             public override GainPtr GainPtr(Geometry geometry)
             {
-                var ptr = Base.AUTDGainGrouped();
-                foreach (var (deviceIdx, gain) in _gains)
-                {
-                    ptr = Base.AUTDGainGroupedAdd(ptr, (uint)deviceIdx, gain.GainPtr(geometry));
-                }
-                return ptr;
+                return _gains.Aggregate(Base.AUTDGainGrouped(), (current, gain) => Base.AUTDGainGroupedAdd(current, (uint)gain.Item1, gain.Item2.GainPtr(geometry)));
             }
         }
 
@@ -1005,12 +1014,23 @@ namespace AUTD3Sharp
                 return new FocusSTM(null, null, freqDiv);
             }
 
-            public void AddFocus(Vector3 point, byte shift = 0)
+            public FocusSTM AddFocus(Vector3 point, byte shift = 0)
             {
                 _points.Add(point.x);
                 _points.Add(point.y);
                 _points.Add(point.z);
                 _shifts.Add(shift);
+                return this;
+            }
+
+            public FocusSTM AddFociFromIter(IEnumerable<Vector3> iter)
+            {
+                return iter.Aggregate(this, (stm, point) => stm.AddFocus(point));
+            }
+
+            public FocusSTM AddFociFromIter(IEnumerable<(Vector3, byte)> iter)
+            {
+                return iter.Aggregate(this, (stm, point) => stm.AddFocus(point.Item1, point.Item2));
             }
 
             public FocusSTM WithStartIdx(ushort? startIdx)
@@ -1061,9 +1081,15 @@ namespace AUTD3Sharp
                 return new GainSTM(null, null, freqDiv);
             }
 
-            public void AddGain(GainBase gain)
+            public GainSTM AddGain(GainBase gain)
             {
                 _gains.Add(gain);
+                return this;
+            }
+
+            public GainSTM AddGainsFromIter(IEnumerable<GainBase> iter)
+            {
+                return iter.Aggregate(this, (stm, gain) => stm.AddGain(gain));
             }
 
             public GainSTM WithStartIdx(ushort? startIdx)
