@@ -68,4 +68,4 @@ def run(autd: Controller):
         print("finish.")
         autd.send(Stop())
 
-    autd.dispose()
+    autd.close()
