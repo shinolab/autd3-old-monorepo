@@ -645,14 +645,7 @@ namespace AUTD3Sharp
             sealed public override GainPtr GainPtr(Geometry geometry)
             {
                 var drives = Calc(geometry);
-                Base.AUTDAllocDriveBuf((ulong)drives.Length, out var ptr, out var len, out var cap);
-                unsafe
-                {
-                    var srcSpan = new Span<Drive>(drives);
-                    var dstSpan = new Span<Drive>(ptr.ToPointer(), (int)len);
-                    srcSpan.CopyTo(dstSpan);
-                }
-                return Base.AUTDGainCustom(ptr, len, cap);
+                return Base.AUTDGainCustom(drives, (ulong)drives.Length);
             }
 
             public abstract Drive[] Calc(Geometry geometry);
@@ -934,14 +927,7 @@ namespace AUTD3Sharp
             sealed public override ModulationPtr ModulationPtr()
             {
                 var data = Calc();
-                Base.AUTDAllocModBuf((ulong)data.Length, out var ptr, out var len, out var cap);
-                unsafe
-                {
-                    var srcSpan = new Span<float_t>(data);
-                    var dstSpan = new Span<float_t>(ptr.ToPointer(), (int)len);
-                    srcSpan.CopyTo(dstSpan);
-                }
-                return Base.AUTDModulationCustom(_freqDiv, ptr, len, cap);
+                return Base.AUTDModulationCustom(_freqDiv, data, (ulong)data.Length);
             }
 
             public abstract float_t[] Calc();

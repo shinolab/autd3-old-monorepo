@@ -106,9 +106,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainTransducerTestSet(GainPtr transTest, uint id, double phase, double amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDAllocDriveBuf(ulong size, out IntPtr ptr, out ulong len, out ulong cap);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainCustom(IntPtr ptr, ulong len, ulong cap);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainCustom(Drive[]? ptr, ulong len);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
@@ -154,9 +152,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m, uint div);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDAllocModBuf(ulong size, out IntPtr ptr, out ulong len, out ulong cap);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCustom(uint freqDiv, IntPtr ptr, ulong len, ulong cap);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCustom(uint freqDiv, double[]? ptr, ulong len);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 

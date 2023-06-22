@@ -123,13 +123,7 @@ class Gain : public internal::Gain {
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     const auto drives = calc(geometry);
-    const auto size = static_cast<uint64_t>(drives.size());
-    void* ptr = nullptr;
-    uint64_t len = 0;
-    uint64_t cap = 0;
-    internal::native_methods::AUTDAllocDriveBuf(size, &ptr, &len, &cap);
-    std::memcpy(ptr, drives.data(), static_cast<size_t>(len) * sizeof(internal::native_methods::Drive));
-    return internal::native_methods::AUTDGainCustom(ptr, len, cap);
+    return internal::native_methods::AUTDGainCustom(drives.data(), static_cast<uint64_t>(drives.size()));
   }
 
   template <class Fn>
@@ -153,13 +147,7 @@ class Cache : public internal::Gain {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    const auto size = static_cast<uint64_t>(_drives.size());
-    void* ptr = nullptr;
-    uint64_t len = 0;
-    uint64_t cap = 0;
-    internal::native_methods::AUTDAllocDriveBuf(size, &ptr, &len, &cap);
-    std::memcpy(ptr, _drives.data(), static_cast<size_t>(len) * sizeof(internal::native_methods::Drive));
-    return internal::native_methods::AUTDGainCustom(ptr, len, cap);
+    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
   }
 
   [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
