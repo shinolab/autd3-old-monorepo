@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -215,6 +215,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     }
 
     pub fn close(&mut self) -> Result<bool, AUTDError> {
+        if !self.link.is_open() {
+            return Ok(false);
+        }
         let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
         self.link.close()?;
