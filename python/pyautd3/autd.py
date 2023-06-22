@@ -188,13 +188,9 @@ class Controller:
     def __del__(self):
         self.dispose()
 
-    def _free(self):
-        Base().free_controller(self._ptr)
-
     def dispose(self):
         if self._ptr._0 is not None:
-            self.close()
-            self._free()
+            Base().free_controller(self._ptr)
             self._ptr._0 = None
 
     @property
