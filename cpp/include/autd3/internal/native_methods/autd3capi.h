@@ -149,9 +149,7 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
                                   double phase,
                                   double amp);
 
-void AUTDAllocDriveBuf(uint64_t size, void **ptr, uint64_t *len, uint64_t *cap);
-
-[[nodiscard]] GainPtr AUTDGainCustom(const void *ptr, uint64_t len, uint64_t cap);
+[[nodiscard]] GainPtr AUTDGainCustom(const Drive *ptr, uint64_t len);
 
 [[nodiscard]] DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
@@ -207,13 +205,10 @@ ModulationPtr AUTDModulationSineLegacyWithSamplingFrequencyDivision(ModulationPt
 ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
                                                                 uint32_t div);
 
-void AUTDAllocModBuf(uint64_t size, void **ptr, uint64_t *len, uint64_t *cap);
-
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,
-                                   const void *ptr,
-                                   uint64_t len,
-                                   uint64_t cap);
+                                   const double *ptr,
+                                   uint64_t len);
 
 [[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 
