@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ public class AdvancedTest
     {
         public override Drive[] Calc(Geometry geometry)
         {
-            return Transform(geometry, _ => new Drive(1.0, 0.0));
+            return Transform(geometry, _ => new Drive{Phase = 0.0, Amp = 1.0});
         }
     }
 

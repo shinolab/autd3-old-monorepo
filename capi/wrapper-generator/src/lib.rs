@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use std::path::Path;
 use anyhow::Result;
 
 use csharp::CSharpGenerator;
-use parse::{parse_const, parse_enum, parse_func, parse_ptr_tuple};
+use parse::{parse_const, parse_enum, parse_func, parse_struct};
 use python::PythonGenerator;
 use traits::Generator;
 
@@ -40,7 +40,7 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
         .register_func(parse_func(&capi_path, use_single)?)
         .register_const(parse_const(&capi_path, use_single)?)
         .register_enum(parse_enum(&capi_path, use_single)?)
-        .register_ptr_tuple(parse_ptr_tuple(&capi_path)?)
+        .register_struct(parse_struct(&capi_path, use_single)?)
         .write(path, crate_name)
 }
 

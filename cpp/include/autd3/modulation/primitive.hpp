@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/06/2023
+// Last Modified: 22/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -205,7 +205,12 @@ class Modulation : public internal::Modulation {
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     const auto buffer = calc();
     const auto size = static_cast<uint64_t>(buffer.size());
-    return internal::native_methods::AUTDModulationCustom(_freq_div, buffer.data(), size);
+    void* ptr = nullptr;
+    uint64_t len = 0;
+    uint64_t cap = 0;
+    internal::native_methods::AUTDAllocModBuf(size, &ptr, &len, &cap);
+    std::memcpy(ptr, buffer.data(), static_cast<size_t>(len) * sizeof(double));
+    return internal::native_methods::AUTDModulationCustom(_freq_div, ptr, len, cap);
   }
 
  private:
@@ -227,7 +232,12 @@ class Cache : public internal::Modulation {
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     const auto size = static_cast<uint64_t>(_buffer.size());
-    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), size);
+    void* ptr = nullptr;
+    uint64_t len = 0;
+    uint64_t cap = 0;
+    internal::native_methods::AUTDAllocModBuf(size, &ptr, &len, &cap);
+    std::memcpy(ptr, _buffer.data(), static_cast<size_t>(len) * sizeof(double));
+    return internal::native_methods::AUTDModulationCustom(_freq_div, ptr, len, cap);
   }
 
   [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }

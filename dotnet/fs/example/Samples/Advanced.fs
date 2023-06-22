@@ -18,7 +18,11 @@ open AUTD3Sharp.Modulation
 module AdvancedTest =
     type UniformGain () =
         inherit Gain()
-        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, fun tr -> new Drive(1., 0.));
+        let Calc_ (tr:Transducer) = 
+            let mutable drive = new Drive();
+            drive.Amp <- 1.0;
+            drive
+        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, Calc_);
         
     type Burst (size: int) =
         inherit Modulation(5120)

@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,6 +47,7 @@ impl Type {
             "u64" => Type::UInt64,
             "c_char" => Type::Char,
             "ConstPtr" => Type::VoidPtr,
+            "c_void" => Type::Void,
             "float" => {
                 if use_single {
                     Type::Float32
@@ -110,14 +111,47 @@ impl Type {
                             InOut::In
                         };
 
-                        return Arg {
-                            name,
-                            ty: Self::parse_str(
-                                ptr.elem.into_token_stream().to_string().as_str(),
-                                use_single,
-                            ),
-                            inout,
-                            pointer: 1,
+                        return match *ptr.elem {
+                            syn::Type::Ptr(ptr2) => {
+                                let ty = Self::parse_str(
+                                    ptr2.elem.into_token_stream().to_string().as_str(),
+                                    use_single,
+                                );
+                                match ty {
+                                    Type::Void => Arg {
+                                        name,
+                                        ty: Type::VoidPtr,
+                                        inout,
+                                        pointer: 1,
+                                    },
+                                    _ => Arg {
+                                        name,
+                                        ty,
+                                        inout,
+                                        pointer: 2,
+                                    },
+                                }
+                            }
+                            _ => {
+                                let ty = Self::parse_str(
+                                    ptr.elem.into_token_stream().to_string().as_str(),
+                                    use_single,
+                                );
+                                match ty {
+                                    Type::Void => Arg {
+                                        name,
+                                        ty: Type::VoidPtr,
+                                        inout,
+                                        pointer: 0,
+                                    },
+                                    _ => Arg {
+                                        name,
+                                        ty,
+                                        inout,
+                                        pointer: 1,
+                                    },
+                                }
+                            }
                         };
                     }
                     _ => panic!("Unknown type: {}", pat.ty.to_token_stream()),

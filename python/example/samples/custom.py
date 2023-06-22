@@ -27,8 +27,8 @@ class Focus(Gain):
         return Gain.transform(
             geometry,
             lambda tr: Drive(
-                1.0,
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
+                1.0,
             ),
         )
 

@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    parse::{Arg, Const, Enum, Function, PtrTuple},
+    parse::{Arg, Const, Enum, Function, Struct},
     types::{InOut, Type},
 };
 
@@ -34,7 +34,7 @@ pub struct PythonGenerator {
     functions: Vec<Function>,
     constants: Vec<Const>,
     enums: Vec<Enum>,
-    ptr_tuple: Vec<PtrTuple>,
+    structs: Vec<Struct>,
 }
 
 impl PythonGenerator {
@@ -126,8 +126,14 @@ impl PythonGenerator {
                 Type::VoidPtr => "ctypes.POINTER(ctypes.c_void_p)".to_owned(),
                 Type::Custom(ref s) => format!("ctypes.POINTER({})", s),
             },
+            2 => match arg.ty {
+                Type::Float32 => "ctypes.POINTER(ctypes.POINTER(ctypes.c_float))".to_owned(),
+                Type::Float64 => "ctypes.POINTER(ctypes.POINTER(ctypes.c_double))".to_owned(),
+                Type::Custom(ref s) => format!("ctypes.POINTER(ctypes.POINTER({}))", s),
+                _ => unimplemented!(),
+            },
             _ => {
-                panic!("double or more pointer is not supported")
+                panic!("truple or more pointer is not supported")
             }
         }
     }
@@ -172,8 +178,9 @@ impl PythonGenerator {
                 Type::VoidPtr => "Any",
                 Type::Custom(_) => "Any",
             },
+            2 => "Any",
             _ => {
-                panic!("double or more pointer is not supported")
+                panic!("triple or more pointer is not supported")
             }
         }
     }
@@ -199,8 +206,8 @@ impl Generator for PythonGenerator {
         self
     }
 
-    fn register_ptr_tuple(mut self, e: Vec<PtrTuple>) -> Self {
-        self.ptr_tuple = e;
+    fn register_struct(mut self, e: Vec<crate::parse::Struct>) -> Self {
+        self.structs = e;
         self
     }
 
@@ -209,7 +216,7 @@ impl Generator for PythonGenerator {
             functions: Vec::new(),
             constants: Vec::new(),
             enums: Vec::new(),
-            ptr_tuple: Vec::new(),
+            structs: Vec::new(),
         }
     }
 
@@ -237,7 +244,7 @@ import os"
         let owns = |ty: &Type| {
             if let Type::Custom(ref s) = ty {
                 if self.enums.iter().any(|e| &e.name == s)
-                    || self.ptr_tuple.iter().any(|e| &e.name == s)
+                    || self.structs.iter().any(|e| &e.name == s)
                 {
                     return None;
                 }
@@ -297,8 +304,9 @@ class {}(IntEnum):",
             })
             .try_collect()?;
 
-        self.ptr_tuple
+        self.structs
             .iter()
+            .filter(|e| e.name.ends_with("Ptr"))
             .map(|p| {
                 writeln!(
                     w,
@@ -311,6 +319,29 @@ class {}(ctypes.Structure):",
                     w,
                     "    _fields_ = [(\"_0\", ctypes.c_void_p)]
 "
+                )
+            })
+            .try_collect()?;
+
+        self.structs
+            .iter()
+            .filter(|e| !e.name.ends_with("Ptr"))
+            .map(|p| {
+                writeln!(
+                    w,
+                    r"
+class {}(ctypes.Structure):",
+                    p.name
+                )?;
+
+                writeln!(
+                    w,
+                    "    _fields_ = [{}]
+",
+                    p.fields
+                        .iter()
+                        .map(|(ty, name)| format!("(\"{}\", {})", name, Self::to_return_ty(&ty)))
+                        .join(", ")
                 )
             })
             .try_collect()?;
