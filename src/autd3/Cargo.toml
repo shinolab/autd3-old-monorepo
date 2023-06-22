@@ -1,6 +1,6 @@
 [package]
 name = "autd3"
-version = "12.1.0"
+version = "12.1.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,9 +11,9 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="12.1.0"}
-autd3-traits = {path="../autd3-traits", version="12.1.0"}
-autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.1.0"}
+autd3-core = {path="../autd3-core", version="12.1.1"}
+autd3-traits = {path="../autd3-traits", version="12.1.1"}
+autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.1.1"}
 itertools = "0.10.3"
 nalgebra = "0.32.1"
 num = "0.4.0"

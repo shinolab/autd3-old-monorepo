@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-simulator"
-version = "12.1.0"
+version = "12.1.1"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="12.1.0"}
-autd3-simulator = {path="../../src/autd3-simulator", version="12.1.0"}
+autd3capi-def = {path="../autd3capi-def", version="12.1.1"}
+autd3-simulator = {path="../../src/autd3-simulator", version="12.1.1"}
 serde_json = "1.0.96"
 
 [build-dependencies]

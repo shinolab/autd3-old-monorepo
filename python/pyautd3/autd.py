@@ -188,13 +188,9 @@ class Controller:
     def __del__(self):
         self.dispose()
 
-    def _free(self):
-        Base().free_controller(self._ptr)
-
     def dispose(self):
         if self._ptr._0 is not None:
-            self.close()
-            self._free()
+            Base().free_controller(self._ptr)
             self._ptr._0 = None
 
     @property
@@ -220,8 +216,7 @@ class Controller:
         if not handle:
             raise AUTDError(err)
 
-        res = []
-        for i in range(self.geometry.num_devices):
+        def get_firmware_info(i: int) -> FirmwareInfo:
             sb = ctypes.create_string_buffer(256)
             is_valid = c_bool(False)
             is_supported = c_bool(False)
@@ -229,7 +224,9 @@ class Controller:
                 handle, i, sb, byref(is_valid), byref(is_supported)
             )
             info = sb.value.decode("utf-8")
-            res.append(FirmwareInfo(info, is_valid.value, is_supported.value))
+            return FirmwareInfo(info, is_valid.value, is_supported.value)
+
+        res = list(map(get_firmware_info, range(self.geometry.num_devices)))
 
         Base().free_firmware_info_list_pointer(handle)
 

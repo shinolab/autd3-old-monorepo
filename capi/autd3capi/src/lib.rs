@@ -114,7 +114,8 @@ pub unsafe extern "C" fn AUTDClose(cnt: ControllerPtr, err: *mut c_char) -> bool
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFreeController(cnt: ControllerPtr) {
-    let _ = Box::from_raw(cnt.0 as *mut Cnt);
+    let mut cnt = Box::from_raw(cnt.0 as *mut Cnt);
+    let _ = cnt.close();
 }
 
 #[no_mangle]

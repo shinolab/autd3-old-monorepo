@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-def"
-version = "12.1.0"
+version = "12.1.1"
 edition = "2021"
 license = "MIT"
 
@@ -8,7 +8,7 @@ license = "MIT"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
-autd3capi-common = {path="../autd3capi-common", version="12.1.0"}
+autd3capi-common = {path="../autd3capi-common", version="12.1.1"}
 
 [build-dependencies]
 wrapper-generator = {path="../wrapper-generator"}

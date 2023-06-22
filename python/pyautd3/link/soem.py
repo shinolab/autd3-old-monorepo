@@ -93,16 +93,16 @@ class SOEM(Link):
     def enumerate_adapters() -> List[EtherCATAdapter]:
         size = ctypes.c_uint32(0)
         handle = LinkSOEM().get_adapter_pointer(byref(size))
-        res = []
-        for i in range(int(size)):
+
+        def get_adapter(i: int) -> EtherCATAdapter:
             sb_desc = ctypes.create_string_buffer(128)
             sb_name = ctypes.create_string_buffer(128)
             LinkSOEM().get_adapter(handle, i, sb_desc, sb_name)
-            res.append(
-                EtherCATAdapter(
-                    sb_name.value.decode("utf-8"), sb_desc.value.decode("utf-8")
-                )
+            return EtherCATAdapter(
+                sb_name.value.decode("utf-8"), sb_desc.value.decode("utf-8")
             )
+
+        res = list(map(get_adapter, range(int(size.value))))
 
         LinkSOEM().free_adapter_pointer(handle)
 

@@ -11,10 +11,11 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
+import functools
 import numpy as np
 from typing import Optional, List, Callable
 from abc import ABCMeta, abstractmethod
-from ctypes import byref, c_void_p, c_uint64, POINTER, memmove, sizeof
+from ctypes import POINTER
 
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -113,12 +114,11 @@ class Grouped(IGain):
         self._indices.append(device_idx)
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        ptr = Base().gain_grouped()
-        for i in range(len(self._gains)):
-            ptr = Base().gain_grouped_add(
-                ptr, self._indices[i], self._gains[i].gain_ptr(geometry)
-            )
-        return ptr
+        return functools.reduce(
+            lambda acc, v: Base().gain_grouped_add(acc, v[0], v[1].gain_ptr(geometry)),
+            zip(self._indices, self._gains),
+            Base().gain_grouped(),
+        )
 
 
 class TransTest(IGain):
@@ -137,13 +137,12 @@ class TransTest(IGain):
         self._amps.append(amp)
         self._phases.append(phase)
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        ptr = Base().gain_transducer_test()
-        for i in range(len(self._indices)):
-            ptr = Base().gain_transducer_test_set(
-                ptr, self._indices[i], self._amps[i], self._phases[i]
-            )
-        return ptr
+    def gain_ptr(self, _: Geometry) -> GainPtr:
+        return functools.reduce(
+            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2]),
+            zip(self._indices, self._phases, self._amps),
+            Base().gain_transducer_test(),
+        )
 
 
 class Gain(IGain, metaclass=ABCMeta):
@@ -158,9 +157,4 @@ class Gain(IGain, metaclass=ABCMeta):
 
     @staticmethod
     def transform(geometry: Geometry, f: Callable[[Transducer], Drive]) -> np.ndarray:
-        drives = np.zeros(geometry.num_transducers, dtype=Drive)
-        for i, tr in enumerate(geometry):
-            d = f(tr)
-            drives[i]["phase"] = d.phase
-            drives[i]["amp"] = d.amp
-        return drives
+        return np.fromiter(map(lambda tr: np.void(f(tr)), geometry), dtype=Drive)  # type: ignore
