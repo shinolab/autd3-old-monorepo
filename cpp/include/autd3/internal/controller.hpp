@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 22/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,17 +31,14 @@ class Controller {
 
    public:
     Builder add_device(const AUTD3& device) {
-      if (const auto euler = device.euler(); euler.has_value()) {
+      if (const auto euler = device.euler(); euler.has_value())
         _ptr = AUTDAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
                              euler.value().z());
-      } else {
-        if (const auto quat = device.quaternion(); quat.has_value())
-          _ptr = AUTDAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
-                                         quat.value().x(), quat.value().y(), quat.value().z());
-        else {
-          throw std::runtime_error("unreachable!");
-        }
-      }
+      else if (const auto quat = device.quaternion(); quat.has_value())
+        _ptr = AUTDAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(), quat.value().x(),
+                                       quat.value().y(), quat.value().z());
+      else
+        throw std::runtime_error("unreachable!");
       return *this;
     }
 
@@ -76,10 +73,22 @@ class Controller {
   static Builder builder() noexcept { return {}; }
 
   Controller() = delete;
-  Controller(const Controller& v) = default;
-  Controller& operator=(const Controller& obj) = default;
-  Controller(Controller&& obj) = default;
-  Controller& operator=(Controller&& obj) = default;
+  Controller(const Controller& v) = delete;
+  Controller& operator=(const Controller& obj) = delete;
+  Controller(Controller&& obj) : _geometry(std::move(obj._geometry)), _ptr(std::move(obj._ptr)), _mode(std::move(obj._mode)) {
+    obj._ptr._0 = nullptr;
+  }
+  Controller& operator=(Controller&& obj) {
+    if (this != &obj) {
+      if (_ptr._0 != nullptr) AUTDFreeController(_ptr);
+
+      _geometry = std::move(obj._geometry);
+      _ptr = std::move(obj._ptr);
+      _mode = std::move(obj._mode);
+      obj._ptr._0 = nullptr;
+    }
+    return *this;
+  }
 
   ~Controller() noexcept {
     try {
@@ -181,9 +190,9 @@ class Controller {
     const auto ptr = AUTDControllerOpenWith(builder, link, err);
     if (ptr._0 == nullptr) throw AUTDException(err);
 
-    auto geometry = Geometry(AUTDGetGeometry(ptr), mode);
+    Geometry geometry(AUTDGetGeometry(ptr), mode);
 
-    auto cnt = Controller(std::move(geometry), ptr, mode);
+    Controller cnt(std::move(geometry), ptr, mode);
 
     cnt.geometry().configure_transducers();
 

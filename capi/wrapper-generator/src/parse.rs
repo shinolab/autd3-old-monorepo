@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,8 +48,9 @@ pub struct Enum {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub struct PtrTuple {
+pub struct Struct {
     pub name: String,
+    pub fields: Vec<(Type, String)>,
 }
 
 pub fn parse_func<P>(header: P, use_single: bool) -> Result<Vec<Function>>
@@ -158,7 +159,7 @@ where
         .collect())
 }
 
-pub fn parse_ptr_tuple<P>(header: P) -> Result<Vec<PtrTuple>>
+pub fn parse_struct<P>(header: P, use_single: bool) -> Result<Vec<Struct>>
 where
     P: AsRef<Path>,
 {
@@ -172,10 +173,27 @@ where
         .items
         .into_iter()
         .filter_map(|item| match item {
-            syn::Item::Struct(item_struct) => {
-                let name = item_struct.ident.to_string();
-                Some(PtrTuple { name })
-            }
+            syn::Item::Struct(item_struct) => match item_struct.vis {
+                syn::Visibility::Public(_) => {
+                    let name = item_struct.ident.to_string();
+                    let fields = item_struct
+                        .fields
+                        .iter()
+                        .filter(|f| f.ident.is_some())
+                        .map(|f| {
+                            (
+                                Type::parse_str(
+                                    f.ty.clone().into_token_stream().to_string().as_str(),
+                                    use_single,
+                                ),
+                                f.ident.as_ref().unwrap().to_string(),
+                            )
+                        })
+                        .collect();
+                    Some(Struct { name, fields })
+                }
+                _ => None,
+            },
             _ => None,
         })
         .collect())

@@ -70,11 +70,13 @@
 
 ## 振動子の位相/振幅データにアクセスするには?
 
-1. 自分で所望の`Gain`を作成する. [Gainの自作](../Users_Manual/advanced_examples/custom_gain.md)を参照.
+1. [`Cache`](../gain/cache.md)を利用する.
+1. 自分で所望の`Gain`を作成する. [Gainの自作](../advanced_examples/custom_gain.md)を参照.
 
 ## AM変調データにアクセスするには?
 
-1. 自分で所望の`Modulation`を作成する. [Modulationの自作](../Users_Manual/advanced_examples/custom_modulation.md)を参照.
+1. [`Cache`](../modulation/cache.md)を利用する.
+1. 自分で所望の`Modulation`を作成する. [Modulationの自作](../advanced_examples/custom_modulation.md)を参照.
 
 ## 超音波の出力が異常に弱い/周波数がおかしい
 

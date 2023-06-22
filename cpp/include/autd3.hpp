@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/06/2023
+// Last Modified: 22/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ namespace autd3 {
 
 constexpr double pi = internal::pi;
 
-static inline std::string version = "12.0.0";
+static inline std::string version = "12.1.0";
 
 using internal::Geometry;
 using internal::Transducer;
@@ -37,8 +37,8 @@ using internal::SilencerConfig;
 
 using internal::AUTD3;
 
-using gain::Drive;
 using gain::Gain;
+using internal::native_methods::Drive;
 using modulation::Modulation;
 
 using internal::Clear;

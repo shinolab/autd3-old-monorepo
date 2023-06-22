@@ -14,7 +14,9 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import numpy as np
 from typing import Optional, List, Callable
 from abc import ABCMeta, abstractmethod
+from ctypes import byref, c_void_p, c_uint64, POINTER, memmove, sizeof
 
+from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Geometry, Transducer
@@ -34,7 +36,7 @@ class Focus(IGain):
         self._amp = amp
         return self
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         ptr = Base().gain_focus(self._p[0], self._p[1], self._p[2])
         if self._amp is not None:
             ptr = Base().gain_focus_with_amp(ptr, self._amp)
@@ -58,7 +60,7 @@ class Bessel(IGain):
         self._amp = amp
         return self
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         ptr = Base().gain_bessel(
             self._p[0],
             self._p[1],
@@ -82,7 +84,7 @@ class Plane(IGain):
         self._d = dir
         self._amp = None
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         ptr = Base().gain_plane(self._d[0], self._d[1], self._d[2])
         if self._amp is not None:
             ptr = Base().gain_plane_with_amp(ptr, self._amp)
@@ -93,7 +95,7 @@ class Null(IGain):
     def __init__(self):
         super().__init__()
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         return Base().gain_null()
 
 
@@ -144,15 +146,6 @@ class TransTest(IGain):
         return ptr
 
 
-class Drive:
-    amp: float
-    phase: float
-
-    def __init__(self, amp: float, phase: float):
-        self.amp = amp
-        self.phase = phase
-
-
 class Gain(IGain, metaclass=ABCMeta):
     @abstractmethod
     def calc(self, geometry: Geometry) -> np.ndarray:
@@ -161,14 +154,13 @@ class Gain(IGain, metaclass=ABCMeta):
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
         drives = self.calc(geometry)
         size = len(drives)
-        phases = np.ctypeslib.as_ctypes(
-            np.fromiter(map(lambda d: d.phase, drives), float).astype(np.double)
-        )
-        amps = np.ctypeslib.as_ctypes(
-            np.fromiter(map(lambda d: d.amp, drives), float).astype(np.double)
-        )
-        return Base().gain_custom(amps, phases, size)
+        return Base().gain_custom(drives.ctypes.data_as(POINTER(Drive)), size)
 
     @staticmethod
     def transform(geometry: Geometry, f: Callable[[Transducer], Drive]) -> np.ndarray:
-        return np.fromiter(map(lambda tr: f(tr), geometry), Drive)
+        drives = np.zeros(geometry.num_transducers, dtype=Drive)
+        for i, tr in enumerate(geometry):
+            d = f(tr)
+            drives[i]["phase"] = d.phase
+            drives[i]["amp"] = d.amp
+        return drives

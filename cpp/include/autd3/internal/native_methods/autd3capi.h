@@ -14,6 +14,11 @@ struct FirmwareInfoListPtr {
   void* _0;
 };
 
+struct Drive {
+  double phase;
+  double amp;
+};
+
 extern "C" {
 
 [[nodiscard]] ControllerBuilderPtr AUTDCreateControllerBuilder();
@@ -144,16 +149,11 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
                                   double phase,
                                   double amp);
 
-[[nodiscard]] GainPtr AUTDGainCustom(const double *amp, const double *phase, uint64_t size);
+[[nodiscard]] GainPtr AUTDGainCustom(const Drive *ptr, uint64_t len);
 
 [[nodiscard]] DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
-[[nodiscard]]
-int32_t AUTDGainCalc(GainPtr gain,
-                     GeometryPtr geometry,
-                     double *amp,
-                     double *phase,
-                     char *err);
+[[nodiscard]] int32_t AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive *drives, char *err);
 
 [[nodiscard]] ModulationPtr AUTDModulationStatic();
 
@@ -207,8 +207,8 @@ ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
 
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,
-                                   const double *amp,
-                                   uint64_t size);
+                                   const double *ptr,
+                                   uint64_t len);
 
 [[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 
@@ -288,6 +288,12 @@ int32_t AUTDSendSpecial(ControllerPtr cnt,
 [[nodiscard]] LinkPtr AUTDLinkDebugWithLogFunc(LinkPtr debug, void* out_func, void* flush_func);
 
 [[nodiscard]] LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, uint64_t timeout_ns);
+
+[[nodiscard]] LinkPtr AUTDLinkLog(LinkPtr link);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, void* out_func, void* flush_func);
 
 } // extern "C"
 
