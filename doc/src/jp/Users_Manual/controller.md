@@ -142,7 +142,7 @@ autd.send(m, g, std::chrono::milliseconds(20));
 ```
 
 ```cs
-autd.Send(m, g, TimeSpan.FromMilliseconds(20));
+autd.Send((m, g), TimeSpan.FromMilliseconds(20));
 ```
 
 ```python
