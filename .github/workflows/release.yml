@@ -120,7 +120,7 @@ jobs:
           cd cpp
           ./build.ps1
           cd ..
-          Compress-Archive -Path LICENSE, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, cpp/bin, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
