@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram};
 
-#[derive(Default)]
 pub struct ConfigSilencer {
     sent: bool,
     step: u16,
