@@ -16,10 +16,6 @@ class SyncMode(IntEnum):
         return int(obj)
 
 
-class Callback(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
-
-
 class Singleton(type):
     _instances = {}  # type: ignore
     _lock = threading.Lock()

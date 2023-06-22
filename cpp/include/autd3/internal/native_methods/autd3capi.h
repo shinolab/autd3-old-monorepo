@@ -14,6 +14,11 @@ struct FirmwareInfoListPtr {
   void* _0;
 };
 
+struct Drive {
+  double phase;
+  double amp;
+};
+
 extern "C" {
 
 [[nodiscard]] ControllerBuilderPtr AUTDCreateControllerBuilder();
@@ -144,16 +149,13 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
                                   double phase,
                                   double amp);
 
-[[nodiscard]] GainPtr AUTDGainCustom(const double *amp, const double *phase, uint64_t size);
+void AUTDAllocDriveBuf(uint64_t size, void **ptr, uint64_t *len, uint64_t *cap);
+
+[[nodiscard]] GainPtr AUTDGainCustom(const void *ptr, uint64_t len, uint64_t cap);
 
 [[nodiscard]] DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
-[[nodiscard]]
-int32_t AUTDGainCalc(GainPtr gain,
-                     GeometryPtr geometry,
-                     double *amp,
-                     double *phase,
-                     char *err);
+[[nodiscard]] int32_t AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive *drives, char *err);
 
 [[nodiscard]] ModulationPtr AUTDModulationStatic();
 
@@ -205,10 +207,13 @@ ModulationPtr AUTDModulationSineLegacyWithSamplingFrequencyDivision(ModulationPt
 ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
                                                                 uint32_t div);
 
+void AUTDAllocModBuf(uint64_t size, void **ptr, uint64_t *len, uint64_t *cap);
+
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,
-                                   const double *amp,
-                                   uint64_t size);
+                                   const void *ptr,
+                                   uint64_t len,
+                                   uint64_t cap);
 
 [[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 

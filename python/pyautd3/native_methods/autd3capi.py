@@ -14,8 +14,8 @@ class FirmwareInfoListPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class Callback(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+class Drive(ctypes.Structure):
+    _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_double)]
 
 
 class Singleton(type):
@@ -176,13 +176,16 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
-        self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDAllocDriveBuf.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(ctypes.c_uint64)] 
+        self.dll.AUTDAllocDriveBuf.restype = None
+
+        self.dll.AUTDGainCustom.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64] 
         self.dll.AUTDGainCustom.restype = GainPtr
 
         self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
         self.dll.AUTDGainIntoDatagram.restype = DatagramBodyPtr
 
-        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(Drive), ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDGainCalc.restype = ctypes.c_int32
 
         self.dll.AUTDModulationStatic.argtypes = [] 
@@ -245,7 +248,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSquareWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDModulationSquareWithSamplingFrequencyDivision.restype = ModulationPtr
 
-        self.dll.AUTDModulationCustom.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDAllocModBuf.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(ctypes.c_uint64)] 
+        self.dll.AUTDAllocModBuf.restype = None
+
+        self.dll.AUTDModulationCustom.argtypes = [ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64] 
         self.dll.AUTDModulationCustom.restype = ModulationPtr
 
         self.dll.AUTDModulationSamplingFrequencyDivision.argtypes = [ModulationPtr]  # type: ignore 
@@ -491,14 +497,17 @@ class NativeMethods(metaclass=Singleton):
     def gain_transducer_test_set(self, trans_test: GainPtr, id: int, phase: float, amp: float) -> GainPtr:
         return self.dll.AUTDGainTransducerTestSet(trans_test, id, phase, amp)
 
-    def gain_custom(self, amp: Any, phase: Any, size: int) -> GainPtr:
-        return self.dll.AUTDGainCustom(amp, phase, size)
+    def alloc_drive_buf(self, size: int, ptr: Any, len: Any, cap: Any) -> None:
+        return self.dll.AUTDAllocDriveBuf(size, ptr, len, cap)
+
+    def gain_custom(self, ptr: ctypes.c_void_p, len: int, cap: int) -> GainPtr:
+        return self.dll.AUTDGainCustom(ptr, len, cap)
 
     def gain_into_datagram(self, gain: GainPtr) -> DatagramBodyPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, amp: Any, phase: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDGainCalc(gain, geometry, amp, phase, err)
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGainCalc(gain, geometry, drives, err)
 
     def modulation_static(self) -> ModulationPtr:
         return self.dll.AUTDModulationStatic()
@@ -560,8 +569,11 @@ class NativeMethods(metaclass=Singleton):
     def modulation_square_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSquareWithSamplingFrequencyDivision(m, div)
 
-    def modulation_custom(self, freq_div: int, amp: Any, size: int) -> ModulationPtr:
-        return self.dll.AUTDModulationCustom(freq_div, amp, size)
+    def alloc_mod_buf(self, size: int, ptr: Any, len: Any, cap: Any) -> None:
+        return self.dll.AUTDAllocModBuf(size, ptr, len, cap)
+
+    def modulation_custom(self, freq_div: int, ptr: ctypes.c_void_p, len: int, cap: int) -> ModulationPtr:
+        return self.dll.AUTDModulationCustom(freq_div, ptr, len, cap)
 
     def modulation_sampling_frequency_division(self, m: ModulationPtr) -> ctypes.c_uint32:
         return self.dll.AUTDModulationSamplingFrequencyDivision(m)

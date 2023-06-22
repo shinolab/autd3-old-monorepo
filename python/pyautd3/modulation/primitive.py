@@ -13,6 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
+from ctypes import byref, c_void_p, c_uint64, POINTER, memmove, sizeof, c_double
 from typing import Optional
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -228,6 +229,15 @@ class Modulation(IModulation, metaclass=ABCMeta):
     def modulation_ptr(self) -> ModulationPtr:
         data = self.calc()
         size = len(data)
+        ptr = c_void_p()
+        len_ = c_uint64()
+        cap = c_uint64()
+        Base().alloc_mod_buf(size, byref(ptr), byref(len_), byref(cap))
+        memmove(
+            ptr,
+            data.ctypes.data_as(POINTER(c_double)),
+            int(len_.value) * sizeof(c_double),
+        )
         return Base().modulation_custom(
-            self._freq_div, np.ctypeslib.as_ctypes(data.astype(np.double)), size
+            self._freq_div, ptr, int(len_.value), int(cap.value)
         )

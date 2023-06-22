@@ -19,11 +19,13 @@ open AUTD3Sharp.Modulation
 module CustomTest =
     type Focus (point: Vector3d) =
         inherit Gain()
-        let Calc_ (tr:Transducer) = 
+        let Calc_ (soundSpeed:double) (tr:Transducer) = 
+            let mutable drive = new Drive();
             let dist = (tr.Position - point).L2Norm;
-            let phase = dist * tr.Wavenumber;
-            new Drive(1., phase)
-        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, Calc_);
+            drive.Phase <- dist * tr.Wavenumber(soundSpeed);
+            drive.Amp <- 1.0;
+            drive
+        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, Calc_(geometry.SoundSpeed));
         
 
     let Test (autd : Controller) = 
