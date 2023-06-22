@@ -1,7 +1,12 @@
+# 12.1.1
+
+- Fix [#78](https://github.com/shinolab/autd3/issues/78)
+- Fix [#79](https://github.com/shinolab/autd3/issues/79)
+
 # 12.1.0
 
-- Fix [#76](https://github.com/shinolab/autd3/issues/75)
-- Fix [#77](https://github.com/shinolab/autd3/issues/75)
+- Fix [#76](https://github.com/shinolab/autd3/issues/76)
+- Fix [#77](https://github.com/shinolab/autd3/issues/77)
 
 # 12.0.0
 

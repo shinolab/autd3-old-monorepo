@@ -1,6 +1,6 @@
 [package]
 name = "autd3-firmware-emulator"
-version = "12.1.0"
+version = "12.1.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,6 +11,6 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path = "../autd3-core", version="12.1.0"}
+autd3-core = {path = "../autd3-core", version="12.1.1"}
 num-integer = "0.1.45"
 thiserror = "1.0.40"

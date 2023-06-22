@@ -43,13 +43,11 @@ autd.send(stm);
 var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 const int pointNum = 200;
 const double radius = 30.0;
-var stm = new GainSTM(1);
-for (var i = 0; i < pointNum; i++)
+var stm = new GainSTM(1.0).AddGainsFromIter(Enumerable.Range(0, pointNum).Select(i =>
 {
     var theta = 2.0 * Math.PI * i / pointNum;
-    var p = radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0);
-    stm.AddGain(new Focus(center + p));
-}
+    return new Focus(center + radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0));
+}));
 autd.Send(stm);
 ```
 
@@ -57,13 +55,16 @@ autd.Send(stm);
 from pyautd3.stm import GainSTM
 
 center = autd.geometry.center + np.array([0.0, 0.0, 150.0])
-size = 200
+point_num = 200
 radius = 30.0
-stm = GainSTM(1.0)
-for i in range(size):
-    theta = 2.0 * np.pi * i / size
-    p = radius * np.array([np.cos(theta), np.sin(theta), 0])
-    stm.add_gain(Focus(center + p))
+stm = GainSTM(1.0).add_gains_from_iter(
+    map(
+        lambda theta: Focus(
+            center + radius * np.array([np.cos(theta), np.sin(theta), 0])
+        ),
+        map(lambda i: 2.0 * np.pi * i / point_num, range(point_num)),
+    )
+)
 autd.send(stm)
 ```
 

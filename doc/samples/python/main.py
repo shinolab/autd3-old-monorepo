@@ -27,14 +27,13 @@ if __name__ == "__main__":
     autd.send(Synchronize())
 
     firm_info_list = autd.firmware_info_list()
-    for i, firm in enumerate(firm_info_list):
-        print(f"[{i}]: {firm}")
+    print("\n".join([f"[{i}]: {firm}" for i, firm in enumerate(firm_info_list)]))
 
     autd.send(SilencerConfig())
 
     g = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Sine(150)
-    autd.send(m, g)
+    autd.send((m, g))
 
     _ = input()
 

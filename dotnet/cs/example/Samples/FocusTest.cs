@@ -25,8 +25,8 @@ internal static class FocusTest
         var config = new SilencerConfig();
         autd.Send(config);
 
-        var mod = new Sine(150);
-        var gain = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
-        autd.Send(mod, gain);
+        var m = new Sine(150);
+        var g = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
+        autd.Send((m, g));
     }
 }

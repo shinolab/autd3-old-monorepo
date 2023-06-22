@@ -141,11 +141,11 @@ autd.send(m, g, std::chrono::milliseconds(20));
 ```
 
 ```cs
-autd.Send(m, g, TimeSpan.FromMilliseconds(20));
+autd.Send((m, g), TimeSpan.FromMilliseconds(20));
 ```
 
 ```python
-autd.send(m, g, timeout=timedelta(milliseconds=20))
+autd.send((m, g), timeout=timedelta(milliseconds=20))
 ```
 
 If the timeout time is greater than 0, the `send` function waits until the sent data is processed by the device or the specified timeout time elapses.
