@@ -118,14 +118,9 @@ packages = [
     "pyautd3.link",
     "pyautd3.stm",
     "pyautd3.extra",
-]
-for f in glob.glob("pyautd3/bin/*"):
-    f = f.replace("\\", ".").replace("/", ".")
-    packages.append(f)
-
-data_files = []
-for f in glob.glob("pyautd3/bin/**/*"):
-    data_files.append(f)
+].extend(
+    map(lambda x: x.replace("\\", ".").replace("/", "."), glob.glob("pyautd3/bin/*"))
+)
 
 setuptools.setup(
     name="pyautd3",
@@ -149,5 +144,4 @@ setuptools.setup(
     package_dir={"pyautd3": "pyautd3"},
     packages=packages,
     python_requires=">=3.8",
-    data_files=[("lib/site-packages", data_files)],
 )

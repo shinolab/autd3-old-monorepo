@@ -24,13 +24,14 @@ def stm_focus(autd: Controller):
 
     m = Static()
 
-    stm = FocusSTM(1.0)
     radius = 30.0
     size = 200
     center = autd.geometry.center + np.array([0.0, 0.0, 150.0])
-    for i in range(size):
-        theta = 2.0 * np.pi * i / size
-        p = radius * np.array([np.cos(theta), np.sin(theta), 0])
-        stm.add_focus(center + p)
+    stm = FocusSTM(1.0).add_foci_from_iter(
+        map(
+            lambda theta: center + radius * np.array([np.cos(theta), np.sin(theta), 0]),
+            map(lambda i: 2.0 * np.pi * i / size, range(size)),
+        )
+    )
 
     autd.send((m, stm))

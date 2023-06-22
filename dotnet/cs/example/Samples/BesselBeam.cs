@@ -26,11 +26,12 @@ internal static class BesselBeamTest
         var config = new SilencerConfig();
         autd.Send(config);
 
-        var mod = new Sine(150); // AM sin 150 Hz
+        var m = new Sine(150); // AM sin 150 Hz
 
         var start = autd.Geometry.Center;
         var dir = Vector3d.UnitZ;
-        var gain = new Bessel(start, dir, 13.0 / 180.0 * AUTD3.Pi); // BesselBeam from (x, y, 0), theta = 13 deg
-        autd.Send(gain, mod);
+        var g = new Bessel(start, dir, 13.0 / 180.0 * AUTD3.Pi); // BesselBeam from (x, y, 0), theta = 13 deg
+
+        autd.Send((m, g));
     }
 }
