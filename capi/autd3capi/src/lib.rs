@@ -492,31 +492,12 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDAllocDriveBuf(
-    size: u64,
-    ptr: *mut *mut c_void,
-    len: *mut u64,
-    cap: *mut u64,
-) {
-    let mut buf = vec![Drive { amp: 0., phase: 0. }; size as usize];
-    // let (ptr_, len_, cap_) = buf.into_raw_parts();
-    // *ptr = ptr_ as _;
-    // *len = len_ as _;
-    // *cap = cap_ as _;
-    *ptr = buf.as_mut_ptr() as _;
-    *len = buf.len() as _;
-    *cap = buf.capacity() as _;
-    std::mem::forget(buf);
-}
-
-#[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainCustom(ptr: *const c_void, len: u64, cap: u64) -> GainPtr {
-    let drives = Vec::from_raw_parts(
-        ptr as *mut c_void as *mut autd3_core::Drive,
-        len as _,
-        cap as _,
-    );
+#[allow(clippy::uninit_vec)]
+pub unsafe extern "C" fn AUTDGainCustom(ptr: *const Drive, len: u64) -> GainPtr {
+    let mut drives = Vec::<autd3_core::Drive>::with_capacity(len as _);
+    drives.set_len(len as _);
+    std::ptr::copy_nonoverlapping(ptr as *const _, drives.as_mut_ptr(), len as _);
     GainPtr::new(CustomGain { drives })
 }
 
@@ -706,32 +687,16 @@ pub unsafe extern "C" fn AUTDModulationSquareWithSamplingFrequencyDivision(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDAllocModBuf(
-    size: u64,
-    ptr: *mut *mut c_void,
-    len: *mut u64,
-    cap: *mut u64,
-) {
-    let mut buf = vec![0.; size as usize];
-    // let (ptr_, len_, cap_) = buf.into_raw_parts();
-    // *ptr = ptr_ as _;
-    // *len = len_ as _;
-    // *cap = cap_ as _;
-    *ptr = buf.as_mut_ptr() as _;
-    *len = buf.len() as _;
-    *cap = buf.capacity() as _;
-    std::mem::forget(buf);
-}
-
-#[no_mangle]
 #[must_use]
+#[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDModulationCustom(
     freq_div: u32,
-    ptr: *const c_void,
+    ptr: *const float,
     len: u64,
-    cap: u64,
 ) -> ModulationPtr {
-    let buf = Vec::from_raw_parts(ptr as *mut c_void as *mut _, len as _, cap as _);
+    let mut buf = Vec::<float>::with_capacity(len as _);
+    buf.set_len(len as _);
+    std::ptr::copy_nonoverlapping(ptr, buf.as_mut_ptr(), len as _);
     ModulationPtr::new(CustomModulation { freq_div, buf })
 }
 
@@ -1355,20 +1320,8 @@ mod tests {
             }
 
             {
-                let mut ptr: *mut c_void = std::ptr::null_mut();
-                let mut len: u64 = 0;
-                let mut cap: u64 = 0;
-                AUTDAllocDriveBuf(
-                    num_transducers as _,
-                    &mut ptr as _,
-                    &mut len as _,
-                    &mut cap as _,
-                );
-                let d_ptr = ptr as *mut Drive;
-                (0..num_transducers as _).for_each(|i| {
-                    d_ptr.add(i).write(Drive { amp: 1., phase: 0. });
-                });
-                let g = AUTDGainCustom(ptr, len, cap);
+                let drives = vec![Drive { amp: 1., phase: 0. }; num_transducers as _];
+                let g = AUTDGainCustom(drives.as_ptr(), drives.len() as _);
                 let g = AUTDGainIntoDatagram(g);
                 if AUTDSend(
                     cnt,
@@ -1503,20 +1456,8 @@ mod tests {
             }
 
             {
-                let mut ptr: *mut c_void = std::ptr::null_mut();
-                let mut len: u64 = 0;
-                let mut cap: u64 = 0;
-                AUTDAllocModBuf(
-                    num_transducers as _,
-                    &mut ptr as _,
-                    &mut len as _,
-                    &mut cap as _,
-                );
-                let d_ptr = ptr as *mut float;
-                (0..2).for_each(|i| {
-                    d_ptr.add(i).write(1.);
-                });
-                let m = AUTDModulationCustom(5000, ptr, len, cap);
+                let buf = vec![1., 1.];
+                let m = AUTDModulationCustom(5000, buf.as_ptr(), buf.len() as _);
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
                     cnt,

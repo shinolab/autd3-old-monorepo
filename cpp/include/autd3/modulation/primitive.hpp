@@ -205,12 +205,7 @@ class Modulation : public internal::Modulation {
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     const auto buffer = calc();
     const auto size = static_cast<uint64_t>(buffer.size());
-    void* ptr = nullptr;
-    uint64_t len = 0;
-    uint64_t cap = 0;
-    internal::native_methods::AUTDAllocModBuf(size, &ptr, &len, &cap);
-    std::memcpy(ptr, buffer.data(), static_cast<size_t>(len) * sizeof(double));
-    return internal::native_methods::AUTDModulationCustom(_freq_div, ptr, len, cap);
+    return internal::native_methods::AUTDModulationCustom(_freq_div, buffer.data(), size);
   }
 
  private:
@@ -231,13 +226,7 @@ class Cache : public internal::Modulation {
   }
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    const auto size = static_cast<uint64_t>(_buffer.size());
-    void* ptr = nullptr;
-    uint64_t len = 0;
-    uint64_t cap = 0;
-    internal::native_methods::AUTDAllocModBuf(size, &ptr, &len, &cap);
-    std::memcpy(ptr, _buffer.data(), static_cast<size_t>(len) * sizeof(double));
-    return internal::native_methods::AUTDModulationCustom(_freq_div, ptr, len, cap);
+    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), static_cast<uint64_t>(_buffer.size()));
   }
 
   [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }

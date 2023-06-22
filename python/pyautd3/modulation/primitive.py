@@ -229,15 +229,6 @@ class Modulation(IModulation, metaclass=ABCMeta):
     def modulation_ptr(self) -> ModulationPtr:
         data = self.calc()
         size = len(data)
-        ptr = c_void_p()
-        len_ = c_uint64()
-        cap = c_uint64()
-        Base().alloc_mod_buf(size, byref(ptr), byref(len_), byref(cap))
-        memmove(
-            ptr,
-            data.ctypes.data_as(POINTER(c_double)),
-            int(len_.value) * sizeof(c_double),
-        )
         return Base().modulation_custom(
-            self._freq_div, ptr, int(len_.value), int(cap.value)
+            self._freq_div, data.ctypes.data_as(c_void_p), size
         )
