@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    parse::{Arg, Const, Enum, Function, PtrTuple},
+    parse::{Arg, Const, Enum, Function, Struct},
     types::{InOut, Type},
 };
 
@@ -33,7 +33,7 @@ pub struct CSharpGenerator {
     functions: Vec<Function>,
     constants: Vec<Const>,
     enums: Vec<Enum>,
-    ptr_tuple: Vec<PtrTuple>,
+    structs: Vec<Struct>,
 }
 
 impl CSharpGenerator {
@@ -176,13 +176,31 @@ impl CSharpGenerator {
                 },
                 Type::Custom(ref s) => match arg.inout {
                     InOut::In => format!("{}[]?", s),
-                    InOut::Out => unimplemented!(),
+                    InOut::Out => format!("{}[]", s),
                     InOut::InOut => panic!("INOUT {} is not supported.", s),
                 },
                 _ => unimplemented!(),
             },
+            2 => match arg.ty {
+                Type::Custom(ref s) => match arg.inout {
+                    InOut::In => unimplemented!(),
+                    InOut::Out => format!("out {}[]", s),
+                    InOut::InOut => unimplemented!(),
+                },
+                Type::Float32 => match arg.inout {
+                    InOut::In => unimplemented!(),
+                    InOut::Out => "out float[]".to_owned(),
+                    InOut::InOut => unimplemented!(),
+                },
+                Type::Float64 => match arg.inout {
+                    InOut::In => unimplemented!(),
+                    InOut::Out => "out double[]".to_owned(),
+                    InOut::InOut => unimplemented!(),
+                },
+                _ => unimplemented!(),
+            },
             _ => {
-                panic!("double or more pointer is not supported")
+                panic!("triple or more pointer is not supported")
             }
         }
     }
@@ -208,8 +226,8 @@ impl Generator for CSharpGenerator {
         self
     }
 
-    fn register_ptr_tuple(mut self, e: Vec<PtrTuple>) -> Self {
-        self.ptr_tuple = e;
+    fn register_struct(mut self, e: Vec<Struct>) -> Self {
+        self.structs = e;
         self
     }
 
@@ -218,7 +236,7 @@ impl Generator for CSharpGenerator {
             functions: Vec::new(),
             constants: Vec::new(),
             enums: Vec::new(),
-            ptr_tuple: Vec::new(),
+            structs: Vec::new(),
         }
     }
 
@@ -328,9 +346,9 @@ namespace AUTD3Sharp
             })
             .try_collect()?;
 
-        self.ptr_tuple
+        self.structs
             .iter()
-            .filter(|e| e.name.ends_with("Ptr"))
+            .filter(|s| s.name.ends_with("Ptr"))
             .map(|e| {
                 write!(
                     w,
@@ -347,6 +365,40 @@ namespace AUTD3Sharp
                 )?;
 
                 writeln!(w, r"        public IntPtr _0;")?;
+
+                writeln!(w, r"    }}",)
+            })
+            .try_collect()?;
+
+        self.structs
+            .iter()
+            .filter(|s| !s.name.ends_with("Ptr"))
+            .map(|s| {
+                write!(
+                    w,
+                    r"
+    [StructLayout(LayoutKind.Sequential)]
+    public struct {}",
+                    s.name,
+                )?;
+
+                writeln!(
+                    w,
+                    r"
+    {{",
+                )?;
+
+                s.fields
+                    .iter()
+                    .map(|(ty, name)| {
+                        writeln!(
+                            w,
+                            r"        public {} {};",
+                            Self::to_return_ty(ty),
+                            Self::to_pascal(name)
+                        )
+                    })
+                    .try_collect()?;
 
                 writeln!(w, r"    }}",)
             })

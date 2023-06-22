@@ -1,6 +1,7 @@
 # Gainの自作
 
-`Gain`クラスを継承することで独自の`Gain`を作成することができる.
+ライブラリでは自前の`Gain`を作成することができる.
+
 ここでは, `Focus`と同じように単一焦点を生成する`FocalPoint`を実際に定義してみることにする.
 
 ```rust
@@ -79,7 +80,7 @@ public class FocalPoint : Gain
             var tp = tr.Position;
             var dist = (tp - _point).L2Norm;
             var phase = dist * tr.Wavenumber(soundSpeed);
-            return new Drive(1.0, phase);
+            return new Drive{Phase = phase, Amp= 1.0};
         });
     }
 }
@@ -97,8 +98,8 @@ class FocalPoint(Gain):
         return Gain.transform(
             geometry,
             lambda tr: Drive(
-                1.0,
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
+                1.0,
             ),
         )
 ```

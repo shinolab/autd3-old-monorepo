@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,22 +16,32 @@
 mod custom;
 
 use autd3_core::stm::STMProps;
+use autd3capi_def::{
+    common::{
+        autd3::link::{log::LogImpl, Log},
+        *,
+    },
+    take_gain, take_link, take_mod, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr,
+    DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr,
+    STMPropsPtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+};
+use custom::{CustomGain, CustomModulation};
 use std::{
     ffi::c_char,
     sync::{Arc, Mutex},
     time::Duration,
 };
 
-use autd3capi_def::{
-    common::*, take_gain, take_link, take_mod, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr,
-    DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr,
-    STMPropsPtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
-};
-use custom::{CustomGain, CustomModulation};
-
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct ControllerBuilderPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct Drive {
+    pub phase: float,
+    pub amp: float,
+}
 
 #[no_mangle]
 #[must_use]
@@ -483,12 +493,12 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainCustom(
-    amp: *const float,
-    phase: *const float,
-    size: u64,
-) -> GainPtr {
-    GainPtr::new(CustomGain::new(amp, phase, size))
+#[allow(clippy::uninit_vec)]
+pub unsafe extern "C" fn AUTDGainCustom(ptr: *const Drive, len: u64) -> GainPtr {
+    let mut drives = Vec::<autd3_core::Drive>::with_capacity(len as _);
+    drives.set_len(len as _);
+    std::ptr::copy_nonoverlapping(ptr as *const _, drives.as_mut_ptr(), len as _);
+    GainPtr::new(CustomGain { drives })
 }
 
 #[no_mangle]
@@ -502,8 +512,7 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramBodyPtr 
 pub unsafe extern "C" fn AUTDGainCalc(
     gain: GainPtr,
     geometry: GeometryPtr,
-    amp: *mut float,
-    phase: *mut float,
+    drives: *mut Drive,
     err: *mut c_char,
 ) -> i32 {
     let res = try_or_return!(
@@ -511,16 +520,7 @@ pub unsafe extern "C" fn AUTDGainCalc(
         err,
         AUTD3_ERR
     );
-
-    let mut amp_ptr = amp;
-    let mut phase_ptr = phase;
-    (0..res.len()).for_each(|i| {
-        *amp_ptr = res[i].amp;
-        amp_ptr = amp_ptr.add(1);
-        *phase_ptr = res[i].phase;
-        phase_ptr = phase_ptr.add(1);
-    });
-
+    std::ptr::copy_nonoverlapping(res.as_ptr(), drives as _, res.len());
     AUTD3_TRUE
 }
 
@@ -688,12 +688,16 @@ pub unsafe extern "C" fn AUTDModulationSquareWithSamplingFrequencyDivision(
 
 #[no_mangle]
 #[must_use]
+#[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDModulationCustom(
     freq_div: u32,
-    amp: *const float,
-    size: u64,
+    ptr: *const float,
+    len: u64,
 ) -> ModulationPtr {
-    ModulationPtr::new(CustomModulation::new(freq_div, amp, size))
+    let mut buf = Vec::<float>::with_capacity(len as _);
+    buf.set_len(len as _);
+    std::ptr::copy_nonoverlapping(ptr, buf.as_mut_ptr(), len as _);
+    ModulationPtr::new(CustomModulation { freq_div, buf })
 }
 
 #[no_mangle]
@@ -995,8 +999,8 @@ pub unsafe extern "C" fn AUTDLinkDebugWithLogLevel(debug: LinkPtr, level: Level)
     LinkPtr::new(take_link!(debug, Debug).with_log_level(level.into()))
 }
 
-struct Callback(ConstPtr);
-unsafe impl Send for Callback {}
+struct CallbackPtr(ConstPtr);
+unsafe impl Send for CallbackPtr {}
 
 #[no_mangle]
 #[must_use]
@@ -1009,7 +1013,7 @@ pub unsafe extern "C" fn AUTDLinkDebugWithLogFunc(
         return debug;
     }
 
-    let out_f = Arc::new(Mutex::new(Callback(out_func)));
+    let out_f = Arc::new(Mutex::new(CallbackPtr(out_func)));
     let out_func = move |msg: &str| -> spdlog::Result<()> {
         let msg = std::ffi::CString::new(msg).unwrap();
         let out_f =
@@ -1017,7 +1021,7 @@ pub unsafe extern "C" fn AUTDLinkDebugWithLogFunc(
         out_f(msg.as_ptr());
         Ok(())
     };
-    let flush_f = Arc::new(Mutex::new(Callback(flush_func)));
+    let flush_f = Arc::new(Mutex::new(CallbackPtr(flush_func)));
     let flush_func = move || -> spdlog::Result<()> {
         let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
         flush_f();
@@ -1035,6 +1039,51 @@ pub unsafe extern "C" fn AUTDLinkDebugWithTimeout(debug: LinkPtr, timeout_ns: u6
     LinkPtr::new(take_link!(debug, Debug).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkLog(link: LinkPtr) -> LinkPtr {
+    let link: Box<Box<L>> = Box::from_raw(link.0 as *mut Box<L>);
+    LinkPtr::new(link.with_log())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkLogWithLogLevel(log: LinkPtr, level: Level) -> LinkPtr {
+    LinkPtr::new(take_link!(log, LogImpl<DynamicTransducer, Box<L>>).with_log_level(level.into()))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkLogWithLogFunc(
+    log: LinkPtr,
+    out_func: ConstPtr,
+    flush_func: ConstPtr,
+) -> LinkPtr {
+    if out_func.is_null() || flush_func.is_null() {
+        return log;
+    }
+
+    let out_f = Arc::new(Mutex::new(CallbackPtr(out_func)));
+    let out_func = move |msg: &str| -> spdlog::Result<()> {
+        let msg = std::ffi::CString::new(msg).unwrap();
+        let out_f =
+            std::mem::transmute::<_, unsafe extern "C" fn(*const c_char)>(out_f.lock().unwrap().0);
+        out_f(msg.as_ptr());
+        Ok(())
+    };
+    let flush_f = Arc::new(Mutex::new(CallbackPtr(flush_func)));
+    let flush_func = move || -> spdlog::Result<()> {
+        let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
+        flush_f();
+        Ok(())
+    };
+
+    LinkPtr::new(
+        take_link!(log, LogImpl<DynamicTransducer, Box<L>>)
+            .with_logger(get_logger_with_custom_func(out_func, flush_func)),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use autd3capi_def::DatagramHeaderPtr;
@@ -1047,6 +1096,22 @@ mod tests {
         let debug = AUTDLinkDebug();
         let debug = AUTDLinkDebugWithLogLevel(debug, Level::Off);
         AUTDLinkDebugWithTimeout(debug, 0)
+    }
+
+    #[test]
+    fn drive_test() {
+        assert_eq!(
+            std::mem::size_of::<autd3_core::Drive>(),
+            std::mem::size_of::<Drive>()
+        );
+        assert_eq!(
+            memoffset::offset_of!(autd3_core::Drive, phase),
+            memoffset::offset_of!(Drive, phase)
+        );
+        assert_eq!(
+            memoffset::offset_of!(autd3_core::Drive, amp),
+            memoffset::offset_of!(Drive, amp)
+        );
     }
 
     #[test]
@@ -1255,9 +1320,8 @@ mod tests {
             }
 
             {
-                let amp = vec![1.0; num_transducers as _];
-                let phase = vec![0.0; num_transducers as _];
-                let g = AUTDGainCustom(amp.as_ptr(), phase.as_ptr(), num_transducers as _);
+                let drives = vec![Drive { amp: 1., phase: 0. }; num_transducers as _];
+                let g = AUTDGainCustom(drives.as_ptr(), drives.len() as _);
                 let g = AUTDGainIntoDatagram(g);
                 if AUTDSend(
                     cnt,
@@ -1392,8 +1456,8 @@ mod tests {
             }
 
             {
-                let amp = vec![1.0; 10];
-                let m = AUTDModulationCustom(5000, amp.as_ptr(), amp.len() as _);
+                let buf = vec![1., 1.];
+                let m = AUTDModulationCustom(5000, buf.as_ptr(), buf.len() as _);
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
                     cnt,

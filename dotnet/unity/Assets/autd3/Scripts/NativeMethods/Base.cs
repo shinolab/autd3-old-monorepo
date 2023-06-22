@@ -106,11 +106,11 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainTransducerTestSet(GainPtr transTest, uint id, float phase, float amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainCustom(float[]? amp, float[]? phase, ulong size);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainCustom(Drive[]? ptr, ulong len);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, GeometryPtr geometry, out float amp, out float phase, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive[] drives, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStatic();
 
@@ -152,7 +152,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m, uint div);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCustom(uint freqDiv, float[]? amp, ulong size);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCustom(uint freqDiv, float[]? ptr, ulong len);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 
@@ -217,6 +217,12 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkDebugWithLogFunc(LinkPtr debug, IntPtr outFunc, IntPtr flushFunc);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, ulong timeoutNs);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkLog(LinkPtr link);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, IntPtr outFunc, IntPtr flushFunc);
         }
     }
 
@@ -230,6 +236,13 @@ namespace AUTD3Sharp
     public struct FirmwareInfoListPtr
     {
         public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Drive
+    {
+        public float Phase;
+        public float Amp;
     }
 
 }

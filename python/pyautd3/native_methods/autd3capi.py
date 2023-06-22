@@ -14,8 +14,8 @@ class FirmwareInfoListPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class Callback(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+class Drive(ctypes.Structure):
+    _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_double)]
 
 
 class Singleton(type):
@@ -176,13 +176,13 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
-        self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(Drive), ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDGainCustom.restype = GainPtr
 
         self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
         self.dll.AUTDGainIntoDatagram.restype = DatagramBodyPtr
 
-        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(Drive), ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDGainCalc.restype = ctypes.c_int32
 
         self.dll.AUTDModulationStatic.argtypes = [] 
@@ -344,6 +344,15 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkDebugWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDLinkDebugWithTimeout.restype = LinkPtr
 
+        self.dll.AUTDLinkLog.argtypes = [LinkPtr]  # type: ignore 
+        self.dll.AUTDLinkLog.restype = LinkPtr
+
+        self.dll.AUTDLinkLogWithLogLevel.argtypes = [LinkPtr, Level]  # type: ignore 
+        self.dll.AUTDLinkLogWithLogLevel.restype = LinkPtr
+
+        self.dll.AUTDLinkLogWithLogFunc.argtypes = [LinkPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDLinkLogWithLogFunc.restype = LinkPtr
+
     def create_controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDCreateControllerBuilder()
 
@@ -482,14 +491,14 @@ class NativeMethods(metaclass=Singleton):
     def gain_transducer_test_set(self, trans_test: GainPtr, id: int, phase: float, amp: float) -> GainPtr:
         return self.dll.AUTDGainTransducerTestSet(trans_test, id, phase, amp)
 
-    def gain_custom(self, amp: Any, phase: Any, size: int) -> GainPtr:
-        return self.dll.AUTDGainCustom(amp, phase, size)
+    def gain_custom(self, ptr: Any, len: int) -> GainPtr:
+        return self.dll.AUTDGainCustom(ptr, len)
 
     def gain_into_datagram(self, gain: GainPtr) -> DatagramBodyPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, amp: Any, phase: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDGainCalc(gain, geometry, amp, phase, err)
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGainCalc(gain, geometry, drives, err)
 
     def modulation_static(self) -> ModulationPtr:
         return self.dll.AUTDModulationStatic()
@@ -551,8 +560,8 @@ class NativeMethods(metaclass=Singleton):
     def modulation_square_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSquareWithSamplingFrequencyDivision(m, div)
 
-    def modulation_custom(self, freq_div: int, amp: Any, size: int) -> ModulationPtr:
-        return self.dll.AUTDModulationCustom(freq_div, amp, size)
+    def modulation_custom(self, freq_div: int, ptr: Any, len: int) -> ModulationPtr:
+        return self.dll.AUTDModulationCustom(freq_div, ptr, len)
 
     def modulation_sampling_frequency_division(self, m: ModulationPtr) -> ctypes.c_uint32:
         return self.dll.AUTDModulationSamplingFrequencyDivision(m)
@@ -649,3 +658,12 @@ class NativeMethods(metaclass=Singleton):
 
     def link_debug_with_timeout(self, debug: LinkPtr, timeout_ns: int) -> LinkPtr:
         return self.dll.AUTDLinkDebugWithTimeout(debug, timeout_ns)
+
+    def link_log(self, link: LinkPtr) -> LinkPtr:
+        return self.dll.AUTDLinkLog(link)
+
+    def link_log_with_log_level(self, log: LinkPtr, level: Level) -> LinkPtr:
+        return self.dll.AUTDLinkLogWithLogLevel(log, level)
+
+    def link_log_with_log_func(self, log: LinkPtr, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> LinkPtr:
+        return self.dll.AUTDLinkLogWithLogFunc(log, out_func, flush_func)

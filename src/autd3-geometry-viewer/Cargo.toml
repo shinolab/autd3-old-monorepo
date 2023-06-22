@@ -1,6 +1,6 @@
 [package]
 name = "autd3-geometry-viewer"
-version = "12.0.0"
+version = "12.1.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ readme = "../README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="12.0.0"}
-autd3-model = {path="../autd3-model", version="12.0.0"}
+autd3-core = {path="../autd3-core", version="12.1.0"}
+autd3-model = {path="../autd3-model", version="12.1.0"}
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"

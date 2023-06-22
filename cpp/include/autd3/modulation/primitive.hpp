@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/06/2023
+// Last Modified: 22/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -226,8 +226,7 @@ class Cache : public internal::Modulation {
   }
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    const auto size = static_cast<uint64_t>(_buffer.size());
-    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), size);
+    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), static_cast<uint64_t>(_buffer.size()));
   }
 
   [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }
