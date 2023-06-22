@@ -52,7 +52,7 @@ from datetime import timedelta
 
 ### Log
 
-`with_log`でログを有効にした`Link`を生成できる.
+`Log`リンクを使用すると, ログを有効にした`Link`を生成できる.
 
 ```rust,should_panic
 # use autd3::prelude::*;
@@ -68,4 +68,11 @@ SOEM::new().with_log()
 # )?;
 # Ok(())
 # }
+```
+
+```cpp
+#include "autd3/link/log.hpp"
+
+// linkは何らかのLink
+autd3::link::Log(link)
 ```

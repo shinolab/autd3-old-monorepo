@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -122,8 +122,8 @@ pub unsafe extern "C" fn AUTDLinkSOEMStateCheckInterval(
     )
 }
 
-struct Callback(ConstPtr);
-unsafe impl Send for Callback {}
+struct SOEMCallbackPtr(ConstPtr);
+unsafe impl Send for SOEMCallbackPtr {}
 
 #[no_mangle]
 #[must_use]
@@ -132,7 +132,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMOnLost(soem: LinkPtr, on_lost_func: ConstPt
         return soem;
     }
 
-    let out_f = Arc::new(Mutex::new(Callback(on_lost_func)));
+    let out_f = Arc::new(Mutex::new(SOEMCallbackPtr(on_lost_func)));
     let out_func = move |msg: &str| {
         let msg = std::ffi::CString::new(msg).unwrap();
         let out_f =
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
         return soem;
     }
 
-    let out_f = Arc::new(Mutex::new(Callback(out_func)));
+    let out_f = Arc::new(Mutex::new(SOEMCallbackPtr(out_func)));
     let out_func = move |msg: &str| -> spdlog::Result<()> {
         let msg = std::ffi::CString::new(msg).unwrap();
         let out_f =
@@ -167,7 +167,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
         out_f(msg.as_ptr());
         Ok(())
     };
-    let flush_f = Arc::new(Mutex::new(Callback(flush_func)));
+    let flush_f = Arc::new(Mutex::new(SOEMCallbackPtr(flush_func)));
     let flush_func = move || -> spdlog::Result<()> {
         let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
         flush_f();
