@@ -394,8 +394,8 @@ namespace AUTD3Sharp
                         writeln!(
                             w,
                             r"        public {} {};",
-                            Self::to_return_ty(&ty),
-                            Self::to_pascal(&name)
+                            Self::to_return_ty(ty),
+                            Self::to_pascal(name)
                         )
                     })
                     .try_collect()?;

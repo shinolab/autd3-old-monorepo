@@ -340,7 +340,7 @@ class {}(ctypes.Structure):",
 ",
                     p.fields
                         .iter()
-                        .map(|(ty, name)| format!("(\"{}\", {})", name, Self::to_return_ty(&ty)))
+                        .map(|(ty, name)| format!("(\"{}\", {})", name, Self::to_return_ty(ty)))
                         .join(", ")
                 )
             })
