@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 22/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -640,26 +640,19 @@ namespace AUTD3Sharp
             }
         }
 
-        public struct Drive
-        {
-            public float_t Phase;
-            public float_t Amp;
-
-            public Drive(float_t amp, float_t phase)
-            {
-                Amp = amp;
-                Phase = phase;
-            }
-        }
-
         public abstract class Gain : GainBase
         {
             sealed public override GainPtr GainPtr(Geometry geometry)
             {
                 var drives = Calc(geometry);
-                var amps = drives.Select(d => d.Amp).ToArray();
-                var phases = drives.Select(d => d.Phase).ToArray();
-                return Base.AUTDGainCustom(amps, phases, (ulong)amps.Length);
+                Base.AUTDAllocDriveBuf((ulong)drives.Length, out var ptr, out var len, out var cap);
+                unsafe
+                {
+                    var srcSpan = new Span<Drive>(drives);
+                    var dstSpan = new Span<Drive>(ptr.ToPointer(), (int)len);
+                    srcSpan.CopyTo(dstSpan);
+                }
+                return Base.AUTDGainCustom(ptr, len, cap);
             }
 
             public abstract Drive[] Calc(Geometry geometry);
@@ -941,7 +934,14 @@ namespace AUTD3Sharp
             sealed public override ModulationPtr ModulationPtr()
             {
                 var data = Calc();
-                return Base.AUTDModulationCustom(_freqDiv, data, (ulong)data.Length);
+                Base.AUTDAllocModBuf((ulong)data.Length, out var ptr, out var len, out var cap);
+                unsafe
+                {
+                    var srcSpan = new Span<float_t>(data);
+                    var dstSpan = new Span<float_t>(ptr.ToPointer(), (int)len);
+                    srcSpan.CopyTo(dstSpan);
+                }
+                return Base.AUTDModulationCustom(_freqDiv, ptr, len, cap);
             }
 
             public abstract float_t[] Calc();
