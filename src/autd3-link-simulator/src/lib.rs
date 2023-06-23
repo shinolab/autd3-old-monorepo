@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 24/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,8 +12,8 @@
  */
 
 use std::{
-    io::{self, Read, Write},
-    net::{Ipv4Addr, Shutdown, SocketAddr, SocketAddrV4, TcpStream, ToSocketAddrs},
+    io::{Read, Write},
+    net::{Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6, TcpStream},
     time::Duration,
 };
 
@@ -25,8 +25,14 @@ use autd3_core::{
     RxDatagram, TxDatagram,
 };
 
+enum Either {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
+
 pub struct Simulator {
-    server_addr: Vec<SocketAddr>,
+    addr: Either,
+    port: u16,
     socket: Option<TcpStream>,
     tx_buf: Vec<u8>,
     rx_buf: Vec<u8>,
@@ -36,7 +42,8 @@ pub struct Simulator {
 impl Simulator {
     pub fn new(port: u16) -> Self {
         Self {
-            server_addr: vec![SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, port))],
+            addr: Either::V4(Ipv4Addr::LOCALHOST),
+            port,
             socket: None,
             tx_buf: Vec::new(),
             rx_buf: Vec::new(),
@@ -44,11 +51,22 @@ impl Simulator {
         }
     }
 
-    pub fn with_server_ip<A: ToSocketAddrs>(self, server_addr: A) -> io::Result<Self> {
-        Ok(Self {
-            server_addr: server_addr.to_socket_addrs()?.collect(),
+    pub fn with_server_ip(self, ipv4: Ipv4Addr) -> Self {
+        self.with_server_ipv4(ipv4)
+    }
+
+    pub fn with_server_ipv4(self, ipv4: Ipv4Addr) -> Self {
+        Self {
+            addr: Either::V4(ipv4),
             ..self
-        })
+        }
+    }
+
+    pub fn with_server_ipv6(self, ipv6: Ipv6Addr) -> Self {
+        Self {
+            addr: Either::V6(ipv6),
+            ..self
+        }
     }
 
     pub fn with_timeout(self, timeout: Duration) -> Self {
@@ -58,12 +76,17 @@ impl Simulator {
 
 impl<T: Transducer> Link<T> for Simulator {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        self.socket = Some(match TcpStream::connect(&self.server_addr[..]) {
+        let sockect_addr = match self.addr {
+            Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
+            Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
+        };
+
+        self.socket = Some(match TcpStream::connect(&sockect_addr) {
             Ok(s) => s,
             Err(e) => {
                 return Err(AUTDInternalError::LinkError(format!(
                     "Failed to connect to {:?}: {}",
-                    self.server_addr, e
+                    sockect_addr, e
                 )))
             }
         });
