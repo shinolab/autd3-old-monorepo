@@ -1,6 +1,6 @@
 [package]
 name = "SOEMAUTDServer"
-version = "12.1.1"
+version = "12.2.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -12,8 +12,8 @@ keywords = ["autd"]
 
 [dependencies]
 clap = { version = "4.3.0", features = ["derive"] }
-autd3-link-soem = {path="../../src/autd3-link-soem", version="12.1.1"}
-autd3-core = {path="../../src/autd3-core", version="12.1.1"}
+autd3-link-soem = {path="../../src/autd3-link-soem", version="12.2.0"}
+autd3-core = {path="../../src/autd3-core", version="12.2.0"}
 anyhow = "1.0.71"
 ctrlc = "3.3.0"
 spdlog-rs = "0.3.8"

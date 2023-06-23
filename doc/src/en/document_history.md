@@ -37,3 +37,4 @@
 | 2023/06/12 | Version 11.1.0 Initial release                |
 | 2023/06/22 | Version 12.1.0 Initial release                |
 | 2023/06/23 | Version 12.1.1 Initial release                |
+| 2023/06/24 | Version 12.2.0 Initial release                |
