@@ -35,10 +35,22 @@ constexpr auto radius = 30.0;
 autd3::GainSTM stm(1);
 for (size_t i = 0; i < points_num; i++) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    stm.add_gain(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0)));
+    stm = stm.add_gain(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0)));
 }
 autd.send(stm);
 ```
+
+- C++20以降の場合は以下のようにもかける
+    ```cpp
+    #include <ranges>
+    using namespace std::ranges::views;
+
+    auto stm = autd3::GainSTM(1).add_gains_from_iter(iota(0) | take(points_num) | transform([&](auto i) {
+                                                        const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+                                                        return autd3::gain::Focus(center +
+                                                                                autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+                                                    }));
+    ```
 
 ```cs
 var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
