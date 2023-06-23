@@ -1,3 +1,7 @@
+# 12.2.0
+
+- Add `send_async`
+
 # 12.1.1
 
 - Fix [#78](https://github.com/shinolab/autd3/issues/78)

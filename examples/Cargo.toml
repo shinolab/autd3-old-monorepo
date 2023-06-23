@@ -10,6 +10,11 @@ name = "debug"
 path = "src/debug.rs"
 
 [[bin]]
+name = "async"
+path = "src/async.rs"
+required-features = ["async"]
+
+[[bin]]
 name = "soem"
 path = "src/soem.rs"
 required-features = ["soem"]
@@ -66,9 +71,11 @@ autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version
 autd3-link-monitor = {path="../src/autd3-link-monitor", optional = true, version="12.1.1"}
 autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="12.1.1"}
 colored = "2.0.0"
+tokio = { version = "1.28.2", features = ["full"], optional = true}
 
 [features] 
 default = []
+async = ["tokio"]
 simulator_client = ["autd3-link-simulator"]
 simulator_server = ["autd3-simulator"]
 soem = ["autd3-link-soem/local"]
@@ -77,7 +84,7 @@ twincat = ["autd3-link-twincat/local"]
 remote_twincat = ["autd3-link-twincat/remote"]
 monitor = ["autd3-link-monitor"]
 geometry_viewer = ["autd3-geometry-viewer"]
-all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer"]
+all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async"]
 
 single_float = ["autd3/single_float"]
 use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
