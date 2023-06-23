@@ -43,6 +43,8 @@ target_compile_definitions(autd3 INTERFACE EIGEN_MPL2_ONLY)
 #target_link_libraries(autd3 PUBLIC Eigen3::Eigen)
 #target_compile_definitions(autd3 PUBLIC EIGEN_MPL2_ONLY)
 
+set(AUTD3_BIN_DIR ${PROJECT_SOURCE_DIR}/bin CACHE INTERNAL "")
+
 include(CheckCXXCompilerFlag)
 function(enable_cxx_compiler_flag_if_supported target scope flag)
   check_cxx_compiler_flag("${flag}" flag_supported)
@@ -50,6 +52,19 @@ function(enable_cxx_compiler_flag_if_supported target scope flag)
     target_compile_options(${target} ${scope} ${flag})
     endif()
   unset(flag_supported CACHE)
+endfunction()
+
+function(autd3_target_link_library target scope)
+  target_link_libraries(${target} ${scope} autd3::autd3)
+  if(WIN32)
+    file(GLOB AUTD3_DLLS ${AUTD3_BIN_DIR}/*.dll)
+    foreach(autd3_dll IN LISTS AUTD3_DLLS)
+      add_custom_command(TARGET ${target} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${autd3_dll} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+        DEPENDS ${autd3_dll})
+    endforeach()
+    unset(AUTD3_DLLS CACHE)
+  endif()
 endfunction()
 
 enable_cxx_compiler_flag_if_supported(autd3 INTERFACE /wd4819)
