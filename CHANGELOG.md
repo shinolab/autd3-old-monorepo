@@ -1,6 +1,8 @@
 # 12.2.0
 
 - Add `send_async`
+- Add `software_stm`
+- Fix [#80](https://github.com/shinolab/autd3/issues/80)
 
 # 12.1.1
 
