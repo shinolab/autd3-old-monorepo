@@ -27,19 +27,39 @@ version: 12.1.1
     endif()
     FetchContent_MakeAvailable(autd3)
 
-    target_link_libraries(<target> <PRIVATE|PUBLIC|INTERFACE> autd3)
+    autd3_target_link_library(<target> <PRIVATE|PUBLIC|INTERFACE>)
     ```
+
+    - Or, you can add `autd3::autd3` library by `target_link_libraries`. In this case, however, Windows user must copy dlls to a location in the PATH or the executable's folder to find dlls.
 
 ## Build example
 
-```
-git clone https://github.com/shinolab/autd3.git
-cd autd3/cpp/examples
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-```
+- Windows
+
+    ```
+    git clone https://github.com/shinolab/autd3.git
+    cd autd3/cpp
+    pwsh build.ps1
+    cd examples
+    mkdir build
+    cd build
+    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake --build . --config Release
+    ```
+
+- Linux/macOS
+
+    ```
+    git clone https://github.com/shinolab/autd3.git
+    cd autd3/cpp
+    chmod +x ./build.sh
+    ./build.sh
+    cd examples
+    mkdir build
+    cd build
+    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake --build . --config Release
+    ```
 
 ## LICENSE
 

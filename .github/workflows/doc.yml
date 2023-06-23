@@ -19,8 +19,11 @@ jobs:
         dotnet build ./doc/samples/cs/cs.csproj -c:Release
 
   check-cpp:
-    name: build cpp
-    runs-on: ubuntu-latest
+    name: build cpp on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps: 
     - uses: actions/checkout@v3
     - name: build
@@ -29,7 +32,7 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        cmake --build . --parallel $(nproc)
+        cmake --build .
 
   check-python:
     name: build python

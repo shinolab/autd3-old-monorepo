@@ -32,7 +32,7 @@ FetchContent_MakeAvailable(autd3)
 
 add_executable(main main.cpp)
 
-target_link_libraries(main autd3)
+autd3_target_link_library(main PRIVATE)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
