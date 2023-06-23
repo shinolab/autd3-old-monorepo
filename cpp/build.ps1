@@ -28,7 +28,7 @@ If($debug){
 cd ..
 mkdir cpp/lib > NUL 2>&1
 mkdir cpp/bin > NUL 2>&1
-foreach($dll in Get-ChildItem -Path capi/target/$target_dir | Where {$_.FullName -match "^(?!.*\.dll).*\.lib$"}){
+foreach($dll in Get-ChildItem -Path capi/target/$target_dir | Where {$_.FullName -match ".*dll\.lib$"}){
     Copy-Item -Path $dll -Destination cpp/lib
 }
 foreach($dll in Get-ChildItem -Path capi/target/$target_dir | Where {$_.FullName -match ".*\.dll$"}){

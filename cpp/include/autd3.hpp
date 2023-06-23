@@ -47,6 +47,7 @@ using internal::Stop;
 using internal::Synchronize;
 using internal::UpdateFlags;
 
+using internal::ControlPoint;
 using internal::FocusSTM;
 using internal::GainSTM;
 
