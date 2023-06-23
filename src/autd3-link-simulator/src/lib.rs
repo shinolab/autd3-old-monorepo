@@ -81,7 +81,7 @@ impl<T: Transducer> Link<T> for Simulator {
             Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
         };
 
-        self.socket = Some(match TcpStream::connect(&sockect_addr) {
+        self.socket = Some(match TcpStream::connect(sockect_addr) {
             Ok(s) => s,
             Err(e) => {
                 return Err(AUTDInternalError::LinkError(format!(
