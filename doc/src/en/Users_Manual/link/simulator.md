@@ -59,7 +59,7 @@ use autd3_link_simulator::Simulator;
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 Simulator::new(8080)
-    .with_server_ip("127.0.0.1")?
+    .with_server_ip("127.0.0.1".parse()?)
 # )?;
 # Ok(())
 # }
