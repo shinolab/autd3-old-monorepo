@@ -26,5 +26,5 @@ default-members = [
 
 [profile.release]
 strip = true
-lto = false
+lto = true
 codegen-units = 1
