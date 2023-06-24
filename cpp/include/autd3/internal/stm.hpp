@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/06/2023
+// Last Modified: 23/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,11 @@
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/native_methods.hpp"
+
+#if __cplusplus >= 202002L
+#include <ranges>
+#include <tuple>
+#endif
 
 namespace autd3::internal {
 
@@ -68,6 +73,11 @@ class STM : public Body {
   int16_t _finish_idx{-1};
 };
 
+struct ControlPoint {
+  Vector3 point;
+  uint8_t duty_shift;
+};
+
 class FocusSTM final : public STM {
  public:
   struct Focus {
@@ -98,10 +108,37 @@ class FocusSTM final : public STM {
     return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), static_cast<uint64_t>(_shifts.size()));
   }
 
-  void add_focus(Vector3 point, const uint8_t duty_shift = 0) {
+  FocusSTM add_focus(Vector3 point, const uint8_t duty_shift = 0) {
     _points.emplace_back(std::move(point));
     _shifts.emplace_back(duty_shift);
+    return std::move(*this);
   }
+
+  FocusSTM add_focus(ControlPoint p) {
+    _points.emplace_back(std::move(p.point));
+    _shifts.emplace_back(p.duty_shift);
+    return std::move(*this);
+  }
+
+#if __cplusplus >= 202002L
+  template <std::ranges::viewable_range R>
+  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>, FocusSTM> {
+    for (Vector3 e : iter) {
+      _points.emplace_back(std::move(e));
+      _shifts.emplace_back(0);
+    }
+    return std::move(*this);
+  }
+
+  template <std::ranges::viewable_range R>
+  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>, FocusSTM> {
+    for (ControlPoint e : iter) {
+      _points.emplace_back(std::move(e.point));
+      _shifts.emplace_back(e.duty_shift);
+    }
+    return std::move(*this);
+  }
+#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_points.size()); }
 
@@ -147,10 +184,20 @@ class GainSTM final : public STM {
   }
 
   template <typename G>
-  void add_gain(G&& gain) {
+  GainSTM add_gain(G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
+    return std::move(*this);
   }
+
+#if __cplusplus >= 202002L
+  template <std::ranges::viewable_range R>
+  auto add_gains_from_iter(R&& iter) -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>, GainSTM> {
+    for (auto e : iter)
+      _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
+    return std::move(*this);
+  }
+#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_gains.size()); }
 

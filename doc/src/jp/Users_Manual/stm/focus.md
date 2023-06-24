@@ -9,9 +9,8 @@
 
 ```rust
 # use autd3::prelude::*;
-# #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
@@ -32,10 +31,23 @@ constexpr auto radius = 30.0;
 autd3::FocusSTM stm(1);
 for (size_t i = 0; i < points_num; i++) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+    stm = stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
 }
 autd.send(stm);
 ```
+
+- C++20以降の場合は以下のようにもかける
+    ```cpp
+    #include <ranges>
+    using namespace std::ranges::views;
+
+    auto stm = autd3::FocusSTM(1).add_foci_from_iter(iota(0) | take(points_num) | transform([&](auto i) {
+                                                        const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+                                                        autd3::Vector3 p =
+                                                            center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0);
+                                                        return p;
+                                                    }));
+    ```
 
 ```cs
 var center = autd.Geometry.Center + new Vector3d(0, 0, 150);

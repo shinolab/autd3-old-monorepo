@@ -14,17 +14,17 @@ include(FetchContent)
 if(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v12.1.1/autd3-v12.1.1-win-x64.zip
+    URL https://github.com/shinolab/autd3/releases/download/v12.2.0/autd3-v12.2.0-win-x64.zip
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v12.1.1/autd3-v12.1.1-macos-universal.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v12.2.0/autd3-v12.2.0-macos-universal.tar.gz
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v12.1.1/autd3-v12.1.1-linux-x64.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v12.2.0/autd3-v12.2.0-linux-x64.tar.gz
   )
 endif()
 set(USE_SYSTEM_EIGEN OFF)
@@ -32,7 +32,7 @@ FetchContent_MakeAvailable(autd3)
 
 add_executable(main main.cpp)
 
-target_link_libraries(main autd3)
+autd3_target_link_library(main PRIVATE)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
