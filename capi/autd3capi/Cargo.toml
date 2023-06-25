@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 
 [lib]
-crate-type = ["rlib", "cdylib", "staticlib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 autd3capi-def = {path="../autd3capi-def", version="12.2.0"}
