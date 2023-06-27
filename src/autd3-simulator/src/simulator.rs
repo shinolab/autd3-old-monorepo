@@ -21,7 +21,6 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    thread::JoinHandle,
 };
 
 use crate::{
@@ -125,10 +124,13 @@ impl simulator_server::Simulator for SimulatorServer {
             while !fin.load(Ordering::Acquire) {
                 if let Ok(rx) = rx_receiver.try_recv() {
                     match tx2.send(Ok(rx)).await {
-                        Ok(_) => (),
-                        Err(_) => break,
-                    };
-                };
+                        Ok(_) => {}
+                        Err(e) => {
+                            spdlog::trace!("Send err: {}", e);
+                            break;
+                        }
+                    }
+                }
                 tokio::time::sleep(std::time::Duration::from_millis(1)).await;
             }
         });
@@ -149,10 +151,14 @@ impl simulator_server::Simulator for SimulatorServer {
                         }
                         match tx.send(Err(err)).await {
                             Ok(_) => (),
-                            Err(_err) => break,
+                            Err(e) => {
+                                spdlog::trace!("Receive err: {}", e);
+                                break;
+                            }
                         }
                     }
                     Ok(None) => {
+                        spdlog::trace!("Receive None");
                         break;
                     }
                     Err(_) => {
@@ -231,14 +237,13 @@ impl Simulator {
     pub fn run(&mut self) -> i32 {
         spdlog::info!("Initializing window...");
 
-        let (sender_c2s, receiver_c2s) = bounded(32);
-        let (sender_s2c, receiver_s2c) = bounded(32);
+        let (sender_c2s, receiver_c2s) = bounded(128);
+        let (sender_s2c, receiver_s2c) = bounded(128);
 
         let (tx, rx) = oneshot::channel::<()>();
         let exit = Arc::new(AtomicBool::new(false));
-        let exit_server = exit.clone();
         let port = self.port.unwrap_or(self.settings.port);
-        let server_th = Self::run_server(port, exit_server, receiver_c2s, sender_s2c, rx);
+        let server_th = Self::run_server(port, exit.clone(), receiver_c2s, sender_s2c, rx);
         self.run_simulator(server_th, exit, receiver_s2c, sender_c2s, tx)
     }
 
@@ -248,7 +253,7 @@ impl Simulator {
         rx_receiver: Receiver<Rx>,
         tx_sender: Sender<Tx>,
         shutdown: tokio::sync::oneshot::Receiver<()>,
-    ) -> JoinHandle<()> {
+    ) -> std::thread::JoinHandle<Result<(), tonic::transport::Error>> {
         std::thread::spawn(move || {
             spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
             let body = async {
@@ -267,19 +272,18 @@ impl Simulator {
                         shutdown.map(drop),
                     )
                     .await
-                    .unwrap();
             };
             Builder::new_multi_thread()
                 .enable_all()
                 .build()
                 .unwrap()
-                .block_on(body);
+                .block_on(body)
         })
     }
 
     fn run_simulator(
         &mut self,
-        server_th: JoinHandle<()>,
+        server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
         exit: Arc<AtomicBool>,
         receiver_c2s: Receiver<Tx>,
         sender_s2c: Sender<Rx>,
@@ -311,6 +315,7 @@ impl Simulator {
         let mut is_source_update = false;
         let mut is_running = true;
 
+        let server_th_ref = &server_th;
         let res = event_loop.run_return(move |event, _, control_flow| {
             if let Ok(tx) = receiver_c2s.try_recv() {
                 match tx.data {
@@ -629,7 +634,7 @@ impl Simulator {
                 }
             }
 
-            if !is_running {
+            if server_th_ref.is_finished() || !is_running {
                 exit.store(true, Ordering::Release);
 
                 spdlog::default_logger().flush();
@@ -638,8 +643,13 @@ impl Simulator {
             }
         });
 
-        shutdown.send(()).unwrap();
-        server_th.join().unwrap();
+        let _ = shutdown.send(());
+        if let Err(e) = server_th.join().unwrap() {
+            match e.source() {
+                Some(e) => spdlog::error!("Server error: {}", e),
+                None => spdlog::error!("Server error: {}", e),
+            }
+        }
 
         res
     }
