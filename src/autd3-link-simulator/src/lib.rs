@@ -24,6 +24,7 @@ pub mod pb {
 use pb::*;
 
 use crossbeam_channel::{bounded, Sender};
+use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::{
@@ -136,7 +137,14 @@ impl<T: Transducer> Link<T> for Simulator {
                 sockect_addr
             ))) {
             Ok(client) => client,
-            Err(err) => return Err(AUTDInternalError::LinkError(err.to_string())),
+            Err(err) => match err.source() {
+                Some(source) => {
+                    return Err(AUTDInternalError::LinkError(source.to_string()));
+                }
+                None => {
+                    return Err(AUTDInternalError::LinkError(err.to_string()));
+                }
+            },
         };
 
         let (rx_sender, rx_receiver) = bounded(128);
