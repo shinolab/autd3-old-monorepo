@@ -1,0 +1,64 @@
+/*
+ * File: autd3.proto
+ * Project: proto
+ * Created Date: 26/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 27/06/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+syntax = "proto3";
+
+package autd3;
+
+message TxRawData { bytes data = 1; }
+
+message RxMessage { bytes data = 1; }
+
+message Read {}
+message Close {}
+
+message Vector3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Quaternion {
+  double w = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+}
+
+message Geometry {
+  message AUTD3 {
+    Vector3 position = 1;
+    Quaternion rotation = 2;
+  }
+  repeated AUTD3 geometries = 1;
+}
+
+message GeometryResponse {}
+
+message Tx {
+  oneof data {
+    Geometry geometry = 1;
+    TxRawData raw = 2;
+    Read read = 8;
+    Close close = 9;
+  }
+}
+
+message Rx {
+  oneof data {
+    RxMessage rx = 1;
+    GeometryResponse geometry = 2;
+  }
+}
+
+service Simulator { rpc ReceiveData(stream Tx) returns (stream Rx); }
