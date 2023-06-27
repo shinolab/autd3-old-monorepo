@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/06/2023
+ * Last Modified: 28/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@ use tokio::runtime::{Builder, Runtime};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
-use tonic::transport::Channel;
 
 pub mod pb {
     tonic::include_proto!("autd3");
@@ -23,7 +22,7 @@ pub mod pb {
 
 use pb::*;
 
-use crossbeam_channel::{bounded, Sender};
+use crossbeam_channel::bounded;
 use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
@@ -99,42 +98,20 @@ impl Simulator {
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }
-
-    async fn rt(
-        mut client: simulator_client::SimulatorClient<Channel>,
-        rx: tokio::sync::mpsc::Receiver<Tx>,
-        rx_sender: Sender<Rx>,
-    ) {
-        let response = client.receive_data(ReceiverStream::new(rx)).await.unwrap();
-        let mut resp_stream = response.into_inner();
-        while let Some(received) = resp_stream.next().await {
-            match received {
-                Ok(received) => match rx_sender.send(received) {
-                    Ok(_) => {}
-                    Err(_) => {
-                        break;
-                    }
-                },
-                Err(_) => {
-                    break;
-                }
-            }
-        }
-    }
 }
 
 impl<T: Transducer> Link<T> for Simulator {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        let sockect_addr = match self.addr {
-            Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
-            Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
-        };
+        let (rx_sender, rx_receiver) = bounded(128);
 
-        let client = match self
+        let mut client = match self
             .runtime
             .block_on(simulator_client::SimulatorClient::connect(format!(
                 "http://{}",
-                sockect_addr
+                match self.addr {
+                    Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
+                    Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
+                }
             ))) {
             Ok(client) => client,
             Err(err) => match err.source() {
@@ -146,43 +123,52 @@ impl<T: Transducer> Link<T> for Simulator {
                 }
             },
         };
-
-        let (rx_sender, rx_receiver) = bounded(128);
-
-        self.receive_stream_th = Some(self.runtime.spawn(Self::rt(
-            client,
-            self.rx.take().unwrap(),
-            rx_sender,
-        )));
-
-        if let Err(err) = self.tx.as_mut().unwrap().blocking_send(Tx {
-            data: Some(tx::Data::Geometry(pb::Geometry {
-                geometries: (0..geometry.num_devices())
-                    .map(|dev| {
-                        let pos = geometry.transducers_of(dev).next().unwrap().position();
-                        let rot = geometry.transducers_of(dev).next().unwrap().rotation();
-                        #[allow(clippy::unnecessary_cast)]
-                        geometry::Autd3 {
-                            position: Some(Vector3 {
-                                x: pos.x as f64,
-                                y: pos.y as f64,
-                                z: pos.z as f64,
-                            }),
-                            rotation: Some(Quaternion {
-                                w: rot.w as f64,
-                                x: rot.coords.x as f64,
-                                y: rot.coords.y as f64,
-                                z: rot.coords.z as f64,
-                            }),
+        let rx = self.rx.take().unwrap();
+        self.receive_stream_th = Some(self.runtime.spawn(async move {
+            let response = client.receive_data(ReceiverStream::new(rx)).await.unwrap();
+            let mut resp_stream = response.into_inner();
+            while let Some(received) = resp_stream.next().await {
+                match received {
+                    Ok(received) => match rx_sender.send(received) {
+                        Ok(_) => {}
+                        Err(_) => {
+                            break;
                         }
-                    })
-                    .collect(),
-            })),
-        }) {
-            return Err(AUTDInternalError::LinkError(err.to_string()));
-        }
+                    },
+                    Err(_) => {
+                        break;
+                    }
+                }
+            }
+        }));
 
-        if !(0..50).any(|_| {
+        if !(0..20).any(|_| {
+            if let Err(_) = self.tx.as_mut().unwrap().blocking_send(Tx {
+                data: Some(tx::Data::Geometry(pb::Geometry {
+                    geometries: (0..geometry.num_devices())
+                        .map(|dev| {
+                            let pos = geometry.transducers_of(dev).next().unwrap().position();
+                            let rot = geometry.transducers_of(dev).next().unwrap().rotation();
+                            #[allow(clippy::unnecessary_cast)]
+                            geometry::Autd3 {
+                                position: Some(Vector3 {
+                                    x: pos.x as f64,
+                                    y: pos.y as f64,
+                                    z: pos.z as f64,
+                                }),
+                                rotation: Some(Quaternion {
+                                    w: rot.w as f64,
+                                    x: rot.coords.x as f64,
+                                    y: rot.coords.y as f64,
+                                    z: rot.coords.z as f64,
+                                }),
+                            }
+                        })
+                        .collect(),
+                })),
+            }) {
+                return false;
+            }
             std::thread::sleep(Duration::from_millis(100));
             if let Ok(rx) = rx_receiver.try_recv() {
                 if let Some(rx) = rx.data {
