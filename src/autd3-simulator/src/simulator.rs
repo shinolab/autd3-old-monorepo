@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/06/2023
+ * Last Modified: 28/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,6 +103,7 @@ impl simulator_server::Simulator for SimulatorServer {
         &self,
         req: Request<Streaming<Tx>>,
     ) -> SimulatorServerResult<Self::ReceiveDataStream> {
+        self.fin.store(false, Ordering::Release);
         spdlog::info!(
             "Connect to client{}",
             if let Some(addr) = req.remote_addr() {
@@ -157,11 +158,7 @@ impl simulator_server::Simulator for SimulatorServer {
                             }
                         }
                     }
-                    Ok(None) => {
-                        spdlog::trace!("Receive None");
-                        break;
-                    }
-                    Err(_) => {
+                    _ => {
                         if fin.load(Ordering::Acquire) {
                             break;
                         }
@@ -172,6 +169,7 @@ impl simulator_server::Simulator for SimulatorServer {
             let _ = tx_sender.send(Tx {
                 data: Some(pb::tx::Data::Close(Close {})),
             });
+            fin.store(true, Ordering::Release);
         });
 
         let out_stream = ReceiverStream::new(rx);
@@ -320,6 +318,9 @@ impl Simulator {
             if let Ok(tx) = receiver_c2s.try_recv() {
                 match tx.data {
                     Some(pb::tx::Data::Geometry(geometry)) => {
+                        sources.clear();
+                        cpus.clear();
+
                         geometry.geometries.iter().for_each(|dev| {
                             let pos = dev.position.as_ref().unwrap();
                             let pos = autd3_core::geometry::Vector3::new(
@@ -418,6 +419,7 @@ impl Simulator {
                         is_initialized = false;
                         sources.clear();
                         cpus.clear();
+                        exit.store(true, Ordering::Release);
                     }
                     None => {
                         unreachable!();
