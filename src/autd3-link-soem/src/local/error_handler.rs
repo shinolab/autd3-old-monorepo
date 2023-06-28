@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 28/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                 .skip(1)
                 .take(ec_slavecount as usize)
                 .for_each(|(i, slave)| {
-                    if slave.state != ec_state_EC_STATE_OPERATIONAL as _ {
+                    if slave.state != ec_state_EC_STATE_OPERATIONAL as u16 {
                         ec_group[0].docheckstate = 1;
                         if slave.state
                             == ec_state_EC_STATE_SAFE_OP as u16 + ec_state_EC_STATE_ERROR as u16
@@ -46,7 +46,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                             slave.state =
                                 ec_state_EC_STATE_SAFE_OP as u16 + ec_state_EC_STATE_ACK as u16;
                             ec_writestate(i as _);
-                        } else if slave.state == ec_state_EC_STATE_SAFE_OP as _ {
+                        } else if slave.state == ec_state_EC_STATE_SAFE_OP as u16 {
                             warn!(
                                 logger: self.logger,
                                 "slave {} is in SAFE_OP, change to OPERATIONAL",
@@ -64,7 +64,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                                 ec_state_EC_STATE_OPERATIONAL as _,
                                 EC_TIMEOUTRET as _,
                             );
-                            if slave.state == ec_state_EC_STATE_NONE as _ {
+                            if slave.state == ec_state_EC_STATE_NONE as u16 {
                                 slave.islost = 1;
                                 writeln!(msg, "slave {i} lost").unwrap();
                                 error!(logger: self.logger, "slave {} lost", i);
@@ -72,7 +72,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                         }
                     }
                     if slave.islost != 0 {
-                        if slave.state == ec_state_EC_STATE_NONE as _ {
+                        if slave.state == ec_state_EC_STATE_NONE as u16 {
                             if ec_recover_slave(i as _, 500) != 0 {
                                 slave.islost = 0;
                                 info!(logger: self.logger, "slave {} recovered", i);

@@ -294,7 +294,7 @@ use autd3_link_soem::RemoteSOEM;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-RemoteSOEM::new("169.254.205.219:8080")?
+RemoteSOEM::new("169.254.205.219:8080".parse()?)?
 # )?;
 # Ok(())
 # }

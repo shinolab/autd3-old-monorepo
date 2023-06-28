@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 28/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ impl TimerCallback for SoemCallback {
     }
 }
 
-type OnLostCallBack = Box<dyn Fn(&str) + Send>;
+type OnLostCallBack = Box<dyn Fn(&str) + Send + Sync>;
 
 pub struct SOEM {
     ecatth_handle: Option<JoinHandle<()>>,
@@ -157,7 +157,7 @@ impl SOEM {
         }
     }
 
-    pub fn with_on_lost<F: 'static + Fn(&str) + Send>(self, on_lost: F) -> Self {
+    pub fn with_on_lost<F: 'static + Fn(&str) + Send + Sync>(self, on_lost: F) -> Self {
         Self {
             on_lost: Some(Box::new(on_lost)),
             ..self
@@ -240,7 +240,7 @@ impl SOEM {
             ec_config_map(self.io_map.lock().unwrap().data() as *mut c_void);
 
             ec_statecheck(0, ec_state_EC_STATE_SAFE_OP as u16, EC_TIMEOUTSTATE as i32);
-            if ec_slave[0].state != ec_state_EC_STATE_SAFE_OP as _ {
+            if ec_slave[0].state != ec_state_EC_STATE_SAFE_OP as u16 {
                 return Err(SOEMError::NotReachedSafeOp(ec_slave[0].state).into());
             }
             ec_readstate();
@@ -309,7 +309,7 @@ impl SOEM {
                 ec_state_EC_STATE_OPERATIONAL as u16,
                 5 * EC_TIMEOUTSTATE as i32,
             );
-            if ec_slave[0].state != ec_state_EC_STATE_OPERATIONAL as _ {
+            if ec_slave[0].state != ec_state_EC_STATE_OPERATIONAL as u16 {
                 self.is_open.store(false, Ordering::Release);
                 if let Some(timer) = self.ecatth_handle.take() {
                     let _ = timer.join();
@@ -355,6 +355,13 @@ impl SOEM {
 
             Ok(wc)
         }
+    }
+
+    pub fn clear_iomap(&mut self) {
+        while !self.sender.as_mut().unwrap().is_empty() {
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+        self.io_map.lock().unwrap().clear();
     }
 }
 
