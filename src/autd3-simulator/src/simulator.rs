@@ -61,12 +61,12 @@ use tonic::{transport::Server, Request, Response, Status, Streaming};
 use autd3_protobuf_parser::*;
 
 type SimulatorServerResult<T> = Result<Response<T>, Status>;
-type ResponseStream = Pin<Box<dyn Stream<Item = Result<Rx, Status>> + Send>>;
+type ResponseStream = Pin<Box<dyn Stream<Item = Result<SimulatorRx, Status>> + Send>>;
 
 struct SimulatorServer {
     fin: Arc<AtomicBool>,
-    rx_receiver: Receiver<Rx>,
-    tx_sender: Sender<Tx>,
+    rx_receiver: Receiver<SimulatorRx>,
+    tx_sender: Sender<SimulatorTx>,
 }
 
 #[tonic::async_trait]
@@ -75,7 +75,7 @@ impl simulator_server::Simulator for SimulatorServer {
 
     async fn receive_data(
         &self,
-        req: Request<Streaming<Tx>>,
+        req: Request<Streaming<SimulatorTx>>,
     ) -> SimulatorServerResult<Self::ReceiveDataStream> {
         self.fin.store(false, Ordering::Release);
         spdlog::info!(
@@ -140,8 +140,8 @@ impl simulator_server::Simulator for SimulatorServer {
                 }
             }
             spdlog::info!("Disconnect from client");
-            let _ = tx_sender.send(Tx {
-                data: Some(pb::tx::Data::Close(Close {})),
+            let _ = tx_sender.send(SimulatorTx {
+                data: Some(simulator_tx::Data::Close(CloseRequest {})),
             });
             fin.store(true, Ordering::Release);
         });
@@ -222,8 +222,8 @@ impl Simulator {
     fn run_server(
         port: u16,
         fin: Arc<AtomicBool>,
-        rx_receiver: Receiver<Rx>,
-        tx_sender: Sender<Tx>,
+        rx_receiver: Receiver<SimulatorRx>,
+        tx_sender: Sender<SimulatorTx>,
         shutdown: tokio::sync::oneshot::Receiver<()>,
     ) -> std::thread::JoinHandle<Result<(), tonic::transport::Error>> {
         std::thread::spawn(move || {
@@ -257,8 +257,8 @@ impl Simulator {
         &mut self,
         server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
         exit: Arc<AtomicBool>,
-        receiver_c2s: Receiver<Tx>,
-        sender_s2c: Sender<Rx>,
+        receiver_c2s: Receiver<SimulatorTx>,
+        sender_s2c: Sender<SimulatorRx>,
         shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
@@ -291,7 +291,7 @@ impl Simulator {
         let res = event_loop.run_return(move |event, _, control_flow| {
             if let Ok(tx) = receiver_c2s.try_recv() {
                 match tx.data {
-                    Some(pb::tx::Data::Geometry(geometry)) => {
+                    Some(simulator_tx::Data::Geometry(geometry)) => {
                         sources.clear();
                         cpus.clear();
 
@@ -309,8 +309,8 @@ impl Simulator {
                         });
 
                         sender_s2c
-                            .send(Rx {
-                                data: Some(pb::rx::Data::Geometry(GeometryResponse {})),
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Geometry(GeometryResponse {})),
                             })
                             .unwrap();
 
@@ -325,14 +325,14 @@ impl Simulator {
 
                         is_initialized = true;
                     }
-                    Some(pb::tx::Data::Raw(raw)) => {
+                    Some(simulator_tx::Data::Raw(raw)) => {
                         let tx = TxDatagram::from_msg(&raw);
                         cpus.iter_mut().for_each(|cpu| {
                             cpu.send(&tx);
                         });
                         sender_s2c
-                            .send(Rx {
-                                data: Some(pb::rx::Data::Rx(RxMessage {
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Rx(RxMessage {
                                     data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
                                 })),
                             })
@@ -340,17 +340,17 @@ impl Simulator {
 
                         is_source_update = true;
                     }
-                    Some(pb::tx::Data::Read(_)) => {
+                    Some(simulator_tx::Data::Read(_)) => {
                         cpus.iter_mut().for_each(|c| c.update());
                         sender_s2c
-                            .send(Rx {
-                                data: Some(pb::rx::Data::Rx(RxMessage {
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Rx(RxMessage {
                                     data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
                                 })),
                             })
                             .unwrap();
                     }
-                    Some(pb::tx::Data::Close(_)) => {
+                    Some(simulator_tx::Data::Close(_)) => {
                         is_initialized = false;
                         sources.clear();
                         cpus.clear();
