@@ -16,7 +16,3 @@ autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.14"
 crossbeam-channel = "0.5.8"
-
-[features]
-default = []
-single_float = ["autd3-core/single_float", "autd3-protobuf-parser/single_float"]

@@ -1,4 +1,4 @@
-pub mod pb {
+mod pb {
     tonic::include_proto!("autd3");
 }
 
@@ -76,6 +76,22 @@ impl ToMessage for autd3_core::TxDatagram {
     }
 }
 
+impl ToMessage for autd3_core::RxDatagram {
+    type Message = RxMessage;
+
+    fn to_msg(&self) -> Self::Message {
+        let mut data = vec![0; std::mem::size_of::<autd3_core::RxMessage>() * self.len()];
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                self.as_ptr() as *const u8,
+                data.as_mut_ptr(),
+                data.len(),
+            );
+        }
+        RxMessage { data }
+    }
+}
+
 impl FromMessage<RxMessage> for autd3_core::RxDatagram {
     fn from_msg(msg: &RxMessage) -> Self {
         let mut rx = autd3_core::RxDatagram::new(
@@ -146,6 +162,8 @@ impl FromMessage<TxRawData> for autd3_core::TxDatagram {
 #[derive(Error, Debug)]
 pub enum AUTDProtoBufError {
     #[error("{0}")]
+    Status(String),
+    #[error("{0}")]
     SendError(String),
     #[error("{0}")]
     TokioSendError(String),
@@ -153,6 +171,12 @@ pub enum AUTDProtoBufError {
     TransportError(String),
     #[error("{0}")]
     TokioJoinError(String),
+}
+
+impl From<tonic::Status> for AUTDProtoBufError {
+    fn from(e: tonic::Status) -> Self {
+        AUTDProtoBufError::Status(e.to_string())
+    }
 }
 
 impl<T> From<std::sync::mpsc::SendError<T>> for AUTDProtoBufError {

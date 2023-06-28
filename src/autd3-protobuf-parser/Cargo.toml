@@ -19,7 +19,3 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 
 [build-dependencies]
 tonic-build = "0.9.2"
-
-[features]
-default = []
-single_float = ["autd3-core/single_float"]

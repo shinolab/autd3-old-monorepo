@@ -41,8 +41,8 @@ enum Either {
 pub struct Simulator {
     addr: Either,
     port: u16,
-    tx: Option<mpsc::Sender<Tx>>,
-    rx: Option<mpsc::Receiver<Tx>>,
+    tx: Option<mpsc::Sender<SimulatorTx>>,
+    rx: Option<mpsc::Receiver<SimulatorTx>>,
     rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
     receive_th: Option<std::thread::JoinHandle<()>>,
     receive_stream_th: Option<JoinHandle<()>>,
@@ -133,8 +133,8 @@ impl Simulator {
                 .tx
                 .as_mut()
                 .unwrap()
-                .blocking_send(Tx {
-                    data: Some(tx::Data::Geometry(geometry.to_msg())),
+                .blocking_send(SimulatorTx {
+                    data: Some(simulator_tx::Data::Geometry(geometry.to_msg())),
                 })
                 .is_err()
             {
@@ -143,7 +143,7 @@ impl Simulator {
             std::thread::sleep(Duration::from_millis(100));
             if let Ok(rx) = rx_receiver.try_recv() {
                 if let Some(rx) = rx.data {
-                    return matches!(rx, rx::Data::Geometry(_));
+                    return matches!(rx, simulator_rx::Data::Geometry(_));
                 }
             }
             false
@@ -163,7 +163,7 @@ impl Simulator {
         self.receive_th = Some(std::thread::spawn(move || {
             while run.load(Ordering::Acquire) {
                 if let Ok(rx) = rx_receiver.try_recv() {
-                    if let Some(rx::Data::Rx(rx)) = rx.data {
+                    if let Some(simulator_rx::Data::Rx(rx)) = rx.data {
                         *rx_buf.write().unwrap() = autd3_core::RxDatagram::from_msg(&rx);
                     }
                 }
@@ -175,13 +175,13 @@ impl Simulator {
     }
 
     fn close_impl(&mut self) -> Result<(), AUTDProtoBufError> {
+        self.run.store(false, Ordering::Release);
         if let Some(tx) = self.tx.take() {
-            tx.blocking_send(Tx {
-                data: Some(tx::Data::Close(Close {})),
+            tx.blocking_send(SimulatorTx {
+                data: Some(simulator_tx::Data::Close(CloseRequest {})),
             })?;
             drop(tx);
         }
-        self.run.store(false, Ordering::Release);
         if let Some(th) = self.receive_th.take() {
             th.join().unwrap();
         }
@@ -192,18 +192,20 @@ impl Simulator {
     }
 
     fn send_impl(
-        sender: &mut tokio::sync::mpsc::Sender<Tx>,
+        sender: &mut tokio::sync::mpsc::Sender<SimulatorTx>,
         tx: &TxDatagram,
     ) -> Result<(), AUTDProtoBufError> {
-        sender.blocking_send(Tx {
-            data: Some(tx::Data::Raw(tx.to_msg())),
+        sender.blocking_send(SimulatorTx {
+            data: Some(simulator_tx::Data::Raw(tx.to_msg())),
         })?;
         Ok(())
     }
 
-    fn receive_impl(sender: &mut tokio::sync::mpsc::Sender<Tx>) -> Result<(), AUTDProtoBufError> {
-        sender.blocking_send(Tx {
-            data: Some(tx::Data::Read(Read {})),
+    fn receive_impl(
+        sender: &mut tokio::sync::mpsc::Sender<SimulatorTx>,
+    ) -> Result<(), AUTDProtoBufError> {
+        sender.blocking_send(SimulatorTx {
+            data: Some(simulator_tx::Data::Read(ReadRequest {})),
         })?;
         Ok(())
     }
@@ -240,7 +242,7 @@ impl<T: Transducer> Link<T> for Simulator {
     }
 
     fn is_open(&self) -> bool {
-        self.receive_stream_th.is_some()
+        self.run.load(Ordering::Acquire)
     }
 
     fn timeout(&self) -> Duration {
