@@ -45,6 +45,10 @@ jobs:
         cd autd3
         cargo publish --dry-run
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3-protobuf-parser
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-link-soem
         cargo publish --dry-run

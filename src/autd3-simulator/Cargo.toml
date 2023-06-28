@@ -12,6 +12,7 @@ keywords = ["autd"]
 [dependencies]
 autd3-core = {path="../autd3-core", version="12.2.0"}
 autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.2.0"}
+autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
@@ -31,15 +32,10 @@ crossbeam-channel = "0.5.8"
 anyhow = "1.0.71"
 serde_derive = "1.0.163"
 image = "0.24.6"
-tonic = "0.9.2"
-prost = "0.11.9"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 futures-util = "0.3.28"
 tokio-stream = "0.1.14"
-h2 = "0.3.20"
-
-[build-dependencies]
-tonic-build = "0.9.2"
+tonic = "0.9.2"
 
 [features]
 default = []
