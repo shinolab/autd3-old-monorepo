@@ -1,22 +1,25 @@
 [package]
-name = "autd3-link-simulator"
+name = "autd3-protobuf-parser"
 version = "12.2.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
 license = "MIT"
-description = "Link for autd-simulator"
+description = "Protocol Buffer"
 repository = "https://github.com/shinolab/autd3"
-readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
+h2 = "0.3.20"
+prost = "0.11.9"
+tonic = "0.9.2"
 autd3-core = {path="../autd3-core", version="12.2.0"}
-autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
+thiserror = "1.0.40"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
-tokio-stream = "0.1.14"
-crossbeam-channel = "0.5.8"
+
+[build-dependencies]
+tonic-build = "0.9.2"
 
 [features]
 default = []
-single_float = ["autd3-core/single_float", "autd3-protobuf-parser/single_float"]
+single_float = ["autd3-core/single_float"]

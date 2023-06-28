@@ -16,14 +16,9 @@ use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-pub mod pb {
-    tonic::include_proto!("autd3");
-}
-
-use pb::*;
+use autd3_protobuf_parser::*;
 
 use crossbeam_channel::bounded;
-use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::{
@@ -48,7 +43,7 @@ pub struct Simulator {
     port: u16,
     tx: Option<mpsc::Sender<Tx>>,
     rx: Option<mpsc::Receiver<Tx>>,
-    rx_buf: Arc<RwLock<Vec<u8>>>,
+    rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
     receive_th: Option<std::thread::JoinHandle<()>>,
     receive_stream_th: Option<JoinHandle<()>>,
     timeout: Duration,
@@ -64,7 +59,7 @@ impl Simulator {
             port,
             tx: Some(tx),
             rx: Some(rx),
-            rx_buf: Arc::new(RwLock::new(Vec::new())),
+            rx_buf: Arc::new(RwLock::new(autd3_core::RxDatagram::new(0))),
             receive_th: None,
             receive_stream_th: None,
             timeout: Duration::from_millis(200),
@@ -98,13 +93,14 @@ impl Simulator {
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }
-}
 
-impl<T: Transducer> Link<T> for Simulator {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open_impl<T: Transducer>(
+        &mut self,
+        geometry: &Geometry<T>,
+    ) -> Result<(), AUTDProtoBufError> {
         let (rx_sender, rx_receiver) = bounded(128);
 
-        let mut client = match self
+        let mut client = self
             .runtime
             .block_on(simulator_client::SimulatorClient::connect(format!(
                 "http://{}",
@@ -112,17 +108,7 @@ impl<T: Transducer> Link<T> for Simulator {
                     Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
                     Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
                 }
-            ))) {
-            Ok(client) => client,
-            Err(err) => match err.source() {
-                Some(source) => {
-                    return Err(AUTDInternalError::LinkError(source.to_string()));
-                }
-                None => {
-                    return Err(AUTDInternalError::LinkError(err.to_string()));
-                }
-            },
-        };
+            )))?;
         let rx = self.rx.take().unwrap();
         self.receive_stream_th = Some(self.runtime.spawn(async move {
             let response = client.receive_data(ReceiverStream::new(rx)).await.unwrap();
@@ -143,30 +129,15 @@ impl<T: Transducer> Link<T> for Simulator {
         }));
 
         if !(0..20).any(|_| {
-            if let Err(_) = self.tx.as_mut().unwrap().blocking_send(Tx {
-                data: Some(tx::Data::Geometry(pb::Geometry {
-                    geometries: (0..geometry.num_devices())
-                        .map(|dev| {
-                            let pos = geometry.transducers_of(dev).next().unwrap().position();
-                            let rot = geometry.transducers_of(dev).next().unwrap().rotation();
-                            #[allow(clippy::unnecessary_cast)]
-                            geometry::Autd3 {
-                                position: Some(Vector3 {
-                                    x: pos.x as f64,
-                                    y: pos.y as f64,
-                                    z: pos.z as f64,
-                                }),
-                                rotation: Some(Quaternion {
-                                    w: rot.w as f64,
-                                    x: rot.coords.x as f64,
-                                    y: rot.coords.y as f64,
-                                    z: rot.coords.z as f64,
-                                }),
-                            }
-                        })
-                        .collect(),
-                })),
-            }) {
+            if self
+                .tx
+                .as_mut()
+                .unwrap()
+                .blocking_send(Tx {
+                    data: Some(tx::Data::Geometry(geometry.to_msg())),
+                })
+                .is_err()
+            {
                 return false;
             }
             std::thread::sleep(Duration::from_millis(100));
@@ -177,13 +148,14 @@ impl<T: Transducer> Link<T> for Simulator {
             }
             false
         }) {
-            return Err(AUTDInternalError::LinkError(
+            return Err(AUTDProtoBufError::SendError(
                 "Failed to initialize simulator".to_string(),
             ));
         }
 
-        let rx_buf_size = std::mem::size_of::<autd3_core::RxMessage>() * geometry.num_devices();
-        self.rx_buf = Arc::new(RwLock::new(vec![0; rx_buf_size]));
+        self.rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(
+            geometry.num_devices(),
+        )));
 
         self.run.store(true, Ordering::Release);
         let run = self.run.clone();
@@ -192,13 +164,7 @@ impl<T: Transducer> Link<T> for Simulator {
             while run.load(Ordering::Acquire) {
                 if let Ok(rx) = rx_receiver.try_recv() {
                     if let Some(rx::Data::Rx(rx)) = rx.data {
-                        unsafe {
-                            std::ptr::copy_nonoverlapping(
-                                rx.data.as_ptr(),
-                                rx_buf.write().unwrap().as_mut_ptr(),
-                                rx.data.len(),
-                            );
-                        }
+                        *rx_buf.write().unwrap() = autd3_core::RxDatagram::from_msg(&rx);
                     }
                 }
                 std::thread::sleep(Duration::from_millis(1));
@@ -208,16 +174,11 @@ impl<T: Transducer> Link<T> for Simulator {
         Ok(())
     }
 
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    fn close_impl(&mut self) -> Result<(), AUTDProtoBufError> {
         if let Some(tx) = self.tx.take() {
-            if let Err(e) = tx.blocking_send(Tx {
+            tx.blocking_send(Tx {
                 data: Some(tx::Data::Close(Close {})),
-            }) {
-                return Err(AUTDInternalError::LinkError(format!(
-                    "Failed to close simulator: {}",
-                    e
-                )));
-            }
+            })?;
             drop(tx);
         }
         self.run.store(false, Ordering::Release);
@@ -225,28 +186,44 @@ impl<T: Transducer> Link<T> for Simulator {
             th.join().unwrap();
         }
         if let Some(th) = self.receive_stream_th.take() {
-            match self.runtime.block_on(th) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(AUTDInternalError::LinkError(err.to_string())),
-            }
-        } else {
-            Ok(())
+            self.runtime.block_on(th)?;
         }
+        Ok(())
+    }
+
+    fn send_impl(
+        sender: &mut tokio::sync::mpsc::Sender<Tx>,
+        tx: &TxDatagram,
+    ) -> Result<(), AUTDProtoBufError> {
+        sender.blocking_send(Tx {
+            data: Some(tx::Data::Raw(tx.to_msg())),
+        })?;
+        Ok(())
+    }
+
+    fn receive_impl(sender: &mut tokio::sync::mpsc::Sender<Tx>) -> Result<(), AUTDProtoBufError> {
+        sender.blocking_send(Tx {
+            data: Some(tx::Data::Read(Read {})),
+        })?;
+        Ok(())
+    }
+}
+
+impl<T: Transducer> Link<T> for Simulator {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.open_impl(geometry)?;
+        Ok(())
+    }
+
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
+        self.close_impl()?;
+        Ok(())
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if let Some(tx_) = &mut self.tx {
-            match tx_.blocking_send(Tx {
-                data: Some(tx::Data::Raw(TxRawData {
-                    data: tx.data().to_vec(),
-                })),
-            }) {
-                Ok(_) => Ok(true),
-                Err(e) => Err(AUTDInternalError::LinkError(format!(
-                    "Failed to send data: {}",
-                    e
-                ))),
-            }
+            Self::send_impl(tx_, tx)?;
+            Ok(true)
         } else {
             Err(AUTDInternalError::LinkClosed)
         }
@@ -254,26 +231,11 @@ impl<T: Transducer> Link<T> for Simulator {
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
         if let Some(tx_) = &mut self.tx {
-            if let Err(e) = tx_.blocking_send(Tx {
-                data: Some(tx::Data::Read(Read {})),
-            }) {
-                return Err(AUTDInternalError::LinkError(format!(
-                    "Failed to receive data: {}",
-                    e
-                )));
-            }
+            Self::receive_impl(tx_)?;
         } else {
             return Err(AUTDInternalError::LinkClosed);
         }
-
-        unsafe {
-            let rx_buf = self.rx_buf.read().unwrap();
-            std::ptr::copy_nonoverlapping(
-                rx_buf.as_ptr(),
-                rx.as_mut_ptr() as *mut u8,
-                rx_buf.len(),
-            );
-        }
+        rx.copy_from(self.rx_buf.read().as_ref().unwrap());
         Ok(true)
     }
 

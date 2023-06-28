@@ -35,11 +35,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3_core::{
-    autd3_device::{AUTD3, NUM_TRANS_IN_UNIT},
-    geometry::Device,
-    TxDatagram, FPGA_CLK_FREQ,
-};
+use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender};
 use vulkano::{
@@ -62,32 +58,10 @@ use tokio::{
 use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
 use tonic::{transport::Server, Request, Response, Status, Streaming};
 
-pub mod pb {
-    tonic::include_proto!("autd3");
-}
-
-use pb::*;
+use autd3_protobuf_parser::*;
 
 type SimulatorServerResult<T> = Result<Response<T>, Status>;
 type ResponseStream = Pin<Box<dyn Stream<Item = Result<Rx, Status>> + Send>>;
-
-fn match_for_io_error(err_status: &Status) -> Option<&std::io::Error> {
-    let mut err: &(dyn Error + 'static) = err_status;
-    loop {
-        if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
-            return Some(io_err);
-        }
-        if let Some(h2_err) = err.downcast_ref::<h2::Error>() {
-            if let Some(io_err) = h2_err.get_io() {
-                return Some(io_err);
-            }
-        }
-        err = match err.source() {
-            Some(err) => err,
-            None => return None,
-        };
-    }
-}
 
 struct SimulatorServer {
     fin: Arc<AtomicBool>,
@@ -321,31 +295,19 @@ impl Simulator {
                         sources.clear();
                         cpus.clear();
 
-                        geometry.geometries.iter().for_each(|dev| {
-                            let pos = dev.position.as_ref().unwrap();
-                            let pos = autd3_core::geometry::Vector3::new(
-                                pos.x as _, pos.y as _, pos.z as _,
-                            );
-                            let rot = dev.rotation.as_ref().unwrap();
-                            let rot = autd3_core::geometry::UnitQuaternion::from_quaternion(
-                                autd3_core::geometry::Quaternion::new(
-                                    rot.w as _, rot.x as _, rot.y as _, rot.z as _,
-                                ),
-                            );
-                            AUTD3::with_quaternion(pos, rot)
-                                .get_transducers(0)
-                                .iter()
-                                .for_each(|(_, p, r)| {
-                                    sources.add(
-                                        to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
-                                        to_gl_rot(Quaternion::new(
-                                            r.w as _, r.i as _, r.j as _, r.k as _,
-                                        )),
-                                        Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
-                                        1.0,
-                                    );
-                                });
+                        Vec::<_>::from_msg(&geometry).iter().for_each(|autd3| {
+                            autd3.get_transducers(0).iter().for_each(|(_, p, r)| {
+                                sources.add(
+                                    to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                    to_gl_rot(Quaternion::new(
+                                        r.w as _, r.i as _, r.j as _, r.k as _,
+                                    )),
+                                    Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
+                                    1.0,
+                                );
+                            });
                         });
+
                         sender_s2c
                             .send(Rx {
                                 data: Some(pb::rx::Data::Geometry(GeometryResponse {})),
@@ -364,34 +326,7 @@ impl Simulator {
                         is_initialized = true;
                     }
                     Some(pb::tx::Data::Raw(raw)) => {
-                        let len = raw.data.len();
-                        let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
-                        let body_size = std::mem::size_of::<u16>() * NUM_TRANS_IN_UNIT;
-                        let body_num = if len > header_size {
-                            if (len - header_size) % body_size != 0 {
-                                spdlog::warn!("Invalid message size: {}", len);
-                                0
-                            } else {
-                                (len - header_size) / body_size
-                            }
-                        } else {
-                            0
-                        };
-                        let mut tx = TxDatagram::new(&vec![NUM_TRANS_IN_UNIT; body_num]);
-                        tx.num_bodies = body_num;
-                        let body_len = body_num * body_size;
-                        unsafe {
-                            std::ptr::copy_nonoverlapping(
-                                raw.data[header_size..].as_ptr(),
-                                tx.body_raw_mut().as_mut_ptr() as *mut u8,
-                                body_len,
-                            );
-                            std::ptr::copy_nonoverlapping(
-                                raw.data.as_ptr(),
-                                tx.header_mut() as *mut _ as *mut u8,
-                                header_size,
-                            );
-                        }
+                        let tx = TxDatagram::from_msg(&raw);
                         cpus.iter_mut().for_each(|cpu| {
                             cpu.send(&tx);
                         });

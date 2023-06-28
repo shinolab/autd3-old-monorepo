@@ -267,13 +267,10 @@ name = "autd3-link-simulator"
 version = "12.2.0"
 dependencies = [
  "autd3-core",
+ "autd3-protobuf-parser",
  "crossbeam-channel",
- "prost",
- "thiserror",
  "tokio",
  "tokio-stream",
- "tonic",
- "tonic-build",
 ]
 
 [[package]]
@@ -321,25 +318,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "autd3-protobuf-parser"
+version = "12.2.0"
+dependencies = [
+ "autd3-core",
+ "h2",
+ "prost",
+ "thiserror",
+ "tokio",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "autd3-simulator"
 version = "12.2.0"
 dependencies = [
  "anyhow",
  "autd3-core",
  "autd3-firmware-emulator",
+ "autd3-protobuf-parser",
  "bitflags 2.3.2",
  "bytemuck",
  "camera_controllers",
  "cgmath",
  "crossbeam-channel",
  "futures-util",
- "h2",
  "image",
  "imgui",
  "imgui-vulkano-renderer",
  "imgui-winit-support",
  "png",
- "prost",
  "scarlet",
  "serde",
  "serde_derive",
@@ -347,7 +356,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tonic",
- "tonic-build",
  "vulkano",
  "vulkano-shaders",
  "vulkano-win",
