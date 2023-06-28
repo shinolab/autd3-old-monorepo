@@ -14,7 +14,7 @@ keywords = ["autd"]
 autd3-core = {path="../autd3-core", version="12.2.0"}
 autd3-traits = {path="../autd3-traits", version="12.2.0"}
 autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.2.0"}
-itertools = "0.10.3"
+itertools = "0.11.0"
 nalgebra = "0.32.1"
 num = "0.4.0"
 thiserror = "1.0.31"

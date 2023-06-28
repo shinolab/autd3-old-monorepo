@@ -9,6 +9,6 @@ license = "MIT"
 [dependencies]
 anyhow = "1.0.57"
 convert_case = "0.6.0"
-itertools = "0.10.3"
+itertools = "0.11.0"
 syn = { version = "2.0.18", features = ["parsing", "full"] }
 cbindgen = "0.24.3"
