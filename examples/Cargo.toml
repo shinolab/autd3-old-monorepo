@@ -71,7 +71,7 @@ autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version
 autd3-link-monitor = {path="../src/autd3-link-monitor", optional = true, version="12.2.0"}
 autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="12.2.0"}
 colored = "2.0.0"
-tokio = { version = "1.28.2", features = ["full"], optional = true}
+tokio = { version = "1.29.0", features = ["full"], optional = true}
 
 [features] 
 default = []
