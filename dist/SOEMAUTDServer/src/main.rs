@@ -1,19 +1,17 @@
 #![allow(non_snake_case)]
 
-use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, link::Link, timer_strategy::TimerStrategy};
+use autd3_core::{link::Link, timer_strategy::TimerStrategy, TxDatagram};
 use autd3_link_soem::{SyncMode, SOEM};
+use autd3_protobuf_parser::*;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 use spdlog::Level;
 
-use std::io::Read;
-use std::io::Write;
-use std::net::TcpListener;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
-};
+use tokio::{runtime::Runtime, sync::mpsc};
+use tonic::{transport::Server, Request, Response, Status};
+
+use std::sync::RwLock;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum SyncModeArg {
@@ -84,121 +82,84 @@ enum Commands {
     List,
 }
 
+struct SOEMServer {
+    num_dev: usize,
+    soem: RwLock<SOEM>,
+}
+
+#[tonic::async_trait]
+impl ecat_server::Ecat for SOEMServer {
+    async fn send_data(
+        &self,
+        request: Request<TxRawData>,
+    ) -> Result<Response<SendResponse>, Status> {
+        let tx = TxDatagram::from_msg(&request.into_inner());
+        Ok(Response::new(SendResponse {
+            success: Link::<autd3_core::geometry::LegacyTransducer>::send(
+                &mut *self.soem.write().unwrap(),
+                &tx,
+            )
+            .unwrap_or(false),
+        }))
+    }
+
+    async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
+        let mut rx = autd3_core::RxDatagram::new(self.num_dev);
+        Link::<autd3_core::geometry::LegacyTransducer>::receive(
+            &mut *self.soem.write().unwrap(),
+            &mut rx,
+        )
+        .unwrap_or(false);
+        Ok(Response::new(rx.to_msg()))
+    }
+
+    async fn close(&self, _: Request<CloseRequest>) -> Result<Response<CloseResponse>, Status> {
+        self.soem.write().unwrap().clear_iomap();
+        Ok(Response::new(CloseResponse { success: true }))
+    }
+}
+
+impl Drop for SOEMServer {
+    fn drop(&mut self) {
+        spdlog::info!("Shutting down server...");
+        let _ =
+            Link::<autd3_core::geometry::LegacyTransducer>::close(&mut *self.soem.write().unwrap());
+        spdlog::info!("Shutting down server...done");
+        spdlog::default_logger().flush();
+    }
+}
+
 fn run(soem: SOEM, port: u16) -> anyhow::Result<()> {
     spdlog::info!("Connecting SOEM server...");
 
     let mut soem = soem;
-    let dev_num = soem.open_impl(&[])? as usize;
+    let num_dev = soem.open_impl(&[])? as usize;
 
-    spdlog::info!("{} AUTDs found", dev_num);
+    spdlog::info!("{} AUTDs found", num_dev);
 
-    let dev_map = vec![NUM_TRANS_IN_UNIT; dev_num];
-    let mut tx = autd3_core::TxDatagram::new(&dev_map);
-    let mut rx = autd3_core::RxDatagram::new(dev_num);
+    let (tx, mut rx) = mpsc::channel(1);
 
-    let buf_size = 1 + tx.transmitting_size();
-    let rx_buf_size = dev_num * std::mem::size_of::<autd3_core::RxMessage>();
-
-    let addr = format!("0.0.0.0:{}", port);
-    let listener = TcpListener::bind(addr)?;
-    listener
-        .set_nonblocking(true)
-        .expect("Cannot set non-blocking");
-    spdlog::info!("Waiting for client connection on {}", port);
-
-    let exit = Arc::new(AtomicBool::new(false));
-    let exit_ = exit.clone();
-    ctrlc::set_handler(move || exit_.store(true, Ordering::Release))
-        .expect("Error setting Ctrl-C handler");
+    ctrlc::set_handler(move || {
+        let rt = Runtime::new().expect("failed to obtain a new Runtime object");
+        rt.block_on(tx.send(())).unwrap();
+    })
+    .expect("Error setting Ctrl-C handler");
     spdlog::info!("Press Ctrl+C to exit...");
 
-    for stream in listener.incoming() {
-        match stream {
-            Ok(mut socket) => {
-                spdlog::info!("Connected to client: {}", socket.peer_addr()?);
-                let mut buf = vec![0x00; buf_size];
-                let mut rx_buf = vec![0x00; rx_buf_size];
-                loop {
-                    let len = match socket.read(&mut buf) {
-                        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                            if exit.load(Ordering::Acquire) {
-                                break;
-                            }
-                            continue;
-                        }
-                        Err(e) => {
-                            return Err(e.into());
-                        }
-                        Ok(len) => len,
-                    };
-                    if len == 0 {
-                        spdlog::info!("Client disconnected");
-                        spdlog::info!("Waiting for client connection on {}", port);
-                        break;
-                    }
-                    match buf[0] {
-                        1 => {
-                            let len = len - 1;
-                            let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
-                            if len > header_size {
-                                let body_size = std::mem::size_of::<u16>() * NUM_TRANS_IN_UNIT;
-                                if (len - header_size) % body_size != 0 {
-                                    spdlog::warn!("Invalid message size: {}", len);
-                                    continue;
-                                }
-                                let body_len = len - header_size;
-                                tx.num_bodies = body_len / body_size;
-                                unsafe {
-                                    std::ptr::copy_nonoverlapping(
-                                        buf[1 + header_size..].as_ptr(),
-                                        tx.body_raw_mut().as_mut_ptr() as *mut u8,
-                                        body_len,
-                                    );
-                                }
-                            } else {
-                                tx.num_bodies = 0;
-                            }
-                            unsafe {
-                                std::ptr::copy_nonoverlapping(
-                                    buf[1..].as_ptr(),
-                                    tx.header_mut() as *mut _ as *mut u8,
-                                    header_size,
-                                );
-                            }
-                            Link::<autd3_core::geometry::LegacyTransducer>::send(&mut soem, &tx)?;
-                        }
-                        2 => {
-                            Link::<autd3_core::geometry::LegacyTransducer>::receive(
-                                &mut soem, &mut rx,
-                            )?;
-                            unsafe {
-                                std::ptr::copy_nonoverlapping(
-                                    rx.as_ptr() as *const u8,
-                                    rx_buf.as_mut_ptr(),
-                                    rx_buf_size,
-                                );
-                            }
-                            let _ = socket.write(&rx_buf)?;
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                if exit.load(Ordering::Acquire) {
-                    spdlog::info!("Shutting down server...");
+    let addr = format!("0.0.0.0:{}", port).parse()?;
 
-                    Link::<autd3_core::geometry::LegacyTransducer>::close(&mut soem)?;
+    spdlog::info!("Waiting for client connection on {}", addr);
 
-                    spdlog::info!("Shutting down server...done");
-
-                    break;
-                }
-                continue;
-            }
-            Err(e) => return Err(e.into()),
-        }
-    }
+    let rt = Runtime::new().expect("failed to obtain a new Runtime object");
+    let server_future = Server::builder()
+        .add_service(ecat_server::EcatServer::new(SOEMServer {
+            num_dev,
+            soem: RwLock::new(soem),
+        }))
+        .serve_with_shutdown(addr, async {
+            let _ = rx.recv().await;
+        });
+    rt.block_on(server_future)?;
 
     Ok(())
 }
