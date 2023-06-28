@@ -17,9 +17,12 @@ glob = "0.3.0"
 
 [dependencies]
 autd3-core = {path="../autd3-core", version="12.2.0"}
+autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 crossbeam-channel = "0.5.4"
 libc = "0.2.124"
 thiserror = "1.0.30"
+tonic = "0.9.2"
 
 [target.'cfg(windows)'.dependencies]
 windows = {version = "0.48.0", features = ["Win32_Foundation", "Win32_System_Performance", "Win32_Networking_WinSock", "Win32_System_SystemInformation"]}
