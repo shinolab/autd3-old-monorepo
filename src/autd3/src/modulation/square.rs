@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -75,6 +75,22 @@ impl Square {
     ///
     pub fn with_duty(self, duty: float) -> Self {
         Self { duty, ..self }
+    }
+
+    pub fn duty(&self) -> float {
+        self.duty
+    }
+
+    pub fn low(&self) -> float {
+        self.low
+    }
+
+    pub fn high(&self) -> float {
+        self.high
+    }
+
+    pub fn freq(&self) -> usize {
+        self.freq
     }
 }
 

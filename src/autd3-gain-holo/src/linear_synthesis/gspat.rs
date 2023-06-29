@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -52,6 +52,10 @@ impl<B: Backend> GSPAT<B> {
 
     pub fn with_repeat(self, repeat: usize) -> Self {
         Self { repeat, ..self }
+    }
+
+    pub fn repeat(&self) -> usize {
+        self.repeat
     }
 }
 

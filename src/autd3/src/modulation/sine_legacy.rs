@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -62,6 +62,18 @@ impl SineLegacy {
     ///
     pub fn with_offset(self, offset: float) -> Self {
         Self { offset, ..self }
+    }
+
+    pub fn freq(&self) -> float {
+        self.freq
+    }
+
+    pub fn amp(&self) -> float {
+        self.amp
+    }
+
+    pub fn offset(&self) -> float {
+        self.offset
     }
 }
 

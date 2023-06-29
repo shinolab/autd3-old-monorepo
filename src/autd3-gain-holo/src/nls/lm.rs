@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -75,6 +75,26 @@ impl<B: Backend> LM<B> {
 
     pub fn with_initial(self, initial: Vec<float>) -> Self {
         Self { initial, ..self }
+    }
+
+    pub fn eps_1(&self) -> float {
+        self.eps_1
+    }
+
+    pub fn eps_2(&self) -> float {
+        self.eps_2
+    }
+
+    pub fn tau(&self) -> float {
+        self.tau
+    }
+
+    pub fn k_max(&self) -> usize {
+        self.k_max
+    }
+
+    pub fn initial(&self) -> &[float] {
+        &self.initial
     }
 }
 
