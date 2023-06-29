@@ -333,7 +333,9 @@ dependencies = [
 name = "autd3-protobuf-parser"
 version = "12.2.0"
 dependencies = [
+ "autd3",
  "autd3-core",
+ "autd3-gain-holo",
  "h2",
  "prost",
  "thiserror",

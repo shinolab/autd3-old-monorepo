@@ -1,0 +1,29 @@
+/*
+ * File: utils.proto
+ * Project: proto
+ * Created Date: 29/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/06/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+syntax = "proto3";
+
+package autd3;
+
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message Quaternion {
+  float w = 1;
+  float x = 2;
+  float y = 3;
+  float z = 4;
+}

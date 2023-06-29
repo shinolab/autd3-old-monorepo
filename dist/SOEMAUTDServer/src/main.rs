@@ -73,6 +73,9 @@ struct Arg {
     /// Set debug mode
     #[clap(short = 'd', long = "debug")]
     debug: bool,
+    /// Enable lightweight mode
+    #[clap(short = 'l', long = "lightweight")]
+    lightweight: bool,
 }
 
 #[derive(Subcommand)]
@@ -129,41 +132,6 @@ impl Drop for SOEMServer {
     }
 }
 
-fn run(soem: SOEM, port: u16) -> anyhow::Result<()> {
-    spdlog::info!("Connecting SOEM server...");
-
-    let mut soem = soem;
-    let num_dev = soem.open_impl(&[])? as usize;
-
-    spdlog::info!("{} AUTDs found", num_dev);
-
-    let (tx, mut rx) = mpsc::channel(1);
-
-    ctrlc::set_handler(move || {
-        let rt = Runtime::new().expect("failed to obtain a new Runtime object");
-        rt.block_on(tx.send(())).unwrap();
-    })
-    .expect("Error setting Ctrl-C handler");
-    spdlog::info!("Press Ctrl+C to exit...");
-
-    let addr = format!("0.0.0.0:{}", port).parse()?;
-
-    spdlog::info!("Waiting for client connection on {}", addr);
-
-    let rt = Runtime::new().expect("failed to obtain a new Runtime object");
-    let server_future = Server::builder()
-        .add_service(ecat_server::EcatServer::new(SOEMServer {
-            num_dev,
-            soem: RwLock::new(soem),
-        }))
-        .serve_with_shutdown(addr, async {
-            let _ = rx.recv().await;
-        });
-    rt.block_on(server_future)?;
-
-    Ok(())
-}
-
 fn main_() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
@@ -202,23 +170,62 @@ fn main_() -> anyhow::Result<()> {
                 Level::Info
             };
             let timeout = args.timeout;
+            let f = move || -> autd3_link_soem::SOEM {
+                autd3_link_soem::SOEM::new()
+                    .with_buf_size(buf_size)
+                    .with_ifname(ifname.clone())
+                    .with_log_level(spdlog::LevelFilter::MoreSevereEqual(level))
+                    .with_send_cycle(send_cycle)
+                    .with_state_check_interval(std::time::Duration::from_millis(
+                        state_check_interval,
+                    ))
+                    .with_sync0_cycle(sync0_cycle)
+                    .with_timer_strategy(timer_strategy)
+                    .with_sync_mode(sync_mode)
+                    .with_timeout(std::time::Duration::from_millis(timeout))
+                    .with_on_lost(|msg| {
+                        spdlog::error!("{}", msg);
+                        std::process::exit(-1);
+                    })
+            };
+            let (tx, mut rx) = mpsc::channel(1);
+            ctrlc::set_handler(move || {
+                let rt = Runtime::new().expect("failed to obtain a new Runtime object");
+                rt.block_on(tx.send(())).unwrap();
+            })
+            .expect("Error setting Ctrl-C handler");
+            spdlog::info!("Press Ctrl+C to exit...");
 
-            let soem = autd3_link_soem::SOEM::new()
-                .with_buf_size(buf_size)
-                .with_ifname(ifname)
-                .with_log_level(spdlog::LevelFilter::MoreSevereEqual(level))
-                .with_send_cycle(send_cycle)
-                .with_state_check_interval(std::time::Duration::from_millis(state_check_interval))
-                .with_sync0_cycle(sync0_cycle)
-                .with_timer_strategy(timer_strategy)
-                .with_sync_mode(sync_mode)
-                .with_timeout(std::time::Duration::from_millis(timeout))
-                .with_on_lost(|msg| {
-                    spdlog::error!("{}", msg);
-                    std::process::exit(-1);
-                });
+            let addr = format!("0.0.0.0:{}", port).parse()?;
+            spdlog::info!("Waiting for client connection on {}", addr);
+            let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
-            run(soem, port)?;
+            if args.lightweight {
+                let server = autd3_protobuf_parser::LightweightServer::new(f);
+                let server_future = Server::builder()
+                    .add_service(ecat_light_server::EcatLightServer::new(server))
+                    .serve_with_shutdown(addr, async {
+                        let _ = rx.recv().await;
+                    });
+                rt.block_on(server_future)?;
+            } else {
+                spdlog::info!("Connecting SOEM server...");
+
+                let mut soem = f();
+                let num_dev = soem.open_impl(&[])? as usize;
+
+                spdlog::info!("{} AUTDs found", num_dev);
+
+                let server_future = Server::builder()
+                    .add_service(ecat_server::EcatServer::new(SOEMServer {
+                        num_dev,
+                        soem: RwLock::new(soem),
+                    }))
+                    .serve_with_shutdown(addr, async {
+                        let _ = rx.recv().await;
+                    });
+                rt.block_on(server_future)?;
+            }
         }
     }
 

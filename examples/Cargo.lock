@@ -229,6 +229,7 @@ dependencies = [
  "autd3-link-soem",
  "autd3-link-twincat",
  "autd3-modulation-audio-file",
+ "autd3-protobuf-parser",
  "autd3-simulator",
  "colored",
  "tokio",
@@ -348,7 +349,9 @@ dependencies = [
 name = "autd3-protobuf-parser"
 version = "12.2.0"
 dependencies = [
+ "autd3",
  "autd3-core",
+ "autd3-gain-holo",
  "h2",
  "prost",
  "thiserror",

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ use std::collections::HashMap;
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
 #[derive(Gain, Default)]
 pub struct Grouped<'a, T: Transducer> {
     gain_map: HashMap<usize, Box<dyn Gain<T> + 'a>>,
@@ -68,6 +67,10 @@ impl<'a, T: Transducer> Grouped<'a, T> {
     pub fn add_boxed(mut self, id: usize, gain: Box<dyn Gain<T> + 'a>) -> Self {
         self.gain_map.insert(id, gain);
         self
+    }
+
+    pub fn gain_map(&self) -> &HashMap<usize, Box<dyn Gain<T> + 'a>> {
+        &self.gain_map
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 29/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,10 @@ impl Static {
     ///
     pub fn with_amp(self, amp: float) -> Self {
         Self { amp, ..self }
+    }
+
+    pub fn amp(&self) -> float {
+        self.amp
     }
 }
 

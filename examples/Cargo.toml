@@ -58,6 +58,11 @@ name = "geometry_viewer"
 path = "src/geometry_viewer.rs"
 required-features = ["geometry_viewer"]
 
+[[bin]]
+name = "lightweight"
+path = "src/lightweight.rs"
+required-features = ["lightweight"]
+
 [dependencies]
 anyhow = "1.0.57"
 autd3 = {path="../src/autd3"}
@@ -70,6 +75,7 @@ autd3-link-soem = {path="../src/autd3-link-soem", optional = true, version="12.2
 autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version="12.2.0"}
 autd3-link-monitor = {path="../src/autd3-link-monitor", optional = true, version="12.2.0"}
 autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="12.2.0"}
+autd3-protobuf-parser = {path="../src/autd3-protobuf-parser", optional = true, version="12.2.0"}
 colored = "2.0.0"
 tokio = { version = "1.29.0", features = ["full"], optional = true}
 
@@ -84,7 +90,8 @@ twincat = ["autd3-link-twincat/local"]
 remote_twincat = ["autd3-link-twincat/remote"]
 monitor = ["autd3-link-monitor"]
 geometry_viewer = ["autd3-geometry-viewer"]
-all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async"]
+lightweight = ["autd3-protobuf-parser", "tokio"]
+all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async", "lightweight"]
 
 single_float = ["autd3/single_float"]
 use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
