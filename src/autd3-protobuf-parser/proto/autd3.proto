@@ -4,7 +4,7 @@
  * Created Date: 26/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/06/2023
+ * Last Modified: 30/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,14 +22,12 @@ import "special.proto";
 
 message SilencerConfig { uint32 step = 1; }
 
-message DatagramBody {
-  oneof body { Gain gain = 1; }
-}
-
-message DatagramHeader {
-  oneof header {
+message Datagram {
+  oneof datagram {
     SilencerConfig silencer_config = 1;
     Modulation modulation = 2;
+    Gain gain = 3;
+    SpecialData special = 4;
   }
 }
 
@@ -80,7 +78,8 @@ service ECAT {
 
 message SendLightResponse {
   bool success = 1;
-  string msg = 2;
+  bool err = 2;
+  string msg = 3;
 }
 
 message GeometryLightResponse {
@@ -92,8 +91,6 @@ message CloseLightResponse { bool success = 1; }
 
 service ECATLight {
   rpc ConfigGeomety(Geometry) returns (GeometryLightResponse) {}
-  rpc SendHeader(DatagramHeader) returns (SendLightResponse) {}
-  rpc SendBody(DatagramBody) returns (SendLightResponse) {}
-  rpc SendSpecial(SpecialData) returns (SendLightResponse) {}
+  rpc Send(Datagram) returns (SendLightResponse) {}
   rpc Close(CloseRequest) returns (GeometryLightResponse) {}
 }
