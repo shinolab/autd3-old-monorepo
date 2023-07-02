@@ -276,7 +276,7 @@ name = "autd3-link-simulator"
 version = "12.2.0"
 dependencies = [
  "autd3-core",
- "autd3-protobuf-parser",
+ "autd3-protobuf",
  "crossbeam-channel",
  "tokio",
  "tokio-stream",
@@ -287,7 +287,7 @@ name = "autd3-link-soem"
 version = "12.2.0"
 dependencies = [
  "autd3-core",
- "autd3-protobuf-parser",
+ "autd3-protobuf",
  "bindgen",
  "cc",
  "crossbeam-channel",
@@ -330,7 +330,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3-protobuf-parser"
+name = "autd3-protobuf"
 version = "12.2.0"
 dependencies = [
  "autd3",
@@ -350,7 +350,7 @@ version = "12.2.0"
 dependencies = [
  "autd3-core",
  "autd3-firmware-emulator",
- "autd3-protobuf-parser",
+ "autd3-protobuf",
  "bitflags 2.3.3",
  "bytemuck",
  "camera_controllers",

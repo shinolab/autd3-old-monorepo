@@ -1,5 +1,5 @@
 [package]
-name = "autd3-protobuf-parser"
+name = "autd3-protobuf"
 version = "12.2.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"

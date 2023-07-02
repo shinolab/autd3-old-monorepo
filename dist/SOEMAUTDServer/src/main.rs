@@ -2,7 +2,7 @@
 
 use autd3_core::{link::Link, timer_strategy::TimerStrategy, TxDatagram};
 use autd3_link_soem::{SyncMode, SOEM};
-use autd3_protobuf_parser::*;
+use autd3_protobuf::*;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
@@ -201,7 +201,7 @@ fn main_() -> anyhow::Result<()> {
             let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
             if args.lightweight {
-                let server = autd3_protobuf_parser::LightweightServer::new(f);
+                let server = autd3_protobuf::LightweightServer::new(f);
                 let server_future = Server::builder()
                     .add_service(ecat_light_server::EcatLightServer::new(server))
                     .serve_with_shutdown(addr, async {
