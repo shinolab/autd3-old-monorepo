@@ -12,7 +12,7 @@ keywords = ["autd"]
 
 [dependencies]
 autd3-core = {path="../autd3-core", version="12.2.0"}
-autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
+autd3-protobuf = {path="../autd3-protobuf", version="12.2.0"}
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.14"
 crossbeam-channel = "0.5.8"

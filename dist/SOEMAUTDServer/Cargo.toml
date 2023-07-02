@@ -13,7 +13,7 @@ keywords = ["autd"]
 [dependencies]
 clap = { version = "4.3.0", features = ["derive"] }
 autd3-link-soem = {path="../../src/autd3-link-soem", version="12.2.0"}
-autd3-protobuf-parser = {path="../../src/autd3-protobuf-parser", version="12.2.0"}
+autd3-protobuf = {path="../../src/autd3-protobuf", version="12.2.0"}
 autd3-core = {path="../../src/autd3-core", version="12.2.0"}
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.71"
