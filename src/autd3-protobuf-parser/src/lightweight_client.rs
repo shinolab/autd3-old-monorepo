@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/06/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::net::SocketAddr;
 
 use autd3_core::geometry::Transducer;
 
-use crate::ToMessage;
+use crate::{FromMessage, ToMessage};
 
 pub struct LightweightClient {
     client: crate::pb::ecat_light_client::EcatLightClient<tonic::transport::Channel>,
@@ -91,6 +91,62 @@ impl LightweightClient {
             return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
         }
         Ok(Self { client })
+    }
+
+    pub async fn firmware_infos(
+        &mut self,
+    ) -> Result<Vec<autd3_core::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
+    {
+        let res = self
+            .client
+            .firmware_info(tonic::Request::new(crate::pb::FirmwareInfoRequest {}))
+            .await?
+            .into_inner();
+        if !res.success {
+            return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
+        }
+        Ok(Vec::from_msg(&res))
+    }
+
+    pub async fn force_fan(&mut self, value: bool) -> Result<(), crate::error::AUTDProtoBufError> {
+        let res = self
+            .client
+            .force_fan(crate::pb::ForceFanRequest { value })
+            .await?
+            .into_inner();
+        if !res.success {
+            return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
+        }
+        Ok(())
+    }
+
+    pub async fn reads_fpga_info(
+        &mut self,
+        value: bool,
+    ) -> Result<(), crate::error::AUTDProtoBufError> {
+        let res = self
+            .client
+            .reads_fpga_info(crate::pb::ReadsFpgaInfoRequest { value })
+            .await?
+            .into_inner();
+        if !res.success {
+            return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
+        }
+        Ok(())
+    }
+
+    pub async fn fpga_info(
+        &mut self,
+    ) -> Result<Vec<autd3_core::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
+        let res = self
+            .client
+            .fpga_info(crate::pb::FpgaInfoRequest {})
+            .await?
+            .into_inner();
+        if !res.success {
+            return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
+        }
+        Ok(Vec::from_msg(&res))
     }
 
     pub async fn send<D: ToMessage<Message = crate::pb::Datagram>>(

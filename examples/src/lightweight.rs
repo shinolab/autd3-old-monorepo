@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/06/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,12 @@ async fn main() -> anyhow::Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .open("127.0.0.1:8080".parse()?)
         .await?;
+
+    println!("*********************************** Firmware information ****************************************");
+    client.firmware_infos().await?.iter().for_each(|firm_info| {
+        println!("{}", firm_info);
+    });
+    println!("*************************************************************************************************");
 
     client.send(Clear::new()).await?;
     client.send(Synchronize::new()).await?;
