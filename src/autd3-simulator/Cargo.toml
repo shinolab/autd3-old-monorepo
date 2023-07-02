@@ -12,7 +12,7 @@ keywords = ["autd"]
 [dependencies]
 autd3-core = {path="../autd3-core", version="12.2.0"}
 autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.2.0"}
-autd3-protobuf-parser = {path="../autd3-protobuf-parser", version="12.2.0"}
+autd3-protobuf = {path="../autd3-protobuf", version="12.2.0"}
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"

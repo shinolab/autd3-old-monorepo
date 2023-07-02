@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/06/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_core::{
 };
 use tokio::runtime::{Builder, Runtime};
 
-use autd3_protobuf_parser::*;
+use autd3_protobuf::*;
 use tonic::Response;
 
 pub struct RemoteSOEM {

@@ -13,7 +13,7 @@
 
 use autd3::prelude::*;
 
-use autd3_protobuf_parser::LightweightClient;
+use autd3_protobuf::LightweightClient;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
