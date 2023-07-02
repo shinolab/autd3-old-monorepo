@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/06/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -872,5 +872,105 @@ impl FromMessage<TxRawData> for autd3_core::TxDatagram {
 impl FromMessage<SilencerConfig> for autd3_core::silencer_config::SilencerConfig {
     fn from_msg(msg: &SilencerConfig) -> Self {
         Self::new(msg.step as _)
+    }
+}
+
+impl FromMessage<FirmwareInfoResponse> for Vec<autd3_core::firmware_version::FirmwareInfo> {
+    fn from_msg(msg: &FirmwareInfoResponse) -> Self {
+        msg.firmware_info_list
+            .iter()
+            .enumerate()
+            .map(|(i, f)| {
+                autd3_core::firmware_version::FirmwareInfo::new(
+                    i,
+                    f.cpu_major_version as _,
+                    f.cpu_minor_version as _,
+                    f.fpga_major_version as _,
+                    f.fpga_minor_version as _,
+                    f.fpga_function_bits as _,
+                )
+            })
+            .collect()
+    }
+}
+
+impl FromMessage<FpgaInfoResponse> for Vec<autd3_core::fpga::FPGAInfo> {
+    fn from_msg(msg: &FpgaInfoResponse) -> Self {
+        msg.fpga_info_list
+            .iter()
+            .map(|f| autd3_core::fpga::FPGAInfo::new(f.info as _))
+            .collect()
+    }
+}
+
+impl FromMessage<FocusStm> for autd3_core::stm::FocusSTM {
+    fn from_msg(msg: &FocusStm) -> Self {
+        autd3_core::stm::FocusSTM::with_sampling_frequency_division(msg.freq_div)
+            .add_foci_from_iter(msg.control_points.iter().map(|p| {
+                autd3_core::stm::ControlPoint::with_shift(
+                    autd3_core::geometry::Vector3::from_msg(p.pos.as_ref().unwrap()),
+                    p.shift as _,
+                )
+            }))
+            .with_start_idx(if msg.start_idx < 0 {
+                None
+            } else {
+                Some(msg.start_idx as _)
+            })
+            .with_finish_idx(if msg.finish_idx < 0 {
+                None
+            } else {
+                Some(msg.finish_idx as _)
+            })
+    }
+}
+
+impl<'a, T: autd3_core::geometry::Transducer + 'a> FromMessage<GainStm>
+    for autd3_core::stm::GainSTM<'a, T>
+{
+    fn from_msg(msg: &GainStm) -> Self {
+        autd3_core::stm::GainSTM::with_sampling_frequency_division(msg.freq_div)
+            .add_gains_from_iter(msg.gains.iter().map(|p| match p.gain.as_ref().unwrap() {
+                gain::Gain::Focus(msg) => Box::new(autd3::prelude::Focus::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Bessel(msg) => Box::new(autd3::prelude::Bessel::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Null(msg) => Box::new(autd3::prelude::Null::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Plane(msg) => Box::new(autd3::prelude::Plane::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::TransTest(msg) => {
+                    Box::new(autd3::prelude::TransducerTest::from_msg(msg))
+                        as Box<dyn autd3_core::gain::Gain<T>>
+                }
+                gain::Gain::Grouped(msg) => {
+                    Box::new(autd3::prelude::Grouped::<'a, T>::from_msg(msg))
+                        as Box<dyn autd3_core::gain::Gain<T>>
+                }
+                gain::Gain::Sdp(msg) => Box::new(autd3_gain_holo::SDP::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Evp(msg) => Box::new(autd3_gain_holo::EVP::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Naive(msg) => Box::new(autd3_gain_holo::Naive::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Gs(msg) => Box::new(autd3_gain_holo::GS::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Gspat(msg) => Box::new(autd3_gain_holo::GSPAT::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Lm(msg) => Box::new(autd3_gain_holo::LM::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+                gain::Gain::Greedy(msg) => Box::new(autd3_gain_holo::Greedy::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
+            }))
+            .with_start_idx(if msg.start_idx < 0 {
+                None
+            } else {
+                Some(msg.start_idx as _)
+            })
+            .with_finish_idx(if msg.finish_idx < 0 {
+                None
+            } else {
+                Some(msg.finish_idx as _)
+            })
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/06/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -108,6 +108,26 @@ impl<
             None => return Err(AUTDProtoBufError::NotSupportedData),
         }?)
     }
+
+    fn send_focus_stm(
+        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        msg: &FocusStm,
+    ) -> Result<bool, AUTDProtoBufError> {
+        if msg.control_points.is_empty() {
+            return Err(AUTDProtoBufError::NotSupportedData);
+        }
+        Ok(autd.send(autd3::prelude::FocusSTM::from_msg(msg))?)
+    }
+
+    fn send_gain_stm(
+        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        msg: &GainStm,
+    ) -> Result<bool, AUTDProtoBufError> {
+        if msg.gains.is_empty() {
+            return Err(AUTDProtoBufError::NotSupportedData);
+        }
+        Ok(autd.send(autd3::prelude::GainSTM::from_msg(msg))?)
+    }
 }
 
 #[tonic::async_trait]
@@ -154,6 +174,112 @@ impl<
         }))
     }
 
+    async fn firmware_info(
+        &self,
+        _req: Request<FirmwareInfoRequest>,
+    ) -> Result<Response<FirmwareInfoResponse>, Status> {
+        if let Some(autd) = self.autd.write().unwrap().as_mut() {
+            match autd.firmware_infos() {
+                Ok(list) => Ok(Response::new(FirmwareInfoResponse {
+                    success: true,
+                    msg: String::new(),
+                    firmware_info_list: list
+                        .iter()
+                        .map(|f| firmware_info_response::FirmwareInfo {
+                            cpu_major_version: f.cpu_version_number_major() as _,
+                            cpu_minor_version: f.cpu_version_number_minor() as _,
+                            fpga_major_version: f.fpga_version_number_major() as _,
+                            fpga_minor_version: f.fpga_version_number_minor() as _,
+                            fpga_function_bits: f.fpga_function_bits() as _,
+                        })
+                        .collect(),
+                })),
+                Err(e) => {
+                    return Ok(Response::new(FirmwareInfoResponse {
+                        success: false,
+                        msg: format!("{}", e),
+                        firmware_info_list: Vec::new(),
+                    }))
+                }
+            }
+        } else {
+            Ok(Response::new(FirmwareInfoResponse {
+                success: false,
+                msg: "Geometry is not configured".to_string(),
+                firmware_info_list: Vec::new(),
+            }))
+        }
+    }
+
+    async fn force_fan(
+        &self,
+        req: Request<ForceFanRequest>,
+    ) -> Result<Response<ForceFanResponse>, Status> {
+        if let Some(autd) = self.autd.write().unwrap().as_mut() {
+            autd.force_fan(req.into_inner().value);
+            return Ok(Response::new(ForceFanResponse {
+                success: false,
+                msg: String::new(),
+            }));
+        } else {
+            Ok(Response::new(ForceFanResponse {
+                success: false,
+                msg: "Geometry is not configured".to_string(),
+            }))
+        }
+    }
+
+    async fn reads_fpga_info(
+        &self,
+        req: Request<ReadsFpgaInfoRequest>,
+    ) -> Result<Response<ReadsFpgaInfoResponse>, Status> {
+        if let Some(autd) = self.autd.write().unwrap().as_mut() {
+            autd.reads_fpga_info(req.into_inner().value);
+            return Ok(Response::new(ReadsFpgaInfoResponse {
+                success: false,
+                msg: String::new(),
+            }));
+        } else {
+            Ok(Response::new(ReadsFpgaInfoResponse {
+                success: false,
+                msg: "Geometry is not configured".to_string(),
+            }))
+        }
+    }
+
+    async fn fpga_info(
+        &self,
+        _req: Request<FpgaInfoRequest>,
+    ) -> Result<Response<FpgaInfoResponse>, Status> {
+        if let Some(autd) = self.autd.write().unwrap().as_mut() {
+            match autd.fpga_info() {
+                Ok(list) => Ok(Response::new(FpgaInfoResponse {
+                    success: true,
+                    msg: String::new(),
+                    fpga_info_list: list
+                        .iter()
+                        .map(|f| fpga_info_response::FpgaInfo {
+                            info: f.info() as _,
+                        })
+                        .collect(),
+                })),
+                Err(e) => {
+                    return Ok(Response::new(FpgaInfoResponse {
+                        success: false,
+                        msg: format!("{}", e),
+                        fpga_info_list: Vec::new(),
+                    }))
+                }
+            }
+        } else {
+            Ok(Response::new(FpgaInfoResponse {
+                success: false,
+                msg: "Geometry is not configured".to_string(),
+                fpga_info_list: Vec::new(),
+            }))
+        }
+    }
+
     async fn send(&self, req: Request<Datagram>) -> Result<Response<SendLightResponse>, Status> {
         if let Some(autd) = self.autd.write().unwrap().as_mut() {
             match match req.into_inner().datagram {
@@ -161,6 +287,8 @@ impl<
                 Some(datagram::Datagram::Gain(ref msg)) => Self::send_gain(autd, msg),
                 Some(datagram::Datagram::Modulation(ref msg)) => Self::send_modulation(autd, msg),
                 Some(datagram::Datagram::Special(ref msg)) => Self::send_special(autd, msg),
+                Some(datagram::Datagram::FocusStm(ref msg)) => Self::send_focus_stm(autd, msg),
+                Some(datagram::Datagram::GainStm(ref msg)) => Self::send_gain_stm(autd, msg),
                 None => Err(AUTDProtoBufError::NotSupportedData),
             } {
                 Ok(res) => Ok(Response::new(SendLightResponse {
