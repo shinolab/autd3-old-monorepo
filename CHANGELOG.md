@@ -1,3 +1,8 @@
+# 12.3.0
+
+- Fix [#81](https://github.com/shinolab/autd3/issues/81)
+  - Raise minimum supported Python version to 3.9
+
 # 12.2.0
 
 - Add `send_async`
