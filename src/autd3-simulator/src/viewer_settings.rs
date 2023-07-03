@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 03/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -60,8 +60,6 @@ pub struct ViewerSettings {
     pub mod_auto_play: bool,
     pub stm_auto_play: bool,
     pub image_save_path: String,
-    pub max_dev_num: usize,
-    pub max_trans_num: usize,
     pub port: u16,
     pub camera_move_speed: f32,
 }
@@ -135,8 +133,6 @@ impl Default for ViewerSettings {
             mod_auto_play: false,
             stm_auto_play: false,
             image_save_path: "image.png".to_string(),
-            max_dev_num: 50,
-            max_trans_num: 10000,
             port: 8080,
             camera_move_speed: 10. * SCALE,
         }
