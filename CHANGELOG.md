@@ -1,6 +1,7 @@
 # 12.3.1
 
 - Fix [#82](https://github.com/shinolab/autd3/issues/82)
+- Fix [#83](https://github.com/shinolab/autd3/issues/83)
 
 # 12.3.0
 
