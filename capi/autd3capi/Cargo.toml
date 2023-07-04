@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi"
-version = "12.3.0"
+version = "12.3.1"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="12.3.0"}
-autd3-core = {path="../../src/autd3-core", version="12.3.0"}
+autd3capi-def = {path="../autd3capi-def", version="12.3.1"}
+autd3-core = {path="../../src/autd3-core", version="12.3.1"}
 
 [build-dependencies]
 wrapper-generator = {path="../wrapper-generator"}
