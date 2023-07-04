@@ -149,6 +149,6 @@ setuptools.setup(
     include_package_data=True,
     package_dir={"pyautd3": "pyautd3"},
     packages=packages,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     data_files=data_files,
 )

@@ -20,8 +20,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: okazunori2013/cuda-toolkit@v0.3.6
-      if: matrix.os != 'macos-latest'
+    - uses: Jimver/cuda-toolkit@v0.2.10
+      if: matrix.os == 'windows-latest'
+      with:
+        method: 'network'
+        sub-packages: '["nvcc", "cudart", "cublas_dev", "cusolver_dev"]'
+    - name: install cuda
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt-get update
+        sudo apt-get -y install cuda-nvcc-12-1 libcublas-dev-12-1 libcusolver-dev-12-1
+        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
     - name: install shaderc
       if: matrix.os == 'windows-latest'
       run: |
@@ -120,7 +131,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: okazunori2013/cuda-toolkit@v0.3.6
+    - name: install cuda
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt-get update
+        sudo apt-get -y install cuda-nvcc-12-1 libcublas-dev-12-1 libcusolver-dev-12-1
+        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
     - name: install shaderc
       run: |
         curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
