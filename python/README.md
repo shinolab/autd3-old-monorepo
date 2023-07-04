@@ -1,8 +1,8 @@
 # pyautd3
 
-[autd3 library](https://github.com/shinolab/autd3) for python3.7+
+[autd3 library](https://github.com/shinolab/autd3) for python3.9+
 
-version: 12.2.0
+version: 12.3.0
 
 ## Install
 
