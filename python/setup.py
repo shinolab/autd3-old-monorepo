@@ -18,6 +18,7 @@ import zipfile
 import tarfile
 import os
 import sys
+import itertools
 
 
 def _get_version():
@@ -118,8 +119,13 @@ packages = [
     "pyautd3.link",
     "pyautd3.stm",
     "pyautd3.extra",
-].extend(
-    map(lambda x: x.replace("\\", ".").replace("/", "."), glob.glob("pyautd3/bin/*"))
+]
+
+data_files = list(
+    map(
+        lambda x: (os.path.join("lib/site-packages", x[0]), list(x[1])),
+        itertools.groupby(glob.glob("pyautd3/bin/**/*"), lambda f: os.path.dirname(f)),
+    )
 )
 
 setuptools.setup(
@@ -143,5 +149,6 @@ setuptools.setup(
     include_package_data=True,
     package_dir={"pyautd3": "pyautd3"},
     packages=packages,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
+    data_files=data_files,
 )

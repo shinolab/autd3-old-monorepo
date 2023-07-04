@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 04/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ mod gpu;
 use std::{
     cell::{Cell, RefCell},
     ffi::OsString,
+    io::Write,
     marker::PhantomData,
     time::Duration,
 };
@@ -74,6 +75,8 @@ pub struct PlotConfig {
     pub fname: OsString,
     #[pyo3(get)]
     pub interval: i32,
+    #[pyo3(get)]
+    pub print_progress: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -181,6 +184,7 @@ impl Default for PlotConfig {
             show: false,
             fname: OsString::new(),
             interval: 100,
+            print_progress: false,
         }
     }
 }
@@ -793,6 +797,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
+import sys
 
 def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
     plot = axes.plot(acoustic_pressures)
@@ -821,6 +826,11 @@ def plot(observe, acoustic_pressures, resolution, x_label, config):
         ax.set_ylabel("Amplitude [-]")
         ax.set_ylim([0, max_p*1.1])
         plt.tight_layout()
+        if config.print_progress:
+            percent = 100 * (frame+1) / size
+            sys.stdout.write('\r')
+            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
+            sys.stdout.flush()
     
     ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
     if config.fname != "":
@@ -874,6 +884,8 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
 import mpl_toolkits.axes_grid1
+import sys
+from matplotlib.colors import Normalize
 
 def config_heatmap(axes, observe_x, observe_y, resolution, config):
     x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
@@ -887,11 +899,12 @@ def config_heatmap(axes, observe_x, observe_y, resolution, config):
     axes.set_xticklabels(x_labels, minor=False)
     axes.set_yticklabels(y_labels, minor=False)
 
-def add_colorbar(fig, axes, mappable, config):
+def add_colorbar(fig, axes, mappable, max_p, config):
     divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
     cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
     cbar = fig.colorbar(mappable, cax=cax)
     cbar.ax.set_ylabel("Amplitude [-]")
+    cbar.ax.set_ylim(0, max_p)
 
 def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
     plt.rcParams["font.size"] = config.fontsize
@@ -902,15 +915,21 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
     size = len(acoustic_pressures) // (nx * ny)
     acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
 
-    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap)
+    max_p = np.max(acoustic_pressures)
+    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap, norm=Normalize(vmin=0, vmax=max_p))
     config_heatmap(ax, observe_x, observe_y, resolution, config)
-    add_colorbar(fig, ax, heatmap, config)
+    add_colorbar(fig, ax, heatmap, max_p, config)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     plt.tight_layout()
 
     def plot_frame(frame):
         heatmap.set_array(acoustic_pressures[frame].flatten())
+        if config.print_progress:
+            percent = 100 * (frame+1) / size
+            sys.stdout.write('\r')
+            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
+            sys.stdout.flush()
         
     ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
     if config.fname != "":
@@ -945,12 +964,31 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
     ) -> Result<(), MonitorError> {
         self.animate.set(false);
 
+        let size = self.animate_drives.borrow().len() as float;
         let acoustic_pressures = self
             .animate_drives
             .borrow()
             .iter()
-            .map(|d| self.calc_field_from_drive(range.clone(), d, geometry))
+            .enumerate()
+            .map(|(i, d)| {
+                if config.print_progress {
+                    let percent = 100.0 * (i + 1) as float / size;
+                    print!("\r");
+                    print!(
+                        "Calculated: [{:30}] {}/{} ({}%)",
+                        "=".repeat((percent / (100.0 / 30.0)) as usize),
+                        i + 1,
+                        size as usize,
+                        percent as usize
+                    );
+                    std::io::stdout().flush().unwrap();
+                }
+                self.calc_field_from_drive(range.clone(), d, geometry)
+            })
             .collect::<Vec<_>>();
+        if config.print_progress {
+            println!();
+        }
         let res = if range.is_1d() {
             let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, 1, 1) => (range.observe_x(), "x [mm]"),
