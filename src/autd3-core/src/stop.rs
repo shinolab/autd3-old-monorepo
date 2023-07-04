@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,10 +28,7 @@ impl<T: Transducer> Datagram<T> for Stop {
     type H = ConfigSilencer;
     type B = GainAdvancedDuty;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
             Self::H::new(10),
             <Self::B as autd3_driver::operation::GainOp>::new(

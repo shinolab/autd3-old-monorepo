@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -182,7 +182,6 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `body` - Body
     ///
     pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
-        let mut s = s;
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
 
         op_header.init();
@@ -444,7 +443,6 @@ mod tests {
             });
 
         let expect_mod = {
-            let mut m = m;
             m.calc()
                 .unwrap()
                 .iter()
@@ -612,7 +610,6 @@ mod tests {
             });
 
         let expect_mod = {
-            let mut m = m;
             m.calc()
                 .unwrap()
                 .iter()
@@ -758,7 +755,6 @@ mod tests {
             });
 
         let expect_mod = {
-            let mut m = m;
             m.calc()
                 .unwrap()
                 .iter()
@@ -904,16 +900,16 @@ mod tests {
         let center = autd.geometry().center();
         let size = 30;
 
-        let mut gains = (0..size)
+        let gains = (0..size)
             .map(|i| {
                 let theta = 2. * PI * i as float / size as float;
                 Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
             })
             .collect::<Vec<_>>();
 
-        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
 
-        autd.send(&mut stm).unwrap();
+        autd.send(&stm).unwrap();
 
         autd.link()
             .emulators()
@@ -940,16 +936,16 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&stm).unwrap();
 
         autd.link().emulators().iter().for_each(|cpu| {
             assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
             assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseFull);
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&stm).unwrap();
 
         (0..size).for_each(|k| {
             autd.link()
@@ -969,8 +965,8 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseHalf);
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_mode(Mode::PhaseHalf);
+        autd.send(&stm).unwrap();
 
         (0..size).for_each(|k| {
             autd.link()
@@ -1009,16 +1005,16 @@ mod tests {
         let center = autd.geometry().center();
         let size = 30;
 
-        let mut gains = (0..size)
+        let gains = (0..size)
             .map(|i| {
                 let theta = 2. * PI * i as float / size as float;
                 Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
             })
             .collect::<Vec<_>>();
 
-        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
 
-        autd.send(&mut stm).unwrap();
+        autd.send(&stm).unwrap();
 
         autd.link()
             .emulators()
@@ -1048,16 +1044,16 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&stm).unwrap();
 
         autd.link().emulators().iter().for_each(|cpu| {
             assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
             assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseFull);
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&stm).unwrap();
 
         (0..size).for_each(|k| {
             autd.link()
@@ -1077,8 +1073,8 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseHalf);
-        assert!(autd.send(&mut stm).is_err());
+        let stm = stm.with_mode(Mode::PhaseHalf);
+        assert!(autd.send(&stm).is_err());
 
         autd.close().unwrap();
     }
@@ -1099,15 +1095,15 @@ mod tests {
         let center = autd.geometry().center();
         let size = 30;
 
-        let mut gains = (0..size)
+        let gains = (0..size)
             .map(|i| {
                 let theta = 2. * PI * i as float / size as float;
                 Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
             })
             .collect::<Vec<_>>();
 
-        let mut stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
-        autd.send(&mut stm).unwrap();
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        autd.send(&stm).unwrap();
 
         autd.link()
             .emulators()
@@ -1137,16 +1133,16 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(&stm).unwrap();
 
         autd.link().emulators().iter().for_each(|cpu| {
             assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
             assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseFull);
-        autd.send(&mut stm).unwrap();
+        let stm = stm.with_mode(Mode::PhaseFull);
+        autd.send(&stm).unwrap();
 
         (0..size).for_each(|k| {
             autd.link()
@@ -1166,8 +1162,8 @@ mod tests {
                 });
         });
 
-        let mut stm = stm.with_mode(Mode::PhaseHalf);
-        assert!(autd.send(&mut stm).is_err());
+        let stm = stm.with_mode(Mode::PhaseHalf);
+        assert!(autd.send(&stm).is_err());
 
         autd.close().unwrap();
     }

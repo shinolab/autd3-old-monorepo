@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             type B = autd3_core::NullBody;
 
             fn operation(
-                &mut self,
+                &self,
                 _geometry: &autd3_core::geometry::Geometry<T>,
             ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                 let freq_div = self.freq_div;
@@ -90,7 +90,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
                 type B = T::Gain;
 
                 fn operation(
-                    &mut self,
+                    &self,
                     geometry: &Geometry<T>,
                 ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                     Ok((Self::H::default(), <Self::B as autd3_core::GainOp>::new(self.calc(geometry)?, || {
@@ -107,7 +107,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
                 type B = T::Gain;
 
                 fn operation(
-                    &mut self,
+                    &self,
                     geometry: &Geometry<T>,
                 ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                     Ok((Self::H::default(), <Self::B as autd3_core::GainOp>::new(self.calc(geometry)?, || {

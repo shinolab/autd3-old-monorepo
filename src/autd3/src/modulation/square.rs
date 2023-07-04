@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -95,7 +95,7 @@ impl Square {
 }
 
 impl Modulation for Square {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let k = gcd(sf, freq);

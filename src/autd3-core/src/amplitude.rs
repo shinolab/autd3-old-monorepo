@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ impl Datagram<AdvancedPhaseTransducer> for Amplitudes {
     type B = autd3_driver::GainAdvancedDuty;
 
     fn operation(
-        &mut self,
+        &self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
