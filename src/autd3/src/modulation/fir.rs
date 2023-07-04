@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -89,7 +89,7 @@ impl<M: Modulation> FIR<M> for M {
 }
 
 impl<M: Modulation> Modulation for FIRImpl<M> {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let m = self.m.calc()?;
         let coeff = self.fir.taps();
         Ok((0..m.len())
@@ -126,7 +126,7 @@ mod tests {
     }
 
     impl Modulation for TestModulation {
-        fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
             Ok(self.data.clone())
         }
     }

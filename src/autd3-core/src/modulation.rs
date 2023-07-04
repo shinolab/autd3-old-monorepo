@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,5 +22,5 @@ pub trait ModulationProperty {
 
 /// Modulation contains the amplitude modulation data.
 pub trait Modulation: ModulationProperty {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError>;
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError>;
 }
