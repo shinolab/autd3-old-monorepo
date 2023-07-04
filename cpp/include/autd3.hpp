@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/06/2023
+// Last Modified: 04/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ namespace autd3 {
 
 constexpr double pi = internal::pi;
 
-static inline std::string version = "12.2.0";
+static inline std::string version = "12.3.0";
 
 using internal::Geometry;
 using internal::Transducer;

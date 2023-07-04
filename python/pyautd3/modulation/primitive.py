@@ -230,5 +230,5 @@ class Modulation(IModulation, metaclass=ABCMeta):
         data = self.calc()
         size = len(data)
         return Base().modulation_custom(
-            self._freq_div, data.ctypes.data_as(c_void_p), size
+            self._freq_div, data.ctypes.data_as(POINTER(c_double)), size
         )
