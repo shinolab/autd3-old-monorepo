@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -30,10 +30,7 @@ impl<T: Transducer> Datagram<T> for Synchronize {
     type H = NullHeader;
     type B = T::Sync;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
             Default::default(),
             <Self::B as autd3_driver::SyncOp>::new(|| {
