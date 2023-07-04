@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-backend-cuda"
-version = "12.2.0"
+version = "12.3.1"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="12.2.0"}
-autd3-backend-cuda = {path="../../src/autd3-backend-cuda", version="12.2.0"}
+autd3capi-def = {path="../autd3capi-def", version="12.3.1"}
+autd3-backend-cuda = {path="../../src/autd3-backend-cuda", version="12.3.1"}
 libc = "0.2.144"
 
 [build-dependencies]
