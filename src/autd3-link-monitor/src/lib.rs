@@ -510,7 +510,7 @@ def plot(modulation, config):
                     .enumerate()
                     .flat_map(|(i, cpu)| {
                         cpu.fpga()
-                            .drives(idx)
+                            .duties_and_phases(idx)
                             .iter()
                             .zip(geometry.transducers_of(i).map(|t| t.cycle()))
                             .zip(

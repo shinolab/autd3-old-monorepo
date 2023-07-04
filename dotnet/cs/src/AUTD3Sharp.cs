@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/06/2023
+ * Last Modified: 04/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -980,7 +980,7 @@ namespace AUTD3Sharp
                 if (_samplFreqDiv != null)
                     ptr = Base.AUTDSTMPropsWithSamplingFreqDiv(_samplFreqDiv.Value);
                 ptr = Base.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
-                ptr = Base.AUTDSTMPropsWithStartIdx(ptr, FinishIdxV);
+                ptr = Base.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
                 return ptr;
             }
 
