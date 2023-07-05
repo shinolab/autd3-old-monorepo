@@ -3,7 +3,7 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 26/01/2023
+# Last Modified: 05/07/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -150,7 +150,7 @@ Write-Host "AUTD3 Firmware Writer"
 ColorEcho "Green" "INFO" "Make sure that you connected configuration cabels and AUTD's power is on."
 
 ColorEcho "Green" "INFO" "Found firmwares are..."
-$firmwares = Get-ChildItem firmwares
+$firmwares = Get-ChildItem bin
 $fpga_firmware = ""
 $cpu_firmware = ""
 foreach ($firmware in $firmwares) {
