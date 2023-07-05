@@ -35,8 +35,8 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## CAUTION
 
-* Before using, write the latest firmware in `dist/firmware`. 
-    * For more information, please see [README](/dist/firmware/README.md).
+* Before using, write the latest firmware in `firmware`. 
+    * For more information, please see [README](./firmware/README.md).
 
 ## Example
 
