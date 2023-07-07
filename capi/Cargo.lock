@@ -351,6 +351,7 @@ dependencies = [
 name = "autd3-simulator"
 version = "12.3.1"
 dependencies = [
+ "anyhow",
  "autd3-core",
  "autd3-firmware-emulator",
  "autd3-protobuf",
