@@ -1,0 +1,23 @@
+{
+  "name": "AUTD server",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@astrojs/svelte": "^3.1.0",
+    "@tauri-apps/api": "^1.4.0",
+    "astro": "^2.7.3",
+    "svelte-tabs": "^1.1.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0",
+    "the-new-css-reset": "^1.9.0"
+  }
+}
