@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 07/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -47,11 +47,63 @@ use vulkano::{
 };
 use vulkano_win::VkSurfaceBuild;
 use winit::{
-    event_loop::EventLoop,
+    event_loop::{EventLoop, EventLoopBuilder},
     window::{Window, WindowBuilder},
 };
 
 use crate::{camera_helper, viewer_settings::ViewerSettings, Matrix4, Vector3};
+
+pub fn available_gpus() -> anyhow::Result<Vec<(u32, String, PhysicalDeviceType)>> {
+    let library = VulkanLibrary::new()?;
+    let required_extensions = vulkano_win::required_extensions(&library);
+    let instance = Instance::new(
+        library,
+        InstanceCreateInfo {
+            enabled_extensions: required_extensions,
+            enumerate_portability: true,
+            ..Default::default()
+        },
+    )?;
+
+    let event_loop = EventLoopBuilder::<()>::new().build();
+
+    let surface = WindowBuilder::new()
+        .with_inner_size(winit::dpi::LogicalSize::new(1, 1))
+        .with_title("tmp")
+        .with_visible(false)
+        .build_vk_surface(&event_loop, instance.clone())?;
+
+    let device_extensions = DeviceExtensions {
+        khr_swapchain: true,
+        ..DeviceExtensions::default()
+    };
+
+    let available_properties = instance
+        .enumerate_physical_devices()?
+        .filter(|p| p.supported_extensions().contains(&device_extensions))
+        .filter_map(|p| {
+            p.queue_family_properties()
+                .iter()
+                .enumerate()
+                .position(|(i, q)| {
+                    q.queue_flags.intersects(QueueFlags::GRAPHICS)
+                        && p.surface_support(i as u32, &surface).unwrap_or(false)
+                })
+                .map(|i| (p, i as u32))
+        })
+        .collect::<Vec<_>>();
+
+    Ok(available_properties
+        .iter()
+        .map(|(p, idx)| {
+            (
+                *idx,
+                p.properties().device_name.to_owned(),
+                p.properties().device_type,
+            )
+        })
+        .collect())
+}
 
 pub struct Renderer {
     device: Arc<Device>,
