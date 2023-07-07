@@ -21,6 +21,8 @@ namespace TwinCATAUTDServer
         [STAThread]
         private static int Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             var clientIpAddr = new Option<string>(
                 aliases: new[] { "--client", "-c" },
                 description: "Client IP address",
