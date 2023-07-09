@@ -4,7 +4,7 @@ Project: AUTD server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 06/07/2023
+Last Modified: 09/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,11 +12,16 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 -->
 
 <script>
+    export let disabled = false;
     export let label = "";
     export let click = () => {};
 </script>
 
-<button on:click={click}>{label}</button>
+{#if disabled}
+    <button disabled>{label}</button>
+{:else}
+    <button on:click={click}>{label}</button>
+{/if}
 
 <style>
     button {
@@ -40,5 +45,9 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
         border: 1px solid var(--color-border-interactive-default, #4dacff);
 
         grid-column: span 2;
+    }
+
+    button:disabled {
+        opacity: 0.4;
     }
 </style>

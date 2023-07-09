@@ -48,68 +48,8 @@ async fn load_settings(handle: tauri::AppHandle) -> Result<Options, String> {
 }
 
 #[tauri::command]
-async fn save_twincat_settings(
-    handle: tauri::AppHandle,
-    twincat_options: &str,
-) -> Result<(), String> {
-    let options = load_settings(handle.clone()).await?;
-    let options = Options {
-        twincat: serde_json::from_str(twincat_options).map_err(|e| e.to_string())?,
-        ..options
-    };
-    let json = serde_json::to_string_pretty(&options).map_err(|e| e.to_string())?;
-    let mut file = match OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(get_settings_file_path(&handle).map_err(|e| e.to_string())?)
-        .await
-    {
-        Ok(file) => file,
-        Err(_) => File::create(get_settings_file_path(&handle).map_err(|e| e.to_string())?)
-            .await
-            .map_err(|e| e.to_string())?,
-    };
-    file.write_all(json.as_bytes())
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-async fn save_soem_settings(handle: tauri::AppHandle, soem_options: &str) -> Result<(), String> {
-    let options = load_settings(handle.clone()).await?;
-    let options = Options {
-        soem: serde_json::from_str(soem_options).map_err(|e| e.to_string())?,
-        ..options
-    };
-    let json = serde_json::to_string_pretty(&options).map_err(|e| e.to_string())?;
-    let mut file = match OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(get_settings_file_path(&handle).map_err(|e| e.to_string())?)
-        .await
-    {
-        Ok(file) => file,
-        Err(_) => File::create(get_settings_file_path(&handle).map_err(|e| e.to_string())?)
-            .await
-            .map_err(|e| e.to_string())?,
-    };
-    file.write_all(json.as_bytes())
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-async fn save_simulator_settings(
-    handle: tauri::AppHandle,
-    simulator_options: &str,
-) -> Result<(), String> {
-    let options = load_settings(handle.clone()).await?;
-    let options = Options {
-        simulator: serde_json::from_str(simulator_options).map_err(|e| e.to_string())?,
-        ..options
-    };
+async fn save_settings(handle: tauri::AppHandle, options: &str) -> Result<(), String> {
+    let options: Options = serde_json::from_str(options).map_err(|e| e.to_string())?;
     let json = serde_json::to_string_pretty(&options).map_err(|e| e.to_string())?;
     let mut file = match OpenOptions::new()
         .write(true)
@@ -174,9 +114,26 @@ async fn run_twincat_server(
     let twincat_options: options::TwinCATOptions =
         serde_json::from_str(twincat_options).map_err(|e| e.to_string())?;
 
-    dbg!(twincat_options);
-
+    let mut args = vec![
+        "-c".to_string(),
+        twincat_options.client,
+        "-s".to_string(),
+        twincat_options.sync0.to_string(),
+        "-t".to_string(),
+        twincat_options.task.to_string(),
+        "-b".to_string(),
+        twincat_options.base.to_string(),
+        "-m".to_string(),
+        match twincat_options.mode {
+            autd3_link_soem::SyncMode::DC => "DC".to_string(),
+            autd3_link_soem::SyncMode::FreeRun => "FreeRun".to_string(),
+        },
+    ];
+    if twincat_options.keep {
+        args.push("-k".to_string());
+    }
     let mut child = Command::new(&twincat_autd_server_path)
+        .args(args)
         .stdout(Stdio::piped())
         .spawn()
         .map_err(|e| e.to_string())?;
@@ -194,32 +151,6 @@ async fn run_twincat_server(
             .await
             .map_err(|e| e.to_string())?;
     }
-
-    Ok(())
-}
-
-#[tauri::command]
-async fn run_soem_server(
-    soem_options: &str,
-    _console_emu_input_tx: tauri::State<'_, Sender<String>>,
-) -> Result<(), String> {
-    let soem_options: options::SOEMOptions =
-        serde_json::from_str(soem_options).map_err(|e| e.to_string())?;
-
-    dbg!(soem_options);
-
-    Ok(())
-}
-
-#[tauri::command]
-async fn run_simulator_server(
-    simulator_options: &str,
-    _console_emu_input_tx: tauri::State<'_, Sender<String>>,
-) -> Result<(), String> {
-    let simulator_options: options::SimulatorOptions =
-        serde_json::from_str(simulator_options).map_err(|e| e.to_string())?;
-
-    dbg!(simulator_options);
 
     Ok(())
 }
@@ -251,14 +182,10 @@ async fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             load_settings,
-            save_twincat_settings,
-            save_soem_settings,
-            save_simulator_settings,
+            save_settings,
             fetch_ifnames,
             copy_autd_xml,
-            run_twincat_server,
-            run_soem_server,
-            run_simulator_server
+            run_twincat_server
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

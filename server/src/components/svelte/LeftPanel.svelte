@@ -8,6 +8,8 @@
 
     import { onMount } from "svelte";
 
+    export let options;
+
     let platformName = "";
 
     onMount(async () => {
@@ -27,16 +29,16 @@
 
         {#if platformName == "win32"}
             <TabPanel>
-                <TwinCAT />
+                <TwinCAT twincatOptions={options.twincat} />
             </TabPanel>
         {/if}
 
         <TabPanel>
-            <SOEM />
+            <SOEM soemOptions={options.soem} />
         </TabPanel>
 
         <TabPanel>
-            <Simulator />
+            <Simulator simulatorOptions={options.simulator} />
         </TabPanel>
     </Tabs>
 </div>

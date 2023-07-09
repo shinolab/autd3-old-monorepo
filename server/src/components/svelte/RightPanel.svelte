@@ -1,9 +1,9 @@
 <script>
+    import { console_output_queue } from "./UI/console_output.js";
     import { listen } from "@tauri-apps/api/event";
     import { onMount } from "svelte";
 
-    let console_output_queue = [];
-    $: console_output = console_output_queue.join("\n");
+    $: console_output = $console_output_queue.join("\n");
 
     onMount(async () => {
         await listen("console-emu", (event) => {
