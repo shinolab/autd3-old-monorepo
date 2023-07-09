@@ -4,14 +4,14 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{ffi::CString, time::Instant};
+use std::{ffi::CString, path::PathBuf, time::Instant};
 
 use autd3_core::{
     autd3_device::NUM_TRANS_IN_UNIT, CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ,
@@ -56,8 +56,15 @@ pub struct ImGuiRenderer {
 }
 
 impl ImGuiRenderer {
-    pub fn new(initial_settings: ViewerSettings, renderer: &Renderer) -> Self {
+    pub fn new(
+        initial_settings: ViewerSettings,
+        config_path: &Option<PathBuf>,
+        renderer: &Renderer,
+    ) -> Self {
         let mut imgui = Context::create();
+        if let Some(path) = config_path {
+            imgui.set_ini_filename(path.join("imgui.ini"));
+        }
 
         let mut platform = WinitPlatform::init(&mut imgui);
         platform.attach_window(imgui.io_mut(), renderer.window(), HiDpiMode::Default);
