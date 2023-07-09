@@ -1,45 +1,72 @@
-<script>
-    import { console_output_queue } from "./UI/console_output.js";
-    import { listen } from "@tauri-apps/api/event";
-    import { onMount } from "svelte";
+<!--
+File: RightPanel.svelte
+Project: AUTD server
+Created Date: 07/07/2023
+Author: Shun Suzuki
+-----
+Last Modified: 10/07/2023
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+-----
+Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-    $: console_output = $console_output_queue.join("\n");
+-->
 
-    onMount(async () => {
-        await listen("console-emu", (event) => {
-            console_output_queue = [...console_output_queue, event.payload];
-        });
+<script lang="ts">
+  import { consoleOutputQueue } from "./UI/console_output.ts";
+  import { listen } from "@tauri-apps/api/event";
+  import { afterUpdate, onMount } from "svelte";
+
+  let element: HTMLTextAreaElement;
+
+  afterUpdate(() => {
+    element.scroll({ top: element.scrollHeight, behavior: "smooth" });
+  });
+
+  let console_output = "";
+  $: {
+    while ($consoleOutputQueue.length > 100) {
+      $consoleOutputQueue.shift();
+    }
+    console_output = $consoleOutputQueue.join("\n");
+  }
+
+  onMount(async () => {
+    await listen("console-emu", (event) => {
+      consoleOutputQueue.update((v) => {
+        return [...v, `${event.payload}`];
+      });
     });
+  });
 </script>
 
 <div>
-    <textarea readonly>{console_output}</textarea>
+  <textarea bind:this={element} readonly>{console_output}</textarea>
 </div>
 
 <style>
-    div {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        flex: 1 0 0;
-        align-self: stretch;
+  div {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1 0 0;
+    align-self: stretch;
 
-        width: 100%;
-        box-sizing: border-box;
-    }
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-    textarea {
-        resize: none;
+  textarea {
+    resize: none;
 
-        display: flex;
-        padding: 8px;
-        align-items: flex-start;
-        flex: 1 0 0;
-        align-self: stretch;
+    display: flex;
+    padding: 8px;
+    align-items: flex-start;
+    flex: 1 0 0;
+    align-self: stretch;
 
-        border-radius: 3px;
-        border: 1px solid var(--color-border-interactive-muted, #2b659b);
-        background: var(--color-background-base-default, #101923);
-        color: var(--color-text-base-default, #ffffff);
-    }
+    border-radius: 3px;
+    border: 1px solid var(--color-border-interactive-muted, #2b659b);
+    background: var(--color-background-base-default, #101923);
+    color: var(--color-text-base-default, #ffffff);
+  }
 </style>

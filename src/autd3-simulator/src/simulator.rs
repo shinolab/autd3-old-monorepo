@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,10 @@
 use std::{
     error::Error,
     f32::consts::PI,
+    ffi::OsStr,
     io::ErrorKind,
     net::ToSocketAddrs,
+    path::{Path, PathBuf},
     pin::Pin,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -162,6 +164,7 @@ pub struct Simulator {
     port: Option<u16>,
     gpu_idx: Option<i32>,
     settings: ViewerSettings,
+    config_path: Option<PathBuf>,
 }
 
 impl Simulator {
@@ -173,6 +176,7 @@ impl Simulator {
             port: None,
             gpu_idx: None,
             settings: ViewerSettings::default(),
+            config_path: None,
         }
     }
 
@@ -199,6 +203,11 @@ impl Simulator {
 
     pub fn with_settings(mut self, settings: ViewerSettings) -> Self {
         self.settings = settings;
+        self
+    }
+
+    pub fn with_config_path<S: AsRef<OsStr> + Sized>(mut self, config_path: S) -> Self {
+        self.config_path = Some(Path::new(&config_path).to_owned());
         self
     }
 
@@ -280,7 +289,7 @@ impl Simulator {
 
         let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings);
         let mut slice_viewer = SliceViewer::new(&render, &self.settings);
-        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &render);
+        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &self.config_path, &render);
         let mut trans_viewer = TransViewer::new(&render);
 
         let mut is_initialized = false;

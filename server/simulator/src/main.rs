@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -63,7 +63,11 @@ struct Arg {
     #[arg(short = 'g', long = "gpu_idx")]
     index: Option<i32>,
 
-    /// Setting file path
+    /// Config file path
+    #[arg(long = "config_path")]
+    config_path: Option<String>,
+
+    /// Setting file name
     #[arg(short = 's', long = "setting", default_value = "settings.json")]
     setting: String,
 
@@ -95,7 +99,11 @@ fn main() -> anyhow::Result<()> {
             let port = arg.port;
             let gpu_idx = arg.index;
             let window_size = arg.window_size;
-            let settings_path = arg.setting.to_owned();
+            let settings_path = if let Some(path) = &arg.config_path {
+                Path::new(path).join(&arg.setting)
+            } else {
+                Path::new(&arg.setting).to_owned()
+            };
             let vsync = arg.vsync;
             let debug = arg.debug;
 
@@ -104,7 +112,7 @@ fn main() -> anyhow::Result<()> {
                     .set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Debug));
             }
 
-            let settings: ViewerSettings = if Path::new(&settings_path).exists() {
+            let settings: ViewerSettings = if settings_path.exists() {
                 let file = File::open(&settings_path)?;
                 let reader = BufReader::new(file);
                 serde_json::from_reader(reader)?
@@ -130,6 +138,10 @@ fn main() -> anyhow::Result<()> {
                 simulator = simulator.with_vsync(vsync);
             }
 
+            if let Some(path) = &arg.config_path {
+                simulator = simulator.with_config_path(path);
+            }
+
             simulator.run();
 
             {
@@ -137,9 +149,11 @@ fn main() -> anyhow::Result<()> {
 
                 let settings_str = serde_json::to_string_pretty(settings)?;
 
-                if Path::new(&settings_path).exists() {
+                if settings_path.exists() {
                     fs::remove_file(&settings_path).unwrap();
                 }
+
+                std::fs::create_dir_all(&settings_path.parent().unwrap())?;
 
                 let mut file = OpenOptions::new()
                     .create_new(true)
