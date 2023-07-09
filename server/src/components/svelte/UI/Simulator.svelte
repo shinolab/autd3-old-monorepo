@@ -4,7 +4,7 @@ Project: AUTD server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 06/07/2023
+Last Modified: 09/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,52 +12,78 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 -->
 
 <script>
-    import { invoke } from "@tauri-apps/api";
-    import { onMount, onDestroy } from "svelte";
-    import { Command } from "@tauri-apps/api/shell";
+    import { onMount } from "svelte";
     import { writable } from "svelte/store";
+    import { Command } from "@tauri-apps/api/shell";
+    import { console_output_queue } from "./console_output.js";
 
     import Button from "./utils/Button.svelte";
     import Select from "./utils/Select.svelte";
     import CheckBox from "./utils/CheckBox.svelte";
     import NumberInput from "./utils/NumberInput.svelte";
 
-    let vsync = false;
-    let port = 8080;
-    let gpu_name = "";
-    let gpu_idx = -1;
+    export let simulatorOptions;
+
+    let command;
+    let child = null;
+
+    let gpu_name;
     $: {
-        const idx = availableGpusNames.indexOf(gpu_name);
-        if (idx == 0 || idx == -1) {
-            gpu_idx = -1;
-        } else {
-            gpu_idx = parseInt(availableGpus[idx - 1].split(":")[0].trim());
+        if (gpu_name) {
+            const idx = availableGpusNames.indexOf(gpu_name);
+            if (idx == 0 || idx == -1) {
+                simulatorOptions.gpu_idx = -1;
+            } else {
+                let gpu_idx = parseInt(
+                    availableGpus[idx - 1].split(":")[0].trim()
+                );
+                simulatorOptions.gpu_idx = gpu_idx;
+            }
         }
     }
-    let window_width = 800;
-    let window_height = 600;
 
-    export const cachedGPUs = writable(null);
+    const cachedGPUs = writable(null);
     let availableGpus = [];
     $: availableGpusNames = ["Auto"].concat(
         availableGpus.map((gpu) => gpu.split(":")[1].trim())
     );
 
-    let options = () =>
-        JSON.stringify({
-            vsync,
-            port,
-            gpu_idx,
-            window_width,
-            window_height,
-        });
-
     let handleRunClick = async () => {
-        const simulatorOptions = options();
-        try {
-            await invoke("run_simulator_server", { simulatorOptions });
-        } catch (err) {
-            alert(err);
+        const args = [
+            "run",
+            "-w",
+            `${simulatorOptions.window_width},${simulatorOptions.window_height}`,
+            "-p",
+            simulatorOptions.port.toString(),
+            "-v",
+            simulatorOptions.vsync ? "true" : "false",
+            "-s",
+            "simulator_settings.json",
+        ];
+        if (simulatorOptions.gpu_idx !== -1) {
+            args.push("-g");
+            args.push(simulatorOptions.gpu_idx.toString());
+        }
+        command = Command.sidecar("simulator", args);
+        child = await command.spawn();
+        command.stdout.on("data", (line) =>
+            console_output_queue.update((v) => {
+                return [...v, line];
+            })
+        );
+        command.stderr.on("data", (line) =>
+            console_output_queue.update((v) => {
+                return [...v, line];
+            })
+        );
+        command.on("error", () => handleCloseClick());
+        command.on("close", () => handleCloseClick());
+    };
+
+    let handleCloseClick = async () => {
+        if (child) {
+            child.kill();
+            child = null;
         }
     };
 
@@ -66,7 +92,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
         cachedGPUs.subscribe((v) => {
             gpus = v;
         })();
-        if (gpus === null) {
+        if (!gpus) {
             gpus = (await Command.sidecar("simulator", "list").execute())
                 .stdout;
             cachedGPUs.set(gpus);
@@ -74,53 +100,50 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
         availableGpus = gpus
             .split("\n")
             .map((s) => s.trim().replace(/ \(type .*\)$/g, ""));
-
-        const options = await invoke("load_settings", {});
-        if (options.simulator) {
-            vsync = options.simulator.vsync;
-            port = options.simulator.port;
-            gpu_name = (
-                availableGpus.find(
-                    (gpu) =>
-                        gpu.split(":")[0].trim() == options.simulator.gpu_idx
-                ) ?? "0:Auto"
-            )
-                .split(":")[1]
-                .trim();
-            console.log(gpu_name);
-            window_width = options.simulator.window_width;
-            window_height = options.simulator.window_height;
-        }
-    });
-
-    onDestroy(async () => {
-        const simulatorOptions = options();
-        await invoke("save_simulator_settings", { simulatorOptions });
+        gpu_name = (
+            availableGpus.find(
+                (gpu) => gpu.split(":")[0].trim() == simulatorOptions.gpu_idx
+            ) ?? "0:Auto"
+        )
+            .split(":")[1]
+            .trim();
     });
 </script>
 
 <div class="ui">
     <label for="vsync">Vsync:</label>
-    <CheckBox id="vsync" bind:checked={vsync} />
+    <CheckBox id="vsync" bind:checked={simulatorOptions.vsync} />
 
     <label for="port">Port:</label>
-    <NumberInput id="port" bind:value={port} min="0" max="65535" step="1" />
+    <NumberInput
+        id="port"
+        bind:value={simulatorOptions.port}
+        min="0"
+        max="65535"
+        step="1"
+    />
 
     <label for="gpu_name">GPU: </label>
     <Select id="gpu_name" bind:value={gpu_name} values={availableGpusNames} />
 
     <label for="window_width">Window width:</label>
-    <NumberInput id="window_width" bind:value={window_width} min="1" step="1" />
-
-    <label for="window_height">Window height:</label>
     <NumberInput
-        id="window_height"
-        bind:value={window_height}
+        id="window_width"
+        bind:value={simulatorOptions.window_width}
         min="1"
         step="1"
     />
 
-    <Button label="Run" click={handleRunClick} />
+    <label for="window_height">Window height:</label>
+    <NumberInput
+        id="window_height"
+        bind:value={simulatorOptions.window_height}
+        min="1"
+        step="1"
+    />
+
+    <Button label="Run" click={handleRunClick} disabled={!!child} />
+    <Button label="Close" click={handleCloseClick} disabled={!child} />
 </div>
 
 <style>

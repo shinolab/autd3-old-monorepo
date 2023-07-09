@@ -4,7 +4,7 @@ Project: AUTD server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 06/07/2023
+Last Modified: 09/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 <script>
     import { invoke } from "@tauri-apps/api";
-    import { onMount, onDestroy } from "svelte";
+    import { onMount } from "svelte";
+    import { writable } from "svelte/store";
+    import { Command } from "@tauri-apps/api/shell";
+    import { console_output_queue } from "./console_output.js";
 
     import Button from "./utils/Button.svelte";
     import Select from "./utils/Select.svelte";
@@ -24,100 +27,159 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
     import { SyncMode, TimerStrategy } from "./ecat.js";
 
-    let ifname = "";
-    let port = 8080;
-    let sync0 = 2;
-    let send = 2;
-    let buf_size = 32;
-    let mode = Object.keys(SyncMode)[1];
-    let timer_strategy = Object.keys(TimerStrategy)[1];
-    let state_check_interval_ms = 500;
-    let timeout_ms = 200;
-    let debug = false;
-    let lightweight = false;
+    export let soemOptions;
 
-    let adapters = [];
-    $: adapter_names = ["Auto"].concat(
-        adapters.map((adapter) => adapter.split(",")[1].trim())
-    );
+    let command;
+    let child = null;
 
-    let options = () => {
-        const timeout = msToDuration(timeout_ms);
-        const state_check_interval = msToDuration(state_check_interval_ms);
-        return JSON.stringify({
-            ifname,
-            port,
-            sync0,
-            send,
-            buf_size,
-            mode,
-            timer_strategy,
-            state_check_interval,
-            timeout,
-            debug,
-            lightweight,
-        });
+    let parse_mode = (mode) => {
+        switch (mode.toString().toLowerCase()) {
+            case "dc":
+                return "dc";
+            case "freerun":
+                return "free-run";
+            default:
+                return "free-run";
+        }
     };
 
+    let parse_strategy = (strategy) => {
+        switch (strategy.toString().toLowerCase()) {
+            case "nativetimer":
+                return "native-timer";
+            case "sleep":
+                return "sleep";
+            case "busywait":
+                return "busy-wait";
+            default:
+                return "sleep";
+        }
+    };
+
+    let state_check_interval_ms = msFromDuration(
+        soemOptions.state_check_interval
+    );
+    $: {
+        soemOptions.state_check_interval = msToDuration(
+            state_check_interval_ms
+        );
+    }
+    let timeout_ms = msFromDuration(soemOptions.timeout);
+    $: {
+        soemOptions.timeout = msToDuration(timeout_ms);
+    }
+
+    const cachedAdapters = writable(null);
+    let adapter_names;
+
     let handleRunClick = async () => {
-        const soemOptions = options();
-        try {
-            await invoke("run_soem_server", { soemOptions });
-        } catch (err) {
-            alert(err);
+        const args = [
+            "run",
+            "-i",
+            soemOptions.ifname == "Auto" ? "" : soemOptions.ifname,
+            "-p",
+            soemOptions.port.toString(),
+            "-s",
+            soemOptions.sync0.toString(),
+            "-c",
+            soemOptions.send.toString(),
+            "-b",
+            soemOptions.buf_size.toString(),
+            "-m",
+            parse_mode(soemOptions.mode),
+            "-w",
+            parse_strategy(soemOptions.timer_strategy),
+            "-e",
+            state_check_interval_ms.toString(),
+            "-t",
+            timeout_ms.toString(),
+        ];
+        if (soemOptions.debug) {
+            args.push("-d");
+        }
+        if (soemOptions.lightweight) {
+            args.push("-l");
+        }
+        command = Command.sidecar("SOEMAUTDServer", args);
+        child = await command.spawn();
+        command.stdout.on("data", (line) =>
+            console_output_queue.update((v) => {
+                return [...v, line];
+            })
+        );
+        command.stderr.on("data", (line) =>
+            console_output_queue.update((v) => {
+                return [...v, line];
+            })
+        );
+        command.on("error", () => handleCloseClick());
+        command.on("close", () => handleCloseClick());
+    };
+
+    let handleCloseClick = async () => {
+        if (child) {
+            child.kill();
+            child = null;
         }
     };
 
     onMount(async () => {
-        const options = await invoke("load_settings", {});
-        if (options.soem) {
-            ifname = !!options.soem.ifname ? options.soem.ifname : "Auto";
-            port = options.soem.port;
-            sync0 = options.soem.sync0;
-            send = options.soem.send;
-            buf_size = options.soem.buf_size;
-            mode = options.soem.mode;
-            timer_strategy = options.soem.timer_strategy;
-            state_check_interval_ms = msFromDuration(
-                options.soem.state_check_interval
-            );
-            timeout_ms = msFromDuration(options.soem.timeout);
-            debug = options.soem.debug;
-            lightweight = options.soem.lightweight;
+        let adapters = null;
+        cachedAdapters.subscribe((v) => {
+            adapters = v;
+        })();
+        if (!adapters) {
+            adapters = await invoke("fetch_ifnames", {});
+            cachedAdapters.set(adapters);
         }
-
-        adapters = await invoke("fetch_ifnames", {});
-    });
-
-    onDestroy(async () => {
-        const soemOptions = options();
-        await invoke("save_soem_settings", { soemOptions });
+        adapter_names = ["Auto"].concat(
+            adapters.map((adapter) => adapter.split(",")[1].trim())
+        );
     });
 </script>
 
 <div class="ui">
     <label for="ifname">Interface name:</label>
-    <Select id="ifname" bind:value={ifname} values={adapter_names} />
+    <Select
+        id="ifname"
+        bind:value={soemOptions.ifname}
+        values={adapter_names}
+    />
 
     <label for="port">Port:</label>
-    <NumberInput id="port" bind:value={port} min="0" max="65535" step="1" />
+    <NumberInput
+        id="port"
+        bind:value={soemOptions.port}
+        min="0"
+        max="65535"
+        step="1"
+    />
 
     <label for="buf_size">Buffer size:</label>
-    <NumberInput id="buf_size" bind:value={buf_size} min="1" step="1" />
+    <NumberInput
+        id="buf_size"
+        bind:value={soemOptions.buf_size}
+        min="1"
+        step="1"
+    />
 
     <label for="sync0">Sync0 cycle:</label>
-    <NumberInput id="sync0" bind:value={sync0} min="1" step="1" />
+    <NumberInput id="sync0" bind:value={soemOptions.sync0} min="1" step="1" />
 
     <label for="send">Send cycle:</label>
-    <NumberInput id="send" bind:value={send} min="1" step="1" />
+    <NumberInput id="send" bind:value={soemOptions.send} min="1" step="1" />
 
     <label for="mode">Sync mode:</label>
-    <Select id="mode" bind:value={mode} values={Object.keys(SyncMode)} />
+    <Select
+        id="mode"
+        bind:value={soemOptions.mode}
+        values={Object.keys(SyncMode)}
+    />
 
     <label for="timer_strategy">Timer strategy:</label>
     <Select
         id="timer_strategy"
-        bind:value={timer_strategy}
+        bind:value={soemOptions.timer_strategy}
         values={Object.keys(TimerStrategy)}
     />
 
@@ -133,12 +195,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     <NumberInput id="timeout_ms" bind:value={timeout_ms} min="1" step="1" />
 
     <label for="debug">Enable debug:</label>
-    <CheckBox id="debug" bind:checked={debug} />
+    <CheckBox id="debug" bind:checked={soemOptions.debug} />
 
     <label for="lightweight">Enable lightweight:</label>
-    <CheckBox id="lightweight" bind:checked={lightweight} />
+    <CheckBox id="lightweight" bind:checked={soemOptions.lightweight} />
 
-    <Button label="Run" click={handleRunClick} />
+    <Button label="Run" click={handleRunClick} disabled={!!child} />
+    <Button label="Close" click={handleCloseClick} disabled={!child} />
 </div>
 
 <style>

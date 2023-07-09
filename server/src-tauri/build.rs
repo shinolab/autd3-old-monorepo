@@ -3,8 +3,17 @@ use std::process::Command;
 
 fn main() {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+
     Command::new("cargo")
         .current_dir(manifest_dir.join("../simulator"))
+        .args(["build", "--release"])
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+
+    Command::new("cargo")
+        .current_dir(manifest_dir.join("../SOEMAUTDServer"))
         .args(["build", "--release"])
         .spawn()
         .unwrap()
@@ -21,6 +30,18 @@ fn main() {
         manifest_dir.join(format!("../simulator/target/release/simulator{}", ext)),
         manifest_dir.join(format!(
             "simulator-{}{}",
+            std::env::var("TARGET").unwrap(),
+            ext
+        )),
+    )
+    .unwrap();
+    std::fs::copy(
+        manifest_dir.join(format!(
+            "../SOEMAUTDServer/target/release/SOEMAUTDServer{}",
+            ext
+        )),
+        manifest_dir.join(format!(
+            "SOEMAUTDServer-{}{}",
             std::env::var("TARGET").unwrap(),
             ext
         )),
