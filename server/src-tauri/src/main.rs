@@ -1,3 +1,16 @@
+/*
+ * File: main.rs
+ * Project: AUTD server
+ * Created Date: 07/07/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 10/07/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -106,6 +119,7 @@ async fn run_twincat_server(
     handle: tauri::AppHandle,
     console_emu_input_tx: tauri::State<'_, Sender<String>>,
 ) -> Result<(), String> {
+    dbg!(twincat_options);
     let twincat_autd_server_path = handle
         .path_resolver()
         .resolve_resource("TwinCATAUTDServer/TwinCATAUTDServer.exe")

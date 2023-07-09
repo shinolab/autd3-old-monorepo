@@ -194,7 +194,6 @@ fn main_() -> anyhow::Result<()> {
                 rt.block_on(tx.send(())).unwrap();
             })
             .expect("Error setting Ctrl-C handler");
-            spdlog::info!("Press Ctrl+C to exit...");
 
             let addr = format!("0.0.0.0:{}", port).parse()?;
             spdlog::info!("Waiting for client connection on {}", addr);
@@ -209,7 +208,7 @@ fn main_() -> anyhow::Result<()> {
                     });
                 rt.block_on(server_future)?;
             } else {
-                spdlog::info!("Connecting SOEM server...");
+                spdlog::info!("Starting SOEM server...");
 
                 let mut soem = f();
                 let num_dev = soem.open_impl(&[])? as usize;

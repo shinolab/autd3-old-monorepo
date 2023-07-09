@@ -1,55 +1,66 @@
-<script>
-	import { options } from "./UI/options.js";
-	import { invoke } from "@tauri-apps/api";
-	import { appWindow } from "@tauri-apps/api/window";
-	import { TauriEvent } from "@tauri-apps/api/event";
-	import { onMount } from "svelte";
+<!--
+File: App.svelte
+Project: AUTD server
+Created Date: 07/07/2023
+Author: Shun Suzuki
+-----
+Last Modified: 10/07/2023
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+-----
+Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-	import LeftPanel from "./LeftPanel.svelte";
-	import RightPanel from "./RightPanel.svelte";
+-->
 
-	onMount(async () => {
-		options.set(await invoke("load_settings", {}));
-	});
+<script lang="ts">
+  import type { Options } from "./UI/options";
 
-	const handleUnload = async () => {
-		let tmp = null;
-		options.subscribe((v) => {
-			tmp = v;
-		})();
-		if (tmp) {
-			let args = {
-				options: JSON.stringify(tmp),
-			};
-			console.log(args);
-			await invoke("save_settings", args);
-		}
-	};
+  import { invoke } from "@tauri-apps/api";
+  import { appWindow } from "@tauri-apps/api/window";
+  import { TauriEvent } from "@tauri-apps/api/event";
+  import { onMount } from "svelte";
 
-	appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-		await handleUnload();
-		await appWindow.close();
-	});
+  import LeftPanel from "./LeftPanel.svelte";
+  import RightPanel from "./RightPanel.svelte";
+
+  let options: null | Options = null;
+
+  onMount(async () => {
+    options = await invoke("load_settings", {});
+  });
+
+  const handleUnload = async () => {
+    if (options) {
+      let args = {
+        options: JSON.stringify(options),
+      };
+      await invoke("save_settings", args);
+    }
+  };
+
+  appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+    await handleUnload();
+    await appWindow.close();
+  });
 </script>
 
 <div>
-	{#if $options}
-		<LeftPanel options={$options} />
-	{/if}
-	<RightPanel />
+  {#if options}
+    <LeftPanel {options} />
+  {/if}
+  <RightPanel />
 </div>
 
 <style>
-	div {
-		display: flex;
-		width: 100%;
-		align-items: flex-start;
-		gap: 10px;
-		flex-shrink: 0;
+  div {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 10px;
+    flex-shrink: 0;
 
-		padding: 10px;
+    padding: 10px;
 
-		height: 100vh;
-		box-sizing: border-box;
-	}
+    height: 100vh;
+    box-sizing: border-box;
+  }
 </style>
