@@ -31,11 +31,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(-1);
         }))?;
 
-    // Initialize and synchronize the device
-    // You must call synchronize at least once after initialization
-    autd.send(Clear::new())?;
-    autd.send(Synchronize::new())?;
-
     // Check firmware version
     // This code assumes that the version is v2.9
     autd.firmware_infos()?.iter().for_each(|firm_info| {

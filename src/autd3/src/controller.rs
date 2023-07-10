@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,9 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear, datagram::Datagram, float, geometry::*, link::Link, stop::Stop, FPGAInfo,
-    FirmwareInfo, Operation, RxDatagram, TxDatagram, METER, MSG_BEGIN, MSG_END,
+    clear::Clear, datagram::Datagram, float, geometry::*, link::Link, stop::Stop,
+    synchronize::Synchronize, FPGAInfo, FirmwareInfo, Operation, RxDatagram, TxDatagram, METER,
+    MSG_BEGIN, MSG_END,
 };
 
 use crate::{error::AUTDError, link::NullLink, software_stm::SoftwareSTM};
@@ -139,7 +140,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
         let tx_buf = TxDatagram::new(geometry.device_map());
-        Ok(Controller {
+        let mut cnt = Controller {
             link,
             geometry,
             tx_buf,
@@ -147,7 +148,10 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             force_fan: autd3_core::ForceFan::default(),
             reads_fpga_info: autd3_core::ReadsFPGAInfo::default(),
             msg_id: AtomicU8::new(MSG_BEGIN),
-        })
+        };
+        cnt.send(Clear::new())?;
+        cnt.send(Synchronize::new())?;
+        Ok(cnt)
     }
 
     pub fn force_fan(&mut self, value: bool) {
