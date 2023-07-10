@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -65,10 +65,22 @@ impl Sine {
     pub fn with_offset(self, offset: float) -> Self {
         Self { offset, ..self }
     }
+
+    pub fn freq(&self) -> usize {
+        self.freq
+    }
+
+    pub fn amp(&self) -> float {
+        self.amp
+    }
+
+    pub fn offset(&self) -> float {
+        self.offset
+    }
 }
 
 impl Modulation for Sine {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);

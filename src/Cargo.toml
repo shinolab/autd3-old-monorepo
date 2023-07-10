@@ -15,6 +15,7 @@ members = [
     "autd3-firmware-emulator",
     "autd3-simulator",
     "autd3-geometry-viewer",
+    "autd3-protobuf"
 ]
 default-members = [
     "autd3",

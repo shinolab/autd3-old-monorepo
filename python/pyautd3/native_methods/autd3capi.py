@@ -206,18 +206,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.restype = ModulationPtr
 
-        self.dll.AUTDModulationSinePressure.argtypes = [ctypes.c_uint32] 
-        self.dll.AUTDModulationSinePressure.restype = ModulationPtr
-
-        self.dll.AUTDModulationSinePressureWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDModulationSinePressureWithAmp.restype = ModulationPtr
-
-        self.dll.AUTDModulationSinePressureWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDModulationSinePressureWithOffset.restype = ModulationPtr
-
-        self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision.restype = ModulationPtr
-
         self.dll.AUTDModulationSineLegacy.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSineLegacy.restype = ModulationPtr
 
@@ -520,18 +508,6 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_sine_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithSamplingFrequencyDivision(m, div)
-
-    def modulation_sine_pressure(self, freq: int) -> ModulationPtr:
-        return self.dll.AUTDModulationSinePressure(freq)
-
-    def modulation_sine_pressure_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
-        return self.dll.AUTDModulationSinePressureWithAmp(m, amp)
-
-    def modulation_sine_pressure_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
-        return self.dll.AUTDModulationSinePressureWithOffset(m, offset)
-
-    def modulation_sine_pressure_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
-        return self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision(m, div)
 
     def modulation_sine_legacy(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSineLegacy(freq)

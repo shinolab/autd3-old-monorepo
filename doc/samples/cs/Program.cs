@@ -14,9 +14,6 @@ var autd = Controller.Builder()
         .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
         .OpenWith(new SOEM().WithOnLost(onLost));
 
-autd.Send(new Clear());
-autd.Send(new Synchronize());
-
 var firmList = autd.FirmwareInfoList().ToArray();
 foreach (var firm in firmList)
     Console.WriteLine(firm);

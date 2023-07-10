@@ -4,15 +4,20 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 07/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+#[cfg(not(target_os = "macos"))]
 use cuda_config::*;
 
+#[cfg(target_os = "macos")]
+fn main() {}
+
+#[cfg(not(target_os = "macos"))]
 fn main() {
     let mut build = cc::Build::new();
 

@@ -2,8 +2,6 @@ name: Release Check
 
 on:
   push:
-    tags-ignore:
-      - v*
     branches:
       - 'release'
 
@@ -15,6 +13,7 @@ jobs:
     name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -57,75 +56,70 @@ jobs:
         echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         cp install/lib/*.dylib /usr/local/lib/
         rm shaderc.tgz
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd src
         cargo build --all --release
         cargo test --workspace --release --exclude autd3-link-soem -- --skip test_timer
-        cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
         cargo build --all --release
         cargo test --all --release -- --skip test_timer
-        cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
         cargo build --all --release --exclude autd3-backend-cuda
         cargo test --all --release --exclude autd3-backend-cuda -- --skip test_timer
-        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd examples
         cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
-        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd examples
         cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd capi
         cargo build --all --release
         cargo test --workspace --release --exclude autd3capi-link-soem
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd capi
         cargo build --all --release
         cargo test --all --release --exclude autd3capi-backend-cuda
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd capi
         cargo build --all --release --exclude autd3capi-backend-cuda
         cargo test --all --release --exclude autd3capi-backend-cuda
-        cargo clean
-    - name: Build dist on ${{ matrix.os }}
-      if: matrix.os == 'windows-latest'
-      run: |
-        cd dist
-        cd SOEMAUTDServer
-        cargo build --all --release
-        cargo test --release
-        cargo clippy --all --release -- -D warnings
-        cargo clean
-        cd ..
-        cd simulator
-        cargo build --all --release
-        cargo test --release
-        cargo clippy --all --release -- -D warnings
-        cargo clean
 
   lint:
     runs-on: ubuntu-latest
@@ -145,18 +139,123 @@ jobs:
         echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         rm shaderc.tgz
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: lint src
       run: |
         cd src
         cargo clippy --all --release -- -D warnings
-        cargo clean
     - name: lint examples
       run: |
         cd examples
         cargo clippy --all --release -- -D warnings
-        cargo clean
     - name: lint capi
       run: |
         cd capi
         cargo clippy --all --release -- -D warnings
-        cargo clean
+
+
+
+  publish-server:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: install aarch64 target on macos
+        if: matrix.os == 'macos-latest'
+        run: |
+          rustup target add aarch64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './server/src-tauri -> target'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './server/simulator -> target'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './server/SOEMAUTDServer -> target'
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev librsvg2-dev
+
+      - name: install shaderc
+        if: matrix.os == 'windows-latest'
+        run: |
+          Invoke-WebRequest -URI https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/windows/continuous_release_2019/10/20230531-104731/install.zip -OutFile shaderc.zip
+          Expand-Archive -Path shaderc.zip -DestinationPath shaderc
+          echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
+          rm shaderc.zip
+      - name: install shaderc
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+          tar -xzf shaderc.tgz
+          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          rm shaderc.tgz
+      - name: install shaderc
+        if: matrix.os == 'macos-latest'
+        run: |
+          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
+          tar -xzf shaderc.tgz
+          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          cp install/lib/*.dylib /usr/local/lib/
+          rm shaderc.tgz
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+      - name: install frontend dependencies
+        run: |
+          cd server 
+          npm install
+      - name: build
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd server
+          npm run tauri build -- --target universal-apple-darwin
+      - name: build
+        if: matrix.os != 'macos-latest'
+        run: |
+          cd server
+          npm run tauri build
