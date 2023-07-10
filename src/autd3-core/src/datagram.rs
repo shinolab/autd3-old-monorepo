@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,10 +21,7 @@ pub trait Datagram<T: Transducer> {
     type H: Operation;
     type B: Operation;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError>;
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError>;
 
     fn timeout(&self) -> Option<Duration> {
         None
@@ -41,10 +38,7 @@ impl<T: Transducer, D: Datagram<T>> Datagram<T> for DatagramWithTimeout<T, D> {
     type H = D::H;
     type B = D::B;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         self.datagram.operation(geometry)
     }
 
@@ -74,10 +68,7 @@ where
     type H = B::H;
     type B = B::B;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         B::operation(self, geometry)
     }
 
@@ -86,17 +77,14 @@ where
     }
 }
 
-impl<T: Transducer, B> Datagram<T> for &mut B
+impl<T: Transducer, B> Datagram<T> for &B
 where
     B: Datagram<T>,
 {
     type H = B::H;
     type B = B::B;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         B::operation(self, geometry)
     }
 
@@ -113,10 +101,7 @@ where
     type H = H::H;
     type B = B::B;
 
-    fn operation(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let (h, _) = self.0.operation(geometry)?;
         let (_, b) = self.1.operation(geometry)?;
         Ok((h, b))
@@ -136,7 +121,7 @@ impl<T: Transducer> Datagram<T> for NullHeader {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 
-    fn operation(&mut self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::default()))
     }
 }
@@ -154,7 +139,7 @@ impl<T: Transducer> Datagram<T> for NullBody {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 
-    fn operation(&mut self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::default()))
     }
 }

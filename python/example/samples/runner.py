@@ -11,7 +11,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, Clear, Synchronize, Stop, FirmwareInfo
+from pyautd3 import Controller, Stop, FirmwareInfo
 
 from . import focus, bessel, holo, custom, stm_gain, stm_focus, grouped
 
@@ -28,9 +28,6 @@ def run(autd: Controller):
 
     if autd.geometry.num_devices == 2:
         samples.append((grouped.grouped, "Grouped Sample"))
-
-    autd.send(Clear())
-    autd.send(Synchronize())
 
     firm_info_list = autd.firmware_info_list()
     if not all([firm.is_valid for firm in firm_info_list]):

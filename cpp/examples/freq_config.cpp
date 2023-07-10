@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 10/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,8 +24,7 @@ int main() try {
     tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
   });
 
-  autd.send(autd3::Clear());
-  autd.send(autd3::Synchronize());  // You must configure the frequencies of all transducers before synchronization.
+  autd.send(autd3::Synchronize());  // You must synchronize after configuring the frequencies.
 
   autd3::SilencerConfig silencer;
   autd.send(silencer);

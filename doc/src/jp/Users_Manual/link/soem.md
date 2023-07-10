@@ -11,7 +11,7 @@ SOEMを使用するのはやむを得ない理由があるか, 開発時のみ�
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macOSの場合は, 特に準備は必要ない.
 
-> NOTE: `SOEM`を使用する場合, `Controller`をopen[^soem_init_sync]してから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
+> NOTE: `SOEM`を使用する場合, `Controller`をopenしてから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
 > この期間, デバイス間の超音波の同期は保証されない.
 
 ## SOEMリンクのAPI
@@ -294,7 +294,7 @@ use autd3_link_soem::RemoteSOEM;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-RemoteSOEM::new("169.254.205.219:8080")?
+RemoteSOEM::new("169.254.205.219:8080".parse()?)?
 # )?;
 # Ok(())
 # }
@@ -325,8 +325,6 @@ RemoteSOEM("169.254.205.219:8080")
 
 TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
 その場合は, ファイアウォールの設定でTCP/UDPの指定したポートの接続を許可する.
-
-[^soem_init_sync]: `Synchronize`を送信してからではない.
 
 [^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
 

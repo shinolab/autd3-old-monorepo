@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ impl RawPCM {
 
 impl Modulation for RawPCM {
     #[allow(clippy::unnecessary_cast)]
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let sample_rate = self.sampling_frequency() as u32;
         let samples =
             wav_io::resample::linear(self.raw_buffer.clone(), 1, self.sample_rate, sample_rate);

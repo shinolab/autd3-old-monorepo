@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ use rayon::prelude::*;
 /// Gain contains amplitude and phase of each transducer in the AUTD.
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
 pub trait Gain<T: Transducer> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
     fn transform<F: Fn(&T) -> Drive + Sync + Send>(geometry: &Geometry<T>, f: F) -> Vec<Drive>
     where
         Self: Sized,

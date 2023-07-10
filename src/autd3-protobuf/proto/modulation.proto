@@ -1,0 +1,52 @@
+/*
+ * File: modulation.proto
+ * Project: proto
+ * Created Date: 29/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 10/07/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+syntax = "proto3";
+
+package autd3;
+
+message Static {
+  uint32 freq_div = 1;
+  float amp = 2;
+}
+
+message SineLegacy {
+  uint32 freq_div = 1;
+  float freq = 2;
+  float amp = 3;
+  float offset = 4;
+}
+
+message Sine {
+  uint32 freq_div = 1;
+  uint32 freq = 2;
+  float amp = 3;
+  float offset = 4;
+}
+
+message Square {
+  uint32 freq_div = 1;
+  uint32 freq = 2;
+  float low = 3;
+  float high = 4;
+  float duty = 5;
+}
+
+message Modulation {
+  oneof modulation {
+    Static static = 1;
+    SineLegacy sine_legacy = 2;
+    Sine sine = 3;
+    Square square = 5;
+  }
+}

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ impl Uniform {
 }
 
 impl<T: Transducer> Gain<T> for Uniform {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok(Self::transform(geometry, |_| Drive {
             phase: 0.0,
             amp: 1.0,
@@ -55,7 +55,7 @@ impl Burst {
 }
 
 impl Modulation for Burst {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         Ok((0..4000)
             .map(|i| if i == 3999 { 1.0 } else { 0.0 })
             .collect())

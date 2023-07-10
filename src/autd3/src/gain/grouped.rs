@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ use std::collections::HashMap;
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
 #[derive(Gain, Default)]
 pub struct Grouped<'a, T: Transducer> {
     gain_map: HashMap<usize, Box<dyn Gain<T> + 'a>>,
@@ -69,13 +68,17 @@ impl<'a, T: Transducer> Grouped<'a, T> {
         self.gain_map.insert(id, gain);
         self
     }
+
+    pub fn gain_map(&self) -> &HashMap<usize, Box<dyn Gain<T> + 'a>> {
+        &self.gain_map
+    }
 }
 
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Self::calc_impl(
             self.gain_map
-                .iter_mut()
+                .iter()
                 .map(|(&i, gain)| -> Result<_, AUTDInternalError> {
                     let d = gain.calc(geometry)?;
                     Ok((i, d))

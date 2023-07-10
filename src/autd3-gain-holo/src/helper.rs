@@ -29,6 +29,16 @@ macro_rules! impl_holo {
                 }
                 Self { foci, amps, ..self }
             }
+
+            pub fn foci(
+                &self,
+            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+                self.foci.iter().zip(self.amps.iter())
+            }
+
+            pub fn constraint(&self) -> &Constraint {
+                &self.constraint
+            }
         }
     };
 
@@ -57,6 +67,16 @@ macro_rules! impl_holo {
                     amps.push(amp);
                 }
                 Self { foci, amps, ..self }
+            }
+
+            pub fn foci(
+                &self,
+            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+                self.foci.iter().zip(self.amps.iter())
+            }
+
+            pub fn constraint(&self) -> &Constraint {
+                &self.constraint
             }
         }
     };

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 10/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,9 +53,6 @@ inline int run(autd3::Controller& autd) {
   std::cout << "================================== AUTD3 firmware information ==================================" << std::endl;
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;
-
-  autd.send(autd3::Clear());
-  autd.send(autd3::Synchronize());
 
   while (true) {
     size_t i = 0;

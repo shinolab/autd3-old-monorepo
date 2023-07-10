@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 02/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -108,6 +108,26 @@ impl FirmwareInfo {
 
     pub fn latest_version() -> String {
         Self::firmware_version_map(VERSION_NUM_MAJOR, VERSION_NUM_MINOR)
+    }
+
+    pub fn cpu_version_number_major(&self) -> u8 {
+        self.cpu_version_number_major
+    }
+
+    pub fn cpu_version_number_minor(&self) -> u8 {
+        self.cpu_version_number_minor
+    }
+
+    pub fn fpga_version_number_major(&self) -> u8 {
+        self.fpga_version_number_major
+    }
+
+    pub fn fpga_version_number_minor(&self) -> u8 {
+        self.fpga_version_number_minor
+    }
+
+    pub fn fpga_function_bits(&self) -> u8 {
+        self.fpga_function_bits
     }
 }
 

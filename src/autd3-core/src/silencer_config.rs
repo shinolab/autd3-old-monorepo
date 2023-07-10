@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,13 +25,17 @@ impl SilencerConfig {
     pub fn none() -> Self {
         Self::new(0xFFFF)
     }
+
+    pub fn step(&self) -> u16 {
+        self.step
+    }
 }
 
 impl<T: Transducer> Datagram<T> for SilencerConfig {
     type H = autd3_driver::ConfigSilencer;
     type B = autd3_driver::NullBody;
 
-    fn operation(&mut self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::new(self.step), Self::B::default()))
     }
 }

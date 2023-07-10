@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -76,11 +76,31 @@ impl<B: Backend> LM<B> {
     pub fn with_initial(self, initial: Vec<float>) -> Self {
         Self { initial, ..self }
     }
+
+    pub fn eps_1(&self) -> float {
+        self.eps_1
+    }
+
+    pub fn eps_2(&self) -> float {
+        self.eps_2
+    }
+
+    pub fn tau(&self) -> float {
+        self.tau
+    }
+
+    pub fn k_max(&self) -> usize {
+        self.k_max
+    }
+
+    pub fn initial(&self) -> &[float] {
+        &self.initial
+    }
 }
 
 impl<B: Backend, T: Transducer> Gain<T> for LM<B> {
     #[allow(clippy::many_single_char_names)]
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let g = generate_propagation_matrix(geometry, &self.foci);
         let x = self.backend.lm(
             self.eps_1,

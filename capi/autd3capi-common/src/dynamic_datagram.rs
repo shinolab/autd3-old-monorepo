@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ use crate::{
 pub trait DynamicDatagram {
     #[allow(clippy::type_complexity)]
     fn operation(
-        &mut self,
+        &self,
         mode: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError>;
@@ -49,7 +49,7 @@ impl Datagram<DynamicTransducer>
     type B = Box<dyn Operation>;
 
     fn operation(
-        &mut self,
+        &self,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let mode = self.0;
@@ -77,7 +77,7 @@ impl Datagram<DynamicTransducer>
     type B = Box<dyn Operation>;
 
     fn operation(
-        &mut self,
+        &self,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let mode = self.0;
@@ -93,7 +93,7 @@ impl Datagram<DynamicTransducer>
 
 impl DynamicDatagram for NullHeader {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
@@ -108,7 +108,7 @@ impl DynamicDatagram for NullHeader {
 
 impl DynamicDatagram for NullBody {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
@@ -123,7 +123,7 @@ impl DynamicDatagram for NullBody {
 
 impl DynamicDatagram for UpdateFlags {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -144,7 +144,7 @@ impl DynamicDatagram for UpdateFlags {
 
 impl DynamicDatagram for Synchronize {
     fn operation(
-        &mut self,
+        &self,
         mode: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -183,7 +183,7 @@ impl DynamicDatagram for Synchronize {
 
 impl DynamicDatagram for Stop {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -204,7 +204,7 @@ impl DynamicDatagram for Stop {
 
 impl DynamicDatagram for SilencerConfig {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -225,7 +225,7 @@ impl DynamicDatagram for SilencerConfig {
 
 impl DynamicDatagram for Clear {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -246,7 +246,7 @@ impl DynamicDatagram for Clear {
 
 impl DynamicDatagram for ModDelay {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -267,7 +267,7 @@ impl DynamicDatagram for ModDelay {
 
 impl DynamicDatagram for FocusSTM {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -288,7 +288,7 @@ impl DynamicDatagram for FocusSTM {
 
 impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
     fn operation(
-        &mut self,
+        &self,
         mode: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -305,8 +305,8 @@ impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
             start_idx: self.start_idx(),
         };
         let drives = self
-            .gains_mut()
-            .iter_mut()
+            .gains()
+            .iter()
             .map(|gain| gain.calc(geometry))
             .collect::<Result<Vec<_>, _>>()?;
         match mode {
@@ -338,7 +338,7 @@ impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
 
 impl DynamicDatagram for Amplitudes {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -370,7 +370,7 @@ impl DynamicDatagram for Amplitudes {
 
 impl DynamicDatagram for Box<G> {
     fn operation(
-        &mut self,
+        &self,
         mode: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
@@ -410,7 +410,7 @@ impl DynamicDatagram for Box<G> {
 
 impl DynamicDatagram for Box<M> {
     fn operation(
-        &mut self,
+        &self,
         _: TransMode,
         _: &Geometry<DynamicTransducer>,
     ) -> Result<

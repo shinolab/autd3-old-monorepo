@@ -18,8 +18,6 @@ let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .open_with(Monitor::new())?;
 
-# autd.send(Clear::new())?;
-# autd.send(Synchronize::new())?;
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let g = Focus::new(center);
 autd.send(g)?;
@@ -56,8 +54,6 @@ let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .open_with(Monitor::new())?;
 
-# autd.send(Clear::new())?;
-# autd.send(Synchronize::new())?;
 let m = Sine::new(150);
 autd.send(m)?;
 
@@ -92,8 +88,6 @@ let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .open_with(Monitor::new())?;
 
-# autd.send(Clear::new())?;
-# autd.send(Synchronize::new())?;
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
 autd.send(Focus::new(center))?;
@@ -139,8 +133,6 @@ let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .open_with(Monitor::new())?;
 
-# autd.send(Clear::new())?;
-# autd.send(Synchronize::new())?;
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
 autd.send(Focus::new(center))?;

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,17 @@
  */
 
 use std::{
+    error::Error,
     f32::consts::PI,
-    io::{Read, Write},
-    net::TcpListener,
+    ffi::OsStr,
+    io::ErrorKind,
+    net::ToSocketAddrs,
+    path::{Path, PathBuf},
+    pin::Pin,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    thread::JoinHandle,
 };
 
 use crate::{
@@ -34,11 +37,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3_core::{
-    autd3_device::{AUTD3, NUM_TRANS_IN_UNIT},
-    geometry::Device,
-    TxDatagram, FPGA_CLK_FREQ,
-};
+use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender};
 use vulkano::{
@@ -53,10 +52,109 @@ use winit::{
     platform::run_return::EventLoopExtRunReturn,
 };
 
-const WRITE: u8 = 1;
-const READ: u8 = 2;
-const GEOMETRY_CONFIG: u8 = 3;
-const CLIENT_DISCONNECT: u8 = 4;
+use futures_util::future::FutureExt;
+use tokio::{
+    runtime::Builder,
+    sync::{mpsc, oneshot},
+};
+use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
+use tonic::{transport::Server, Request, Response, Status, Streaming};
+
+use autd3_protobuf::*;
+
+type SimulatorServerResult<T> = Result<Response<T>, Status>;
+type ResponseStream = Pin<Box<dyn Stream<Item = Result<SimulatorRx, Status>> + Send>>;
+
+struct SimulatorServer {
+    fin: Arc<AtomicBool>,
+    rx_receiver: Receiver<SimulatorRx>,
+    tx_sender: Sender<SimulatorTx>,
+}
+
+#[tonic::async_trait]
+impl simulator_server::Simulator for SimulatorServer {
+    type ReceiveDataStream = ResponseStream;
+
+    async fn receive_data(
+        &self,
+        req: Request<Streaming<SimulatorTx>>,
+    ) -> SimulatorServerResult<Self::ReceiveDataStream> {
+        self.fin.store(false, Ordering::Release);
+        spdlog::info!(
+            "Connect to client{}",
+            if let Some(addr) = req.remote_addr() {
+                format!(": {}", addr)
+            } else {
+                "".to_string()
+            }
+        );
+        let in_stream = req
+            .into_inner()
+            .timeout_repeating(tokio::time::interval(std::time::Duration::from_millis(100)));
+
+        let (tx, rx) = mpsc::channel(128);
+
+        let fin = self.fin.clone();
+        let rx_receiver = self.rx_receiver.clone();
+        let tx2 = tx.clone();
+        tokio::spawn(async move {
+            while !fin.load(Ordering::Acquire) {
+                if let Ok(rx) = rx_receiver.try_recv() {
+                    match tx2.send(Ok(rx)).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            spdlog::trace!("Send err: {}", e);
+                            break;
+                        }
+                    }
+                }
+                tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+            }
+        });
+        let fin = self.fin.clone();
+        let tx_sender = self.tx_sender.clone();
+        tokio::spawn(async move {
+            tokio::pin!(in_stream);
+            loop {
+                match in_stream.try_next().await {
+                    Ok(Some(Ok(result))) => {
+                        tx_sender.send(result).unwrap();
+                    }
+                    Ok(Some(Err(err))) => {
+                        if let Some(io_err) = match_for_io_error(&err) {
+                            if io_err.kind() == ErrorKind::BrokenPipe {
+                                break;
+                            }
+                        }
+                        match tx.send(Err(err)).await {
+                            Ok(_) => (),
+                            Err(e) => {
+                                spdlog::trace!("Receive err: {}", e);
+                                break;
+                            }
+                        }
+                    }
+                    _ => {
+                        if fin.load(Ordering::Acquire) {
+                            break;
+                        }
+                    }
+                }
+            }
+            spdlog::info!("Disconnect from client");
+            let _ = tx_sender.send(SimulatorTx {
+                data: Some(simulator_tx::Data::Close(CloseRequest {})),
+            });
+            fin.store(true, Ordering::Release);
+        });
+
+        let out_stream = ReceiverStream::new(rx);
+
+        Ok(Response::new(
+            Box::pin(out_stream) as Self::ReceiveDataStream
+        ))
+    }
+}
 
 #[derive(Default)]
 pub struct Simulator {
@@ -66,6 +164,7 @@ pub struct Simulator {
     port: Option<u16>,
     gpu_idx: Option<i32>,
     settings: ViewerSettings,
+    config_path: Option<PathBuf>,
 }
 
 impl Simulator {
@@ -77,6 +176,7 @@ impl Simulator {
             port: None,
             gpu_idx: None,
             settings: ViewerSettings::default(),
+            config_path: None,
         }
     }
 
@@ -106,6 +206,11 @@ impl Simulator {
         self
     }
 
+    pub fn with_config_path<S: AsRef<OsStr> + Sized>(mut self, config_path: S) -> Self {
+        self.config_path = Some(Path::new(&config_path).to_owned());
+        self
+    }
+
     pub fn get_settings(&self) -> &ViewerSettings {
         &self.settings
     }
@@ -113,120 +218,57 @@ impl Simulator {
     pub fn run(&mut self) -> i32 {
         spdlog::info!("Initializing window...");
 
-        let (sender_c2s, receiver_c2s) = bounded(32);
-        let (sender_s2c, receiver_s2c) = bounded(32);
+        let (sender_c2s, receiver_c2s) = bounded(128);
+        let (sender_s2c, receiver_s2c) = bounded(128);
 
-        let max_dev_num = self.settings.max_dev_num;
+        let (tx, rx) = oneshot::channel::<()>();
         let exit = Arc::new(AtomicBool::new(false));
-        let exit_server = exit.clone();
         let port = self.port.unwrap_or(self.settings.port);
-        let server_th = std::thread::spawn(move || {
-            match Self::run_server(port, max_dev_num, receiver_s2c, sender_c2s, exit_server) {
-                Ok(_) => {}
-                Err(e) => {
-                    spdlog::error!("{}", e);
-                }
-            }
-        });
-
-        self.run_simulator(server_th, exit, receiver_c2s, sender_s2c)
+        let server_th = Self::run_server(port, exit.clone(), receiver_c2s, sender_s2c, rx);
+        self.run_simulator(server_th, exit, receiver_s2c, sender_c2s, tx)
     }
 
     fn run_server(
         port: u16,
-        max_dev_num: usize,
-        receiver_s2c: Receiver<Vec<u8>>,
-        sender_c2s: Sender<Vec<u8>>,
-        exit: Arc<AtomicBool>,
-    ) -> anyhow::Result<()> {
-        let buf_size =
-            1 + std::mem::size_of::<autd3_core::GlobalHeader>() + max_dev_num * NUM_TRANS_IN_UNIT;
-
-        let addr = format!("0.0.0.0:{}", port);
-        let listener = TcpListener::bind(addr)?;
-        listener
-            .set_nonblocking(true)
-            .expect("Cannot set non-blocking");
-        spdlog::info!("Waiting for client connection on {}", port);
-
-        for stream in listener.incoming() {
-            let mut rx = Vec::new();
-            match stream {
-                Ok(mut socket) => {
-                    spdlog::info!("Connected to client: {}", socket.peer_addr()?);
-                    let mut buf = vec![0x00; buf_size];
-                    loop {
-                        if let Ok(rx_) = receiver_s2c.try_recv() {
-                            rx = rx_;
-                        }
-                        let len = match socket.read(&mut buf) {
-                            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                                if exit.load(Ordering::Acquire) {
-                                    break;
-                                }
-                                continue;
-                            }
-                            Err(e) if e.kind() == std::io::ErrorKind::ConnectionReset => {
-                                spdlog::info!("Client disconnected");
-                                sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
-                                spdlog::info!("Waiting for client connection on {}", port);
-                                break;
-                            }
-                            Err(e) if e.kind() == std::io::ErrorKind::ConnectionAborted => {
-                                spdlog::info!("Client disconnected");
-                                sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
-                                spdlog::info!("Waiting for client connection on {}", port);
-                                break;
-                            }
-                            Err(e) => {
-                                return Err(e.into());
-                            }
-                            Ok(len) => len,
-                        };
-                        if len == 0 {
-                            spdlog::info!("Client disconnected");
-                            sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
-                            spdlog::info!("Waiting for client connection on {}", port);
-                            break;
-                        }
-                        match buf[0] {
-                            WRITE => {
-                                sender_c2s.send(buf[..len].to_vec()).unwrap();
-                            }
-                            GEOMETRY_CONFIG => {
-                                sender_c2s.send(buf[..len].to_vec()).unwrap();
-                                if let Ok(rx_) = receiver_s2c.recv() {
-                                    let _ = socket.write(&rx_)?;
-                                }
-                            }
-                            READ => {
-                                let _ = socket.write(&rx)?;
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                    if exit.load(Ordering::Acquire) {
-                        break;
-                    }
-                    continue;
-                }
-                Err(e) => {
-                    return Err(e.into());
-                }
-            }
-        }
-
-        Ok(())
+        fin: Arc<AtomicBool>,
+        rx_receiver: Receiver<SimulatorRx>,
+        tx_sender: Sender<SimulatorTx>,
+        shutdown: tokio::sync::oneshot::Receiver<()>,
+    ) -> std::thread::JoinHandle<Result<(), tonic::transport::Error>> {
+        std::thread::spawn(move || {
+            spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
+            let body = async {
+                Server::builder()
+                    .add_service(simulator_server::SimulatorServer::new(SimulatorServer {
+                        fin,
+                        rx_receiver,
+                        tx_sender,
+                    }))
+                    .serve_with_shutdown(
+                        format!("0.0.0.0:{port}")
+                            .to_socket_addrs()
+                            .unwrap()
+                            .next()
+                            .unwrap(),
+                        shutdown.map(drop),
+                    )
+                    .await
+            };
+            Builder::new_multi_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(body)
+        })
     }
 
     fn run_simulator(
         &mut self,
-        server_th: JoinHandle<()>,
+        server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
         exit: Arc<AtomicBool>,
-        receiver_c2s: Receiver<Vec<u8>>,
-        sender_s2c: Sender<Vec<u8>>,
+        receiver_c2s: Receiver<SimulatorTx>,
+        sender_s2c: Sender<SimulatorRx>,
+        shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
 
@@ -247,109 +289,39 @@ impl Simulator {
 
         let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings);
         let mut slice_viewer = SliceViewer::new(&render, &self.settings);
-        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &render);
+        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &self.config_path, &render);
         let mut trans_viewer = TransViewer::new(&render);
 
         let mut is_initialized = false;
         let mut is_source_update = false;
         let mut is_running = true;
 
+        let server_th_ref = &server_th;
         let res = event_loop.run_return(move |event, _, control_flow| {
-            if is_initialized {
-                cpus.iter_mut().for_each(|c| c.update());
-                let rx = cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect();
-                sender_s2c.send(rx).unwrap();
-            }
+            if let Ok(tx) = receiver_c2s.try_recv() {
+                match tx.data {
+                    Some(simulator_tx::Data::Geometry(geometry)) => {
+                        sources.clear();
+                        cpus.clear();
 
-            if let Ok(buf) = receiver_c2s.try_recv() {
-                match buf[0] {
-                    WRITE => {
-                        let len = buf.len() - 1;
-                        let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
-                        let body_size = std::mem::size_of::<u16>() * NUM_TRANS_IN_UNIT;
-                        let body_num = if len > header_size {
-                            if (len - header_size) % body_size != 0 {
-                                spdlog::warn!("Invalid message size: {}", len);
-                                0
-                            } else {
-                                (len - header_size) / body_size
-                            }
-                        } else {
-                            0
-                        };
-
-                        let mut tx = TxDatagram::new(&vec![NUM_TRANS_IN_UNIT; body_num]);
-                        tx.num_bodies = body_num;
-                        let body_len = body_num * body_size;
-                        unsafe {
-                            std::ptr::copy_nonoverlapping(
-                                buf[1 + header_size..].as_ptr(),
-                                tx.body_raw_mut().as_mut_ptr() as *mut u8,
-                                body_len,
-                            );
-                            std::ptr::copy_nonoverlapping(
-                                buf[1..].as_ptr(),
-                                tx.header_mut() as *mut _ as *mut u8,
-                                header_size,
-                            );
-                        }
-                        cpus.iter_mut().for_each(|cpu| {
-                            cpu.send(&tx);
+                        Vec::<_>::from_msg(&geometry).iter().for_each(|autd3| {
+                            autd3.get_transducers(0).iter().for_each(|(_, p, r)| {
+                                sources.add(
+                                    to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                    to_gl_rot(Quaternion::new(
+                                        r.w as _, r.i as _, r.j as _, r.k as _,
+                                    )),
+                                    Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
+                                    1.0,
+                                );
+                            });
                         });
 
-                        is_source_update = true;
-                    }
-                    GEOMETRY_CONFIG => {
-                        unsafe {
-                            let mut cursor: *const u8 = buf[1..].as_ptr();
-                            let dev_num = std::ptr::read(cursor as *const u32) as usize;
-                            cursor = cursor.add(std::mem::size_of::<u32>());
-                            (0..dev_num).for_each(|_| {
-                                let mut p = cursor as *const f32;
-                                let x = std::ptr::read(p);
-                                p = p.add(1);
-                                let y = std::ptr::read(p);
-                                p = p.add(1);
-                                let z = std::ptr::read(p);
-                                p = p.add(1);
-                                let qw = std::ptr::read(p);
-                                p = p.add(1);
-                                let qx = std::ptr::read(p);
-                                p = p.add(1);
-                                let qy = std::ptr::read(p);
-                                p = p.add(1);
-                                let qz = std::ptr::read(p);
-                                cursor = cursor.add(7 * std::mem::size_of::<f32>());
-
-                                let pos =
-                                    autd3_core::geometry::Vector3::new(x as _, y as _, z as _);
-                                let rot = autd3_core::geometry::UnitQuaternion::from_quaternion(
-                                    autd3_core::geometry::Quaternion::new(
-                                        qw as _, qx as _, qy as _, qz as _,
-                                    ),
-                                );
-                                AUTD3::with_quaternion(pos, rot)
-                                    .get_transducers(0)
-                                    .iter()
-                                    .for_each(|(_, p, r)| {
-                                        sources.add(
-                                            to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
-                                            to_gl_rot(Quaternion::new(
-                                                r.w as _, r.i as _, r.j as _, r.k as _,
-                                            )),
-                                            Drive::new(
-                                                1.0,
-                                                0.0,
-                                                1.0,
-                                                40e3,
-                                                self.settings.sound_speed,
-                                            ),
-                                            1.0,
-                                        );
-                                    });
-                            });
-                        }
-                        sender_s2c.send(vec![GEOMETRY_CONFIG]).unwrap();
+                        sender_s2c
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Geometry(GeometryResponse {})),
+                            })
+                            .unwrap();
 
                         cpus = (0..sources.len() / NUM_TRANS_IN_UNIT)
                             .map(|i| CPUEmulator::new(i, NUM_TRANS_IN_UNIT))
@@ -362,13 +334,39 @@ impl Simulator {
 
                         is_initialized = true;
                     }
-                    CLIENT_DISCONNECT => {
+                    Some(simulator_tx::Data::Raw(raw)) => {
+                        let tx = TxDatagram::from_msg(&raw);
+                        cpus.iter_mut().for_each(|cpu| {
+                            cpu.send(&tx);
+                        });
+                        sender_s2c
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Rx(RxMessage {
+                                    data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
+                                })),
+                            })
+                            .unwrap();
+
+                        is_source_update = true;
+                    }
+                    Some(simulator_tx::Data::Read(_)) => {
+                        cpus.iter_mut().for_each(|c| c.update());
+                        sender_s2c
+                            .send(SimulatorRx {
+                                data: Some(simulator_rx::Data::Rx(RxMessage {
+                                    data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
+                                })),
+                            })
+                            .unwrap();
+                    }
+                    Some(simulator_tx::Data::Close(_)) => {
                         is_initialized = false;
                         sources.clear();
                         cpus.clear();
+                        exit.store(true, Ordering::Release);
                     }
-                    _ => {
-                        unreachable!()
+                    None => {
+                        unreachable!();
                     }
                 }
             }
@@ -582,7 +580,7 @@ impl Simulator {
                 }
             }
 
-            if !is_running {
+            if server_th_ref.is_finished() || !is_running {
                 exit.store(true, Ordering::Release);
 
                 spdlog::default_logger().flush();
@@ -591,7 +589,13 @@ impl Simulator {
             }
         });
 
-        server_th.join().unwrap();
+        let _ = shutdown.send(());
+        if let Err(e) = server_th.join().unwrap() {
+            match e.source() {
+                Some(e) => spdlog::error!("Server error: {}", e),
+                None => spdlog::error!("Server error: {}", e),
+            }
+        }
 
         res
     }

@@ -1,0 +1,151 @@
+/*
+ * File: gain.proto
+ * Project: proto
+ * Created Date: 29/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/06/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+syntax = "proto3";
+
+package autd3;
+
+import "utils.proto";
+
+message Focus {
+  float amp = 1;
+  Vector3 pos = 2;
+}
+
+message Bessel {
+  float amp = 1;
+  Vector3 pos = 2;
+  Vector3 dir = 3;
+  float theta = 4;
+}
+
+message Null {}
+
+message Plane {
+  float amp = 1;
+  Vector3 dir = 3;
+}
+
+message TransducerTest {
+  message TestDrive {
+    uint32 idx = 1;
+    float amp = 2;
+    float phase = 3;
+  }
+  repeated TestDrive drives = 1;
+}
+
+message Grouped {
+  message Group {
+    uint32 id = 1;
+    Gain gain = 2;
+  }
+  repeated Group groups = 1;
+}
+
+message Holo {
+  Vector3 pos = 1;
+  float amp = 2;
+}
+
+enum Backend {
+  NALGEBRA = 0;
+  CUDA = 1;
+}
+
+message DontCare {}
+message Normalize {}
+message Uniform { float value = 1; }
+message Clamp {
+  float min = 1;
+  float max = 2;
+}
+message Constraint {
+  oneof constraint {
+    DontCare dont_care = 1;
+    Normalize normalize = 2;
+    Uniform uniform = 3;
+    Clamp clamp = 4;
+  }
+}
+
+message SDP {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  float alpha = 3;
+  float lambda = 4;
+  uint32 repeat = 5;
+  Constraint constraint = 6;
+}
+
+message EVP {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  float gamma = 3;
+  Constraint constraint = 4;
+}
+
+message Naive {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  Constraint constraint = 3;
+}
+
+message GS {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  uint32 repeat = 3;
+  Constraint constraint = 4;
+}
+
+message GSPAT {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  uint32 repeat = 3;
+  Constraint constraint = 4;
+}
+
+message LM {
+  Backend backend = 1;
+  repeated Holo holo = 2;
+  float eps_1 = 3;
+  float eps_2 = 4;
+  float tau = 5;
+  uint32 k_max = 6;
+  repeated float initial = 7;
+  Constraint constraint = 8;
+}
+
+message Greedy {
+  repeated Holo holo = 1;
+  uint32 phase_div = 2;
+  Constraint constraint = 3;
+}
+
+message Gain {
+  oneof gain {
+    Focus focus = 1;
+    Bessel bessel = 2;
+    Null null = 3;
+    Plane plane = 4;
+    TransducerTest trans_test = 5;
+    Grouped grouped = 6;
+    SDP sdp = 7;
+    EVP evp = 8;
+    Naive naive = 9;
+    GS gs = 10;
+    GSPAT gspat = 11;
+    LM lm = 12;
+    Greedy greedy = 13;
+  }
+}

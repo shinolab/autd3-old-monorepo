@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,9 +24,6 @@ pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Res
         println!("{}", firm_info);
     });
     println!("*************************************************************************************************");
-
-    autd.send(Clear::new())?;
-    autd.send(Synchronize::new())?;
 
     let mut examples: Vec<(
         &'static str,

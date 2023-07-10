@@ -1,0 +1,154 @@
+/*
+ * File: autd3.proto
+ * Project: proto
+ * Created Date: 26/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 02/07/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+syntax = "proto3";
+
+package autd3;
+
+import "utils.proto";
+import "gain.proto";
+import "modulation.proto";
+import "special.proto";
+
+message SilencerConfig { uint32 step = 1; }
+
+message FocusSTM {
+  message ControlPoint {
+    Vector3 pos = 1;
+    uint32 shift = 2;
+  }
+  repeated ControlPoint control_points = 1;
+  uint32 freq_div = 2;
+  int32 start_idx = 3;
+  int32 finish_idx = 4;
+}
+
+message GainSTM {
+  repeated Gain gains = 1;
+  uint32 freq_div = 2;
+  int32 start_idx = 3;
+  int32 finish_idx = 4;
+}
+
+message Datagram {
+  oneof datagram {
+    SilencerConfig silencer_config = 1;
+    Modulation modulation = 2;
+    Gain gain = 3;
+    SpecialData special = 4;
+    FocusSTM focus_stm = 5;
+    GainSTM gain_stm = 6;
+  }
+}
+
+message FirmwareInfoRequest {}
+message FirmwareInfoResponse {
+  message FirmwareInfo {
+    uint32 fpga_major_version = 1;
+    uint32 fpga_minor_version = 2;
+    uint32 cpu_major_version = 3;
+    uint32 cpu_minor_version = 4;
+    uint32 fpga_function_bits = 5;
+  }
+  bool success = 1;
+  string msg = 2;
+  repeated FirmwareInfo firmware_info_list = 3;
+}
+
+message ForceFanRequest { bool value = 1; }
+message ForceFanResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message ReadsFPGAInfoRequest { bool value = 1; }
+message ReadsFPGAInfoResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message FPGAInfoRequest {}
+message FPGAInfoResponse {
+  message FPGAInfo { uint32 info = 1; }
+  bool success = 1;
+  string msg = 2;
+  repeated FPGAInfo fpga_info_list = 3;
+}
+
+message TxRawData { bytes data = 1; }
+message SendResponse { bool success = 1; }
+
+message ReadRequest {}
+message RxMessage { bytes data = 1; }
+
+message CloseRequest {}
+message CloseResponse { bool success = 1; }
+
+message Geometry {
+  message AUTD3 {
+    Vector3 position = 1;
+    Quaternion rotation = 2;
+  }
+  repeated AUTD3 geometries = 1;
+}
+
+message GeometryResponse {}
+
+message SimulatorTx {
+  oneof data {
+    Geometry geometry = 1;
+    TxRawData raw = 2;
+    ReadRequest read = 8;
+    CloseRequest close = 9;
+  }
+}
+
+message SimulatorRx {
+  oneof data {
+    RxMessage rx = 1;
+    GeometryResponse geometry = 2;
+  }
+}
+
+service Simulator {
+  rpc ReceiveData(stream SimulatorTx) returns (stream SimulatorRx);
+}
+
+service ECAT {
+  rpc SendData(TxRawData) returns (SendResponse) {}
+  rpc ReadData(ReadRequest) returns (RxMessage) {}
+  rpc Close(CloseRequest) returns (CloseResponse) {}
+}
+
+message SendLightResponse {
+  bool success = 1;
+  bool err = 2;
+  string msg = 3;
+}
+
+message GeometryLightResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message CloseLightResponse { bool success = 1; }
+
+service ECATLight {
+  rpc ConfigGeomety(Geometry) returns (GeometryLightResponse) {}
+  rpc FirmwareInfo(FirmwareInfoRequest) returns (FirmwareInfoResponse) {}
+  rpc ForceFan(ForceFanRequest) returns (ForceFanResponse) {}
+  rpc ReadsFPGAInfo(ReadsFPGAInfoRequest) returns (ReadsFPGAInfoResponse) {}
+  rpc FPGAInfo(FPGAInfoRequest) returns (FPGAInfoResponse) {}
+  rpc Send(Datagram) returns (SendLightResponse) {}
+  rpc Close(CloseRequest) returns (GeometryLightResponse) {}
+}

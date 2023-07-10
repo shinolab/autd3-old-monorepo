@@ -1,6 +1,6 @@
 [package]
 name = "autd3-simulator"
-version = "12.3.1"
+version = "13.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -10,8 +10,9 @@ repository = "https://github.com/shinolab/autd3"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="12.3.1"}
-autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="12.3.1"}
+autd3-core = {path="../autd3-core", version="13.0.0"}
+autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="13.0.0"}
+autd3-protobuf = {path="../autd3-protobuf", version="13.0.0"}
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
@@ -28,9 +29,13 @@ winit = "0.28.6"
 imgui-vulkano-renderer = { git = "https://github.com/s5suzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
 spdlog-rs = "0.3.8"
 crossbeam-channel = "0.5.8"
-anyhow = "1.0.71"
 serde_derive = "1.0.163"
 image = "0.24.6"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+futures-util = "0.3.28"
+tokio-stream = "0.1.14"
+tonic = "0.9.2"
+anyhow = "1.0.71"
 
 [features]
 default = []
