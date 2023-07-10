@@ -137,6 +137,8 @@ jobs:
           Expand-Archive -Path shaderc.zip -DestinationPath shaderc
           echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
           rm shaderc.zip
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
       - name: Build project x64
         run: |
           cd cpp
@@ -235,6 +237,8 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install cuda-nvcc-12-1 libcublas-dev-12-1 libcusolver-dev-12-1
           echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
       - name: Get the version
         id: get_version
         uses: actions/github-script@v6
@@ -300,6 +304,8 @@ jobs:
           echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
           cp install/lib/*.dylib /usr/local/lib/
           rm shaderc.tgz
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
       - name: install aarch64 target on macos
         run: |
           rustup target add aarch64-apple-darwin
