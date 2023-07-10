@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "atomic",
  "autd3-core",
@@ -190,7 +190,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-backend-cuda"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-gain-holo",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "atomic",
  "autd3-driver",
@@ -225,7 +225,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "bitflags 2.3.3",
  "thiserror",
@@ -233,7 +233,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "num-integer",
@@ -242,7 +242,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-traits",
@@ -254,7 +254,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-geometry-viewer"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-model",
@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-simulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "cc",
@@ -318,11 +318,11 @@ dependencies = [
 
 [[package]]
 name = "autd3-model"
-version = "12.3.1"
+version = "13.0.0"
 
 [[package]]
 name = "autd3-modulation-audio-file"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -334,7 +334,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -349,7 +349,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-simulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -381,7 +381,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "quote",
  "syn 2.0.23",
@@ -389,7 +389,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3capi-def",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-backend-cuda"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-backend-cuda",
  "autd3capi-def",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-common"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -420,7 +420,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-def"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3capi-common",
  "wrapper-generator",
@@ -428,7 +428,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-gain-holo"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3capi",
  "autd3capi-def",
@@ -437,7 +437,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-geometry-viewer"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-geometry-viewer",
  "autd3capi-def",
@@ -446,7 +446,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-simulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-link-simulator",
  "autd3capi-def",
@@ -455,7 +455,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-soem"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-link-soem",
  "autd3capi-def",
@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-twincat"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-link-twincat",
  "autd3capi-def",
@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-modulation-audio-file"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-modulation-audio-file",
  "autd3capi-def",
@@ -482,7 +482,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-simulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-simulator",
  "autd3capi-def",
@@ -3775,7 +3775,7 @@ dependencies = [
 
 [[package]]
 name = "wrapper-generator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "anyhow",
  "cbindgen",

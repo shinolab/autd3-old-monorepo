@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "atomic",
  "autd3-core",
@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "atomic",
  "autd3-driver",
@@ -295,7 +295,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "bitflags 2.3.3",
  "thiserror",
@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "num-integer",
@@ -312,7 +312,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-traits",
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
@@ -342,7 +342,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -357,7 +357,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "12.3.1"
+version = "13.0.0"
 dependencies = [
  "quote",
  "syn 2.0.23",
