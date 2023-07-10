@@ -173,16 +173,6 @@ ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m,
 ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m,
                                                               uint32_t div);
 
-[[nodiscard]] ModulationPtr AUTDModulationSinePressure(uint32_t freq);
-
-[[nodiscard]] ModulationPtr AUTDModulationSinePressureWithAmp(ModulationPtr m, double amp);
-
-[[nodiscard]] ModulationPtr AUTDModulationSinePressureWithOffset(ModulationPtr m, double offset);
-
-[[nodiscard]]
-ModulationPtr AUTDModulationSinePressureWithSamplingFrequencyDivision(ModulationPtr m,
-                                                                      uint32_t div);
-
 [[nodiscard]] ModulationPtr AUTDModulationSineLegacy(double freq);
 
 [[nodiscard]] ModulationPtr AUTDModulationSineLegacyWithAmp(ModulationPtr m, double amp);

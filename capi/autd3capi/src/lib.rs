@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -577,39 +577,6 @@ pub unsafe extern "C" fn AUTDModulationSineWithSamplingFrequencyDivision(
     div: u32,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Sine).with_sampling_frequency_division(div))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationSinePressure(freq: u32) -> ModulationPtr {
-    ModulationPtr::new(SinePressure::new(freq as _))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationSinePressureWithAmp(
-    m: ModulationPtr,
-    amp: float,
-) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, SinePressure).with_amp(amp))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationSinePressureWithOffset(
-    m: ModulationPtr,
-    offset: float,
-) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, SinePressure).with_offset(offset))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationSinePressureWithSamplingFrequencyDivision(
-    m: ModulationPtr,
-    div: u32,
-) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, SinePressure).with_sampling_frequency_division(div))
 }
 
 #[no_mangle]
@@ -1374,29 +1341,6 @@ mod tests {
                 let m = AUTDModulationSineWithSamplingFrequencyDivision(m, div);
 
                 let m = AUTDModulationIntoDatagram(m);
-                if AUTDSend(
-                    cnt,
-                    TransMode::Legacy,
-                    m,
-                    DatagramBodyPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ) == AUTD3_ERR
-                {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let m = AUTDModulationSinePressure(150);
-                let m = AUTDModulationSinePressureWithAmp(m, 1.);
-                let m = AUTDModulationSinePressureWithOffset(m, 0.5);
-
-                let div = 10240;
-                let m = AUTDModulationSinePressureWithSamplingFrequencyDivision(m, div);
-
-                let m = AUTDModulationIntoDatagram(m);
-
                 if AUTDSend(
                     cnt,
                     TransMode::Legacy,

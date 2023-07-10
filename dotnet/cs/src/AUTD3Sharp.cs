@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -751,58 +751,6 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSineWithOffset(ptr, _offset.Value);
                 if (_freq_div != null)
                     ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.Value);
-                return ptr;
-            }
-        }
-
-
-        public sealed class SinePressure : ModulationBase
-        {
-            private readonly int _freq;
-            private float_t? _amp;
-            private float_t? _offset;
-            private uint? _freq_div;
-
-            public SinePressure(int freq)
-            {
-                _freq = freq;
-                _amp = null;
-                _offset = null;
-                _freq_div = null;
-            }
-
-            public SinePressure WithAmp(float_t amp)
-            {
-                _amp = amp;
-                return this;
-            }
-
-            public SinePressure WithOffset(float_t offset)
-            {
-                _offset = offset;
-                return this;
-            }
-
-            public SinePressure with_sampling_frequency_division(uint div)
-            {
-                _freq_div = div;
-                return this;
-            }
-
-            public SinePressure with_sampling_frequency(float_t freq)
-            {
-                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
-            }
-
-            public override ModulationPtr ModulationPtr()
-            {
-                var ptr = Base.AUTDModulationSinePressure((uint)_freq);
-                if (_amp != null)
-                    ptr = Base.AUTDModulationSinePressureWithAmp(ptr, _amp.Value);
-                if (_offset != null)
-                    ptr = Base.AUTDModulationSinePressureWithOffset(ptr, _offset.Value);
-                if (_freq_div != null)
-                    ptr = Base.AUTDModulationSinePressureWithSamplingFrequencyDivision(ptr, _freq_div.Value);
                 return ptr;
             }
         }

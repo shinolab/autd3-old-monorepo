@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2023
+// Last Modified: 10/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -63,44 +63,6 @@ class Sine final : public internal::Modulation {
     if (_amp.has_value()) ptr = AUTDModulationSineWithAmp(ptr, _amp.value());
     if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value());
     if (_freq_div.has_value()) ptr = AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.value());
-    return ptr;
-  }
-
- private:
-  int32_t _freq;
-  std::optional<double> _amp;
-  std::optional<double> _offset;
-  std::optional<uint32_t> _freq_div;
-};
-
-class SinePressure final : public internal::Modulation {
- public:
-  explicit SinePressure(const int32_t freq) : _freq(freq) {}
-
-  SinePressure with_amp(const double amp) {
-    _amp = amp;
-    return *this;
-  }
-
-  SinePressure with_offset(const double offset) {
-    _offset = offset;
-    return *this;
-  }
-
-  SinePressure with_sampling_frequency_division(const uint32_t div) {
-    _freq_div = div;
-    return *this;
-  }
-
-  SinePressure with_sampling_frequency(const double freq) {
-    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
-
-  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    auto ptr = internal::native_methods::AUTDModulationSinePressure(_freq);
-    if (_amp.has_value()) ptr = AUTDModulationSinePressureWithAmp(ptr, _amp.value());
-    if (_offset.has_value()) ptr = AUTDModulationSinePressureWithOffset(ptr, _offset.value());
-    if (_freq_div.has_value()) ptr = AUTDModulationSinePressureWithSamplingFrequencyDivision(ptr, _freq_div.value());
     return ptr;
   }
 

@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -120,24 +120,6 @@ impl ToMessage for autd3::modulation::Sine {
         Self::Message {
             datagram: Some(datagram::Datagram::Modulation(Modulation {
                 modulation: Some(modulation::Modulation::Sine(Sine {
-                    freq_div: self.sampling_frequency_division() as _,
-                    freq: self.freq() as _,
-                    amp: self.amp() as _,
-                    offset: self.offset() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::modulation::SinePressure {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Modulation(Modulation {
-                modulation: Some(modulation::Modulation::SinePressure(SinePressure {
                     freq_div: self.sampling_frequency_division() as _,
                     freq: self.freq() as _,
                     amp: self.amp() as _,
@@ -547,16 +529,6 @@ impl FromMessage<SineLegacy> for autd3::modulation::SineLegacy {
 impl FromMessage<Sine> for autd3::modulation::Sine {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Sine) -> Self {
-        Self::new(msg.freq as _)
-            .with_amp(msg.amp as _)
-            .with_offset(msg.offset as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
-    }
-}
-
-impl FromMessage<SinePressure> for autd3::modulation::SinePressure {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &SinePressure) -> Self {
         Self::new(msg.freq as _)
             .with_amp(msg.amp as _)
             .with_offset(msg.offset as _)
