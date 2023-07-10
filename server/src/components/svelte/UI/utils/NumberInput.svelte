@@ -66,6 +66,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     background: var(--color-background-base-default, #101923);
     color: var(--color-text-base-default, #ffffff);
     width: 100%;
+    height: 26px;
   }
   .number-spinner {
     position: relative;
