@@ -90,10 +90,17 @@ fn fetch_ifnames() -> Vec<String> {
 }
 
 #[tauri::command]
-async fn copy_autd_xml(handle: tauri::AppHandle) -> Result<(), String> {
+async fn copy_autd_xml(
+    handle: tauri::AppHandle,
+    console_emu_input_tx: tauri::State<'_, Sender<String>>,
+) -> Result<(), String> {
     let dst = std::path::Path::new("C:/TwinCAT/3.1/Config/Io/EtherCAT/AUTD.xml");
 
     if dst.exists() {
+        console_emu_input_tx
+            .send("AUTD.xml is already exists".to_string())
+            .await
+            .map_err(|e| e.to_string())?;
         return Ok(());
     }
 
@@ -107,6 +114,11 @@ async fn copy_autd_xml(handle: tauri::AppHandle) -> Result<(), String> {
         .ok_or("Can't find AUTD.xml")?;
 
     tokio::fs::copy(autd_xml_path, dst)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    console_emu_input_tx
+        .send("AUTD.xml is successfully copied".to_string())
         .await
         .map_err(|e| e.to_string())?;
 
