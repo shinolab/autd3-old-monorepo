@@ -155,9 +155,6 @@ jobs:
 
       - name: Build project x64 for Unity
         run: |
-          cd capi
-          cargo clean
-          cd ..
           cd dotnet/unity
           ./build.ps1
       - name: Setup Node.js
