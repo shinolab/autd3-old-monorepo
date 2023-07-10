@@ -28,7 +28,7 @@ impl FocalPoint {
 }
 
 impl<T: Transducer> Gain<T> for FocalPoint {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed; 
         Ok(Self::transform(geometry, |tr| Drive {
             phase: (tr.position() - self.position).norm() * tr.wavelength(sound_speed),
