@@ -1,6 +1,8 @@
 # 13.0.0
 
 - Remove `SinePressure`, add `RadiationPressure` instead
+- Adopt gRPC for more stable remote communication
+- Integrated SOEMAUTDServer/TwinCATAUTDServer/simulator into AUTD server app
 
 # 12.3.1
 
