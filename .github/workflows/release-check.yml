@@ -59,6 +59,8 @@ jobs:
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
@@ -140,6 +142,8 @@ jobs:
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
@@ -201,6 +205,8 @@ jobs:
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: install dependencies (ubuntu only)
         if: matrix.os == 'ubuntu-latest'
