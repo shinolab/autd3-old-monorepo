@@ -71,7 +71,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.shinolab.dev",
+      "identifier": "com.shinolab.autd-server",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
