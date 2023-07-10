@@ -1,12 +1,15 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
-default-run = "app"
+name = "autd-server"
+version = "13.0.0"
+description = "AUTD Server app"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
+repository = "https://github.com/shinolab/autd3"
+keywords = ["autd"]
+
+license = "MIT"
+default-run = "autd-server"
+
 rust-version = "1.60"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -1,6 +1,6 @@
 /*
  * File: console_output.ts
- * Project: AUTD server
+ * Project: AUTD Server
  * Created Date: 09/07/2023
  * Author: Shun Suzuki
  * -----

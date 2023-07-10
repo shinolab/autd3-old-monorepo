@@ -1,6 +1,6 @@
 /*
  * File: main.rs
- * Project: AUTD server
+ * Project: AUTD Server
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----

@@ -1,6 +1,6 @@
 /*
  * File: options.ts
- * Project: AUTD server
+ * Project: AUTD Server
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
