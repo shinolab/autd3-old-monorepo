@@ -14,7 +14,6 @@ The SDK has `Modulation` by default to generate several types of AM.
 
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
-* [SinePressure](./modulation/sine_pressure.md)
 * [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
