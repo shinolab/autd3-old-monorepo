@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,13 +34,6 @@ message Sine {
   float offset = 4;
 }
 
-message SinePressure {
-  uint32 freq_div = 1;
-  uint32 freq = 2;
-  float amp = 3;
-  float offset = 4;
-}
-
 message Square {
   uint32 freq_div = 1;
   uint32 freq = 2;
@@ -54,7 +47,6 @@ message Modulation {
     Static static = 1;
     SineLegacy sine_legacy = 2;
     Sine sine = 3;
-    SinePressure sine_pressure = 4;
     Square square = 5;
   }
 }

@@ -1,3 +1,7 @@
+# 13.0.0
+
+- Remove `SinePressure`, add `RadiationPressure` instead
+
 # 12.3.1
 
 - Fix [#82](https://github.com/shinolab/autd3/issues/82)

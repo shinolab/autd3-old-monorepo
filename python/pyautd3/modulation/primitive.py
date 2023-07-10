@@ -81,48 +81,6 @@ class Sine(IModulation):
         return ptr
 
 
-class SinePressure(IModulation):
-    _freq: int
-    _amp: Optional[float]
-    _offset: Optional[float]
-    _freq_div: Optional[int]
-
-    def __init__(self, freq: int):
-        super().__init__()
-        self._freq = freq
-        self._amp = None
-        self._offset = None
-        self._freq_div = None
-
-    def with_amp(self, amp: float) -> "SinePressure":
-        self._amp = amp
-        return self
-
-    def with_offset(self, offset: float) -> "SinePressure":
-        self._offset = offset
-        return self
-
-    def with_sampling_frequency_division(self, div: int) -> "SinePressure":
-        self._freq_div = div
-        return self
-
-    def with_sampling_frequency(self, freq: float) -> "SinePressure":
-        div = int(FPGA_SUB_CLK_FREQ / freq)
-        return self.with_sampling_frequency_division(div)
-
-    def modulation_ptr(self) -> ModulationPtr:
-        ptr = Base().modulation_sine_pressure(self._freq)
-        if self._amp is not None:
-            ptr = Base().modulation_sine_pressure_with_amp(ptr, self._amp)
-        if self._offset is not None:
-            ptr = Base().modulation_sine_pressure_with_offset(ptr, self._offset)
-        if self._freq_div is not None:
-            ptr = Base().modulation_sine_pressure_with_sampling_frequency_division(
-                ptr, self._freq_div
-            )
-        return ptr
-
-
 class SineLegacy(IModulation):
     _freq: float
     _amp: Optional[float]

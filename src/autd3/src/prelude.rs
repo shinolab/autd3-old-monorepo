@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ pub use crate::{
     error::AUTDError,
     gain::{Bessel, Focus, Grouped, Null, Plane, TransducerTest},
     link::NullLink,
-    modulation::{Sine, SineLegacy, SinePressure, Square, Static},
+    modulation::{RadiationPressure, Sine, SineLegacy, Square, Static},
 };
 
 pub use crate::gain::Cache as GainCache;
