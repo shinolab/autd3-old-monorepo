@@ -2,8 +2,6 @@ name: build-cpp
 
 on:
   push:
-    tags-ignore:
-      - v*
     branches:
       - 'release'
 
@@ -15,6 +13,7 @@ jobs:
     name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -61,6 +60,14 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         rustup target add aarch64-apple-darwin
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: Build capi on ${{ matrix.os }}
       if : matrix.os == 'windows-latest'
       run: |

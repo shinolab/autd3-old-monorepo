@@ -2,8 +2,6 @@ name: build-cs
 
 on:
   push:
-    tags-ignore:
-      - v*
     branches:
       - 'dev'
 
@@ -15,6 +13,7 @@ jobs:
     name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 

@@ -2,8 +2,6 @@ name: build
 
 on:
   push:
-    tags-ignore:
-      - v*
     branches:
       - 'dev'
 
@@ -15,11 +13,27 @@ jobs:
     name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
@@ -59,6 +73,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
     - name: lint src
       run: |
         cd src

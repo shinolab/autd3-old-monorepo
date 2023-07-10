@@ -2,8 +2,6 @@ name: Release Check
 
 on:
   push:
-    tags-ignore:
-      - v*
     branches:
       - 'release'
 
@@ -15,6 +13,7 @@ jobs:
     name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -57,60 +56,68 @@ jobs:
         echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         cp install/lib/*.dylib /usr/local/lib/
         rm shaderc.tgz
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd src
         cargo build --all --release
         cargo test --workspace --release --exclude autd3-link-soem -- --skip test_timer
-        cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
         cargo build --all --release
         cargo test --all --release -- --skip test_timer
-        cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
         cargo build --all --release --exclude autd3-backend-cuda
         cargo test --all --release --exclude autd3-backend-cuda -- --skip test_timer
-        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd examples
         cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
-        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd examples
         cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd capi
         cargo build --all --release
         cargo test --workspace --release --exclude autd3capi-link-soem
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd capi
         cargo build --all --release
         cargo test --all --release --exclude autd3capi-backend-cuda
-        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd capi
         cargo build --all --release --exclude autd3capi-backend-cuda
         cargo test --all --release --exclude autd3capi-backend-cuda
-        cargo clean
     - name: Build dist on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
@@ -119,13 +126,11 @@ jobs:
         cargo build --all --release
         cargo test --release
         cargo clippy --all --release -- -D warnings
-        cargo clean
         cd ..
         cd simulator
         cargo build --all --release
         cargo test --release
         cargo clippy --all --release -- -D warnings
-        cargo clean
 
   lint:
     runs-on: ubuntu-latest
@@ -145,18 +150,31 @@ jobs:
         echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         rm shaderc.tgz
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './examples -> target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: lint src
       run: |
         cd src
         cargo clippy --all --release -- -D warnings
-        cargo clean
     - name: lint examples
       run: |
         cd examples
         cargo clippy --all --release -- -D warnings
-        cargo clean
     - name: lint capi
       run: |
         cd capi
         cargo clippy --all --release -- -D warnings
-        cargo clean
