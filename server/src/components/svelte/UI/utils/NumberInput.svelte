@@ -1,6 +1,6 @@
 <!--
 File: NumberInput.svelte
-Project: AUTD server
+Project: AUTD Server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
