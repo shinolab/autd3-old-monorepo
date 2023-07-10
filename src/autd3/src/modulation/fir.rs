@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,41 +39,45 @@ pub trait FIR<M: Modulation> {
 }
 
 impl<M: Modulation> FIR<M> for M {
+    #[allow(clippy::unnecessary_cast)]
     fn with_low_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M> {
         FIRImpl {
             freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::lowpass(n_taps, cutoff / self.sampling_frequency()),
+            fir: fir::FIR::lowpass(n_taps, (cutoff / self.sampling_frequency()) as f64),
             m: self,
         }
     }
 
-    fn with_high_pass(self, n_taps: usize, cutoff: f64) -> FIRImpl<M> {
+    #[allow(clippy::unnecessary_cast)]
+    fn with_high_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M> {
         FIRImpl {
             freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::highpass(n_taps, cutoff / self.sampling_frequency()),
+            fir: fir::FIR::highpass(n_taps, (cutoff / self.sampling_frequency()) as f64),
             m: self,
         }
     }
 
-    fn with_band_pass(self, n_taps: usize, f_low: f64, f_high: f64) -> FIRImpl<M> {
+    #[allow(clippy::unnecessary_cast)]
+    fn with_band_pass(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M> {
         FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::bandpass(
                 n_taps,
-                f_low / self.sampling_frequency(),
-                f_high / self.sampling_frequency(),
+                (f_low / self.sampling_frequency()) as f64,
+                (f_high / self.sampling_frequency()) as f64,
             ),
             m: self,
         }
     }
 
-    fn with_band_stop(self, n_taps: usize, f_low: f64, f_high: f64) -> FIRImpl<M> {
+    #[allow(clippy::unnecessary_cast)]
+    fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M> {
         FIRImpl {
             freq_div: self.sampling_frequency_division(),
             fir: fir::FIR::bandstop(
                 n_taps,
-                f_low / self.sampling_frequency(),
-                f_high / self.sampling_frequency(),
+                (f_low / self.sampling_frequency()) as f64,
+                (f_high / self.sampling_frequency()) as f64,
             ),
             m: self,
         }
@@ -89,6 +93,7 @@ impl<M: Modulation> FIR<M> for M {
 }
 
 impl<M: Modulation> Modulation for FIRImpl<M> {
+    #[allow(clippy::unnecessary_cast)]
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let m = self.m.calc()?;
         let coeff = self.fir.taps();
@@ -97,7 +102,8 @@ impl<M: Modulation> Modulation for FIRImpl<M> {
                 let left = i as isize - (coeff.len() - 1) as isize / 2;
                 let right = left + coeff.len() as isize;
                 (left..right).enumerate().fold(0., |acc, (k, j)| {
-                    acc + m[j.rem_euclid(m.len() as isize) as usize] * coeff[coeff.len() - 1 - k]
+                    acc + m[j.rem_euclid(m.len() as isize) as usize]
+                        * coeff[coeff.len() - 1 - k] as float
                 })
             })
             .collect())
