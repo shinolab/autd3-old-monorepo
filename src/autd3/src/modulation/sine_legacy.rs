@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -63,10 +63,22 @@ impl SineLegacy {
     pub fn with_offset(self, offset: float) -> Self {
         Self { offset, ..self }
     }
+
+    pub fn freq(&self) -> float {
+        self.freq
+    }
+
+    pub fn amp(&self) -> float {
+        self.amp
+    }
+
+    pub fn offset(&self) -> float {
+        self.offset
+    }
 }
 
 impl Modulation for SineLegacy {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_frequency();
         let freq = self.freq.clamp(
             autd3_core::FPGA_SUB_CLK_FREQ as float / u32::MAX as float,

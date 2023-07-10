@@ -1,4 +1,4 @@
-from pyautd3 import AUTD3, Controller, SilencerConfig, Clear, Synchronize
+from pyautd3 import AUTD3, Controller, SilencerConfig
 from pyautd3.link import SOEM, OnLostFunc
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
@@ -22,9 +22,6 @@ if __name__ == "__main__":
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(SOEM().with_on_lost(on_lost_func))
     )
-
-    autd.send(Clear())
-    autd.send(Synchronize())
 
     firm_info_list = autd.firmware_info_list()
     print("\n".join([f"[{i}]: {firm}" for i, firm in enumerate(firm_info_list)]))

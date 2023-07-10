@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 28/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -79,5 +79,9 @@ impl IOMap {
         (0..self.device_map.len()).for_each(|i| unsafe {
             std::ptr::copy_nonoverlapping(tx.header() as *const _, self.header(i), 1);
         });
+    }
+
+    pub fn clear(&mut self) {
+        self.buf.fill(0x00);
     }
 }

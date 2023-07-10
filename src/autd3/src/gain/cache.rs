@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 05/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ impl Clone for CacheImpl {
 impl CacheImpl {
     /// constructor
     pub fn new<T: Transducer, G: Gain<T>>(
-        mut gain: G,
+        gain: G,
         geometry: &Geometry<T>,
     ) -> Result<Self, AUTDInternalError> {
         Ok(Self {
@@ -60,7 +60,7 @@ impl CacheImpl {
 }
 
 impl<T: Transducer> Gain<T> for CacheImpl {
-    fn calc(&mut self, _geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, _geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok(self.cache.clone())
     }
 }
