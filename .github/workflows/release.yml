@@ -30,6 +30,8 @@ jobs:
         rm shaderc.tgz
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: publish to carate.io
       run: |
         git submodule update --init --recursive
@@ -139,6 +141,8 @@ jobs:
           rm shaderc.zip
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build project x64
         run: |
           cd cpp
@@ -239,6 +243,8 @@ jobs:
           echo "/usr/local/cuda/bin" >> $GITHUB_PATH
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Get the version
         id: get_version
         uses: actions/github-script@v6
@@ -306,6 +312,8 @@ jobs:
           rm shaderc.tgz
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: install aarch64 target on macos
         run: |
           rustup target add aarch64-apple-darwin
@@ -426,6 +434,8 @@ jobs:
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: install dependencies (ubuntu only)
         if: matrix.os == 'ubuntu-latest'
