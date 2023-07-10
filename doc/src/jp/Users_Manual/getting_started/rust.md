@@ -33,11 +33,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(-1);
         }))?;
 
-    // デバイスの初期化と同期
-    // 同期は初期化後に必ず一度は行う必要がある
-    autd.send(Clear::new())?;
-    autd.send(Synchronize::new())?;
-
     // ファームウェアバージョンのチェック
     // ここで, v2.9以外が表示される場合の動作は保証しない
     autd.firmware_infos()?.iter().for_each(|firm_info| {

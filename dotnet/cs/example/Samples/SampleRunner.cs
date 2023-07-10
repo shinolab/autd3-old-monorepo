@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,9 +34,6 @@ public class SampleRunner
         if (autd.Geometry.NumDevices == 2)
             examples.Add((GroupTest.Test, "Grouped gain Test"));
 
-        autd.Send(new Clear());
-        autd.Send(new Synchronize());
-
         var firmList = autd.FirmwareInfoList().ToArray();
         if (!firmList.All(firm => firm.IsValid))
         {
@@ -57,7 +54,7 @@ public class SampleRunner
 
         while (true)
         {
-            Console.WriteLine(string.Join("\n", examples.Select((example, i )=> $"[{i}]: {example.Item2}")));
+            Console.WriteLine(string.Join("\n", examples.Select((example, i) => $"[{i}]: {example.Item2}")));
             Console.WriteLine("[Others]: finish");
             Console.Write("Choose number: ");
 

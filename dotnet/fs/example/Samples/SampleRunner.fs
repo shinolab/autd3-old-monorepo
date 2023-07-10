@@ -27,9 +27,6 @@ module SampleRunner =
         let examples = 
             if autd.Geometry.NumDevices = 2 then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
 
-        (new Clear()) |> autd.Send |> ignore;
-        (new Synchronize()) |> autd.Send |> ignore;
-
         let firmwareList = autd.FirmwareInfoList()
         let inline print_warn msg = 
                 System.Console.ForegroundColor <- System.ConsoleColor.Yellow
