@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use std::net::SocketAddr;
 
-use autd3_core::geometry::Transducer;
+use autd3_core::{clear::Clear, geometry::Transducer, synchronize::Synchronize};
 
-use crate::{FromMessage, ToMessage};
+use crate::traits::*;
 
 pub struct LightweightClient {
     client: crate::pb::ecat_light_client::EcatLightClient<tonic::transport::Channel>,
@@ -90,7 +90,13 @@ impl LightweightClient {
         if !res.success {
             return Err(crate::error::AUTDProtoBufError::SendError(res.msg));
         }
-        Ok(Self { client })
+
+        let mut client = Self { client };
+
+        client.send(Clear::new()).await?;
+        client.send(Synchronize::new()).await?;
+
+        Ok(client)
     }
 
     pub async fn firmware_infos(

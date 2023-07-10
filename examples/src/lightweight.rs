@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 10/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,9 +27,6 @@ async fn main() -> anyhow::Result<()> {
         println!("{}", firm_info);
     });
     println!("*************************************************************************************************");
-
-    client.send(Clear::new()).await?;
-    client.send(Synchronize::new()).await?;
 
     client.send(Sine::new(150)).await?;
     client

@@ -19,11 +19,6 @@ int main() try {
                   .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                   .open_with(autd3::link::SOEM().with_on_lost(&on_lost));
 
-  // initialize and synchronize devices
-  // You MUST synchronize devices once after initialization, even if you are using only one device.
-  autd.send(autd3::Clear());
-  autd.send(autd3::Synchronize());
-
   // check firmware version
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
