@@ -158,6 +158,15 @@ async fn run_twincat_server(
     if twincat_options.keep {
         args.push("-k".to_string());
     }
+
+    #[cfg(target_os = "windows")]
+    let mut child = Command::new(&twincat_autd_server_path)
+        .args(args)
+        .stdout(Stdio::piped())
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    #[cfg(not(target_os = "windows"))]
     let mut child = Command::new(&twincat_autd_server_path)
         .args(args)
         .stdout(Stdio::piped())
