@@ -206,8 +206,7 @@ jobs:
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-firmware';
       - name: Build project x64
         run: |
-          Remove-Item -Recurse -Force firmware/src
-          Compress-Archive -Path firmware -DestinationPath assets_x64.zip
+          Compress-Archive -Path firmware/bin, firmware/scripts, firmware/autd_firmware_writer.ps1, firmware/README.md -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
