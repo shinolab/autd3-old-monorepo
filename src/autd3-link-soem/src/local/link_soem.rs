@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/06/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ use crate::local::{
     error::SOEMError,
     error_handler::EcatErrorHandler,
     iomap::IOMap,
-    native_methods::*,
+    soem_bindings::*,
     EthernetAdapters, SyncMode,
 };
 
