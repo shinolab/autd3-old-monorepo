@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@ use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 use autd3_protobuf::*;
 
 use crossbeam_channel::bounded;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
+// use std::sync::atomic::{AtomicBool, Ordering};
+// use std::sync::{Arc, RwLock};
 use std::{
     net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     time::Duration,
@@ -43,12 +43,11 @@ pub struct Simulator {
     port: u16,
     tx: Option<mpsc::Sender<SimulatorTx>>,
     rx: Option<mpsc::Receiver<SimulatorTx>>,
-    rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
-    receive_th: Option<std::thread::JoinHandle<()>>,
+    // rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
     receive_stream_th: Option<JoinHandle<()>>,
     timeout: Duration,
     runtime: Runtime,
-    run: Arc<AtomicBool>,
+    rx_receiver: Option<crossbeam_channel::Receiver<SimulatorRx>>,
 }
 
 impl Simulator {
@@ -59,8 +58,7 @@ impl Simulator {
             port,
             tx: Some(tx),
             rx: Some(rx),
-            rx_buf: Arc::new(RwLock::new(autd3_core::RxDatagram::new(0))),
-            receive_th: None,
+            // rx_buf: Arc::new(RwLock::new(autd3_core::RxDatagram::new(0))),
             receive_stream_th: None,
             timeout: Duration::from_millis(200),
             runtime: Builder::new_multi_thread()
@@ -68,7 +66,7 @@ impl Simulator {
                 .enable_all()
                 .build()
                 .unwrap(),
-            run: Arc::new(AtomicBool::new(false)),
+            rx_receiver: None,
         }
     }
 
@@ -153,38 +151,40 @@ impl Simulator {
             ));
         }
 
-        self.rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(
-            geometry.num_devices(),
-        )));
+        // self.rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(
+        //     geometry.num_devices(),
+        // )));
 
-        self.run.store(true, Ordering::Release);
-        let run = self.run.clone();
-        let rx_buf = self.rx_buf.clone();
-        self.receive_th = Some(std::thread::spawn(move || {
-            while run.load(Ordering::Acquire) {
-                if let Ok(rx) = rx_receiver.try_recv() {
-                    if let Some(simulator_rx::Data::Rx(rx)) = rx.data {
-                        *rx_buf.write().unwrap() = autd3_core::RxDatagram::from_msg(&rx);
-                    }
-                }
-                std::thread::sleep(Duration::from_millis(1));
-            }
-        }));
+        self.rx_receiver = Some(rx_receiver);
+
+        // self.run.store(true, Ordering::Release);
+        // let run = self.run.clone();
+        // let rx_buf = self.rx_buf.clone();
+        // self.receive_th = Some(std::thread::spawn(move || {
+        //     while run.load(Ordering::Acquire) {
+        //         if let Ok(rx) = rx_receiver.try_recv() {
+        //             if let Some(simulator_rx::Data::Rx(rx)) = rx.data {
+        //                 *rx_buf.write().unwrap() = autd3_core::RxDatagram::from_msg(&rx);
+        //             }
+        //         }
+        //         std::thread::sleep(Duration::from_millis(1));
+        //     }
+        // }));
 
         Ok(())
     }
 
     fn close_impl(&mut self) -> Result<(), AUTDProtoBufError> {
-        self.run.store(false, Ordering::Release);
+        // self.run.store(false, Ordering::Release);
         if let Some(tx) = self.tx.take() {
             tx.blocking_send(SimulatorTx {
                 data: Some(simulator_tx::Data::Close(CloseRequest {})),
             })?;
             drop(tx);
         }
-        if let Some(th) = self.receive_th.take() {
-            th.join().unwrap();
-        }
+        // if let Some(th) = self.receive_th.take() {
+        //     th.join().unwrap();
+        // }
         if let Some(th) = self.receive_stream_th.take() {
             self.runtime.block_on(th)?;
         }
@@ -237,12 +237,21 @@ impl<T: Transducer> Link<T> for Simulator {
         } else {
             return Err(AUTDInternalError::LinkClosed);
         }
-        rx.copy_from(self.rx_buf.read().as_ref().unwrap());
+
+        if let Some(receiver) = self.rx_receiver.as_ref() {
+            if let Ok(rx_) = receiver.try_recv() {
+                if let Some(simulator_rx::Data::Rx(rx_)) = rx_.data {
+                    rx.copy_from(&autd3_core::RxDatagram::from_msg(&rx_));
+                }
+            }
+        }
+
         Ok(true)
     }
 
     fn is_open(&self) -> bool {
-        self.run.load(Ordering::Acquire)
+        // self.run.load(Ordering::Acquire)
+        self.tx.is_some()
     }
 
     fn timeout(&self) -> Duration {
