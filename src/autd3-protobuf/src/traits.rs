@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -594,7 +594,7 @@ impl FromMessage<TransducerTest> for autd3::gain::TransducerTest {
     }
 }
 
-impl<'a, T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::Grouped<'a, T> {
+impl<'a, T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::Grouped<T> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Grouped) -> Self {
         msg.groups.iter().fold(Self::new(), |acc, v| {
@@ -897,7 +897,7 @@ impl FromMessage<FocusStm> for autd3_core::stm::FocusSTM {
     }
 }
 
-impl<'a, T: autd3_core::geometry::Transducer + 'a> FromMessage<GainStm>
+impl<'a, T: autd3_core::geometry::Transducer + 'a + 'static> FromMessage<GainStm>
     for autd3_core::stm::GainSTM<'a, T>
 {
     fn from_msg(msg: &GainStm) -> Self {
@@ -915,10 +915,8 @@ impl<'a, T: autd3_core::geometry::Transducer + 'a> FromMessage<GainStm>
                     Box::new(autd3::prelude::TransducerTest::from_msg(msg))
                         as Box<dyn autd3_core::gain::Gain<T>>
                 }
-                gain::Gain::Grouped(msg) => {
-                    Box::new(autd3::prelude::Grouped::<'a, T>::from_msg(msg))
-                        as Box<dyn autd3_core::gain::Gain<T>>
-                }
+                gain::Gain::Grouped(msg) => Box::new(autd3::prelude::Grouped::<T>::from_msg(msg))
+                    as Box<dyn autd3_core::gain::Gain<T>>,
                 gain::Gain::Sdp(msg) => Box::new(autd3_gain_holo::SDP::from_msg(msg))
                     as Box<dyn autd3_core::gain::Gain<T>>,
                 gain::Gain::Evp(msg) => Box::new(autd3_gain_holo::EVP::from_msg(msg))
