@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/05/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::fmt;
 use std::vec::Vec;
 
-use crate::local::native_methods;
+use crate::local::soem_bindings;
 
 use std::ffi::CStr;
 use std::ops::Index;
@@ -45,7 +45,7 @@ impl EthernetAdapters {
     pub fn new() -> Self {
         let mut adapters = Vec::new();
         unsafe {
-            let mut adapter = native_methods::ec_find_adapters();
+            let mut adapter = soem_bindings::ec_find_adapters();
             while !adapter.is_null() {
                 let desc = CStr::from_ptr(((*adapter).desc).as_ptr())
                     .to_str()
@@ -58,7 +58,7 @@ impl EthernetAdapters {
                 adapters.push(EthernetAdapter { desc, name });
                 adapter = (*adapter).next;
             }
-            native_methods::ec_free_adapters(adapter);
+            soem_bindings::ec_free_adapters(adapter);
             EthernetAdapters { adapters }
         }
     }
