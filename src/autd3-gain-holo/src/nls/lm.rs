@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ use autd3_traits::Gain;
 /// * D.W.Marquardt, “An algorithm for least-squares estimation of non-linear parameters,” Journal of the society for Industrial and AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
 /// * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
 #[derive(Gain)]
-pub struct LM<B: Backend> {
+pub struct LM<B: Backend + 'static> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     eps_1: float,
@@ -42,7 +42,7 @@ pub struct LM<B: Backend> {
 
 impl_holo!(B, LM<B>);
 
-impl<B: Backend> LM<B> {
+impl<B: Backend + 'static> LM<B> {
     pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
@@ -98,7 +98,7 @@ impl<B: Backend> LM<B> {
     }
 }
 
-impl<B: Backend, T: Transducer> Gain<T> for LM<B> {
+impl<B: Backend + 'static, T: Transducer> Gain<T> for LM<B> {
     #[allow(clippy::many_single_char_names)]
     fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let g = generate_propagation_matrix(geometry, &self.foci);

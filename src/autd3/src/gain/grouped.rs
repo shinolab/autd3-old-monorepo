@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,11 +17,11 @@ use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
 use autd3_traits::Gain;
 
 #[derive(Gain, Default)]
-pub struct Grouped<'a, T: Transducer> {
-    gain_map: HashMap<usize, Box<dyn Gain<T> + 'a>>,
+pub struct Grouped<T: Transducer + 'static> {
+    gain_map: HashMap<usize, Box<dyn Gain<T> + 'static>>,
 }
 
-impl<'a, T: Transducer> Grouped<'a, T> {
+impl<T: Transducer> Grouped<T> {
     /// constructor
     pub fn new() -> Self {
         Self {
@@ -59,22 +59,29 @@ impl<'a, T: Transducer> Grouped<'a, T> {
             .collect())
     }
 
-    pub fn add<G: 'a + Gain<T>>(mut self, id: usize, gain: G) -> Self {
+    pub fn add<G: Gain<T> + 'static>(mut self, id: usize, gain: G) -> Self {
         self.gain_map.insert(id, Box::new(gain));
         self
     }
 
-    pub fn add_boxed(mut self, id: usize, gain: Box<dyn Gain<T> + 'a>) -> Self {
+    pub fn add_boxed(mut self, id: usize, gain: Box<dyn Gain<T>>) -> Self {
         self.gain_map.insert(id, gain);
         self
     }
 
-    pub fn gain_map(&self) -> &HashMap<usize, Box<dyn Gain<T> + 'a>> {
+    pub fn gain_map(&self) -> &HashMap<usize, Box<dyn Gain<T>>> {
         &self.gain_map
+    }
+
+    pub fn get_gain<'a, G: Gain<T> + 'static>(&'a self, idx: usize) -> Option<&'a G> {
+        if !self.gain_map.contains_key(&idx) {
+            return None;
+        }
+        self.gain_map[&idx].as_any().downcast_ref::<G>()
     }
 }
 
-impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
+impl<T: Transducer> Gain<T> for Grouped<T> {
     fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Self::calc_impl(
             self.gain_map
