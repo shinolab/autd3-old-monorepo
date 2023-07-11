@@ -1,2 +1,2 @@
 *.dylib
-!dummy.dll
+!dummy.dylib
