@@ -278,10 +278,10 @@ version = "13.0.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
- "crossbeam-channel",
  "thiserror",
  "tokio",
  "tokio-stream",
+ "tonic",
 ]
 
 [[package]]

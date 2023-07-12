@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -115,11 +115,15 @@ impl CPUEmulator {
             | MSG_RD_FPGA_VERSION_MINOR
             | MSG_RD_FPGA_FUNCTION => {}
             _ => {
-                if self.read_fpga_info {
+                if self.should_update() {
                     self.ack = self.read_fpga_info() as _;
                 }
             }
         }
+    }
+
+    pub fn should_update(&self) -> bool {
+        self.read_fpga_info
     }
 }
 
