@@ -234,6 +234,97 @@ impl ToMessage for autd3::gain::TransducerTest {
     }
 }
 
+impl<T: autd3_core::geometry::Transducer> ToMessage for autd3::gain::Grouped<T> {
+    type Message = Grouped;
+
+    fn to_msg(&self) -> Self::Message {
+        Self::Message {
+            groups: self
+                .gain_map()
+                .keys()
+                .map(|&k| {
+                    let gain = if let Some(g) = self.get_gain::<autd3::gain::Focus>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) = self.get_gain::<autd3::gain::Bessel>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) = self.get_gain::<autd3::gain::Null>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) = self.get_gain::<autd3::gain::Plane>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) = self.get_gain::<autd3::gain::TransducerTest>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::SDP<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::EVP<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::Naive<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::GS<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::GSPAT<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) =
+                        self.get_gain::<autd3_gain_holo::LM<autd3_gain_holo::NalgebraBackend>>(k)
+                    {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else if let Some(g) = self.get_gain::<autd3_gain_holo::Greedy>(k) {
+                        match g.to_msg().datagram.unwrap() {
+                            datagram::Datagram::Gain(g) => Some(g),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+                    grouped::Group { id: k as _, gain }
+                })
+                .collect(),
+        }
+    }
+}
+
 impl ToMessage for autd3_gain_holo::Constraint {
     type Message = Constraint;
 
