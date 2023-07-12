@@ -12,15 +12,9 @@
  */
 
 use tokio::runtime::{Builder, Runtime};
-use tokio::sync::mpsc;
-use tokio::task::JoinHandle;
-use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 
-use autd3_protobuf::*;
+use autd3_protobuf::{simulator_client::SimulatorClient, *};
 
-use crossbeam_channel::bounded;
-// use std::sync::atomic::{AtomicBool, Ordering};
-// use std::sync::{Arc, RwLock};
 use std::{
     net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     time::Duration,
@@ -39,34 +33,25 @@ enum Either {
 }
 
 pub struct Simulator {
+    client: Option<simulator_client::SimulatorClient<tonic::transport::Channel>>,
     addr: Either,
     port: u16,
-    tx: Option<mpsc::Sender<SimulatorTx>>,
-    rx: Option<mpsc::Receiver<SimulatorTx>>,
-    // rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
-    receive_stream_th: Option<JoinHandle<()>>,
     timeout: Duration,
     runtime: Runtime,
-    rx_receiver: Option<crossbeam_channel::Receiver<SimulatorRx>>,
 }
 
 impl Simulator {
     pub fn new(port: u16) -> Self {
-        let (tx, rx) = mpsc::channel(128);
         Self {
+            client: None,
             addr: Either::V4(Ipv4Addr::LOCALHOST),
             port,
-            tx: Some(tx),
-            rx: Some(rx),
-            // rx_buf: Arc::new(RwLock::new(autd3_core::RxDatagram::new(0))),
-            receive_stream_th: None,
             timeout: Duration::from_millis(200),
             runtime: Builder::new_multi_thread()
                 .worker_threads(1)
                 .enable_all()
                 .build()
                 .unwrap(),
-            rx_receiver: None,
         }
     }
 
@@ -96,8 +81,6 @@ impl Simulator {
         &mut self,
         geometry: &Geometry<T>,
     ) -> Result<(), AUTDProtoBufError> {
-        let (rx_sender, rx_receiver) = bounded(128);
-
         let mut client = self
             .runtime
             .block_on(simulator_client::SimulatorClient::connect(format!(
@@ -107,107 +90,45 @@ impl Simulator {
                     Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
                 }
             )))?;
-        let rx = self.rx.take().unwrap();
-        self.receive_stream_th = Some(self.runtime.spawn(async move {
-            let response = client.receive_data(ReceiverStream::new(rx)).await.unwrap();
-            let mut resp_stream = response.into_inner();
-            while let Some(received) = resp_stream.next().await {
-                match received {
-                    Ok(received) => match rx_sender.send(received) {
-                        Ok(_) => {}
-                        Err(_) => {
-                            break;
-                        }
-                    },
-                    Err(_) => {
-                        break;
-                    }
-                }
-            }
-        }));
 
-        if !(0..20).any(|_| {
-            if self
-                .tx
-                .as_mut()
-                .unwrap()
-                .blocking_send(SimulatorTx {
-                    data: Some(simulator_tx::Data::Geometry(geometry.to_msg())),
-                })
-                .is_err()
-            {
-                return false;
-            }
-            std::thread::sleep(Duration::from_millis(100));
-            if let Ok(rx) = rx_receiver.try_recv() {
-                if let Some(rx) = rx.data {
-                    return matches!(rx, simulator_rx::Data::Geometry(_));
-                }
-            }
-            false
-        }) {
+        if self
+            .runtime
+            .block_on(client.config_geomety(geometry.to_msg()))
+            .is_err()
+        {
             return Err(AUTDProtoBufError::SendError(
                 "Failed to initialize simulator".to_string(),
             ));
         }
 
-        // self.rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(
-        //     geometry.num_devices(),
-        // )));
-
-        self.rx_receiver = Some(rx_receiver);
-
-        // self.run.store(true, Ordering::Release);
-        // let run = self.run.clone();
-        // let rx_buf = self.rx_buf.clone();
-        // self.receive_th = Some(std::thread::spawn(move || {
-        //     while run.load(Ordering::Acquire) {
-        //         if let Ok(rx) = rx_receiver.try_recv() {
-        //             if let Some(simulator_rx::Data::Rx(rx)) = rx.data {
-        //                 *rx_buf.write().unwrap() = autd3_core::RxDatagram::from_msg(&rx);
-        //             }
-        //         }
-        //         std::thread::sleep(Duration::from_millis(1));
-        //     }
-        // }));
+        self.client = Some(client);
 
         Ok(())
     }
 
-    fn close_impl(&mut self) -> Result<(), AUTDProtoBufError> {
-        // self.run.store(false, Ordering::Release);
-        if let Some(tx) = self.tx.take() {
-            tx.blocking_send(SimulatorTx {
-                data: Some(simulator_tx::Data::Close(CloseRequest {})),
-            })?;
-            drop(tx);
-        }
-        // if let Some(th) = self.receive_th.take() {
-        //     th.join().unwrap();
-        // }
-        if let Some(th) = self.receive_stream_th.take() {
-            self.runtime.block_on(th)?;
-        }
-        Ok(())
+    fn close_impl(
+        client: &mut SimulatorClient<tonic::transport::Channel>,
+        runtime: &Runtime,
+    ) -> Result<bool, AUTDProtoBufError> {
+        let res = runtime.block_on(client.close(CloseRequest {}))?;
+        Ok(res.into_inner().success)
     }
 
     fn send_impl(
-        sender: &mut tokio::sync::mpsc::Sender<SimulatorTx>,
+        client: &mut SimulatorClient<tonic::transport::Channel>,
+        runtime: &Runtime,
         tx: &TxDatagram,
-    ) -> Result<(), AUTDProtoBufError> {
-        sender.blocking_send(SimulatorTx {
-            data: Some(simulator_tx::Data::Raw(tx.to_msg())),
-        })?;
-        Ok(())
+    ) -> Result<bool, AUTDProtoBufError> {
+        let res = runtime.block_on(client.send_data(tx.to_msg()))?;
+        Ok(res.into_inner().success)
     }
 
     fn receive_impl(
-        sender: &mut tokio::sync::mpsc::Sender<SimulatorTx>,
-    ) -> Result<(), AUTDProtoBufError> {
-        sender.blocking_send(SimulatorTx {
-            data: Some(simulator_tx::Data::Read(ReadRequest {})),
-        })?;
-        Ok(())
+        client: &mut SimulatorClient<tonic::transport::Channel>,
+        runtime: &Runtime,
+    ) -> Result<RxDatagram, AUTDProtoBufError> {
+        let res = runtime.block_on(client.read_data(ReadRequest {}))?;
+        Ok(autd3_core::RxDatagram::from_msg(&res.into_inner()))
     }
 }
 
@@ -218,40 +139,33 @@ impl<T: Transducer> Link<T> for Simulator {
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
-        self.close_impl()?;
+        if let Some(client) = &mut self.client {
+            Self::close_impl(client, &self.runtime)?;
+        }
         Ok(())
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if let Some(tx_) = &mut self.tx {
-            Self::send_impl(tx_, tx)?;
-            Ok(true)
+        if let Some(client) = &mut self.client {
+            Ok(Self::send_impl(client, &self.runtime, tx)?)
         } else {
             Err(AUTDInternalError::LinkClosed)
         }
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
-        if let Some(tx_) = &mut self.tx {
-            Self::receive_impl(tx_)?;
+        if let Some(client) = &mut self.client {
+            let rx_ = Self::receive_impl(client, &self.runtime)?;
+            rx.copy_from(&rx_);
         } else {
             return Err(AUTDInternalError::LinkClosed);
-        }
-
-        if let Some(receiver) = self.rx_receiver.as_ref() {
-            if let Ok(rx_) = receiver.try_recv() {
-                if let Some(simulator_rx::Data::Rx(rx_)) = rx_.data {
-                    rx.copy_from(&autd3_core::RxDatagram::from_msg(&rx_));
-                }
-            }
         }
 
         Ok(true)
     }
 
     fn is_open(&self) -> bool {
-        // self.run.load(Ordering::Acquire)
-        self.tx.is_some()
+        self.client.is_some()
     }
 
     fn timeout(&self) -> Duration {

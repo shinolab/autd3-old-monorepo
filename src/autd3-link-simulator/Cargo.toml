@@ -15,8 +15,8 @@ autd3-protobuf = {path="../autd3-protobuf", version="13.0.0"}
 autd3-core = {path="../autd3-core", version="13.0.0"}
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.14"
-crossbeam-channel = "0.5.8"
 thiserror = "1.0.30"
+tonic = "0.9.2"
 
 [features]
 default = []
