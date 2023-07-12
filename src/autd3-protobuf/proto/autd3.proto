@@ -4,7 +4,7 @@
  * Created Date: 26/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -87,9 +87,8 @@ message FPGAInfoResponse {
 
 message TxRawData { bytes data = 1; }
 message SendResponse { bool success = 1; }
-
-message ReadRequest {}
 message RxMessage { bytes data = 1; }
+message ReadRequest {}
 
 message CloseRequest {}
 message CloseResponse { bool success = 1; }
@@ -104,24 +103,11 @@ message Geometry {
 
 message GeometryResponse {}
 
-message SimulatorTx {
-  oneof data {
-    Geometry geometry = 1;
-    TxRawData raw = 2;
-    ReadRequest read = 8;
-    CloseRequest close = 9;
-  }
-}
-
-message SimulatorRx {
-  oneof data {
-    RxMessage rx = 1;
-    GeometryResponse geometry = 2;
-  }
-}
-
 service Simulator {
-  rpc ReceiveData(stream SimulatorTx) returns (stream SimulatorRx);
+  rpc ConfigGeomety(Geometry) returns (GeometryResponse) {}
+  rpc SendData(TxRawData) returns (SendResponse) {}
+  rpc ReadData(ReadRequest) returns (RxMessage) {}
+  rpc Close(CloseRequest) returns (CloseResponse) {}
 }
 
 service ECAT {

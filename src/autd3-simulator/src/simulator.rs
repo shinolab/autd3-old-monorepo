@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,14 +15,9 @@ use std::{
     error::Error,
     f32::consts::PI,
     ffi::OsStr,
-    io::ErrorKind,
     net::ToSocketAddrs,
     path::{Path, PathBuf},
-    pin::Pin,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::{Arc, RwLock},
 };
 
 use crate::{
@@ -39,7 +34,7 @@ use crate::{
 };
 use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
-use crossbeam_channel::{bounded, Receiver, Sender};
+use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
@@ -53,106 +48,57 @@ use winit::{
 };
 
 use futures_util::future::FutureExt;
-use tokio::{
-    runtime::Builder,
-    sync::{mpsc, oneshot},
-};
-use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
-use tonic::{transport::Server, Request, Response, Status, Streaming};
+use tokio::{runtime::Builder, sync::oneshot};
+use tonic::{transport::Server, Request, Response, Status};
 
 use autd3_protobuf::*;
 
-type SimulatorServerResult<T> = Result<Response<T>, Status>;
-type ResponseStream = Pin<Box<dyn Stream<Item = Result<SimulatorRx, Status>> + Send>>;
+enum Signal {
+    ConfigGeometry(Geometry),
+    Send(TxRawData),
+    Close,
+}
 
 struct SimulatorServer {
-    fin: Arc<AtomicBool>,
-    rx_receiver: Receiver<SimulatorRx>,
-    tx_sender: Sender<SimulatorTx>,
+    rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
+    sender: Sender<Signal>,
 }
 
 #[tonic::async_trait]
 impl simulator_server::Simulator for SimulatorServer {
-    type ReceiveDataStream = ResponseStream;
-
-    async fn receive_data(
+    async fn config_geomety(
         &self,
-        req: Request<Streaming<SimulatorTx>>,
-    ) -> SimulatorServerResult<Self::ReceiveDataStream> {
-        self.fin.store(false, Ordering::Release);
-        spdlog::info!(
-            "Connect to client{}",
-            if let Some(addr) = req.remote_addr() {
-                format!(": {}", addr)
-            } else {
-                "".to_string()
-            }
-        );
-        let in_stream = req
-            .into_inner()
-            .timeout_repeating(tokio::time::interval(std::time::Duration::from_millis(100)));
+        req: Request<Geometry>,
+    ) -> Result<Response<GeometryResponse>, Status> {
+        if self
+            .sender
+            .send(Signal::ConfigGeometry(req.into_inner()))
+            .is_err()
+        {
+            return Err(Status::unavailable("Simulator is closed"));
+        }
+        Ok(Response::new(GeometryResponse {}))
+    }
 
-        let (tx, rx) = mpsc::channel(128);
+    async fn send_data(&self, req: Request<TxRawData>) -> Result<Response<SendResponse>, Status> {
+        if self.sender.send(Signal::Send(req.into_inner())).is_err() {
+            return Err(Status::unavailable("Simulator is closed"));
+        }
+        Ok(Response::new(SendResponse { success: true }))
+    }
 
-        let fin = self.fin.clone();
-        let rx_receiver = self.rx_receiver.clone();
-        let tx2 = tx.clone();
-        tokio::spawn(async move {
-            while !fin.load(Ordering::Acquire) {
-                if let Ok(rx) = rx_receiver.try_recv() {
-                    match tx2.send(Ok(rx)).await {
-                        Ok(_) => {}
-                        Err(e) => {
-                            spdlog::trace!("Send err: {}", e);
-                            break;
-                        }
-                    }
-                }
-                tokio::time::sleep(std::time::Duration::from_millis(1)).await;
-            }
-        });
-        let fin = self.fin.clone();
-        let tx_sender = self.tx_sender.clone();
-        tokio::spawn(async move {
-            tokio::pin!(in_stream);
-            loop {
-                match in_stream.try_next().await {
-                    Ok(Some(Ok(result))) => {
-                        tx_sender.send(result).unwrap();
-                    }
-                    Ok(Some(Err(err))) => {
-                        if let Some(io_err) = match_for_io_error(&err) {
-                            if io_err.kind() == ErrorKind::BrokenPipe {
-                                break;
-                            }
-                        }
-                        match tx.send(Err(err)).await {
-                            Ok(_) => (),
-                            Err(e) => {
-                                spdlog::trace!("Receive err: {}", e);
-                                break;
-                            }
-                        }
-                    }
-                    _ => {
-                        if fin.load(Ordering::Acquire) {
-                            break;
-                        }
-                    }
-                }
-            }
-            spdlog::info!("Disconnect from client");
-            let _ = tx_sender.send(SimulatorTx {
-                data: Some(simulator_tx::Data::Close(CloseRequest {})),
-            });
-            fin.store(true, Ordering::Release);
-        });
+    async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
+        let rx = self.rx_buf.read().unwrap();
+        Ok(Response::new(RxMessage {
+            data: rx.iter().flat_map(|c| [c.ack, c.msg_id]).collect(),
+        }))
+    }
 
-        let out_stream = ReceiverStream::new(rx);
-
-        Ok(Response::new(
-            Box::pin(out_stream) as Self::ReceiveDataStream
-        ))
+    async fn close(&self, _: Request<CloseRequest>) -> Result<Response<CloseResponse>, Status> {
+        if self.sender.send(Signal::Close).is_err() {
+            return Err(Status::unavailable("Simulator is closed"));
+        }
+        Ok(Response::new(CloseResponse { success: true }))
     }
 }
 
@@ -218,31 +164,21 @@ impl Simulator {
     pub fn run(&mut self) -> i32 {
         spdlog::info!("Initializing window...");
 
-        let (sender_c2s, receiver_c2s) = bounded(128);
-        let (sender_s2c, receiver_s2c) = bounded(128);
+        let (tx, rx) = bounded(32);
 
-        let (tx, rx) = oneshot::channel::<()>();
-        let exit = Arc::new(AtomicBool::new(false));
+        let (tx_shutdown, rx_shutdown) = oneshot::channel::<()>();
         let port = self.port.unwrap_or(self.settings.port);
-        let server_th = Self::run_server(port, exit.clone(), receiver_c2s, sender_s2c, rx);
-        self.run_simulator(server_th, exit, receiver_s2c, sender_c2s, tx)
-    }
 
-    fn run_server(
-        port: u16,
-        fin: Arc<AtomicBool>,
-        rx_receiver: Receiver<SimulatorRx>,
-        tx_sender: Sender<SimulatorTx>,
-        shutdown: tokio::sync::oneshot::Receiver<()>,
-    ) -> std::thread::JoinHandle<Result<(), tonic::transport::Error>> {
-        std::thread::spawn(move || {
+        let rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(0)));
+        let rx_buf_clone = rx_buf.clone();
+
+        let server_th = std::thread::spawn(move || {
             spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
             let body = async {
                 Server::builder()
                     .add_service(simulator_server::SimulatorServer::new(SimulatorServer {
-                        fin,
-                        rx_receiver,
-                        tx_sender,
+                        rx_buf: rx_buf_clone,
+                        sender: tx,
                     }))
                     .serve_with_shutdown(
                         format!("0.0.0.0:{port}")
@@ -250,7 +186,7 @@ impl Simulator {
                             .unwrap()
                             .next()
                             .unwrap(),
-                        shutdown.map(drop),
+                        rx_shutdown.map(drop),
                     )
                     .await
             };
@@ -259,15 +195,16 @@ impl Simulator {
                 .build()
                 .unwrap()
                 .block_on(body)
-        })
+        });
+
+        self.run_simulator(server_th, rx_buf, rx, tx_shutdown)
     }
 
     fn run_simulator(
         &mut self,
         server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
-        exit: Arc<AtomicBool>,
-        receiver_c2s: Receiver<SimulatorTx>,
-        sender_s2c: Sender<SimulatorRx>,
+        rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
+        receiver: Receiver<Signal>,
         shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
@@ -298,77 +235,67 @@ impl Simulator {
 
         let server_th_ref = &server_th;
         let res = event_loop.run_return(move |event, _, control_flow| {
-            if let Ok(tx) = receiver_c2s.try_recv() {
-                match tx.data {
-                    Some(simulator_tx::Data::Geometry(geometry)) => {
-                        sources.clear();
-                        cpus.clear();
+            cpus.iter_mut().for_each(CPUEmulator::update);
+            if cpus.iter().any(CPUEmulator::should_update) {
+                rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
+                    autd3_core::RxMessage {
+                        ack: c.ack(),
+                        msg_id: c.msg_id(),
+                    }
+                }));
+            }
 
-                        Vec::<_>::from_msg(&geometry).iter().for_each(|autd3| {
-                            autd3.get_transducers(0).iter().for_each(|(_, p, r)| {
-                                sources.add(
-                                    to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
-                                    to_gl_rot(Quaternion::new(
-                                        r.w as _, r.i as _, r.j as _, r.k as _,
-                                    )),
-                                    Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
-                                    1.0,
-                                );
-                            });
+            match receiver.try_recv() {
+                Ok(Signal::ConfigGeometry(geometry)) => {
+                    sources.clear();
+                    cpus.clear();
+
+                    let devices = Vec::<_>::from_msg(&geometry);
+                    devices.iter().for_each(|autd3| {
+                        autd3.get_transducers(0).iter().for_each(|(_, p, r)| {
+                            sources.add(
+                                to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                to_gl_rot(Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _)),
+                                Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
+                                1.0,
+                            );
                         });
+                    });
 
-                        sender_s2c
-                            .send(SimulatorRx {
-                                data: Some(simulator_rx::Data::Geometry(GeometryResponse {})),
-                            })
-                            .unwrap();
+                    cpus = (0..sources.len() / NUM_TRANS_IN_UNIT)
+                        .map(|i| CPUEmulator::new(i, NUM_TRANS_IN_UNIT))
+                        .collect();
 
-                        cpus = (0..sources.len() / NUM_TRANS_IN_UNIT)
-                            .map(|i| CPUEmulator::new(i, NUM_TRANS_IN_UNIT))
-                            .collect();
+                    *rx_buf.write().unwrap() = autd3_core::RxDatagram::new(devices.len());
 
-                        field_compute_pipeline.init(&render, &sources);
-                        trans_viewer.init(&render, &sources);
-                        slice_viewer.init(&self.settings);
-                        imgui.init(&cpus);
+                    field_compute_pipeline.init(&render, &sources);
+                    trans_viewer.init(&render, &sources);
+                    slice_viewer.init(&self.settings);
+                    imgui.init(devices.len());
 
-                        is_initialized = true;
-                    }
-                    Some(simulator_tx::Data::Raw(raw)) => {
-                        let tx = TxDatagram::from_msg(&raw);
-                        cpus.iter_mut().for_each(|cpu| {
-                            cpu.send(&tx);
-                        });
-                        sender_s2c
-                            .send(SimulatorRx {
-                                data: Some(simulator_rx::Data::Rx(RxMessage {
-                                    data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
-                                })),
-                            })
-                            .unwrap();
-
-                        is_source_update = true;
-                    }
-                    Some(simulator_tx::Data::Read(_)) => {
-                        cpus.iter_mut().for_each(|c| c.update());
-                        sender_s2c
-                            .send(SimulatorRx {
-                                data: Some(simulator_rx::Data::Rx(RxMessage {
-                                    data: cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect(),
-                                })),
-                            })
-                            .unwrap();
-                    }
-                    Some(simulator_tx::Data::Close(_)) => {
-                        is_initialized = false;
-                        sources.clear();
-                        cpus.clear();
-                        exit.store(true, Ordering::Release);
-                    }
-                    None => {
-                        unreachable!();
-                    }
+                    is_initialized = true;
                 }
+                Ok(Signal::Send(raw)) => {
+                    let tx = TxDatagram::from_msg(&raw);
+                    cpus.iter_mut().for_each(|cpu| {
+                        cpu.send(&tx);
+                    });
+                    rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
+                        autd3_core::RxMessage {
+                            ack: c.ack(),
+                            msg_id: c.msg_id(),
+                        }
+                    }));
+
+                    is_source_update = true;
+                }
+                Ok(Signal::Close) => {
+                    is_initialized = false;
+                    sources.clear();
+                    cpus.clear();
+                }
+                Err(TryRecvError::Empty) => {}
+                _ => {}
             }
 
             match event {
@@ -581,8 +508,6 @@ impl Simulator {
             }
 
             if server_th_ref.is_finished() || !is_running {
-                exit.store(true, Ordering::Release);
-
                 spdlog::default_logger().flush();
 
                 *control_flow = ControlFlow::Exit;
