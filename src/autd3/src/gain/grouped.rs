@@ -73,7 +73,7 @@ impl<T: Transducer> Grouped<T> {
         &self.gain_map
     }
 
-    pub fn get_gain<'a, G: Gain<T> + 'static>(&'a self, idx: usize) -> Option<&'a G> {
+    pub fn get_gain<G: Gain<T> + 'static>(&self, idx: usize) -> Option<&G> {
         if !self.gain_map.contains_key(&idx) {
             return None;
         }
