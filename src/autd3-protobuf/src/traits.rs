@@ -685,7 +685,7 @@ impl FromMessage<TransducerTest> for autd3::gain::TransducerTest {
     }
 }
 
-impl<'a, T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::Grouped<T> {
+impl<T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::Grouped<T> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Grouped) -> Self {
         msg.groups.iter().fold(Self::new(), |acc, v| {
