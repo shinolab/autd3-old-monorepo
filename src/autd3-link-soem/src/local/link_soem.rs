@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -217,12 +217,10 @@ impl SOEM {
                     ) {
                         if name.is_empty() {
                             Err(SOEMError::NoDeviceFound)
+                        } else if name == "AUTD" {
+                            Ok(())
                         } else {
-                            if name == "AUTD" {
-                                Ok(())
-                            } else {
-                                Err(SOEMError::NotAUTD3Device(name.to_owned()))
-                            }
+                            Err(SOEMError::NotAUTD3Device(name))
                         }
                     } else {
                         Err(SOEMError::NoDeviceFound)
