@@ -12,7 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from .primitive import Static, Modulation, Sine, SineLegacy, Square
+from .primitive import Static, Modulation, Sine, SineLegacy, Square, RadiationPressure
 from .audio_file import Wav
 
 
@@ -22,5 +22,6 @@ __all__ = [
     "Sine",
     "SineLegacy",
     "Square",
+    "RadiationPressure",
     "Wav",
 ]
