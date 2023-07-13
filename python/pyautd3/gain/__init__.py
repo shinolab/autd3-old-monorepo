@@ -12,7 +12,27 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from .primitive import Focus, Bessel, Plane, Gain, Null, Grouped, TransTest, Drive
+from .primitive import (
+    Focus,
+    Bessel,
+    Plane,
+    Gain,
+    Null,
+    Grouped,
+    TransTest,
+    Drive,
+    Cache,
+)
 
 
-__all__ = ["Focus", "Bessel", "Plane", "Gain", "Null", "Grouped", "TransTest", "Drive"]
+__all__ = [
+    "Focus",
+    "Bessel",
+    "Plane",
+    "Gain",
+    "Null",
+    "Grouped",
+    "TransTest",
+    "Drive",
+    "Cache",
+]

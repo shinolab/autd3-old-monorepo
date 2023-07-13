@@ -673,6 +673,36 @@ namespace AUTD3Sharp
             }
         }
 
+        public sealed class Cache : GainBase, IEnumerable<Drive>
+        {
+            private Drive[] _drives;
+
+            public Cache(GainBase g, Geometry geometry)
+            {
+                var err = new byte[256];
+                _drives = new Drive[geometry.NumTransducers];
+                if (Base.AUTDGainCalc(g.GainPtr(geometry), geometry.Ptr, _drives, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+            }
+
+            sealed public override GainPtr GainPtr(Geometry geometry)
+            {
+                return Base.AUTDGainCustom(_drives, (ulong)_drives.Length);
+            }
+
+            public Drive this[int index]
+            {
+                get => _drives[index];
+                set => _drives[index] = value;
+            }
+
+            public Drive[] Drives => _drives;
+
+            public IEnumerator<Drive> GetEnumerator() => _drives.AsEnumerable().GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
         public sealed class Null : GainBase
         {
             public override GainPtr GainPtr(Geometry geometry) => Base.AUTDGainNull();
@@ -898,7 +928,43 @@ namespace AUTD3Sharp
             public abstract float_t[] Calc();
         }
 
-        public class RadiationPressure : ModulationBase
+
+        public class Cache : ModulationBase, IEnumerable<float_t>
+        {
+            private readonly uint _freqDiv;
+            private float_t[] _buffer;
+
+            public Cache(ModulationBase m)
+            {
+                _freqDiv = m.SamplingFrequencyDivision;
+
+                var err = new byte[256];
+                var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
+                if (size == Def.Autd3Err) throw new AUTDException(err);
+                _buffer = new float_t[size];
+                if (Base.AUTDModulationCalc(m.ModulationPtr(), _buffer, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+            }
+
+            sealed public override ModulationPtr ModulationPtr()
+            {
+                return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            }
+
+            public float_t this[int index]
+            {
+                get => _buffer[index];
+                set => _buffer[index] = value;
+            }
+
+            public float_t[] Buffer => _buffer;
+
+            public IEnumerator<float_t> GetEnumerator() => _buffer.AsEnumerable().GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public sealed class RadiationPressure : ModulationBase
         {
             private readonly uint _freqDiv;
             private readonly float_t[] _buffer;
