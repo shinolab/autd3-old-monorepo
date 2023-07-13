@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2023
+// Last Modified: 13/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -146,7 +146,7 @@ class Cache : public internal::Gain {
       throw internal::AUTDException(err);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
   }
 

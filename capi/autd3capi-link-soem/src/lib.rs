@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/06/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,10 +25,14 @@ use autd3_link_soem::{local::SOEM, remote::RemoteSOEM, EthernetAdapters};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetAdapterPointer(len: *mut u32) -> ConstPtr {
-    let adapters = EthernetAdapters::new();
-    *len = adapters.len() as u32;
-    Box::into_raw(Box::new(adapters)) as _
+pub unsafe extern "C" fn AUTDGetAdapterPointer() -> ConstPtr {
+    Box::into_raw(Box::new(EthernetAdapters::new())) as _
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGetAdapterSize(adapters: ConstPtr) -> u32 {
+    cast!(adapters, EthernetAdapters).len() as u32
 }
 
 #[no_mangle]
