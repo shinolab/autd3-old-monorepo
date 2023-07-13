@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ mod error_handler;
 mod ethernet_adapters;
 mod iomap;
 mod link_soem;
-mod native_methods;
+mod soem_bindings;
 
 pub use autd3_core::sync_mode::SyncMode;
 pub use ethernet_adapters::EthernetAdapters;
