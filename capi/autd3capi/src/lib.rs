@@ -363,7 +363,7 @@ pub unsafe extern "C" fn AUTDGainNull() -> GainPtr {
     GainPtr::new(Null::new())
 }
 
-type DynamicGrouped = Grouped<'static, DynamicTransducer>;
+type DynamicGrouped = Grouped<DynamicTransducer>;
 
 #[no_mangle]
 #[must_use]
@@ -1094,22 +1094,20 @@ mod tests {
             }
             dbg!(fpga_info);
 
-            let mut x = 0.0;
-            let mut y = 0.0;
-            let mut z = 0.0;
-            AUTDGeometryCenter(geo, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
-            AUTDGeometryCenterOf(geo, 0, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
+            let mut v = [0., 0., 0.];
+            AUTDGeometryCenter(geo, v.as_mut_ptr());
+            dbg!(&v);
+            AUTDGeometryCenterOf(geo, 0, v.as_mut_ptr());
+            dbg!(&v);
 
-            AUTDTransPosition(geo, 0, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
-            AUTDTransXDirection(geo, 0, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
-            AUTDTransYDirection(geo, 0, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
-            AUTDTransZDirection(geo, 0, &mut x as _, &mut y as _, &mut z as _);
-            dbg!(Vector3::new(x, y, z));
+            AUTDTransPosition(geo, 0, v.as_mut_ptr());
+            dbg!(&v);
+            AUTDTransXDirection(geo, 0, v.as_mut_ptr());
+            dbg!(&v);
+            AUTDTransYDirection(geo, 0, v.as_mut_ptr());
+            dbg!(&v);
+            AUTDTransZDirection(geo, 0, v.as_mut_ptr());
+            dbg!(&v);
 
             let delay = 0xFFFF;
             AUTDSetTransModDelay(geo, 0, delay);
@@ -1121,18 +1119,10 @@ mod tests {
             }
             (0..num_devices).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
-                let mut is_valid = false;
-                let mut is_supported = false;
-                AUTDGetFirmwareInfo(
-                    firm_p,
-                    i as _,
-                    info.as_mut_ptr(),
-                    &mut is_valid as _,
-                    &mut is_supported as _,
-                );
+                let mut props = [false, false];
+                AUTDGetFirmwareInfo(firm_p, i as _, info.as_mut_ptr(), props.as_mut_ptr());
                 dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
-                dbg!(is_valid);
-                dbg!(is_supported);
+                dbg!(props);
             });
             AUTDFreeFirmwareInfoListPointer(firm_p);
 
