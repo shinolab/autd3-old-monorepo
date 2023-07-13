@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
-from ctypes import byref, c_bool
+from ctypes import c_bool
 import numpy as np
 from typing import List, Optional, Tuple, Union
 

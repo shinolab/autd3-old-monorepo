@@ -13,7 +13,6 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from datetime import timedelta
 import ctypes
-from ctypes import byref
 from typing import List
 from .link import Link
 
