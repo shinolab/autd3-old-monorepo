@@ -192,7 +192,7 @@ class Cache : public internal::Modulation {
   }
 
   [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }
-  std::vector<double>& drives() { return _buffer; }
+  std::vector<double>& buffer() { return _buffer; }
 
   [[nodiscard]] std::vector<double>::const_iterator begin() const noexcept { return _buffer.begin(); }
   [[nodiscard]] std::vector<double>::const_iterator end() const noexcept { return _buffer.end(); }
