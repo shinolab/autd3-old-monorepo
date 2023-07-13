@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ use nalgebra::ComplexField;
 ///
 /// Not yet been implemented with GPU.
 #[derive(Gain)]
-pub struct GSPAT<B: Backend> {
+pub struct GSPAT<B: Backend + 'static> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     repeat: usize,
@@ -39,7 +39,7 @@ pub struct GSPAT<B: Backend> {
 
 impl_holo!(B, GSPAT<B>);
 
-impl<B: Backend> GSPAT<B> {
+impl<B: Backend + 'static> GSPAT<B> {
     pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
@@ -59,7 +59,7 @@ impl<B: Backend> GSPAT<B> {
     }
 }
 
-impl<B: Backend, T: Transducer> Gain<T> for GSPAT<B> {
+impl<B: Backend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
     fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let g = generate_propagation_matrix(geometry, &self.foci);
         let q = self.backend.gspat(self.repeat, &self.amps, g)?;
