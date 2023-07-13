@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/07/2023
+Last Modified: 12/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import type { SOEMOptions, SyncMode, TimerStrategy } from "./options.ts";
   import { SyncModeValues, TimerStrategyValues } from "./options.ts";
 
-  import { invoke } from "@tauri-apps/api";
+  import { platform } from "@tauri-apps/api/os";
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
   import { Command, Child } from "@tauri-apps/api/shell";
@@ -68,6 +68,19 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
   const cachedAdapters = writable<string[]>([]);
   let adapterNames: string[] = [];
+  let adapterName: string = "Auto";
+  $: {
+    if (adapterName == "Auto") {
+      soemOptions.ifname = "Auto";
+    } else {
+      const idx = $cachedAdapters.findIndex(
+        (adapter) => adapter.split(",")[1].trim() == adapterName
+      );
+      console.log(idx);
+      soemOptions.ifname = $cachedAdapters[idx].split(",")[0].trim();
+      console.log(soemOptions.ifname);
+    }
+  }
 
   let handleRunClick = async () => {
     const args: string[] = [
@@ -97,6 +110,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     if (soemOptions.lightweight) {
       args.push("-l");
     }
+
     command = Command.sidecar("SOEMAUTDServer", args);
     child = await command.spawn();
     command.stdout.on("data", (line) =>
@@ -109,8 +123,21 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
         return [...v, line];
       })
     );
-    command.on("error", () => handleCloseClick());
-    command.on("close", () => handleCloseClick());
+    command.on("error", (err) => {
+      alert(err);
+      handleCloseClick();
+    });
+    command.on("close", async (data) => {
+      if (data.code < -1) {
+        const platformName = await platform();
+        let message = `SOEMAUTDServer exited with code ${data.code}`;
+        if (platformName == "win32") {
+          message += ". npcap is installed?";
+        }
+        alert(message);
+      }
+      handleCloseClick();
+    });
   };
 
   let handleCloseClick = async () => {
@@ -126,7 +153,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       adapters = v;
     })();
     if (adapters.length == 0) {
-      adapters = await invoke<string[]>("fetch_ifnames", {});
+      let ifnames = (
+        await Command.sidecar("SOEMAUTDServer", ["list"]).execute()
+      ).stdout;
+      adapters = ifnames
+        .split("\n")
+        .slice(1)
+        .map((line) => line.trim().split("\t").join(","));
       cachedAdapters.set(adapters);
     }
     adapterNames = ["Auto"].concat(
@@ -137,7 +170,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 <div class="ui">
   <label for="ifname">Interface name:</label>
-  <Select id="ifname" bind:value={soemOptions.ifname} values={adapterNames} />
+  <Select id="ifname" bind:value={adapterName} values={adapterNames} />
 
   <label for="port">Port:</label>
   <NumberInput
