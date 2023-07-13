@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -58,6 +58,13 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
 
     pub fn mode(&self) -> Mode {
         self.mode
+    }
+
+    pub fn get_gain<G: Gain<T> + 'static>(&'a self, idx: usize) -> Option<&'a G> {
+        if idx >= self.gains.len() {
+            return None;
+        }
+        self.gains[idx].as_any().downcast_ref::<G>()
     }
 
     pub fn with_props(props: STMProps) -> Self {
@@ -168,11 +175,19 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::gain::GainAsAny;
+
     use super::*;
     use assert_approx_eq::assert_approx_eq;
     use autd3_driver::FPGA_SUB_CLK_FREQ;
 
     struct NullGain {}
+
+    impl GainAsAny for NullGain {
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
 
     impl<T: Transducer> Gain<T> for NullGain {
         fn calc(&self, _: &Geometry<T>) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {
