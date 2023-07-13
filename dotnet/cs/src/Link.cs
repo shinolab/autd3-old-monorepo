@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -145,7 +145,8 @@ namespace AUTD3Sharp
 
             public static IEnumerable<EtherCATAdapter> EnumerateAdapters()
             {
-                var handle = NativeMethods.LinkSOEM.AUTDGetAdapterPointer(out var len);
+                var handle = NativeMethods.LinkSOEM.AUTDGetAdapterPointer();
+                var len = NativeMethods.LinkSOEM.AUTDGetAdapterSize(handle);
                 for (uint i = 0; i < len; i++)
                 {
                     var sbDesc = new byte[128];

@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -235,102 +235,60 @@ pub unsafe extern "C" fn AUTDNumDevices(geo: GeometryPtr) -> u32 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGeometryCenter(
-    geo: GeometryPtr,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let center = cast!(geo.0, Geo).center();
-    *x = center.x;
-    *y = center.y;
-    *z = center.z;
+pub unsafe extern "C" fn AUTDGeometryCenter(geo: GeometryPtr, center: *mut float) {
+    let c = cast!(geo.0, Geo).center();
+    center.add(0).write(c.x);
+    center.add(1).write(c.y);
+    center.add(2).write(c.z);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGeometryCenterOf(
-    geo: GeometryPtr,
-    dev_idx: u32,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let center = cast!(geo.0, Geo).center_of(dev_idx as usize);
-    *x = center.x;
-    *y = center.y;
-    *z = center.z;
+pub unsafe extern "C" fn AUTDGeometryCenterOf(geo: GeometryPtr, dev_idx: u32, center: *mut float) {
+    let c = cast!(geo.0, Geo).center_of(dev_idx as usize);
+    center.add(0).write(c.x);
+    center.add(1).write(c.y);
+    center.add(2).write(c.z);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDTransPosition(
-    geo: GeometryPtr,
-    tr_idx: u32,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let pos = cast!(geo.0, Geo)[tr_idx as usize].position();
-    *x = pos.x;
-    *y = pos.y;
-    *z = pos.z;
+pub unsafe extern "C" fn AUTDTransPosition(geo: GeometryPtr, tr_idx: u32, pos: *mut float) {
+    let p = cast!(geo.0, Geo)[tr_idx as usize].position();
+    pos.add(0).write(p.x);
+    pos.add(1).write(p.y);
+    pos.add(2).write(p.z);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDTransRotation(
-    geo: GeometryPtr,
-    tr_idx: u32,
-    w: *mut float,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let rot = cast!(geo.0, Geo)[tr_idx as usize].rotation();
-    *w = rot.w;
-    *x = rot.i;
-    *y = rot.j;
-    *z = rot.k;
+pub unsafe extern "C" fn AUTDTransRotation(geo: GeometryPtr, tr_idx: u32, rot: *mut float) {
+    let r = cast!(geo.0, Geo)[tr_idx as usize].rotation();
+    rot.add(0).write(r.w);
+    rot.add(1).write(r.i);
+    rot.add(2).write(r.j);
+    rot.add(3).write(r.k);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDTransXDirection(
-    geo: GeometryPtr,
-    tr_idx: u32,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let dir = cast!(geo.0, Geo)[tr_idx as usize].x_direction();
-    *x = dir.x;
-    *y = dir.y;
-    *z = dir.z;
+pub unsafe extern "C" fn AUTDTransXDirection(geo: GeometryPtr, tr_idx: u32, dir: *mut float) {
+    let d = cast!(geo.0, Geo)[tr_idx as usize].x_direction();
+    dir.add(0).write(d.x);
+    dir.add(1).write(d.y);
+    dir.add(2).write(d.z);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDTransYDirection(
-    geo: GeometryPtr,
-    tr_idx: u32,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let dir = cast!(geo.0, Geo)[tr_idx as usize].y_direction();
-    *x = dir.x;
-    *y = dir.y;
-    *z = dir.z;
+pub unsafe extern "C" fn AUTDTransYDirection(geo: GeometryPtr, tr_idx: u32, dir: *mut float) {
+    let d = cast!(geo.0, Geo)[tr_idx as usize].y_direction();
+    dir.add(0).write(d.x);
+    dir.add(1).write(d.y);
+    dir.add(2).write(d.z);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDTransZDirection(
-    geo: GeometryPtr,
-    tr_idx: u32,
-    x: *mut float,
-    y: *mut float,
-    z: *mut float,
-) {
-    let dir = cast!(geo.0, Geo)[tr_idx as usize].z_direction();
-    *x = dir.x;
-    *y = dir.y;
-    *z = dir.z;
+pub unsafe extern "C" fn AUTDTransZDirection(geo: GeometryPtr, tr_idx: u32, dir: *mut float) {
+    let d = cast!(geo.0, Geo)[tr_idx as usize].z_direction();
+    dir.add(0).write(d.x);
+    dir.add(1).write(d.y);
+    dir.add(2).write(d.z);
 }
 
 #[no_mangle]
@@ -348,11 +306,11 @@ pub unsafe extern "C" fn AUTDSetTransModDelay(geo: GeometryPtr, tr_idx: u32, del
 #[must_use]
 pub unsafe extern "C" fn AUTDGetFPGAInfo(
     cnt: ControllerPtr,
-    out: *const u8,
+    out: *mut u8,
     err: *mut c_char,
 ) -> bool {
     let fpga_info = try_or_return!(cast_mut!(cnt.0, Cnt).fpga_info(), err, false);
-    std::ptr::copy_nonoverlapping(fpga_info.as_ptr() as _, out as *mut _, fpga_info.len());
+    std::ptr::copy_nonoverlapping(fpga_info.as_ptr() as _, out, fpga_info.len());
     true
 }
 
@@ -379,14 +337,13 @@ pub unsafe extern "C" fn AUTDGetFirmwareInfo(
     p_info_list: FirmwareInfoListPtr,
     idx: u32,
     info: *mut c_char,
-    is_valid: *mut bool,
-    is_supported: *mut bool,
+    props: *mut bool,
 ) {
     let firm_info = &cast_mut!(p_info_list.0, Vec<FirmwareInfo>)[idx as usize];
     let info_str = std::ffi::CString::new(firm_info.to_string()).unwrap();
     libc::strcpy(info, info_str.as_ptr());
-    *is_valid = firm_info.is_valid();
-    *is_supported = firm_info.is_supported();
+    props.add(0).write(firm_info.is_valid());
+    props.add(1).write(firm_info.is_supported());
 }
 
 #[no_mangle]

@@ -2,7 +2,6 @@
 import threading
 import ctypes
 import os
-from typing import Any
 from .autd3capi_def import Level, LinkPtr, TimerStrategy
 
 from enum import IntEnum
@@ -36,8 +35,11 @@ class NativeMethods(metaclass=Singleton):
         except FileNotFoundError:
             return
 
-        self.dll.AUTDGetAdapterPointer.argtypes = [ctypes.POINTER(ctypes.c_uint32)] 
+        self.dll.AUTDGetAdapterPointer.argtypes = [] 
         self.dll.AUTDGetAdapterPointer.restype = ctypes.c_void_p
+
+        self.dll.AUTDGetAdapterSize.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGetAdapterSize.restype = ctypes.c_uint32
 
         self.dll.AUTDGetAdapter.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_char_p] 
         self.dll.AUTDGetAdapter.restype = None
@@ -87,8 +89,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkRemoteSOEMTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDLinkRemoteSOEMTimeout.restype = LinkPtr
 
-    def get_adapter_pointer(self, len: Any) -> ctypes.c_void_p:
-        return self.dll.AUTDGetAdapterPointer(len)
+    def get_adapter_pointer(self) -> ctypes.c_void_p:
+        return self.dll.AUTDGetAdapterPointer()
+
+    def get_adapter_size(self, adapters: ctypes.c_void_p) -> ctypes.c_uint32:
+        return self.dll.AUTDGetAdapterSize(adapters)
 
     def get_adapter(self, adapters: ctypes.c_void_p, idx: int, desc: ctypes.Array[ctypes.c_char], name: ctypes.Array[ctypes.c_char]) -> None:
         return self.dll.AUTDGetAdapter(adapters, idx, desc, name)
