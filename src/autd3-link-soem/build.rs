@@ -4,14 +4,12 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
-
-use std::path::PathBuf;
 
 macro_rules! add {
     ($path:expr, $p:ident, $work: expr) => {
@@ -91,54 +89,6 @@ fn main() {
     }
     build.compile("soem");
 
-    let mut bindings = bindgen::Builder::default()
-        .clang_arg("-I3rdparty/SOEM/soem")
-        .clang_arg("-I3rdparty/SOEM/osal")
-        .clang_arg(format!("-I3rdparty/SOEM/osal/{}", os))
-        .clang_arg(format!("-I3rdparty/SOEM/oshw/{}", os));
-    #[cfg(target_os = "windows")]
-    {
-        bindings = bindings
-            .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include")
-            .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
-            .clang_arg("-DWIN32")
-            .header("3rdparty/SOEM/osal/win32/osal_win32.h")
-    }
-
-    bindings = bindings
-        .header(format!("3rdparty/SOEM/osal/{}/osal_defs.h", os))
-        .header("3rdparty/SOEM/soem/ethercattype.h")
-        .header(format!("3rdparty/SOEM/oshw/{}/nicdrv.h", os))
-        .header("3rdparty/SOEM/soem/ethercatmain.h")
-        .header("3rdparty/SOEM/soem/ethercatdc.h")
-        .header("3rdparty/SOEM/soem/ethercatconfig.h")
-        .header("3rdparty/SOEM/soem/ethercatprint.h")
-        .allowlist_function("ec_init")
-        .allowlist_function("ec_find_adapters")
-        .allowlist_function("ec_free_adapters")
-        .allowlist_function("ec_send_processdata")
-        .allowlist_function("ec_receive_processdata")
-        .allowlist_function("ec_config_init")
-        .allowlist_function("ec_config_map")
-        .allowlist_function("ec_dcsync0")
-        .allowlist_function("ec_configdc")
-        .allowlist_function("ec_writestate")
-        .allowlist_function("ec_statecheck")
-        .allowlist_function("ec_close")
-        .allowlist_function("ec_readstate")
-        .allowlist_function("ec_reconfig_slave")
-        .allowlist_function("ec_recover_slave")
-        .allowlist_function("ec_ALstatuscode2string")
-        .allowlist_var("ec_slave")
-        .allowlist_var("ec_group")
-        .allowlist_var("ec_DCtime")
-        .allowlist_var("ecx_context")
-        .allowlist_var("ec_slavecount")
-        .allowlist_var("EC_TIMEOUTSTATE")
-        .allowlist_var("EC_TIMEOUTRET")
-        .allowlist_type("ec_state")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks));
-
     #[cfg(target_os = "windows")]
     {
         let home_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -165,10 +115,4 @@ fn main() {
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=rt");
     }
-
-    let bindings = bindings.generate().expect("Unable to generate bindings");
-    let out_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("soem_bindings.rs"))
-        .expect("Couldn't write bindings!");
 }
