@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,8 +26,8 @@ pub enum SOEMError {
     NotResponding,
     #[error("One ore more slaves did not reach safe operational state: {0}")]
     NotReachedSafeOp(u16),
-    #[error("Non-AUTD3 device detected")]
-    NotAUTD3Device,
+    #[error("Non-AUTD3 device detected: {0}")]
+    NotAUTD3Device(String),
 }
 
 impl From<SOEMError> for AUTDInternalError {
