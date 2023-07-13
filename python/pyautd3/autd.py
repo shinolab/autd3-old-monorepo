@@ -218,13 +218,11 @@ class Controller:
 
         def get_firmware_info(i: int) -> FirmwareInfo:
             sb = ctypes.create_string_buffer(256)
-            is_valid = c_bool(False)
-            is_supported = c_bool(False)
-            Base().get_firmware_info(
-                handle, i, sb, byref(is_valid), byref(is_supported)
-            )
+            props = np.zeros([2]).astype(c_bool)
+            propsp = np.ctypeslib.as_ctypes(props)
+            Base().get_firmware_info(handle, i, sb, propsp)
             info = sb.value.decode("utf-8")
-            return FirmwareInfo(info, is_valid.value, is_supported.value)
+            return FirmwareInfo(info, props[0], props[1])
 
         res = list(map(get_firmware_info, range(self.geometry.num_devices)))
 
