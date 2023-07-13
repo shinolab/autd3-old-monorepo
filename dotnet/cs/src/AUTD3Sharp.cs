@@ -1,4 +1,4 @@
-/*
+﻿/*
  * File: AUTD3Sharp.cs
  * Project: src
  * Created Date: 23/05/2022
@@ -896,6 +896,30 @@ namespace AUTD3Sharp
             }
 
             public abstract float_t[] Calc();
+        }
+
+        public class RadiationPressure : ModulationBase
+        {
+            private readonly uint _freqDiv;
+            private readonly float_t[] _buffer;
+
+            public RadiationPressure(ModulationBase m)
+            {
+                _freqDiv = m.SamplingFrequencyDivision;
+
+                var err = new byte[256];
+                var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
+                if (size == Def.Autd3Err) throw new AUTDException(err);
+                var buf = new float_t[size];
+                if (Base.AUTDModulationCalc(m.ModulationPtr(), buf, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+                _buffer = buf.Select(v => Math.Sqrt(v)).ToArray();
+            }
+
+            sealed public override ModulationPtr ModulationPtr()
+            {
+                return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            }
         }
     }
 
