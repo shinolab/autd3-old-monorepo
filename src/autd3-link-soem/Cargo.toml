@@ -4,7 +4,7 @@ version = "13.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
-license = "MIT"
+license-file = "LICENSE"
 description = "Link of AUTD using SOEM."
 repository = "https://github.com/shinolab/autd3"
 readme = "README.md"
