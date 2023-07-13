@@ -13,7 +13,9 @@ enum class SyncMode : uint8_t {
 
 extern "C" {
 
-[[nodiscard]] void* AUTDGetAdapterPointer(uint32_t *len);
+[[nodiscard]] void* AUTDGetAdapterPointer();
+
+[[nodiscard]] uint32_t AUTDGetAdapterSize(void* adapters);
 
 void AUTDGetAdapter(void* adapters, uint32_t idx, char *desc, char *name);
 

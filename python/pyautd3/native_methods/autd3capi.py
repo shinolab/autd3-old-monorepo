@@ -101,25 +101,25 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDNumDevices.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDNumDevices.restype = ctypes.c_uint32
 
-        self.dll.AUTDGeometryCenter.argtypes = [GeometryPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDGeometryCenter.argtypes = [GeometryPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDGeometryCenter.restype = None
 
-        self.dll.AUTDGeometryCenterOf.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDGeometryCenterOf.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDGeometryCenterOf.restype = None
 
-        self.dll.AUTDTransPosition.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransPosition.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransPosition.restype = None
 
-        self.dll.AUTDTransRotation.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransRotation.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransRotation.restype = None
 
-        self.dll.AUTDTransXDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransXDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransXDirection.restype = None
 
-        self.dll.AUTDTransYDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransYDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransYDirection.restype = None
 
-        self.dll.AUTDTransZDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransZDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransZDirection.restype = None
 
         self.dll.AUTDGetTransModDelay.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
@@ -134,7 +134,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDGetFirmwareInfoListPointer.restype = FirmwareInfoListPtr
 
-        self.dll.AUTDGetFirmwareInfo.argtypes = [FirmwareInfoListPtr, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)]  # type: ignore 
+        self.dll.AUTDGetFirmwareInfo.argtypes = [FirmwareInfoListPtr, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool)]  # type: ignore 
         self.dll.AUTDGetFirmwareInfo.restype = None
 
         self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [FirmwareInfoListPtr]  # type: ignore 
@@ -404,26 +404,26 @@ class NativeMethods(metaclass=Singleton):
     def num_devices(self, geo: GeometryPtr) -> ctypes.c_uint32:
         return self.dll.AUTDNumDevices(geo)
 
-    def geometry_center(self, geo: GeometryPtr, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDGeometryCenter(geo, x, y, z)
+    def geometry_center(self, geo: GeometryPtr, center: Any) -> None:
+        return self.dll.AUTDGeometryCenter(geo, center)
 
-    def geometry_center_of(self, geo: GeometryPtr, dev_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDGeometryCenterOf(geo, dev_idx, x, y, z)
+    def geometry_center_of(self, geo: GeometryPtr, dev_idx: int, center: Any) -> None:
+        return self.dll.AUTDGeometryCenterOf(geo, dev_idx, center)
 
-    def trans_position(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransPosition(geo, tr_idx, x, y, z)
+    def trans_position(self, geo: GeometryPtr, tr_idx: int, pos: Any) -> None:
+        return self.dll.AUTDTransPosition(geo, tr_idx, pos)
 
-    def trans_rotation(self, geo: GeometryPtr, tr_idx: int, w: Any, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransRotation(geo, tr_idx, w, x, y, z)
+    def trans_rotation(self, geo: GeometryPtr, tr_idx: int, rot: Any) -> None:
+        return self.dll.AUTDTransRotation(geo, tr_idx, rot)
 
-    def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransXDirection(geo, tr_idx, x, y, z)
+    def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+        return self.dll.AUTDTransXDirection(geo, tr_idx, dir)
 
-    def trans_y_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransYDirection(geo, tr_idx, x, y, z)
+    def trans_y_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+        return self.dll.AUTDTransYDirection(geo, tr_idx, dir)
 
-    def trans_z_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransZDirection(geo, tr_idx, x, y, z)
+    def trans_z_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+        return self.dll.AUTDTransZDirection(geo, tr_idx, dir)
 
     def get_trans_mod_delay(self, geo: GeometryPtr, tr_idx: int) -> ctypes.c_uint16:
         return self.dll.AUTDGetTransModDelay(geo, tr_idx)
@@ -437,8 +437,8 @@ class NativeMethods(metaclass=Singleton):
     def get_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPtr:
         return self.dll.AUTDGetFirmwareInfoListPointer(cnt, err)
 
-    def get_firmware_info(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char], is_valid: Any, is_supported: Any) -> None:
-        return self.dll.AUTDGetFirmwareInfo(p_info_list, idx, info, is_valid, is_supported)
+    def get_firmware_info(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char], props: Any) -> None:
+        return self.dll.AUTDGetFirmwareInfo(p_info_list, idx, info, props)
 
     def free_firmware_info_list_pointer(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDFreeFirmwareInfoListPointer(p_info_list)

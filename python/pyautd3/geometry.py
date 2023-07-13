@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from ctypes import c_double, create_string_buffer, byref
+from ctypes import c_double, create_string_buffer
 import numpy as np
 from typing import Optional, List, Iterator
 
@@ -59,46 +59,38 @@ class Transducer:
 
     @property
     def position(self) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().trans_position(self._ptr, self._tr_id, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().trans_position(self._ptr, self._tr_id, vp)
+        return v
 
     @property
     def rotation(self) -> np.ndarray:
-        w = c_double(0.0)
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().trans_rotation(
-            self._ptr, self._tr_id, byref(w), byref(x), byref(y), byref(z)
-        )
-        return np.array([w.value, x.value, y.value, z.value])
+        v = np.zeros([4]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().trans_rotation(self._ptr, self._tr_id, vp)
+        return v
 
     @property
     def x_direction(self) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().trans_x_direction(self._ptr, self._tr_id, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().trans_x_direction(self._ptr, self._tr_id, vp)
+        return v
 
     @property
     def y_direction(self) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().trans_y_direction(self._ptr, self._tr_id, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().trans_y_direction(self._ptr, self._tr_id, vp)
+        return v
 
     @property
     def z_direction(self) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().trans_z_direction(self._ptr, self._tr_id, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().trans_z_direction(self._ptr, self._tr_id, vp)
+        return v
 
     @property
     def frequency(self) -> float:
@@ -182,18 +174,16 @@ class Geometry:
 
     @property
     def center(self) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().geometry_center(self._ptr, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().geometry_center(self._ptr, vp)
+        return v
 
     def center_of(self, dev_idx: int) -> np.ndarray:
-        x = c_double(0.0)
-        y = c_double(0.0)
-        z = c_double(0.0)
-        Base().geometry_center_of(self._ptr, dev_idx, byref(x), byref(y), byref(z))
-        return np.array([x.value, y.value, z.value])
+        v = np.zeros([3]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().geometry_center_of(self._ptr, dev_idx, vp)
+        return v
 
     def __getitem__(self, key: int) -> Transducer:
         return self._transducers[key]

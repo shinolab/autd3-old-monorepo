@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/06/2023
+// Last Modified: 13/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,35 +22,35 @@ class Transducer {
   Transducer(const uint32_t idx, const native_methods::GeometryPtr ptr) : _ptr(ptr), _idx(idx) {}
 
   [[nodiscard]] Vector3 position() const noexcept {
-    double x, y, z;
-    AUTDTransPosition(_ptr, _idx, &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDTransPosition(_ptr, _idx, v.data());
+    return v;
   }
 
   [[nodiscard]] Quaternion rotation() const noexcept {
-    double w, x, y, z;
-    AUTDTransRotation(_ptr, _idx, &w, &x, &y, &z);
-    return {w, x, y, z};
+    Quaternion v;
+    AUTDTransRotation(_ptr, _idx, v.vec().data());
+    return v;
   }
 
   [[nodiscard]] size_t idx() const noexcept { return static_cast<size_t>(_idx); }
 
   [[nodiscard]] Vector3 x_direction() const {
-    double x, y, z;
-    AUTDTransXDirection(_ptr, _idx, &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDTransXDirection(_ptr, _idx, v.data());
+    return v;
   }
 
   [[nodiscard]] Vector3 y_direction() const {
-    double x, y, z;
-    AUTDTransYDirection(_ptr, _idx, &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDTransYDirection(_ptr, _idx, v.data());
+    return v;
   }
 
   [[nodiscard]] Vector3 z_direction() const {
-    double x, y, z;
-    AUTDTransZDirection(_ptr, _idx, &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDTransZDirection(_ptr, _idx, v.data());
+    return v;
   }
 
   [[nodiscard]] double frequency() const { return AUTDGetTransFrequency(_ptr, _idx); }
