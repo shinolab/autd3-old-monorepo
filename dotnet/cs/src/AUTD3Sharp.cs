@@ -1,10 +1,10 @@
-﻿/*
+/*
  * File: AUTD3Sharp.cs
  * Project: src
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -104,8 +104,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransPosition(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var pos = new float_t[3];
+                Base.AUTDTransPosition(_ptr, (uint)Idx, pos);
+                return new Vector3(pos[0], pos[1], pos[2]);
             }
         }
 
@@ -113,8 +114,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransRotation(_ptr, (uint)Idx, out var w, out var x, out var y, out var z);
-                return new Quaternion(x, y, z, w);
+                var rot = new float_t[4];
+                Base.AUTDTransRotation(_ptr, (uint)Idx, rot);
+                return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
             }
         }
 
@@ -122,8 +124,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransXDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransXDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -131,8 +134,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransYDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransYDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -140,8 +144,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransZDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransZDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
         public float_t Frequency
@@ -211,8 +216,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDGeometryCenter(Ptr, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var center = new float_t[3];
+                Base.AUTDGeometryCenter(Ptr, center);
+                return new Vector3(center[0], center[1], center[2]);
             }
         }
 
@@ -225,8 +231,9 @@ namespace AUTD3Sharp
 
         public Vector3 CenterOf(int devIdx)
         {
-            Base.AUTDGeometryCenterOf(Ptr, (uint)devIdx, out var x, out var y, out var z);
-            return new Vector3(x, y, z);
+            var center = new float_t[3];
+            Base.AUTDGeometryCenterOf(Ptr, (uint)devIdx, center);
+            return new Vector3(center[0], center[1], center[2]);
         }
 
         public IEnumerator<Transducer> GetEnumerator() => _transducers.GetEnumerator();
@@ -345,8 +352,9 @@ namespace AUTD3Sharp
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
                 var info = new byte[256];
-                Base.AUTDGetFirmwareInfo(handle, i, info, out var isValid, out var isSupported);
-                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), isValid, isSupported);
+                var props = new bool[2];
+                Base.AUTDGetFirmwareInfo(handle, i, info, props);
+                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), props[0], props[1]);
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);

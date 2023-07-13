@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 13/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -59,15 +59,15 @@ class Geometry {
   [[nodiscard]] size_t num_transducers() const { return static_cast<size_t>(AUTDNumTransducers(_ptr)); }
 
   [[nodiscard]] Vector3 center() const {
-    double x, y, z;
-    AUTDGeometryCenter(_ptr, &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDGeometryCenter(_ptr, v.data());
+    return v;
   }
 
   [[nodiscard]] Vector3 center_of(const size_t idx) const {
-    double x, y, z;
-    AUTDGeometryCenterOf(_ptr, static_cast<uint32_t>(idx), &x, &y, &z);
-    return {x, y, z};
+    Vector3 v;
+    AUTDGeometryCenterOf(_ptr, static_cast<uint32_t>(idx), v.data());
+    return v;
   }
 
   [[nodiscard]] double sound_speed() const { return AUTDGetSoundSpeed(_ptr); }

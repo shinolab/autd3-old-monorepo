@@ -91,8 +91,8 @@ class SOEM(Link):
 
     @staticmethod
     def enumerate_adapters() -> List[EtherCATAdapter]:
-        size = ctypes.c_uint32(0)
-        handle = LinkSOEM().get_adapter_pointer(byref(size))
+        handle = LinkSOEM().get_adapter_pointer()
+        size = LinkSOEM().get_adapter_size(handle)
 
         def get_adapter(i: int) -> EtherCATAdapter:
             sb_desc = ctypes.create_string_buffer(128)
