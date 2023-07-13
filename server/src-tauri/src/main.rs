@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,14 +82,6 @@ async fn save_settings(handle: tauri::AppHandle, options: &str) -> Result<(), St
 }
 
 #[tauri::command]
-fn fetch_ifnames() -> Vec<String> {
-    autd3_link_soem::EthernetAdapters::new()
-        .into_iter()
-        .map(|adapter| adapter.to_string())
-        .collect()
-}
-
-#[tauri::command]
 async fn copy_autd_xml(
     handle: tauri::AppHandle,
     console_emu_input_tx: tauri::State<'_, Sender<String>>,
@@ -151,8 +143,8 @@ async fn run_twincat_server(
         twincat_options.base.to_string(),
         "-m".to_string(),
         match twincat_options.mode {
-            autd3_link_soem::SyncMode::DC => "DC".to_string(),
-            autd3_link_soem::SyncMode::FreeRun => "FreeRun".to_string(),
+            autd3_core::sync_mode::SyncMode::DC => "DC".to_string(),
+            autd3_core::sync_mode::SyncMode::FreeRun => "FreeRun".to_string(),
         },
     ];
     if twincat_options.keep {
@@ -218,7 +210,6 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             load_settings,
             save_settings,
-            fetch_ifnames,
             copy_autd_xml,
             run_twincat_server
         ])
