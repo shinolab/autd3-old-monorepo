@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from ctypes import c_double, create_string_buffer, byref
+from ctypes import c_double, create_string_buffer
 import numpy as np
 from typing import Optional, List, Iterator
 
