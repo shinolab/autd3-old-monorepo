@@ -1,0 +1,17 @@
+accepted = [
+    "Apache-2.0",
+    "MIT",
+    "BSD-3-Clause",
+    "MPL-2.0",
+    "ISC",
+    "Apache-2.0 WITH LLVM-exception",
+    "Unicode-DFS-2016",
+    "BSD-4-Clause-UC",
+]
+
+[autd3-link-soem.clarify]
+license = 'MIT'
+
+[[autd3-link-soem.clarify.files]]
+path = 'LICENSE'
+checksum = '17fbd36ac9a0f964b9fbac5311863c231f7f869cec6fcc92182df068bb10b84f'
