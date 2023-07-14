@@ -31,6 +31,12 @@ If you want to use `pyautd3.link.SOEM`, please add permission as follows.
 sudo chmod +r /dev/bpf*
 ```
 
+### linux
+
+```
+sudo setcap cap_net_raw,cap_net_admin=eip <your python path>
+```
+
 ## LICENSE
 
 MIT
