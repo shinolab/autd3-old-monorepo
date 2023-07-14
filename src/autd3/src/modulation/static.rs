@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -63,21 +63,21 @@ mod tests {
 
     #[test]
     fn test_static_default() {
-        let mut m = Static::default();
+        let m = Static::default();
         assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
         assert_eq!(m.calc().unwrap(), vec![1.0, 1.0]);
     }
 
     #[test]
     fn test_static_new() {
-        let mut m = Static::new();
+        let m = Static::new();
         assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
         assert_eq!(m.calc().unwrap(), vec![1.0, 1.0]);
     }
 
     #[test]
     fn test_static_with_amp() {
-        let mut m = Static::new().with_amp(0.5);
+        let m = Static::new().with_amp(0.5);
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
         assert_eq!(m.calc().unwrap(), vec![0.5, 0.5]);
     }
