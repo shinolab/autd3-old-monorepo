@@ -243,7 +243,7 @@ class Controller:
 
     @property
     def fpga_info(self) -> List[FPGAInfo]:
-        infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
+        infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         err = ctypes.create_string_buffer(256)
         if not Base().get_fpga_info(self._ptr, pinfos, err):
