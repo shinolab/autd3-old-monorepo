@@ -6,8 +6,6 @@ script_dir="$( dirname -- "$( readlink -f -- "$0"; )"; )"
 pushd $script_dir
 cd ..
 
-mkdir python/pyautd3/bin/win_x64 > NUL 2>&1
-
 cd capi
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cargo build --release --all
@@ -24,5 +22,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     lipo -create $x64_file ./capi/target/aarch64-apple-darwin/release/$file_basename -output python/pyautd3/bin/macos_universal/$file_basename
   done
 fi
+
+cd python
+python setup.py sdist bdist_wheel True
 
 popd
