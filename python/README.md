@@ -16,19 +16,20 @@ or from this repository
 pip install git+https://github.com/shinolab/autd3.git#subdirectory=python
 ```
 
-## Requirements
-
-If you are using Linux/macOS, you may need to install and run pyautd3 as root.
-
-```
-sudo pip install pyautd3
-sudo python
->>> import pyautd3
-```
-
 ## Example
 
 see [example](./example)
+
+## For macOS and Linux users
+
+`pyautd3.link.SOEM` uses `libpcap` which requires root permission.
+If you want to use `pyautd3.link.SOEM`, please add permission as follows.
+
+### macOS
+
+```
+sudo chmod +r /dev/bpf*
+```
 
 ## LICENSE
 
