@@ -8,7 +8,11 @@ cd ..
 
 cd capi
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  cargo build --release --all
+  if ! [ -x "$(command -v nvcc)" ]; then    
+    cargo build --release --all --exclude autd3capi-backend-cuda
+  else 
+    cargo build --release --all
+  fi
   cd ..
   mkdir -p python/pyautd3/bin/linux_x64
   cp ./capi/target/release/*.so python/pyautd3/bin/linux_x64
