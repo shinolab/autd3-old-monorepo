@@ -15,6 +15,7 @@ from abc import ABCMeta, abstractmethod
 import functools
 from typing import Optional, List, Tuple, Union
 from collections.abc import Iterable
+import ctypes
 
 import numpy as np
 
@@ -103,9 +104,11 @@ class FocusSTM(STM):
         self._points = []
         self._duty_shifts = []
 
-    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
-        points = np.ctypeslib.as_ctypes(np.array(self._points).astype(np.double))
-        shifts = np.ctypeslib.as_ctypes(np.array(self._duty_shifts).astype(np.uint8))
+    def ptr(self, _: Geometry) -> DatagramBodyPtr:
+        points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
+        shifts = np.ctypeslib.as_ctypes(
+            np.array(self._duty_shifts).astype(ctypes.c_uint8)
+        )
         return Base().focus_stm(self.props(), points, shifts, len(self._duty_shifts))
 
     @staticmethod
