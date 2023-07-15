@@ -23,7 +23,6 @@ default-members = [
     "autd3-driver",
     "autd3-traits",
     "autd3-gain-holo",
-    "autd3-link-simulator",
     "autd3-link-soem",
     "autd3-link-twincat",
     "autd3-link-monitor",
