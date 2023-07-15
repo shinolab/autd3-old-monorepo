@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/07/2023
+Last Modified: 15/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,6 +42,14 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     running = false;
   };
 
+  let handleOpenXaeShellClick = async () => {
+    try {
+      await invoke("open_xae_shell", {});
+    } catch (err) {
+      alert(err);
+    }
+  };
+
   let handleCopyAUTDXmlClick = async () => {
     try {
       await invoke("copy_autd_xml", {});
@@ -71,6 +79,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   <CheckBox id="keep" bind:checked={twincatOptions.keep} />
 
   <Button label="Run" click={handleRunClick} disabled={running} />
+  <Button label="Open XAE Shell" click={handleOpenXaeShellClick} />
   <Button label="Copy AUTD.xml" click={handleCopyAUTDXmlClick} />
 </div>
 
