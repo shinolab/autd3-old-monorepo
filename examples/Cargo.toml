@@ -78,7 +78,6 @@ autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", versio
 autd3-protobuf = {path="../src/autd3-protobuf", optional = true, version="13.0.0"}
 colored = "2.0.0"
 tokio = { version = "1.29.0", features = ["full"], optional = true}
-scarlet = "1.2.0"
 
 [features] 
 default = []
