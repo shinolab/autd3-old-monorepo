@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/07/2023
+ * Last Modified: 16/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,10 @@ mod error;
 
 #[cfg(feature = "gpu")]
 mod gpu;
+
+mod backend;
+
+pub use backend::*;
 
 use std::{
     cell::{Cell, RefCell},
@@ -36,9 +40,8 @@ use autd3_firmware_emulator::CPUEmulator;
 
 use error::MonitorError;
 
-use pyo3::prelude::*;
-
-pub struct Monitor<D: Directivity> {
+pub struct Monitor<D: Directivity, B: Backend> {
+    backend: B,
     is_open: bool,
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
@@ -50,33 +53,30 @@ pub struct Monitor<D: Directivity> {
     gpu_compute: Option<gpu::FieldCompute>,
 }
 
-#[pyclass]
+pub trait Config {
+    fn print_progress(&self) -> bool;
+}
+
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
-    #[pyo3(get)]
     pub figsize: (i32, i32),
-    #[pyo3(get)]
     pub dpi: i32,
-    #[pyo3(get)]
     pub cbar_position: String,
-    #[pyo3(get)]
     pub cbar_size: String,
-    #[pyo3(get)]
     pub cbar_pad: String,
-    #[pyo3(get)]
     pub fontsize: i32,
-    #[pyo3(get)]
     pub ticks_step: float,
-    #[pyo3(get)]
     pub cmap: String,
-    #[pyo3(get)]
     pub show: bool,
-    #[pyo3(get)]
     pub fname: OsString,
-    #[pyo3(get)]
     pub interval: i32,
-    #[pyo3(get)]
     pub print_progress: bool,
+}
+
+impl Config for PlotConfig {
+    fn print_progress(&self) -> bool {
+        self.print_progress
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -189,9 +189,10 @@ impl Default for PlotConfig {
     }
 }
 
-impl Monitor<Sphere> {
+impl<B: Backend> Monitor<Sphere, B> {
     pub fn new() -> Self {
         Self {
+            backend: B::new(),
             is_open: false,
             timeout: Duration::ZERO,
             cpus: Vec::new(),
@@ -205,15 +206,44 @@ impl Monitor<Sphere> {
     }
 }
 
-impl<D: Directivity> Monitor<D> {
-    pub fn with_directivity<U: Directivity>(self) -> Monitor<U> {
-        unsafe { std::mem::transmute(self) }
+impl<D: Directivity, B: Backend> Monitor<D, B> {
+    pub fn with_directivity<U: Directivity>(self) -> Monitor<U, B> {
+        Monitor {
+            backend: self.backend,
+            is_open: self.is_open,
+            timeout: self.timeout,
+            cpus: self.cpus,
+            _d: PhantomData,
+            animate: self.animate,
+            animate_is_stm: self.animate_is_stm,
+            animate_drives: self.animate_drives,
+            #[cfg(feature = "gpu")]
+            gpu_compute: self.gpu_compute,
+        }
+    }
+}
+
+#[cfg(feature = "python")]
+impl<D: Directivity, B: Backend> Monitor<D, B> {
+    pub fn with_python(self) -> Monitor<D, PythonBackend> {
+        Monitor {
+            backend: PythonBackend::new(),
+            is_open: self.is_open,
+            timeout: self.timeout,
+            cpus: self.cpus,
+            _d: PhantomData,
+            animate: self.animate,
+            animate_is_stm: self.animate_is_stm,
+            animate_drives: self.animate_drives,
+            #[cfg(feature = "gpu")]
+            gpu_compute: self.gpu_compute,
+        }
     }
 }
 
 #[cfg(feature = "gpu")]
-impl<D: Directivity> Monitor<D> {
-    pub fn with_gpu(self, gpu_idx: i32) -> Monitor<D> {
+impl<D: Directivity, B: Backend> Monitor<D, B> {
+    pub fn with_gpu(self, gpu_idx: i32) -> Monitor<D, B> {
         Self {
             gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
             ..self
@@ -221,33 +251,13 @@ impl<D: Directivity> Monitor<D> {
     }
 }
 
-impl Default for Monitor<Sphere> {
+impl Default for Monitor<Sphere, PlottersBackend> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<D: Directivity> Monitor<D> {
-    #[cfg(target_os = "windows")]
-    fn initialize_python() -> PyResult<()> {
-        let python_exe = which::which("python").unwrap();
-        let python_home = python_exe.parent().unwrap();
-
-        let mut python_home = python_home
-            .to_str()
-            .unwrap()
-            .encode_utf16()
-            .collect::<Vec<u16>>();
-        python_home.push(0);
-        unsafe {
-            pyo3::ffi::Py_SetPythonHome(python_home.as_ptr());
-        }
-
-        pyo3::prepare_freethreaded_python();
-
-        Ok(())
-    }
-
+impl<D: Directivity, B: Backend> Monitor<D, B> {
     pub fn phases_of(&self, idx: usize) -> Vec<float> {
         self.cpus
             .iter()
@@ -298,192 +308,6 @@ impl<D: Directivity> Monitor<D> {
             .iter()
             .map(|&x| (0.5 * PI * x).sin())
             .collect()
-    }
-
-    fn plot_1d_impl(
-        observe_points: Vec<float>,
-        acoustic_pressures: Vec<Complex>,
-        resolution: float,
-        x_label: &str,
-        config: PlotConfig,
-    ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
-
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .map(|&x| x.norm())
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                py,
-                r#"
-import matplotlib.pyplot as plt
-import numpy as np
-
-def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
-    plot = axes.plot(acoustic_pressures)
-    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    axes.set_xticks(np.array(x_ticks), minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    return plot
-
-def plot(observe, acoustic_pressures, resolution, x_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111)
-    plot_acoustic_field_1d(ax, acoustic_pressures, observe, resolution, config)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel("Amplitude [-]")
-    plt.tight_layout()
-    if config.fname != "":
-        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-    if config.show:
-        plt.show()
-    plt.close()"#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
-            fun.call1((
-                observe_points,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                config,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn plot_2d_impl(
-        observe_x: Vec<float>,
-        observe_y: Vec<float>,
-        acoustic_pressures: Vec<Complex>,
-        resolution: float,
-        x_label: &str,
-        y_label: &str,
-        config: PlotConfig,
-    ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
-
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .map(|&x| x.norm())
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                    py,
-r#"
-import matplotlib.pyplot as plt
-import numpy as np
-import mpl_toolkits.axes_grid1
-
-def plot_acoustic_field_2d(axes, acoustic_pressures, observe_x, observe_y, resolution, config):
-    heatmap = axes.pcolor(acoustic_pressures, cmap=config.cmap)
-    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
-    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
-    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
-    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
-    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    axes.set_yticklabels(y_labels, minor=False)
-    return heatmap
-
-def add_colorbar(fig, axes, mappable, config):
-    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-    cbar = fig.colorbar(mappable, cax=cax)
-    cbar.ax.set_ylabel("Amplitude [-]")
-
-def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111, aspect="equal")
-    nx = len(observe_x)
-    ny = len(observe_y)
-    acoustic_pressures = np.array(acoustic_pressures).reshape((ny, nx))
-    heatmap = plot_acoustic_field_2d(ax, acoustic_pressures, observe_x, observe_y, resolution, config)
-    add_colorbar(fig, ax, heatmap, config)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    plt.tight_layout()
-    if config.fname != "":
-        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-    if config.show:
-        plt.show()
-    plt.close()"#, "", "")?
-                .getattr("plot")?;
-            fun.call1((
-                observe_x,
-                observe_y,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                y_label,
-                config,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
-    fn plot_modulation_impl(
-        modulation: Vec<float>,
-        config: PlotConfig,
-    ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                py,
-                r#"
-import matplotlib.pyplot as plt
-import numpy as np
-
-def plot(modulation, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111)
-    ax.plot(modulation)
-    ax.set_xlim(0, len(modulation))
-    ax.set_ylim(0, 1)
-    ax.set_xlabel("Index")
-    ax.set_ylabel("Modulation")
-    plt.tight_layout()
-    if config.fname != "":
-        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-    if config.show:
-        plt.show()
-    plt.close()"#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
-            fun.call1((modulation, config))?;
-            Ok(())
-        })?;
-
-        Ok(())
     }
 
     pub fn calc_field<T: Transducer, I: IntoIterator<Item = Vector3>>(
@@ -564,7 +388,7 @@ def plot(modulation, config):
     pub fn plot_field<T: Transducer>(
         &self,
         range: PlotRange,
-        config: PlotConfig,
+        config: B::PlotConfig,
         geometry: &Geometry<T>,
     ) -> Result<(), MonitorError> {
         self.plot_field_of(range, config, geometry, 0)
@@ -573,7 +397,7 @@ def plot(modulation, config):
     pub fn plot_field_of<T: Transducer>(
         &self,
         range: PlotRange,
-        config: PlotConfig,
+        config: B::PlotConfig,
         geometry: &Geometry<T>,
         idx: usize,
     ) -> Result<(), MonitorError> {
@@ -586,7 +410,7 @@ def plot(modulation, config):
                 (1, 1, _) => (range.observe_z(), "z [mm]"),
                 _ => unreachable!(),
             };
-            Self::plot_1d_impl(observe, acoustic_pressures, range.resolution, label, config)
+            B::plot_1d(observe, acoustic_pressures, range.resolution, label, config)
         } else if range.is_2d() {
             let (observe_x, x_label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, _, 1) => (range.observe_x(), "x [mm]"),
@@ -600,7 +424,7 @@ def plot(modulation, config):
                 (_, 1, _) => (range.observe_x(), "x [mm]"),
                 _ => unreachable!(),
             };
-            Self::plot_2d_impl(
+            B::plot_2d(
                 observe_x,
                 observe_y,
                 acoustic_pressures,
@@ -616,7 +440,7 @@ def plot(modulation, config):
 
     pub fn plot_phase<T: Transducer>(
         &self,
-        config: PlotConfig,
+        config: B::PlotConfig,
         geometry: &Geometry<T>,
     ) -> Result<(), MonitorError> {
         self.plot_phase_of(config, geometry, 0)
@@ -624,95 +448,21 @@ def plot(modulation, config):
 
     pub fn plot_phase_of<T: Transducer>(
         &self,
-        config: PlotConfig,
+        config: B::PlotConfig,
         geometry: &Geometry<T>,
         idx: usize,
     ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
+        let phases = self.phases_of(idx);
+        B::plot_phase(config, geometry, phases)
+    }
 
-        let trans_x = geometry
-            .transducers()
-            .map(|t| t.position().x)
-            .collect::<Vec<_>>();
-        let trans_y = geometry
-            .transducers()
-            .map(|t| t.position().y)
-            .collect::<Vec<_>>();
-        let trans_phase = self.phases_of(idx);
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                    py,
-r#"
-import matplotlib.pyplot as plt
-import numpy as np
-import mpl_toolkits.axes_grid1
-
-def adjust_marker_size(fig, axes, scat, radius):
-    fig.canvas.draw()
-    r_pix = axes.transData.transform((radius, radius)) - axes.transData.transform((0, 0))
-    sizes = (2 * r_pix * 72 / fig.dpi)**2
-    scat.set_sizes(sizes)
-
-def add_colorbar(fig, axes, mappable, config):
-    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-    cbar = fig.colorbar(mappable, cax=cax)
-    cbar.ax.set_ylim((0, 2 * np.pi))
-    cbar.ax.set_yticks([0, np.pi, 2 * np.pi])
-    cbar.ax.set_yticklabels(['0', '$\\pi$', '$2\\pi$'])
-
-def plot_phase_2d(fig, axes, trans_x, trans_y, trans_phase, trans_size, config, cmap='jet', marker='o'):
-    scat = axes.scatter(trans_x, trans_y, c=trans_phase, cmap=cmap, s=0,
-                        marker=marker, vmin=0, vmax=2 * np.pi,
-                        clip_on=False)
-    add_colorbar(fig, axes, scat, config)
-    adjust_marker_size(fig, axes, scat, trans_size / 2)
-    return scat
-
-def plot(trans_x, trans_y, trans_phase, config, trans_size):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111, aspect='equal')
-    trans_x = np.array(trans_x)
-    trans_y = np.array(trans_y)
-    x_min = np.min(trans_x) - trans_size / 2
-    x_max = np.max(trans_x) + trans_size / 2
-    y_min = np.min(trans_y) - trans_size / 2
-    y_max = np.max(trans_y) + trans_size / 2
-    ax.set_xlim((x_min, x_max))
-    ax.set_ylim((y_min, y_max))
-    scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
-    plt.tight_layout()
-    if config.fname != '':
-        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-    if config.show:
-        plt.show()
-    plt.close()"#, "", "")?
-                .getattr("plot")?;
-            fun.call1((
-                trans_x,
-                trans_y,
-                trans_phase,
-                config,
-                autd3_core::autd3_device::TRANS_SPACING,
-            ))?;
-            Ok(())
-        })?;
-
+    pub fn plot_modulation(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
+        B::plot_modulation(self.modulation(), config)?;
         Ok(())
     }
 
-    pub fn plot_modulation(&self, config: PlotConfig) -> Result<(), MonitorError> {
-        Self::plot_modulation_impl(self.modulation(), config)?;
-        Ok(())
-    }
-
-    pub fn plot_modulation_raw(&self, config: PlotConfig) -> Result<(), MonitorError> {
-        Self::plot_modulation_impl(self.modulation_raw(), config)?;
+    pub fn plot_modulation_raw(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
+        B::plot_modulation(self.modulation_raw(), config)?;
         Ok(())
     }
 
@@ -773,193 +523,10 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
             .collect()
     }
 
-    fn animate_1d_impl(
-        observe_points: Vec<float>,
-        acoustic_pressures: Vec<Vec<Complex>>,
-        resolution: float,
-        x_label: &str,
-        config: PlotConfig,
-    ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
-
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .flat_map(|x| x.iter().map(|&x| x.norm()))
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                py,
-                r#"
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.animation import FuncAnimation
-import sys
-
-def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
-    plot = axes.plot(acoustic_pressures)
-    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    axes.set_xticks(np.array(x_ticks), minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    return plot
-
-def plot(observe, acoustic_pressures, resolution, x_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111)
-
-    nx = len(observe)
-    size = len(acoustic_pressures) // nx
-    acoustic_pressures = np.array(acoustic_pressures)
-    max_p = np.max(acoustic_pressures)
-    acoustic_pressures = acoustic_pressures.reshape((size, nx))
-    
-    def plot_frame(frame):
-        ax.cla()
-        plot_acoustic_field_1d(ax, acoustic_pressures[frame], observe, resolution, config)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel("Amplitude [-]")
-        ax.set_ylim([0, max_p*1.1])
-        plt.tight_layout()
-        if config.print_progress:
-            percent = 100 * (frame+1) / size
-            sys.stdout.write('\r')
-            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-            sys.stdout.flush()
-    
-    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-    if config.fname != "":
-        ani.save(config.fname, dpi=fig.dpi)
-
-    if config.show:
-        plt.show()
-    plt.close()"#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
-            fun.call1((
-                observe_points,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                config,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn animate_2d_impl(
-        observe_x: Vec<float>,
-        observe_y: Vec<float>,
-        acoustic_pressures: Vec<Vec<Complex>>,
-        resolution: float,
-        x_label: &str,
-        y_label: &str,
-        config: PlotConfig,
-    ) -> Result<(), MonitorError> {
-        #[cfg(target_os = "windows")]
-        {
-            Self::initialize_python()?;
-        }
-
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .flat_map(|x| x.iter().map(|&x| x.norm()))
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-                py,
-                r#"
-from matplotlib.animation import FuncAnimation
-import matplotlib.pyplot as plt
-import numpy as np
-import mpl_toolkits.axes_grid1
-import sys
-from matplotlib.colors import Normalize
-
-def config_heatmap(axes, observe_x, observe_y, resolution, config):
-    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
-    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
-    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
-    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
-    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    axes.set_yticklabels(y_labels, minor=False)
-
-def add_colorbar(fig, axes, mappable, max_p, config):
-    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-    cbar = fig.colorbar(mappable, cax=cax)
-    cbar.ax.set_ylabel("Amplitude [-]")
-    cbar.ax.set_ylim(0, max_p)
-
-def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111, aspect="equal")
-    nx = len(observe_x)
-    ny = len(observe_y)
-    size = len(acoustic_pressures) // (nx * ny)
-    acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
-
-    max_p = np.max(acoustic_pressures)
-    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap, norm=Normalize(vmin=0, vmax=max_p))
-    config_heatmap(ax, observe_x, observe_y, resolution, config)
-    add_colorbar(fig, ax, heatmap, max_p, config)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    plt.tight_layout()
-
-    def plot_frame(frame):
-        heatmap.set_array(acoustic_pressures[frame].flatten())
-        if config.print_progress:
-            percent = 100 * (frame+1) / size
-            sys.stdout.write('\r')
-            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-            sys.stdout.flush()
-        
-    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-    if config.fname != "":
-        ani.save(config.fname, dpi=fig.dpi)
-    if config.show:
-        plt.show()
-    plt.close()"#,
-                "",
-                "",
-            )?
-            .getattr("plot")?;
-            fun.call1((
-                observe_x,
-                observe_y,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                y_label,
-                config,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
     pub fn end_animation<T: Transducer>(
         &self,
         range: PlotRange,
-        config: PlotConfig,
+        config: B::PlotConfig,
         geometry: &Geometry<T>,
     ) -> Result<(), MonitorError> {
         self.animate.set(false);
@@ -971,7 +538,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
             .iter()
             .enumerate()
             .map(|(i, d)| {
-                if config.print_progress {
+                if config.print_progress() {
                     let percent = 100.0 * (i + 1) as float / size;
                     print!("\r");
                     print!(
@@ -986,7 +553,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
                 self.calc_field_from_drive(range.clone(), d, geometry)
             })
             .collect::<Vec<_>>();
-        if config.print_progress {
+        if config.print_progress() {
             println!();
         }
         let res = if range.is_1d() {
@@ -996,7 +563,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
                 (1, 1, _) => (range.observe_z(), "z [mm]"),
                 _ => unreachable!(),
             };
-            Self::animate_1d_impl(observe, acoustic_pressures, range.resolution, label, config)
+            B::animate_1d(observe, acoustic_pressures, range.resolution, label, config)
         } else if range.is_2d() {
             let (observe_x, x_label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, _, 1) => (range.observe_x(), "x [mm]"),
@@ -1010,7 +577,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
                 (_, 1, _) => (range.observe_x(), "x [mm]"),
                 _ => unreachable!(),
             };
-            Self::animate_2d_impl(
+            B::animate_2d(
                 observe_x,
                 observe_y,
                 acoustic_pressures,
@@ -1029,7 +596,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
     }
 }
 
-impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
+impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Monitor<D, B> {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open {
             return Ok(());
@@ -1045,6 +612,8 @@ impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
                 cpu
             })
             .collect();
+
+        self.backend.initialize()?;
 
         self.is_open = true;
 

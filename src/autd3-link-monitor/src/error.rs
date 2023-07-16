@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 16/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum MonitorError {
+    #[cfg(feature = "python")]
     #[error("{0}")]
     PyO3Error(pyo3::PyErr),
     #[error("Plot range is invalid")]
@@ -28,6 +29,7 @@ impl From<MonitorError> for AUTDInternalError {
     }
 }
 
+#[cfg(feature = "python")]
 impl From<pyo3::PyErr> for MonitorError {
     fn from(value: pyo3::PyErr) -> Self {
         Self::PyO3Error(value)
