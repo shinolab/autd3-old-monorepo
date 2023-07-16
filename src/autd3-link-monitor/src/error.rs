@@ -14,6 +14,8 @@
 use autd3_core::error::AUTDInternalError;
 use thiserror::Error;
 
+use plotters::drawing::DrawingAreaErrorKind;
+
 #[derive(Error, Debug)]
 pub enum MonitorError {
     #[cfg(feature = "python")]
@@ -21,11 +23,29 @@ pub enum MonitorError {
     PyO3Error(pyo3::PyErr),
     #[error("Plot range is invalid")]
     InvalidPlotRange,
+    #[error("{0}")]
+    BitmapDrawingAreaError(
+        DrawingAreaErrorKind<
+            <plotters::prelude::BitMapBackend<'static> as plotters::prelude::DrawingBackend>::ErrorType,
+        >,
+    ),
 }
 
 impl From<MonitorError> for AUTDInternalError {
     fn from(val: MonitorError) -> AUTDInternalError {
         AUTDInternalError::LinkError(val.to_string())
+    }
+}
+
+impl From<
+DrawingAreaErrorKind<
+<plotters::prelude::BitMapBackend<'static> as plotters::prelude::DrawingBackend>::ErrorType,
+> 
+> for MonitorError {
+    fn from(value: DrawingAreaErrorKind<
+        <plotters::prelude::BitMapBackend<'static> as plotters::prelude::DrawingBackend>::ErrorType,
+        >) -> Self {
+        Self::BitmapDrawingAreaError(value)
     }
 }
 

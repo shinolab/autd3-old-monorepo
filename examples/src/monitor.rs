@@ -33,8 +33,6 @@ fn main() -> Result<()> {
     autd.link().plot_phase(
         PlotConfig {
             fname: Path::new("phase.png").into(),
-            figsize: (6, 4),
-            dpi: 72,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -48,9 +46,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("x.png").into(),
-            figsize: (6, 4),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -64,9 +59,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("xy.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -80,9 +72,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("yz.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -96,9 +85,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("zx.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ticks_step: 20.,
             ..PlotConfig::default()
         },
@@ -107,8 +93,6 @@ fn main() -> Result<()> {
 
     autd.link().plot_modulation(PlotConfig {
         fname: Path::new("mod.png").into(),
-        figsize: (6, 4),
-        dpi: 72,
         ..PlotConfig::default()
     })?;
 
