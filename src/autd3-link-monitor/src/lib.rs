@@ -38,6 +38,8 @@ use autd3_core::{
 };
 use autd3_firmware_emulator::CPUEmulator;
 
+pub use scarlet::colormap::ListedColorMap;
+
 use error::MonitorError;
 
 pub struct Monitor<D: Directivity, B: Backend> {
@@ -59,18 +61,35 @@ pub trait Config {
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
-    pub figsize: (i32, i32),
-    pub dpi: i32,
-    pub cbar_position: String,
-    pub cbar_size: String,
-    pub cbar_pad: String,
-    pub fontsize: i32,
+    pub figsize: (u32, u32),
+    pub cbar_size: f64,
+    pub fontsize: u32,
+    pub label_area_size: u32,
+    pub margin: u32,
+    pub font_size: u32,
     pub ticks_step: float,
-    pub cmap: String,
-    pub show: bool,
+    pub cmap: ListedColorMap,
     pub fname: OsString,
     pub interval: i32,
     pub print_progress: bool,
+}
+
+impl Default for PlotConfig {
+    fn default() -> Self {
+        Self {
+            figsize: (960, 640),
+            cbar_size: 0.1,
+            fontsize: 12,
+            ticks_step: 10.,
+            label_area_size: 20,
+            margin: 20,
+            font_size: 24,
+            cmap: ListedColorMap::breeze(),
+            fname: OsString::new(),
+            interval: 100,
+            print_progress: false,
+        }
+    }
 }
 
 impl Config for PlotConfig {
@@ -166,25 +185,6 @@ impl PlotRange {
             (_, _, _) => itertools::iproduct!(self.observe_z(), self.observe_y(), self.observe_x())
                 .map(|(z, y, x)| Vector3::new(x, y, z))
                 .collect(),
-        }
-    }
-}
-
-impl Default for PlotConfig {
-    fn default() -> Self {
-        Self {
-            figsize: (6, 4),
-            dpi: 72,
-            cbar_position: "right".to_string(),
-            cbar_size: "5%".to_string(),
-            cbar_pad: "3%".to_string(),
-            fontsize: 12,
-            ticks_step: 10.,
-            cmap: "jet".to_string(),
-            show: false,
-            fname: OsString::new(),
-            interval: 100,
-            print_progress: false,
         }
     }
 }
