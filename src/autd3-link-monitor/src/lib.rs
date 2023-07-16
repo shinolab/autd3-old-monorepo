@@ -20,6 +20,8 @@ mod backend;
 
 pub use backend::*;
 
+pub mod colormap;
+
 use std::{
     cell::{Cell, RefCell},
     ffi::OsString,
@@ -84,7 +86,7 @@ impl Default for PlotConfig {
             label_area_size: 20,
             margin: 20,
             font_size: 24,
-            cmap: ListedColorMap::breeze(),
+            cmap: colormap::jet(),
             fname: OsString::new(),
             interval: 100,
             print_progress: false,
