@@ -293,9 +293,9 @@ dependencies = [
  "autd3-firmware-emulator",
  "itertools 0.11.0",
  "plotters",
+ "plotters-bitmap",
  "scarlet",
  "thiserror",
- "which",
 ]
 
 [[package]]
