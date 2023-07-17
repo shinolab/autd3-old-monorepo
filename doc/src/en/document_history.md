@@ -40,3 +40,4 @@
 | 2023/06/24 | Version 12.2.0 Initial release                |
 | 2023/07/04 | Version 12.3.0 Initial release                |
 | 2023/07/04 | Version 12.3.1 Initial release                |
+| 2023/07/11 | Version 13.0.0 Initial release                |
