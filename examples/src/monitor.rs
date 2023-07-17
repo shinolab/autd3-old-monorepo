@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/07/2023
+ * Last Modified: 17/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -121,9 +121,7 @@ fn main() -> Result<()> {
     //         resolution: 1.,
     //     },
     //     PlotConfig {
-    //         fname: Path::new("stm.mp4").into(),
-    //         figsize: (8, 6),
-    //         dpi: 72,
+    //         fname: Path::new("stm.gif").into(),
     //         print_progress: true,
     //         ..PlotConfig::default()
     //     },

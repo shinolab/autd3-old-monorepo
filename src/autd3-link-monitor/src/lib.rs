@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/07/2023
+ * Last Modified: 17/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,11 +20,11 @@ mod backend;
 
 pub use backend::*;
 
+#[cfg(feature = "plotters")]
 pub mod colormap;
 
 use std::{
     cell::{Cell, RefCell},
-    ffi::OsString,
     io::Write,
     marker::PhantomData,
     time::Duration,
@@ -40,6 +40,7 @@ use autd3_core::{
 };
 use autd3_firmware_emulator::CPUEmulator;
 
+#[cfg(feature = "plotters")]
 pub use scarlet::colormap::ListedColorMap;
 
 use error::MonitorError;
@@ -59,45 +60,6 @@ pub struct Monitor<D: Directivity, B: Backend> {
 
 pub trait Config {
     fn print_progress(&self) -> bool;
-}
-
-#[derive(Clone, Debug)]
-pub struct PlotConfig {
-    pub figsize: (u32, u32),
-    pub cbar_size: f64,
-    pub fontsize: u32,
-    pub label_area_size: u32,
-    pub margin: u32,
-    pub font_size: u32,
-    pub ticks_step: float,
-    pub cmap: ListedColorMap,
-    pub fname: OsString,
-    pub interval: i32,
-    pub print_progress: bool,
-}
-
-impl Default for PlotConfig {
-    fn default() -> Self {
-        Self {
-            figsize: (960, 640),
-            cbar_size: 0.1,
-            fontsize: 12,
-            ticks_step: 10.,
-            label_area_size: 20,
-            margin: 20,
-            font_size: 24,
-            cmap: colormap::jet(),
-            fname: OsString::new(),
-            interval: 100,
-            print_progress: false,
-        }
-    }
-}
-
-impl Config for PlotConfig {
-    fn print_progress(&self) -> bool {
-        self.print_progress
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -208,6 +170,26 @@ impl<B: Backend> Monitor<Sphere, B> {
     }
 }
 
+#[cfg(feature = "plotters")]
+impl Monitor<Sphere, PlottersBackend> {
+    pub fn plotters() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(feature = "python")]
+impl Monitor<Sphere, PythonBackend> {
+    pub fn plotters() -> Self {
+        Self::new()
+    }
+}
+
+impl Monitor<Sphere, NullBackend> {
+    pub fn null() -> Self {
+        Self::new()
+    }
+}
+
 impl<D: Directivity, B: Backend> Monitor<D, B> {
     pub fn with_directivity<U: Directivity>(self) -> Monitor<U, B> {
         Monitor {
@@ -253,7 +235,22 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
     }
 }
 
+#[cfg(all(feature = "plotters", not(feature = "python")))]
 impl Default for Monitor<Sphere, PlottersBackend> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(all(not(feature = "plotters"), feature = "python"))]
+impl Default for Monitor<Sphere, PythonBackend> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(all(not(feature = "plotters"), not(feature = "python")))]
+impl Default for Monitor<Sphere, NullBackend> {
     fn default() -> Self {
         Self::new()
     }
