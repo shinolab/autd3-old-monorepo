@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ use sdr_rs::fir;
 use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_traits::Modulation;
 
+/// Modulation to apply FIR filter
 #[derive(Modulation)]
 pub struct FIRImpl<M: Modulation> {
     m: M,
@@ -31,10 +32,48 @@ pub struct FIRImpl<M: Modulation> {
 }
 
 pub trait FIR<M: Modulation> {
+    /// Apply low pass filter
+    ///
+    /// # Arguments
+    ///
+    /// * `n_taps` - Number of taps
+    /// * `cutoff` - Cutoff frequency
+    ///
     fn with_low_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M>;
+    /// Apply high pass filter
+    ///
+    /// # Arguments
+    ///
+    /// * `n_taps` - Number of taps
+    /// * `cutoff` - Cutoff frequency
+    ///
     fn with_high_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M>;
+    /// Apply band pass filter
+    ///
+    /// # Arguments
+    ///
+    /// * `n_taps` - Number of taps
+    /// * `f_low` - Lower cutoff frequency
+    /// * `f_high` - Higher cutoff frequency
+    ///
     fn with_band_pass(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
+    /// Apply band stop filter
+    ///
+    /// # Arguments
+    ///
+    /// * `n_taps` - Number of taps
+    /// * `f_low` - Lower cutoff frequency
+    /// * `f_high` - Higher cutoff frequency
+    ///
     fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
+    /// Apply resampler
+    ///
+    /// # Arguments
+    ///
+    /// * `n_taps` - Number of taps
+    /// * `decimate` - Decimate factor
+    /// * `interpolate` - Interpolate factor
+    ///
     fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M>;
 }
 

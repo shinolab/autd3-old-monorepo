@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_traits::Modulation;
 
 use num::integer::gcd;
 
-/// Sine wave modulation in ultrasound amplitude
+/// Sine wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Sine {
     freq: usize,
@@ -31,7 +31,9 @@ pub struct Sine {
 }
 
 impl Sine {
-    /// constructor.
+    /// constructor
+    ///
+    /// The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.
     ///
     /// # Arguments
     ///
@@ -50,7 +52,7 @@ impl Sine {
     ///
     /// # Arguments
     ///
-    /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
+    /// * `amp` - peek to peek amplitude of the wave
     ///
     pub fn with_amp(self, amp: float) -> Self {
         Self { amp, ..self }
