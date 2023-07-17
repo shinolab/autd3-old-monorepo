@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -182,7 +182,7 @@ mod tests {
             0.2730047501302267,
             0.3832773180720463,
         ];
-        let mut m = Sine::new(150);
+        let m = Sine::new(150);
         assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_sine_new() {
-        let mut m = Sine::new(100);
+        let m = Sine::new(100);
         assert_eq!(m.freq, 100);
         assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
         assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_sine_with_amp() {
-        let mut m = Sine::new(100).with_amp(0.5);
+        let m = Sine::new(100).with_amp(0.5);
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_sine_with_offset() {
-        let mut m = Sine::new(100).with_offset(1.0);
+        let m = Sine::new(100).with_offset(1.0);
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();
