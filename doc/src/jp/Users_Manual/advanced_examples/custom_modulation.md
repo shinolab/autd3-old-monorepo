@@ -27,7 +27,7 @@ impl Burst {
 }
 
 impl Modulation for Burst {
-    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         Ok((0..4000)
             .map(|i| if i == 3999 { 1.0 } else { 0.0 })
             .collect())
