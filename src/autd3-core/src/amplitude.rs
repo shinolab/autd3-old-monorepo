@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -74,11 +74,11 @@ mod tests {
 
         let amp = 0.5;
 
-        let mut datagram = Amplitudes::uniform(amp);
+        let datagram = Amplitudes::uniform(amp);
         assert_eq!(datagram.timeout(), None);
         datagram.operation(&geometry).unwrap();
 
-        let mut datagram = Amplitudes::uniform(amp).with_timeout(Duration::from_millis(100));
+        let datagram = Amplitudes::uniform(amp).with_timeout(Duration::from_millis(100));
         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
         datagram.operation(&geometry).unwrap();
     }

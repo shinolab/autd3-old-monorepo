@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -151,7 +151,7 @@ mod tests {
             .collect();
 
         let n_taps = 199;
-        let mut fir_modulation =
+        let fir_modulation =
             TestModulation::new(mod_data).with_low_pass(n_taps, (f_high + f_low) / 2.0);
 
         fir_modulation

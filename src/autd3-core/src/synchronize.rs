@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -59,14 +59,14 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut datagram = Synchronize::new();
+        let datagram = Synchronize::new();
         assert_eq!(
             <Synchronize as Datagram<LegacyTransducer>>::timeout(&datagram),
             Some(Duration::from_millis(200))
         );
         datagram.operation(&geometry).unwrap();
 
-        let mut datagram = Synchronize::new().with_timeout(Duration::from_millis(100));
+        let datagram = Synchronize::new().with_timeout(Duration::from_millis(100));
         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
         datagram.operation(&geometry).unwrap();
     }

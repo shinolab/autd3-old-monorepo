@@ -4,7 +4,7 @@
  * Created Date: 01/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -49,14 +49,14 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut datagram = ModDelay::new();
+        let datagram = ModDelay::new();
         assert_eq!(
             <ModDelay as Datagram<LegacyTransducer>>::timeout(&datagram),
             None
         );
         datagram.operation(&geometry).unwrap();
 
-        let mut datagram = ModDelay::new().with_timeout(Duration::from_millis(100));
+        let datagram = ModDelay::new().with_timeout(Duration::from_millis(100));
         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
         datagram.operation(&geometry).unwrap();
     }

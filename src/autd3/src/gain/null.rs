@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut null_gain = Null::new();
+        let null_gain = Null::new();
 
         let drives = null_gain.calc(&geometry).unwrap();
 
