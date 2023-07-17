@@ -289,7 +289,6 @@ name = "autd3-link-soem"
 version = "13.0.0"
 dependencies = [
  "autd3-core",
- "autd3-protobuf",
  "cc",
  "crossbeam-channel",
  "glob",
