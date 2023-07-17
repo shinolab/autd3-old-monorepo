@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ use autd3_core::{
 
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
+/// Gain to drive only specified transducers
 #[derive(Gain, Default, Clone)]
 pub struct TransducerTest {
     test_drive: HashMap<usize, (float, float)>,
@@ -37,11 +37,19 @@ impl TransducerTest {
         }
     }
 
+    /// set drive
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - transducer id
+    /// * `phase` - phase
+    /// * `amp` - normalized amplitude (from 0 to 1)
     pub fn set(mut self, id: usize, phase: float, amp: float) -> Self {
         self.test_drive.insert(id, (phase, amp));
         self
     }
 
+    /// get drive map which maps transducer id to phase and amplitude
     pub fn test_drive(&self) -> &HashMap<usize, (float, float)> {
         &self.test_drive
     }

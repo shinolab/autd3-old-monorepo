@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use autd3_core::{
 
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
+/// Gain to output nothing
 #[derive(Gain, Default, Clone, Copy)]
 pub struct Null {}
 

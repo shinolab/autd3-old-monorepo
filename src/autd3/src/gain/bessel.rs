@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_core::{
 
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
+/// Gain to produce a Bessel beam
 #[derive(Gain, Clone, Copy)]
 pub struct Bessel {
     amp: float,
@@ -35,9 +35,9 @@ impl Bessel {
     ///
     /// # Arguments
     ///
-    /// * `point` - Start point of the beam
+    /// * `pos` - Start point of the beam (the apex of the conical wavefront of the beam)
     /// * `dir` - Direction of the beam
-    /// * `theta` - Angle between the conical wavefront of the beam and the direction
+    /// * `theta` - Angle between the conical wavefront of the beam and the plane normal to `dir`
     ///
     pub fn new(pos: Vector3, dir: Vector3, theta: float) -> Self {
         Self {
