@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 17/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_link_monitor::*;
 fn main() -> Result<()> {
     let mut autd = Controller::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Monitor::new())?;
+        .open_with(Monitor::default())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -33,8 +33,6 @@ fn main() -> Result<()> {
     autd.link().plot_phase(
         PlotConfig {
             fname: Path::new("phase.png").into(),
-            figsize: (6, 4),
-            dpi: 72,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -48,9 +46,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("x.png").into(),
-            figsize: (6, 4),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -64,9 +59,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("xy.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -80,9 +72,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("yz.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ..PlotConfig::default()
         },
         autd.geometry(),
@@ -96,9 +85,6 @@ fn main() -> Result<()> {
         },
         PlotConfig {
             fname: Path::new("zx.png").into(),
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
             ticks_step: 20.,
             ..PlotConfig::default()
         },
@@ -107,8 +93,6 @@ fn main() -> Result<()> {
 
     autd.link().plot_modulation(PlotConfig {
         fname: Path::new("mod.png").into(),
-        figsize: (6, 4),
-        dpi: 72,
         ..PlotConfig::default()
     })?;
 
@@ -137,9 +121,7 @@ fn main() -> Result<()> {
     //         resolution: 1.,
     //     },
     //     PlotConfig {
-    //         fname: Path::new("stm.mp4").into(),
-    //         figsize: (8, 6),
-    //         dpi: 72,
+    //         fname: Path::new("stm.gif").into(),
     //         print_progress: true,
     //         ..PlotConfig::default()
     //     },
