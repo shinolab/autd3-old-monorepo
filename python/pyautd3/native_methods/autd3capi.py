@@ -2,7 +2,6 @@
 import threading
 import ctypes
 import os
-from typing import Any
 from .autd3capi_def import ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode
 
 
@@ -404,25 +403,25 @@ class NativeMethods(metaclass=Singleton):
     def num_devices(self, geo: GeometryPtr) -> ctypes.c_uint32:
         return self.dll.AUTDNumDevices(geo)
 
-    def geometry_center(self, geo: GeometryPtr, center: Any) -> None:
+    def geometry_center(self, geo: GeometryPtr, center: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDGeometryCenter(geo, center)
 
-    def geometry_center_of(self, geo: GeometryPtr, dev_idx: int, center: Any) -> None:
+    def geometry_center_of(self, geo: GeometryPtr, dev_idx: int, center: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDGeometryCenterOf(geo, dev_idx, center)
 
-    def trans_position(self, geo: GeometryPtr, tr_idx: int, pos: Any) -> None:
+    def trans_position(self, geo: GeometryPtr, tr_idx: int, pos: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDTransPosition(geo, tr_idx, pos)
 
-    def trans_rotation(self, geo: GeometryPtr, tr_idx: int, rot: Any) -> None:
+    def trans_rotation(self, geo: GeometryPtr, tr_idx: int, rot: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDTransRotation(geo, tr_idx, rot)
 
-    def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+    def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDTransXDirection(geo, tr_idx, dir)
 
-    def trans_y_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+    def trans_y_direction(self, geo: GeometryPtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDTransYDirection(geo, tr_idx, dir)
 
-    def trans_z_direction(self, geo: GeometryPtr, tr_idx: int, dir: Any) -> None:
+    def trans_z_direction(self, geo: GeometryPtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
         return self.dll.AUTDTransZDirection(geo, tr_idx, dir)
 
     def get_trans_mod_delay(self, geo: GeometryPtr, tr_idx: int) -> ctypes.c_uint16:
@@ -431,13 +430,13 @@ class NativeMethods(metaclass=Singleton):
     def set_trans_mod_delay(self, geo: GeometryPtr, tr_idx: int, delay: int) -> None:
         return self.dll.AUTDSetTransModDelay(geo, tr_idx, delay)
 
-    def get_fpga_info(self, cnt: ControllerPtr, out: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def get_fpga_info(self, cnt: ControllerPtr, out: ctypes.Array[ctypes.c_uint8], err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDGetFPGAInfo(cnt, out, err)
 
     def get_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPtr:
         return self.dll.AUTDGetFirmwareInfoListPointer(cnt, err)
 
-    def get_firmware_info(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char], props: Any) -> None:
+    def get_firmware_info(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char], props: ctypes.Array[ctypes.c_bool]) -> None:
         return self.dll.AUTDGetFirmwareInfo(p_info_list, idx, info, props)
 
     def free_firmware_info_list_pointer(self, p_info_list: FirmwareInfoListPtr) -> None:
@@ -479,13 +478,13 @@ class NativeMethods(metaclass=Singleton):
     def gain_transducer_test_set(self, trans_test: GainPtr, id: int, phase: float, amp: float) -> GainPtr:
         return self.dll.AUTDGainTransducerTestSet(trans_test, id, phase, amp)
 
-    def gain_custom(self, ptr: Any, len: int) -> GainPtr:
+    def gain_custom(self, ptr: ctypes.Array, len: int) -> GainPtr:
         return self.dll.AUTDGainCustom(ptr, len)
 
     def gain_into_datagram(self, gain: GainPtr) -> DatagramBodyPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: ctypes.Array, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDGainCalc(gain, geometry, drives, err)
 
     def modulation_static(self) -> ModulationPtr:
@@ -536,7 +535,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_square_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSquareWithSamplingFrequencyDivision(m, div)
 
-    def modulation_custom(self, freq_div: int, ptr: Any, len: int) -> ModulationPtr:
+    def modulation_custom(self, freq_div: int, ptr: ctypes.Array[ctypes.c_double], len: int) -> ModulationPtr:
         return self.dll.AUTDModulationCustom(freq_div, ptr, len)
 
     def modulation_sampling_frequency_division(self, m: ModulationPtr) -> ctypes.c_uint32:
@@ -551,7 +550,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_size(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDModulationSize(m, err)
 
-    def modulation_calc(self, m: ModulationPtr, buffer: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def modulation_calc(self, m: ModulationPtr, buffer: ctypes.Array[ctypes.c_double], err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDModulationCalc(m, buffer, err)
 
     def stm_props(self, freq: float) -> STMPropsPtr:
@@ -584,7 +583,7 @@ class NativeMethods(metaclass=Singleton):
     def stm_props_finish_idx(self, props: STMPropsPtr) -> ctypes.c_int32:
         return self.dll.AUTDSTMPropsFinishIdx(props)
 
-    def focus_stm(self, props: STMPropsPtr, points: Any, shift: Any, size: int) -> DatagramBodyPtr:
+    def focus_stm(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double], shift: ctypes.Array[ctypes.c_uint8], size: int) -> DatagramBodyPtr:
         return self.dll.AUTDFocusSTM(props, points, shift, size)
 
     def gain_stm_with_mode(self, props: STMPropsPtr, mode: GainSTMMode) -> DatagramBodyPtr:
