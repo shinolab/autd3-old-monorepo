@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 17/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -123,7 +123,6 @@ async fn run_twincat_server(
     handle: tauri::AppHandle,
     console_emu_input_tx: tauri::State<'_, Sender<String>>,
 ) -> Result<(), String> {
-    dbg!(twincat_options);
     let twincat_autd_server_path = handle
         .path_resolver()
         .resolve_resource("TwinCATAUTDServer/TwinCATAUTDServer.exe")
@@ -182,6 +181,34 @@ async fn run_twincat_server(
     Ok(())
 }
 
+#[tauri::command]
+async fn open_xae_shell() -> Result<(), String> {
+    let path = std::env::var("TEMP").unwrap_or_default();
+    let path = std::path::Path::new(&path)
+        .join("TwinCATAUTDServer")
+        .join("TwinCATAUTDServer.sln");
+
+    let xae_shell = std::path::Path::new("C:\\")
+        .join("Program Files (x86)")
+        .join("Beckhoff")
+        .join("TcXaeShell")
+        .join("Common7")
+        .join("IDE")
+        .join("TcXaeShell.exe");
+
+    if path.exists() {
+        Command::new(&xae_shell).arg(&path).spawn()
+    } else {
+        Command::new(&xae_shell).spawn()
+    }
+    .map_err(|e| e.to_string())?
+    .wait()
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
     tauri::async_runtime::set(tokio::runtime::Handle::current());
@@ -211,7 +238,8 @@ async fn main() {
             load_settings,
             save_settings,
             copy_autd_xml,
-            run_twincat_server
+            run_twincat_server,
+            open_xae_shell
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
