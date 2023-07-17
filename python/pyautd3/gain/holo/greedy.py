@@ -14,6 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 from typing import Optional
+import ctypes
 
 from .constraint import AmplitudeConstraint
 
@@ -43,8 +44,8 @@ class Greedy(Holo):
 
     def gain_ptr(self, _: Geometry) -> GainPtr:
         size = len(self._amps)
-        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
-        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))
+        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
+        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
         ptr = GainHolo().gain_holo_greedy(foci_, amps, size)
         if self._div is not None:
             ptr = GainHolo().gain_holo_greedy_with_phase_div(ptr, self._div)

@@ -154,7 +154,7 @@ class Gain(IGain, metaclass=ABCMeta):
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
         drives = self.calc(geometry)
         size = len(drives)
-        return Base().gain_custom(drives.ctypes.data_as(POINTER(Drive)), size)
+        return Base().gain_custom(drives.ctypes.data_as(POINTER(Drive)), size)  # type: ignore
 
     @staticmethod
     def transform(geometry: Geometry, f: Callable[[Transducer], Drive]) -> np.ndarray:

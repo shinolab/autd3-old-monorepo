@@ -14,6 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 from typing import Optional, List
+import ctypes
 
 from .backend import Backend, DefaultBackend
 from .constraint import AmplitudeConstraint
@@ -68,8 +69,8 @@ class LM(Holo):
 
     def gain_ptr(self, _: Geometry) -> GainPtr:
         size = len(self._amps)
-        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
-        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))
+        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
+        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
         ptr = GainHolo().gain_holo_lm(self._backend.ptr(), foci_, amps, size)
         if self._eps1 is not None:
             ptr = GainHolo().gain_holo_lm_with_eps_1(ptr, self._eps1)
@@ -80,7 +81,9 @@ class LM(Holo):
         if self._kmax is not None:
             ptr = GainHolo().gain_holo_lm_with_k_max(ptr, self._kmax)
         if len(self._initial) > 0:
-            initial_ = np.ctypeslib.as_ctypes(np.array(self._initial).astype(np.double))
+            initial_ = np.ctypeslib.as_ctypes(
+                np.array(self._initial).astype(ctypes.c_double)
+            )
             ptr = GainHolo().gain_holo_lm_with_initial(
                 ptr, initial_, len(self._initial)
             )
