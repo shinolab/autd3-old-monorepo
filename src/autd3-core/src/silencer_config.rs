@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,15 +13,23 @@
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram to configure silencer
 pub struct SilencerConfig {
     step: u16,
 }
 
 impl SilencerConfig {
+    /// Constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `step` - Update step of silencer. The smaller `step` is, the quieter the output is.  
+    ///
     pub fn new(step: u16) -> Self {
         SilencerConfig { step }
     }
 
+    /// Disable silencer
     pub fn none() -> Self {
         Self::new(0xFFFF)
     }

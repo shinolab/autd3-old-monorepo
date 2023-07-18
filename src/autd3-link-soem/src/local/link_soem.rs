@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -71,6 +71,7 @@ impl TimerCallback for SoemCallback {
 
 type OnLostCallBack = Box<dyn Fn(&str) + Send + Sync>;
 
+/// Link using [SOEM](https://github.com/OpenEtherCATsociety/SOEM)
 pub struct SOEM {
     ecatth_handle: Option<JoinHandle<()>>,
     ecat_check_th: Option<JoinHandle<()>>,
@@ -114,6 +115,7 @@ impl SOEM {
         }
     }
 
+    /// Set sync0 cycle (the unit is 500us)
     pub fn with_sync0_cycle(self, sync0_cycle: u16) -> Self {
         Self {
             ec_sync0_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * sync0_cycle as u32,
@@ -121,6 +123,7 @@ impl SOEM {
         }
     }
 
+    /// Set send cycle (the unit is 500us)
     pub fn with_send_cycle(self, send_cycle: u16) -> Self {
         Self {
             ec_send_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * send_cycle as u32,
@@ -128,10 +131,12 @@ impl SOEM {
         }
     }
 
+    /// Set send buffer size
     pub fn with_buf_size(self, buf_size: usize) -> Self {
         Self { buf_size, ..self }
     }
 
+    /// Set timer strategy
     pub fn with_timer_strategy(self, timer_strategy: TimerStrategy) -> Self {
         Self {
             timer_strategy,
@@ -139,10 +144,15 @@ impl SOEM {
         }
     }
 
+    /// Set sync mode
     pub fn with_sync_mode(self, sync_mode: SyncMode) -> Self {
         Self { sync_mode, ..self }
     }
 
+    /// Set network interface name
+    ///
+    /// If empty, this link will automatically find the network interface that is connected to AUTD3 devices.
+    ///
     pub fn with_ifname<S: Into<String>>(self, ifname: S) -> Self {
         Self {
             ifname: ifname.into(),
@@ -150,6 +160,7 @@ impl SOEM {
         }
     }
 
+    /// Set state check interval
     pub fn with_state_check_interval(self, state_check_interval: Duration) -> Self {
         Self {
             state_check_interval,
@@ -157,6 +168,7 @@ impl SOEM {
         }
     }
 
+    /// Set callback function when the link is lost
     pub fn with_on_lost<F: 'static + Fn(&str) + Send + Sync>(self, on_lost: F) -> Self {
         Self {
             on_lost: Some(Box::new(on_lost)),
@@ -164,15 +176,18 @@ impl SOEM {
         }
     }
 
+    /// Set log level
     pub fn with_log_level(self, level: LevelFilter) -> Self {
         self.logger.set_level_filter(level);
         self
     }
 
+    /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }
 
+    /// Set logger for debugging
     pub fn with_logger(self, logger: Logger) -> Self {
         Self { logger, ..self }
     }
