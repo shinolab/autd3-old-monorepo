@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,14 +15,22 @@ use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
 use autd3_driver::{float, MILLIMETER};
 use num::FromPrimitive;
 
+/// Number of transducer in an AUTD3 device
 pub const NUM_TRANS_IN_UNIT: usize = 249;
+/// Number of transducer in x-axis of AUTD3 device
 pub const NUM_TRANS_X: usize = 18;
+/// Number of transducer in y-axis of AUTD3 device
 pub const NUM_TRANS_Y: usize = 14;
+/// Spacing between transducers in mm
 pub const TRANS_SPACING_MM: float = 10.16;
+/// Spacing between transducers
 pub const TRANS_SPACING: float = TRANS_SPACING_MM * MILLIMETER;
+/// Device width including substrate
 pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+/// Device height including substrate
 pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
 
+/// AUTD3 device
 #[derive(Clone, Copy)]
 pub struct AUTD3 {
     position: Vector3,
@@ -30,12 +38,12 @@ pub struct AUTD3 {
 }
 
 impl AUTD3 {
-    /// Create AUTD3 device
+    /// Constructor
     ///
     /// # Arguments
     ///
-    /// * `pos` - Global position of AUTD.
-    /// * `rot` - ZYZ Euler angles.
+    /// * `position` - Global position
+    /// * `euler_angles` - ZYZ Euler angles
     ///
     pub fn new(position: Vector3, euler_angles: Vector3) -> Self {
         let q = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.x)
@@ -44,12 +52,12 @@ impl AUTD3 {
         Self::with_quaternion(position, q)
     }
 
-    /// Create AUTD3 device
+    /// Constructor
     ///
     /// # Arguments
     ///
-    /// * `pos` - Global position of AUTD.
-    /// * `rot` - Rotation quaternion.
+    /// * `position` - Global position
+    /// * `rotation` - Rotation quaternion
     ///
     pub fn with_quaternion<Q>(position: Vector3, rotation: Q) -> Self
     where
@@ -61,6 +69,8 @@ impl AUTD3 {
         }
     }
 
+    #[doc(hidden)]
+    /// This is used only for internal.
     pub fn is_missing_transducer<T1, T2>(x: T1, y: T2) -> bool
     where
         T1: FromPrimitive + PartialEq<T1>,
@@ -72,6 +82,26 @@ impl AUTD3 {
                 || x == FromPrimitive::from_u8(16).unwrap())
     }
 
+    /// Get grid id from transducer id
+    ///
+    /// # Arguments
+    ///
+    /// * `idx` - Transducer index
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use autd3_core::autd3_device::AUTD3;
+    ///
+    /// let (x, y) = AUTD3::grid_id(0);
+    /// assert_eq!(x, 0);
+    /// assert_eq!(y, 0);
+    ///
+    /// let (x, y) = AUTD3::grid_id(248);
+    /// assert_eq!(x, 17);
+    /// assert_eq!(y, 13);
+    /// ```
+    ///
     pub fn grid_id(idx: usize) -> (usize, usize) {
         let local_id = idx % NUM_TRANS_IN_UNIT;
         let mut offset = 0;

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ use autd3_core::{
 
 use crate::{error::AUTDError, link::NullLink, software_stm::SoftwareSTM};
 
+/// Builder for `Controller`
 pub struct ControllerBuilder<T: Transducer> {
     attenuation: float,
     sound_speed: float,
@@ -40,6 +41,8 @@ impl<T: Transducer> Default for ControllerBuilder<T> {
 }
 
 impl<T: Transducer> ControllerBuilder<T> {
+    #[doc(hidden)]
+    /// This is used only for capi.
     pub fn new() -> ControllerBuilder<T> {
         Self {
             attenuation: 0.0,
@@ -50,6 +53,7 @@ impl<T: Transducer> ControllerBuilder<T> {
         }
     }
 
+    /// Set attenuation coefficient
     pub fn attenuation(self, attenuation: float) -> Self {
         Self {
             attenuation,
@@ -57,6 +61,7 @@ impl<T: Transducer> ControllerBuilder<T> {
         }
     }
 
+    /// Set speed of sound
     pub fn sound_speed(self, sound_speed: float) -> Self {
         Self {
             sound_speed,
@@ -64,6 +69,7 @@ impl<T: Transducer> ControllerBuilder<T> {
         }
     }
 
+    /// Add device
     pub fn add_device<D: Device>(mut self, dev: D) -> Self {
         let id = self.transducers.len();
         let mut t = dev.get_transducers(id);
@@ -72,6 +78,7 @@ impl<T: Transducer> ControllerBuilder<T> {
         self
     }
 
+    /// Open controller
     pub fn open_with<L: Link<T>>(self, link: L) -> Result<Controller<T, L>, AUTDError> {
         Controller::open_impl(
             Geometry::<T>::new(
@@ -89,35 +96,42 @@ impl<T: Transducer> ControllerBuilder<T> {
 }
 
 impl ControllerBuilder<LegacyTransducer> {
+    /// Set advanced mode
     pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
+    /// Set advanced phase mode
     pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
 
 impl ControllerBuilder<AdvancedTransducer> {
+    /// Set legacy mode
     pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
+    /// Set advanced phase mode
     pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
 
 impl ControllerBuilder<AdvancedPhaseTransducer> {
+    /// Set advanced mode
     pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
+    /// Set legacy mode
     pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
 
+/// Controller for AUTD
 pub struct Controller<T: Transducer, L: Link<T>> {
     link: L,
     geometry: Geometry<T>,
@@ -129,13 +143,14 @@ pub struct Controller<T: Transducer, L: Link<T>> {
 }
 
 impl Controller<LegacyTransducer, NullLink> {
+    /// Create Controller builder
     pub fn builder() -> ControllerBuilder<LegacyTransducer> {
         ControllerBuilder::<LegacyTransducer>::new()
     }
 }
 
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
-    pub(crate) fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+    fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
@@ -154,36 +169,46 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(cnt)
     }
 
+    /// set force fan flag
     pub fn force_fan(&mut self, value: bool) {
         self.force_fan.value = value
     }
 
+    /// set reads fpga info flag
     pub fn reads_fpga_info(&mut self, value: bool) {
         self.reads_fpga_info.value = value
     }
 
+    /// get geometry
     pub fn geometry(&self) -> &Geometry<T> {
         &self.geometry
     }
 
+    /// get geometry mutably
     pub fn geometry_mut(&mut self) -> &mut Geometry<T> {
         &mut self.geometry
     }
 
+    /// get link
     pub fn link(&self) -> &L {
         &self.link
     }
 
+    /// get link mutably
     pub fn link_mut(&self) -> &L {
         &self.link
     }
 
-    /// Send header and body to the devices
+    /// Send data to the devices
     ///
     /// # Arguments
     ///
-    /// * `header` - Header
-    /// * `body` - Body
+    /// * `s` - Datagram
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
     ///
     pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
@@ -217,10 +242,22 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(true)
     }
 
+    /// Send data to the devices asynchronously
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - Datagram
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
+    ///
     pub async fn send_async<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         async { self.send(s) }.await
     }
 
+    // Close connection
     pub fn close(&mut self) -> Result<bool, AUTDError> {
         if !self.link.is_open() {
             return Ok(false);
@@ -231,7 +268,12 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(res)
     }
 
-    /// Return firmware information of the devices
+    /// Get firmware information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
+    ///
     pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
         let mut op = autd3_core::CPUVersionMajor::default();
         op.pack(&mut self.tx_buf);
@@ -287,11 +329,24 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             .collect())
     }
 
+    /// Get FPGA information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FPGAInfo>)` - List of FPGA information
+    ///
     pub fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
         self.link.receive(&mut self.rx_buf)?;
         Ok(self.rx_buf.iter().map(FPGAInfo::from).collect())
     }
 
+    /// Start software Spatio-Temporal Modulation
+    ///
+    /// # Arguments
+    ///
+    /// * `callback` - Callback function called specified interval
+    /// * `finish_handler` - If this function returns true, STM will be finished
+    ///
     pub fn software_stm<
         S: Datagram<T>,
         Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
@@ -306,7 +361,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 }
 
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
-    pub fn get_id(&mut self) -> u8 {
+    fn get_id(&mut self) -> u8 {
         if self
             .msg_id
             .compare_exchange(

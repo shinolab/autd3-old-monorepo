@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ use autd3_driver::{NullBody, NullHeader};
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram to update flags (Force fan flag and reads FPGA info flag)
 #[derive(Default)]
 pub struct UpdateFlags {}
 
@@ -48,14 +49,14 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut datagram = UpdateFlags::default();
+        let datagram = UpdateFlags::default();
         assert_eq!(
             <UpdateFlags as Datagram<LegacyTransducer>>::timeout(&datagram),
             None
         );
         datagram.operation(&geometry).unwrap();
 
-        let mut datagram = UpdateFlags::default().with_timeout(Duration::from_millis(100));
+        let datagram = UpdateFlags::default().with_timeout(Duration::from_millis(100));
         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
         datagram.operation(&geometry).unwrap();
     }

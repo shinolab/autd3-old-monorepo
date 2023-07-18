@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 14/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,25 +158,25 @@ impl PythonGenerator {
                 Type::Custom(ref s) => s,
             },
             1 => match arg.ty {
-                Type::Int8 => "Any",
-                Type::Int16 => "Any",
-                Type::Int32 => "Any",
-                Type::Int64 => "Any",
-                Type::UInt8 => "Any",
-                Type::UInt16 => "Any",
-                Type::UInt32 => "Any",
-                Type::UInt64 => "Any",
+                Type::Int8 => "ctypes.Array[ctypes.c_int8]",
+                Type::Int16 => "ctypes.Array[ctypes.c_int16]",
+                Type::Int32 => "ctypes.Array[ctypes.c_int32]",
+                Type::Int64 => "ctypes.Array[ctypes.c_int64]",
+                Type::UInt8 => "ctypes.Array[ctypes.c_uint8]",
+                Type::UInt16 => "ctypes.Array[ctypes.c_uint16]",
+                Type::UInt32 => "ctypes.Array[ctypes.c_uint32]",
+                Type::UInt64 => "ctypes.Array[ctypes.c_uint64]",
                 Type::Void => unimplemented!(),
                 Type::Char => match arg.inout {
                     InOut::In => "bytes",
                     InOut::Out => "ctypes.Array[ctypes.c_char]",
                     _ => "Any",
                 },
-                Type::Float32 => "Any",
-                Type::Float64 => "Any",
-                Type::Bool => "Any",
-                Type::VoidPtr => "Any",
-                Type::Custom(_) => "Any",
+                Type::Float32 => "ctypes.Array[ctypes.c_float]",
+                Type::Float64 => "ctypes.Array[ctypes.c_double]",
+                Type::Bool => "ctypes.Array[ctypes.c_bool]",
+                Type::VoidPtr => "ctypes.Array[ctypes.c_void_p]",
+                Type::Custom(_) => "ctypes.Array",
             },
             2 => "Any",
             _ => {
@@ -232,14 +232,6 @@ import threading
 import ctypes
 import os"
         )?;
-
-        if self
-            .functions
-            .iter()
-            .any(|f| f.args.iter().any(|arg| Self::to_python_arg(arg) == "Any"))
-        {
-            writeln!(w, r"from typing import Any")?;
-        }
 
         let owns = |ty: &Type| {
             if let Type::Custom(ref s) = ty {
@@ -390,7 +382,7 @@ class NativeMethods(metaclass=Singleton):",
     def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
         try:
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{{bin_prefix}}{}{{bin_ext}}'))
-        except FileNotFoundError:
+        except Exception:
             return",
             crate_name.replace('-', "_")
         )?;

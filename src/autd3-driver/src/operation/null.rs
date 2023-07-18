@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,6 +50,60 @@ pub struct NullBody {
 }
 
 impl Operation for NullBody {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
+        tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
+        tx.num_bodies = 0;
+
+        self.sent = true;
+        Ok(())
+    }
+
+    fn init(&mut self) {
+        self.sent = false;
+    }
+
+    fn is_finished(&self) -> bool {
+        self.sent
+    }
+}
+
+#[derive(Default)]
+pub struct ExclusiveNullHeader {
+    sent: bool,
+}
+
+impl Operation for ExclusiveNullHeader {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
+        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
+        tx.header_mut()
+            .cpu_flag
+            .remove(CPUControlFlags::CONFIG_SILENCER);
+        tx.header_mut()
+            .cpu_flag
+            .remove(CPUControlFlags::CONFIG_SYNC);
+
+        tx.header_mut().size = 0;
+
+        self.sent = true;
+        Ok(())
+    }
+
+    fn init(&mut self) {
+        self.sent = false;
+    }
+
+    fn is_finished(&self) -> bool {
+        self.sent
+    }
+}
+
+#[derive(Default)]
+pub struct ExclusiveNullBody {
+    sent: bool,
+}
+
+impl Operation for ExclusiveNullBody {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);

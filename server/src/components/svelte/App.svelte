@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/07/2023
+Last Modified: 12/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,13 +14,23 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 <script lang="ts">
   import type { Options } from "./UI/options";
 
+  import { onMount } from "svelte";
+  import { writable } from "svelte/store";
+
   import { invoke } from "@tauri-apps/api";
   import { appWindow } from "@tauri-apps/api/window";
   import { TauriEvent } from "@tauri-apps/api/event";
-  import { onMount } from "svelte";
 
   import LeftPanel from "./LeftPanel.svelte";
   import RightPanel from "./RightPanel.svelte";
+
+  import License from "./License.svelte";
+  import Notice from "./Notice.svelte";
+  import Modal, { bind } from "svelte-simple-modal";
+  const licenseModal = writable<any>(null);
+  const noticeModal = writable<any>(null);
+  const showLicenseModal = () => licenseModal.set(bind(License, {}));
+  const showNoticeModal = () => noticeModal.set(bind(Notice, {}));
 
   let options: null | Options = null;
 
@@ -43,24 +53,70 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   });
 </script>
 
-<div>
-  {#if options}
-    <LeftPanel {options} />
-  {/if}
-  <RightPanel />
-</div>
+<body>
+  <div>
+    {#if options}
+      <LeftPanel {options} />
+    {/if}
+    <RightPanel />
+  </div>
+
+  <footer class="right-align">
+    <Modal
+      show={$licenseModal}
+      closeButton={false}
+      styleWindow={{ backgroundColor: "#101923" }}
+    >
+      <button on:click={showLicenseModal}>License</button>
+    </Modal>
+    <Modal
+      show={$noticeModal}
+      closeButton={false}
+      styleWindow={{ backgroundColor: "#101923" }}
+    >
+      <button on:click={showNoticeModal}>Third party</button>
+    </Modal>
+  </footer>
+</body>
 
 <style>
-  div {
+  body {
     display: flex;
-    width: 100%;
-    align-items: flex-start;
-    gap: 10px;
+    flex-flow: column;
     flex-shrink: 0;
 
-    padding: 10px;
+    width: 100%;
+    padding: 10px 10px 0px 10px;
+
+    justify-content: stretch;
 
     height: 100vh;
+  }
+
+  div {
+    display: flex;
+    gap: 10px;
+
+    height: calc(100% - 26px);
+
+    width: 100%;
+  }
+
+  button {
+    font-size: 12px;
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  footer {
+    width: 100%;
+    height: 26px;
+
+    text-align: right;
+
+    padding: 0;
+    margin: 0;
     box-sizing: border-box;
+    border: 0;
   }
 </style>
