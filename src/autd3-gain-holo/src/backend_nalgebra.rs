@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ use autd3_core::float;
 
 use crate::{error::HoloError, Backend, Complex, MatrixX, MatrixXc, VectorX, VectorXc};
 
+/// Backend using nalgebra
 #[derive(Default)]
 pub struct NalgebraBackend {}
 
