@@ -87,9 +87,9 @@ impl From<&(Vector3, u8)> for ControlPoint {
 ///
 /// The sampling timing is determined by hardware, thus the sampling time is precise.
 ///
-/// FocusSTM have following restrictions:
+/// FocusSTM has following restrictions:
 /// - The maximum number of sampling points is 65536.
-/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer.
+/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN]
 ///
 #[derive(Clone)]
 pub struct FocusSTM {
