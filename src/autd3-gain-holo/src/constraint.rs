@@ -13,6 +13,7 @@
 
 use autd3_core::float;
 
+/// Amplitude constraint
 pub enum Constraint {
     /// Do nothing (this is equivalent to `Clamp(0, 1)`)
     DontCare,
