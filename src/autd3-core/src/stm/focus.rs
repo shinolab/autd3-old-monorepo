@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,17 +17,35 @@ use autd3_driver::float;
 
 use super::STMProps;
 
+/// Control point for FocusSTM
 #[derive(Clone, Debug, Copy)]
 pub struct ControlPoint {
+    /// Focal point
     point: Vector3,
+    /// Duty shift
+    /// Duty ratio of ultrasound will be `50% >> shift`.
+    /// If `shift` is 0, duty ratio is 50%, which means the amplitude is the maximum.
     shift: u8,
 }
 
 impl ControlPoint {
+    /// constructor (shift is 0)
+    ///
+    /// # Arguments
+    ///
+    /// * `point` - focal point
+    ///
     pub fn new(point: Vector3) -> Self {
         Self { point, shift: 0 }
     }
 
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `point` - focal point
+    /// * `shift` - duty shift
+    ///
     pub fn with_shift(point: Vector3, shift: u8) -> Self {
         Self { point, shift }
     }
@@ -65,6 +83,14 @@ impl From<&(Vector3, u8)> for ControlPoint {
     }
 }
 
+/// FocusSTM is an STM for moving a single focal point.
+///
+/// The sampling timing is determined by hardware, thus the sampling time is precise.
+///
+/// FocusSTM have following restrictions:
+/// - The maximum number of sampling points is 65536.
+/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer.
+///
 #[derive(Clone)]
 pub struct FocusSTM {
     control_points: Vec<ControlPoint>,
@@ -72,11 +98,13 @@ pub struct FocusSTM {
 }
 
 impl FocusSTM {
+    /// Add [ControlPoint] to FocusSTM
     pub fn add_focus<C: Into<ControlPoint>>(mut self, point: C) -> Self {
         self.control_points.push(point.into());
         self
     }
 
+    /// Add [ControlPoint]s to FocusSTM
     pub fn add_foci_from_iter<C: Into<ControlPoint>, T: IntoIterator<Item = C>>(
         mut self,
         iter: T,
@@ -86,10 +114,13 @@ impl FocusSTM {
         self
     }
 
+    /// Get [ControlPoint]s
     pub fn control_points(&self) -> &[ControlPoint] {
         &self.control_points
     }
 
+    #[doc(hidden)]
+    /// This is used only for capi.
     pub fn with_props(props: STMProps) -> Self {
         Self {
             control_points: Vec::new(),
@@ -139,6 +170,12 @@ impl<T: Transducer> Datagram<T> for FocusSTM {
 }
 
 impl FocusSTM {
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
+    ///
     pub fn new(freq: float) -> Self {
         Self {
             control_points: vec![],
@@ -146,6 +183,12 @@ impl FocusSTM {
         }
     }
 
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/`freq_div`.
+    ///
     pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
             control_points: vec![],
@@ -153,6 +196,12 @@ impl FocusSTM {
         }
     }
 
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq` - Sampling frequency of STM. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
+    ///
     pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
             control_points: vec![],
@@ -160,6 +209,7 @@ impl FocusSTM {
         }
     }
 
+    /// Set the start index of STM
     pub fn with_start_idx(self, idx: Option<u16>) -> Self {
         Self {
             props: self.props.with_start_idx(idx),
@@ -167,6 +217,7 @@ impl FocusSTM {
         }
     }
 
+    /// Set the finish index of STM
     pub fn with_finish_idx(self, idx: Option<u16>) -> Self {
         Self {
             props: self.props.with_finish_idx(idx),
@@ -182,6 +233,8 @@ impl FocusSTM {
         self.props.finish_idx()
     }
 
+    #[doc(hidden)]
+    /// This is used only for internal.
     pub fn size(&self) -> usize {
         self.control_points.len()
     }

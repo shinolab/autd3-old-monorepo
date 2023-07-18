@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,8 @@ use autd3_driver::{float, FPGA_SUB_CLK_FREQ};
 pub use focus::{ControlPoint, FocusSTM};
 pub use gain::GainSTM;
 
+#[doc(hidden)]
+/// This is used only for internal.
 #[derive(Clone, Copy)]
 pub struct STMProps {
     freq_div: Option<u32>,
