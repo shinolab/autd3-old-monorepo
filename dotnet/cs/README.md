@@ -2,7 +2,7 @@
 
 [autd3](https://github.com/shinolab/autd3) wrapper for .Net Standard 2.1
 
-version: 13.0.0
+version: 14.0.0
 
 ## Install
 
