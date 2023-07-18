@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "13.0.0"
+version = "14.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -66,16 +66,16 @@ required-features = ["lightweight"]
 [dependencies]
 anyhow = "1.0.57"
 autd3 = {path="../src/autd3"}
-autd3-core = {path="../src/autd3-core", version="13.0.0"}
-autd3-gain-holo = {path="../src/autd3-gain-holo", version="13.0.0"}
-autd3-link-simulator = {path="../src/autd3-link-simulator", optional = true, version="13.0.0"}
-autd3-simulator = {path="../src/autd3-simulator", optional = true, version="13.0.0"}
-autd3-geometry-viewer = {path="../src/autd3-geometry-viewer", optional = true, version="13.0.0"}
-autd3-link-soem = {path="../src/autd3-link-soem", optional = true, version="13.0.0"}
-autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version="13.0.0"}
-autd3-link-monitor = {path="../src/autd3-link-monitor", optional = true, version="13.0.0"}
-autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="13.0.0"}
-autd3-protobuf = {path="../src/autd3-protobuf", optional = true, version="13.0.0"}
+autd3-core = {path="../src/autd3-core", version="14.0.0"}
+autd3-gain-holo = {path="../src/autd3-gain-holo", version="14.0.0"}
+autd3-link-simulator = {path="../src/autd3-link-simulator", optional = true, version="14.0.0"}
+autd3-simulator = {path="../src/autd3-simulator", optional = true, version="14.0.0"}
+autd3-geometry-viewer = {path="../src/autd3-geometry-viewer", optional = true, version="14.0.0"}
+autd3-link-soem = {path="../src/autd3-link-soem", optional = true, version="14.0.0"}
+autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version="14.0.0"}
+autd3-link-monitor = {path="../src/autd3-link-monitor", optional = true, version="14.0.0"}
+autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="14.0.0"}
+autd3-protobuf = {path="../src/autd3-protobuf", optional = true, version="14.0.0"}
 colored = "2.0.0"
 tokio = { version = "1.29.0", features = ["full"], optional = true}
 
