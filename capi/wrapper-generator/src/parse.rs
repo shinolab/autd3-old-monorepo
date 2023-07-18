@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,7 @@ pub struct Arg {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Function {
+    pub docs: Vec<String>,
     pub name: String,
     pub return_ty: Type,
     pub args: Vec<Arg>,
@@ -68,6 +69,23 @@ where
         .into_iter()
         .filter_map(|item| match item {
             syn::Item::Fn(item_fn) => {
+                let docs = item_fn
+                    .attrs
+                    .iter()
+                    .filter(|attr| attr.path().is_ident("doc"))
+                    .map(|attr| {
+                        attr.meta
+                            .require_name_value()
+                            .unwrap()
+                            .value
+                            .clone()
+                            .into_token_stream()
+                            .to_string()
+                            .trim()
+                            .to_string()
+                    })
+                    .collect();
+
                 let name = item_fn.sig.ident.to_string();
                 let return_ty = Type::parse_return(item_fn.sig.output, use_single);
                 let args = item_fn
@@ -78,6 +96,7 @@ where
                     .collect::<Vec<_>>();
 
                 Some(Function {
+                    docs,
                     name,
                     return_ty,
                     args,
