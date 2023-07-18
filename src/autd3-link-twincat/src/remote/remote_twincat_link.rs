@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -30,6 +30,7 @@ const INDEX_OFFSET_BASE: u32 = 0x8100_0000;
 const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
+/// Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
 pub struct RemoteTwinCAT {
     port: c_long,
     server_ams_net_id: String,
@@ -40,6 +41,12 @@ pub struct RemoteTwinCAT {
 }
 
 impl RemoteTwinCAT {
+    /// Construct
+    ///
+    /// # Arguments
+    ///
+    /// * `server_ams_net_id` - Server AMS Net ID
+    ///
     pub fn new<S: Into<String>>(server_ams_net_id: S) -> Result<Self, AdsError> {
         Ok(Self {
             port: 0,
@@ -51,11 +58,13 @@ impl RemoteTwinCAT {
         })
     }
 
+    /// Set server IP address
     pub fn with_server_ip<S: Into<String>>(mut self, server_ip: S) -> Self {
         self.server_ip = Some(server_ip.into());
         self
     }
 
+    /// Set client AMS Net ID
     pub fn with_client_ams_net_id<S: Into<String>>(mut self, client_ams_net_id: S) -> Self {
         self.client_ams_net_id = Some(client_ams_net_id.into());
         self
