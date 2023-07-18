@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,8 @@ use std::ffi::OsString;
 
 use pyo3::prelude::*;
 
-use crate::{error::MonitorError, Config};
+use crate::{error::MonitorError, Backend, Config};
 
-use super::backend::Backend;
 use autd3_core::{
     acoustics::Complex,
     float,
@@ -59,6 +58,7 @@ impl Config for PyPlotConfig {
     }
 }
 
+/// Backend using Python and matplotlib
 pub struct PythonBackend {}
 
 impl PythonBackend {

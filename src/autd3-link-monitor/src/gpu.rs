@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ use vulkano::{
     VulkanLibrary,
 };
 
-pub struct FieldCompute {
+pub(crate) struct FieldCompute {
     pipeline: Arc<ComputePipeline>,
     queue: Arc<Queue>,
     command_buffer_allocator: StandardCommandBufferAllocator,
@@ -47,7 +47,7 @@ pub struct FieldCompute {
 }
 
 impl FieldCompute {
-    pub fn new(gpu_idx: i32) -> Self {
+    pub(crate) fn new(gpu_idx: i32) -> Self {
         let library = VulkanLibrary::new().unwrap();
         let instance = Instance::new(
             library,
@@ -130,7 +130,7 @@ impl FieldCompute {
         }
     }
 
-    pub fn calc_field_of<'a, T: Transducer, D: autd3_core::acoustics::Directivity>(
+    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3_core::acoustics::Directivity>(
         &self,
         observe_points: Vec<Vector3>,
         geometry: &Geometry<T>,
