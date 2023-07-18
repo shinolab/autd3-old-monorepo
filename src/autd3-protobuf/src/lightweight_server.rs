@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use crate::{error::*, pb::*, traits::*};
 
 use tonic::{Request, Response, Status};
 
+#[doc(hidden)]
 pub struct LightweightServer<
     L: autd3_core::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
     F: Fn() -> L + Send + Sync + 'static,

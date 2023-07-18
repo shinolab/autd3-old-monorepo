@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3_core::{
 };
 use autd3_traits::Modulation;
 
-/// Sine wave modulation in ultrasound amplitude
+/// Sine wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct SineLegacy {
     freq: float,
@@ -29,7 +29,9 @@ pub struct SineLegacy {
 }
 
 impl SineLegacy {
-    /// constructor.
+    /// constructor
+    ///
+    /// The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.
     ///
     /// # Arguments
     ///
@@ -48,7 +50,7 @@ impl SineLegacy {
     ///
     /// # Arguments
     ///
-    /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
+    /// * `amp` - peek to peek amplitude of the sine wave
     ///
     pub fn with_amp(self, amp: float) -> Self {
         Self { amp, ..self }
@@ -126,7 +128,7 @@ mod tests {
             0.27560040989976875,
             0.3846920646287802,
         ];
-        let mut m = SineLegacy::new(150.);
+        let m = SineLegacy::new(150.);
         assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
@@ -139,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_sine_legacy_new() {
-        let mut m = SineLegacy::new(100.0);
+        let m = SineLegacy::new(100.0);
         assert_approx_eq::assert_approx_eq!(m.freq, 100.0);
         assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
         assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
@@ -153,7 +155,7 @@ mod tests {
 
     #[test]
     fn test_sine_legacy_with_amp() {
-        let mut m = SineLegacy::new(100.0).with_amp(0.5);
+        let m = SineLegacy::new(100.0).with_amp(0.5);
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
@@ -165,7 +167,7 @@ mod tests {
 
     #[test]
     fn test_sine_legacy_with_offset() {
-        let mut m = SineLegacy::new(100.0).with_offset(1.0);
+        let m = SineLegacy::new(100.0).with_offset(1.0);
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();

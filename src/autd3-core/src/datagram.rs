@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,11 @@ use autd3_driver::Operation;
 
 use crate::{error::AUTDInternalError, geometry::*};
 
+/// Datagram to be sent to devices
 pub trait Datagram<T: Transducer> {
+    /// Header type
     type H: Operation;
+    /// Body type
     type B: Operation;
 
     fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError>;
@@ -28,6 +31,7 @@ pub trait Datagram<T: Transducer> {
     }
 }
 
+/// Datagram with timeout
 pub struct DatagramWithTimeout<T: Transducer, D: Datagram<T>> {
     datagram: D,
     timeout: Duration,
@@ -48,6 +52,8 @@ impl<T: Transducer, D: Datagram<T>> Datagram<T> for DatagramWithTimeout<T, D> {
 }
 
 pub trait DatagramT<T: Transducer, D: Datagram<T>> {
+    /// Set timeout.
+    /// This takes precedence over the timeout specified in Link.
     fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<T, D>;
 }
 
@@ -108,6 +114,7 @@ where
     }
 }
 
+/// Header to do nothing
 #[derive(Default)]
 pub struct NullHeader {}
 
@@ -126,6 +133,7 @@ impl<T: Transducer> Datagram<T> for NullHeader {
     }
 }
 
+/// Body to do nothing
 #[derive(Default)]
 pub struct NullBody {}
 

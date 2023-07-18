@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,12 +42,24 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
         }
 
         impl <#(#linetimes_impl,)* #(#type_params_impl,)*> #name #ty_generics #where_clause {
+            /// Set sampling frequency division
+            ///
+            /// # Arguments
+            ///
+            /// * `freq_div` - Sampling frequency division. The sampling frequency will be [autd3_core::FPGA_SUB_CLK_FREQ] / `freq_div`. The value must be and must be at least [autd3_core::SAMPLING_FREQ_DIV_MIN]
+            ///
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
                 Self {freq_div, ..self}
             }
 
 
+            /// Set sampling frequency
+            ///
+            /// # Arguments
+            ///
+            /// * `freq` - Sampling frequency. The sampling frequency. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
+            ///
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency(self, freq: autd3_core::float) -> Self {
                 let freq_div = autd3_core::FPGA_SUB_CLK_FREQ as autd3_core::float / freq;
@@ -80,11 +92,19 @@ pub fn gain_derive(input: TokenStream) -> TokenStream {
 fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
+    let linetimes_for_any = generics.lifetimes();
     let linetimes = generics.lifetimes();
+    let type_params_for_any = generics.type_params();
     let type_params = generics.type_params();
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     if generics.type_params().any(|ty| ty.ident == "T") {
         let gen = quote! {
+            impl <#(#linetimes_for_any,)* #(#type_params_for_any,)*> autd3_core::gain::GainAsAny for #name #ty_generics #where_clause {
+                fn as_any(&self) -> &dyn std::any::Any {
+                    self
+                }
+            }
+
             impl <#(#linetimes,)* #(#type_params,)*> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
                 type H = autd3_core::NullHeader;
                 type B = T::Gain;
@@ -102,6 +122,12 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
         gen.into()
     } else {
         let gen = quote! {
+            impl <#(#linetimes_for_any,)* #(#type_params_for_any,)*> autd3_core::gain::GainAsAny for #name #ty_generics #where_clause {
+                fn as_any(&self) -> &dyn std::any::Any {
+                    self
+                }
+            }
+
             impl <#(#linetimes,)* #(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
                 type H = autd3_core::NullHeader;
                 type B = T::Gain;

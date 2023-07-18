@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -53,6 +53,7 @@ use winit::{
 
 use crate::{camera_helper, viewer_settings::ViewerSettings, Matrix4, Vector3};
 
+/// List available GPUs
 pub fn available_gpus() -> anyhow::Result<Vec<(u32, String, PhysicalDeviceType)>> {
     let library = VulkanLibrary::new()?;
     let required_extensions = vulkano_win::required_extensions(&library);
