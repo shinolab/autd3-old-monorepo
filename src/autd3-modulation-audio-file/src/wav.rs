@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,9 @@ use std::path::Path;
 
 use crate::error::AudioFileError;
 
+/// Modulation constructed from wav file
+///
+/// The wav data is resampled to the sampling frequency of Modulation.
 #[derive(Modulation, Clone)]
 pub struct Wav {
     channels: u16,
@@ -32,6 +35,12 @@ pub struct Wav {
 }
 
 impl Wav {
+    /// Constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Path to the wav file
+    ///
     pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, AudioFileError> {
         let mut reader = hound::WavReader::open(path)?;
         let channels = reader.spec().channels;
