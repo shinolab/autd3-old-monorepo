@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use autd3_driver::NullBody;
+use autd3_driver::ExclusiveNullBody;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
@@ -29,7 +29,7 @@ impl Clear {
 
 impl<T: Transducer> Datagram<T> for Clear {
     type H = autd3_driver::Clear;
-    type B = NullBody;
+    type B = ExclusiveNullBody;
 
     fn timeout(&self) -> Option<Duration> {
         Some(Duration::from_millis(200))
