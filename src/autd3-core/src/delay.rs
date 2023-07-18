@@ -4,7 +4,7 @@
  * Created Date: 01/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram to set modulation delay
 #[derive(Default)]
 pub struct ModDelay {}
 

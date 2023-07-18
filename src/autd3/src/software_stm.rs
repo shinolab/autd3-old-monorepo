@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ use autd3_core::{
 
 use crate::{error::AUTDError, Controller};
 
+/// Software Spatio-Temporal Modulation (STM)
 pub struct SoftwareSTM<
     'a,
     T: Transducer,
@@ -50,7 +51,7 @@ impl<
         Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
     > SoftwareSTM<'a, T, L, S, Fs, Ff>
 {
-    pub fn new(
+    pub(crate) fn new(
         controller: &'a mut Controller<T, L>,
         callback_loop: Fs,
         callback_finish: Ff,
@@ -63,6 +64,7 @@ impl<
         }
     }
 
+    /// Set timer strategy
     pub fn with_timer_strategy(self, timer_strategy: TimerStrategy) -> Self {
         Self {
             timer_strategy,
@@ -108,6 +110,7 @@ impl<
         Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
     > SoftwareSTM<'a, T, L, S, Fs, Ff>
 {
+    /// Start STM with specified interval
     pub fn start(self, interval: std::time::Duration) -> Result<bool, AUTDError> {
         let Self {
             controller,

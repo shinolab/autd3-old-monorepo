@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,6 +24,8 @@ use autd3_core::{
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
 
+/// Gain to produce multiple foci with GS algorithm
+///
 /// Reference
 /// * Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
 #[derive(Gain)]

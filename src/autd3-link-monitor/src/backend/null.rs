@@ -4,7 +4,7 @@
  * Created Date: 17/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 use crate::{Backend, Config};
 
+/// Backend with no plotting
 pub struct NullBackend {}
 
 pub struct NullPlotConfig {}

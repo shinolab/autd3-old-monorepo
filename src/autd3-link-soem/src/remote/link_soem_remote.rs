@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ use tokio::runtime::{Builder, Runtime};
 use autd3_protobuf::*;
 use tonic::Response;
 
+/// Link to connect to remote SOEMServer
 pub struct RemoteSOEM {
     client: ecat_client::EcatClient<tonic::transport::Channel>,
     runtime: Runtime,
@@ -32,6 +33,12 @@ pub struct RemoteSOEM {
 }
 
 impl RemoteSOEM {
+    /// Constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - IP address and port of SOEMServer
+    ///
     pub fn new(addr: SocketAddr) -> Result<Self, AUTDProtoBufError> {
         let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
         Ok(Self {
@@ -43,6 +50,7 @@ impl RemoteSOEM {
         })
     }
 
+    /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }

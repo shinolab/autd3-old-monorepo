@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -27,12 +27,12 @@ use autd3_core::{
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct AmsNetId {
+struct AmsNetId {
     pub b: [u8; 6],
 }
 
 #[repr(C)]
-pub struct AmsAddr {
+struct AmsAddr {
     pub net_id: AmsNetId,
     pub port: u16,
 }
@@ -44,6 +44,7 @@ const INDEX_OFFSET_BASE: u32 = 0x8100_0000;
 const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
+/// Link using TwinCAT3
 pub struct TwinCAT {
     port: i32,
     send_addr: AmsAddr,
@@ -75,6 +76,7 @@ impl TwinCAT {
         })
     }
 
+    /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }

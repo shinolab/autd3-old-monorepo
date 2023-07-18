@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,11 +42,14 @@ use crate::error::AUTDInternalError;
 pub struct Geometry<T: Transducer> {
     pub(crate) transducers: Vec<T>,
     device_map: Vec<usize>,
+    /// Speed of sound
     pub sound_speed: float,
+    /// Attenuation coefficient
     pub attenuation: float,
 }
 
 impl<T: Transducer> Geometry<T> {
+    #[doc(hidden)]
     pub fn new(
         transducers: Vec<T>,
         device_map: Vec<usize>,
@@ -64,18 +67,22 @@ impl<T: Transducer> Geometry<T> {
         })
     }
 
+    /// Get the number of devices
     pub fn num_devices(&self) -> usize {
         self.device_map.len()
     }
 
+    /// Get the number of transducers
     pub fn num_transducers(&self) -> usize {
         self.transducers.len()
     }
 
+    /// Get transducers
     pub fn transducers(&self) -> std::slice::Iter<'_, T> {
         self.transducers.iter()
     }
 
+    /// Get transducers of specified device
     pub fn transducers_of(
         &self,
         idx: usize,
@@ -87,10 +94,12 @@ impl<T: Transducer> Geometry<T> {
             .take(self.device_map[idx])
     }
 
+    /// Get transducers mutably
     pub fn transducers_mut(&mut self) -> std::slice::IterMut<'_, T> {
         self.transducers.iter_mut()
     }
 
+    /// Get transducers mutably of specified device
     pub fn transducers_mut_of(
         &mut self,
         idx: usize,
@@ -102,6 +111,7 @@ impl<T: Transducer> Geometry<T> {
             .take(self.device_map[idx])
     }
 
+    /// Get center position of all transducers
     pub fn center(&self) -> Vector3 {
         self.transducers
             .iter()
@@ -110,6 +120,7 @@ impl<T: Transducer> Geometry<T> {
             / self.transducers.len() as float
     }
 
+    /// Get center position of transducers in the specified device
     pub fn center_of(&self, idx: usize) -> Vector3 {
         self.transducers_of(idx)
             .map(|d| d.position())
@@ -117,38 +128,61 @@ impl<T: Transducer> Geometry<T> {
             / self.device_map[idx] as float
     }
 
+    /// Translate all transducers
     pub fn translate(&mut self, t: Vector3) {
         self.affine(t, UnitQuaternion::identity());
     }
 
+    /// Rorate all transducers
     pub fn rotate(&mut self, r: UnitQuaternion) {
         self.affine(Vector3::zeros(), r);
     }
 
+    /// Affine transform all transducers
     pub fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
         self.transducers.iter_mut().for_each(|tr| tr.affine(t, r));
     }
 
+    /// Translate transducers in the specified device
     pub fn translate_of(&mut self, idx: usize, t: Vector3) {
         self.affine_of(idx, t, UnitQuaternion::identity());
     }
 
+    /// Rotate transducers in the specified device
     pub fn rotate_of(&mut self, idx: usize, r: UnitQuaternion) {
         self.affine_of(idx, Vector3::zeros(), r);
     }
 
+    /// Affine transform transducers in the specified device
     pub fn affine_of(&mut self, idx: usize, t: Vector3, r: UnitQuaternion) {
         self.transducers_mut_of(idx).for_each(|tr| tr.affine(t, r));
     }
 
+    #[doc(hidden)]
     pub fn device_map(&self) -> &[usize] {
         &self.device_map
     }
 
+    /// Set speed of sound from temperature
+    /// This is equivalent to `set_sound_speed_from_temp_with(temp, 1.4, 8.314463, 28.9647e-3)`
+    ///
+    /// # Arguments
+    ///
+    /// * `temp` - Temperature in Celsius
+    ///
     pub fn set_sound_speed_from_temp(&mut self, temp: float) {
         self.set_sound_speed_from_temp_with(temp, 1.4, 8.314_463, 28.9647e-3);
     }
 
+    /// Set speed of sound from temperature with air parameter
+    ///
+    /// # Arguments
+    ///
+    /// * `temp` - Temperature in Celsius
+    /// * `k` - Ratio of specific heat
+    /// * `r` - Gas constant
+    /// * `m` - Molar mass
+    ///
     pub fn set_sound_speed_from_temp_with(&mut self, temp: float, k: float, r: float, m: float) {
         self.sound_speed = (k * r * (273.15 + temp) / m).sqrt() * METER;
     }
