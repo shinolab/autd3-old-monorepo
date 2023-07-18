@@ -21,9 +21,9 @@ use super::STMProps;
 ///
 /// The sampling timing is determined by hardware, thus the sampling time is precise.
 ///
-/// GainSTM have following restrictions:
+/// GainSTM has following restrictions:
 /// - The maximum number of sampling [Gain] is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
-/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer.
+/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN]
 ///
 pub struct GainSTM<'a, T: Transducer> {
     gains: Vec<Box<dyn Gain<T> + 'a>>,
