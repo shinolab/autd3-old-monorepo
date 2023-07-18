@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ use autd3_driver::{NullBody, NullHeader};
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram to update flags (Force fan flag and reads FPGA info flag)
 #[derive(Default)]
 pub struct UpdateFlags {}
 

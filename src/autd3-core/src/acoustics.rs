@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -69,10 +69,12 @@ static DIR_COEF_D: &[float] = &[
     -4.79372835035e-06,
 ];
 
+/// Directivity
 pub trait Directivity: Send + Sync {
     fn directivity(theta_deg: float) -> float;
 }
 
+/// Directivity of T4010A1
 pub struct T4010A1 {}
 
 impl Directivity for T4010A1 {
@@ -99,6 +101,7 @@ impl Directivity for T4010A1 {
     }
 }
 
+/// Directivity of spherical wave
 pub struct Sphere {}
 
 impl Directivity for Sphere {
@@ -107,6 +110,16 @@ impl Directivity for Sphere {
     }
 }
 
+/// Calculate propagation of ultrasound wave
+///
+/// # Arguments
+///
+/// * `source_pos` - Position of source
+/// * `source_dir` - Direction of source
+/// * `attenuation` - Attenuation coefficient
+/// * `wavenumber` - Wavenumber of ultrasound
+/// * `target_pos` - Position of target
+///
 pub fn propagate<D: Directivity>(
     source_pos: &Vector3,
     source_dir: &Vector3,
