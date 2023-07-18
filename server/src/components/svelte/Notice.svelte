@@ -4,7 +4,7 @@ Project: autd-server
 Created Date: 12/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 12/07/2023
+Last Modified: 18/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -10140,7 +10140,7 @@ SOFTWARE.
                 <h3 id="MIT">MIT License</h3>
                 <h4>Used by:</h4>
                 <ul class="license-used-by">
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-link-soem 13.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-link-soem 14.0.0</a></li>
                 </ul>
                 <pre class="license-text">MIT License
 
@@ -10206,14 +10206,14 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
                 <h3 id="MIT">MIT License</h3>
                 <h4>Used by:</h4>
                 <ul class="license-used-by">
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd-server 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-core 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-driver 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-firmware-emulator 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-gain-holo 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-protobuf 13.0.0</a></li>
-                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-traits 13.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd-server 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-core 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-driver 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-firmware-emulator 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-gain-holo 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-protobuf 14.0.0</a></li>
+                    <li><a href=" https://github.com/shinolab/autd3 ">autd3-traits 14.0.0</a></li>
                     <li><a href=" http://github.com/SSheldon/rust-block ">block 0.1.6</a></li>
                     <li><a href=" https://github.com/dropbox/rust-brotli ">brotli 3.3.4</a></li>
                     <li><a href=" https://github.com/dropbox/rust-brotli-decompressor ">brotli-decompressor 2.3.4</a></li>
