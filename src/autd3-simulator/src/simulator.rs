@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -102,6 +102,7 @@ impl simulator_server::Simulator for SimulatorServer {
     }
 }
 
+/// AUTD Simulator
 #[derive(Default)]
 pub struct Simulator {
     window_width: Option<u32>,
@@ -126,41 +127,60 @@ impl Simulator {
         }
     }
 
+    /// Set window size
     pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = Some(width);
         self.window_height = Some(height);
         self
     }
 
+    /// Set vsync
     pub fn with_vsync(mut self, vsync: bool) -> Self {
         self.vsync = Some(vsync);
         self
     }
 
+    /// Set port
     pub fn with_port(mut self, port: u16) -> Self {
         self.port = Some(port);
         self
     }
 
+    /// Set GPU index
+    ///
+    /// # Arguments
+    ///
+    /// * `gpu_idx` - GPU index. If -1, use the most suitable GPU.
+    ///
     pub fn with_gpu_idx(mut self, gpu_idx: i32) -> Self {
         self.gpu_idx = Some(gpu_idx);
         self
     }
 
+    /// Set viewer settings
     pub fn with_settings(mut self, settings: ViewerSettings) -> Self {
         self.settings = settings;
         self
     }
 
+    /// Set config path where settings are saved
     pub fn with_config_path<S: AsRef<OsStr> + Sized>(mut self, config_path: S) -> Self {
         self.config_path = Some(Path::new(&config_path).to_owned());
         self
     }
 
+    /// Get viewer settings
     pub fn get_settings(&self) -> &ViewerSettings {
         &self.settings
     }
 
+    /// Run Simulator
+    ///
+    /// # Returns
+    ///
+    /// ## Platform-specific
+    ///
+    /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
     pub fn run(&mut self) -> i32 {
         spdlog::info!("Initializing window...");
 

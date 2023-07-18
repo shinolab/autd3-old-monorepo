@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -23,6 +23,7 @@ pub enum ColorMapType {
     Plasma,
 }
 
+/// Viewer settings
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ViewerSettings {
     pub window_width: u32,
