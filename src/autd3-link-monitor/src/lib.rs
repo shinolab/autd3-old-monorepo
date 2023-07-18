@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,6 +45,7 @@ pub use scarlet::colormap::ListedColorMap;
 
 use error::MonitorError;
 
+/// Link to monitoring the status of AUTD and acoustic field
 pub struct Monitor<D: Directivity, B: Backend> {
     backend: B,
     is_open: bool,
@@ -87,14 +88,14 @@ impl PlotRange {
         Self::n(&self.z_range, self.resolution)
     }
 
-    pub fn is_1d(&self) -> bool {
+    fn is_1d(&self) -> bool {
         matches!(
             (self.nx(), self.ny(), self.nz()),
             (_, 1, 1) | (1, _, 1) | (1, 1, _)
         )
     }
 
-    pub fn is_2d(&self) -> bool {
+    fn is_2d(&self) -> bool {
         if self.is_1d() {
             return false;
         }
@@ -104,23 +105,23 @@ impl PlotRange {
         )
     }
 
-    pub fn observe(n: usize, start: float, resolution: float) -> Vec<float> {
+    fn observe(n: usize, start: float, resolution: float) -> Vec<float> {
         (0..n).map(|i| start + resolution * i as float).collect()
     }
 
-    pub fn observe_x(&self) -> Vec<float> {
+    fn observe_x(&self) -> Vec<float> {
         Self::observe(self.nx(), self.x_range.start, self.resolution)
     }
 
-    pub fn observe_y(&self) -> Vec<float> {
+    fn observe_y(&self) -> Vec<float> {
         Self::observe(self.ny(), self.y_range.start, self.resolution)
     }
 
-    pub fn observe_z(&self) -> Vec<float> {
+    fn observe_z(&self) -> Vec<float> {
         Self::observe(self.nz(), self.z_range.start, self.resolution)
     }
 
-    pub fn observe_points(&self) -> Vec<Vector3> {
+    fn observe_points(&self) -> Vec<Vector3> {
         match (self.nx(), self.ny(), self.nz()) {
             (_, 1, 1) => self
                 .observe_x()
@@ -172,6 +173,7 @@ impl<B: Backend> Monitor<Sphere, B> {
 
 #[cfg(feature = "plotters")]
 impl Monitor<Sphere, PlottersBackend> {
+    /// Constructor with Plotters backend
     pub fn plotters() -> Self {
         Self::new()
     }
@@ -179,18 +181,21 @@ impl Monitor<Sphere, PlottersBackend> {
 
 #[cfg(feature = "python")]
 impl Monitor<Sphere, PythonBackend> {
-    pub fn plotters() -> Self {
+    /// Constructor with Python backend
+    pub fn python() -> Self {
         Self::new()
     }
 }
 
 impl Monitor<Sphere, NullBackend> {
+    /// Constructor with Null backend
     pub fn null() -> Self {
         Self::new()
     }
 }
 
 impl<D: Directivity, B: Backend> Monitor<D, B> {
+    /// Set directivity
     pub fn with_directivity<U: Directivity>(self) -> Monitor<U, B> {
         Monitor {
             backend: self.backend,
@@ -207,26 +212,9 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
     }
 }
 
-#[cfg(feature = "python")]
-impl<D: Directivity, B: Backend> Monitor<D, B> {
-    pub fn with_python(self) -> Monitor<D, PythonBackend> {
-        Monitor {
-            backend: PythonBackend::new(),
-            is_open: self.is_open,
-            timeout: self.timeout,
-            cpus: self.cpus,
-            _d: PhantomData,
-            animate: self.animate,
-            animate_is_stm: self.animate_is_stm,
-            animate_drives: self.animate_drives,
-            #[cfg(feature = "gpu")]
-            gpu_compute: self.gpu_compute,
-        }
-    }
-}
-
 #[cfg(feature = "gpu")]
 impl<D: Directivity, B: Backend> Monitor<D, B> {
+    /// Enable GPU acceleration
     pub fn with_gpu(self, gpu_idx: i32) -> Monitor<D, B> {
         Self {
             gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
@@ -257,6 +245,12 @@ impl Default for Monitor<Sphere, NullBackend> {
 }
 
 impl<D: Directivity, B: Backend> Monitor<D, B> {
+    /// Get phases of transducers
+    ///
+    /// # Arguments
+    ///
+    /// * `idx` - Index of STM. If you use Gain, this value should be 0.
+    ///
     pub fn phases_of(&self, idx: usize) -> Vec<float> {
         self.cpus
             .iter()
@@ -271,6 +265,12 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// Get duty ratios of transducers
+    ///
+    /// # Arguments
+    ///
+    /// * `idx` - Index of STM. If you use Gain, this value should be 0.
+    ///
     pub fn duties_of(&self, idx: usize) -> Vec<float> {
         self.cpus
             .iter()
@@ -285,14 +285,17 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// Get phases of transducers
     pub fn phases(&self) -> Vec<float> {
         self.phases_of(0)
     }
 
+    /// Get duty ratios of transducers
     pub fn duties(&self) -> Vec<float> {
         self.duties_of(0)
     }
 
+    /// Get raw modulation data
     pub fn modulation_raw(&self) -> Vec<float> {
         self.cpus[0]
             .fpga()
@@ -302,6 +305,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// Get modulation data
     pub fn modulation(&self) -> Vec<float> {
         self.modulation_raw()
             .iter()
@@ -309,6 +313,13 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// Calculate acoustic field at specified points
+    ///
+    /// # Arguments
+    ///
+    /// * `observe_points` - Observe points iterator
+    /// * `geometry` - Geometry
+    ///
     pub fn calc_field<T: Transducer, I: IntoIterator<Item = Vector3>>(
         &self,
         observe_points: I,
@@ -317,6 +328,14 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         self.calc_field_of::<T, I>(observe_points, geometry, 0)
     }
 
+    /// Calculate acoustic field at specified points
+    ///
+    /// # Arguments
+    ///
+    /// * `observe_points` - Observe points iterator
+    /// * `geometry` - Geometry
+    /// * `idx` - Index of STM. If you use Gain, this value should be 0.
+    ///
     pub fn calc_field_of<T: Transducer, I: IntoIterator<Item = Vector3>>(
         &self,
         observe_points: I,
@@ -384,6 +403,14 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// Plot acoustic field
+    ///
+    /// # Arguments
+    ///
+    /// * `range` - Plot range
+    /// * `config` - Plot configuration
+    /// * `geometry` - Geometry
+    ///
     pub fn plot_field<T: Transducer>(
         &self,
         range: PlotRange,
@@ -393,6 +420,15 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         self.plot_field_of(range, config, geometry, 0)
     }
 
+    /// Plot acoustic field
+    ///
+    /// # Arguments
+    ///
+    /// * `range` - Plot range
+    /// * `config` - Plot configuration
+    /// * `geometry` - Geometry
+    /// * `idx` - Index of STM. If you use Gain, this value should be 0.
+    ///
     pub fn plot_field_of<T: Transducer>(
         &self,
         range: PlotRange,
@@ -437,6 +473,13 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         }
     }
 
+    /// Plot transducers with phases
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - Plot configuration
+    /// * `geometry` - Geometry
+    ///
     pub fn plot_phase<T: Transducer>(
         &self,
         config: B::PlotConfig,
@@ -445,6 +488,14 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         self.plot_phase_of(config, geometry, 0)
     }
 
+    /// Plot transducers with phases
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - Plot configuration
+    /// * `geometry` - Geometry
+    /// * `idx` - Index of STM. If you use Gain, this value should be 0.
+    ///
     pub fn plot_phase_of<T: Transducer>(
         &self,
         config: B::PlotConfig,
@@ -455,16 +506,21 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         B::plot_phase(config, geometry, phases)
     }
 
+    /// Plot modulation data
     pub fn plot_modulation(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
         B::plot_modulation(self.modulation(), config)?;
         Ok(())
     }
 
+    /// Plot raw modulation data
     pub fn plot_modulation_raw(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
         B::plot_modulation(self.modulation_raw(), config)?;
         Ok(())
     }
 
+    /// Begin acoustic field animation
+    ///
+    /// From this call, the monitor will record the drive data until `end_animation` is called.
     pub fn begin_animation(&self) {
         self.animate.set(true);
         self.animate_drives.borrow_mut().clear();
@@ -522,6 +578,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
             .collect()
     }
 
+    /// End acoustic field animation and plot the result
     pub fn end_animation<T: Transducer>(
         &self,
         range: PlotRange,

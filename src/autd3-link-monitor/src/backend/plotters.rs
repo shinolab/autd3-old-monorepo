@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,6 +60,7 @@ impl Config for PlotConfig {
     }
 }
 
+/// Backend using [plotters](https://github.com/plotters-rs/plotters)
 pub struct PlottersBackend {}
 
 impl PlottersBackend {
