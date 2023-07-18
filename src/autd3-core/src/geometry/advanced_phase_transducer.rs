@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -79,14 +79,27 @@ impl Transducer for AdvancedPhaseTransducer {
 }
 
 impl AdvancedPhaseTransducer {
+    /// Set ultrasound cycle
+    /// The frequency will be [FPGA_CLK_FREQ] / `cycle`.
+    ///
+    /// # Arguments
+    ///
+    /// * `cycle` - Cycle of ultrasound (from 2 to [MAX_CYCLE])
+    ///
     pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {
-        if cycle > MAX_CYCLE {
+        if cycle < 2 || MAX_CYCLE < cycle {
             return Err(AUTDInternalError::CycleOutOfRange(cycle));
         }
         self.cycle = cycle;
         Ok(())
     }
 
+    /// Set ultrasound frequency
+    ///
+    /// # Arguments
+    ///
+    /// * `freq` - frequency of ultrasound. The frequency closest to `freq` from the possible frequencies is set.
+    ///
     pub fn set_frequency(&mut self, freq: float) -> Result<(), AUTDInternalError> {
         let cycle = (FPGA_CLK_FREQ as float / freq).round() as u16;
         self.set_cycle(cycle)
