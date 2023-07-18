@@ -41,7 +41,9 @@ impl<T: Transducer> Default for ControllerBuilder<T> {
 }
 
 impl<T: Transducer> ControllerBuilder<T> {
-    fn new() -> ControllerBuilder<T> {
+    #[doc(hidden)]
+    /// This is used only for capi.
+    pub fn new() -> ControllerBuilder<T> {
         Self {
             attenuation: 0.0,
             sound_speed: 340.0 * METER,

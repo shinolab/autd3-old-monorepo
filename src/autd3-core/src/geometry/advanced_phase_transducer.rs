@@ -87,7 +87,7 @@ impl AdvancedPhaseTransducer {
     /// * `cycle` - Cycle of ultrasound (from 2 to [MAX_CYCLE])
     ///
     pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {
-        if cycle < 2 || MAX_CYCLE < cycle {
+        if !(2..=MAX_CYCLE).contains(&cycle) {
             return Err(AUTDInternalError::CycleOutOfRange(cycle));
         }
         self.cycle = cycle;
