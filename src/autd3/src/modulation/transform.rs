@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_traits::Modulation;
 
+/// Modulation to transform modulation data
 #[derive(Modulation)]
 pub struct TransformImpl<M: Modulation, F: Fn(usize, &float) -> float> {
     m: M,
@@ -22,6 +23,12 @@ pub struct TransformImpl<M: Modulation, F: Fn(usize, &float) -> float> {
 }
 
 pub trait Transform<M: Modulation> {
+    /// transform modulation data
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - transform function. The first argument is index of the element, and the second argument is the value of the element of the original modulation data.
+    ///
     fn with_transform<F: Fn(usize, &float) -> float>(self, f: F) -> TransformImpl<M, F>;
 }
 
@@ -50,8 +57,8 @@ mod tests {
 
     #[test]
     fn test_transform_impl() {
-        let mut m = Sine::new(100).with_amp(0.5);
-        let mut m_transformed = m.with_transform(|i, x| i as float * x);
+        let m = Sine::new(100).with_amp(0.5);
+        let m_transformed = m.with_transform(|i, x| i as float * x);
 
         let vec = m.calc().unwrap();
         let vec_transformed = m_transformed.calc().unwrap();

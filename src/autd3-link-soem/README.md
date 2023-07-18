@@ -2,9 +2,12 @@
 
 This crate provides link using [SOEM](https://github.com/OpenEtherCATsociety/SOEM).
 
-## build
+# Dependencies
 
-This crate uses [bindgen](https://github.com/rust-lang/rust-bindgen), so please see the [bindgen requirements](https://rust-lang.github.io/rust-bindgen/requirements.html) to compile.
+## With `remote` feature
+
+This library depends on [tonic](https://github.com/hyperium/tonic).
+To build this library, see the above link and follow the instructions.
 
 # Notice
 

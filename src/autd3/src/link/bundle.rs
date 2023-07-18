@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ use autd3_core::{
     RxDatagram, TxDatagram,
 };
 
+/// Link to bundle two links
 pub struct Bundle<T: Transducer, L1: Link<T>, L2: Link<T>> {
     main_link: L1,
     sub_link: L2,
@@ -27,6 +28,15 @@ pub struct Bundle<T: Transducer, L1: Link<T>, L2: Link<T>> {
 }
 
 impl<T: Transducer, L1: Link<T>, L2: Link<T>> Bundle<T, L1, L2> {
+    /// constructor
+    ///
+    /// Data is sent to both `main_link` and `sub_link`, but the received data is used from `main_link`. Also, the larger timeout of `main_link` and `sub_link` is used.
+    ///
+    /// # Arguments
+    ///
+    /// * `main_link` - main link
+    /// * `sub_link` - sub link
+    ///
     pub fn new(main_link: L1, sub_link: L2) -> Self {
         Self {
             main_link,

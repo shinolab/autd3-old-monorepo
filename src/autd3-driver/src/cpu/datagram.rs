@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/06/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -228,6 +228,15 @@ impl RxDatagram {
 
     pub fn copy_from(&mut self, src: &RxDatagram) {
         self.data.copy_from_slice(&src.data);
+    }
+
+    pub fn copy_from_iter<I: IntoIterator<Item = RxMessage>>(&mut self, src: I) {
+        self.data
+            .iter_mut()
+            .zip(src.into_iter())
+            .for_each(|(dst, src)| {
+                *dst = src;
+            });
     }
 }
 

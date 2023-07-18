@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ use autd3_firmware_emulator::CPUEmulator;
 
 use spdlog::prelude::*;
 
+/// Link to debug
 pub struct Debug {
     is_open: bool,
     timeout: Duration,
@@ -44,15 +45,20 @@ impl Debug {
         }
     }
 
+    /// set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }
 
+    /// set log level
     pub fn with_log_level(self, level: LevelFilter) -> Self {
         self.logger.set_level_filter(level);
         self
     }
 
+    /// set logger
+    ///
+    /// By default, the logger will display log messages on the console.
     pub fn with_logger(self, logger: Logger) -> Self {
         Self { logger, ..self }
     }

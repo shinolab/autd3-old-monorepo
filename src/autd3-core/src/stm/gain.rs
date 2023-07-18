@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,14 @@ use autd3_driver::{float, GainSTMProps, Mode};
 
 use super::STMProps;
 
+/// GainSTM is an STM for moving [Gain].
+///
+/// The sampling timing is determined by hardware, thus the sampling time is precise.
+///
+/// GainSTM has following restrictions:
+/// - The maximum number of sampling [Gain] is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
+/// - The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN]
+///
 pub struct GainSTM<'a, T: Transducer> {
     gains: Vec<Box<dyn Gain<T> + 'a>>,
     mode: Mode,
@@ -24,22 +32,26 @@ pub struct GainSTM<'a, T: Transducer> {
 }
 
 impl<'a, T: Transducer> GainSTM<'a, T> {
+    /// Set the mode of GainSTM
     pub fn with_mode(self, mode: Mode) -> Self {
         Self { mode, ..self }
     }
 }
 
 impl<'a, T: Transducer> GainSTM<'a, T> {
+    /// Add a [Gain] to GainSTM
     pub fn add_gain<G: Gain<T> + 'a>(mut self, gain: G) -> Self {
         self.gains.push(Box::new(gain));
         self
     }
 
+    /// Add a boxed [Gain] to GainSTM
     pub fn add_gain_boxed(mut self, gain: Box<dyn Gain<T>>) -> Self {
         self.gains.push(gain);
         self
     }
 
+    /// Add boxed [Gain]s from iterator to GainSTM
     pub fn add_gains_from_iter<I: IntoIterator<Item = Box<dyn Gain<T> + 'a>>>(
         mut self,
         iter: I,
@@ -48,18 +60,35 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         self
     }
 
+    #[doc(hidden)]
+    /// This is used only for capi.
     pub fn gains(&self) -> &[Box<dyn Gain<T> + 'a>] {
         &self.gains
-    }
-
-    pub fn gains_mut(&mut self) -> &mut [Box<dyn Gain<T> + 'a>] {
-        &mut self.gains
     }
 
     pub fn mode(&self) -> Mode {
         self.mode
     }
 
+    /// get Gain of specified index
+    ///
+    /// # Arguments
+    ///
+    /// * `idx` - index
+    ///
+    /// # Returns
+    ///
+    /// * Gain of specified index if the type is matched, otherwise None
+    ///
+    pub fn get_gain<G: Gain<T> + 'static>(&'a self, idx: usize) -> Option<&'a G> {
+        if idx >= self.gains.len() {
+            return None;
+        }
+        self.gains[idx].as_any().downcast_ref::<G>()
+    }
+
+    #[doc(hidden)]
+    /// This is used only for capi.
     pub fn with_props(props: STMProps) -> Self {
         Self {
             gains: Vec::new(),
@@ -68,6 +97,8 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
+    #[doc(hidden)]
+    /// This is used only for capi.
     pub fn with_props_mode(props: STMProps, mode: Mode) -> Self {
         Self {
             gains: Vec::new(),
@@ -78,6 +109,12 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
 }
 
 impl<'a, T: Transducer> GainSTM<'a, T> {
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
+    ///
     pub fn new(freq: float) -> Self {
         Self {
             gains: vec![],
@@ -86,6 +123,12 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/`freq_div`.
+    ///
     pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
             gains: vec![],
@@ -94,6 +137,12 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `freq` - Sampling frequency of STM. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
+    ///
     pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
             gains: vec![],
@@ -102,6 +151,7 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
+    /// Set the start index of STM
     pub fn with_start_idx(self, idx: Option<u16>) -> Self {
         Self {
             props: self.props.with_start_idx(idx),
@@ -109,6 +159,7 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
+    /// Set the finish index of STM
     pub fn with_finish_idx(self, idx: Option<u16>) -> Self {
         Self {
             props: self.props.with_finish_idx(idx),
@@ -124,6 +175,8 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         self.props.finish_idx()
     }
 
+    #[doc(hidden)]
+    /// This is used only for internal.
     pub fn size(&self) -> usize {
         self.gains.len()
     }
@@ -168,11 +221,19 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::gain::GainAsAny;
+
     use super::*;
     use assert_approx_eq::assert_approx_eq;
     use autd3_driver::FPGA_SUB_CLK_FREQ;
 
     struct NullGain {}
+
+    impl GainAsAny for NullGain {
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
 
     impl<T: Transducer> Gain<T> for NullGain {
         fn calc(&self, _: &Geometry<T>) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,10 +24,12 @@ use autd3_core::{
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
 
+/// Gain to produce multiple foci by solving Eigen Value Problem
+///
 /// Reference
 /// * Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
 #[derive(Gain)]
-pub struct EVP<B: Backend> {
+pub struct EVP<B: Backend + 'static> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     gamma: float,
@@ -37,7 +39,7 @@ pub struct EVP<B: Backend> {
 
 impl_holo!(B, EVP<B>);
 
-impl<B: Backend> EVP<B> {
+impl<B: Backend + 'static> EVP<B> {
     pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
@@ -57,7 +59,7 @@ impl<B: Backend> EVP<B> {
     }
 }
 
-impl<B: Backend, T: Transducer> Gain<T> for EVP<B> {
+impl<B: Backend + 'static, T: Transducer> Gain<T> for EVP<B> {
     fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let g = generate_propagation_matrix(geometry, &self.foci);
         let q = self.backend.evp(self.gamma, &self.amps, g)?;

@@ -79,38 +79,29 @@ void AUTDSetAttenuation(GeometryPtr geo, double value);
 
 [[nodiscard]] uint32_t AUTDNumDevices(GeometryPtr geo);
 
-void AUTDGeometryCenter(GeometryPtr geo, double *x, double *y, double *z);
+void AUTDGeometryCenter(GeometryPtr geo, double *center);
 
-void AUTDGeometryCenterOf(GeometryPtr geo, uint32_t dev_idx, double *x, double *y, double *z);
+void AUTDGeometryCenterOf(GeometryPtr geo, uint32_t dev_idx, double *center);
 
-void AUTDTransPosition(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
+void AUTDTransPosition(GeometryPtr geo, uint32_t tr_idx, double *pos);
 
-void AUTDTransRotation(GeometryPtr geo,
-                       uint32_t tr_idx,
-                       double *w,
-                       double *x,
-                       double *y,
-                       double *z);
+void AUTDTransRotation(GeometryPtr geo, uint32_t tr_idx, double *rot);
 
-void AUTDTransXDirection(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
+void AUTDTransXDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
 
-void AUTDTransYDirection(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
+void AUTDTransYDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
 
-void AUTDTransZDirection(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
+void AUTDTransZDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
 
 [[nodiscard]] uint16_t AUTDGetTransModDelay(GeometryPtr geo, uint32_t tr_idx);
 
 void AUTDSetTransModDelay(GeometryPtr geo, uint32_t tr_idx, uint16_t delay);
 
-[[nodiscard]] bool AUTDGetFPGAInfo(ControllerPtr cnt, const uint8_t *out, char *err);
+[[nodiscard]] bool AUTDGetFPGAInfo(ControllerPtr cnt, uint8_t *out, char *err);
 
 [[nodiscard]] FirmwareInfoListPtr AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, char *err);
 
-void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list,
-                         uint32_t idx,
-                         char *info,
-                         bool *is_valid,
-                         bool *is_supported);
+void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info, bool *props);
 
 void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPtr p_info_list);
 

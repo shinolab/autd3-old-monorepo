@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 17/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,14 +82,6 @@ async fn save_settings(handle: tauri::AppHandle, options: &str) -> Result<(), St
 }
 
 #[tauri::command]
-fn fetch_ifnames() -> Vec<String> {
-    autd3_link_soem::EthernetAdapters::new()
-        .into_iter()
-        .map(|adapter| adapter.to_string())
-        .collect()
-}
-
-#[tauri::command]
 async fn copy_autd_xml(
     handle: tauri::AppHandle,
     console_emu_input_tx: tauri::State<'_, Sender<String>>,
@@ -131,7 +123,6 @@ async fn run_twincat_server(
     handle: tauri::AppHandle,
     console_emu_input_tx: tauri::State<'_, Sender<String>>,
 ) -> Result<(), String> {
-    dbg!(twincat_options);
     let twincat_autd_server_path = handle
         .path_resolver()
         .resolve_resource("TwinCATAUTDServer/TwinCATAUTDServer.exe")
@@ -151,8 +142,8 @@ async fn run_twincat_server(
         twincat_options.base.to_string(),
         "-m".to_string(),
         match twincat_options.mode {
-            autd3_link_soem::SyncMode::DC => "DC".to_string(),
-            autd3_link_soem::SyncMode::FreeRun => "FreeRun".to_string(),
+            autd3_core::sync_mode::SyncMode::DC => "DC".to_string(),
+            autd3_core::sync_mode::SyncMode::FreeRun => "FreeRun".to_string(),
         },
     ];
     if twincat_options.keep {
@@ -190,6 +181,34 @@ async fn run_twincat_server(
     Ok(())
 }
 
+#[tauri::command]
+async fn open_xae_shell() -> Result<(), String> {
+    let path = std::env::var("TEMP").unwrap_or_default();
+    let path = std::path::Path::new(&path)
+        .join("TwinCATAUTDServer")
+        .join("TwinCATAUTDServer.sln");
+
+    let xae_shell = std::path::Path::new("C:\\")
+        .join("Program Files (x86)")
+        .join("Beckhoff")
+        .join("TcXaeShell")
+        .join("Common7")
+        .join("IDE")
+        .join("TcXaeShell.exe");
+
+    if path.exists() {
+        Command::new(&xae_shell).arg(&path).spawn()
+    } else {
+        Command::new(&xae_shell).spawn()
+    }
+    .map_err(|e| e.to_string())?
+    .wait()
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
     tauri::async_runtime::set(tokio::runtime::Handle::current());
@@ -218,9 +237,9 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             load_settings,
             save_settings,
-            fetch_ifnames,
             copy_autd_xml,
-            run_twincat_server
+            run_twincat_server,
+            open_xae_shell
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

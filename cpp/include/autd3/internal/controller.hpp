@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2023
+// Last Modified: 13/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,10 +75,10 @@ class Controller {
   Controller() = delete;
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) : _geometry(std::move(obj._geometry)), _ptr(std::move(obj._ptr)), _mode(std::move(obj._mode)) {
+  Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(std::move(obj._ptr)), _mode(std::move(obj._mode)) {
     obj._ptr._0 = nullptr;
   }
-  Controller& operator=(Controller&& obj) {
+  Controller& operator=(Controller&& obj) noexcept {
     if (this != &obj) {
       if (_ptr._0 != nullptr) AUTDFreeController(_ptr);
 
@@ -125,9 +125,9 @@ class Controller {
     std::vector<FirmwareInfo> ret;
     for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
       char info[256]{};
-      bool is_valid, is_supported;
-      AUTDGetFirmwareInfo(handle, i, info, &is_valid, &is_supported);
-      ret.emplace_back(std::string(info), is_valid, is_supported);
+      bool props[2];
+      AUTDGetFirmwareInfo(handle, i, info, props);
+      ret.emplace_back(std::string(info), props[0], props[1]);
     }
     AUTDFreeFirmwareInfoListPointer(handle);
     return ret;

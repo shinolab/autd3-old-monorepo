@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use autd3_traits::Modulation;
 
 use num::integer::gcd;
 
-/// Sine wave modulation in ultrasound amplitude
+/// Square wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Square {
     freq: usize,
@@ -35,7 +35,7 @@ impl Square {
     ///
     /// # Arguments
     ///
-    /// * `freq` - Frequency of the sine wave
+    /// * `freq` - Frequency of the square wave
     ///
     pub fn new(freq: usize) -> Self {
         Self {
@@ -47,31 +47,31 @@ impl Square {
         }
     }
 
-    /// set low
+    /// set low level amplitude
     ///
     /// # Arguments
     ///
-    /// * `low` - low value
+    /// * `low` - low level amplitude (from 0 to 1)
     ///
     pub fn with_low(self, low: float) -> Self {
         Self { low, ..self }
     }
 
-    /// set high
+    /// set high level amplitude
     ///
     /// # Arguments
     ///
-    /// * `high` - high value
+    /// * `high` - high level amplitude (from 0 to 1)
     ///     
     pub fn with_high(self, high: float) -> Self {
         Self { high, ..self }
     }
 
-    /// set duty
+    /// set duty ratio which is defined as `Th / (Th + Tl)`, where `Th` is high level duration, and `Tl` is low level duration.
     ///
     /// # Arguments
     ///     
-    /// * `duty` - duty
+    /// * `duty` - duty ratio
     ///
     pub fn with_duty(self, duty: float) -> Self {
         Self { duty, ..self }
@@ -126,7 +126,7 @@ mod tests {
             0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         ];
-        let mut m = Square::new(150);
+        let m = Square::new(150);
         assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn test_square_with_low() {
-        let mut m = Square::new(150).with_low(1.0);
+        let m = Square::new(150).with_low(1.0);
         m.calc().unwrap().iter().for_each(|a| {
             assert_approx_eq::assert_approx_eq!(a, 1.0);
         });
@@ -147,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_square_with_high() {
-        let mut m = Square::new(150).with_high(0.0);
+        let m = Square::new(150).with_high(0.0);
         m.calc().unwrap().iter().for_each(|a| {
             assert_approx_eq::assert_approx_eq!(a, 0.0);
         });
@@ -155,12 +155,12 @@ mod tests {
 
     #[test]
     fn test_square_with_duty() {
-        let mut m = Square::new(150).with_duty(0.0);
+        let m = Square::new(150).with_duty(0.0);
         m.calc().unwrap().iter().for_each(|a| {
             assert_approx_eq::assert_approx_eq!(a, 0.0);
         });
 
-        let mut m = Square::new(150).with_duty(1.0);
+        let m = Square::new(150).with_duty(1.0);
         m.calc().unwrap().iter().for_each(|a| {
             assert_approx_eq::assert_approx_eq!(a, 1.0);
         });

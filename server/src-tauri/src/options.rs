@@ -4,7 +4,7 @@
  * Created Date: 06/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use autd3_core::timer_strategy::TimerStrategy;
-use autd3_link_soem::SyncMode;
+use autd3_core::{sync_mode::SyncMode, timer_strategy::TimerStrategy};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TwinCATOptions {

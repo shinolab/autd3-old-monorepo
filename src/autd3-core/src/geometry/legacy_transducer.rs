@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -67,24 +67,6 @@ impl Transducer for LegacyTransducer {
 
     fn set_mod_delay(&mut self, delay: u16) {
         self.mod_delay = delay;
-    }
-
-    fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
-        let dir: UnitQuaternion =
-            UnitQuaternion::from_quaternion(super::Quaternion::from_imag(dir));
-        (rotation * dir * rotation.conjugate()).imag().normalize()
-    }
-
-    fn x_direction(&self) -> Vector3 {
-        Self::get_direction(Vector3::x(), self.rotation())
-    }
-
-    fn y_direction(&self) -> Vector3 {
-        Self::get_direction(Vector3::y(), self.rotation())
-    }
-
-    fn z_direction(&self) -> Vector3 {
-        Self::get_direction(Vector3::z(), self.rotation())
     }
 
     fn cycle(&self) -> u16 {

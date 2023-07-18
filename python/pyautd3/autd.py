@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
-from ctypes import byref, c_bool
+from ctypes import c_bool
 import numpy as np
 from typing import List, Optional, Tuple, Union
 
@@ -218,13 +218,11 @@ class Controller:
 
         def get_firmware_info(i: int) -> FirmwareInfo:
             sb = ctypes.create_string_buffer(256)
-            is_valid = c_bool(False)
-            is_supported = c_bool(False)
-            Base().get_firmware_info(
-                handle, i, sb, byref(is_valid), byref(is_supported)
-            )
+            props = np.zeros([2]).astype(c_bool)
+            propsp = np.ctypeslib.as_ctypes(props)
+            Base().get_firmware_info(handle, i, sb, propsp)
             info = sb.value.decode("utf-8")
-            return FirmwareInfo(info, is_valid.value, is_supported.value)
+            return FirmwareInfo(info, props[0], props[1])
 
         res = list(map(get_firmware_info, range(self.geometry.num_devices)))
 
@@ -245,7 +243,7 @@ class Controller:
 
     @property
     def fpga_info(self) -> List[FPGAInfo]:
-        infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
+        infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         err = ctypes.create_string_buffer(256)
         if not Base().get_fpga_info(self._ptr, pinfos, err):

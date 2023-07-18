@@ -1,17 +1,17 @@
 [package]
 name = "autd3-link-twincat"
-version = "13.0.0"
+version = "14.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
-license = "MIT"
+license-file = "LICENSE"
 description = "Link of AUTD using TwinCAT."
 repository = "https://github.com/shinolab/autd3"
 readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="13.0.0"}
+autd3-core = {path="../autd3-core", version="14.0.0"}
 itertools = "0.11.0"
 libc = "0.2.125"
 libloading = "0.8.0"

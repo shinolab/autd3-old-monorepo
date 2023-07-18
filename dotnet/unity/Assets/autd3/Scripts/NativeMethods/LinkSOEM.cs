@@ -14,7 +14,9 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_link_soem";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGetAdapterPointer(out uint len);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGetAdapterPointer();
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDGetAdapterSize(IntPtr adapters);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetAdapter(IntPtr adapters, uint idx, byte[] desc, byte[] name);
 

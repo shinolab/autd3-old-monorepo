@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,12 +16,14 @@ use autd3_traits::Gain;
 
 use std::ops::{Deref, DerefMut};
 
+/// Gain to cache the result of calculation
 #[derive(Gain)]
 pub struct CacheImpl {
     cache: Vec<Drive>,
 }
 
 pub trait Cache<T: Transducer, G: Gain<T>> {
+    /// Cache the result of calculation
     fn with_cache(self, geometry: &Geometry<T>) -> Result<CacheImpl, AUTDInternalError>;
 }
 
@@ -41,7 +43,7 @@ impl Clone for CacheImpl {
 
 impl CacheImpl {
     /// constructor
-    pub fn new<T: Transducer, G: Gain<T>>(
+    fn new<T: Transducer, G: Gain<T>>(
         gain: G,
         geometry: &Geometry<T>,
     ) -> Result<Self, AUTDInternalError> {
@@ -50,10 +52,12 @@ impl CacheImpl {
         })
     }
 
+    /// get cached drives
     pub fn drives(&self) -> &[Drive] {
         &self.cache
     }
 
+    /// get cached drives mutably
     pub fn drives_mut(&mut self) -> &mut [Drive] {
         &mut self.cache
     }

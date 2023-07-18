@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -239,6 +239,7 @@ macro_rules! cpy_device_to_host {
     }};
 }
 
+/// Backend using CUDA
 pub struct CUDABackend {
     handle: cuda_sys::cublas::cublasHandle_t,
     handle_s: cusolver::cusolverDnHandle_t,

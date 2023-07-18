@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -100,10 +100,10 @@ impl ImGuiRenderer {
         }
     }
 
-    pub fn init(&mut self, cpus: &[CPUEmulator]) {
-        self.visible = vec![true; cpus.len()];
-        self.enable = vec![true; cpus.len()];
-        self.thermal = vec![false; cpus.len()];
+    pub fn init(&mut self, dev_num: usize) {
+        self.visible = vec![true; dev_num];
+        self.enable = vec![true; dev_num];
+        self.thermal = vec![false; dev_num];
     }
 
     pub fn resized<T>(&mut self, window: &Window, event: &Event<T>) {

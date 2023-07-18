@@ -4,7 +4,7 @@
  * Created Date: 05/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/10/2022
+ * Last Modified: 15/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using TwinCAT.Ads;
+using System.Text.RegularExpressions;
 
 namespace TwinCATAUTDServer
 {
@@ -90,6 +91,16 @@ namespace TwinCATAUTDServer
                 Console.WriteLine("Activating and Restarting TwinCAT3...");
                 sysManager.ActivateConfiguration();
                 sysManager.StartRestartTwinCAT();
+
+                if (ipAddr != null)
+                {
+                    var system = sysManager.LookupTreeItem("SYSTEM");
+                    var systemXml = system.ProduceXml(true);
+                    var amsNetIdReg = Regex.Match(systemXml, @"<AmsNetId>(?<AmsNetId>.*)</AmsNetId>").Groups["AmsNetId"].Value;
+                    Console.WriteLine($"Server AmsNetId: {amsNetIdReg}");
+                    Console.WriteLine($"Client AmsNetId: {ipAddr}.1.1");
+                }
+
                 Console.WriteLine($"Saving the Project...");
                 SaveProject(dte, project, solutionPath);
                 if (!_keep) dte.Quit();
