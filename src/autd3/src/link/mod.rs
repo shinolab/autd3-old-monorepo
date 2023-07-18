@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ pub use bundle::Bundle;
 pub use debug::Debug;
 pub use log::Log;
 
+/// Link to do nothing
 pub struct NullLink {}
 
 impl<T: Transducer> Link<T> for NullLink {

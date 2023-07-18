@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_traits::Modulation;
 
-/// Sine wave modulation in ultrasound amplitude
+/// Without modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Static {
     amp: float,
@@ -22,7 +22,7 @@ pub struct Static {
 }
 
 impl Static {
-    /// constructor.
+    /// constructor
     pub fn new() -> Self {
         Self {
             amp: 1.0,
@@ -34,7 +34,7 @@ impl Static {
     ///
     /// # Arguments
     ///
-    /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
+    /// * `amp` - normalized amplitude of the ultrasound (from 0 to 1)
     ///
     pub fn with_amp(self, amp: float) -> Self {
         Self { amp, ..self }

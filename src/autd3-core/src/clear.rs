@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use autd3_driver::NullBody;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram for clear all data in devices
 #[derive(Default)]
 pub struct Clear {}
 

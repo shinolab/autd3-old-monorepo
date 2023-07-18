@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -36,11 +36,11 @@ pub type Matrix3 = cgmath::Matrix3<f32>;
 pub type Matrix4 = cgmath::Matrix4<f32>;
 
 #[cfg(feature = "use_meter")]
-pub const SCALE: f32 = 1e-3;
+pub(crate) const SCALE: f32 = 1e-3;
 #[cfg(not(feature = "use_meter"))]
-pub const SCALE: f32 = 1.;
+pub(crate) const SCALE: f32 = 1.;
 
 #[cfg(feature = "left_handed")]
-pub const ZPARITY: f32 = -1.;
+pub(crate) const ZPARITY: f32 = -1.;
 #[cfg(not(feature = "left_handed"))]
-pub const ZPARITY: f32 = 1.;
+pub(crate) const ZPARITY: f32 = 1.;

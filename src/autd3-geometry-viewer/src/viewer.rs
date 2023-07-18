@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,6 +33,7 @@ use winit::{
     platform::run_return::EventLoopExtRunReturn,
 };
 
+/// Viewer for [autd3_core::geometry::Geometry]
 #[derive(Default)]
 pub struct GeometryViewer {
     window_height: u32,
@@ -49,17 +50,30 @@ impl GeometryViewer {
         }
     }
 
+    /// Set window size
     pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = width;
         self.window_height = height;
         self
     }
 
+    /// Set vsync
     pub fn with_vsync(mut self, vsync: bool) -> Self {
         self.vsync = vsync;
         self
     }
 
+    /// Run viewer
+    ///
+    /// # Arguments
+    ///
+    /// * `geometry` - Geometry
+    ///
+    /// # Returns
+    ///
+    /// ## Platform-specific
+    ///
+    /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
     pub fn run<T: Transducer>(&mut self, geometry: &Geometry<T>) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
         let mut render = Renderer::new(

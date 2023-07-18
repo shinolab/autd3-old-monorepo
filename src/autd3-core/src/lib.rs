@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,6 +22,7 @@ pub mod gain;
 pub mod geometry;
 pub mod link;
 pub mod modulation;
+#[doc(hidden)]
 pub mod osal_timer;
 pub mod silencer_config;
 pub mod stm;

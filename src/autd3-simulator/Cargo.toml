@@ -7,6 +7,7 @@ edition = "2021"
 license = "MIT"
 description = "AUTD Simulator"
 repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]

@@ -1,6 +1,4 @@
-# autd3-link-simulator
-
-This crate provides a link for AUTD Simulator.
+# AUTD Simulator
 
 # Dependencies
 
@@ -9,4 +7,4 @@ To build this library, see the above link and follow the instructions.
 
 # Author
 
-Shun Suzuki, 2022-2023
+Shun Suzuki, 2023

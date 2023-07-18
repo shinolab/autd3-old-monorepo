@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -32,6 +32,7 @@ enum Either {
     V6(Ipv6Addr),
 }
 
+/// Link for Simulator
 pub struct Simulator {
     client: Option<simulator_client::SimulatorClient<tonic::transport::Channel>>,
     addr: Either,
@@ -55,10 +56,12 @@ impl Simulator {
         }
     }
 
+    /// Set server IP address
     pub fn with_server_ip(self, ipv4: Ipv4Addr) -> Self {
         self.with_server_ipv4(ipv4)
     }
 
+    /// Set server IP address
     pub fn with_server_ipv4(self, ipv4: Ipv4Addr) -> Self {
         Self {
             addr: Either::V4(ipv4),
@@ -66,6 +69,7 @@ impl Simulator {
         }
     }
 
+    /// Set server IP address
     pub fn with_server_ipv6(self, ipv6: Ipv6Addr) -> Self {
         Self {
             addr: Either::V6(ipv6),
@@ -73,6 +77,7 @@ impl Simulator {
         }
     }
 
+    /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
     }

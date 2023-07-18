@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use autd3_core::{clear::Clear, geometry::Transducer, synchronize::Synchronize};
 
 use crate::traits::*;
 
+/// Client of AUTD with lightweight mode
 pub struct LightweightClient {
     client: crate::pb::ecat_light_client::EcatLightClient<tonic::transport::Channel>,
 }
@@ -37,13 +38,14 @@ impl Default for LightweightClientBuilder {
 }
 
 impl LightweightClientBuilder {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             transducers: vec![],
             device_map: vec![],
         }
     }
 
+    /// Add device
     pub fn add_device<D: autd3_core::geometry::Device>(mut self, dev: D) -> Self {
         let id = self.transducers.len();
         let mut t = dev.get_transducers(id);
@@ -52,6 +54,7 @@ impl LightweightClientBuilder {
         self
     }
 
+    /// Open connection
     pub async fn open(
         self,
         addr: SocketAddr,
@@ -75,6 +78,7 @@ impl LightweightClientBuilder {
 }
 
 impl LightweightClient {
+    /// Create Client builder
     pub fn builder() -> LightweightClientBuilder {
         LightweightClientBuilder::new()
     }
@@ -99,6 +103,12 @@ impl LightweightClient {
         Ok(client)
     }
 
+    /// Get firmware information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
+    ///
     pub async fn firmware_infos(
         &mut self,
     ) -> Result<Vec<autd3_core::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
@@ -114,6 +124,7 @@ impl LightweightClient {
         Ok(Vec::from_msg(&res))
     }
 
+    /// set force fan flag
     pub async fn force_fan(&mut self, value: bool) -> Result<(), crate::error::AUTDProtoBufError> {
         let res = self
             .client
@@ -126,6 +137,7 @@ impl LightweightClient {
         Ok(())
     }
 
+    /// set reads fpga info flag
     pub async fn reads_fpga_info(
         &mut self,
         value: bool,
@@ -141,6 +153,12 @@ impl LightweightClient {
         Ok(())
     }
 
+    /// Get FPGA information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FPGAInfo>)` - List of FPGA information
+    ///
     pub async fn fpga_info(
         &mut self,
     ) -> Result<Vec<autd3_core::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
@@ -155,6 +173,17 @@ impl LightweightClient {
         Ok(Vec::from_msg(&res))
     }
 
+    /// Send data to the devices
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - Datagram
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
+    ///
     pub async fn send<D: ToMessage<Message = crate::pb::Datagram>>(
         &mut self,
         datagram: D,
@@ -170,6 +199,7 @@ impl LightweightClient {
         Ok(res.success)
     }
 
+    // Close connection
     pub async fn close(mut self) -> Result<(), crate::error::AUTDProtoBufError> {
         let res = self
             .client

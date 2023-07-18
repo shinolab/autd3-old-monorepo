@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ use spdlog::{
 
 type SinkErrorHandler = Atomic<Option<ErrorHandler>>;
 
+/// logger with custom output and flush callback
 pub struct CustomSink<O, F>
 where
     O: Fn(&str) -> spdlog::Result<()> + Send + Sync,
@@ -99,6 +100,7 @@ where
     vec![Arc::new(CustomSink::new(out, flush))]
 }
 
+/// Create default logger
 pub fn get_logger() -> Logger {
     Logger::builder()
         .sinks(get_default_sink())
@@ -107,6 +109,7 @@ pub fn get_logger() -> Logger {
         .unwrap()
 }
 
+/// Create logger with custom output and flush callback
 pub fn get_logger_with_custom_func<O, F>(out: O, flush: F) -> Logger
 where
     O: Fn(&str) -> spdlog::Result<()> + Send + Sync + 'static,

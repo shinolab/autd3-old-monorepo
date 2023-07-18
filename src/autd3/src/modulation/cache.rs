@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use autd3_traits::Modulation;
 
 use std::ops::{Deref, DerefMut};
 
+/// Modulation to cache the result of calculation
 #[derive(Modulation)]
 pub struct CacheImpl {
     cache: Vec<float>,
@@ -23,6 +24,7 @@ pub struct CacheImpl {
 }
 
 pub trait Cache<M: Modulation> {
+    /// Cache the result of calculation
     fn with_cache(self) -> Result<CacheImpl, AUTDInternalError>;
 }
 
@@ -51,10 +53,12 @@ impl CacheImpl {
         })
     }
 
+    /// get cached modulation data
     pub fn buffer(&self) -> &[float] {
         &self.cache
     }
 
+    /// get cached modulation data mutably
     pub fn buffer_mut(&mut self) -> &mut [float] {
         &mut self.cache
     }

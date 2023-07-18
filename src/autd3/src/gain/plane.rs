@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_core::{
 
 use autd3_traits::Gain;
 
-/// Gain to produce single focal point
+/// Gain to produce plane wave
 #[derive(Gain, Clone, Copy)]
 pub struct Plane {
     amp: float,
@@ -33,7 +33,7 @@ impl Plane {
     ///
     /// # Arguments
     ///
-    /// * `dir` - direction
+    /// * `dir` - direction of plane wave
     ///
     pub fn new(dir: Vector3) -> Self {
         Self { dir, amp: 1.0 }
