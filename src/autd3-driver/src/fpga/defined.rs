@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,15 +13,19 @@
 
 use crate::{float, RxMessage, METER, PI};
 
+/// FPGA main clock frequency
 pub const FPGA_CLK_FREQ: usize = 163840000;
 pub const FPGA_SUB_CLK_FREQ_DIV: usize = 8;
+/// FPGA sub clock frequency
 pub const FPGA_SUB_CLK_FREQ: usize = FPGA_CLK_FREQ / FPGA_SUB_CLK_FREQ_DIV;
 
 pub const FOCUS_STM_FIXED_NUM_UNIT: float = 0.025e-3 * METER;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Drive {
+    /// Phase of ultrasound (from 0 to 2π)
     pub phase: float,
+    /// Normalized amplitude of ultrasound (from 0 to 1)
     pub amp: float,
 }
 
@@ -79,6 +83,7 @@ impl AdvancedDriveDuty {
     }
 }
 
+/// FPGA information
 #[derive(Default)]
 #[repr(C)]
 pub struct FPGAInfo {
@@ -90,6 +95,7 @@ impl FPGAInfo {
         Self { info }
     }
 
+    /// Check if thermal sensor is asserted
     pub fn is_thermal_assert(&self) -> bool {
         (self.info & 0x01) != 0
     }
