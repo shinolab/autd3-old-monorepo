@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use autd3_driver::NullBody;
+use autd3_driver::ExclusiveNullBody;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
@@ -28,7 +28,7 @@ impl Clear {
 
 impl<T: Transducer> Datagram<T> for Clear {
     type H = autd3_driver::Clear;
-    type B = NullBody;
+    type B = ExclusiveNullBody;
 
     fn timeout(&self) -> Option<Duration> {
         Some(Duration::from_millis(200))

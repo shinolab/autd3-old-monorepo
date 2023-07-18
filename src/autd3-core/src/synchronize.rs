@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use autd3_driver::NullHeader;
+use autd3_driver::ExclusiveNullHeader;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
@@ -27,7 +27,7 @@ impl Synchronize {
 }
 
 impl<T: Transducer> Datagram<T> for Synchronize {
-    type H = NullHeader;
+    type H = ExclusiveNullHeader;
     type B = T::Sync;
 
     fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
