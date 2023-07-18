@@ -5,6 +5,7 @@ macro_rules! impl_holo {
         where
             $backend: $crate::Backend,
         {
+            /// Add focus
             pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
@@ -13,10 +14,12 @@ macro_rules! impl_holo {
                 Self { foci, amps, ..self }
             }
 
+            /// Set constraint
             pub fn with_constraint(self, constraint: Constraint) -> Self {
                 Self { constraint, ..self }
             }
 
+            /// Add foci
             pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
                 self,
                 iter: I,
@@ -44,6 +47,7 @@ macro_rules! impl_holo {
 
     ($t:ty) => {
         impl $t {
+            /// Add focus
             pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
@@ -52,10 +56,12 @@ macro_rules! impl_holo {
                 Self { foci, amps, ..self }
             }
 
+            /// Set constraint
             pub fn with_constraint(self, constraint: Constraint) -> Self {
                 Self { constraint, ..self }
             }
 
+            /// Add foci
             pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
                 self,
                 iter: I,
