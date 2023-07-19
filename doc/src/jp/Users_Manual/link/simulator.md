@@ -12,7 +12,9 @@ Simulator linkは[AUTDシミュレータ](../../Simulator/simulator.md)を使用
 
 `Simulator`のコンストラクタにはAUTDシミュレータのポート番号を指定する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 
@@ -48,7 +50,9 @@ Simulator(8080)
 
 `with_addr`でAUTDシミュレータを実行しているサーバのIPアドレスを指定する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 

@@ -2,7 +2,8 @@
 
 `Transform`は`Modulation`になんらかの後処理を適用するための機能である.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 use autd3::prelude::*;
 use autd3::modulation::Transform;
 

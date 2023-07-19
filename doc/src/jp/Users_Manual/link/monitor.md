@@ -6,7 +6,9 @@
 
 ## 位相パターンの可視化
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
 # use autd3::prelude::*;
 use autd3_link_monitor::{Monitor, PlotConfig};
 
@@ -16,7 +18,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Monitor::new())?;
+    .open_with(Monitor::default())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let g = Focus::new(center);
@@ -25,8 +27,6 @@ autd.send(g)?;
 autd.link().plot_phase(
     PlotConfig {
         fname: Path::new("phase.png").into(),
-        figsize: (6, 4),
-        dpi: 72,
         ..PlotConfig::default()
     },
     autd.geometry(),
@@ -42,7 +42,9 @@ autd.link().plot_phase(
 
 ## 変調データの可視化
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
 # use autd3::prelude::*;
 use autd3_link_monitor::{Monitor, PlotConfig};
 
@@ -52,7 +54,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Monitor::new())?;
+    .open_with(Monitor::default())?;
 
 let m = Sine::new(150);
 autd.send(m)?;
@@ -60,8 +62,6 @@ autd.send(m)?;
 autd.link().plot_modulation(
     PlotConfig {
         fname: Path::new("mod.png").into(),
-        figsize: (6, 4),
-        dpi: 72,
         ..PlotConfig::default()
     },
 )?;
@@ -76,7 +76,9 @@ autd.link().plot_modulation(
 
 ## 音場の可視化
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
 # use autd3::prelude::*;
 use autd3_link_monitor::*;
 
@@ -86,7 +88,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Monitor::new())?;
+    .open_with(Monitor::default())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -101,9 +103,6 @@ autd.link().plot_field(
     },
     PlotConfig {
         fname: Path::new("xy.png").into(),
-        figsize: (6, 6),
-        dpi: 72,
-        fontsize: 8,
         ..PlotConfig::default()
     },
     autd.geometry(),
@@ -121,7 +120,9 @@ autd.link().plot_field(
 
 `calc_filed`関数で, プロットせずに音場の計算を行うことができる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
 # use autd3::prelude::*;
 use autd3_link_monitor::Monitor;
 
@@ -131,7 +132,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Monitor::new())?;
+    .open_with(Monitor::default())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -159,7 +160,9 @@ println!(
 cargo add autd3-link-monitor --features gpu
 ```
 
-```rust,ignore
+```rust,ignore,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
 # use autd3::prelude::*;
 # use autd3_link_monitor::{Monitor, PlotConfig};
 

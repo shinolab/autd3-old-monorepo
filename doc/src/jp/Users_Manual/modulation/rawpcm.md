@@ -2,7 +2,8 @@
 
 `RawPCM`はraw pcmファイルをもとに構成される`Modulation`である.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3_modulation_audio_file;
 use autd3_modulation_audio_file::RawPCM;
 
 # #[allow(unused_variables)]

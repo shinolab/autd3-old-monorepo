@@ -27,7 +27,8 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を**接
 例えば, 上図のように配置・接続しており, 図左側のデバイスが1台目, 右側のデバイスが2台目だとする.
 さらに, グローバル座標を1台目のローカル座標と同じようにとるとすると,
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -71,7 +72,8 @@ auto = Controller.builder()\
 
 また, 例えば上図のように, グローバル座標を2台目のローカル座標と同じようにとるとすると,
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -110,7 +112,8 @@ auto = Controller.builder()\
 
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -174,7 +177,8 @@ $$
 音波の波長$\lambda$は, 音速$v$と周波数$f$から$\lambda = v/f$と計算される.
 `Geometry`の`sound_speed`メンバーがこの音速$v$を表している.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -205,7 +209,8 @@ autd.geometry.sound_speed = 340e3
 温度からも音速を設定できる.
 これには, `set_sound_speed_from_temp`関数を使用する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -245,7 +250,8 @@ $$
 ここで, $D(\theta)$は指向性, $k = 2\pi / \lambda$は波数であり, $\alpha$が減衰係数である.
 `Geometry`の`attenuation`メンバーがこの減衰係数$\alpha$を表している.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -279,7 +285,8 @@ autd.geometry.attenuation = 0.0
 
 `center`で全振動子の中心を取得できる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -307,7 +314,8 @@ center = autd.geometry.center
 
 また, `center_of`で特定のデバイス内の全振動子の中心を取得できる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -337,7 +345,8 @@ center = autd.geometry.center_of(0)
 
 `num_devices`でデバイスの数, `num_transducers`で振動子の数を取得できる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -375,7 +384,8 @@ num_tr = autd.geometry.num_transducers
 - `rotate`: 回転
 - `affine`: アフィン変換 (平行移動/回転)
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -395,7 +405,8 @@ autd.geometry_mut().affine(t, r);
 
 以下の関数を使用すると, 特定のデバイスのみ移動, 回転できる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -421,7 +432,8 @@ autd.geometry_mut().affine_of(0, t, r);
 例えば, 0番目の振動子を取得するには以下のようにする.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -449,7 +461,8 @@ tr = autd.geometry[0]
 
 あるいは, イテレータを使用することもできる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -483,7 +496,8 @@ for tr in autd.geometry:
 
 振動子のインデックスを取得する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -515,7 +529,8 @@ idx = tr.idx
 位置, 及び, 回転を取得する.
 回転はクオータニオンで表される.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -550,7 +565,8 @@ rotation = tr.rotation
 
 振動子のx,y,z方向ベクトルを取得する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -590,7 +606,8 @@ z_dir = tr.z_direction
 振動子のModulation delayを取得/設定する.
 詳細は「[Modulation](./modulation.md)」を参照されたい.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -628,7 +645,8 @@ tr.mod_delay = 0
 
 注: 周期の設定はLegacyモードでは使用できない.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -671,7 +689,8 @@ tr.cycle = 4096
 
 注: 周波数の設定はLegacyモードでは使用できない.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -713,7 +732,8 @@ tr.frequency = 40e3
 
 引数に音速を渡す必要がある.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -755,7 +775,9 @@ wavenum = tr.wavenumber(sound_speed)
   <figcaption>Geometry viewer</figcaption>
 </figure>
 
-```rust,ignore
+```rust,ignore,edition2021
+# extern crate autd3;
+# extern crate autd3_geometry_viewer;
 use autd3::prelude::*;
 use autd3_geometry_viewer::GeometryViewer;
 
