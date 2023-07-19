@@ -1,3 +1,8 @@
+# 14.0.1
+
+- Fix [#107](https://github.com/shinolab/autd3/issues/107): There is no with_sampling_frequency method in FocusSTM and GainSTM in pyautd3
+- Add sampling frequency option to `Wav` modulation in capi
+
 # 14.0.0
 
 - Fix [#84](https://github.com/shinolab/autd3/issues/84): AUTD Server should not require wpcap.dll
