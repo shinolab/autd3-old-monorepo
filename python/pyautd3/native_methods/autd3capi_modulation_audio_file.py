@@ -28,5 +28,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
         self.dll.AUTDModulationWav.restype = ModulationPtr
 
+        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.restype = ModulationPtr
+
     def modulation_wav(self, path: bytes, err: ctypes.Array[ctypes.c_char]) -> ModulationPtr:
         return self.dll.AUTDModulationWav(path, err)
+
+    def modulation_wav_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationWavWithSamplingFrequencyDivision(m, div)
