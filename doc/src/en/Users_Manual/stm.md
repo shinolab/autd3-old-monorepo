@@ -26,7 +26,8 @@ Get the sampling frequency division of STM.
 `FocusSTM`/`GainSTM` are usually not specified which focus/`Gain` to start from.
 To specify this, use `with_start_idx` as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -59,7 +60,8 @@ The STM output a focus/`Gain` one before `finish_idx`, and then the STM ends.
 
 To disable these settings, do the following.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
