@@ -9,7 +9,13 @@
    - linuxの場合, `setcap`コマンドで以下の権限を設定することで回避することもできる
    
       ```shell
-      sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
+      sudo setcap cap_net_raw,cap_net_admin=eip <your executable file>
+      ```
+
+   - macOSの場合, `/dev/bpf*`ファイルに読み取り権限を追加することで回避することもできる
+   
+      ```shell
+      sudo chmod +r /dev/bpf*
       ```
 
 - (Windows) 最新のnpcapを使用する
@@ -77,11 +83,6 @@
 
 1. [`Cache`](../modulation/cache.md)を利用する.
 1. 自分で所望の`Modulation`を作成する. [Modulationの自作](../advanced_examples/custom_modulation.md)を参照.
-
-## 超音波の出力が異常に弱い/周波数がおかしい
-
-- 初期化/同期を行っているか確認する.
-   - 同期は, たとえ1台のデバイスしか使っていない場合でも必要
 
 ## その他
 

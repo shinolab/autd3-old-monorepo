@@ -21,7 +21,6 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を**接
 
 <figure>
   <img src="../fig/Users_Manual/hor_left_ori_left_1.png"/>
-  <figcaption>Horizontal alignment</figcaption>
 </figure>
 
 例えば, 上図のように配置・接続しており, 図左側のデバイスが1台目, 右側のデバイスが2台目だとする.
@@ -67,7 +66,6 @@ auto = Controller.builder()\
 
 <figure>
   <img src="../fig/Users_Manual/hor_right_ori_left_1.png"/>
-  <figcaption>Horizontal alignment</figcaption>
 </figure>
 
 また, 例えば上図のように, グローバル座標を2台目のローカル座標と同じようにとるとすると,
@@ -107,7 +105,6 @@ auto = Controller.builder()\
 
 <figure>
   <img src="../fig/Users_Manual/vert.png"/>
-  <figcaption>Vertical alignment</figcaption>
 </figure>
 
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
@@ -148,7 +145,6 @@ autd = Controller.builder()\
 
 <figure>
   <img src="../fig/Users_Manual/hor_right_ori_right_1.png"/>
-  <figcaption>Horizontal alignment</figcaption>
 </figure>
 
 `add_device`を呼び出す順番は接続した順番に依存することに注意する.
@@ -260,7 +256,7 @@ $$
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-autd.geometry_mut().attenuation = 340e3;
+autd.geometry_mut().attenuation = 0.;
 # Ok(())
 # }
 ```
@@ -494,7 +490,7 @@ for tr in autd.geometry:
 
 ### idx
 
-振動子のインデックスを取得する.
+振動子のグローバルインデックスを取得する.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -772,7 +768,6 @@ wavenum = tr.wavenumber(sound_speed)
 
 <figure>
   <img src="../fig/Users_Manual/geometry_viewer.jpg"/>
-  <figcaption>Geometry viewer</figcaption>
 </figure>
 
 ```rust,ignore,edition2021

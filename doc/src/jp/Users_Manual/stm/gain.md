@@ -1,6 +1,6 @@
 # GainSTM
 
-`GainSTM`は`FocusSTM`とは異なり, 任意の`Gain`を扱える. ただし, 使用できる`Gain`の個数は
+`GainSTM`は`GainSTM`とは異なり, 任意の`Gain`を扱える. ただし, 使用できる`Gain`の個数は
 - Legacyモードの場合2048
 - Advanced/AdvancedPhaseモードの場合1024
 となる.
@@ -80,6 +80,63 @@ stm = GainSTM(1.0).add_gains_from_iter(
     )
 )
 autd.send(stm)
+```
+
+
+## サンプリング周波数の指定
+
+周波数ではなく, サンプリング周波数を指定することもできる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = GainSTM::with_sampling_frequency(1.0);
+# autd.send(stm)?;
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::GainSTM::with_sampling_frequency(1);
+```
+
+```cs
+var stm = GainSTM.WithSamplingFrequency(1);
+```
+
+```python
+from pyautd3.stm import GainSTM
+
+stm = GainSTM.with_sampling_frequency(1.0)
+```
+
+また, サンプリング周波数分周比$N$を指定することもできる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = GainSTM::with_sampling_frequency_division(5120);
+# autd.send(stm)?;
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::GainSTM::with_sampling_frequency_division(5120);
+```
+
+```cs
+var stm = GainSTM.WithSamplingFrequencyDivision(5120);
+```
+
+```python
+from pyautd3.stm import GainSTM
+
+stm = GainSTM.with_sampling_frequency_division(5120)
 ```
 
 ## GainSTMMode

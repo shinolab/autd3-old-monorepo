@@ -54,7 +54,7 @@ from datetime import timedelta
 
 ### Log
 
-`Log`リンクを使用すると, ログを有効にした`Link`を生成できる.
+`Log`リンクを使用すると, ロギングを有効にした`Link`を生成できる.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;

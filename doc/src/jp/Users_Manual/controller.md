@@ -123,6 +123,35 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 デバイスにデータを送信する.
 
+### データタイプ
+
+データにはHeader/Body/Specialの別があり, それぞれ単体で送信するか, HeaderとBodyのみ同時に送信することができる.
+
+#### Header
+
+以下がHeaderデータタイプである.
+
+- `SilencerConfig`
+- `Modulation`
+
+#### Body
+
+以下がBodyデータタイプである.
+
+- `Gain`
+- `FocusSTM`, `GainSTM`
+- `Amplitudes`
+
+#### Special
+
+以下が, Specialデータタイプである.
+
+- `Clear`
+- `Synchronize`
+- `Stop`
+- `ModDelay`
+- `UpdateFlag`
+
 ### タイムアウト
 
 `with_timeout`でタイムアウト時間を指定できる.
