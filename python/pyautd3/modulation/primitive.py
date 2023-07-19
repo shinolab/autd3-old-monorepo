@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
-from ctypes import POINTER, c_double, create_string_buffer
+from ctypes import c_double, create_string_buffer
 from typing import Optional, Iterator
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
