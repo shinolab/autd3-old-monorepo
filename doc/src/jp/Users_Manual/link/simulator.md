@@ -46,9 +46,9 @@ from pyautd3.link import SOEM
 Simulator(8080)
 ```
 
-### AUTDシミュレータサーバIP
+### リモート接続
 
-`with_addr`でAUTDシミュレータを実行しているサーバのIPアドレスを指定する.
+`with_server_ip`でAUTDシミュレータを実行しているサーバのIPアドレスを指定することで, リモートのシミュレータに接続することができる.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;

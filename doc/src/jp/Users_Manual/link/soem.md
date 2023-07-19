@@ -286,9 +286,24 @@ SOEM()\
 まず, サーバとAUTDデバイスを接続する.
 また, サーバとクライアントを別のLANで繋ぐ[^fn_remote_soem].
 そして, サーバとクライアント間のLANのIPを確認しておく.
-ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
-次に, サーバで`SOEMAUTDServer`を起動する.
-この時, `-p`オプションでポート番号を指定する.
+ここでは例えば, サーバ側が`172.16.99.104`, クライアント側が`172.16.99.62`だったとする.
+
+## AUTD Server
+
+`RemoteSOEM`を使用する場合, サーバに`AUTD Server`をインストールする必要がある.
+[GitHub Releases](https://github.com/shinolab/autd3/releases)にてインストーラを配布しているので, これをダウンロードし, 指示に従ってインストールする.
+
+`AUTD Server`を実行すると, 以下のような画面になるので, `SOEM`タブを開く.
+
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_remotesoem.jpg"/>
+</figure>
+
+ポートに適当なポート番号を指定し, `Run`ボタンを押す.
+
+AUTD3デバイスが見つかり, クライアントとの接続待ちである旨のメッセージが表示されれば成功である.
+
+なお, `AUTD Server`では`SOEM`と同等のオプションを指定できる.
 
 ## RemoteSOEMリンクのAPI
 
@@ -306,7 +321,7 @@ use autd3_link_soem::RemoteSOEM;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-RemoteSOEM::new("169.254.205.219:8080".parse()?)?
+RemoteSOEM::new("172.16.99.104:8080".parse()?)?
 # )?;
 # Ok(())
 # }
@@ -315,31 +330,26 @@ RemoteSOEM::new("169.254.205.219:8080".parse()?)?
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::RemoteSOEM("169.254.205.219:8080")
+autd3::link::RemoteSOEM("172.16.99.104:8080")
 ```
 
 ```cs
-new RemoteSOEM(new IPEndPoint(IPAddress.Parse("169.254.205.219"), 8080))
+new RemoteSOEM(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
 ```
 
 ```python
 from pyautd3.link import RemoteSOEM
 
-RemoteSOEM("169.254.205.219:8080")
+RemoteSOEM("172.16.99.104:8080")
 ```
-
-## SOEMAUTDServer
-
-`SOEMAUTDServer`のオプション引数で, `SOEM`と同等のオプションを指定できる.
-詳しくは`--help`オプション付きで起動して, ヘルプを参照されたい.
 
 ## ファイアウォール
 
 TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
 その場合は, ファイアウォールの設定でTCP/UDPの指定したポートの接続を許可する.
 
-[^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
-
 [^fn_soem_err]: なお, 回復不能なので直ちに終了するくらいしかできることはない.
+
+[^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
 
 [^fn_remote_soem]: 無線LANでも可

@@ -1,8 +1,15 @@
 # Modulation
 
 `Modulation`はAM変調を制御するための仕組みである.
-`Modulation`は, バッファに貯められた$\SI{8}{bit}$データから, 一定のサンプリングレートでデータを順番にサンプリングし, Duty比に掛け合わせることで実現されている.
-現在, `Modulation`には以下の制約がある.
+
+Modulationは音圧振幅に掛け合わされる.
+例えば, $\SI{1}{kHz}$の`Sine`変調を印加した場合の音圧振幅は以下のようになり, 音圧振幅の正の部分 (或いは, 負の部分) の包絡線が$\SI{1}{kHz}$のsin波に従う.
+
+<figure>
+  <img src="../../fig/Users_Manual/sine_1k_mod.png"/>
+</figure>
+
+なお, 現在, `Modulation`には以下の制約がある.
 
 * バッファサイズは最大で65536
 * サンプリングレートは$\clklf/N$で, $N$は32-bit符号なし整数であり, $512$以上の値である必要がある.
@@ -19,6 +26,7 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 * [Wav](./modulation/wav.md)
 * [RawPCM](./modulation/rawpcm.md)
 * [Cache](./modulation/cache.md)
+* [RadiationPressure](./modulation/radiation.md)
 
 また, これらを加工するための機能も用意されている.
 
@@ -30,6 +38,7 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 ### Sampling周波数
 
 `sampling_frequency`でサンプリング周波数を取得できる.
+デフォルトは$\SI{4}{kHz}$である.
 
 ```rust,edition2021
 # extern crate autd3;
