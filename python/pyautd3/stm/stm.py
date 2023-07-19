@@ -112,11 +112,11 @@ class FocusSTM(STM):
         return Base().focus_stm(self.props(), points, shifts, len(self._duty_shifts))
 
     @staticmethod
-    def from_sampling_frequency(sampling_freq: float) -> "FocusSTM":
+    def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
         return FocusSTM(None, sampling_freq, None)
 
     @staticmethod
-    def from_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
+    def with_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
         return FocusSTM(None, None, sampling_freq_div)
 
     def add_focus(self, point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
