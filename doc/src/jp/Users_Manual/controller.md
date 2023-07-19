@@ -20,7 +20,8 @@ Offモードではファンは常時オフであり, Onモードでは常時オ�
 Autoモードの場合は温度が高くなると自動的にファンが起動する.
 `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -46,7 +47,8 @@ autd.force_fan(True)
 フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,7 +80,8 @@ FPGAの状態を取得する.
 これを使用する前に, `reads_fpga_info`フラグをセットしておく必要がある.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -120,12 +123,42 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 デバイスにデータを送信する.
 
+### データタイプ
+
+データにはHeader/Body/Specialの別があり, それぞれ単体で送信するか, HeaderとBodyのみ同時に送信することができる.
+
+#### Header
+
+以下がHeaderデータタイプである.
+
+- `SilencerConfig`
+- `Modulation`
+
+#### Body
+
+以下がBodyデータタイプである.
+
+- `Gain`
+- `FocusSTM`, `GainSTM`
+- `Amplitudes`
+
+#### Special
+
+以下が, Specialデータタイプである.
+
+- `Clear`
+- `Synchronize`
+- `Stop`
+- `ModDelay`
+- `UpdateFlag`
+
 ### タイムアウト
 
 `with_timeout`でタイムアウト時間を指定できる.
 これを省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
