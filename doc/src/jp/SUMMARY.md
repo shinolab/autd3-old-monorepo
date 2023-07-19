@@ -33,6 +33,7 @@
     - [Wav](./Users_Manual/modulation/wav.md)
     - [RawPCM](./Users_Manual/modulation/rawpcm.md)
     - [Cache](./Users_Manual/modulation/cache.md)
+    - [Radiation](./Users_Manual/modulation/radiation.md)
     - [FIR](./Users_Manual/modulation/fir.md)
     - [Transform](./Users_Manual/modulation/transform.md)
   - [Spatio-Temporal Modulation](./Users_Manual/stm.md)

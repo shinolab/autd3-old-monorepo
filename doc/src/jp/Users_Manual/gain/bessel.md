@@ -3,7 +3,8 @@
 `Bessel`ではBessel beamを生成する.
 この`Gain`は長谷川らの論文[^hasegawa2017]に基づく.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -44,7 +45,8 @@ g = Bessel([x, y, z], [nx, ny, nz], theta)
 `with_amp`にて, 0-1の規格化された音圧振幅を指定できる.
 $\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {

@@ -4,7 +4,8 @@
 
 コンストラクタには周波数$f$を整数で指定する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -38,7 +39,8 @@ $$
 
 ただし, 上記で$\[0, 1\]$を超えるような値は$\[0, 1\]$に収まるように変換される.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
