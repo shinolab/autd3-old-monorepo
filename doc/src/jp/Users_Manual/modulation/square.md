@@ -4,7 +4,8 @@
 
 コンストラクタには周波数$f$を整数で指定する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -32,7 +33,8 @@ m = Square(150)
 Low/Highレベルの振幅はそれぞれ, `with_low`, `with_high`で指定できる.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -65,7 +67,8 @@ m = Square(150).with_low(0).with_high(1)
 
 `with_duty`で矩形波のDuty比を指定できる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

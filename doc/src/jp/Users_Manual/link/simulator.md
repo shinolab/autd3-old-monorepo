@@ -12,7 +12,9 @@ Simulator linkは[AUTDシミュレータ](../../Simulator/simulator.md)を使用
 
 `Simulator`のコンストラクタにはAUTDシミュレータのポート番号を指定する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 
@@ -44,11 +46,13 @@ from pyautd3.link import SOEM
 Simulator(8080)
 ```
 
-### AUTDシミュレータサーバIP
+### リモート接続
 
-`with_addr`でAUTDシミュレータを実行しているサーバのIPアドレスを指定する.
+`with_server_ip`でAUTDシミュレータを実行しているサーバのIPアドレスを指定することで, リモートのシミュレータに接続することができる.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 

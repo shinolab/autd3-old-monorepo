@@ -7,7 +7,8 @@
 これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
 円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている. (すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
@@ -83,3 +84,57 @@ autd.send(stm)
 そのため, もっとも近い$N$が選択される.
 これによって, 指定した周波数と実際の周波数がずれる.
 `frequency`によって実際の周波数を確認することができる.
+
+## サンプリング周波数の指定
+
+周波数ではなく, サンプリング周波数を指定することもできる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = FocusSTM::with_sampling_frequency(1.0);
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::FocusSTM::with_sampling_frequency(1);
+```
+
+```cs
+var stm = FocusSTM.WithSamplingFrequency(1);
+```
+
+```python
+from pyautd3.stm import FocusSTM
+
+stm = FocusSTM.with_sampling_frequency(1.0)
+```
+
+また, サンプリング周波数分周比$N$を指定することもできる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = FocusSTM::with_sampling_frequency_division(5120);
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::FocusSTM::with_sampling_frequency_division(5120);
+```
+
+```cs
+var stm = FocusSTM.WithSamplingFrequencyDivision(5120);
+```
+
+```python
+from pyautd3.stm import FocusSTM
+
+stm = FocusSTM.with_sampling_frequency_division(5120)
+```

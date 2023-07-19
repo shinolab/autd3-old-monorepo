@@ -17,7 +17,9 @@ SDKには以下の`Backend`が用意されている
 * `NalgebraBackend` (`DefaultBackend`) - [Nalgebra](hthttps://nalgebra.org/)を使用
 * `CUDABackend` - CUDAを使用, GPUで実行
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{NalgebraBackend, GSPAT};
 
@@ -78,7 +80,9 @@ g.add_focus([x2, y2, z2], 1.0)
 - Uniform: すべての振動子の振幅を指定した値にする. ($\[0, 1\]$の範囲外の値は$\[0, 1\]$の範囲にクランプされる.)
 - Clamp: 振幅を指定の範囲にクランプする.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{NalgebraBackend, GSPAT, Constraint};
 
@@ -118,7 +122,9 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
 これらはすべて`with_xxx`で指定する.
 
 - e.g.,
-    ```rust
+    ```rust,edition2021
+    # extern crate autd3;
+    # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
     # use autd3_gain_holo::{NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]

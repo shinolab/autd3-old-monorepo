@@ -4,7 +4,9 @@
 
 ここでは, `Focus`と同じように単一焦点を生成する`FocalPoint`を実際に定義してみることにする.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_core;
 use autd3::{
     core::{
         error::AUTDInternalError,
