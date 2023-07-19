@@ -26,7 +26,8 @@ STMの周波数を取得する.
 `FocusSTM`/`GainSTM`は通常, 何番目の焦点/`Gain`からスタートするかは決められていない.
 これを指定するには, 以下のように`with_start_idx`で指定する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -60,7 +61,8 @@ stm = FocusSTM(1).with_start_idx(0)
 これらの設定を無効 (デフォルト) にするには, 以下のようにする.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
