@@ -23,7 +23,8 @@ For example, suppose you have two devices as shown in the figure above.
 The left device is the first device, and the right device is the second device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -67,7 +68,8 @@ In this example, no rotation is performed, so the second argument can be zero.
 And, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the left device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -106,7 +108,8 @@ auto = Controller.builder()\
 Furthermore, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the lower device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -156,7 +159,8 @@ When calculating the phase of the transducer, there are some cases where the wav
 The wavelength $\lambda$ of the sound wave is calculated from the sound speed $v$ and the frequency $f$ as $\lambda = v/f$.
 The `sound_speed` member of `Geometry` represents this sound speed $v$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -186,7 +190,8 @@ The unit of the sound speed is mm/s.
 
 You can also set the sound speed from the temperature.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -223,7 +228,8 @@ $$
 where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
 `attenuation` member of `Geometry` represents this attenuation coefficient $\alpha$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -257,7 +263,8 @@ The default value is 0.0.
 
 You can get the center of all devices with `center`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -285,7 +292,8 @@ center = autd.geometry.center
 
 You can get the center of a device by `center_of` method.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -315,7 +323,8 @@ center = autd.geometry.center_of(0)
 
 You can get the number of devices and transducers by `num_devices` and `num_transducers` methods.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -352,7 +361,8 @@ To modify the position of the device added to `Geometry`, use the following func
 - `rotate`
 - `affine`
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -372,7 +382,8 @@ autd.geometry_mut().affine(t, r);
 
 You can move and rotate only a specific device by using the following functions.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -396,7 +407,8 @@ autd.geometry_mut().affine_of(0, t, r);
 
 To access `Transducer`, use the following methods.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -424,7 +436,8 @@ tr = autd.geometry[0]
 
 Or, you can use an iterator.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -458,7 +471,8 @@ for tr in autd.geometry:
 
 Get the global index of the transducer.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -490,7 +504,8 @@ idx = tr.idx
 Get the position and rotation of the transducer.
 The rotation is represented by a quaternion.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -525,7 +540,8 @@ rotation = tr.rotation
 
 Get the direction of the transducer.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -566,7 +582,8 @@ Set/get the modulation delay of the transducer.
 
 See [Modulation](./modulation.md) for more details.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -603,7 +620,8 @@ Set/get the cycle of the transducer.
 
 Note: The cycle setting is not available in Legacy mode.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -646,7 +664,8 @@ When setting the frequency $f$, the closest period $N$ to $\clkf/f$ is selected.
 
 Note: The frequency setting is not available in Legacy mode.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -688,7 +707,8 @@ Get the wavelength and wavenumber of the transducer.
 
 You need to pass the speed of sound as an argument to `wavelength` and `wavenumber`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 

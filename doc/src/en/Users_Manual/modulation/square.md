@@ -4,7 +4,8 @@
 
 Specify the frequency $f$ as an integer in the constructor.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -31,7 +32,8 @@ m = Square(150)
 
 You can set the amplitude of the square wave with `with_low` and `with_high` for low level and high level, respectively.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -64,7 +66,8 @@ m = Square(150).with_low(0).with_high(1)
 
 You can set the duty ratio of the square wave with `with_duty`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

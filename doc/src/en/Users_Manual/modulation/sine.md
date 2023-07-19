@@ -4,7 +4,8 @@
 
 Specify the frequency $f$ as an integer in the constructor.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -37,7 +38,8 @@ Here, $amplitude$ and $offset$ can be specified by `with_amp` and `with_offset`,
 
 Note that the value that exceeds $\[0, 1\]$ is clamped in $\[0, 1\]$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

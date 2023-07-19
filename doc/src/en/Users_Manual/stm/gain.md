@@ -8,7 +8,8 @@ However, the number of `Gain`s that can be used is
 The following is an example of how to use `GainSTM`.
 This is a sample that rotates the focus on a circle with a radius of $\SI{30}{mm}$ centered on a point $\SI{150}{mm}$ directly above the center of the array.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -75,7 +76,8 @@ To solve this problem, `GainSTM` has `PhaseFull` mode that sends only phase and 
 
 This mode can be switched with `with_mode`.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {

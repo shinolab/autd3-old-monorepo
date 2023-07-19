@@ -13,7 +13,9 @@ cargo add autd3-link-soem
 Next, edit `src/main.rs` file as follows.
 This is the source code for generating a focus with $\SI{150}{Hz}$ AM modulation. 
 
-```rust,should_panic,filename=main.rs
+```rust,should_panic,filename=main.rs,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 

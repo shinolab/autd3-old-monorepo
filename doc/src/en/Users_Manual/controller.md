@@ -22,7 +22,8 @@ If you short the fan side as shown in the following figure, it will be Auto, Off
 In Auto mode, the fan starts automatically when the temperature rises.
 You can also force the fan to start by setting the `force_fan` flag.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -47,7 +48,8 @@ autd.force_fan(True)
 The flag is updated when `send` is called and some data is sent.
 If you only want to update the flag, you can send `UpdateFlags`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,7 +80,8 @@ autd.send(UpdateFlags())
 Get the FPGA status.
 Before using this, you need to set the `reads_fpga_info` flag.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -124,7 +127,8 @@ Send the data to the device.
 You can specify the timeout time with `with_timeout`.
 If you omit this, the timeout time set by [Link](./link.md) will be used.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {

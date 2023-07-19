@@ -5,7 +5,9 @@ Here, we try to create a `Burst` that outputs only for a certain moment in a cyc
 
 The following is a sample of `Burst`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_core;
 use autd3::{
     core::{
         error::AUTDInternalError,

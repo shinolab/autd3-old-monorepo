@@ -2,7 +2,8 @@
 
 `Plane` output a plane wave.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -38,7 +39,8 @@ Specify the direction of the plane wave in the constructor of `Plane`.
 You can change amplitude by `with_amp` method.
 The amplitude is normalized to 0-1 (1 by default).
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {

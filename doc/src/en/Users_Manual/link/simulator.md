@@ -12,7 +12,9 @@ Before using this link, you need to start AUTD simulator.
 
 Simulator link's constructor takes a port number of AUTD simulator.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 
@@ -48,7 +50,9 @@ Simulator(8080)
 
 You can specify the IP address of the server running AUTD simulator with `with_server_ip`.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 

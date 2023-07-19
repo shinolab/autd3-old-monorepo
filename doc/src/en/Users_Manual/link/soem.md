@@ -19,10 +19,11 @@ If you are using Linux/macOS, no special preparation is required.
 
 ### Interface name
 
-
 You can specify the network interface on which the AUTD3 device is connected with `with_ifname`.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -65,7 +66,9 @@ By default, it is blank, and if it is blank, the network interface to which the 
 You can set a callback with `with_on_lost` function when an unrecoverable error (e.g., cable is unplugged) occurs[^fn_soem_err].
 The callback take an error message as an argument.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -127,7 +130,9 @@ SOEM()\
 `SOEM` might behave unstably when a large number of devices are connected[^fn_soem].
 In this case, use the `with_sync0_cycle` and `with_send_cycle` functions to increase the values.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -174,7 +179,9 @@ This value should be as small as possible without causing an error.
 EhterCAT works by sending frames periodically at regular intervals.
 You can specify how to send these periodic frames with `timer_strategy`.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -224,7 +231,9 @@ You can set the EtherCAT sync mode (`DC` or `FreeRun`) with `with_sync_mode`.
 
 - Please refer to [Beckhoff's explanation](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for details.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::{SOEM, SyncMode};
 
@@ -275,15 +284,28 @@ This is called the "client" here.
 First, connect the server and the AUTD device.
 Then, connect the server and the client on different LANs[^fn_remote_soem].
 Then, check the IP of the LAN between the server and the client.
-For example, suppose the server is "169.254.205.219", and the client is "169.254.175.45".
-Next, start `SOEMAUTDServer` on the server.
-At this time, specify the port number with the `-p` option.
+For example, suppose the server is "172.16.99.104", and the client is "172.16.99.62".
+
+## AUTD Server
+
+To use `RemoteSOEM`, install `AUTD Server` first.
+The AUTD server's installer is distributed on [GitHub Releases](https://github.com/shinolab/autd3/releases).
+
+When you run `AUTD Server`, the following screen will appear, so open the "SOEM" tab.
+
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_remotesoem.jpg"/>
+</figure>
+
+Set port number and click "Run" button.
 
 ## RemoteSOEM link API
 
-`RemoteSOEM` constructor takes <server ip address:poer> as an argument.
+`RemoteSOEM` constructor takes <server ip address:port> as an argument.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::RemoteSOEM;
 
@@ -293,7 +315,7 @@ use autd3_link_soem::RemoteSOEM;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-RemoteSOEM::new("169.254.205.219:8080".parse()?)?
+RemoteSOEM::new("172.16.99.104:8080".parse()?)?
 # )?;
 # Ok(())
 # }
@@ -302,17 +324,17 @@ RemoteSOEM::new("169.254.205.219:8080".parse()?)?
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::RemoteSOEM("169.254.205.219:8080")
+autd3::link::RemoteSOEM("172.16.99.104:8080")
 ```
 
 ```cs
-new RemoteSOEM(new IPEndPoint(IPAddress.Parse("169.254.205.219"), 8080))
+new RemoteSOEM(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
 ```
 
 ```python
 from pyautd3.link import RemoteSOEM
 
-RemoteSOEM("169.254.205.219:8080")
+RemoteSOEM("172.16.99.104:8080")
 ```
 
 ## SOEMAUTDServer
