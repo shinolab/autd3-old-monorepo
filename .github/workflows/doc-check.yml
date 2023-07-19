@@ -50,9 +50,12 @@ jobs:
     - name: Build src
       run: |
         cd ./src
-        cargo build --all
-    - name: Build book
+        cargo build --all --features "remote"
+    - name: Build book jp
+      run: |
+        cd ./doc
+        MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
+    - name: Build book en
       run: |
         cd ./doc
         MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps
-        MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
