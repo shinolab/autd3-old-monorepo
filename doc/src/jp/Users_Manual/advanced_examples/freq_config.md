@@ -9,7 +9,6 @@ AUTD3のSDKでは, 超音波の周波数を$\ufreq$から変更できる.
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced()
@@ -36,13 +35,12 @@ autd = Controller.builder().advanced_mode()
 `cycle`はこの$N$を表している.
 `set_frequency`の場合は可能な$N$の中でもっとも近い$N$が選ばれる.
 
-周波数, または, 周期の変更は, `Synchronize`を送信する前に行う必要があることに注意する.
+周波数, または, 周期の変更を行った後, `Synchronize`を送信する必要があることに注意する.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced()
@@ -51,20 +49,30 @@ autd = Controller.builder().advanced_mode()
 for tr in autd.geometry_mut().iter_mut() {
   tr.set_frequency(70e3)?;
 }
+
+autd.send(Synchronize::new())?;
 #    Ok(())
 # }
 ```
 ```cpp
 for (auto& tr : autd.geometry())
     tr.set_frequency(70e3);
+
+autd.send(autd3::Synchronize());
 ```
 ```cs
 foreach (var tr in autd.Geometry)
     tr.Frequency = 70e3;
+
+autd.Send(new Synchronize());
 ```
 ```python
+from pyautd3 import Synchronize
+
 for tr in autd.geometry:
     tr.frequency = 70e3
+
+autd.send(Synchronize())
 ```
 
 ## AdvancedPhaseモード
@@ -76,7 +84,6 @@ Advancedモードは振幅/位相データをそれぞれ1フレームで送信�
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced_phase()
@@ -100,7 +107,6 @@ autd = Controller.builder().advanced_phase_mode()
 
 このモードの場合, 振幅はあらかじめ`Amplitudes`クラスを送信することで制御する.
 `Gain`の振幅パラメータはすべて無視される.
-
 
 ```rust,edition2021
 # extern crate autd3;

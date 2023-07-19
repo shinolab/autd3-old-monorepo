@@ -25,3 +25,19 @@ autd3::modulation::Cache c(m);
 
 c[0] = 0;
 ```
+
+```cs
+// mは何らかのModulation
+var c = new AUTD3Sharp.Modulation.Cache(m);
+
+c[0] = 0;
+```
+
+```python
+from pyautd3.modulation import Cache
+
+# mは何らかのModulation
+c = Cache(m)
+
+c[0] = 0
+```

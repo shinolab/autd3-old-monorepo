@@ -2,8 +2,6 @@
 
 `Monitor`リンクはデバッグ用の`Link`である.
 
-この`Link`は内部でpythonのmatplotlibライブラリを使用するので, 事前にmatplotlibをインストールする必要がある.
-
 ## 位相パターンの可視化
 
 ```rust,edition2021
@@ -179,3 +177,30 @@ Monitor::new().with_gpu(-1)
 ```
 
 `with_gpu`の引数にはGPUのIDを指定する. `-1`を指定すると, 適当なGPUが自動的に選択される.
+
+## Matplotlibの使用
+
+`python` featureを有効化することで, Pythonとmatplotlibを使用してプロットを行うことができるようになる.
+このfeatureを使用する場合は, Pythonとmatplotlib, 及び, numpyをインストールしておく必要がある.
+
+```shell
+cagro add autd3-link-monitor --features python
+```
+
+```rust,ignore,edition2021
+# extern crate autd3;
+# extern crate autd3_link_monitor;
+# use autd3::prelude::*;
+# use autd3_link_monitor::{Monitor, PlotConfig};
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .open_with(
+Monitor::python()
+# )?;
+# autd.close()?;
+# Ok(())
+# }
+```

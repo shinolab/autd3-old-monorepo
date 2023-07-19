@@ -32,3 +32,6 @@ from pyautd3.modulation import Wav
 path = "path/to/foo.wav"
 m = Wav(path)
 ```
+
+> NOTE: `Wav`では, wavファイルデータをModulationのサンプリング周波数でリサンプリングするので注意されたい.
+> Modulationのサンプリング周波数の設定と制約は[Modulation](../modulation.md)を参照されたい.

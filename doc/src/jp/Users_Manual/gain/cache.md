@@ -25,3 +25,15 @@ autd3::gain::Cache c(g, autd.geometry());
 
 c[0].phase = 0;
 ```
+
+```cs
+// gは何らかのGain
+var c = new AUTD3Sharp.Gain.Cache(g, autd.Geometry);
+```
+
+```python
+from pyautd3.gain import Cache
+
+# gは何らかのGain
+c = Cache(g, autd.geometry)
+```
