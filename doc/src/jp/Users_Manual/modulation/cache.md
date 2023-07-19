@@ -4,7 +4,8 @@
 
 また, 変調データを変更する事もできる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # #[allow(unused_variables)]
@@ -23,4 +24,20 @@ m[0] = 0.;
 autd3::modulation::Cache c(m);
 
 c[0] = 0;
+```
+
+```cs
+// mは何らかのModulation
+var c = new AUTD3Sharp.Modulation.Cache(m);
+
+c[0] = 0;
+```
+
+```python
+from pyautd3.modulation import Cache
+
+# mは何らかのModulation
+c = Cache(m)
+
+c[0] = 0
 ```

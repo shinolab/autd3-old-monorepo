@@ -19,11 +19,26 @@ pip install pyautd3
 python main.py
 ```
 
-## Linux,macOS使用時の注意
+## Linux使用時の注意
 
-Linux, macOSでは, SOEMを使用するのに管理者権限が必要な場合がある.
-
+Linuxでは, SOEMを使用するのに管理者権限が必要な場合がある.
+その場合は, 
 ```shell
-sudo python main.py
+sudo setcap cap_net_raw,cap_net_admin=eip <your python path>
 ```
-とすること.
+とした後, `main.py`を実行する.
+```shell
+python main.py
+```
+
+## macOS使用時の注意
+
+macOSでは, SOEMを使用するのに管理者権限が必要な場合がある.
+その場合は, 
+```shell
+sudo chmod +r /dev/bpf*
+```
+とした後, `main.py`を実行する.
+```shell
+python main.py
+```

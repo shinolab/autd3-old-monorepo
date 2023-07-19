@@ -4,7 +4,8 @@
 
 また, 振幅/位相データを変更する事もできる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # #[allow(unused_variables)]
@@ -23,4 +24,16 @@ g[0].phase = 0.;
 autd3::gain::Cache c(g, autd.geometry());
 
 c[0].phase = 0;
+```
+
+```cs
+// gは何らかのGain
+var c = new AUTD3Sharp.Gain.Cache(g, autd.Geometry);
+```
+
+```python
+from pyautd3.gain import Cache
+
+# gは何らかのGain
+c = Cache(g, autd.geometry)
 ```

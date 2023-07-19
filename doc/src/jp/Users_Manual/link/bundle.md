@@ -2,7 +2,10 @@
 
 `Bundle`リンクは2つの`Link`まとめるためのものである.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
+# extern crate autd3_link_simulator;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 use autd3_link_simulator::Simulator;

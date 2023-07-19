@@ -10,6 +10,10 @@ extern "C" {
 
 [[nodiscard]] ModulationPtr AUTDModulationWav(const char *path, char *err);
 
+[[nodiscard]]
+ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m,
+                                                             uint32_t div);
+
 } // extern "C"
 
 } // namespace autd3::internal::native_methods

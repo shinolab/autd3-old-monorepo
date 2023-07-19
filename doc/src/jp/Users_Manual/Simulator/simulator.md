@@ -2,12 +2,19 @@
 
 AUTD Simulator (以下, シミュレータ) はその名の通りAUTDのシミュレータであり, Windows/Linux/macOSで動作する.
 
-シミュレータを使用するには, 自前でビルドする必要がある.
-Windows 64bitのみビルド済みの実行ファイルが配布されているのでそれを使うこともできる.
+## AUTD Server
 
-## 使い方
+シミュレータは`AUTD Server`に付属している.
+[GitHub Releases](https://github.com/shinolab/autd3/releases)にてインストーラを配布しているので, これをダウンロードし, 指示に従ってインストールする.
 
-シミュレータを実行すると接続待ちの状態になる.
+`AUTD Server`を実行すると, 以下のような画面になるので, `Simulator`タブを開き, `Run`ボタンを押すとシミュレータが起動する.
+
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_simulator.jpg"/>
+  <figcaption>AUTD Server</figcaption>
+</figure>
+
+シミュレータが起動すると接続待ちの状態になる.
 
 <figure>
   <img src="../../fig/sim_waiting.jpg"/>

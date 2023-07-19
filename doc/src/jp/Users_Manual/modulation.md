@@ -26,6 +26,7 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 * [Wav](./modulation/wav.md)
 * [RawPCM](./modulation/rawpcm.md)
 * [Cache](./modulation/cache.md)
+* [RadiationPressure](./modulation/radiation.md)
 
 また, これらを加工するための機能も用意されている.
 
@@ -37,8 +38,10 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 ### Sampling周波数
 
 `sampling_frequency`でサンプリング周波数を取得できる.
+デフォルトは$\SI{4}{kHz}$である.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
@@ -64,7 +67,8 @@ fs = m.sampling_frequency
 ただし, `Modulation`の制約上, 必ずしも指定したサンプリング周波数になるとは限らない.
 
 - e.g.,
-  ```rust
+  ```rust,edition2021
+  # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
   # fn main()  {
@@ -90,7 +94,8 @@ fs = m.sampling_frequency
 
 サンプリング周波数の基本周波数は$\clklf$である.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
@@ -115,7 +120,8 @@ fs = m.sampling_frequency_division
 また, 一部の`Modulation`は`with_sampling_frequency_division`でサンプリング周波数分周比を設定できる.
 
 - e.g.,
-  ```rust
+  ```rust,edition2021
+  # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
   # fn main()  {
@@ -144,7 +150,8 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 
 例えば, 以下のようにすると, $0$番目の振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
