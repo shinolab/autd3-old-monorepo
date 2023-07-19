@@ -13,6 +13,20 @@ jobs:
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: install cuda
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt-get update
+        sudo apt-get -y install cuda-nvcc-12-1 libcublas-dev-12-1 libcusolver-dev-12-1
+        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+    - name: install shaderc
+      run: |
+        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+        tar -xzf shaderc.tgz
+        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        rm shaderc.tgz
     - name: Setup mdbook
       uses: peaceiris/actions-mdbook@v1
       with:
@@ -33,11 +47,15 @@ jobs:
         tar -xvf mdbook-katex.tar.gz
         chmod +x mdbook-katex
         sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
-    - name: Setup mdbook-keeper
+    - name: Build src
       run: |
-        cargo install mdbook-keeper
-    - name: Build book
+        cd ./src
+        cargo build --all --features "remote"
+    - name: Build book jp
       run: |
         cd ./doc
-        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
-        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
+        MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
+    - name: Build book en
+      run: |
+        cd ./doc
+        MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps

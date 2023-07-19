@@ -246,7 +246,7 @@ checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
 
 [[package]]
 name = "autd-server"
-version = "14.0.0"
+version = "14.0.1"
 dependencies = [
  "autd3-core",
  "serde",
@@ -258,7 +258,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "14.0.0"
+version = "14.0.1"
 dependencies = [
  "atomic",
  "autd3-driver",
@@ -278,7 +278,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "14.0.0"
+version = "14.0.1"
 dependencies = [
  "bitflags 2.3.3",
  "thiserror",

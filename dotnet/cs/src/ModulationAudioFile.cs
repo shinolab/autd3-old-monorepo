@@ -15,6 +15,12 @@
 #define USE_SINGLE
 #endif
 
+#if USE_SINGLE
+using float_t = System.Single;
+#else
+using float_t = System.Double;
+#endif
+
 using System;
 
 namespace AUTD3Sharp
@@ -24,10 +30,22 @@ namespace AUTD3Sharp
         public sealed class Wav : ModulationBase
         {
             private readonly string _filename;
+            private uint? _freqDiv;
 
             public Wav(string filename)
             {
                 _filename = filename;
+            }
+
+            public Wav WithSamplingFrequencyDivision(uint div)
+            {
+                _freqDiv = div;
+                return this;
+            }
+
+            public Wav WithSamplingFrequency(float_t freq)
+            {
+                return WithSamplingFrequencyDivision((uint)((float_t)NativeMethods.Def.FpgaSubClkFreq / freq));
             }
 
             public override ModulationPtr ModulationPtr()
@@ -36,6 +54,8 @@ namespace AUTD3Sharp
                 var ptr = NativeMethods.ModulationAudioFile.AUTDModulationWav(_filename, err);
                 if (ptr._0 == IntPtr.Zero)
                     throw new AUTDException(err);
+                if (_freqDiv != null)
+                    ptr = NativeMethods.ModulationAudioFile.AUTDModulationWavWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
                 return ptr;
             }
         }

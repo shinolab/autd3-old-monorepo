@@ -134,7 +134,7 @@ namespace AUTD3Sharp
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
 
-                public SDP() : base()
+                public SDP()
                 { }
                 public SDP(Backend backend) : base(backend)
                 { }
@@ -181,7 +181,7 @@ namespace AUTD3Sharp
                 private float_t? _gamma;
                 private IAmplitudeConstraint? _constraint;
 
-                public EVP() : base()
+                public EVP()
                 { }
 
                 public EVP(Backend backend) : base(backend)
@@ -214,7 +214,7 @@ namespace AUTD3Sharp
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
 
-                public GS() : base()
+                public GS()
                 { }
 
                 public GS(Backend backend) : base(backend)
@@ -248,7 +248,7 @@ namespace AUTD3Sharp
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
 
-                public GSPAT() : base()
+                public GSPAT()
                 { }
                 public GSPAT(Backend backend) : base(backend)
                 { }
@@ -279,7 +279,7 @@ namespace AUTD3Sharp
             {
                 private IAmplitudeConstraint? _constraint;
 
-                public Naive() : base()
+                public Naive()
                 { }
 
                 public Naive(Backend backend) : base(backend)
@@ -317,7 +317,7 @@ namespace AUTD3Sharp
 
                 private IAmplitudeConstraint? _constraint;
 
-                public LM() : base()
+                public LM()
                 { }
                 public LM(Backend backend) : base(backend)
                 {
