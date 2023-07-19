@@ -69,7 +69,9 @@ TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethern
 
 ### コンストラクタ
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::TwinCAT;
 
@@ -178,7 +180,9 @@ RemoteTwinCATリンクのコンストラクタにはサーバのNetIdを指定�
 また, `with_server_ip`と`with_client_ams_net_id`でサーバーのIPアドレスとクライアントのNetIdを指定する.
 これらは省略することも可能だが, 基本的には指定することを推奨する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::RemoteTwinCAT;
 

@@ -17,7 +17,9 @@ LinkはAUTD3デバイスとのインターフェースである.
 
 * タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 # use autd3_link_soem::SOEM;
 # #[allow(unused_variables)]
@@ -54,7 +56,9 @@ from datetime import timedelta
 
 `Log`リンクを使用すると, ログを有効にした`Link`を生成できる.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3::link::Log;
 use autd3_link_soem::SOEM;

@@ -5,7 +5,8 @@ AUTD3のSDKでは, 超音波の周波数を$\ufreq$から変更できる.
 
 デフォルトはLegacyモードになっており, Advancedモードを使用する場合は, 以下のようにする.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -37,7 +38,8 @@ autd = Controller.builder().advanced_mode()
 
 周波数, または, 周期の変更は, `Synchronize`を送信する前に行う必要があることに注意する.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -70,7 +72,8 @@ for tr in autd.geometry:
 Advancedモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 通信のレイテンシがLegacyモードの2倍になる.
 実際には振幅データは頻繁に更新されることはないと考えられるため, 位相データのみを送信するAdvancedPhaseモードが用意されている.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -99,7 +102,8 @@ autd = Controller.builder().advanced_phase_mode()
 `Gain`の振幅パラメータはすべて無視される.
 
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 

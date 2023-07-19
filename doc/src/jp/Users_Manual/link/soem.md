@@ -20,7 +20,9 @@ Linux/macOSの場合は, 特に準備は必要ない.
 
 `with_ifname`でAUTD3デバイスが接続されているネットワークインタフェースを指定できる.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -63,7 +65,9 @@ SOEM()\
 `with_on_lost`関数で, 回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定できる[^fn_soem_err].
 コールバック関数はエラーメッセージを引数に取る.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -126,7 +130,9 @@ SOEM()\
 このときは, `with_sync0_cycle`と`with_send_cycle`関数を使用し, その値を増やす.
 
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -174,7 +180,9 @@ SOEM()\
 EtherCATは、一定の間隔で周期的にフレームを送信することで動作する.
 `with_timer_strategy`でこの周期的な送信をどのように行うかを指定できる.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
@@ -226,7 +234,9 @@ SOEM()\
 * 詳細は[Beckhoffの説明](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=)を参照されたい.
 
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::{SOEM, SyncMode};
 
@@ -284,7 +294,9 @@ SOEM()\
 
 `RemoteSOEM`のコンストラクタでは, <サーバのIP:ポート>を指定する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::RemoteSOEM;
 

@@ -4,7 +4,8 @@
 
 また, 振幅/位相データを変更する事もできる.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # #[allow(unused_variables)]
