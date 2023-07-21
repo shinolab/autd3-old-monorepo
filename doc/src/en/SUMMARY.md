@@ -25,7 +25,6 @@
   - [Modulation](./Users_Manual/modulation.md)
     - [Static](./Users_Manual/modulation/static.md)
     - [Sine](./Users_Manual/modulation/sine.md)
-    - [SinePressure](./Users_Manual/modulation/sine_pressure.md)
     - [SineLegacy](./Users_Manual/modulation/sine_legacy.md)
     - [Square](./Users_Manual/modulation/square.md)
     - [Wav](./Users_Manual/modulation/wav.md)

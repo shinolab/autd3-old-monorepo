@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 13/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,42 +111,42 @@ impl CSharpGenerator {
             1 => match arg.ty {
                 Type::Int8 => match arg.inout {
                     InOut::In => "sbyte[]?".to_owned(),
-                    InOut::Out => "out sbyte".to_owned(),
+                    InOut::Out => "sbyte[]".to_owned(),
                     InOut::InOut => panic!("INOUT sbyte is not supported."),
                 },
                 Type::Int16 => match arg.inout {
                     InOut::In => "short[]?".to_owned(),
-                    InOut::Out => "out short".to_owned(),
+                    InOut::Out => "short[]".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::Int32 => match arg.inout {
-                    InOut::In => "short[]?".to_owned(),
-                    InOut::Out => "out short".to_owned(),
+                    InOut::In => "int[]?".to_owned(),
+                    InOut::Out => "int[]".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::Int64 => match arg.inout {
-                    InOut::In => "short[]?".to_owned(),
-                    InOut::Out => "out short".to_owned(),
+                    InOut::In => "long[]?".to_owned(),
+                    InOut::Out => "long[]".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::UInt8 => match arg.inout {
                     InOut::In => "byte[]?".to_owned(),
-                    InOut::Out => "out byte".to_owned(),
+                    InOut::Out => "byte[]".to_owned(),
                     InOut::InOut => panic!("INOUT byte is not supported."),
                 },
                 Type::UInt16 => match arg.inout {
                     InOut::In => "ushort[]?".to_owned(),
-                    InOut::Out => "out ushort".to_owned(),
+                    InOut::Out => "ushort[]".to_owned(),
                     InOut::InOut => panic!("INOUT ushort is not supported."),
                 },
                 Type::UInt32 => match arg.inout {
                     InOut::In => "uint[]?".to_owned(),
-                    InOut::Out => "out uint".to_owned(),
+                    InOut::Out => "uint[]".to_owned(),
                     InOut::InOut => panic!("INOUT uint is not supported."),
                 },
                 Type::UInt64 => match arg.inout {
                     InOut::In => "ulong[]?".to_owned(),
-                    InOut::Out => "out ulong".to_owned(),
+                    InOut::Out => "ulong[]".to_owned(),
                     InOut::InOut => panic!("INOUT ulong is not supported."),
                 },
                 Type::Char => match arg.inout {
@@ -156,17 +156,17 @@ impl CSharpGenerator {
                 },
                 Type::Float32 => match arg.inout {
                     InOut::In => "float[]?".to_owned(),
-                    InOut::Out => "out float".to_owned(),
+                    InOut::Out => "float[]".to_owned(),
                     InOut::InOut => panic!("INOUT float is not supported."),
                 },
                 Type::Float64 => match arg.inout {
                     InOut::In => "double[]?".to_owned(),
-                    InOut::Out => "out double".to_owned(),
+                    InOut::Out => "double[]".to_owned(),
                     InOut::InOut => panic!("INOUT double is not supported."),
                 },
                 Type::Bool => match arg.inout {
                     InOut::In => "bool[]?".to_owned(),
-                    InOut::Out => "out bool".to_owned(),
+                    InOut::Out => "bool[]".to_owned(),
                     InOut::InOut => panic!("INOUT bool is not supported."),
                 },
                 Type::VoidPtr => match arg.inout {
@@ -189,12 +189,12 @@ impl CSharpGenerator {
                 },
                 Type::Float32 => match arg.inout {
                     InOut::In => unimplemented!(),
-                    InOut::Out => "out float[]".to_owned(),
+                    InOut::Out => unimplemented!(),
                     InOut::InOut => unimplemented!(),
                 },
                 Type::Float64 => match arg.inout {
                     InOut::In => unimplemented!(),
-                    InOut::Out => "out double[]".to_owned(),
+                    InOut::Out => unimplemented!(),
                     InOut::InOut => unimplemented!(),
                 },
                 _ => unimplemented!(),

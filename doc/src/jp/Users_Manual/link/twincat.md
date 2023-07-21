@@ -33,25 +33,25 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 インストール後に再起動し, `C:/TwinCAT/3.1/System/win8settick.bat`を管理者権限で実行し, 再び再起動する.
 
-最後に, SDK内の`dist/TwinCATAUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
+## AUTD Server
 
-## TwinCATAUTDServer
+TwinCATのLinkを使うには, まず, `AUTD Server`をインストールする必要がある.
+[GitHub Releases](https://github.com/shinolab/autd3/releases)にてインストーラを配布しているので, これをダウンロードし, 指示に従ってインストールする.
 
-TwinCATのLinkを使うには, まず, `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe`を実行する.
+`AUTD Server`を実行すると, 以下のような画面になるので, `TwinCAT`タブを開く.
 
-初回のみ, ドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_twincat.jpg"/>
+</figure>
 
-```shell
-TwinCATAUTDServer.exe -k
-```
+### 初回の追加作業
 
-> Note: もし閉じてしまった場合は, `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln`をTcXaeShell Applicationとして開けば良い. `%TEMP%`は環境変数で, 普通は`C:/Users/(user name)/AppData/Local/Temp`である.
+初回のみ, 以下の作業が必要になる.
 
-なお, TwinCATAUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
+まず, 「Copy AUTD.xml」ボタンを押す.
+ここで, 「AUTD.xml is successfully copied」のようなメッセージが出れば成功である.
 
-### ドライバのインストール
-
-初回はEherCAT用のドライバのインストールが必要になる.
+次に, 「Open XAE Shell」ボタンを押し, XAE Shellを開く.
 TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethernet Compatible Devices」を開き「Compatible devices」の中の対応デバイスを選択し, Installをクリックする.
 「Installed and ready to use devices (realtime capable)」にインストールされたアダプタが表示されていれば成功である.
 
@@ -65,11 +65,26 @@ TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethern
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
 ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び`TwinCATAUTDServer.exe`を実行する.
 
+### AUTD Serverの実行
+
+AUTD3とPCを接続し, AUTD3の電源が入った状態で, 「Run」ボタンを押す.
+このとき, 「Client IP address」の欄は空白にしておくこと.
+
+下の画面のように, AUTD3デバイスが見つかった旨のメッセージが出れば成功である.
+
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_twincat_run.jpg"/>
+</figure>
+
+なお, AUTD ServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
+
 ## TwinCATリンクのAPI
 
 ### コンストラクタ
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::TwinCAT;
 
@@ -110,12 +125,8 @@ TwinCAT()
   <figcaption>9台のAUTD3デバイスを使用した際のTwinCATエラー</figcaption>
 </figure>
 
-この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
+この場合は, `AUTD Server`の`Sync0 cycle time`と`Send task cycle time`の値を増やし, AUTD Serverを再び実行する.
 これらのオプションの値はデフォルトでそれぞれ`2`になっている.
-
-```shell
-TwinCATAUTDServer.exe -s 3 -t 3
-```
 
 どの程度の値にすればいいかは接続する台数による.
 エラーが出ない中で可能な限り小さな値が望ましい.
@@ -133,52 +144,35 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 このPCをここでは"サーバ"と呼ぶ.
 一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
 
-<figure>
-  <img src="../../fig/Users_Manual/remotetwincat.jpg"/>
-  <figcaption>Network Configuration</figcaption>
-</figure>
-
 まず, サーバとAUTDデバイスを接続する.
 この時使うLANのアダプタはTwinCAT linkと同じく, TwinCAT対応のアダプタである必要がある.
 また, サーバとクライアントを別のLANで繋ぐ.
 こちらのLANアダプタはTwinCAT対応である必要はない[^fn_remote_twin].
 そして, サーバとクライアント間のLANのIPを確認しておく.
-ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
-次に, サーバでTwinCATAUTDServerを起動する.
-この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`) を指定する.
-また, 最後に`-k`オプションを使用し, TwinCATAUTDServerを開いたままにしておく.
-
-```ignore
-TwinCATAUTDServer.exe -c 169.254.175.45 -k
-```
-
-そして, 以下の図のように, System→Routesを開き, NetId ManagementタブのLocal NetIdを確認しておく.
+ここでは例えば, サーバ側が`172.16.99.104`, クライアント側が`172.16.99.62`だったとする.
+次に, サーバで`AUTD Server`を起動する.
+この時, `Client IP address`にクライアントのIPアドレス (この例だと`172.16.99.62`) を指定する.
 
 <figure>
-  <img src="../../fig/Users_Manual/NetId_Management.jpg"/>
-  <figcaption>Server AmsNetId</figcaption>
+  <img src="../../fig/Users_Manual/autdserver_remotetwincat.jpg"/>
 </figure>
 
-ここでは, "172.16.99.194.1.1"だったとする.
+右側の画面に, 「Server AmsNetId」と「Client AmsNetId」が表示されるので, これをメモっておく.
 
-また, クライアントのAMS NetIdを確認しておく.
-これは, 以下の図のようにTwinCATで「System」→「Routes」を開き, 「Current Route」タブのAmsNetIdで確認できる.
-
-<figure>
-  <img src="../../fig/Users_Manual/Current_Route.jpg"/>
-  <figcaption>Client AmsNetId</figcaption>
-</figure>
+> NOTE: 「Server AmsNetId」の最初の4桁はServerのIPアドレスを意味しているわけではないので注意されたい.
 
 ## RemoteTwinCATリンクのAPI
 
 ### コンストラクタ
 
-RemoteTwinCATリンクのコンストラクタにはサーバのNetIdを指定する.
+RemoteTwinCATリンクのコンストラクタには「Server AmsNetId」を指定する.
 
 また, `with_server_ip`と`with_client_ams_net_id`でサーバーのIPアドレスとクライアントのNetIdを指定する.
 これらは省略することも可能だが, 基本的には指定することを推奨する.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::RemoteTwinCAT;
 
@@ -188,9 +182,9 @@ use autd3_link_twincat::RemoteTwinCAT;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #      .open_with(
-RemoteTwinCAT::new("172.16.99.194.1.1")?
-            .with_server_ip("169.254.205.219")
-            .with_client_ams_net_id("169.254.175.45.1.1")
+RemoteTwinCAT::new("172.16.99.111.1.1")?
+            .with_server_ip("172.16.99.104")
+            .with_client_ams_net_id("172.16.99.62.1.1")
 # )?;
 # Ok(())
 # }
@@ -199,23 +193,23 @@ RemoteTwinCAT::new("172.16.99.194.1.1")?
 ```cpp
 #include "autd3/link/twincat.hpp"
 
-autd3::link::RemoteTwinCAT("172.16.99.194.1.1")
-				.with_server_ip("169.254.205.219")
-				.with_client_ams_net_id("169.254.175.45.1.1");
+autd3::link::RemoteTwinCAT("172.16.99.111.1.1")
+				.with_server_ip("172.16.99.104")
+				.with_client_ams_net_id("172.16.99.62.1.1");
 ```
 
 ```cs
-new RemoteTwinCAT("172.16.99.194.1.1")
-        .WithServerIp(IPAddress.Parse("169.254.205.219"))
-        .WithClientAmsNetId("169.254.175.45.1.1");
+new RemoteTwinCAT("172.16.99.111.1.1")
+        .WithServerIp(IPAddress.Parse("172.16.99.104"))
+        .WithClientAmsNetId("172.16.99.62.1.1");
 ```
 
 ```python
 from pyautd3.link import RemoteTwinCAT
 
-RemoteTwinCAT("172.16.99.194.1.1")\
-    .with_server_ip("169.254.205.219")\
-    .with_client_ams_net_id("169.254.175.45.1.1")
+RemoteTwinCAT("172.16.99.111.1.1")\
+    .with_server_ip("172.16.99.104")\
+    .with_client_ams_net_id("172.16.99.62.1.1")
 ```
 
 ## ファイアウォール

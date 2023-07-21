@@ -1,3 +1,28 @@
+# 14.0.1
+
+- Fix [#107](https://github.com/shinolab/autd3/issues/107): There is no with_sampling_frequency method in FocusSTM and GainSTM in pyautd3
+- Add sampling frequency option to `Wav` modulation in capi
+
+# 14.0.0
+
+- Fix [#84](https://github.com/shinolab/autd3/issues/84): AUTD Server should not require wpcap.dll
+- Fix [#85](https://github.com/shinolab/autd3/issues/85): Dockerfile in doc is broken
+- Fix [#86](https://github.com/shinolab/autd3/issues/86): Remove bindgen dependency from autd3-link-soem
+- Fix [#87](https://github.com/shinolab/autd3/issues/87): Firmware version from Simulator is invalid in macOS
+- Fix [#88](https://github.com/shinolab/autd3/issues/88): [Rust] Poor documentation
+- Fix [#92](https://github.com/shinolab/autd3/issues/92): Support modulation::Radiation in C++/C#/Python
+- Fix [#95](https://github.com/shinolab/autd3/issues/95): Poor typing in pyautd3
+- Fix [#96](https://github.com/shinolab/autd3/issues/96): sudo pip is not recommended
+- Fix [#97](https://github.com/shinolab/autd3/issues/97): Can AMS Net Id be displayed on terminal?
+- Fix [#99](https://github.com/shinolab/autd3/issues/99): Add gain::Grouped support in lightweight mode
+- Fix [#100](https://github.com/shinolab/autd3/issues/100): AUTD Server application should show License
+- Fix [#102](https://github.com/shinolab/autd3/issues/102): error message when given an Interface name and no AUTD3 device is not found is a bit strange
+- Fix [#103](https://github.com/shinolab/autd3/issues/103): warning: variable does not need to be mutable in tests
+- Fix [#104](https://github.com/shinolab/autd3/issues/104): dependency on autd3-protobuf should be optional because it requires additional libraries to build and is not necessary for basic usage
+- Fix [#105](https://github.com/shinolab/autd3/issues/105): pyautd3 cannot be used on macOS
+- Fix [#106](https://github.com/shinolab/autd3/issues/106): tuple of Clear and Synchronize can be sent, but it must be not allowed
+- Add plotters backend for `autd3-link-monitor` and make it default
+
 # 13.0.0
 
 - Remove `SinePressure`, add `RadiationPressure` instead

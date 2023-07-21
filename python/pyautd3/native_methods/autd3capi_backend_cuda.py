@@ -22,7 +22,7 @@ class NativeMethods(metaclass=Singleton):
     def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
         try:
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_backend_cuda{bin_ext}'))
-        except FileNotFoundError:
+        except Exception:
             return
 
         self.dll.AUTDCUDABackend.argtypes = [ctypes.c_char_p] 

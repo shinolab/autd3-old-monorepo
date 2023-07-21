@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 19/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -104,8 +104,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransPosition(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var pos = new float_t[3];
+                Base.AUTDTransPosition(_ptr, (uint)Idx, pos);
+                return new Vector3(pos[0], pos[1], pos[2]);
             }
         }
 
@@ -113,8 +114,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransRotation(_ptr, (uint)Idx, out var w, out var x, out var y, out var z);
-                return new Quaternion(x, y, z, w);
+                var rot = new float_t[4];
+                Base.AUTDTransRotation(_ptr, (uint)Idx, rot);
+                return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
             }
         }
 
@@ -122,8 +124,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransXDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransXDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -131,8 +134,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransYDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransYDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -140,8 +144,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransZDirection(_ptr, (uint)Idx, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var dir = new float_t[3];
+                Base.AUTDTransZDirection(_ptr, (uint)Idx, dir);
+                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
         public float_t Frequency
@@ -211,8 +216,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDGeometryCenter(Ptr, out var x, out var y, out var z);
-                return new Vector3(x, y, z);
+                var center = new float_t[3];
+                Base.AUTDGeometryCenter(Ptr, center);
+                return new Vector3(center[0], center[1], center[2]);
             }
         }
 
@@ -225,8 +231,9 @@ namespace AUTD3Sharp
 
         public Vector3 CenterOf(int devIdx)
         {
-            Base.AUTDGeometryCenterOf(Ptr, (uint)devIdx, out var x, out var y, out var z);
-            return new Vector3(x, y, z);
+            var center = new float_t[3];
+            Base.AUTDGeometryCenterOf(Ptr, (uint)devIdx, center);
+            return new Vector3(center[0], center[1], center[2]);
         }
 
         public IEnumerator<Transducer> GetEnumerator() => _transducers.GetEnumerator();
@@ -345,8 +352,9 @@ namespace AUTD3Sharp
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
                 var info = new byte[256];
-                Base.AUTDGetFirmwareInfo(handle, i, info, out var isValid, out var isSupported);
-                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), isValid, isSupported);
+                var props = new bool[2];
+                Base.AUTDGetFirmwareInfo(handle, i, info, props);
+                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), props[0], props[1]);
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);
@@ -665,6 +673,34 @@ namespace AUTD3Sharp
             }
         }
 
+        public sealed class Cache : GainBase, IEnumerable<Drive>
+        {
+            public Cache(GainBase g, Geometry geometry)
+            {
+                var err = new byte[256];
+                Drives = new Drive[geometry.NumTransducers];
+                if (Base.AUTDGainCalc(g.GainPtr(geometry), geometry.Ptr, Drives, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+            }
+
+            public override GainPtr GainPtr(Geometry geometry)
+            {
+                return Base.AUTDGainCustom(Drives, (ulong)Drives.Length);
+            }
+
+            public Drive this[int index]
+            {
+                get => Drives[index];
+                set => Drives[index] = value;
+            }
+
+            public Drive[] Drives { get; }
+
+            public IEnumerator<Drive> GetEnumerator() => Drives.AsEnumerable().GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
         public sealed class Null : GainBase
         {
             public override GainPtr GainPtr(Geometry geometry) => Base.AUTDGainNull();
@@ -709,14 +745,14 @@ namespace AUTD3Sharp
             private readonly int _freq;
             private float_t? _amp;
             private float_t? _offset;
-            private uint? _freq_div;
+            private uint? _freqDiv;
 
             public Sine(int freq)
             {
                 _freq = freq;
                 _amp = null;
                 _offset = null;
-                _freq_div = null;
+                _freqDiv = null;
             }
 
             public Sine WithAmp(float_t amp)
@@ -731,15 +767,15 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Sine with_sampling_frequency_division(uint div)
+            public Sine WithSamplingFrequencyDivision(uint div)
             {
-                _freq_div = div;
+                _freqDiv = div;
                 return this;
             }
 
-            public Sine with_sampling_frequency(float_t freq)
+            public Sine WithSamplingFrequency(float_t freq)
             {
-                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+                return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
             }
 
             public override ModulationPtr ModulationPtr()
@@ -749,8 +785,8 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSineWithAmp(ptr, _amp.Value);
                 if (_offset != null)
                     ptr = Base.AUTDModulationSineWithOffset(ptr, _offset.Value);
-                if (_freq_div != null)
-                    ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.Value);
+                if (_freqDiv != null)
+                    ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
                 return ptr;
             }
         }
@@ -760,14 +796,14 @@ namespace AUTD3Sharp
             private readonly float_t _freq;
             private float_t? _amp;
             private float_t? _offset;
-            private uint? _freq_div;
+            private uint? _freqDiv;
 
             public SineLegacy(float_t freq)
             {
                 _freq = freq;
                 _amp = null;
                 _offset = null;
-                _freq_div = null;
+                _freqDiv = null;
             }
 
             public SineLegacy WithAmp(float_t amp)
@@ -782,15 +818,15 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SineLegacy with_sampling_frequency_division(uint div)
+            public SineLegacy WithSamplingFrequencyDivision(uint div)
             {
-                _freq_div = div;
+                _freqDiv = div;
                 return this;
             }
 
-            public SineLegacy with_sampling_frequency(float_t freq)
+            public SineLegacy WithSamplingFrequency(float_t freq)
             {
-                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+                return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
             }
 
             public override ModulationPtr ModulationPtr()
@@ -800,8 +836,8 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSineLegacyWithAmp(ptr, _amp.Value);
                 if (_offset != null)
                     ptr = Base.AUTDModulationSineLegacyWithOffset(ptr, _offset.Value);
-                if (_freq_div != null)
-                    ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, _freq_div.Value);
+                if (_freqDiv != null)
+                    ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
                 return ptr;
             }
         }
@@ -812,7 +848,7 @@ namespace AUTD3Sharp
             private float_t? _low;
             private float_t? _high;
             private float_t? _duty;
-            private uint? _freq_div;
+            private uint? _freqDiv;
 
             public Square(int freq)
             {
@@ -820,7 +856,7 @@ namespace AUTD3Sharp
                 _low = null;
                 _high = null;
                 _duty = null;
-                _freq_div = null;
+                _freqDiv = null;
             }
 
             public Square WithLow(float_t low)
@@ -841,15 +877,15 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Square with_sampling_frequency_division(uint div)
+            public Square WithSamplingFrequencyDivision(uint div)
             {
-                _freq_div = div;
+                _freqDiv = div;
                 return this;
             }
 
-            public Square with_sampling_frequency(float_t freq)
+            public Square WithSamplingFrequency(float_t freq)
             {
-                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+                return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
             }
 
             public override ModulationPtr ModulationPtr()
@@ -861,8 +897,8 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSquareWithHigh(ptr, _high.Value);
                 if (_duty != null)
                     ptr = Base.AUTDModulationSquareWithDuty(ptr, _duty.Value);
-                if (_freq_div != null)
-                    ptr = Base.AUTDModulationSquareWithSamplingFrequencyDivision(ptr, _freq_div.Value);
+                if (_freqDiv != null)
+                    ptr = Base.AUTDModulationSquareWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
                 return ptr;
             }
         }
@@ -888,6 +924,65 @@ namespace AUTD3Sharp
             }
 
             public abstract float_t[] Calc();
+        }
+
+
+        public class Cache : ModulationBase, IEnumerable<float_t>
+        {
+            private readonly uint _freqDiv;
+
+            public Cache(ModulationBase m)
+            {
+                _freqDiv = m.SamplingFrequencyDivision;
+
+                var err = new byte[256];
+                var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
+                if (size == Def.Autd3Err) throw new AUTDException(err);
+                Buffer = new float_t[size];
+                if (Base.AUTDModulationCalc(m.ModulationPtr(), Buffer, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+            }
+
+            public override ModulationPtr ModulationPtr()
+            {
+                return Base.AUTDModulationCustom(_freqDiv, Buffer, (ulong)Buffer.Length);
+            }
+
+            public float_t this[int index]
+            {
+                get => Buffer[index];
+                set => Buffer[index] = value;
+            }
+
+            public float_t[] Buffer { get; }
+
+            public IEnumerator<float_t> GetEnumerator() => Buffer.AsEnumerable().GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public sealed class RadiationPressure : ModulationBase
+        {
+            private readonly uint _freqDiv;
+            private readonly float_t[] _buffer;
+
+            public RadiationPressure(ModulationBase m)
+            {
+                _freqDiv = m.SamplingFrequencyDivision;
+
+                var err = new byte[256];
+                var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
+                if (size == Def.Autd3Err) throw new AUTDException(err);
+                var buf = new float_t[size];
+                if (Base.AUTDModulationCalc(m.ModulationPtr(), buf, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+                _buffer = buf.Select(Math.Sqrt).ToArray();
+            }
+
+            public override ModulationPtr ModulationPtr()
+            {
+                return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            }
         }
     }
 

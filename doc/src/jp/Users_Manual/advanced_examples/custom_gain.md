@@ -4,7 +4,9 @@
 
 ここでは, `Focus`と同じように単一焦点を生成する`FocalPoint`を実際に定義してみることにする.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_core;
 use autd3::{
     core::{
         error::AUTDInternalError,
@@ -28,7 +30,7 @@ impl FocalPoint {
 }
 
 impl<T: Transducer> Gain<T> for FocalPoint {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed; 
         Ok(Self::transform(geometry, |tr| Drive {
             phase: (tr.position() - self.position).norm() * tr.wavelength(sound_speed),

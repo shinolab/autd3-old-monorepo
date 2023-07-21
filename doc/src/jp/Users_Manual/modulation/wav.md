@@ -2,7 +2,8 @@
 
 `Wav`はWavファイルをもとに構成される`Modulation`である.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3_modulation_audio_file;
 use autd3_modulation_audio_file::Wav;
 
 # #[allow(unused_variables)]
@@ -31,3 +32,6 @@ from pyautd3.modulation import Wav
 path = "path/to/foo.wav"
 m = Wav(path)
 ```
+
+> NOTE: `Wav`では, wavファイルデータをModulationのサンプリング周波数でリサンプリングするので注意されたい.
+> Modulationのサンプリング周波数の設定と制約は[Modulation](../modulation.md)を参照されたい.

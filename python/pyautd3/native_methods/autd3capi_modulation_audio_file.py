@@ -22,11 +22,17 @@ class NativeMethods(metaclass=Singleton):
     def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
         try:
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_modulation_audio_file{bin_ext}'))
-        except FileNotFoundError:
+        except Exception:
             return
 
         self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
         self.dll.AUTDModulationWav.restype = ModulationPtr
 
+        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.restype = ModulationPtr
+
     def modulation_wav(self, path: bytes, err: ctypes.Array[ctypes.c_char]) -> ModulationPtr:
         return self.dll.AUTDModulationWav(path, err)
+
+    def modulation_wav_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationWavWithSamplingFrequencyDivision(m, div)

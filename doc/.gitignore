@@ -2,3 +2,4 @@ book
 .DS_Store
 doctest_cache
 *.lib
+*.png

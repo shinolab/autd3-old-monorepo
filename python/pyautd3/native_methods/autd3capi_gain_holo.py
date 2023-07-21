@@ -2,7 +2,6 @@
 import threading
 import ctypes
 import os
-from typing import Any
 from .autd3capi_def import BackendPtr, GainPtr
 
 
@@ -27,7 +26,7 @@ class NativeMethods(metaclass=Singleton):
     def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
         try:
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_gain_holo{bin_ext}'))
-        except FileNotFoundError:
+        except Exception:
             return
 
         self.dll.AUTDDefaultBackend.argtypes = [] 
@@ -144,7 +143,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_clamp_constraint(self, min_v: float, max_v: float) -> ConstraintPtr:
         return self.dll.AUTDGainHoloClampConstraint(min_v, max_v)
 
-    def gain_holo_sdp(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_sdp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloSDP(backend, points, amps, size)
 
     def gain_holo_sdp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -159,7 +158,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_sdp_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloSDPWithRepeat(holo, repeat)
 
-    def gain_holo_evp(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_evp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloEVP(backend, points, amps, size)
 
     def gain_holo_evp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -168,7 +167,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_evp_with_gamma(self, holo: GainPtr, gamma: float) -> GainPtr:
         return self.dll.AUTDGainHoloEVPWithGamma(holo, gamma)
 
-    def gain_holo_gs(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_gs(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloGS(backend, points, amps, size)
 
     def gain_holo_gs_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -177,7 +176,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_gs_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloGSWithRepeat(holo, repeat)
 
-    def gain_holo_gspat(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_gspat(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloGSPAT(backend, points, amps, size)
 
     def gain_holo_gspat_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -186,13 +185,13 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_gspat_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloGSPATWithRepeat(holo, repeat)
 
-    def gain_holo_naive(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_naive(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloNaive(backend, points, amps, size)
 
     def gain_holo_naive_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
         return self.dll.AUTDGainHoloNaiveWithConstraint(holo, constraint)
 
-    def gain_holo_greedy(self, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_greedy(self, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloGreedy(points, amps, size)
 
     def gain_holo_greedy_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -201,7 +200,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_greedy_with_phase_div(self, holo: GainPtr, div: int) -> GainPtr:
         return self.dll.AUTDGainHoloGreedyWithPhaseDiv(holo, div)
 
-    def gain_holo_lm(self, backend: BackendPtr, points: Any, amps: Any, size: int) -> GainPtr:
+    def gain_holo_lm(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
         return self.dll.AUTDGainHoloLM(backend, points, amps, size)
 
     def gain_holo_lm_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -219,5 +218,5 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_lm_with_k_max(self, holo: GainPtr, k_max: int) -> GainPtr:
         return self.dll.AUTDGainHoloLMWithKMax(holo, k_max)
 
-    def gain_holo_lm_with_initial(self, holo: GainPtr, initial_ptr: Any, len: int) -> GainPtr:
+    def gain_holo_lm_with_initial(self, holo: GainPtr, initial_ptr: ctypes.Array[ctypes.c_double], len: int) -> GainPtr:
         return self.dll.AUTDGainHoloLMWithInitial(holo, initial_ptr, len)

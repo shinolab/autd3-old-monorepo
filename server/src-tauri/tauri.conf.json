@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "AUTD Server",
-    "version": "13.0.0"
+    "version": "14.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -55,15 +55,13 @@
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [
-        "simulator",
-        "SOEMAUTDServer"
+      "targets": [
+        "msi",
+        "deb",
+        "dmg"
       ],
+      "identifier": "com.shinolab.autd-server",
+      "publisher": "Shun Suzuki",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -71,15 +69,6 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.shinolab.autd-server",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
       "resources": [
         "./TwinCATAUTDServer/AUTD.xml",
         "./TwinCATAUTDServer/TwinCATAUTDServer.exe",
@@ -90,8 +79,24 @@
         "./TwinCATAUTDServer/System.Runtime.CompilerServices.Unsafe.dll",
         "./TwinCATAUTDServer/TwinCAT.Ads.dll"
       ],
-      "shortDescription": "",
-      "targets": "all",
+      "copyright": "Copyright (c) 2023 Shun Suzuki. All rights reserved.",
+      "category": "DeveloperTool",
+      "shortDescription": "AUTD Server application",
+      "longDescription": "",
+      "deb": {
+        "depends": []
+      },
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "externalBin": [
+        "simulator",
+        "SOEMAUTDServer"
+      ],
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",

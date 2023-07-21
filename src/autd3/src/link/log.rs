@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/06/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,7 @@ use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
+/// Link to logging
 pub struct LogImpl<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
@@ -36,6 +37,7 @@ pub struct LogImpl<T: Transducer, L: Link<T>> {
 }
 
 pub trait Log<T: Transducer, L: Link<T>> {
+    /// enable logger
     fn with_log(self) -> LogImpl<T, L>;
 }
 
@@ -71,11 +73,15 @@ impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
         }
     }
 
+    /// set log level
     pub fn with_log_level(self, level: LevelFilter) -> Self {
         self.logger.set_level_filter(level);
         self
     }
 
+    /// set logger
+    ///
+    /// By default, the logger will display the log on the console.
     pub fn with_logger(self, logger: Logger) -> Self {
         Self { logger, ..self }
     }

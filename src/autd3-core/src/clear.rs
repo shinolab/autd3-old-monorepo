@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 18/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,11 @@
 
 use std::time::Duration;
 
-use autd3_driver::NullBody;
+use autd3_driver::ExclusiveNullBody;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
+/// Datagram for clear all data in devices
 #[derive(Default)]
 pub struct Clear {}
 
@@ -28,7 +29,7 @@ impl Clear {
 
 impl<T: Transducer> Datagram<T> for Clear {
     type H = autd3_driver::Clear;
-    type B = NullBody;
+    type B = ExclusiveNullBody;
 
     fn timeout(&self) -> Option<Duration> {
         Some(Duration::from_millis(200))
@@ -54,14 +55,14 @@ mod tests {
             .build()
             .unwrap();
 
-        let mut datagram = Clear::new();
+        let datagram = Clear::new();
         assert_eq!(
             <Clear as Datagram<LegacyTransducer>>::timeout(&datagram),
             Some(Duration::from_millis(200))
         );
         datagram.operation(&geometry).unwrap();
 
-        let mut datagram = Clear::new().with_timeout(Duration::from_millis(100));
+        let datagram = Clear::new().with_timeout(Duration::from_millis(100));
         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
         datagram.operation(&geometry).unwrap();
     }
