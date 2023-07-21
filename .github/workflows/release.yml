@@ -225,6 +225,23 @@ jobs:
           asset_path: ./assets_x64.zip
           asset_name: ${{ steps.get_version.outputs.result }}.zip
           asset_content_type: application/zip
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine wheel
+      - name: Build
+        run: |
+          cd python
+          python setup.py sdist bdist_wheel
+      - name: Publish
+        run: |
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_linux:
     needs: [release]
@@ -285,6 +302,23 @@ jobs:
           asset_path: ./cpp/assets_x64.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}-x64.tar.gz
           asset_content_type: application/octet-stream
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine wheel
+      - name: Build
+        run: |
+          cd python
+          python setup.py sdist bdist_wheel
+      - name: Publish
+        run: |
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
   
   publish_mac:
     needs: [release]
@@ -341,6 +375,23 @@ jobs:
           asset_path: ./cpp/assets.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}
           asset_content_type: application/octet-stream
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine wheel
+      - name: Build
+        run: |
+          cd python
+          python setup.py sdist bdist_wheel
+      - name: Publish
+        run: |
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_pypi:
     needs: [build, publish_win, publish_linux, publish_mac]
@@ -355,10 +406,15 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install twine wheel
+    - name: Copy artifacts from other jobs
+      run: |
+        mkdir python/dist
+        cp publish_win/python/dist/* python/dist/
+        cp publish_linux/python/dist/* python/dist/
+        cp publish_mac/python/dist/* python/dist/
     - name: Publish
       run: |
         cd python
-        python setup.py sdist bdist_wheel
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_nuget:
