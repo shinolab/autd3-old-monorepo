@@ -323,7 +323,6 @@ version = "14.0.1"
 name = "autd3-modulation-audio-file"
 version = "14.0.1"
 dependencies = [
- "autd3",
  "autd3-core",
  "autd3-traits",
  "hound",
