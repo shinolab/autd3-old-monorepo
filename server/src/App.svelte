@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 12/07/2023
+Last Modified: 24/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 -->
 
 <script lang="ts">
-  import type { Options } from "./UI/options";
+  import type { Options } from "./lib/UI/options";
 
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
@@ -21,12 +21,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import { appWindow } from "@tauri-apps/api/window";
   import { TauriEvent } from "@tauri-apps/api/event";
 
-  import LeftPanel from "./LeftPanel.svelte";
-  import RightPanel from "./RightPanel.svelte";
+  import LeftPanel from "./lib/LeftPanel.svelte";
+  import RightPanel from "./lib/RightPanel.svelte";
 
-  import License from "./License.svelte";
-  import Notice from "./Notice.svelte";
+  import License from "./lib/License.svelte";
+  import Notice from "./lib/Notice.svelte";
   import Modal, { bind } from "svelte-simple-modal";
+
   const licenseModal = writable<any>(null);
   const noticeModal = writable<any>(null);
   const showLicenseModal = () => licenseModal.set(bind(License, {}));
@@ -53,7 +54,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   });
 </script>
 
-<body>
+<main class="container">
   <div>
     {#if options}
       <LeftPanel {options} />
@@ -77,10 +78,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       <button on:click={showNoticeModal}>Third party</button>
     </Modal>
   </footer>
-</body>
+</main>
 
 <style>
-  body {
+  .container {
     display: flex;
     flex-flow: column;
     flex-shrink: 0;

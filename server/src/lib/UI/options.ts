@@ -4,14 +4,14 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  * 
  */
 
-import type { Duration } from "./utils/duration.ts";
+import type { Duration } from "./utils/duration.js";
 
 export const SyncModeValues = ["DC", "FreeRun"] as const
 export type SyncMode = typeof SyncModeValues[number]
