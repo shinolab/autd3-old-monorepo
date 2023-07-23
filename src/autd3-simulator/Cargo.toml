@@ -11,18 +11,18 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="14.0.1"}
-autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="14.0.1"}
-autd3-protobuf = {path="../autd3-protobuf", version="14.0.1"}
+autd3-core = { path = "../autd3-core", version = "14.0.1" }
+autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "14.0.1" }
+autd3-protobuf = { path = "../autd3-protobuf", version = "14.0.1" }
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"
-imgui = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" } # for winit 0.28
-imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" } # for winit 0.28
+imgui = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                               # for winit 0.28
+imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                 # for winit 0.28
 png = "0.17.8"
 scarlet = "1.1.0"
-serde = "1.0.163"
+serde = { version = "1.0.174", features = ["derive"] }
 vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
 vulkano-win = "0.33.0"
@@ -30,11 +30,9 @@ winit = "0.28.6"
 imgui-vulkano-renderer = { git = "https://github.com/s5suzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
 spdlog-rs = "0.3.8"
 crossbeam-channel = "0.5.8"
-serde_derive = "1.0.163"
 image = "0.24.6"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.0", features = ["rt-multi-thread"] }
 futures-util = "0.3.28"
-tokio-stream = "0.1.14"
 tonic = "0.9.2"
 anyhow = "1.0.71"
 
