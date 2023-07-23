@@ -185,15 +185,11 @@ dependencies = [
 name = "autd3"
 version = "14.0.1"
 dependencies = [
- "atomic",
  "autd3-core",
  "autd3-firmware-emulator",
  "autd3-traits",
- "itertools 0.11.0",
- "nalgebra",
  "num",
  "spdlog-rs",
- "spin",
  "thiserror",
 ]
 
@@ -201,18 +197,12 @@ dependencies = [
 name = "autd3-core"
 version = "14.0.1"
 dependencies = [
- "atomic",
  "autd3-driver",
  "bitflags 2.3.3",
- "itertools 0.11.0",
  "libc",
  "nalgebra",
- "num",
- "num-derive",
- "num-traits",
  "serde",
  "spdlog-rs",
- "spin",
  "thiserror",
  "windows",
 ]
@@ -306,7 +296,6 @@ dependencies = [
  "autd3-protobuf",
  "thiserror",
  "tokio",
- "tokio-stream",
  "tonic",
 ]
 
@@ -320,8 +309,6 @@ dependencies = [
  "crossbeam-channel",
  "glob",
  "libc",
- "once_cell",
- "serde",
  "thiserror",
  "tokio",
  "tonic",
@@ -335,9 +322,7 @@ dependencies = [
  "autd3-core",
  "cc",
  "itertools 0.11.0",
- "libc",
  "libloading 0.8.0",
- "once_cell",
  "thiserror",
 ]
 
@@ -392,10 +377,8 @@ dependencies = [
  "png",
  "scarlet",
  "serde",
- "serde_derive",
  "spdlog-rs",
  "tokio",
- "tokio-stream",
  "tonic",
  "vulkano",
  "vulkano-shaders",
@@ -1918,17 +1901,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num-derive"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e6a0fd4f737c707bd9086cc16c925f294943eb62eb71499e9fd4cf71f8b9f4e"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.26",
-]
-
-[[package]]
 name = "num-integer"
 version = "0.1.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2713,18 +2685,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.171"
+version = "1.0.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30e27d1e4fd7659406c492fd6cfaf2066ba8773de45ca75e855590f856dc34a9"
+checksum = "3b88756493a5bd5e5395d53baa70b194b05764ab85b59e43e4b8f4e1192fa9b1"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.171"
+version = "1.0.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "389894603bd18c46fa56231694f8d827779c0951a667087194cf9de94ed24682"
+checksum = "6e5c3a298c7f978e53536f95a63bdc4c4a64550582f31a0359a9afda6aede62e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2761,15 +2733,6 @@ dependencies = [
  "cmake",
  "libc",
  "roxmltree",
-]
-
-[[package]]
-name = "signal-hook-registry"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8229b473baa5980ac72ef434c4415e70c4b5e71b423043adb4ba059f89c99a1"
-dependencies = [
- "libc",
 ]
 
 [[package]]
@@ -3036,9 +2999,7 @@ dependencies = [
  "libc",
  "mio",
  "num_cpus",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.48.0",

@@ -11,28 +11,23 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-atomic = "0.5.1"
-autd3-driver = {path = "../autd3-driver", version="14.0.1"}
+autd3-driver = { path = "../autd3-driver", version = "14.0.1" }
 bitflags = "2.0.2"
-itertools = "0.11.0"
-nalgebra = "0.32.1"
-num = "0.4.0"
-num-derive = "0.4.0"
-num-traits = "0.2.15"
-rayon = {version="1.7.0", optional=true}
+nalgebra = { version = "0.32.1", default-features = false, features = ["std"] }
+rayon = { version = "1.7.0", optional = true }
 serde = { version = "1.0.166", features = ["derive"] }
 spdlog-rs = "0.3.8"
-spin = "0.9.8"
 thiserror = "1.0.30"
 
 [target.'cfg(windows)'.dependencies]
-windows = {version = "0.48.0", features = ["Win32_Media_Multimedia", "Win32_System_Threading", "Win32_Foundation"]}
+windows = { version = "0.48.0", features = ["Win32_Media_Multimedia", "Win32_System_Threading", "Win32_Foundation"] }
 
 [target.'cfg(not(windows))'.dependencies]
 libc = "0.2.144"
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
+itertools = "0.11.0"
 
 [features]
 default = []
