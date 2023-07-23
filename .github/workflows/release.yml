@@ -361,6 +361,7 @@ jobs:
         pip install twine wheel
     - name: Publish
       run: |
+        git clean -d -fx  
         cd python
         python setup.py sdist bdist_wheel --plat-name ${{ matrix.os }}
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
