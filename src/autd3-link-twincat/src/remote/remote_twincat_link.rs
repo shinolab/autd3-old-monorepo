@@ -4,17 +4,19 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{ffi::CString, time::Duration};
+use std::{
+    ffi::{c_long, CString},
+    time::Duration,
+};
 
 use itertools::Itertools;
-use libc::c_long;
 
 use autd3_core::{
     error::AUTDInternalError,
