@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -63,8 +63,6 @@ impl TimerCallback for SoemCallback {
             if let Ok(tx) = self.receiver.try_recv() {
                 self.io_map.lock().unwrap().copy_from(&tx);
             }
-
-            ec_send_processdata();
         }
     }
 }
@@ -462,11 +460,11 @@ impl<T: Transducer> Link<T> for SOEM {
         if let Some(timer) = self.ecatth_handle.take() {
             let _ = timer.join();
         }
-        if let Some(th) = self.ecat_check_th.take() {
-            let _ = th.join();
-        }
         if let Some(timer) = self.timer_handle.take() {
             timer.close()?;
+        }
+        if let Some(th) = self.ecat_check_th.take() {
+            let _ = th.join();
         }
 
         unsafe {
