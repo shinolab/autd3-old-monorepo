@@ -11,6 +11,6 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path = "../autd3-core", version="14.0.1"}
+autd3-core = { path = "../autd3-core", version = "14.0.1" }
 num-integer = "0.1.45"
 thiserror = "1.0.40"
