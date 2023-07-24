@@ -16,6 +16,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cd ..
   mkdir -p python/pyautd3/bin
   cp ./capi/target/release/*.so python/pyautd3/bin
+  cd python
+  python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux1-x86_64"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   cargo build --release --all --exclude autd3capi-backend-cuda --target=x86_64-apple-darwin
   cargo build --release --all --exclude autd3capi-backend-cuda --target=aarch64-apple-darwin
@@ -25,9 +27,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     file_basename=`basename $x64_file`
     lipo -create $x64_file ./capi/target/aarch64-apple-darwin/release/$file_basename -output python/pyautd3/bin/$file_basename
   done
+  cd python
+  python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-10-13-x86_64"
+  python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-11-0-arm64"
 fi
-
-cd python
-python -m build
-
 popd
