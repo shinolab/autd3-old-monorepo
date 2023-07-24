@@ -13,7 +13,7 @@ keywords = ["autd"]
 [dependencies]
 autd3-driver = { path = "../autd3-driver", version = "14.0.1" }
 bitflags = "2.0.2"
-nalgebra = { version = "0.32.1", default-features = false, features = ["std"] }
+nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
 rayon = { version = "1.7.0", optional = true }
 serde = { version = "1.0.166", features = ["derive"] }
 spdlog-rs = "0.3.8"
