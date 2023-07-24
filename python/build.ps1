@@ -21,5 +21,5 @@ foreach($dll in Get-ChildItem -Path capi/target/release | Where {$_.extension -l
     Copy-Item -Path $dll -Destination python/pyautd3/bin
 }
 cd python
-python -m build
+python -m build -w -C="--build-option=--plat-name" -C="--build-option=win-amd64"
 popd
