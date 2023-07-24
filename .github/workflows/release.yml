@@ -372,7 +372,7 @@ jobs:
       run: |
         git clean -d -fx  
         cd python
-        python setup.py sdist bdist_wheel --plat-name $PLAT_NAME
+        python setup.py sdist bdist_wheel --plat-name=$PLAT_NAME
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_nuget:
