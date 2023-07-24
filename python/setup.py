@@ -130,6 +130,15 @@ data_files = list(
     )
 )
 
+def get_platform_name():
+    system_name = platform.system()
+    if system_name == 'Windows':
+        return 'windows'
+    elif system_name == 'Darwin':
+        return 'macos'
+    elif system_name == 'Linux':
+        return 'linux'
+
 setuptools.setup(
     name="pyautd3",
     version=_get_version(),
@@ -156,4 +165,5 @@ setuptools.setup(
     ],
     python_requires=">=3.9",
     data_files=data_files,
+    options={'bdist_wheel': {'plat_name': get_platform_name()}},
 )

@@ -359,20 +359,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install twine wheel
-    - name: Set plat-name variable based on ${{ matrix.os }}
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          export PLAT_NAME="win_amd64"
-        elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          export PLAT_NAME="manylinux2014_x86_64"
-        elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          export PLAT_NAME="macosx_10_15_x86_64"
-        fi
     - name: Publish
       run: |
-        git clean -d -fx  
+        git clean -d -fx
         cd python
-        python setup.py sdist bdist_wheel --plat-name=$PLAT_NAME
+        python setup.py sdist bdist_wheel
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_nuget:
