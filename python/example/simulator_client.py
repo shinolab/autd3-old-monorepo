@@ -11,7 +11,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, AUTD3, DEVICE_WIDTH
+from pyautd3 import Controller, AUTD3, DEVICE_WIDTH, Synchronize
 from pyautd3.link import Simulator
 
 from samples import runner
@@ -28,5 +28,7 @@ if __name__ == "__main__":
 
     for tr in autd.geometry:
         tr.frequency = 70e3
+
+    autd.send(Synchronize())
 
     runner.run(autd)
