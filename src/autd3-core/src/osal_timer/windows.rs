@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -27,7 +27,7 @@ impl NativeTimerWrapper {
     pub fn start<P>(
         &mut self,
         cb: LPTIMECALLBACK,
-        period_ns: u32,
+        period: std::time::Duration,
         lp_param: *mut P,
     ) -> Result<bool, TimerError> {
         unsafe {
@@ -38,7 +38,7 @@ impl NativeTimerWrapper {
             timeBeginPeriod(u_resolution);
 
             let timer_id = timeSetEvent(
-                period_ns / 1000 / 1000,
+                period.as_millis() as _,
                 u_resolution,
                 cb,
                 lp_param as usize,
