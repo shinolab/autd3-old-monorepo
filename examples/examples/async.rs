@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,8 @@ async fn main() -> Result<()> {
     let m = Square::new(150);
 
     autd.send_async((m, g)).await?;
+
+    autd.close()?;
 
     Ok(())
 }
