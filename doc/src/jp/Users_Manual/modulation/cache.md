@@ -13,8 +13,8 @@
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .open_with(Debug::new())?;
-let mut m = Static::new().with_cache()?;
-m[0] = 0.;
+let mut c = Static::new().with_cache()?;
+c[0] = 0.;
 # Ok(())
 # }
 ```

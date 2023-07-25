@@ -62,7 +62,7 @@ In that case, you can install the driver in "Incompatible devices", but it is no
 In addition, the first time you run it, you will get a license error.
 Open "Solution Explorer" → "SYSTEM" → "License" in XAE Shell, click "7 Days Trial License ...", and enter the characters displayed on the screen.
 Note that the license is a 7-day trial license, but you can reissue it by doing the same thing again.
-After issuing the license, close TwinCAT XAE Shell and run `TwinCATAUTDServer.exe` again.
+After issuing the license, close TwinCAT XAE Shell and run again.
 
 ### Run AUTD Server
 
