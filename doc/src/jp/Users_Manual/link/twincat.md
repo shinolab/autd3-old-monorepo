@@ -63,7 +63,7 @@ TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethern
 
 また, 初回はライセンス関係のエラーが出るので, XAE Shellで「Solution Explorer」→「SYSTEM」→「License」を開き, 「7 Days Trial License ...」をクリックし, 画面に表示される文字を入力する.
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
-ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び`TwinCATAUTDServer.exe`を実行する.
+ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び実行する.
 
 ### AUTD Serverの実行
 
