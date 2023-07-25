@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 25/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -242,7 +242,8 @@ impl<T: autd3_core::geometry::Transducer> ToMessage for autd3::gain::Grouped<T> 
             groups: self
                 .gain_map()
                 .keys()
-                .map(|&k| {
+                .map(|ks| {
+                    let k = ks[0];
                     let gain = if let Some(g) = self.get_gain::<autd3::gain::Focus>(k) {
                         match g.to_msg().datagram.unwrap() {
                             datagram::Datagram::Gain(g) => Some(g),
@@ -318,7 +319,10 @@ impl<T: autd3_core::geometry::Transducer> ToMessage for autd3::gain::Grouped<T> 
                     } else {
                         None
                     };
-                    grouped::Group { id: k as _, gain }
+                    grouped::Group {
+                        ids: ks.iter().map(|&i| i as u32).collect(),
+                        gain,
+                    }
                 })
                 .collect(),
         }
@@ -689,50 +693,51 @@ impl<T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Grouped) -> Self {
         msg.groups.iter().fold(Self::new(), |acc, v| {
+            let ids = v.ids.iter().map(|&i| i as usize).collect::<Vec<_>>();
             if let Some(g) = &v.gain {
                 match &g.gain {
-                    Some(gain::Gain::Focus(g)) => {
-                        acc.add::<autd3::gain::Focus>(v.id as _, autd3::gain::Focus::from_msg(g))
-                    }
-                    Some(gain::Gain::Bessel(g)) => {
-                        acc.add::<autd3::gain::Bessel>(v.id as _, autd3::gain::Bessel::from_msg(g))
-                    }
-                    Some(gain::Gain::Null(g)) => {
-                        acc.add::<autd3::gain::Null>(v.id as _, autd3::gain::Null::from_msg(g))
-                    }
-                    Some(gain::Gain::Plane(g)) => {
-                        acc.add::<autd3::gain::Plane>(v.id as _, autd3::gain::Plane::from_msg(g))
-                    }
-                    Some(gain::Gain::TransTest(g)) => acc.add::<autd3::gain::TransducerTest>(
-                        v.id as _,
-                        autd3::gain::TransducerTest::from_msg(g),
+                    Some(gain::Gain::Focus(g)) => acc
+                        .add_by_group::<autd3::gain::Focus>(&ids, autd3::gain::Focus::from_msg(g)),
+                    Some(gain::Gain::Bessel(g)) => acc.add_by_group::<autd3::gain::Bessel>(
+                        &ids,
+                        autd3::gain::Bessel::from_msg(g),
                     ),
-                    Some(gain::Gain::Sdp(g)) => acc.add::<autd3_gain_holo::SDP<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Null(g)) => {
+                        acc.add_by_group::<autd3::gain::Null>(&ids, autd3::gain::Null::from_msg(g))
+                    }
+                    Some(gain::Gain::Plane(g)) => acc
+                        .add_by_group::<autd3::gain::Plane>(&ids, autd3::gain::Plane::from_msg(g)),
+                    Some(gain::Gain::TransTest(g)) => acc
+                        .add_by_group::<autd3::gain::TransducerTest>(
+                            &ids,
+                            autd3::gain::TransducerTest::from_msg(g),
+                        ),
+                    Some(gain::Gain::Sdp(g)) => acc.add_by_group::<autd3_gain_holo::SDP<_>>(
+                        &ids,
                         autd3_gain_holo::SDP::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Evp(g)) => acc.add::<autd3_gain_holo::EVP<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Evp(g)) => acc.add_by_group::<autd3_gain_holo::EVP<_>>(
+                        &ids,
                         autd3_gain_holo::EVP::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Naive(g)) => acc.add::<autd3_gain_holo::Naive<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Naive(g)) => acc.add_by_group::<autd3_gain_holo::Naive<_>>(
+                        &ids,
                         autd3_gain_holo::Naive::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Gs(g)) => acc.add::<autd3_gain_holo::GS<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Gs(g)) => acc.add_by_group::<autd3_gain_holo::GS<_>>(
+                        &ids,
                         autd3_gain_holo::GS::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Gspat(g)) => acc.add::<autd3_gain_holo::GSPAT<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Gspat(g)) => acc.add_by_group::<autd3_gain_holo::GSPAT<_>>(
+                        &ids,
                         autd3_gain_holo::GSPAT::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Lm(g)) => acc.add::<autd3_gain_holo::LM<_>>(
-                        v.id as _,
+                    Some(gain::Gain::Lm(g)) => acc.add_by_group::<autd3_gain_holo::LM<_>>(
+                        &ids,
                         autd3_gain_holo::LM::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
                     ),
-                    Some(gain::Gain::Greedy(g)) => acc.add::<autd3_gain_holo::Greedy>(
-                        v.id as _,
+                    Some(gain::Gain::Greedy(g)) => acc.add_by_group::<autd3_gain_holo::Greedy>(
+                        &ids,
                         autd3_gain_holo::Greedy::from_msg(g),
                     ),
                     _ => acc,
