@@ -5,50 +5,62 @@ authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
 
-[[example]]
+[[bin]]
 name = "debug"
+path = "src/debug.rs"
 
-[[example]]
+[[bin]]
 name = "async"
+path = "src/async.rs"
 required-features = ["async"]
 
-[[example]]
+[[bin]]
 name = "soem"
+path = "src/soem.rs"
 required-features = ["soem"]
 
-[[example]]
+[[bin]]
 name = "remote_soem"
+path = "src/remote_soem.rs"
 required-features = ["remote_soem"]
 
-[[example]]
+[[bin]]
 name = "twincat"
+path = "src/twincat.rs"
 required-features = ["twincat"]
 
-[[example]]
+[[bin]]
 name = "remote_twincat"
+path = "src/remote_twincat.rs"
 required-features = ["remote_twincat"]
 
-[[example]]
+[[bin]]
 name = "simulator_client"
+path = "src/simulator_client.rs"
 required-features = ["simulator_client"]
 
-[[example]]
+[[bin]]
 name = "simulator_server"
+path = "src/simulator_server.rs"
 required-features = ["simulator_server"]
 
-[[example]]
+[[bin]]
 name = "monitor"
+path = "src/monitor.rs"
 required-features = ["monitor"]
 
-[[example]]
+[[bin]]
 name = "freq_config"
+path = "src/freq_config.rs"
 
-[[example]]
+[[bin]]
 name = "geometry_viewer"
+path = "src/geometry_viewer.rs"
 required-features = ["geometry_viewer"]
 
-[[example]]
+[[bin]]
 name = "lightweight"
+path = "src/lightweight.rs"
 required-features = ["lightweight"]
 
 [dependencies]
@@ -80,5 +92,6 @@ monitor = ["autd3-link-monitor"]
 geometry_viewer = ["autd3-geometry-viewer"]
 lightweight = ["autd3-protobuf", "tokio"]
 all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async", "lightweight"]
+
 single_float = ["autd3/single_float"]
 use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
