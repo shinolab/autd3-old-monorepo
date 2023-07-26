@@ -26,39 +26,20 @@ from .autd3capi_geometry_viewer import NativeMethods as ExtraGeometryViewer
 from .autd3capi_backend_cuda import NativeMethods as BackendCUDA
 
 _PLATFORM = platform.system()
-_TARGET_OS = ""
-_ARCH = ""
 _PREFIX = ""
 _BIN_EXT = ""
 if _PLATFORM == "Windows":
     _BIN_EXT = ".dll"
-    _TARGET_OS = "win"
-    _ARCH = "x64" if platform.machine().endswith("64") else "x86"
 elif _PLATFORM == "Darwin":
     _PREFIX = "lib"
     _BIN_EXT = ".dylib"
-    _TARGET_OS = "macos"
-    _ARCH = "universal"
 elif _PLATFORM == "Linux":
     _PREFIX = "lib"
     _BIN_EXT = ".so"
-    _TARGET_OS = "linux"
-    if platform.machine().startswith("aarch64"):
-        _ARCH = "arm64"
-    elif platform.machine().startswith("arm64"):
-        _ARCH = "arm64"
-    elif platform.machine().startswith("arm"):
-        _ARCH = "arm32"
-    elif platform.machine().endswith("64"):
-        _ARCH = "x64"
-    else:
-        raise ImportError("Cannot identify CPU architecture")
 else:
     raise ImportError("Not supported OS")
 
-_LIB_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "bin", f"{_TARGET_OS}_{_ARCH}"
-)
+_LIB_PATH = os.path.join(os.path.dirname(__file__), "..", "bin")
 
 Base().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 GainHolo().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
