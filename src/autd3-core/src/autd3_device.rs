@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,18 +14,25 @@
 use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
 use autd3_driver::{float, MILLIMETER};
 
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_IN_UNIT instead")]
 /// Number of transducer in an AUTD3 device
 pub const NUM_TRANS_IN_UNIT: usize = 249;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_X instead")]
 /// Number of transducer in x-axis of AUTD3 device
 pub const NUM_TRANS_X: usize = 18;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_Y instead")]
 /// Number of transducer in y-axis of AUTD3 device
 pub const NUM_TRANS_Y: usize = 14;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::TRANS_SPACING_MM instead")]
 /// Spacing between transducers in mm
 pub const TRANS_SPACING_MM: float = 10.16;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::TRANS_SPACING instead")]
 /// Spacing between transducers
-pub const TRANS_SPACING: float = TRANS_SPACING_MM * MILLIMETER;
+pub const TRANS_SPACING: float = AUTD3::TRANS_SPACING_MM * MILLIMETER;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::DEVICE_WIDTH instead")]
 /// Device width including substrate
 pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::DEVICE_HEIGHT instead")]
 /// Device height including substrate
 pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
 
@@ -37,6 +44,21 @@ pub struct AUTD3 {
 }
 
 impl AUTD3 {
+    /// Number of transducer in an AUTD3 device
+    pub const NUM_TRANS_IN_UNIT: usize = 249;
+    /// Number of transducer in x-axis of AUTD3 device
+    pub const NUM_TRANS_X: usize = 18;
+    /// Number of transducer in y-axis of AUTD3 device
+    pub const NUM_TRANS_Y: usize = 14;
+    /// Spacing between transducers in mm
+    pub const TRANS_SPACING_MM: float = 10.16;
+    /// Spacing between transducers
+    pub const TRANS_SPACING: float = Self::TRANS_SPACING_MM * MILLIMETER;
+    /// Device width including substrate
+    pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+    /// Device height including substrate
+    pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
+
     /// Constructor
     ///
     /// # Arguments
@@ -108,7 +130,7 @@ impl AUTD3 {
     /// ```
     ///
     pub fn grid_id(idx: usize) -> (usize, usize) {
-        let local_id = idx % NUM_TRANS_IN_UNIT;
+        let local_id = idx % Self::NUM_TRANS_IN_UNIT;
         let mut offset = 0;
         if local_id >= 19 {
             offset += 2;
@@ -117,7 +139,7 @@ impl AUTD3 {
             offset += 1;
         }
         let uid = local_id + offset;
-        (uid % NUM_TRANS_X, uid / NUM_TRANS_X)
+        (uid % Self::NUM_TRANS_X, uid / Self::NUM_TRANS_X)
     }
 }
 
@@ -125,13 +147,13 @@ impl Device for AUTD3 {
     fn get_transducers(&self, start_id: usize) -> Vec<(usize, Vector3, UnitQuaternion)> {
         let rot_mat: Matrix4 = From::from(self.rotation);
         let trans_mat = rot_mat.append_translation(&self.position);
-        (0..NUM_TRANS_Y)
-            .flat_map(|y| (0..NUM_TRANS_X).map(move |x| (x, y)))
+        (0..Self::NUM_TRANS_Y)
+            .flat_map(|y| (0..Self::NUM_TRANS_X).map(move |x| (x, y)))
             .filter(|&(x, y)| !Self::is_missing_transducer(x, y))
             .map(|(x, y)| {
                 Vector4::new(
-                    x as float * TRANS_SPACING,
-                    y as float * TRANS_SPACING,
+                    x as float * Self::TRANS_SPACING,
+                    y as float * Self::TRANS_SPACING,
                     0.,
                     1.,
                 )
@@ -155,10 +177,10 @@ mod tests {
 
         assert_approx_eq::assert_approx_eq!(transducers[0].1.x, 0.);
         assert_approx_eq::assert_approx_eq!(transducers[0].1.y, 0.);
-        assert_approx_eq::assert_approx_eq!(transducers[1].1.x, TRANS_SPACING);
+        assert_approx_eq::assert_approx_eq!(transducers[1].1.x, AUTD3::TRANS_SPACING);
         assert_approx_eq::assert_approx_eq!(transducers[1].1.y, 0.);
         assert_approx_eq::assert_approx_eq!(transducers[18].1.x, 0.);
-        assert_approx_eq::assert_approx_eq!(transducers[18].1.y, TRANS_SPACING);
+        assert_approx_eq::assert_approx_eq!(transducers[18].1.y, AUTD3::TRANS_SPACING);
     }
 
     #[test]

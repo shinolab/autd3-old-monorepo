@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,10 +26,7 @@ pub use crate::modulation::Cache as ModulationCache;
 
 pub use autd3_core::{
     amplitude::Amplitudes,
-    autd3_device::{
-        AUTD3, DEVICE_HEIGHT, DEVICE_WIDTH, NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y,
-        TRANS_SPACING_MM,
-    },
+    autd3_device::AUTD3,
     clear::Clear,
     datagram::DatagramT,
     delay::ModDelay,
@@ -45,4 +42,9 @@ pub use autd3_core::{
     timer_strategy::TimerStrategy,
     update_flag::UpdateFlags,
     Mode, METER, MILLIMETER, PI,
+};
+
+#[allow(deprecated)]
+pub use autd3_core::autd3_device::{
+    DEVICE_HEIGHT, DEVICE_WIDTH, NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING_MM,
 };

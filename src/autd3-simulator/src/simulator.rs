@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
+use autd3_core::{autd3_device::AUTD3, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
@@ -282,8 +282,8 @@ impl Simulator {
                         });
                     });
 
-                    cpus = (0..sources.len() / NUM_TRANS_IN_UNIT)
-                        .map(|i| CPUEmulator::new(i, NUM_TRANS_IN_UNIT))
+                    cpus = (0..sources.len() / AUTD3::NUM_TRANS_IN_UNIT)
+                        .map(|i| CPUEmulator::new(i, AUTD3::NUM_TRANS_IN_UNIT))
                         .collect();
 
                     *rx_buf.write().unwrap() = autd3_core::RxDatagram::new(devices.len());
@@ -430,8 +430,8 @@ impl Simulator {
                                     };
                                     sources
                                         .drives_mut()
-                                        .skip(cpu.id() * NUM_TRANS_IN_UNIT)
-                                        .take(NUM_TRANS_IN_UNIT)
+                                        .skip(cpu.id() * AUTD3::NUM_TRANS_IN_UNIT)
+                                        .take(AUTD3::NUM_TRANS_IN_UNIT)
                                         .enumerate()
                                         .for_each(|(i, d)| {
                                             d.amp = (PI * drives[i].0 as f32 * m
