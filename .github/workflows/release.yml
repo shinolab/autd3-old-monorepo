@@ -10,7 +10,18 @@ env:
 
 
 jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    name: Check license
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check license
+      run: |
+        cd license-checker
+        cargo run
+
   build:
+    needs: [license-check]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -89,6 +100,7 @@ jobs:
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
+    needs: [license-check]
     name: Create Github Release
     runs-on: ubuntu-latest
     steps:
@@ -187,7 +199,6 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 
   publish_firmware:
     needs: [release]
