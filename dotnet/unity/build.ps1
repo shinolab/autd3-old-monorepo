@@ -37,6 +37,6 @@ Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt -Value ""
 Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt -Value "========================================================="
 Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt -Value ""
 Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt -Value "AUTD SIMULATOR " -NoNewline
-Get-Content -Path ./server/simulator/AUTD-Simulator-ThirdPartyNotice.txt | Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt
+Get-Content -Path ./server/simulator/ThirdPartyNotice.txt | Add-Content -Path ./dotnet/unity/Assets/autd3/LICENSE.txt
 
 popd
