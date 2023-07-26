@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{
 };
 
 use autd3_core::{
-    autd3_device::NUM_TRANS_IN_UNIT,
+    autd3_device::AUTD3,
     geometry::{Geometry, Transducer},
 };
 
@@ -91,7 +91,7 @@ impl GeometryViewer {
 
         let geo: Vec<_> = geometry
             .iter()
-            .step_by(NUM_TRANS_IN_UNIT)
+            .step_by(AUTD3::NUM_TRANS_IN_UNIT)
             .map(|tr| {
                 let pos = tr.position();
                 let rot = tr.rotation();

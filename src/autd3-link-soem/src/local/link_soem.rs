@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use time::ext::NumericalDuration;
 
 use autd3_core::{
-    autd3_device::NUM_TRANS_IN_UNIT,
+    autd3_device::AUTD3,
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::{get_logger, Link},
@@ -256,7 +256,7 @@ impl SOEM {
             ec_configdc();
 
             let dev_map = if device_map.is_empty() {
-                vec![NUM_TRANS_IN_UNIT; wc as _]
+                vec![AUTD3::NUM_TRANS_IN_UNIT; wc as _]
             } else {
                 device_map.to_vec()
             };

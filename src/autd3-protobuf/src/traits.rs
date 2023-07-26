@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -900,7 +900,8 @@ impl FromMessage<TxRawData> for autd3_core::TxDatagram {
     fn from_msg(msg: &TxRawData) -> Self {
         let len = msg.data.len();
         let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
-        let body_size = std::mem::size_of::<u16>() * autd3_core::autd3_device::NUM_TRANS_IN_UNIT;
+        let body_size =
+            std::mem::size_of::<u16>() * autd3_core::autd3_device::AUTD3::NUM_TRANS_IN_UNIT;
         let body_num = if len > header_size {
             if (len - header_size) % body_size != 0 {
                 0
@@ -911,7 +912,7 @@ impl FromMessage<TxRawData> for autd3_core::TxDatagram {
             0
         };
         let mut tx = autd3_core::TxDatagram::new(&vec![
-            autd3_core::autd3_device::NUM_TRANS_IN_UNIT;
+            autd3_core::autd3_device::AUTD3::NUM_TRANS_IN_UNIT;
             body_num
         ]);
         tx.num_bodies = body_num;
