@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -91,20 +91,22 @@ where
         )?;
         writeln!(writer)?;
 
-        let author = dependency
-            .authors
-            .map(|authos| format!("@{}/", authos))
-            .unwrap_or_default();
-
-        let license = dependency
-            .license
-            .map(|license| format!(" ({})", license))
-            .unwrap_or_default();
         writeln!(
             writer,
-            "{}{} {}{}",
-            author, dependency.name, dependency.version, license
+            "{} {}{}",
+            dependency.name,
+            dependency.version,
+            dependency
+                .license
+                .map(|license| format!(" ({})", license))
+                .unwrap_or_default()
         )?;
+        if let Some(authors) = dependency.authors {
+            writeln!(writer, "{}", authors)?;
+        }
+        if let Some(rep) = dependency.repository {
+            writeln!(writer, "{}", rep)?;
+        }
 
         if dependency.license_file.is_some() {
             let license_file_content = license_file_map

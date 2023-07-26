@@ -6,91 +6,147 @@ The license terms for each of these components are provided later in this notice
 
 ---------------------------------------------------------
 
-@Alex Butler <alexheretic@gmail.com>/ab_glyph 0.2.21 (Apache-2.0)
+ab_glyph 0.2.21 (Apache-2.0)
+Alex Butler <alexheretic@gmail.com>
+https://github.com/alexheretic/ab-glyph
 ---------------------------------------------------------
 
-@Alex Butler <alexheretic@gmail.com>/ab_glyph_rasterizer 0.1.8 (Apache-2.0)
+ab_glyph_rasterizer 0.1.8 (Apache-2.0)
+Alex Butler <alexheretic@gmail.com>
+https://github.com/alexheretic/ab-glyph
 ---------------------------------------------------------
 
 addr2line 0.20.0 (Apache-2.0 OR MIT)
+https://github.com/gimli-rs/addr2line
 ---------------------------------------------------------
 
-@Jonas Schievink <jonasschievink@gmail.com>/adler 1.0.2 (0BSD OR Apache-2.0 OR MIT)
+adler 1.0.2 (0BSD OR Apache-2.0 OR MIT)
+Jonas Schievink <jonasschievink@gmail.com>
+https://github.com/jonas-schievink/adler.git
 ---------------------------------------------------------
 
-@Tom Kaitchuck <Tom.Kaitchuck@gmail.com>/ahash 0.8.3 (Apache-2.0 OR MIT)
+ahash 0.8.3 (Apache-2.0 OR MIT)
+Tom Kaitchuck <Tom.Kaitchuck@gmail.com>
+https://github.com/tkaitchuck/ahash
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/aho-corasick 1.0.2 (MIT OR Unlicense)
+aho-corasick 1.0.2 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/aho-corasick
 ---------------------------------------------------------
 
 android-activity 0.4.2 (Apache-2.0 OR MIT)
+https://github.com/rust-mobile/android-activity
 ---------------------------------------------------------
 
-@Mikhail Lappo <mikhail.lappo@esrlabs.com>/android-properties 0.2.2 (MIT)
+android-properties 0.2.2 (MIT)
+Mikhail Lappo <mikhail.lappo@esrlabs.com>
+https://github.com/miklelappo/android-properties
 ---------------------------------------------------------
 
-@RumovZ/android-tzdata 0.1.1 (Apache-2.0 OR MIT)
+android-tzdata 0.1.1 (Apache-2.0 OR MIT)
+RumovZ
+https://github.com/RumovZ/android-tzdata
 ---------------------------------------------------------
 
-@Nicolas Silva <nical@fastmail.com>/android_system_properties 0.1.5 (Apache-2.0 OR MIT)
+android_system_properties 0.1.5 (Apache-2.0 OR MIT)
+Nicolas Silva <nical@fastmail.com>
+https://github.com/nical/android_system_properties
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/anyhow 1.0.71 (Apache-2.0 OR MIT)
+anyhow 1.0.71 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/anyhow
 ---------------------------------------------------------
 
-@Brendan Zabarauskas <bjzaba@yahoo.com.au>/approx 0.4.0 (Apache-2.0)
+approx 0.4.0 (Apache-2.0)
+Brendan Zabarauskas <bjzaba@yahoo.com.au>
+https://github.com/brendanzab/approx
 ---------------------------------------------------------
 
-@Brendan Zabarauskas <bjzaba@yahoo.com.au>/approx 0.5.1 (Apache-2.0)
+approx 0.5.1 (Apache-2.0)
+Brendan Zabarauskas <bjzaba@yahoo.com.au>
+https://github.com/brendanzab/approx
 ---------------------------------------------------------
 
-@Michal 'vorner' Vaner <vorner@vorner.cz>/arc-swap 1.6.0 (Apache-2.0 OR MIT)
+arc-swap 1.6.0 (Apache-2.0 OR MIT)
+Michal 'vorner' Vaner <vorner@vorner.cz>
+https://github.com/vorner/arc-swap
 ---------------------------------------------------------
 
-@David Roundy <roundyd@physics.oregonstate.edu>/arrayref 0.3.7 (BSD-2-Clause)
+arrayref 0.3.7 (BSD-2-Clause)
+David Roundy <roundyd@physics.oregonstate.edu>
+https://github.com/droundy/arrayref
 ---------------------------------------------------------
 
-@bluss/arrayvec 0.7.4 (Apache-2.0 OR MIT)
+arrayvec 0.7.4 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/arrayvec
 ---------------------------------------------------------
 
-@Maik Klein <maikklein@googlemail.com>|Benjamin Saunders <ben.e.saunders@gmail.com>|Marijn Suijten <marijn@traverseresearch.nl>/ash 0.37.3+1.3.251 (Apache-2.0 OR MIT)
+ash 0.37.3+1.3.251 (Apache-2.0 OR MIT)
+Maik Klein <maikklein@googlemail.com>|Benjamin Saunders <ben.e.saunders@gmail.com>|Marijn Suijten <marijn@traverseresearch.nl>
+https://github.com/MaikKlein/ash
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/async-trait 0.1.70 (Apache-2.0 OR MIT)
+async-trait 0.1.70 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/async-trait
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/atomic 0.5.3 (Apache-2.0 OR MIT)
+atomic 0.5.3 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/Amanieu/atomic-rs
 ---------------------------------------------------------
 
-@softprops <d.tangren@gmail.com>/atty 0.2.14 (MIT)
+atty 0.2.14 (MIT)
+softprops <d.tangren@gmail.com>
+https://github.com/softprops/atty
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3 14.0.1 (MIT)
+autd3 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-backend-cuda 14.0.1 (MIT)
+autd3-backend-cuda 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-core 14.0.1 (MIT)
+autd3-core 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-driver 14.0.1 (MIT)
+autd3-driver 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-firmware-emulator 14.0.1 (MIT)
+autd3-firmware-emulator 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-gain-holo 14.0.1 (MIT)
+autd3-gain-holo 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-geometry-viewer 14.0.1 (MIT)
+autd3-geometry-viewer 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-link-simulator 14.0.1 (MIT)
+autd3-link-simulator 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-link-soem 14.0.1
+autd3-link-soem 14.0.1
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 
 ---
 
@@ -155,7 +211,9 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-link-twincat 14.0.1
+autd3-link-twincat 14.0.1
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 
 ---
 
@@ -209,16 +267,24 @@ SOFTWARE.
 autd3-model 14.0.1 (MIT)
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-modulation-audio-file 14.0.1 (MIT)
+autd3-modulation-audio-file 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-protobuf 14.0.1 (MIT)
+autd3-protobuf 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-simulator 14.0.1 (MIT)
+autd3-simulator 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-@shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>/autd3-traits 14.0.1 (MIT)
+autd3-traits 14.0.1 (MIT)
+shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autd3capi 14.0.1 (MIT)
@@ -254,298 +320,473 @@ autd3capi-modulation-audio-file 14.0.1 (MIT)
 autd3capi-simulator 14.0.1 (MIT)
 ---------------------------------------------------------
 
-@Josh Stone <cuviper@gmail.com>/autocfg 1.1.0 (Apache-2.0 OR MIT)
+autocfg 1.1.0 (Apache-2.0 OR MIT)
+Josh Stone <cuviper@gmail.com>
+https://github.com/cuviper/autocfg
 ---------------------------------------------------------
 
 axum 0.6.18 (MIT)
+https://github.com/tokio-rs/axum
 ---------------------------------------------------------
 
 axum-core 0.3.4 (MIT)
+https://github.com/tokio-rs/axum
 ---------------------------------------------------------
 
-@The Rust Project Developers/backtrace 0.3.68 (Apache-2.0 OR MIT)
+backtrace 0.3.68 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/backtrace-rs
 ---------------------------------------------------------
 
-@Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>/base64 0.13.1 (Apache-2.0 OR MIT)
+base64 0.13.1 (Apache-2.0 OR MIT)
+Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>
+https://github.com/marshallpierce/rust-base64
 ---------------------------------------------------------
 
-@Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>/base64 0.21.2 (Apache-2.0 OR MIT)
+base64 0.21.2 (Apache-2.0 OR MIT)
+Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>
+https://github.com/marshallpierce/rust-base64
 ---------------------------------------------------------
 
-@Philipp Oppermann <dev@phil-opp.com>/bit_field 0.10.2 (Apache-2.0 OR MIT)
+bit_field 0.10.2 (Apache-2.0 OR MIT)
+Philipp Oppermann <dev@phil-opp.com>
+https://github.com/phil-opp/rust-bit-field
 ---------------------------------------------------------
 
-@The Rust Project Developers/bitflags 1.3.2 (Apache-2.0 OR MIT)
+bitflags 1.3.2 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/bitflags/bitflags
 ---------------------------------------------------------
 
-@The Rust Project Developers/bitflags 2.3.3 (Apache-2.0 OR MIT)
+bitflags 2.3.3 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/bitflags/bitflags
 ---------------------------------------------------------
 
-@Mads Marquart <mads@marquart.dk>/block-sys 0.1.0-beta.1 (MIT)
+block-sys 0.1.0-beta.1 (MIT)
+Mads Marquart <mads@marquart.dk>
+https://github.com/madsmtm/objc2
 ---------------------------------------------------------
 
-@Steven Sheldon|Mads Marquart <mads@marquart.dk>/block2 0.2.0-alpha.6 (MIT)
+block2 0.2.0-alpha.6 (MIT)
+Steven Sheldon|Mads Marquart <mads@marquart.dk>
+https://github.com/madsmtm/objc2
 ---------------------------------------------------------
 
-@Nick Fitzgerald <fitzgen@gmail.com>/bumpalo 3.13.0 (Apache-2.0 OR MIT)
+bumpalo 3.13.0 (Apache-2.0 OR MIT)
+Nick Fitzgerald <fitzgen@gmail.com>
+https://github.com/fitzgen/bumpalo
 ---------------------------------------------------------
 
-@Lokathor <zefria@gmail.com>/bytemuck 1.13.1 (Apache-2.0 OR MIT OR Zlib)
+bytemuck 1.13.1 (Apache-2.0 OR MIT OR Zlib)
+Lokathor <zefria@gmail.com>
+https://github.com/Lokathor/bytemuck
 ---------------------------------------------------------
 
-@Lokathor <zefria@gmail.com>/bytemuck_derive 1.4.1 (Apache-2.0 OR MIT OR Zlib)
+bytemuck_derive 1.4.1 (Apache-2.0 OR MIT OR Zlib)
+Lokathor <zefria@gmail.com>
+https://github.com/Lokathor/bytemuck
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/byteorder 1.4.3 (MIT OR Unlicense)
+byteorder 1.4.3 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/byteorder
 ---------------------------------------------------------
 
-@Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>/bytes 1.4.0 (MIT)
+bytes 1.4.0 (MIT)
+Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>
+https://github.com/tokio-rs/bytes
 ---------------------------------------------------------
 
-@Elinor Berger <elinor@safaradeg.net>/calloop 0.10.6 (MIT)
+calloop 0.10.6 (MIT)
+Elinor Berger <elinor@safaradeg.net>
+https://github.com/Smithay/calloop
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>|stjahns <s.t.jahns@gmail.com>/camera_controllers 0.33.0 (MIT)
+camera_controllers 0.33.0 (MIT)
+bvssvni <bvssvni@gmail.com>|stjahns <s.t.jahns@gmail.com>
+https://github.com/PistonDevelopers/camera_controllers.git
 ---------------------------------------------------------
 
-@Emilio Cobos Álvarez <emilio@crisal.io>|Jeff Muizelaar <jmuizelaar@mozilla.com>|Kartikaya Gupta <kats@mozilla.com>|Ryan Hunt <rhunt@eqrion.net>/cbindgen 0.24.5 (MPL-2.0)
+cbindgen 0.24.5 (MPL-2.0)
+Emilio Cobos Álvarez <emilio@crisal.io>|Jeff Muizelaar <jmuizelaar@mozilla.com>|Kartikaya Gupta <kats@mozilla.com>|Ryan Hunt <rhunt@eqrion.net>
+https://github.com/eqrion/cbindgen
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/cc 1.0.79 (Apache-2.0 OR MIT)
+cc 1.0.79 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/rust-lang/cc-rs
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/cfg-if 1.0.0 (Apache-2.0 OR MIT)
+cfg-if 1.0.0 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/alexcrichton/cfg-if
 ---------------------------------------------------------
 
-@Zicklag <zicklag@katharostech.com>/cfg_aliases 0.1.1 (MIT)
+cfg_aliases 0.1.1 (MIT)
+Zicklag <zicklag@katharostech.com>
+https://github.com/katharostech/cfg_aliases
 ---------------------------------------------------------
 
-@Rust game-developers/cgmath 0.18.0 (Apache-2.0)
+cgmath 0.18.0 (Apache-2.0)
+Rust game-developers
+https://github.com/rustgd/cgmath
 ---------------------------------------------------------
 
-@Lokathor <zefria@gmail.com>/chlorine 1.0.10 (Apache-2.0 OR MIT OR Zlib)
+chlorine 1.0.10 (Apache-2.0 OR MIT OR Zlib)
+Lokathor <zefria@gmail.com>
+https://github.com/Lokathor/chlorine
 ---------------------------------------------------------
 
 chrono 0.4.26 (Apache-2.0 OR MIT)
+https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
 clap 3.2.25 (Apache-2.0 OR MIT)
+https://github.com/clap-rs/clap
 ---------------------------------------------------------
 
 clap_lex 0.2.4 (Apache-2.0 OR MIT)
+https://github.com/clap-rs/clap/tree/master/clap_lex
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/cmake 0.1.50 (Apache-2.0 OR MIT)
+cmake 0.1.50 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/rust-lang/cmake-rs
 ---------------------------------------------------------
 
-@nwin <nwin@users.noreply.github.com>/color_quant 1.1.0 (MIT)
+color_quant 1.1.0 (MIT)
+nwin <nwin@users.noreply.github.com>
+https://github.com/image-rs/color_quant.git
 ---------------------------------------------------------
 
-@Rutrum <dave@rutrum.net>/convert_case 0.6.0 (MIT)
+convert_case 0.6.0 (MIT)
+Rutrum <dave@rutrum.net>
+https://github.com/rutrum/convert-case
 ---------------------------------------------------------
 
-@The Servo Project Developers/core-foundation 0.9.3 (Apache-2.0 OR MIT)
+core-foundation 0.9.3 (Apache-2.0 OR MIT)
+The Servo Project Developers
+https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-@The Servo Project Developers/core-foundation-sys 0.8.4 (Apache-2.0 OR MIT)
+core-foundation-sys 0.8.4 (Apache-2.0 OR MIT)
+The Servo Project Developers
+https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-@The Servo Project Developers/core-graphics 0.22.3 (Apache-2.0 OR MIT)
+core-graphics 0.22.3 (Apache-2.0 OR MIT)
+The Servo Project Developers
+https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-@The Servo Project Developers/core-graphics-types 0.1.2 (Apache-2.0 OR MIT)
+core-graphics-types 0.1.2 (Apache-2.0 OR MIT)
+The Servo Project Developers
+https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-@Sam Rijs <srijs@airpost.net>|Alex Crichton <alex@alexcrichton.com>/crc32fast 1.3.2 (Apache-2.0 OR MIT)
+crc32fast 1.3.2 (Apache-2.0 OR MIT)
+Sam Rijs <srijs@airpost.net>|Alex Crichton <alex@alexcrichton.com>
+https://github.com/srijs/rust-crc32fast
 ---------------------------------------------------------
 
 crossbeam-channel 0.5.8 (Apache-2.0 OR MIT)
+https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crossbeam-deque 0.8.3 (Apache-2.0 OR MIT)
+https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crossbeam-epoch 0.9.15 (Apache-2.0 OR MIT)
+https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crossbeam-queue 0.3.8 (Apache-2.0 OR MIT)
+https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crossbeam-utils 0.8.16 (Apache-2.0 OR MIT)
+https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
-@Vurich <jackefransham@hotmail.co.uk>/crunchy 0.2.2 (MIT)
+crunchy 0.2.2 (MIT)
+Vurich <jackefransham@hotmail.co.uk>
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/csv 1.2.2 (MIT OR Unlicense)
+csv 1.2.2 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/rust-csv
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/csv-core 0.1.10 (MIT OR Unlicense)
+csv-core 0.1.10 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/rust-csv
 ---------------------------------------------------------
 
-@Toshiki Teramura <toshiki.teramura@gmail.com>/cuda-config 0.1.0 (Apache-2.0 OR MIT)
+cuda-config 0.1.0 (Apache-2.0 OR MIT)
+Toshiki Teramura <toshiki.teramura@gmail.com>
+https://github.com/rust-cuda/cuda-sys
 ---------------------------------------------------------
 
-@Toshiki Teramura <toshiki.teramura@gmail.com>/cuda-sys 0.2.0 (MIT)
+cuda-sys 0.2.0 (MIT)
+Toshiki Teramura <toshiki.teramura@gmail.com>
+https://github.com/termoshtt/accel
 ---------------------------------------------------------
 
-@Steven Sheldon/dispatch 0.2.0 (MIT)
+dispatch 0.2.0 (MIT)
+Steven Sheldon
+http://github.com/SSheldon/rust-dispatch
 ---------------------------------------------------------
 
-@Elinor Berger <elinor@safaradeg.net>/dlib 0.5.2 (MIT)
+dlib 0.5.2 (MIT)
+Elinor Berger <elinor@safaradeg.net>
+https://github.com/elinorbgr/dlib
 ---------------------------------------------------------
 
-@Ashish Myles <marcianx@gmail.com>|Runji Wang <wangrunji0408@163.com>/downcast-rs 1.2.0 (Apache-2.0 OR MIT)
+downcast-rs 1.2.0 (Apache-2.0 OR MIT)
+Ashish Myles <marcianx@gmail.com>|Runji Wang <wangrunji0408@163.com>
+https://github.com/marcianx/downcast-rs
 ---------------------------------------------------------
 
-@bluss/either 1.8.1 (Apache-2.0 OR MIT)
+either 1.8.1 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/either
 ---------------------------------------------------------
 
 equivalent 1.0.0 (Apache-2.0 OR MIT)
+https://github.com/cuviper/equivalent
 ---------------------------------------------------------
 
-@Chris Wong <lambda.fairy@gmail.com>/errno 0.3.1 (Apache-2.0 OR MIT)
+errno 0.3.1 (Apache-2.0 OR MIT)
+Chris Wong <lambda.fairy@gmail.com>
+https://github.com/lambda-fairy/rust-errno
 ---------------------------------------------------------
 
-@Michael Neumann <mneumann@ntecs.de>/errno-dragonfly 0.1.2 (MIT)
+errno-dragonfly 0.1.2 (MIT)
+Michael Neumann <mneumann@ntecs.de>
+https://github.com/mneumann/errno-dragonfly-rs
 ---------------------------------------------------------
 
-@johannesvollmer <johannes596@t-online.de>/exr 1.6.4 (BSD-3-Clause)
+exr 1.6.4 (BSD-3-Clause)
+johannesvollmer <johannes596@t-online.de>
+https://github.com/johannesvollmer/exrs
 ---------------------------------------------------------
 
-@Stjepan Glavina <stjepang@gmail.com>/fastrand 1.9.0 (Apache-2.0 OR MIT)
+fastrand 1.9.0 (Apache-2.0 OR MIT)
+Stjepan Glavina <stjepang@gmail.com>
+https://github.com/smol-rs/fastrand
 ---------------------------------------------------------
 
-@The image-rs Developers/fdeflate 0.3.0 (Apache-2.0 OR MIT)
+fdeflate 0.3.0 (Apache-2.0 OR MIT)
+The image-rs Developers
+https://github.com/image-rs/fdeflate
 ---------------------------------------------------------
 
-@bluss/fixedbitset 0.4.2 (Apache-2.0 OR MIT)
+fixedbitset 0.4.2 (Apache-2.0 OR MIT)
+bluss
+https://github.com/petgraph/fixedbitset
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>|Josh Triplett <josh@joshtriplett.org>/flate2 1.0.26 (Apache-2.0 OR MIT)
+flate2 1.0.26 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>|Josh Triplett <josh@joshtriplett.org>
+https://github.com/rust-lang/flate2-rs
 ---------------------------------------------------------
 
-@Mike Dilger <mike@mikedilger.com>/float-cmp 0.6.0 (MIT)
+float-cmp 0.6.0 (MIT)
+Mike Dilger <mike@mikedilger.com>
+https://github.com/mikedilger/float-cmp
 ---------------------------------------------------------
 
-@Joshua Barretto <joshua.s.barretto@gmail.com>/flume 0.10.14 (Apache-2.0 OR MIT)
+flume 0.10.14 (Apache-2.0 OR MIT)
+Joshua Barretto <joshua.s.barretto@gmail.com>
+https://github.com/zesterer/flume
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/fnv 1.0.7 (Apache-2.0 OR MIT)
+fnv 1.0.7 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/servo/rust-fnv
 ---------------------------------------------------------
 
-@Steven Fackler <sfackler@gmail.com>/foreign-types 0.3.2 (Apache-2.0 OR MIT)
+foreign-types 0.3.2 (Apache-2.0 OR MIT)
+Steven Fackler <sfackler@gmail.com>
+https://github.com/sfackler/foreign-types
 ---------------------------------------------------------
 
-@Steven Fackler <sfackler@gmail.com>/foreign-types-shared 0.1.1 (Apache-2.0 OR MIT)
+foreign-types-shared 0.1.1 (Apache-2.0 OR MIT)
+Steven Fackler <sfackler@gmail.com>
+https://github.com/sfackler/foreign-types
 ---------------------------------------------------------
 
 futures-channel 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-core 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-macro 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-sink 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-task 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-util 0.3.28 (Apache-2.0 OR MIT)
+https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
-@Corey Farwell <coreyf@rwell.org>/geo 0.13.0 (Apache-2.0 OR MIT)
+geo 0.13.0 (Apache-2.0 OR MIT)
+Corey Farwell <coreyf@rwell.org>
+https://github.com/georust/geo
 ---------------------------------------------------------
 
-@Corey Farwell <coreyf@rwell.org>/geo-types 0.5.0 (Apache-2.0 OR MIT)
+geo-types 0.5.0 (Apache-2.0 OR MIT)
+Corey Farwell <coreyf@rwell.org>
+https://github.com/georust/geo
 ---------------------------------------------------------
 
-@The Rand Project Developers/getrandom 0.2.10 (Apache-2.0 OR MIT)
+getrandom 0.2.10 (Apache-2.0 OR MIT)
+The Rand Project Developers
+https://github.com/rust-random/getrandom
 ---------------------------------------------------------
 
-@The image-rs Developers/gif 0.12.0 (Apache-2.0 OR MIT)
+gif 0.12.0 (Apache-2.0 OR MIT)
+The image-rs Developers
+https://github.com/image-rs/image-gif
 ---------------------------------------------------------
 
 gimli 0.27.3 (Apache-2.0 OR MIT)
+https://github.com/gimli-rs/gimli
 ---------------------------------------------------------
 
-@The Rust Project Developers/glob 0.3.1 (Apache-2.0 OR MIT)
+glob 0.3.1 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/glob
 ---------------------------------------------------------
 
-@David Harvey-Macaulay <alteous@outlook.com>/gltf 1.2.0 (Apache-2.0 OR MIT)
+gltf 1.2.0 (Apache-2.0 OR MIT)
+David Harvey-Macaulay <alteous@outlook.com>
+https://github.com/gltf-rs/gltf
 ---------------------------------------------------------
 
-@David Harvey-Macaulay <alteous@outlook.com>/gltf-derive 1.2.0 (Apache-2.0 OR MIT)
+gltf-derive 1.2.0 (Apache-2.0 OR MIT)
+David Harvey-Macaulay <alteous@outlook.com>
+https://github.com/gltf-rs/gltf
 ---------------------------------------------------------
 
-@David Harvey-Macaulay <alteous@outlook.com>/gltf-json 1.2.0 (Apache-2.0 OR MIT)
+gltf-json 1.2.0 (Apache-2.0 OR MIT)
+David Harvey-Macaulay <alteous@outlook.com>
+https://github.com/gltf-rs/gltf
 ---------------------------------------------------------
 
-@Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>/h2 0.3.20 (MIT)
+h2 0.3.20 (MIT)
+Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>
+https://github.com/hyperium/h2
 ---------------------------------------------------------
 
-@Kathryn Long <squeeself@gmail.com>/half 2.3.1 (Apache-2.0 OR MIT)
+half 2.3.1 (Apache-2.0 OR MIT)
+Kathryn Long <squeeself@gmail.com>
+https://github.com/starkat99/half-rs
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/hashbrown 0.12.3 (Apache-2.0 OR MIT)
+hashbrown 0.12.3 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/rust-lang/hashbrown
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/hashbrown 0.14.0 (Apache-2.0 OR MIT)
+hashbrown 0.14.0 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/rust-lang/hashbrown
 ---------------------------------------------------------
 
-@Without Boats <woboats@gmail.com>/heck 0.4.1 (Apache-2.0 OR MIT)
+heck 0.4.1 (Apache-2.0 OR MIT)
+Without Boats <woboats@gmail.com>
+https://github.com/withoutboats/heck
 ---------------------------------------------------------
 
-@Stefan Lankes/hermit-abi 0.1.19 (Apache-2.0 OR MIT)
+hermit-abi 0.1.19 (Apache-2.0 OR MIT)
+Stefan Lankes
+https://github.com/hermitcore/libhermit-rs
 ---------------------------------------------------------
 
-@Stefan Lankes/hermit-abi 0.3.2 (Apache-2.0 OR MIT)
+hermit-abi 0.3.2 (Apache-2.0 OR MIT)
+Stefan Lankes
+https://github.com/hermitcore/rusty-hermit
 ---------------------------------------------------------
 
-@Ruud van Asseldonk <dev@veniogames.com>/hound 3.5.0 (Apache-2.0)
+hound 3.5.0 (Apache-2.0)
+Ruud van Asseldonk <dev@veniogames.com>
+https://github.com/ruuda/hound
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>|Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>/http 0.2.9 (Apache-2.0 OR MIT)
+http 0.2.9 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>|Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>
+https://github.com/hyperium/http
 ---------------------------------------------------------
 
-@Carl Lerche <me@carllerche.com>|Lucio Franco <luciofranco14@gmail.com>|Sean McArthur <sean@seanmonstar.com>/http-body 0.4.5 (MIT)
+http-body 0.4.5 (MIT)
+Carl Lerche <me@carllerche.com>|Lucio Franco <luciofranco14@gmail.com>|Sean McArthur <sean@seanmonstar.com>
+https://github.com/hyperium/http-body
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/httparse 1.8.0 (Apache-2.0 OR MIT)
+httparse 1.8.0 (Apache-2.0 OR MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/seanmonstar/httparse
 ---------------------------------------------------------
 
-@Pyfisch <pyfisch@posteo.org>/httpdate 1.0.2 (Apache-2.0 OR MIT)
+httpdate 1.0.2 (Apache-2.0 OR MIT)
+Pyfisch <pyfisch@posteo.org>
+https://github.com/pyfisch/httpdate
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/hyper 0.14.27 (MIT)
+hyper 0.14.27 (MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/hyperium/hyper
 ---------------------------------------------------------
 
-@Herman J. Radtke III <herman@hermanradtke.com>/hyper-timeout 0.4.1 (Apache-2.0 OR MIT)
+hyper-timeout 0.4.1 (Apache-2.0 OR MIT)
+Herman J. Radtke III <herman@hermanradtke.com>
+https://github.com/hjr3/hyper-timeout
 ---------------------------------------------------------
 
-@Andrew Straw <strawman@astraw.com>|René Kijewski <rene.kijewski@fu-berlin.de>|Ryan Lopopolo <rjl@hyperbo.la>/iana-time-zone 0.1.57 (Apache-2.0 OR MIT)
+iana-time-zone 0.1.57 (Apache-2.0 OR MIT)
+Andrew Straw <strawman@astraw.com>|René Kijewski <rene.kijewski@fu-berlin.de>|Ryan Lopopolo <rjl@hyperbo.la>
+https://github.com/strawlab/iana-time-zone
 ---------------------------------------------------------
 
-@René Kijewski <crates.io@k6i.de>/iana-time-zone-haiku 0.1.2 (Apache-2.0 OR MIT)
+iana-time-zone-haiku 0.1.2 (Apache-2.0 OR MIT)
+René Kijewski <crates.io@k6i.de>
+https://github.com/strawlab/iana-time-zone
 ---------------------------------------------------------
 
-@Chris Wong <lambda.fairy@gmail.com>/if_chain 1.0.2 (Apache-2.0 OR MIT)
+if_chain 1.0.2 (Apache-2.0 OR MIT)
+Chris Wong <lambda.fairy@gmail.com>
+https://github.com/lambda-fairy/if_chain
 ---------------------------------------------------------
 
-@The image-rs Developers/image 0.24.6 (MIT)
+image 0.24.6 (MIT)
+The image-rs Developers
+https://github.com/image-rs/image
 ---------------------------------------------------------
 
 imgui 0.10.0 (Apache-2.0 OR MIT)
+https://github.com/imgui-rs/imgui-rs
 ---------------------------------------------------------
 
 imgui-sys 0.10.0 (Apache-2.0 OR MIT)
+https://github.com/imgui-rs/imgui-rs
 ---------------------------------------------------------
 
-@Sam Blazes/imgui-vulkano-renderer 0.9.0 (MIT)
+imgui-vulkano-renderer 0.9.0 (MIT)
+Sam Blazes
+https://github.com/Tenebryo/imgui-vulkano-renderer
 
 ---
 
@@ -578,720 +819,1185 @@ DEALINGS IN THE SOFTWARE.
 ---------------------------------------------------------
 
 imgui-winit-support 0.11.0 (Apache-2.0 OR MIT)
+https://github.com/imgui-rs/imgui-rs
 ---------------------------------------------------------
 
 indexmap 1.9.3 (Apache-2.0 OR MIT)
+https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
 indexmap 2.0.0 (Apache-2.0 OR MIT)
+https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
-@Caleb Meredith <calebmeredith8@gmail.com>/inflections 1.1.1 (MIT)
+inflections 1.1.1 (MIT)
+Caleb Meredith <calebmeredith8@gmail.com>
+https://docs.rs/inflections
 ---------------------------------------------------------
 
-@sebcrozet <developer@crozet.re>/instant 0.1.12 (BSD-3-Clause)
+instant 0.1.12 (BSD-3-Clause)
+sebcrozet <developer@crozet.re>
+https://github.com/sebcrozet/instant
 ---------------------------------------------------------
 
-@Dan Gohman <dev@sunfishcode.online>/io-lifetimes 1.0.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+io-lifetimes 1.0.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+Dan Gohman <dev@sunfishcode.online>
+https://github.com/sunfishcode/io-lifetimes
 ---------------------------------------------------------
 
-@softprops <d.tangren@gmail.com>|Dan Gohman <dev@sunfishcode.online>/is-terminal 0.4.8 (MIT)
+is-terminal 0.4.8 (MIT)
+softprops <d.tangren@gmail.com>|Dan Gohman <dev@sunfishcode.online>
+https://github.com/sunfishcode/is-terminal
 ---------------------------------------------------------
 
-@bluss/itertools 0.10.5 (Apache-2.0 OR MIT)
+itertools 0.10.5 (Apache-2.0 OR MIT)
+bluss
+https://github.com/rust-itertools/itertools
 ---------------------------------------------------------
 
-@bluss/itertools 0.11.0 (Apache-2.0 OR MIT)
+itertools 0.11.0 (Apache-2.0 OR MIT)
+bluss
+https://github.com/rust-itertools/itertools
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/itoa 1.0.8 (Apache-2.0 OR MIT)
+itoa 1.0.8 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/itoa
 ---------------------------------------------------------
 
-@Steven Fackler <sfackler@gmail.com>/jni-sys 0.3.0 (Apache-2.0 OR MIT)
+jni-sys 0.3.0 (Apache-2.0 OR MIT)
+Steven Fackler <sfackler@gmail.com>
+https://github.com/sfackler/rust-jni-sys
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/jobserver 0.1.26 (Apache-2.0 OR MIT)
+jobserver 0.1.26 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/alexcrichton/jobserver-rs
 ---------------------------------------------------------
 
-@The image-rs Developers/jpeg-decoder 0.3.0 (Apache-2.0 OR MIT)
+jpeg-decoder 0.3.0 (Apache-2.0 OR MIT)
+The image-rs Developers
+https://github.com/image-rs/jpeg-decoder
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/js-sys 0.3.64 (Apache-2.0 OR MIT)
+js-sys 0.3.64 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/js-sys
 ---------------------------------------------------------
 
-@Marvin Löbel <loebel.marvin@gmail.com>/lazy_static 1.4.0 (Apache-2.0 OR MIT)
+lazy_static 1.4.0 (Apache-2.0 OR MIT)
+Marvin Löbel <loebel.marvin@gmail.com>
+https://github.com/rust-lang-nursery/lazy-static.rs
 ---------------------------------------------------------
 
-@johannesvollmer <johannes596@t-online.de>/lebe 0.5.2 (BSD-3-Clause)
+lebe 0.5.2 (BSD-3-Clause)
+johannesvollmer <johannes596@t-online.de>
+https://github.com/johannesvollmer/lebe
 ---------------------------------------------------------
 
-@The Rust Project Developers/libc 0.2.147 (Apache-2.0 OR MIT)
+libc 0.2.147 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/libc
 ---------------------------------------------------------
 
-@Simonas Kazlauskas <libloading@kazlauskas.me>/libloading 0.7.4 (ISC)
+libloading 0.7.4 (ISC)
+Simonas Kazlauskas <libloading@kazlauskas.me>
+https://github.com/nagisa/rust_libloading/
 ---------------------------------------------------------
 
-@Simonas Kazlauskas <libloading@kazlauskas.me>/libloading 0.8.0 (ISC)
+libloading 0.8.0 (ISC)
+Simonas Kazlauskas <libloading@kazlauskas.me>
+https://github.com/nagisa/rust_libloading/
 ---------------------------------------------------------
 
-@Jorge Aparicio <jorge@japaric.io>/libm 0.2.7 (Apache-2.0 OR MIT)
+libm 0.2.7 (Apache-2.0 OR MIT)
+Jorge Aparicio <jorge@japaric.io>
+https://github.com/rust-lang/libm
 ---------------------------------------------------------
 
-@Dan Gohman <dev@sunfishcode.online>/linux-raw-sys 0.3.8 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+linux-raw-sys 0.3.8 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+Dan Gohman <dev@sunfishcode.online>
+https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
-@Dan Gohman <dev@sunfishcode.online>/linux-raw-sys 0.4.3 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+linux-raw-sys 0.4.3 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+Dan Gohman <dev@sunfishcode.online>
+https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/lock_api 0.4.10 (Apache-2.0 OR MIT)
+lock_api 0.4.10 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
-@The Rust Project Developers/log 0.4.19 (Apache-2.0 OR MIT)
+log 0.4.19 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/log
 ---------------------------------------------------------
 
-@Steven Sheldon/malloc_buf 0.0.6 (MIT)
+malloc_buf 0.0.6 (MIT)
+Steven Sheldon
+https://github.com/SSheldon/malloc_buf
 ---------------------------------------------------------
 
-@bluss/maplit 1.0.2 (Apache-2.0 OR MIT)
+maplit 1.0.2 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/maplit
 ---------------------------------------------------------
 
-@Ibraheem Ahmed <ibraheem@ibraheem.ca>/matchit 0.7.0 (MIT)
+matchit 0.7.0 (MIT)
+Ibraheem Ahmed <ibraheem@ibraheem.ca>
+https://github.com/ibraheemdev/matchit
 ---------------------------------------------------------
 
-@bluss/matrixmultiply 0.1.15 (Apache-2.0 OR MIT)
+matrixmultiply 0.1.15 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/matrixmultiply/
 ---------------------------------------------------------
 
-@bluss|R. Janis Goldschmidt/matrixmultiply 0.3.7 (Apache-2.0 OR MIT)
+matrixmultiply 0.3.7 (Apache-2.0 OR MIT)
+bluss|R. Janis Goldschmidt
+https://github.com/bluss/matrixmultiply/
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>|bluss/memchr 2.5.0 (MIT OR Unlicense)
+memchr 2.5.0 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>|bluss
+https://github.com/BurntSushi/memchr
 ---------------------------------------------------------
 
-@Dan Burkert <dan@danburkert.com>|Yevhenii Reizner <razrfalcon@gmail.com>/memmap2 0.5.10 (Apache-2.0 OR MIT)
+memmap2 0.5.10 (Apache-2.0 OR MIT)
+Dan Burkert <dan@danburkert.com>|Yevhenii Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/memmap2-rs
 ---------------------------------------------------------
 
-@Gilad Naaman <gilad.naaman@gmail.com>/memoffset 0.6.5 (MIT)
+memoffset 0.6.5 (MIT)
+Gilad Naaman <gilad.naaman@gmail.com>
+https://github.com/Gilnaa/memoffset
 ---------------------------------------------------------
 
-@Gilad Naaman <gilad.naaman@gmail.com>/memoffset 0.9.0 (MIT)
+memoffset 0.9.0 (MIT)
+Gilad Naaman <gilad.naaman@gmail.com>
+https://github.com/Gilnaa/memoffset
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/mime 0.3.17 (Apache-2.0 OR MIT)
+mime 0.3.17 (Apache-2.0 OR MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/hyperium/mime
 ---------------------------------------------------------
 
-@Alex Huszagh <ahuszagh@gmail.com>/minimal-lexical 0.2.1 (Apache-2.0 OR MIT)
+minimal-lexical 0.2.1 (Apache-2.0 OR MIT)
+Alex Huszagh <ahuszagh@gmail.com>
+https://github.com/Alexhuszagh/minimal-lexical
 ---------------------------------------------------------
 
-@Frommi <daniil.liferenko@gmail.com>|oyvindln <oyvindln@users.noreply.github.com>/miniz_oxide 0.7.1 (Apache-2.0 OR MIT OR Zlib)
+miniz_oxide 0.7.1 (Apache-2.0 OR MIT OR Zlib)
+Frommi <daniil.liferenko@gmail.com>|oyvindln <oyvindln@users.noreply.github.com>
+https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 ---------------------------------------------------------
 
-@Benjamin Saunders <ben.e.saunders@gmail.com>|Dzmitry Malyshau <kvarkus@gmail.com>|Evgenii P. <eupn@protonmail.com>|George Burton <burtonageo@gmail.com>|Ilya Bogdanov <fumlead@gmail.com>|Osspial <osspial@gmail.com>|Pâris DOUADY <paris.douady@hotmail.fr>|Rémi Lauzier <remilauzier@protonmail.com>/mint 0.5.9 (MIT)
+mint 0.5.9 (MIT)
+Benjamin Saunders <ben.e.saunders@gmail.com>|Dzmitry Malyshau <kvarkus@gmail.com>|Evgenii P. <eupn@protonmail.com>|George Burton <burtonageo@gmail.com>|Ilya Bogdanov <fumlead@gmail.com>|Osspial <osspial@gmail.com>|Pâris DOUADY <paris.douady@hotmail.fr>|Rémi Lauzier <remilauzier@protonmail.com>
+https://github.com/kvark/mint
 ---------------------------------------------------------
 
-@Carl Lerche <me@carllerche.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>|Tokio Contributors <team@tokio.rs>/mio 0.8.8 (MIT)
+mio 0.8.8 (MIT)
+Carl Lerche <me@carllerche.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/mio
 ---------------------------------------------------------
 
-@Håvar Nøvik <havar.novik@gmail.com>/multimap 0.8.3 (Apache-2.0 OR MIT)
+multimap 0.8.3 (Apache-2.0 OR MIT)
+Håvar Nøvik <havar.novik@gmail.com>
+https://github.com/havarnov/multimap
 ---------------------------------------------------------
 
-@Sébastien Crozet <developer@crozet.re>/nalgebra 0.32.2 (BSD-3-Clause)
+nalgebra 0.32.2 (BSD-3-Clause)
+Sébastien Crozet <developer@crozet.re>
+https://github.com/dimforge/nalgebra
 ---------------------------------------------------------
 
-@Andreas Longva|Sébastien Crozet <developer@crozet.re>/nalgebra-macros 0.2.0 (Apache-2.0)
+nalgebra-macros 0.2.0 (Apache-2.0)
+Andreas Longva|Sébastien Crozet <developer@crozet.re>
+https://github.com/dimforge/nalgebra
 ---------------------------------------------------------
 
-@Lucy <lucy@absolucy.moe>/nanorand 0.7.0 (Zlib)
+nanorand 0.7.0 (Zlib)
+Lucy <lucy@absolucy.moe>
+https://github.com/Absolucy/nanorand-rs
 ---------------------------------------------------------
 
-@The Rust Windowing contributors/ndk 0.7.0 (Apache-2.0 OR MIT)
+ndk 0.7.0 (Apache-2.0 OR MIT)
+The Rust Windowing contributors
+https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
-@The Rust Windowing contributors/ndk-context 0.1.1 (Apache-2.0 OR MIT)
+ndk-context 0.1.1 (Apache-2.0 OR MIT)
+The Rust Windowing contributors
+https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
-@The Rust Windowing contributors/ndk-sys 0.4.1+23.1.7779620 (Apache-2.0 OR MIT)
+ndk-sys 0.4.1+23.1.7779620 (Apache-2.0 OR MIT)
+The Rust Windowing contributors
+https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
-@The nix-rust Project Developers/nix 0.24.3 (MIT)
+nix 0.24.3 (MIT)
+The nix-rust Project Developers
+https://github.com/nix-rust/nix
 ---------------------------------------------------------
 
-@The nix-rust Project Developers/nix 0.25.1 (MIT)
+nix 0.25.1 (MIT)
+The nix-rust Project Developers
+https://github.com/nix-rust/nix
 ---------------------------------------------------------
 
-@contact@geoffroycouprie.com/nom 7.1.3 (MIT)
+nom 7.1.3 (MIT)
+contact@geoffroycouprie.com
+https://github.com/Geal/nom
 ---------------------------------------------------------
 
-@The Rust Project Developers/num 0.1.42 (Apache-2.0 OR MIT)
+num 0.1.42 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num
 ---------------------------------------------------------
 
-@The Rust Project Developers/num 0.2.1 (Apache-2.0 OR MIT)
+num 0.2.1 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num
 ---------------------------------------------------------
 
-@The Rust Project Developers/num 0.4.0 (Apache-2.0 OR MIT)
+num 0.4.0 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-bigint 0.2.6 (Apache-2.0 OR MIT)
+num-bigint 0.2.6 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-bigint
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-bigint 0.4.3 (Apache-2.0 OR MIT)
+num-bigint 0.4.3 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-bigint
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-complex 0.2.4 (Apache-2.0 OR MIT)
+num-complex 0.2.4 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-complex
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-complex 0.4.3 (Apache-2.0 OR MIT)
+num-complex 0.4.3 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-complex
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-derive 0.4.0 (Apache-2.0 OR MIT)
+num-derive 0.4.0 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-derive
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-integer 0.1.45 (Apache-2.0 OR MIT)
+num-integer 0.1.45 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-integer
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-iter 0.1.43 (Apache-2.0 OR MIT)
+num-iter 0.1.43 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-iter
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-rational 0.2.4 (Apache-2.0 OR MIT)
+num-rational 0.2.4 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-rational
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-rational 0.4.1 (Apache-2.0 OR MIT)
+num-rational 0.4.1 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-rational
 ---------------------------------------------------------
 
-@The Rust Project Developers/num-traits 0.2.15 (Apache-2.0 OR MIT)
+num-traits 0.2.15 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-num/num-traits
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/num_cpus 1.16.0 (Apache-2.0 OR MIT)
+num_cpus 1.16.0 (Apache-2.0 OR MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/seanmonstar/num_cpus
 ---------------------------------------------------------
 
-@Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>/num_enum 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
+num_enum 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
+Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
+https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
-@Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>/num_enum 0.6.1 (Apache-2.0 OR BSD-3-Clause OR MIT)
+num_enum 0.6.1 (Apache-2.0 OR BSD-3-Clause OR MIT)
+Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
+https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
-@Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>/num_enum_derive 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
+num_enum_derive 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
+Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
+https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
-@Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>/num_enum_derive 0.6.1 (Apache-2.0 OR BSD-3-Clause OR MIT)
+num_enum_derive 0.6.1 (Apache-2.0 OR BSD-3-Clause OR MIT)
+Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
+https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
-@Steven Sheldon/objc 0.2.7 (MIT)
+objc 0.2.7 (MIT)
+Steven Sheldon
+http://github.com/SSheldon/rust-objc
 ---------------------------------------------------------
 
-@Mads Marquart <mads@marquart.dk>/objc-sys 0.2.0-beta.2 (MIT)
+objc-sys 0.2.0-beta.2 (MIT)
+Mads Marquart <mads@marquart.dk>
+https://github.com/madsmtm/objc2
 ---------------------------------------------------------
 
-@Steven Sheldon|Mads Marquart <mads@marquart.dk>/objc2 0.3.0-beta.3.patch-leaks.3 (MIT)
+objc2 0.3.0-beta.3.patch-leaks.3 (MIT)
+Steven Sheldon|Mads Marquart <mads@marquart.dk>
+https://github.com/madsmtm/objc2
 ---------------------------------------------------------
 
-@Steven Sheldon|Mads Marquart <mads@marquart.dk>/objc2-encode 2.0.0-pre.2 (MIT)
+objc2-encode 2.0.0-pre.2 (MIT)
+Steven Sheldon|Mads Marquart <mads@marquart.dk>
+https://github.com/madsmtm/objc2
 ---------------------------------------------------------
 
 object 0.31.1 (Apache-2.0 OR MIT)
+https://github.com/gimli-rs/object
 ---------------------------------------------------------
 
-@Aleksey Kladov <aleksey.kladov@gmail.com>/once_cell 1.18.0 (Apache-2.0 OR MIT)
+once_cell 1.18.0 (Apache-2.0 OR MIT)
+Aleksey Kladov <aleksey.kladov@gmail.com>
+https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
-@Jeremy Soller <jackpot51@gmail.com>/orbclient 0.3.45 (MIT)
+orbclient 0.3.45 (MIT)
+Jeremy Soller <jackpot51@gmail.com>
+https://gitlab.redox-os.org/redox-os/orbclient
 ---------------------------------------------------------
 
-@dylni/os_str_bytes 6.5.1 (Apache-2.0 OR MIT)
+os_str_bytes 6.5.1 (Apache-2.0 OR MIT)
+dylni
+https://github.com/dylni/os_str_bytes
 ---------------------------------------------------------
 
-@Alex Butler <alexheretic@gmail.com>/owned_ttf_parser 0.19.0 (Apache-2.0)
+owned_ttf_parser 0.19.0 (Apache-2.0)
+Alex Butler <alexheretic@gmail.com>
+https://github.com/alexheretic/owned-ttf-parser
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/parking_lot 0.12.1 (Apache-2.0 OR MIT)
+parking_lot 0.12.1 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/parking_lot_core 0.9.8 (Apache-2.0 OR MIT)
+parking_lot_core 0.9.8 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/paste 1.0.13 (Apache-2.0 OR MIT)
+paste 1.0.13 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/paste
 ---------------------------------------------------------
 
-@TheIronBorn/pdqselect 0.1.1 (Apache-2.0 OR MIT)
+pdqselect 0.1.1 (Apache-2.0 OR MIT)
+TheIronBorn
 ---------------------------------------------------------
 
-@The rust-url developers/percent-encoding 2.3.0 (Apache-2.0 OR MIT)
+percent-encoding 2.3.0 (Apache-2.0 OR MIT)
+The rust-url developers
+https://github.com/servo/rust-url/
 ---------------------------------------------------------
 
-@bluss|mitchmindtree/petgraph 0.6.3 (Apache-2.0 OR MIT)
+petgraph 0.6.3 (Apache-2.0 OR MIT)
+bluss|mitchmindtree
+https://github.com/petgraph/petgraph
 ---------------------------------------------------------
 
 pin-project 1.1.2 (Apache-2.0 OR MIT)
+https://github.com/taiki-e/pin-project
 ---------------------------------------------------------
 
 pin-project-internal 1.1.2 (Apache-2.0 OR MIT)
+https://github.com/taiki-e/pin-project
 ---------------------------------------------------------
 
 pin-project-lite 0.2.10 (Apache-2.0 OR MIT)
+https://github.com/taiki-e/pin-project-lite
 ---------------------------------------------------------
 
-@Josef Brandl <mail@josefbrandl.de>/pin-utils 0.1.0 (Apache-2.0 OR MIT)
+pin-utils 0.1.0 (Apache-2.0 OR MIT)
+Josef Brandl <mail@josefbrandl.de>
+https://github.com/rust-lang-nursery/pin-utils
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>/piston-float 1.0.1 (MIT)
+piston-float 1.0.1 (MIT)
+bvssvni <bvssvni@gmail.com>
+https://github.com/pistondevelopers/float.git
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>/piston-viewport 1.0.2 (MIT)
+piston-viewport 1.0.2 (MIT)
+bvssvni <bvssvni@gmail.com>
+https://github.com/PistonDevelopers/viewport.git
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>|eddyb/piston3d-cam 0.6.0 (MIT)
+piston3d-cam 0.6.0 (MIT)
+bvssvni <bvssvni@gmail.com>|eddyb
+https://github.com/pistondevelopers/cam.git
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>/pistoncore-input 1.0.1 (MIT)
+pistoncore-input 1.0.1 (MIT)
+bvssvni <bvssvni@gmail.com>
+https://github.com/PistonDevelopers/piston.git
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/pkg-config 0.3.27 (Apache-2.0 OR MIT)
+pkg-config 0.3.27 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/rust-lang/pkg-config-rs
 ---------------------------------------------------------
 
-@The image-rs Developers/png 0.17.9 (Apache-2.0 OR MIT)
+png 0.17.9 (Apache-2.0 OR MIT)
+The image-rs Developers
+https://github.com/image-rs/image-png.git
 ---------------------------------------------------------
 
-@The CryptoCorrosion Contributors/ppv-lite86 0.2.17 (Apache-2.0 OR MIT)
+ppv-lite86 0.2.17 (Apache-2.0 OR MIT)
+The CryptoCorrosion Contributors
+https://github.com/cryptocorrosion/cryptocorrosion
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/prettyplease 0.1.25 (Apache-2.0 OR MIT)
+prettyplease 0.1.25 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/prettyplease
 ---------------------------------------------------------
 
-@Bastian Köcher <git@kchr.de>/proc-macro-crate 1.3.1 (Apache-2.0 OR MIT)
+proc-macro-crate 1.3.1 (Apache-2.0 OR MIT)
+Bastian Köcher <git@kchr.de>
+https://github.com/bkchr/proc-macro-crate
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>|Alex Crichton <alex@alexcrichton.com>/proc-macro2 1.0.63 (Apache-2.0 OR MIT)
+proc-macro2 1.0.63 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>|Alex Crichton <alex@alexcrichton.com>
+https://github.com/dtolnay/proc-macro2
 ---------------------------------------------------------
 
-@Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com|Tokio Contributors <team@tokio.rs>/prost 0.11.9 (Apache-2.0)
+prost 0.11.9 (Apache-2.0)
+Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-@Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com>|Tokio Contributors <team@tokio.rs>/prost-build 0.11.9 (Apache-2.0)
+prost-build 0.11.9 (Apache-2.0)
+Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com>|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-@Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com>|Tokio Contributors <team@tokio.rs>/prost-derive 0.11.9 (Apache-2.0)
+prost-derive 0.11.9 (Apache-2.0)
+Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com>|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-@Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com|Tokio Contributors <team@tokio.rs>/prost-types 0.11.9 (Apache-2.0)
+prost-types 0.11.9 (Apache-2.0)
+Dan Burkert <dan@danburkert.com>|Lucio Franco <luciofranco14@gmail.com|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-@Ivan Smirnov <rust@ivan.smirnov.ie>/qoi 0.4.1 (Apache-2.0 OR MIT)
+qoi 0.4.1 (Apache-2.0 OR MIT)
+Ivan Smirnov <rust@ivan.smirnov.ie>
+https://github.com/aldanor/qoi-rust
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>|Steve Jahns <s.t.jahns@gmail.com>|Red Hara <hara@protonmail.ch>/quaternion 1.0.0 (Apache-2.0 OR MIT)
+quaternion 1.0.0 (Apache-2.0 OR MIT)
+bvssvni <bvssvni@gmail.com>|Steve Jahns <s.t.jahns@gmail.com>|Red Hara <hara@protonmail.ch>
+https://github.com/PistonDevelopers/quaternion.git
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/quote 1.0.29 (Apache-2.0 OR MIT)
+quote 1.0.29 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/quote
 ---------------------------------------------------------
 
-@The Rand Project Developers|The Rust Project Developers/rand 0.8.5 (Apache-2.0 OR MIT)
+rand 0.8.5 (Apache-2.0 OR MIT)
+The Rand Project Developers|The Rust Project Developers
+https://github.com/rust-random/rand
 ---------------------------------------------------------
 
-@The Rand Project Developers|The Rust Project Developers|The CryptoCorrosion Contributors/rand_chacha 0.3.1 (Apache-2.0 OR MIT)
+rand_chacha 0.3.1 (Apache-2.0 OR MIT)
+The Rand Project Developers|The Rust Project Developers|The CryptoCorrosion Contributors
+https://github.com/rust-random/rand
 ---------------------------------------------------------
 
-@The Rand Project Developers|The Rust Project Developers/rand_core 0.6.4 (Apache-2.0 OR MIT)
+rand_core 0.6.4 (Apache-2.0 OR MIT)
+The Rand Project Developers|The Rust Project Developers
+https://github.com/rust-random/rand
 ---------------------------------------------------------
 
-@The Rand Project Developers/rand_distr 0.4.3 (Apache-2.0 OR MIT)
+rand_distr 0.4.3 (Apache-2.0 OR MIT)
+The Rand Project Developers
+https://github.com/rust-random/rand
 ---------------------------------------------------------
 
-@Osspial <osspial@gmail.com>/raw-window-handle 0.5.2 (Apache-2.0 OR MIT OR Zlib)
+raw-window-handle 0.5.2 (Apache-2.0 OR MIT OR Zlib)
+Osspial <osspial@gmail.com>
+https://github.com/rust-windowing/raw-window-handle
 ---------------------------------------------------------
 
-@bluss/rawpointer 0.1.0 (Apache-2.0 OR MIT)
+rawpointer 0.1.0 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/rawpointer/
 ---------------------------------------------------------
 
-@bluss/rawpointer 0.2.1 (Apache-2.0 OR MIT)
+rawpointer 0.2.1 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/rawpointer/
 ---------------------------------------------------------
 
-@Niko Matsakis <niko@alum.mit.edu>|Josh Stone <cuviper@gmail.com>/rayon 1.7.0 (Apache-2.0 OR MIT)
+rayon 1.7.0 (Apache-2.0 OR MIT)
+Niko Matsakis <niko@alum.mit.edu>|Josh Stone <cuviper@gmail.com>
+https://github.com/rayon-rs/rayon
 ---------------------------------------------------------
 
-@Niko Matsakis <niko@alum.mit.edu>|Josh Stone <cuviper@gmail.com>/rayon-core 1.11.0 (Apache-2.0 OR MIT)
+rayon-core 1.11.0 (Apache-2.0 OR MIT)
+Niko Matsakis <niko@alum.mit.edu>|Josh Stone <cuviper@gmail.com>
+https://github.com/rayon-rs/rayon
 ---------------------------------------------------------
 
-@Jeremy Soller <jackpot51@gmail.com>/redox_syscall 0.3.5 (MIT)
+redox_syscall 0.3.5 (MIT)
+Jeremy Soller <jackpot51@gmail.com>
+https://gitlab.redox-os.org/redox-os/syscall
 ---------------------------------------------------------
 
-@The Rust Project Developers/regex 1.8.4 (Apache-2.0 OR MIT)
+regex 1.8.4 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/regex
 ---------------------------------------------------------
 
-@The Rust Project Developers/regex-syntax 0.7.2 (Apache-2.0 OR MIT)
+regex-syntax 0.7.2 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/rust-lang/regex
 ---------------------------------------------------------
 
-@Evgeniy Reizner <razrfalcon@gmail.com>/roxmltree 0.14.1 (Apache-2.0 OR MIT)
+roxmltree 0.14.1 (Apache-2.0 OR MIT)
+Evgeniy Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/roxmltree
 ---------------------------------------------------------
 
-@Stefan Altmayer <stoeoef@gmail.com>/rstar 0.7.1 (Apache-2.0 OR MIT)
+rstar 0.7.1 (Apache-2.0 OR MIT)
+Stefan Altmayer <stoeoef@gmail.com>
+https://github.com/Stoeoef/rstar
 ---------------------------------------------------------
 
-@AtheMathmo/rulinalg 0.4.2 (MIT)
+rulinalg 0.4.2 (MIT)
+AtheMathmo
+https://github.com/AtheMathmo/rulinalg
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/rustc-demangle 0.1.23 (Apache-2.0 OR MIT)
+rustc-demangle 0.1.23 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/alexcrichton/rustc-demangle
 ---------------------------------------------------------
 
-@Dirkjan Ochtman <dirkjan@ochtman.nl>|Marvin Löbel <loebel.marvin@gmail.com>/rustc_version 0.4.0 (Apache-2.0 OR MIT)
+rustc_version 0.4.0 (Apache-2.0 OR MIT)
+Dirkjan Ochtman <dirkjan@ochtman.nl>|Marvin Löbel <loebel.marvin@gmail.com>
+https://github.com/Kimundi/rustc-version-rs
 ---------------------------------------------------------
 
-@Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>/rustix 0.37.22 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+rustix 0.37.22 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>
+https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
-@Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>/rustix 0.38.2 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+rustix 0.38.2 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>
+https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/rustversion 1.0.13 (Apache-2.0 OR MIT)
+rustversion 1.0.13 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/rustversion
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/ryu 1.0.14 (Apache-2.0 OR BSL-1.0)
+ryu 1.0.14 (Apache-2.0 OR BSL-1.0)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/ryu
 ---------------------------------------------------------
 
-@Lokathor <zefria@gmail.com>/safe_arch 0.7.0 (Apache-2.0 OR MIT OR Zlib)
+safe_arch 0.7.0 (Apache-2.0 OR MIT OR Zlib)
+Lokathor <zefria@gmail.com>
+https://github.com/Lokathor/safe_arch
 ---------------------------------------------------------
 
-@Nicholas Miklaucic <nicholas.miklaucic@gmail.com>/scarlet 1.1.0 (Apache-2.0)
+scarlet 1.1.0 (Apache-2.0)
+Nicholas Miklaucic <nicholas.miklaucic@gmail.com>
+https://github.com/nicholas-miklaucic/scarlet
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/scoped-tls 1.0.1 (Apache-2.0 OR MIT)
+scoped-tls 1.0.1 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/alexcrichton/scoped-tls
 ---------------------------------------------------------
 
-@bluss/scopeguard 1.1.0 (Apache-2.0 OR MIT)
+scopeguard 1.1.0 (Apache-2.0 OR MIT)
+bluss
+https://github.com/bluss/scopeguard
 ---------------------------------------------------------
 
-@Poly <marynczak.bartlomiej@gmail.com>/sctk-adwaita 0.5.4 (MIT)
+sctk-adwaita 0.5.4 (MIT)
+Poly <marynczak.bartlomiej@gmail.com>
+https://github.com/PolyMeilex/sctk-adwaita
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/semver 1.0.17 (Apache-2.0 OR MIT)
+semver 1.0.17 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/semver
 ---------------------------------------------------------
 
-@Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>/serde 1.0.166 (Apache-2.0 OR MIT)
+serde 1.0.166 (Apache-2.0 OR MIT)
+Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
+https://github.com/serde-rs/serde
 ---------------------------------------------------------
 
-@Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>/serde_derive 1.0.166 (Apache-2.0 OR MIT)
+serde_derive 1.0.166 (Apache-2.0 OR MIT)
+Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
+https://github.com/serde-rs/serde
 ---------------------------------------------------------
 
-@Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>/serde_json 1.0.100 (Apache-2.0 OR MIT)
+serde_json 1.0.100 (Apache-2.0 OR MIT)
+Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
+https://github.com/serde-rs/json
 ---------------------------------------------------------
 
-@Lei Zhang <antiagainst@gmail.com>/shaderc 0.8.2 (Apache-2.0)
+shaderc 0.8.2 (Apache-2.0)
+Lei Zhang <antiagainst@gmail.com>
+https://github.com/google/shaderc-rs
 ---------------------------------------------------------
 
-@Lei Zhang <antiagainst@gmail.com>|Mr. Knapp <knappador@gmail.com>/shaderc-sys 0.8.2 (Apache-2.0)
+shaderc-sys 0.8.2 (Apache-2.0)
+Lei Zhang <antiagainst@gmail.com>|Mr. Knapp <knappador@gmail.com>
+https://github.com/google/shaderc-rs
 ---------------------------------------------------------
 
-@sebcrozet <developer@crozet.re>/simba 0.8.1 (Apache-2.0)
+simba 0.8.1 (Apache-2.0)
+sebcrozet <developer@crozet.re>
+https://github.com/dimforge/simba
 ---------------------------------------------------------
 
-@Marvin Countryman <me@maar.vin>/simd-adler32 0.3.5 (MIT)
+simd-adler32 0.3.5 (MIT)
+Marvin Countryman <me@maar.vin>
+https://github.com/mcountryman/simd-adler32
 ---------------------------------------------------------
 
-@Carl Lerche <me@carllerche.com>/slab 0.4.8 (MIT)
+slab 0.4.8 (MIT)
+Carl Lerche <me@carllerche.com>
+https://github.com/tokio-rs/slab
 ---------------------------------------------------------
 
-@Orson Peters <orsonpeters@gmail.com>/slotmap 1.0.6 (Zlib)
+slotmap 1.0.6 (Zlib)
+Orson Peters <orsonpeters@gmail.com>
+https://github.com/orlp/slotmap
 ---------------------------------------------------------
 
-@The Servo Project Developers/smallvec 1.10.0 (Apache-2.0 OR MIT)
+smallvec 1.10.0 (Apache-2.0 OR MIT)
+The Servo Project Developers
+https://github.com/servo/rust-smallvec
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/smithay-client-toolkit 0.16.0 (MIT)
+smithay-client-toolkit 0.16.0 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/client-toolkit
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>/socket2 0.4.9 (Apache-2.0 OR MIT)
+socket2 0.4.9 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>
+https://github.com/rust-lang/socket2
 ---------------------------------------------------------
 
 spdlog-macros 0.1.0 (Apache-2.0 OR MIT)
+https://github.com/SpriteOvO/spdlog-rs
 ---------------------------------------------------------
 
 spdlog-rs 0.3.8 (Apache-2.0 OR MIT)
+https://github.com/SpriteOvO/spdlog-rs
 ---------------------------------------------------------
 
-@Mathijs van de Nes <git@mathijs.vd-nes.nl>|John Ericson <git@JohnEricson.me>|Joshua Barretto <joshua.s.barretto@gmail.com>/spin 0.9.8 (MIT)
+spin 0.9.8 (MIT)
+Mathijs van de Nes <git@mathijs.vd-nes.nl>|John Ericson <git@JohnEricson.me>|Joshua Barretto <joshua.s.barretto@gmail.com>
+https://github.com/mvdnes/spin-rs.git
 ---------------------------------------------------------
 
-@Nikolai Vazquez/static_assertions 1.1.0 (Apache-2.0 OR MIT)
+static_assertions 1.1.0 (Apache-2.0 OR MIT)
+Nikolai Vazquez
+https://github.com/nvzqz/static-assertions-rs
 ---------------------------------------------------------
 
-@Yevhenii Reizner <razrfalcon@gmail.com>/strict-num 0.1.1 (MIT)
+strict-num 0.1.1 (MIT)
+Yevhenii Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/strict-num
 ---------------------------------------------------------
 
-@Danny Guo <danny@dannyguo.com>/strsim 0.10.0 (MIT)
+strsim 0.10.0 (MIT)
+Danny Guo <danny@dannyguo.com>
+https://github.com/dguo/strsim-rs
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/syn 1.0.109 (Apache-2.0 OR MIT)
+syn 1.0.109 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/syn 2.0.23 (Apache-2.0 OR MIT)
+syn 2.0.23 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
-@Actyx AG <developer@actyx.io>/sync_wrapper 0.1.2 (Apache-2.0)
+sync_wrapper 0.1.2 (Apache-2.0)
+Actyx AG <developer@actyx.io>
+https://github.com/Actyx/sync_wrapper
 ---------------------------------------------------------
 
-@Steven Allen <steven@stebalien.com>|The Rust Project Developers|Ashley Mannix <ashleymannix@live.com.au>|Jason White <me@jasonwhite.io>/tempfile 3.6.0 (Apache-2.0 OR MIT)
+tempfile 3.6.0 (Apache-2.0 OR MIT)
+Steven Allen <steven@stebalien.com>|The Rust Project Developers|Ashley Mannix <ashleymannix@live.com.au>|Jason White <me@jasonwhite.io>
+https://github.com/Stebalien/tempfile
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/termcolor 1.2.0 (MIT OR Unlicense)
+termcolor 1.2.0 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/termcolor
 ---------------------------------------------------------
 
-@Martin Geisler <martin@geisler.net>/textwrap 0.16.0 (MIT)
+textwrap 0.16.0 (MIT)
+Martin Geisler <martin@geisler.net>
+https://github.com/mgeisler/textwrap
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/thiserror 1.0.41 (Apache-2.0 OR MIT)
+thiserror 1.0.41 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/thiserror
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/thiserror-impl 1.0.41 (Apache-2.0 OR MIT)
+thiserror-impl 1.0.41 (Apache-2.0 OR MIT)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/thiserror
 ---------------------------------------------------------
 
-@Amanieu d'Antras <amanieu@gmail.com>/thread_local 1.1.7 (Apache-2.0 OR MIT)
+thread_local 1.1.7 (Apache-2.0 OR MIT)
+Amanieu d'Antras <amanieu@gmail.com>
+https://github.com/Amanieu/thread_local-rs
 ---------------------------------------------------------
 
-@The image-rs Developers/tiff 0.8.1 (MIT)
+tiff 0.8.1 (MIT)
+The image-rs Developers
+https://github.com/image-rs/image-tiff
 ---------------------------------------------------------
 
-@The Rust Project Developers/time 0.1.45 (Apache-2.0 OR MIT)
+time 0.1.45 (Apache-2.0 OR MIT)
+The Rust Project Developers
+https://github.com/time-rs/time
 ---------------------------------------------------------
 
-@Yevhenii Reizner <razrfalcon@gmail.com>/tiny-skia 0.8.4 (BSD-3-Clause)
+tiny-skia 0.8.4 (BSD-3-Clause)
+Yevhenii Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/tiny-skia
 ---------------------------------------------------------
 
-@Yevhenii Reizner <razrfalcon@gmail.com>/tiny-skia-path 0.8.4 (BSD-3-Clause)
+tiny-skia-path 0.8.4 (BSD-3-Clause)
+Yevhenii Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/tiny-skia/path
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>/tokio 1.29.1 (MIT)
+tokio 1.29.1 (MIT)
+Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-@Steven Fackler <sfackler@gmail.com>/tokio-io-timeout 1.2.0 (Apache-2.0 OR MIT)
+tokio-io-timeout 1.2.0 (Apache-2.0 OR MIT)
+Steven Fackler <sfackler@gmail.com>
+https://github.com/sfackler/tokio-io-timeout
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>/tokio-macros 2.1.0 (MIT)
+tokio-macros 2.1.0 (MIT)
+Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>/tokio-stream 0.1.14 (MIT)
+tokio-stream 0.1.14 (MIT)
+Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>/tokio-util 0.7.8 (MIT)
+tokio-util 0.7.8 (MIT)
+Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/toml 0.5.11 (Apache-2.0 OR MIT)
+toml 0.5.11 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>/toml_datetime 0.6.3 (Apache-2.0 OR MIT)
+toml_datetime 0.6.3 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>
+https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
-@Andronik Ordian <write@reusable.software>|Ed Page <eopage@gmail.com>/toml_edit 0.19.11 (Apache-2.0 OR MIT)
+toml_edit 0.19.11 (Apache-2.0 OR MIT)
+Andronik Ordian <write@reusable.software>|Ed Page <eopage@gmail.com>
+https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
-@Lucio Franco <luciofranco14@gmail.com>/tonic 0.9.2 (MIT)
+tonic 0.9.2 (MIT)
+Lucio Franco <luciofranco14@gmail.com>
+https://github.com/hyperium/tonic
 ---------------------------------------------------------
 
-@Lucio Franco <luciofranco14@gmail.com>/tonic-build 0.9.2 (MIT)
+tonic-build 0.9.2 (MIT)
+Lucio Franco <luciofranco14@gmail.com>
+https://github.com/hyperium/tonic
 ---------------------------------------------------------
 
-@Tower Maintainers <team@tower-rs.com>/tower 0.4.13 (MIT)
+tower 0.4.13 (MIT)
+Tower Maintainers <team@tower-rs.com>
+https://github.com/tower-rs/tower
 ---------------------------------------------------------
 
-@Tower Maintainers <team@tower-rs.com>/tower-layer 0.3.2 (MIT)
+tower-layer 0.3.2 (MIT)
+Tower Maintainers <team@tower-rs.com>
+https://github.com/tower-rs/tower
 ---------------------------------------------------------
 
-@Tower Maintainers <team@tower-rs.com>/tower-service 0.3.2 (MIT)
+tower-service 0.3.2 (MIT)
+Tower Maintainers <team@tower-rs.com>
+https://github.com/tower-rs/tower
 ---------------------------------------------------------
 
-@Eliza Weisman <eliza@buoyant.io>|Tokio Contributors <team@tokio.rs>/tracing 0.1.37 (MIT)
+tracing 0.1.37 (MIT)
+Eliza Weisman <eliza@buoyant.io>|Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>|Eliza Weisman <eliza@buoyant.io>|David Barsky <dbarsky@amazon.com>/tracing-attributes 0.1.26 (MIT)
+tracing-attributes 0.1.26 (MIT)
+Tokio Contributors <team@tokio.rs>|Eliza Weisman <eliza@buoyant.io>|David Barsky <dbarsky@amazon.com>
+https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
-@Tokio Contributors <team@tokio.rs>/tracing-core 0.1.31 (MIT)
+tracing-core 0.1.31 (MIT)
+Tokio Contributors <team@tokio.rs>
+https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/try-lock 0.2.4 (MIT)
+try-lock 0.2.4 (MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/seanmonstar/try-lock
 ---------------------------------------------------------
 
-@Yevhenii Reizner <razrfalcon@gmail.com>/ttf-parser 0.19.1 (Apache-2.0 OR MIT)
+ttf-parser 0.19.1 (Apache-2.0 OR MIT)
+Yevhenii Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/ttf-parser
 ---------------------------------------------------------
 
-@Paho Lurie-Gregg <paho@paholg.com>|Andre Bogus <bogusandre@gmail.com>/typenum 1.16.0 (Apache-2.0 OR MIT)
+typenum 1.16.0 (Apache-2.0 OR MIT)
+Paho Lurie-Gregg <paho@paholg.com>|Andre Bogus <bogusandre@gmail.com>
+https://github.com/paholg/typenum
 ---------------------------------------------------------
 
-@David Tolnay <dtolnay@gmail.com>/unicode-ident 1.0.10 ((MIT OR Apache-2.0) AND Unicode-DFS-2016)
+unicode-ident 1.0.10 ((MIT OR Apache-2.0) AND Unicode-DFS-2016)
+David Tolnay <dtolnay@gmail.com>
+https://github.com/dtolnay/unicode-ident
 ---------------------------------------------------------
 
-@kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>/unicode-segmentation 1.10.1 (Apache-2.0 OR MIT)
+unicode-segmentation 1.10.1 (Apache-2.0 OR MIT)
+kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>
+https://github.com/unicode-rs/unicode-segmentation
 ---------------------------------------------------------
 
-@Kornel <kornel@geekhood.net>|Bertram Truong <b@bertramtruong.com>/urlencoding 2.1.2 (MIT)
+urlencoding 2.1.2 (MIT)
+Kornel <kornel@geekhood.net>|Bertram Truong <b@bertramtruong.com>
+https://github.com/kornelski/rust_urlencoding
 ---------------------------------------------------------
 
-@Alex Crichton <alex@alexcrichton.com>|Jorge Aparicio <japaricious@gmail.com>|Alexis Beingessner <a.beingessner@gmail.com>|Brian Anderson <>|tbu- <>|Manish Goregaokar <>|Aaron Turon <aturon@mozilla.com>|Adolfo Ochagavía <>|Niko Matsakis <>|Steven Fackler <>|Chase Southwood <csouth3@illinois.edu>|Eduard Burtescu <>|Florian Wilkens <>|Félix Raimundo <>|Tibor Benke <>|Markus Siemens <markus@m-siemens.de>|Josh Branchaud <jbranchaud@gmail.com>|Huon Wilson <dbau.pp@gmail.com>|Corey Farwell <coref@rwell.org>|Aaron Liblong <>|Nick Cameron <nrc@ncameron.org>|Patrick Walton <pcwalton@mimiga.net>|Felix S Klock II <>|Andrew Paseltiner <apaseltiner@gmail.com>|Sean McArthur <sean.monstar@gmail.com>|Vadim Petrochenkov <>/vec_map 0.8.2 (Apache-2.0 OR MIT)
+vec_map 0.8.2 (Apache-2.0 OR MIT)
+Alex Crichton <alex@alexcrichton.com>|Jorge Aparicio <japaricious@gmail.com>|Alexis Beingessner <a.beingessner@gmail.com>|Brian Anderson <>|tbu- <>|Manish Goregaokar <>|Aaron Turon <aturon@mozilla.com>|Adolfo Ochagavía <>|Niko Matsakis <>|Steven Fackler <>|Chase Southwood <csouth3@illinois.edu>|Eduard Burtescu <>|Florian Wilkens <>|Félix Raimundo <>|Tibor Benke <>|Markus Siemens <markus@m-siemens.de>|Josh Branchaud <jbranchaud@gmail.com>|Huon Wilson <dbau.pp@gmail.com>|Corey Farwell <coref@rwell.org>|Aaron Liblong <>|Nick Cameron <nrc@ncameron.org>|Patrick Walton <pcwalton@mimiga.net>|Felix S Klock II <>|Andrew Paseltiner <apaseltiner@gmail.com>|Sean McArthur <sean.monstar@gmail.com>|Vadim Petrochenkov <>
+https://github.com/contain-rs/vec-map
 ---------------------------------------------------------
 
-@bvssvni <bvssvni@gmail.com>/vecmath 1.0.0 (MIT)
+vecmath 1.0.0 (MIT)
+bvssvni <bvssvni@gmail.com>
+https://github.com/pistondevelopers/vecmath.git
 ---------------------------------------------------------
 
-@Sergio Benitez <sb@sergio.bz>/version_check 0.9.4 (Apache-2.0 OR MIT)
+version_check 0.9.4 (Apache-2.0 OR MIT)
+Sergio Benitez <sb@sergio.bz>
+https://github.com/SergioBenitez/version_check
 ---------------------------------------------------------
 
-@Martin Krošlák <kroslakma@gmail.com>/vk-parse 0.8.0 (Apache-2.0 OR MIT)
+vk-parse 0.8.0 (Apache-2.0 OR MIT)
+Martin Krošlák <kroslakma@gmail.com>
+https://github.com/krolli/vk-parse
 ---------------------------------------------------------
 
-@Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors/vulkano 0.33.0 (Apache-2.0 OR MIT)
+vulkano 0.33.0 (Apache-2.0 OR MIT)
+Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors
+https://github.com/vulkano-rs/vulkano
 ---------------------------------------------------------
 
-@Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors/vulkano-macros 0.33.0 (Apache-2.0 OR MIT)
+vulkano-macros 0.33.0 (Apache-2.0 OR MIT)
+Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors
+https://github.com/vulkano-rs/vulkano
 ---------------------------------------------------------
 
-@Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors/vulkano-shaders 0.33.0 (Apache-2.0 OR MIT)
+vulkano-shaders 0.33.0 (Apache-2.0 OR MIT)
+Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors
+https://github.com/vulkano-rs/vulkano
 ---------------------------------------------------------
 
-@Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors/vulkano-win 0.33.0 (Apache-2.0 OR MIT)
+vulkano-win 0.33.0 (Apache-2.0 OR MIT)
+Pierre Krieger <pierre.krieger1708@gmail.com>|The vulkano contributors
+https://github.com/vulkano-rs/vulkano
 ---------------------------------------------------------
 
-@Sean McArthur <sean@seanmonstar.com>/want 0.3.1 (MIT)
+want 0.3.1 (MIT)
+Sean McArthur <sean@seanmonstar.com>
+https://github.com/seanmonstar/want
 ---------------------------------------------------------
 
-@The Cranelift Project Developers/wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+The Cranelift Project Developers
+https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
-@The Cranelift Project Developers/wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+The Cranelift Project Developers
+https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/wasm-bindgen 0.2.87 (Apache-2.0 OR MIT)
+wasm-bindgen 0.2.87 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/wasm-bindgen-backend 0.2.87 (Apache-2.0 OR MIT)
+wasm-bindgen-backend 0.2.87 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/backend
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/wasm-bindgen-macro 0.2.87 (Apache-2.0 OR MIT)
+wasm-bindgen-macro 0.2.87 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/macro
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/wasm-bindgen-macro-support 0.2.87 (Apache-2.0 OR MIT)
+wasm-bindgen-macro-support 0.2.87 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/macro-support
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/wasm-bindgen-shared 0.2.87 (Apache-2.0 OR MIT)
+wasm-bindgen-shared 0.2.87 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/shared
 ---------------------------------------------------------
 
-@kujirahand/wav_io 0.1.8 (MIT)
+wav_io 0.1.8 (MIT)
+kujirahand
+https://github.com/kujirahand/wav_io
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-client 0.29.5 (MIT)
+wayland-client 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-commons 0.29.5 (MIT)
+wayland-commons 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-cursor 0.29.5 (MIT)
+wayland-cursor 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-protocols 0.29.5 (MIT)
+wayland-protocols 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-scanner 0.29.5 (MIT)
+wayland-scanner 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@Victor Berger <victor.berger@m4x.org>/wayland-sys 0.29.5 (MIT)
+wayland-sys 0.29.5 (MIT)
+Victor Berger <victor.berger@m4x.org>
+https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-@The wasm-bindgen Developers/web-sys 0.3.64 (Apache-2.0 OR MIT)
+web-sys 0.3.64 (Apache-2.0 OR MIT)
+The wasm-bindgen Developers
+https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys
 ---------------------------------------------------------
 
-@HeroicKatora <andreas.molzer@gmx.de>/weezl 0.1.7 (Apache-2.0 OR MIT)
+weezl 0.1.7 (Apache-2.0 OR MIT)
+HeroicKatora <andreas.molzer@gmx.de>
+https://github.com/image-rs/lzw.git
 ---------------------------------------------------------
 
-@Harry Fei <tiziyuanfang@gmail.com>/which 4.4.0 (MIT)
+which 4.4.0 (MIT)
+Harry Fei <tiziyuanfang@gmail.com>
+https://github.com/harryfei/which-rs.git
 ---------------------------------------------------------
 
-@Lokathor <zefria@gmail.com>/wide 0.7.10 (Apache-2.0 OR MIT OR Zlib)
+wide 0.7.10 (Apache-2.0 OR MIT OR Zlib)
+Lokathor <zefria@gmail.com>
+https://github.com/Lokathor/wide
 ---------------------------------------------------------
 
-@Peter Atashian <retep998@gmail.com>/winapi 0.3.9 (Apache-2.0 OR MIT)
+winapi 0.3.9 (Apache-2.0 OR MIT)
+Peter Atashian <retep998@gmail.com>
+https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
-@Peter Atashian <retep998@gmail.com>/winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
+winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
+Peter Atashian <retep998@gmail.com>
+https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
-@Andrew Gallant <jamslam@gmail.com>/winapi-util 0.1.5 (MIT OR Unlicense)
+winapi-util 0.1.5 (MIT OR Unlicense)
+Andrew Gallant <jamslam@gmail.com>
+https://github.com/BurntSushi/winapi-util
 ---------------------------------------------------------
 
-@Peter Atashian <retep998@gmail.com>/winapi-x86_64-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
+winapi-x86_64-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
+Peter Atashian <retep998@gmail.com>
+https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
-@Microsoft/windows 0.48.0 (Apache-2.0 OR MIT)
+windows 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows-sys 0.45.0 (Apache-2.0 OR MIT)
+windows-sys 0.45.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows-sys 0.48.0 (Apache-2.0 OR MIT)
+windows-sys 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows-targets 0.42.2 (Apache-2.0 OR MIT)
+windows-targets 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows-targets 0.48.1 (Apache-2.0 OR MIT)
+windows-targets 0.48.1 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_aarch64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
+windows_aarch64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_aarch64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
+windows_aarch64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_aarch64_msvc 0.42.2 (Apache-2.0 OR MIT)
+windows_aarch64_msvc 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_aarch64_msvc 0.48.0 (Apache-2.0 OR MIT)
+windows_aarch64_msvc 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_i686_gnu 0.42.2 (Apache-2.0 OR MIT)
+windows_i686_gnu 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_i686_gnu 0.48.0 (Apache-2.0 OR MIT)
+windows_i686_gnu 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_i686_msvc 0.42.2 (Apache-2.0 OR MIT)
+windows_i686_msvc 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_i686_msvc 0.48.0 (Apache-2.0 OR MIT)
+windows_i686_msvc 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_gnu 0.42.2 (Apache-2.0 OR MIT)
+windows_x86_64_gnu 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_gnu 0.48.0 (Apache-2.0 OR MIT)
+windows_x86_64_gnu 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
+windows_x86_64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
+windows_x86_64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_msvc 0.42.2 (Apache-2.0 OR MIT)
+windows_x86_64_msvc 0.42.2 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@Microsoft/windows_x86_64_msvc 0.48.0 (Apache-2.0 OR MIT)
+windows_x86_64_msvc 0.48.0 (Apache-2.0 OR MIT)
+Microsoft
+https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-@The winit contributors|Pierre Krieger <pierre.krieger1708@gmail.com>/winit 0.28.6 (Apache-2.0)
+winit 0.28.6 (Apache-2.0)
+The winit contributors|Pierre Krieger <pierre.krieger1708@gmail.com>
+https://github.com/rust-windowing/winit
 ---------------------------------------------------------
 
 winnow 0.4.7 (MIT)
+https://github.com/winnow-rs/winnow
 ---------------------------------------------------------
 
 wrapper-generator 14.0.1 (MIT)
 ---------------------------------------------------------
 
-@daggerbot <daggerbot@gmail.com>|Erle Pereira <erle@erlepereira.com>|AltF02 <contact@altf2.dev>/x11-dl 2.21.0 (MIT)
+x11-dl 2.21.0 (MIT)
+daggerbot <daggerbot@gmail.com>|Erle Pereira <erle@erlepereira.com>|AltF02 <contact@altf2.dev>
+https://github.com/AltF02/x11-rs.git
 ---------------------------------------------------------
 
-@Samuele Esposito/xcursor 0.3.4 (MIT)
+xcursor 0.3.4 (MIT)
+Samuele Esposito
+https://github.com/esposm03/xcursor-rs
 ---------------------------------------------------------
 
-@Vladimir Matveev <vmatveev@citrine.cc>/xml-rs 0.8.15 (MIT)
+xml-rs 0.8.15 (MIT)
+Vladimir Matveev <vmatveev@citrine.cc>
+https://github.com/kornelski/xml-rs
 ---------------------------------------------------------
 
-@Evgeniy Reizner <razrfalcon@gmail.com>/xmlparser 0.13.5 (Apache-2.0 OR MIT)
+xmlparser 0.13.5 (Apache-2.0 OR MIT)
+Evgeniy Reizner <razrfalcon@gmail.com>
+https://github.com/RazrFalcon/xmlparser
 ---------------------------------------------------------
 
 zune-inflate 0.2.54 (Apache-2.0 OR MIT OR Zlib)
