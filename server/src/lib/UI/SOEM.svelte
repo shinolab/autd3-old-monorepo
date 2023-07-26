@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 06/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 12/07/2023
+Last Modified: 26/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import type { SOEMOptions, SyncMode, TimerStrategy } from "./options.ts";
   import { SyncModeValues, TimerStrategyValues } from "./options.ts";
 
-  import { platform } from "@tauri-apps/api/os";
   import { onMount } from "svelte";
-  import { writable } from "svelte/store";
   import { Command, Child } from "@tauri-apps/api/shell";
   import { consoleOutputQueue } from "./console_output.ts";
 
@@ -29,6 +27,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import { msToDuration, msFromDuration } from "./utils/duration.ts";
 
   export let soemOptions: SOEMOptions;
+  export let adapters: string[] = [];
 
   let command;
   let child: null | Child = null;
@@ -66,19 +65,16 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     soemOptions.timeout = msToDuration(timeoutMs);
   }
 
-  const cachedAdapters = writable<string[]>([]);
   let adapterNames: string[] = [];
   let adapterName: string = "Auto";
   $: {
     if (adapterName == "Auto") {
       soemOptions.ifname = "Auto";
     } else {
-      const idx = $cachedAdapters.findIndex(
+      const idx = adapters.findIndex(
         (adapter) => adapter.split(",")[1].trim() == adapterName
       );
-      console.log(idx);
-      soemOptions.ifname = $cachedAdapters[idx].split(",")[0].trim();
-      console.log(soemOptions.ifname);
+      soemOptions.ifname = adapters[idx].split(",")[0].trim();
     }
   }
 
@@ -129,12 +125,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     });
     command.on("close", async (data) => {
       if (data.code < -1) {
-        const platformName = await platform();
-        let message = `SOEMAUTDServer exited with code ${data.code}`;
-        if (platformName == "win32") {
-          message += ". npcap is installed?";
-        }
-        alert(message);
+        alert(`SOEMAUTDServer exited with code ${data.code}`);
       }
       handleCloseClick();
     });
@@ -148,20 +139,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   };
 
   onMount(async () => {
-    let adapters: string[] = [];
-    cachedAdapters.subscribe((v) => {
-      adapters = v;
-    })();
-    if (adapters.length == 0) {
-      let ifnames = (
-        await Command.sidecar("SOEMAUTDServer", ["list"]).execute()
-      ).stdout;
-      adapters = ifnames
-        .split("\n")
-        .slice(1)
-        .map((line) => line.trim().split("\t").join(","));
-      cachedAdapters.set(adapters);
-    }
     adapterNames = ["Auto"].concat(
       adapters.map((adapter) => adapter.split(",")[1].trim())
     );
