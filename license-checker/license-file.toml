@@ -1,0 +1,11 @@
+[[package]]
+name = "autd3-link-soem"
+license_file_url = "https://raw.githubusercontent.com/shinolab/autd3/master/src/autd3-link-soem/LICENSE"
+
+[[package]]
+name = "autd3-link-twincat"
+license_file_url = "https://raw.githubusercontent.com/shinolab/autd3/master/src/autd3-link-twincat/LICENSE"
+
+[[package]]
+name = "imgui-vulkano-renderer"
+license_file_url = "https://raw.githubusercontent.com/s5suzuki/imgui-vulkano-renderer/vulkano-0.33.0/LICENSE"

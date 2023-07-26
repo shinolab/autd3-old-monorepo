@@ -1,0 +1,19 @@
+[package]
+name = "license-checker"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.72"
+cargo-license = "0.5.1"
+cargo_metadata = "0.15.4"
+console = "0.15.7"
+csv = "1.2.2"
+current_platform = "0.2.0"
+glob = "0.3.1"
+reqwest = { version = "0.11.18", features = ["blocking"] }
+serde = { version = "1.0.175", features = ["derive"] }
+similar = { version = "2.2.1", features = ["text", "inline", "bytes"] }
+toml = "0.7.6"
