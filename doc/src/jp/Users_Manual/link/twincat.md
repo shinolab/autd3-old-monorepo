@@ -25,6 +25,9 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 と打ち込めば良い.
 
+また, Windows 11の場合, 仮想化ベースのセキュリティ機能もオフにする必要がある.
+「Windows セキュリティ」→ 「デバイス セキュリティ」→「コア分離」→「メモリ整合性」をオフにする.
+
 まず, TwinCAT XAEを[公式サイト](https://www.beckhoff.com/en-en/)からダウンロードする.
 ダウンロードには登録 (無料) が必要になる.
 
