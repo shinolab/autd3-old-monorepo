@@ -104,11 +104,15 @@ for target in targets:
                     target.bin_ext
                 ):
                     f.extract(info, ".")
+                if info.filename.endswith("ThirdPartyNotice.txt"):
+                    f.extract(info, ".")
     elif target.archive_ext == "tar.gz":
         with tarfile.open(tmp_archive_path) as f:
             libraries = []
             for i in f.getmembers():
                 if i.name.startswith("bin") and i.name.endswith(target.bin_ext):
+                    libraries.append(i)
+                if i.name.endswith("ThirdPartyNotice.txt"):
                     libraries.append(i)
             f.extractall(path=".", members=libraries)
 
@@ -117,5 +121,8 @@ for target in targets:
     os.makedirs("pyautd3/bin")
     for f in glob.glob("./bin/*"):
         shutil.move(f, "pyautd3/bin")
+    if os.path.exists("LICENSE.txt"):
+        os.remove("LICENSE.txt")
+    shutil.copy("../LICENSE", "LICENSE.txt")
     os.remove(tmp_archive_path)
     shutil.rmtree("./bin")
