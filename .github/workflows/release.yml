@@ -380,7 +380,9 @@ jobs:
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
     - name: Replace latest binary
       run: |
-        cp LICENSE dotnet/cs/src/LICENSE.md
+        cp LICENSE dotnet/cs/src/LICENSE.txt
+        echo "\n=========================================================\n" >> dotnet/cs/src/LICENSE.txt
+        cat ./capi/ThirdPartyNotice.txt >> dotnet/cs/src/LICENSE.txt
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
         rm -f ./dotnet/cs/src/native/linux/x64/*
         \cp bin/*.so ./dotnet/cs/src/native/linux/x64/
