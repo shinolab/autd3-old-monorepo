@@ -11,262 +11,210 @@ https://github.com/gimli-rs/addr2line
 ---------------------------------------------------------
 
 adler 1.0.2 (0BSD OR Apache-2.0 OR MIT)
-Jonas Schievink <jonasschievink@gmail.com>
 https://github.com/jonas-schievink/adler.git
 ---------------------------------------------------------
 
 aho-corasick 0.7.20 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/aho-corasick
 ---------------------------------------------------------
 
 aho-corasick 1.0.2 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/aho-corasick
 ---------------------------------------------------------
 
 alloc-no-stdlib 2.0.4 (BSD-3-Clause)
-Daniel Reiter Horn <danielrh@dropbox.com>
 https://github.com/dropbox/rust-alloc-no-stdlib
 ---------------------------------------------------------
 
 alloc-stdlib 0.2.2 (BSD-3-Clause)
-Daniel Reiter Horn <danielrh@dropbox.com>
 https://github.com/dropbox/rust-alloc-no-stdlib
 ---------------------------------------------------------
 
 android-tzdata 0.1.1 (Apache-2.0 OR MIT)
-RumovZ
 https://github.com/RumovZ/android-tzdata
 ---------------------------------------------------------
 
 android_system_properties 0.1.5 (Apache-2.0 OR MIT)
-Nicolas Silva <nical@fastmail.com>
 https://github.com/nical/android_system_properties
 ---------------------------------------------------------
 
 anyhow 1.0.71 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/anyhow
 ---------------------------------------------------------
 
 approx 0.5.1 (Apache-2.0)
-Brendan Zabarauskas <bjzaba@yahoo.com.au>
 https://github.com/brendanzab/approx
 ---------------------------------------------------------
 
 arc-swap 1.6.0 (Apache-2.0 OR MIT)
-Michal 'vorner' Vaner <vorner@vorner.cz>
 https://github.com/vorner/arc-swap
 ---------------------------------------------------------
 
 async-broadcast 0.5.1 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>|Yoshua Wuyts <yoshuawuyts@gmail.com>|Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/smol-rs/async-broadcast
 ---------------------------------------------------------
 
 async-channel 1.8.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-channel
 ---------------------------------------------------------
 
 async-executor 1.5.1 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-executor
 ---------------------------------------------------------
 
 async-fs 1.6.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-fs
 ---------------------------------------------------------
 
 async-io 1.13.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-io
 ---------------------------------------------------------
 
 async-lock 2.7.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-lock
 ---------------------------------------------------------
 
 async-process 1.7.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-process
 ---------------------------------------------------------
 
 async-recursion 1.0.4 (Apache-2.0 OR MIT)
-Robert Usher <266585+dcchut@users.noreply.github.com>
 https://github.com/dcchut/async-recursion
 ---------------------------------------------------------
 
 async-task 4.4.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/async-task
 ---------------------------------------------------------
 
 async-trait 0.1.71 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/async-trait
 ---------------------------------------------------------
 
 atk 0.15.1 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 atk-sys 0.15.1 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 atomic 0.5.3 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/Amanieu/atomic-rs
 ---------------------------------------------------------
 
 atomic-waker 1.1.1 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>|Contributors to futures-rs
 https://github.com/smol-rs/atomic-waker
 ---------------------------------------------------------
 
 autd-server 14.0.1 (MIT)
-shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autd3-core 14.0.1 (MIT)
-shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autd3-driver 14.0.1 (MIT)
-shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
-Josh Stone <cuviper@gmail.com>
 https://github.com/cuviper/autocfg
 ---------------------------------------------------------
 
 backtrace 0.3.68 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/backtrace-rs
 ---------------------------------------------------------
 
 base64 0.13.1 (Apache-2.0 OR MIT)
-Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>
 https://github.com/marshallpierce/rust-base64
 ---------------------------------------------------------
 
 base64 0.21.2 (Apache-2.0 OR MIT)
-Alice Maz <alice@alicemaz.com>|Marshall Pierce <marshall@mpierce.org>
 https://github.com/marshallpierce/rust-base64
 ---------------------------------------------------------
 
 bitflags 1.3.2 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/bitflags/bitflags
 ---------------------------------------------------------
 
 bitflags 2.3.3 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/bitflags/bitflags
 ---------------------------------------------------------
 
 block 0.1.6 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-block
 ---------------------------------------------------------
 
 block-buffer 0.10.4 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/utils
 ---------------------------------------------------------
 
 blocking 1.3.1 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/blocking
 ---------------------------------------------------------
 
 brotli 3.3.4 (BSD-3-Clause OR MIT)
-Daniel Reiter Horn <danielrh@dropbox.com>|The Brotli Authors
 https://github.com/dropbox/rust-brotli
 ---------------------------------------------------------
 
 brotli-decompressor 2.3.4 (BSD-3-Clause OR MIT)
-Daniel Reiter Horn <danielrh@dropbox.com>|The Brotli Authors
 https://github.com/dropbox/rust-brotli-decompressor
 ---------------------------------------------------------
 
 bstr 1.5.0 (Apache-2.0 OR MIT)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/bstr
 ---------------------------------------------------------
 
 bumpalo 3.13.0 (Apache-2.0 OR MIT)
-Nick Fitzgerald <fitzgen@gmail.com>
 https://github.com/fitzgen/bumpalo
 ---------------------------------------------------------
 
 bytemuck 1.13.1 (Apache-2.0 OR MIT OR Zlib)
-Lokathor <zefria@gmail.com>
 https://github.com/Lokathor/bytemuck
 ---------------------------------------------------------
 
 byteorder 1.4.3 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/byteorder
 ---------------------------------------------------------
 
 bytes 1.4.0 (MIT)
-Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>
 https://github.com/tokio-rs/bytes
 ---------------------------------------------------------
 
 cairo-rs 0.15.12 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 cairo-sys-rs 0.15.1 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 cargo_toml 0.15.3 (Apache-2.0 OR MIT)
-Kornel <kornel@geekhood.net>
 https://gitlab.com/crates.rs/cargo_toml
 ---------------------------------------------------------
 
 cc 1.0.79 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/rust-lang/cc-rs
 ---------------------------------------------------------
 
 cesu8 1.1.0 (Apache-2.0 OR MIT)
-Eric Kidd <git@randomhacks.net>
 https://github.com/emk/cesu8-rs
 ---------------------------------------------------------
 
 cfb 0.7.3 (MIT)
-Matthew D. Steele <mdsteele@alum.mit.edu>
 https://github.com/mdsteele/rust-cfb
 ---------------------------------------------------------
 
 cfg-expr 0.9.1 (Apache-2.0 OR MIT)
-Embark <opensource@embark-studios.com>|Jake Shadle <jake.shadle@embark-studios.com>
 https://github.com/EmbarkStudios/cfg-expr
 ---------------------------------------------------------
 
 cfg-expr 0.15.3 (Apache-2.0 OR MIT)
-Embark <opensource@embark-studios.com>|Jake Shadle <jake.shadle@embark-studios.com>
 https://github.com/EmbarkStudios/cfg-expr
 ---------------------------------------------------------
 
 cfg-if 1.0.0 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/alexcrichton/cfg-if
 ---------------------------------------------------------
 
@@ -275,62 +223,50 @@ https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
 cocoa 0.24.1 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 cocoa-foundation 0.1.1 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 color_quant 1.1.0 (MIT)
-nwin <nwin@users.noreply.github.com>
 https://github.com/image-rs/color_quant.git
 ---------------------------------------------------------
 
 combine 4.6.6 (MIT)
-Markus Westerlind <marwes91@gmail.com>
 https://github.com/Marwes/combine
 ---------------------------------------------------------
 
 concurrent-queue 2.2.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>|Taiki Endo <te316e89@gmail.com>|John Nunley <jtnunley01@gmail.com>
 https://github.com/smol-rs/concurrent-queue
 ---------------------------------------------------------
 
 convert_case 0.4.0 (MIT)
-David Purdum <purdum41@gmail.com>
 https://github.com/rutrum/convert-case
 ---------------------------------------------------------
 
 core-foundation 0.9.3 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 core-foundation-sys 0.8.4 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 core-graphics 0.22.3 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 core-graphics-types 0.1.2 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
 cpufeatures 0.2.8 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/utils
 ---------------------------------------------------------
 
 crc32fast 1.3.2 (Apache-2.0 OR MIT)
-Sam Rijs <srijs@airpost.net>|Alex Crichton <alex@alexcrichton.com>
 https://github.com/srijs/rust-crc32fast
 ---------------------------------------------------------
 
@@ -343,112 +279,90 @@ https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crypto-common 0.1.6 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/traits
 ---------------------------------------------------------
 
 cssparser 0.27.2 (MPL-2.0)
-Simon Sapin <simon.sapin@exyr.org>
 https://github.com/servo/rust-cssparser
 ---------------------------------------------------------
 
 cssparser-macros 0.6.1 (MPL-2.0)
-Simon Sapin <simon.sapin@exyr.org>
 https://github.com/servo/rust-cssparser
 ---------------------------------------------------------
 
 ctor 0.1.26 (Apache-2.0 OR MIT)
-Matt Mastracci <matthew@mastracci.com>
 https://github.com/mmastrac/rust-ctor
 ---------------------------------------------------------
 
 darling 0.20.1 (MIT)
-Ted Driggs <ted.driggs@outlook.com>
 https://github.com/TedDriggs/darling
 ---------------------------------------------------------
 
 darling_core 0.20.1 (MIT)
-Ted Driggs <ted.driggs@outlook.com>
 https://github.com/TedDriggs/darling
 ---------------------------------------------------------
 
 darling_macro 0.20.1 (MIT)
-Ted Driggs <ted.driggs@outlook.com>
 https://github.com/TedDriggs/darling
 ---------------------------------------------------------
 
 derivative 2.2.0 (Apache-2.0 OR MIT)
-mcarton <cartonmartin+git@gmail.com>
 https://github.com/mcarton/rust-derivative
 ---------------------------------------------------------
 
 derive_more 0.99.17 (MIT)
-Jelte Fennema <github-tech@jeltef.nl>
 https://github.com/JelteF/derive_more
 ---------------------------------------------------------
 
 digest 0.10.7 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/traits
 ---------------------------------------------------------
 
 dirs-next 2.0.0 (Apache-2.0 OR MIT)
-The @xdg-rs members
 https://github.com/xdg-rs/dirs
 ---------------------------------------------------------
 
 dirs-sys-next 0.1.2 (Apache-2.0 OR MIT)
-The @xdg-rs members
 https://github.com/xdg-rs/dirs/tree/master/dirs-sys
 ---------------------------------------------------------
 
 dispatch 0.2.0 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-dispatch
 ---------------------------------------------------------
 
 dtoa 1.0.8 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/dtoa
 ---------------------------------------------------------
 
 dtoa-short 0.3.4 (MPL-2.0)
-Xidorn Quan <me@upsuper.org>
 https://github.com/upsuper/dtoa-short
 ---------------------------------------------------------
 
 dunce 1.0.4 (Apache-2.0 OR CC0-1.0 OR MIT-0)
-Kornel <kornel@geekhood.net>
 https://gitlab.com/kornelski/dunce
 ---------------------------------------------------------
 
 either 1.8.1 (Apache-2.0 OR MIT)
-bluss
 https://github.com/bluss/either
 ---------------------------------------------------------
 
 embed-resource 2.2.0 (MIT)
-наб <nabijaczleweli@nabijaczleweli.xyz>|Cat Plus Plus <piotrlegnica@piotrl.pl>|Liigo <liigo@qq.com>|azyobuzin <azyobuzin@users.sourceforge.jp>|Peter Atashian <retep998@gmail.com>|pravic <ehysta@gmail.com>|Gabriel Majeri <gabriel.majeri6@gmail.com>|SonnyX|Johan Andersson <repi@repi.se>|Jordan Poles <jpdev.noreply@gmail.com>|MSxDOS <melcodos@gmail.com>|Jim McGrath <jimmc2@gmail.com>|roblabla <unfiltered@roblab.la>|Jasper Bekkers <jasper@traverseresearch.nl>|Richard Markiewicz <rmarkiewicz@devolutions.net>|Emerson de Freitas Barcelos <emersonfxbx@gmail.com>|Li Keqing <me@kaze.ai>|Alexis Bourget <alexis.bourget@gmail.com>|Michael Farrell <micolous+git@gmail.com>
 https://github.com/nabijaczleweli/rust-embed-resource
 ---------------------------------------------------------
 
 embed_plist 1.2.2 (Apache-2.0 OR MIT)
-Nikolai Vazquez <hello@nikolaivazquez.com>
 https://github.com/nvzqz/embed-plist-rs
 ---------------------------------------------------------
 
 encoding_rs 0.8.32 ((Apache-2.0 OR MIT) AND BSD-3-Clause)
-Henri Sivonen <hsivonen@hsivonen.fi>
 https://github.com/hsivonen/encoding_rs
 ---------------------------------------------------------
 
 enumflags2 0.7.7 (Apache-2.0 OR MIT)
-maik klein <maikklein@googlemail.com>|Maja Kądziołka <maya@compilercrim.es>
 https://github.com/meithecatte/enumflags2
 ---------------------------------------------------------
 
 enumflags2_derive 0.7.7 (Apache-2.0 OR MIT)
-maik klein <maikklein@googlemail.com>|Maja Kądziołka <maya@compilercrim.es>
 https://github.com/meithecatte/enumflags2
 ---------------------------------------------------------
 
@@ -457,67 +371,54 @@ https://github.com/cuviper/equivalent
 ---------------------------------------------------------
 
 errno 0.3.1 (Apache-2.0 OR MIT)
-Chris Wong <lambda.fairy@gmail.com>
 https://github.com/lambda-fairy/rust-errno
 ---------------------------------------------------------
 
 errno-dragonfly 0.1.2 (MIT)
-Michael Neumann <mneumann@ntecs.de>
 https://github.com/mneumann/errno-dragonfly-rs
 ---------------------------------------------------------
 
 event-listener 2.5.3 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/event-listener
 ---------------------------------------------------------
 
 fastrand 1.9.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/fastrand
 ---------------------------------------------------------
 
 fdeflate 0.3.0 (Apache-2.0 OR MIT)
-The image-rs Developers
 https://github.com/image-rs/fdeflate
 ---------------------------------------------------------
 
 field-offset 0.3.6 (Apache-2.0 OR MIT)
-Diggory Blake <diggsey@googlemail.com>
 https://github.com/Diggsey/rust-field-offset
 ---------------------------------------------------------
 
 filetime 0.2.21 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/alexcrichton/filetime
 ---------------------------------------------------------
 
 flate2 1.0.26 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>|Josh Triplett <josh@joshtriplett.org>
 https://github.com/rust-lang/flate2-rs
 ---------------------------------------------------------
 
 fnv 1.0.7 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/servo/rust-fnv
 ---------------------------------------------------------
 
 foreign-types 0.3.2 (Apache-2.0 OR MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/foreign-types
 ---------------------------------------------------------
 
 foreign-types-shared 0.1.1 (Apache-2.0 OR MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/foreign-types
 ---------------------------------------------------------
 
 form_urlencoded 1.2.0 (Apache-2.0 OR MIT)
-The rust-url developers
 https://github.com/servo/rust-url
 ---------------------------------------------------------
 
 futf 0.1.5 (Apache-2.0 OR MIT)
-Keegan McAllister <kmcallister@mozilla.com>
 https://github.com/servo/futf
 ---------------------------------------------------------
 
@@ -538,7 +439,6 @@ https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 futures-lite 1.13.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>|Contributors to futures-rs
 https://github.com/smol-rs/futures-lite
 ---------------------------------------------------------
 
@@ -559,57 +459,46 @@ https://github.com/rust-lang/futures-rs
 ---------------------------------------------------------
 
 fxhash 0.2.1 (Apache-2.0 OR MIT)
-cbreeden <github@u.breeden.cc>
 https://github.com/cbreeden/fxhash
 ---------------------------------------------------------
 
 gdk 0.15.4 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 gdk-pixbuf 0.15.11 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 gdk-pixbuf-sys 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 gdk-sys 0.15.1 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 gdkwayland-sys 0.15.3 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 gdkx11-sys 0.15.1 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 generator 0.7.5 (Apache-2.0 OR MIT)
-Xudong Huang <huangxu008@hotmail.com>
 https://github.com/Xudong-Huang/generator-rs.git
 ---------------------------------------------------------
 
 generic-array 0.14.7 (MIT)
-Bartłomiej Kamiński <fizyk20@gmail.com>|Aaron Trent <novacrazy@gmail.com>
 https://github.com/fizyk20/generic-array.git
 ---------------------------------------------------------
 
 getrandom 0.1.16 (Apache-2.0 OR MIT)
-The Rand Project Developers
 https://github.com/rust-random/getrandom
 ---------------------------------------------------------
 
 getrandom 0.2.10 (Apache-2.0 OR MIT)
-The Rand Project Developers
 https://github.com/rust-random/getrandom
 ---------------------------------------------------------
 
@@ -618,142 +507,114 @@ https://github.com/gimli-rs/gimli
 ---------------------------------------------------------
 
 gio 0.15.12 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 gio-sys 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 glib 0.15.12 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 glib-macros 0.15.13 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 glib-sys 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 glob 0.3.1 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/glob
 ---------------------------------------------------------
 
 globset 0.4.10 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/ripgrep/tree/master/crates/globset
 ---------------------------------------------------------
 
 gobject-sys 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 gtk 0.15.5 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 gtk-sys 0.15.3 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 gtk3-macros 0.15.6 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk3-rs
 ---------------------------------------------------------
 
 hashbrown 0.12.3 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/rust-lang/hashbrown
 ---------------------------------------------------------
 
 hashbrown 0.14.0 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/rust-lang/hashbrown
 ---------------------------------------------------------
 
 heck 0.3.3 (Apache-2.0 OR MIT)
-Without Boats <woboats@gmail.com>
 https://github.com/withoutboats/heck
 ---------------------------------------------------------
 
 heck 0.4.1 (Apache-2.0 OR MIT)
-Without Boats <woboats@gmail.com>
 https://github.com/withoutboats/heck
 ---------------------------------------------------------
 
 hermit-abi 0.3.1 (Apache-2.0 OR MIT)
-Stefan Lankes
 https://github.com/hermitcore/rusty-hermit
 ---------------------------------------------------------
 
 hex 0.4.3 (Apache-2.0 OR MIT)
-KokaKiwi <kokakiwi@kokakiwi.net>
 https://github.com/KokaKiwi/rust-hex
 ---------------------------------------------------------
 
 html5ever 0.25.2 (Apache-2.0 OR MIT)
-The html5ever Project Developers
 https://github.com/servo/html5ever
 ---------------------------------------------------------
 
 http 0.2.9 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>|Carl Lerche <me@carllerche.com>|Sean McArthur <sean@seanmonstar.com>
 https://github.com/hyperium/http
 ---------------------------------------------------------
 
 http-range 0.1.5 (MIT)
-Luka Zakrajšek <luka@bancek.net>
 https://github.com/bancek/rust-http-range.git
 ---------------------------------------------------------
 
 iana-time-zone 0.1.57 (Apache-2.0 OR MIT)
-Andrew Straw <strawman@astraw.com>|René Kijewski <rene.kijewski@fu-berlin.de>|Ryan Lopopolo <rjl@hyperbo.la>
 https://github.com/strawlab/iana-time-zone
 ---------------------------------------------------------
 
 iana-time-zone-haiku 0.1.2 (Apache-2.0 OR MIT)
-René Kijewski <crates.io@k6i.de>
 https://github.com/strawlab/iana-time-zone
 ---------------------------------------------------------
 
 ico 0.3.0 (MIT)
-Matthew D. Steele <mdsteele@alum.mit.edu>
 https://github.com/mdsteele/rust-ico
 ---------------------------------------------------------
 
 ident_case 1.0.1 (Apache-2.0 OR MIT)
-Ted Driggs <ted.driggs@outlook.com>
 https://github.com/TedDriggs/ident_case
 ---------------------------------------------------------
 
 idna 0.4.0 (Apache-2.0 OR MIT)
-The rust-url developers
 https://github.com/servo/rust-url/
 ---------------------------------------------------------
 
 if_chain 1.0.2 (Apache-2.0 OR MIT)
-Chris Wong <lambda.fairy@gmail.com>
 https://github.com/lambda-fairy/if_chain
 ---------------------------------------------------------
 
 ignore 0.4.20 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/ripgrep/tree/master/crates/ignore
 ---------------------------------------------------------
 
 image 0.24.6 (MIT)
-The image-rs Developers
 https://github.com/image-rs/image
 ---------------------------------------------------------
 
@@ -766,37 +627,30 @@ https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
 infer 0.12.0 (MIT)
-Bojan <dbojan@gmail.com>
 https://github.com/bojand/infer
 ---------------------------------------------------------
 
 instant 0.1.12 (BSD-3-Clause)
-sebcrozet <developer@crozet.re>
 https://github.com/sebcrozet/instant
 ---------------------------------------------------------
 
 io-lifetimes 1.0.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-Dan Gohman <dev@sunfishcode.online>
 https://github.com/sunfishcode/io-lifetimes
 ---------------------------------------------------------
 
 is-terminal 0.4.8 (MIT)
-softprops <d.tangren@gmail.com>|Dan Gohman <dev@sunfishcode.online>
 https://github.com/sunfishcode/is-terminal
 ---------------------------------------------------------
 
 itertools 0.11.0 (Apache-2.0 OR MIT)
-bluss
 https://github.com/rust-itertools/itertools
 ---------------------------------------------------------
 
 itoa 0.4.8 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/itoa
 ---------------------------------------------------------
 
 itoa 1.0.8 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/itoa
 ---------------------------------------------------------
 
@@ -805,97 +659,78 @@ https://github.com/tauri-apps/javascriptcore-rs
 ---------------------------------------------------------
 
 javascriptcore-rs-sys 0.4.0 (MIT)
-The Gtk-rs Project Developers
 https://github.com/tauri-apps/javascriptcore-rs
 ---------------------------------------------------------
 
 jni 0.20.0 (Apache-2.0 OR MIT)
-Josh Chase <josh@prevoty.com>
 https://github.com/jni-rs/jni-rs
 ---------------------------------------------------------
 
 jni-sys 0.3.0 (Apache-2.0 OR MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-jni-sys
 ---------------------------------------------------------
 
 js-sys 0.3.64 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/js-sys
 ---------------------------------------------------------
 
 json-patch 1.0.0 (Apache-2.0 OR MIT)
-Ivan Dubrov <dubrov.ivan@gmail.com>
 https://github.com/idubrov/json-patch
 ---------------------------------------------------------
 
 kuchiki 0.8.1 (MIT)
-Simon Sapin <simon.sapin@exyr.org>
 https://github.com/SimonSapin/kuchiki
 ---------------------------------------------------------
 
 lazy_static 1.4.0 (Apache-2.0 OR MIT)
-Marvin Löbel <loebel.marvin@gmail.com>
 https://github.com/rust-lang-nursery/lazy-static.rs
 ---------------------------------------------------------
 
 libc 0.2.147 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/libc
 ---------------------------------------------------------
 
 line-wrap 0.1.1 (Apache-2.0)
-Marshall Pierce <marshall@mpierce.org>
 https://bitbucket.org/marshallpierce/line-wrap-rs/src
 ---------------------------------------------------------
 
 linux-raw-sys 0.3.8 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-Dan Gohman <dev@sunfishcode.online>
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
 linux-raw-sys 0.4.3 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-Dan Gohman <dev@sunfishcode.online>
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
 lock_api 0.4.10 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
 log 0.4.19 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/log
 ---------------------------------------------------------
 
 loom 0.5.6 (MIT)
-Carl Lerche <me@carllerche.com>
 https://github.com/tokio-rs/loom
 ---------------------------------------------------------
 
 mac 0.1.1 (Apache-2.0 OR MIT)
-Jonathan Reem <jonathan.reem@gmail.com>
 https://github.com/reem/rust-mac.git
 ---------------------------------------------------------
 
 mac-notification-sys 0.5.6 (MIT)
-Felix Döring <development@felixdoering.com>|Hendrik Sollich <hendrik@hoodie.de>
 https://github.com/h4llow3En/mac-notification-sys
 ---------------------------------------------------------
 
 malloc_buf 0.0.6 (MIT)
-Steven Sheldon
 https://github.com/SSheldon/malloc_buf
 ---------------------------------------------------------
 
 markup5ever 0.10.1 (Apache-2.0 OR MIT)
-The html5ever Project Developers
 https://github.com/servo/html5ever
 ---------------------------------------------------------
 
 matchers 0.1.0 (MIT)
-Eliza Weisman <eliza@buoyant.io>
 https://github.com/hawkw/matchers
 ---------------------------------------------------------
 
@@ -904,167 +739,134 @@ https://github.com/SimonSapin/rust-std-candidates
 ---------------------------------------------------------
 
 matrixmultiply 0.3.7 (Apache-2.0 OR MIT)
-bluss|R. Janis Goldschmidt
 https://github.com/bluss/matrixmultiply/
 ---------------------------------------------------------
 
 memchr 2.5.0 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>|bluss
 https://github.com/BurntSushi/memchr
 ---------------------------------------------------------
 
 memoffset 0.7.1 (MIT)
-Gilad Naaman <gilad.naaman@gmail.com>
 https://github.com/Gilnaa/memoffset
 ---------------------------------------------------------
 
 memoffset 0.9.0 (MIT)
-Gilad Naaman <gilad.naaman@gmail.com>
 https://github.com/Gilnaa/memoffset
 ---------------------------------------------------------
 
 minimal-lexical 0.2.1 (Apache-2.0 OR MIT)
-Alex Huszagh <ahuszagh@gmail.com>
 https://github.com/Alexhuszagh/minimal-lexical
 ---------------------------------------------------------
 
 miniz_oxide 0.7.1 (Apache-2.0 OR MIT OR Zlib)
-Frommi <daniil.liferenko@gmail.com>|oyvindln <oyvindln@users.noreply.github.com>
 https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 ---------------------------------------------------------
 
 mio 0.8.8 (MIT)
-Carl Lerche <me@carllerche.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>|Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/mio
 ---------------------------------------------------------
 
 nalgebra 0.32.2 (BSD-3-Clause)
-Sébastien Crozet <developer@crozet.re>
 https://github.com/dimforge/nalgebra
 ---------------------------------------------------------
 
 nalgebra-macros 0.2.0 (Apache-2.0)
-Andreas Longva|Sébastien Crozet <developer@crozet.re>
 https://github.com/dimforge/nalgebra
 ---------------------------------------------------------
 
 ndk 0.6.0 (Apache-2.0 OR MIT)
-The Rust Windowing contributors
 https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
 ndk-context 0.1.1 (Apache-2.0 OR MIT)
-The Rust Windowing contributors
 https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
 ndk-sys 0.3.0 (Apache-2.0 OR MIT)
-The Rust Windowing contributors
 https://github.com/rust-windowing/android-ndk-rs
 ---------------------------------------------------------
 
 new_debug_unreachable 1.0.4 (MIT)
-Matt Brubeck <mbrubeck@limpet.net>|Jonathan Reem <jonathan.reem@gmail.com>
 https://github.com/mbrubeck/rust-debug-unreachable
 ---------------------------------------------------------
 
 nix 0.26.2 (MIT)
-The nix-rust Project Developers
 https://github.com/nix-rust/nix
 ---------------------------------------------------------
 
 nodrop 0.1.14 (Apache-2.0 OR MIT)
-bluss
 https://github.com/bluss/arrayvec
 ---------------------------------------------------------
 
 nom 7.1.3 (MIT)
-contact@geoffroycouprie.com
 https://github.com/Geal/nom
 ---------------------------------------------------------
 
 notify-rust 4.8.0 (Apache-2.0 OR MIT)
-Hendrik Sollich <hendrik@hoodie.de>
 https://github.com/hoodie/notify-rust
 ---------------------------------------------------------
 
 nu-ansi-term 0.46.0 (MIT)
-ogham@bsago.me|Ryan Scheel (Havvy) <ryan.havvy@gmail.com>|Josh Triplett <josh@joshtriplett.org>|The Nushell Project Developers
 https://github.com/nushell/nu-ansi-term
 ---------------------------------------------------------
 
 num 0.4.0 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num
 ---------------------------------------------------------
 
 num-bigint 0.4.3 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-bigint
 ---------------------------------------------------------
 
 num-complex 0.4.3 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-complex
 ---------------------------------------------------------
 
 num-derive 0.4.0 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-derive
 ---------------------------------------------------------
 
 num-integer 0.1.45 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-integer
 ---------------------------------------------------------
 
 num-iter 0.1.43 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-iter
 ---------------------------------------------------------
 
 num-rational 0.4.1 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-rational
 ---------------------------------------------------------
 
 num-traits 0.2.15 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-num/num-traits
 ---------------------------------------------------------
 
 num_cpus 1.16.0 (Apache-2.0 OR MIT)
-Sean McArthur <sean@seanmonstar.com>
 https://github.com/seanmonstar/num_cpus
 ---------------------------------------------------------
 
 num_enum 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
-Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
 https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
 num_enum_derive 0.5.11 (Apache-2.0 OR BSD-3-Clause OR MIT)
-Daniel Wagner-Hall <dawagner@gmail.com>|Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>|Vincent Esche <regexident@gmail.com>
 https://github.com/illicitonion/num_enum
 ---------------------------------------------------------
 
 objc 0.2.7 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-objc
 ---------------------------------------------------------
 
 objc-foundation 0.1.1 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-objc-foundation
 ---------------------------------------------------------
 
 objc_exception 0.1.2 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-objc-exception
 ---------------------------------------------------------
 
 objc_id 0.1.1 (MIT)
-Steven Sheldon
 http://github.com/SSheldon/rust-objc-id
 ---------------------------------------------------------
 
@@ -1073,107 +875,86 @@ https://github.com/gimli-rs/object
 ---------------------------------------------------------
 
 once_cell 1.18.0 (Apache-2.0 OR MIT)
-Aleksey Kladov <aleksey.kladov@gmail.com>
 https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
 ordered-stream 0.2.0 (Apache-2.0 OR MIT)
-Daniel De Graaf <code@danieldg.net>|Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/danieldg/ordered-stream
 ---------------------------------------------------------
 
 os_info 3.7.0 (MIT)
-Jan Schulte <hello@unexpected-co.de>|Stanislav Tkach <stanislav.tkach@gmail.com>
 https://github.com/stanislav-tkach/os_info
 ---------------------------------------------------------
 
 os_pipe 1.1.4 (MIT)
-Jack O'Connor
 https://github.com/oconnor663/os_pipe.rs
 ---------------------------------------------------------
 
 overload 0.1.1 (MIT)
-Daniel Salvadori <danaugrs@gmail.com>
 https://github.com/danaugrs/overload
 ---------------------------------------------------------
 
 pango 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 pango-sys 0.15.10 (MIT)
-The gtk-rs Project Developers
 https://github.com/gtk-rs/gtk-rs-core
 ---------------------------------------------------------
 
 parking 2.1.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>|The Rust Project Developers
 https://github.com/smol-rs/parking
 ---------------------------------------------------------
 
 parking_lot 0.12.1 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
 parking_lot_core 0.9.8 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/Amanieu/parking_lot
 ---------------------------------------------------------
 
 paste 1.0.13 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/paste
 ---------------------------------------------------------
 
 percent-encoding 2.3.0 (Apache-2.0 OR MIT)
-The rust-url developers
 https://github.com/servo/rust-url/
 ---------------------------------------------------------
 
 phf 0.8.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf 0.10.1 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_codegen 0.8.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_generator 0.8.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_generator 0.10.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_macros 0.8.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_macros 0.10.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_shared 0.8.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
 phf_shared 0.10.0 (MIT)
-Steven Fackler <sfackler@gmail.com>
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
@@ -1182,62 +963,50 @@ https://github.com/taiki-e/pin-project-lite
 ---------------------------------------------------------
 
 pin-utils 0.1.0 (Apache-2.0 OR MIT)
-Josef Brandl <mail@josefbrandl.de>
 https://github.com/rust-lang-nursery/pin-utils
 ---------------------------------------------------------
 
 pkg-config 0.3.27 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/rust-lang/pkg-config-rs
 ---------------------------------------------------------
 
 plist 1.4.3 (MIT)
-Ed Barnard <eabarnard@gmail.com>
 https://github.com/ebarnard/rust-plist/
 ---------------------------------------------------------
 
 png 0.17.9 (Apache-2.0 OR MIT)
-The image-rs Developers
 https://github.com/image-rs/image-png.git
 ---------------------------------------------------------
 
 polling 2.8.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/smol-rs/polling
 ---------------------------------------------------------
 
 ppv-lite86 0.2.17 (Apache-2.0 OR MIT)
-The CryptoCorrosion Contributors
 https://github.com/cryptocorrosion/cryptocorrosion
 ---------------------------------------------------------
 
 precomputed-hash 0.1.1 (MIT)
-Emilio Cobos Álvarez <emilio@crisal.io>
 https://github.com/emilio/precomputed-hash
 ---------------------------------------------------------
 
 proc-macro-crate 1.3.1 (Apache-2.0 OR MIT)
-Bastian Köcher <git@kchr.de>
 https://github.com/bkchr/proc-macro-crate
 ---------------------------------------------------------
 
 proc-macro-error 1.0.4 (Apache-2.0 OR MIT)
-CreepySkeleton <creepy-skeleton@yandex.ru>
 https://gitlab.com/CreepySkeleton/proc-macro-error
 ---------------------------------------------------------
 
 proc-macro-error-attr 1.0.4 (Apache-2.0 OR MIT)
-CreepySkeleton <creepy-skeleton@yandex.ru>
 https://gitlab.com/CreepySkeleton/proc-macro-error
 ---------------------------------------------------------
 
 proc-macro-hack 0.5.20+deprecated (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/proc-macro-hack
 ---------------------------------------------------------
 
 proc-macro2 1.0.63 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>|Alex Crichton <alex@alexcrichton.com>
 https://github.com/dtolnay/proc-macro2
 ---------------------------------------------------------
 
@@ -1250,182 +1019,146 @@ https://github.com/tafia/quick-xml
 ---------------------------------------------------------
 
 quote 1.0.29 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/quote
 ---------------------------------------------------------
 
 rand 0.7.3 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand 0.8.5 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_chacha 0.2.2 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers|The CryptoCorrosion Contributors
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_chacha 0.3.1 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers|The CryptoCorrosion Contributors
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_core 0.5.1 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_core 0.6.4 (Apache-2.0 OR MIT)
-The Rand Project Developers|The Rust Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_hc 0.2.0 (Apache-2.0 OR MIT)
-The Rand Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 rand_pcg 0.2.1 (Apache-2.0 OR MIT)
-The Rand Project Developers
 https://github.com/rust-random/rand
 ---------------------------------------------------------
 
 raw-window-handle 0.5.2 (Apache-2.0 OR MIT OR Zlib)
-Osspial <osspial@gmail.com>
 https://github.com/rust-windowing/raw-window-handle
 ---------------------------------------------------------
 
 rawpointer 0.2.1 (Apache-2.0 OR MIT)
-bluss
 https://github.com/bluss/rawpointer/
 ---------------------------------------------------------
 
 redox_syscall 0.2.16 (MIT)
-Jeremy Soller <jackpot51@gmail.com>
 https://gitlab.redox-os.org/redox-os/syscall
 ---------------------------------------------------------
 
 redox_syscall 0.3.5 (MIT)
-Jeremy Soller <jackpot51@gmail.com>
 https://gitlab.redox-os.org/redox-os/syscall
 ---------------------------------------------------------
 
 redox_users 0.4.3 (MIT)
-Jose Narvaez <goyox86@gmail.com>|Wesley Hershberger <mggmugginsmc@gmail.com>
 https://gitlab.redox-os.org/redox-os/users
 ---------------------------------------------------------
 
 regex 1.8.4 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/regex
 ---------------------------------------------------------
 
 regex-automata 0.1.10 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/regex-automata
 ---------------------------------------------------------
 
 regex-syntax 0.6.29 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/regex
 ---------------------------------------------------------
 
 regex-syntax 0.7.2 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/rust-lang/regex
 ---------------------------------------------------------
 
 rfd 0.10.0 (MIT)
-Poly <marynczak.bartlomiej@gmail.com>
 https://github.com/PolyMeilex/rfd
 ---------------------------------------------------------
 
 rustc-demangle 0.1.23 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/alexcrichton/rustc-demangle
 ---------------------------------------------------------
 
 rustc_version 0.4.0 (Apache-2.0 OR MIT)
-Dirkjan Ochtman <dirkjan@ochtman.nl>|Marvin Löbel <loebel.marvin@gmail.com>
 https://github.com/Kimundi/rustc-version-rs
 ---------------------------------------------------------
 
 rustix 0.37.22 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
 rustix 0.38.3 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
 rustversion 1.0.13 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/rustversion
 ---------------------------------------------------------
 
 ryu 1.0.14 (Apache-2.0 OR BSL-1.0)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/ryu
 ---------------------------------------------------------
 
 safe_arch 0.7.0 (Apache-2.0 OR MIT OR Zlib)
-Lokathor <zefria@gmail.com>
 https://github.com/Lokathor/safe_arch
 ---------------------------------------------------------
 
 safemem 0.3.3 (Apache-2.0 OR MIT)
-Austin Bonander <austin.bonander@gmail.com>
 https://github.com/abonander/safemem
 ---------------------------------------------------------
 
 same-file 1.0.6 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/same-file
 ---------------------------------------------------------
 
 scoped-tls 1.0.1 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/alexcrichton/scoped-tls
 ---------------------------------------------------------
 
 scopeguard 1.1.0 (Apache-2.0 OR MIT)
-bluss
 https://github.com/bluss/scopeguard
 ---------------------------------------------------------
 
 selectors 0.22.0 (MPL-2.0)
-The Servo Project Developers
 https://github.com/servo/servo
 ---------------------------------------------------------
 
 semver 1.0.17 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/semver
 ---------------------------------------------------------
 
 serde 1.0.166 (Apache-2.0 OR MIT)
-Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
 https://github.com/serde-rs/serde
 ---------------------------------------------------------
 
 serde_derive 1.0.166 (Apache-2.0 OR MIT)
-Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
 https://github.com/serde-rs/serde
 ---------------------------------------------------------
 
 serde_json 1.0.99 (Apache-2.0 OR MIT)
-Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>
 https://github.com/serde-rs/json
 ---------------------------------------------------------
 
 serde_repr 0.1.13 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/serde-repr
 ---------------------------------------------------------
 
@@ -1434,87 +1167,70 @@ https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
 serde_with 3.0.0 (Apache-2.0 OR MIT)
-Jonas Bushart|Marcin Kaźmierczak
 https://github.com/jonasbb/serde_with
 ---------------------------------------------------------
 
 serde_with_macros 3.0.0 (Apache-2.0 OR MIT)
-Jonas Bushart
 https://github.com/jonasbb/serde_with/
 ---------------------------------------------------------
 
 serialize-to-javascript 0.1.1 (Apache-2.0 OR MIT)
-Chip Reed <chip@chip.sh>
 https://github.com/chippers/serialize-to-javascript
 ---------------------------------------------------------
 
 serialize-to-javascript-impl 0.1.1 (Apache-2.0 OR MIT)
-Chip Reed <chip@chip.sh>
 https://github.com/chippers/serialize-to-javascript
 ---------------------------------------------------------
 
 servo_arc 0.1.1 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/servo
 ---------------------------------------------------------
 
 sha1 0.10.5 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/hashes
 ---------------------------------------------------------
 
 sha2 0.10.7 (Apache-2.0 OR MIT)
-RustCrypto Developers
 https://github.com/RustCrypto/hashes
 ---------------------------------------------------------
 
 sharded-slab 0.1.4 (MIT)
-Eliza Weisman <eliza@buoyant.io>
 https://github.com/hawkw/sharded-slab
 ---------------------------------------------------------
 
 shared_child 1.0.0 (MIT)
-jacko
 https://github.com/oconnor663/shared_child.rs
 ---------------------------------------------------------
 
 signal-hook 0.3.15 (Apache-2.0 OR MIT)
-Michal 'vorner' Vaner <vorner@vorner.cz>|Thomas Himmelstoss <thimm@posteo.de>
 https://github.com/vorner/signal-hook
 ---------------------------------------------------------
 
 signal-hook-registry 1.4.1 (Apache-2.0 OR MIT)
-Michal 'vorner' Vaner <vorner@vorner.cz>|Masaki Hara <ackie.h.gmai@gmail.com>
 https://github.com/vorner/signal-hook
 ---------------------------------------------------------
 
 simba 0.8.1 (Apache-2.0)
-sebcrozet <developer@crozet.re>
 https://github.com/dimforge/simba
 ---------------------------------------------------------
 
 simd-adler32 0.3.5 (MIT)
-Marvin Countryman <me@maar.vin>
 https://github.com/mcountryman/simd-adler32
 ---------------------------------------------------------
 
 siphasher 0.3.10 (Apache-2.0 OR MIT)
-Frank Denis <github@pureftpd.org>
 https://github.com/jedisct1/rust-siphash
 ---------------------------------------------------------
 
 slab 0.4.8 (MIT)
-Carl Lerche <me@carllerche.com>
 https://github.com/tokio-rs/slab
 ---------------------------------------------------------
 
 smallvec 1.10.0 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/rust-smallvec
 ---------------------------------------------------------
 
 socket2 0.4.9 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>|Thomas de Zeeuw <thomasdezeeuw@gmail.com>
 https://github.com/rust-lang/socket2
 ---------------------------------------------------------
 
@@ -1533,292 +1249,234 @@ https://github.com/SpriteOvO/spdlog-rs
 ---------------------------------------------------------
 
 spin 0.9.8 (MIT)
-Mathijs van de Nes <git@mathijs.vd-nes.nl>|John Ericson <git@JohnEricson.me>|Joshua Barretto <joshua.s.barretto@gmail.com>
 https://github.com/mvdnes/spin-rs.git
 ---------------------------------------------------------
 
 stable_deref_trait 1.2.0 (Apache-2.0 OR MIT)
-Robert Grosse <n210241048576@gmail.com>
 https://github.com/storyyeller/stable_deref_trait
 ---------------------------------------------------------
 
 state 0.5.3 (Apache-2.0 OR MIT)
-Sergio Benitez <sb@sergio.bz>
 https://github.com/SergioBenitez/state
 ---------------------------------------------------------
 
 static_assertions 1.1.0 (Apache-2.0 OR MIT)
-Nikolai Vazquez
 https://github.com/nvzqz/static-assertions-rs
 ---------------------------------------------------------
 
 string_cache 0.8.7 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/string-cache
 ---------------------------------------------------------
 
 string_cache_codegen 0.5.2 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/string-cache
 ---------------------------------------------------------
 
 strsim 0.10.0 (MIT)
-Danny Guo <danny@dannyguo.com>
 https://github.com/dguo/strsim-rs
 ---------------------------------------------------------
 
 syn 1.0.109 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
 syn 2.0.23 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
 sys-locale 0.2.4 (Apache-2.0 OR MIT)
-1Password
 https://github.com/1Password/sys-locale
 ---------------------------------------------------------
 
 system-deps 5.0.0 (Apache-2.0 OR MIT)
-Guillaume Desmottes <guillaume.desmottes@collabora.com>|Josh Triplett <josh@joshtriplett.org>
 https://github.com/gdesmott/system-deps
 ---------------------------------------------------------
 
 system-deps 6.1.1 (Apache-2.0 OR MIT)
-Guillaume Desmottes <guillaume.desmottes@collabora.com>|Josh Triplett <josh@joshtriplett.org>
 https://github.com/gdesmott/system-deps
 ---------------------------------------------------------
 
 tao 0.16.2 (Apache-2.0)
-Tauri Programme within The Commons Conservancy|The winit contributors
 https://github.com/tauri-apps/tao
 ---------------------------------------------------------
 
 tao-macros 0.1.1 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tao
 ---------------------------------------------------------
 
 tar 0.4.38 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/alexcrichton/tar-rs
 ---------------------------------------------------------
 
 target-lexicon 0.12.8 (Apache-2.0 WITH LLVM-exception)
-Dan Gohman <sunfish@mozilla.com>
 https://github.com/bytecodealliance/target-lexicon
 ---------------------------------------------------------
 
 tauri 1.4.1 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
 tauri-build 1.4.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri/tree/dev/core/tauri-build
 ---------------------------------------------------------
 
 tauri-codegen 1.4.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri/tree/dev/core/tauri-codegen
 ---------------------------------------------------------
 
 tauri-macros 1.4.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
 tauri-runtime 0.14.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
 tauri-runtime-wry 0.14.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
 tauri-utils 1.4.0 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
 tauri-winres 0.1.1 (MIT)
-Tauri Programme within The Commons Conservancy|Max Resch <resch.max@gmail.com>
 https://github.com/tauri-apps/winres
 ---------------------------------------------------------
 
 tauri-winrt-notification 0.1.2 (Apache-2.0 OR MIT)
-allenbenz|Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/winrt-notification
 ---------------------------------------------------------
 
 tempfile 3.6.0 (Apache-2.0 OR MIT)
-Steven Allen <steven@stebalien.com>|The Rust Project Developers|Ashley Mannix <ashleymannix@live.com.au>|Jason White <me@jasonwhite.io>
 https://github.com/Stebalien/tempfile
 ---------------------------------------------------------
 
 tendril 0.4.3 (Apache-2.0 OR MIT)
-Keegan McAllister <mcallister.keegan@gmail.com>|Simon Sapin <simon.sapin@exyr.org>|Chris Morgan <me@chrismorgan.info>
 https://github.com/servo/tendril
 ---------------------------------------------------------
 
 thin-slice 0.1.1 (MPL-2.0)
-Cameron McCormack <cam@mcc.id.au>
 https://github.com/heycam/thin-slice
 ---------------------------------------------------------
 
 thiserror 1.0.40 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/thiserror
 ---------------------------------------------------------
 
 thiserror-impl 1.0.40 (Apache-2.0 OR MIT)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/thiserror
 ---------------------------------------------------------
 
 thread_local 1.1.7 (Apache-2.0 OR MIT)
-Amanieu d'Antras <amanieu@gmail.com>
 https://github.com/Amanieu/thread_local-rs
 ---------------------------------------------------------
 
 time 0.1.45 (Apache-2.0 OR MIT)
-The Rust Project Developers
 https://github.com/time-rs/time
 ---------------------------------------------------------
 
 time 0.3.22 (Apache-2.0 OR MIT)
-Jacob Pratt <open-source@jhpratt.dev>|Time contributors
 https://github.com/time-rs/time
 ---------------------------------------------------------
 
 time-core 0.1.1 (Apache-2.0 OR MIT)
-Jacob Pratt <open-source@jhpratt.dev>|Time contributors
 https://github.com/time-rs/time
 ---------------------------------------------------------
 
 time-macros 0.2.9 (Apache-2.0 OR MIT)
-Jacob Pratt <open-source@jhpratt.dev>|Time contributors
 https://github.com/time-rs/time
 ---------------------------------------------------------
 
 tinyvec 1.6.0 (Apache-2.0 OR MIT OR Zlib)
-Lokathor <zefria@gmail.com>
 https://github.com/Lokathor/tinyvec
 ---------------------------------------------------------
 
 tinyvec_macros 0.1.1 (Apache-2.0 OR MIT OR Zlib)
-Soveu <marx.tomasz@gmail.com>
 https://github.com/Soveu/tinyvec_macros
 ---------------------------------------------------------
 
 tokio 1.29.1 (MIT)
-Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
 tokio-macros 2.1.0 (MIT)
-Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
 toml 0.5.11 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
 toml 0.7.5 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
 toml_datetime 0.6.3 (Apache-2.0 OR MIT)
-Alex Crichton <alex@alexcrichton.com>
 https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
 toml_edit 0.19.11 (Apache-2.0 OR MIT)
-Andronik Ordian <write@reusable.software>|Ed Page <eopage@gmail.com>
 https://github.com/toml-rs/toml
 ---------------------------------------------------------
 
 tracing 0.1.37 (MIT)
-Eliza Weisman <eliza@buoyant.io>|Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
 tracing-attributes 0.1.26 (MIT)
-Tokio Contributors <team@tokio.rs>|Eliza Weisman <eliza@buoyant.io>|David Barsky <dbarsky@amazon.com>
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
 tracing-core 0.1.31 (MIT)
-Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
 tracing-log 0.1.3 (MIT)
-Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
 tracing-subscriber 0.3.17 (MIT)
-Eliza Weisman <eliza@buoyant.io>|David Barsky <me@davidbarsky.com>|Tokio Contributors <team@tokio.rs>
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
 treediff 4.0.2 (Apache-2.0 OR MIT)
-Sebastian Thiel <byronimo@gmail.com>
 https://github.com/Byron/treediff-rs
 ---------------------------------------------------------
 
 typenum 1.16.0 (Apache-2.0 OR MIT)
-Paho Lurie-Gregg <paho@paholg.com>|Andre Bogus <bogusandre@gmail.com>
 https://github.com/paholg/typenum
 ---------------------------------------------------------
 
 uds_windows 1.0.2 (MIT)
-Azure IoT Edge Devs|Harald Hoyer <harald@redhat.com>
 https://github.com/haraldh/rust_uds_windows
 ---------------------------------------------------------
 
 unicode-bidi 0.3.13 (Apache-2.0 OR MIT)
-The Servo Project Developers
 https://github.com/servo/unicode-bidi
 ---------------------------------------------------------
 
 unicode-ident 1.0.10 ((MIT OR Apache-2.0) AND Unicode-DFS-2016)
-David Tolnay <dtolnay@gmail.com>
 https://github.com/dtolnay/unicode-ident
 ---------------------------------------------------------
 
 unicode-normalization 0.1.22 (Apache-2.0 OR MIT)
-kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>
 https://github.com/unicode-rs/unicode-normalization
 ---------------------------------------------------------
 
 unicode-segmentation 1.10.1 (Apache-2.0 OR MIT)
-kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>
 https://github.com/unicode-rs/unicode-segmentation
 ---------------------------------------------------------
 
 url 2.4.0 (Apache-2.0 OR MIT)
-The rust-url developers
 https://github.com/servo/rust-url
 ---------------------------------------------------------
 
 utf-8 0.7.6 (Apache-2.0 OR MIT)
-Simon Sapin <simon.sapin@exyr.org>
 https://github.com/SimonSapin/rust-utf8
 ---------------------------------------------------------
 
 uuid 1.4.0 (Apache-2.0 OR MIT)
-Ashley Mannix<ashleymannix@live.com.au>|Christopher Armstrong|Dylan DPC<dylan.dpc@gmail.com>|Hunar Roop Kahlon<hunar.roop@gmail.com>
 https://github.com/uuid-rs/uuid
 ---------------------------------------------------------
 
@@ -1827,87 +1485,70 @@ https://github.com/tokio-rs/valuable
 ---------------------------------------------------------
 
 version-compare 0.0.11 (MIT)
-Tim Visee <3a4fb3964f@sinenomine.email>
 https://github.com/timvisee/version-compare
 ---------------------------------------------------------
 
 version-compare 0.1.1 (MIT)
-Tim Visee <3a4fb3964f@sinenomine.email>
 https://gitlab.com/timvisee/version-compare
 ---------------------------------------------------------
 
 version_check 0.9.4 (Apache-2.0 OR MIT)
-Sergio Benitez <sb@sergio.bz>
 https://github.com/SergioBenitez/version_check
 ---------------------------------------------------------
 
 vswhom 0.1.0 (MIT)
-nabijaczleweli <nabijaczleweli@gmail.com>
 https://github.com/nabijaczleweli/vswhom.rs
 ---------------------------------------------------------
 
 vswhom-sys 0.1.2 (MIT)
-наб <nabijaczleweli@nabijaczleweli.xyz>|forrestsmithfb <forrest.smith@fb.com>
 https://github.com/nabijaczleweli/vswhom-sys.rs
 ---------------------------------------------------------
 
 waker-fn 1.1.0 (Apache-2.0 OR MIT)
-Stjepan Glavina <stjepang@gmail.com>
 https://github.com/stjepang/waker-fn
 ---------------------------------------------------------
 
 walkdir 2.3.3 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/walkdir
 ---------------------------------------------------------
 
 wasi 0.9.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-The Cranelift Project Developers
 https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-The Cranelift Project Developers
 https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-The Cranelift Project Developers
 https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasm-bindgen 0.2.87 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen
 ---------------------------------------------------------
 
 wasm-bindgen-backend 0.2.87 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/backend
 ---------------------------------------------------------
 
 wasm-bindgen-futures 0.4.37 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/futures
 ---------------------------------------------------------
 
 wasm-bindgen-macro 0.2.87 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/macro
 ---------------------------------------------------------
 
 wasm-bindgen-macro-support 0.2.87 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/macro-support
 ---------------------------------------------------------
 
 wasm-bindgen-shared 0.2.87 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/shared
 ---------------------------------------------------------
 
 web-sys 0.3.64 (Apache-2.0 OR MIT)
-The wasm-bindgen Developers
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys
 ---------------------------------------------------------
 
@@ -1932,202 +1573,162 @@ https://github.com/wravery/webview2-rs
 ---------------------------------------------------------
 
 wide 0.7.10 (Apache-2.0 OR MIT OR Zlib)
-Lokathor <zefria@gmail.com>
 https://github.com/Lokathor/wide
 ---------------------------------------------------------
 
 winapi 0.3.9 (Apache-2.0 OR MIT)
-Peter Atashian <retep998@gmail.com>
 https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
 winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
-Peter Atashian <retep998@gmail.com>
 https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
 winapi-util 0.1.5 (MIT OR Unlicense)
-Andrew Gallant <jamslam@gmail.com>
 https://github.com/BurntSushi/winapi-util
 ---------------------------------------------------------
 
 winapi-x86_64-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
-Peter Atashian <retep998@gmail.com>
 https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
 windows 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-bindgen 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-implement 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-metadata 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-sys 0.45.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-sys 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-targets 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-targets 0.48.1 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-tokens 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_msvc 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_msvc 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_msvc 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_aarch64_msvc 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_gnu 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_gnu 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_gnu 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_gnu 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_msvc 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_msvc 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_msvc 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_i686_msvc 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnu 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnu 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnu 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnu 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnullvm 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_gnullvm 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_msvc 0.37.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_msvc 0.39.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_msvc 0.42.2 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows_x86_64_msvc 0.48.0 (Apache-2.0 OR MIT)
-Microsoft
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
@@ -2136,66 +1737,55 @@ https://github.com/winnow-rs/winnow
 ---------------------------------------------------------
 
 winreg 0.11.0 (MIT)
-Igor Shaula <gentoo90@gmail.com>
 https://github.com/gentoo90/winreg-rs
 ---------------------------------------------------------
 
 wry 0.24.3 (Apache-2.0 OR MIT)
-Tauri Programme within The Commons Conservancy
 https://github.com/tauri-apps/wry
 ---------------------------------------------------------
 
 x11 2.21.0 (MIT)
-daggerbot <daggerbot@gmail.com>|Erle Pereira <erle@erlepereira.com>|AltF02 <contact@altf2.dev>
 https://github.com/AltF02/x11-rs.git
 ---------------------------------------------------------
 
 x11-dl 2.21.0 (MIT)
-daggerbot <daggerbot@gmail.com>|Erle Pereira <erle@erlepereira.com>|AltF02 <contact@altf2.dev>
 https://github.com/AltF02/x11-rs.git
 ---------------------------------------------------------
 
 xattr 0.2.3 (Apache-2.0 OR MIT)
-Steven Allen <steven@stebalien.com>
 https://github.com/Stebalien/xattr
 ---------------------------------------------------------
 
 xdg-home 1.0.0 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/zeenix/xdg-home
 ---------------------------------------------------------
 
 zbus 3.14.1 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
 zbus_macros 3.14.1 (MIT)
-Marc-André Lureau <marcandre.lureau@redhat.com>|Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
 zbus_names 2.6.0 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
 zvariant 3.15.0 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
 zvariant_derive 3.15.0 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
 zvariant_utils 1.0.1 (MIT)
-Zeeshan Ali Khan <zeeshanak@gnome.org>|turbocooler <turbocooler@cocaine.ninja>
 https://github.com/dbus2/zbus/
 ---------------------------------------------------------
 
-@Adam Greig <adam@adamgreig.com>/sdr 0.7.0 (MIT)
+sdr 0.7.0 (MIT)
+https://github.com/adamgreig/sdr-rs
 Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
 
 ---------------------------------------------------------
@@ -2207,7 +1797,7 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
 Permission to use, copy, modify, and/or distribute this software for
 any purpose with or without fee is hereby granted.
 
-THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
 WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
 OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
 FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
@@ -2435,18 +2025,18 @@ Redistribution and use in source and binary forms, with or without modification,
 
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---------------------------------------------------------
 
 BSL-1.0
 
 ---
 
-Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the “Software”) to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:
+Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the "Software") to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:
 
 The copyright notices in the Software and this entire statement, including the above license grant, this restriction and the following disclaimer, must be included in all copies of the Software, in whole or in part, and all derivative works of the Software, unless such copies or derivative works are solely in the form of machine-executable object code generated by a source language processor.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ---------------------------------------------------------
 
 CC0-1.0
@@ -2655,11 +2245,11 @@ MIT
 
 ---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ---------------------------------------------------------
 
 MPL-2.0
@@ -3048,7 +2638,7 @@ Unicode-DFS-2016
 UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
 
 See Terms of Use <https://www.unicode.org/copyright.html>
-for definitions of Unicode Inc.’s Data Files and Software.
+for definitions of Unicode Inc.'s Data Files and Software.
 
 NOTICE TO USER: Carefully read the following legal agreement.
 BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
