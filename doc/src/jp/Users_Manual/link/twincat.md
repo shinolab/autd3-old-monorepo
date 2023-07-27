@@ -25,6 +25,9 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 と打ち込めば良い.
 
+また, Windows 11の場合, 仮想化ベースのセキュリティ機能もオフにする必要がある.
+「Windows セキュリティ」→ 「デバイス セキュリティ」→「コア分離」→「メモリ整合性」をオフにする.
+
 まず, TwinCAT XAEを[公式サイト](https://www.beckhoff.com/en-en/)からダウンロードする.
 ダウンロードには登録 (無料) が必要になる.
 
@@ -63,7 +66,7 @@ TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethern
 
 また, 初回はライセンス関係のエラーが出るので, XAE Shellで「Solution Explorer」→「SYSTEM」→「License」を開き, 「7 Days Trial License ...」をクリックし, 画面に表示される文字を入力する.
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
-ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び`TwinCATAUTDServer.exe`を実行する.
+ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び実行する.
 
 ### AUTD Serverの実行
 
