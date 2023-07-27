@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -392,8 +392,7 @@ pub unsafe extern "C" fn AUTDGainGroupedAddByGroup(
     device_ids_len: u64,
     gain: GainPtr,
 ) -> GainPtr {
-    let mut ids = Vec::<u32>::with_capacity(device_ids_len as _);
-    ids.set_len(device_ids_len as _);
+    let mut ids = vec![0u32; device_ids_len as _];
     std::ptr::copy_nonoverlapping(device_ids, ids.as_mut_ptr(), device_ids_len as _);
     let ids = ids.iter().map(|&i| i as usize).collect::<Vec<_>>();
     GainPtr::new(
