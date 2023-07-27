@@ -18,16 +18,15 @@ bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"
-imgui = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                               # for winit 0.28
-imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                 # for winit 0.28
 png = "0.17.8"
+imgui = "0.11.0"
+imgui-winit-support = "0.11.0"
 scarlet = "~1.1.0"
 serde = { version = "1.0.174", features = ["derive"] }
 vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
 vulkano-win = "0.33.0"
 winit = "0.28.6"
-imgui-vulkano-renderer = { git = "https://github.com/s5suzuki/imgui-vulkano-renderer.git", branch = "vulkano-0.33.0" }
 spdlog-rs = "0.3.8"
 crossbeam-channel = "0.5.8"
 image = "0.24.6"
