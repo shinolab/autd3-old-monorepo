@@ -5,3 +5,4 @@ imgui.ini
 *.git
 *.mp4
 *.gif
+!Cargo.lock
