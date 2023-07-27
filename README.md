@@ -40,7 +40,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## Example
 
-* See [examples](./examples)
+* See [examples](./src/examples)
 
     * If you are using Linux/macOS, you may need to run as root.
 
