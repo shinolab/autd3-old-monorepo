@@ -9,8 +9,8 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  build:
-    name: build ${{ matrix.os }}
+  build-src:
+    name: build src ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -27,14 +27,6 @@ jobs:
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './examples -> target'
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './capi -> target'
 
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
@@ -48,16 +40,37 @@ jobs:
         cd src
         cargo build
         cargo test -- --skip test_timer
+
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
-        cd examples
+        cd src/examples
         cargo build --bins --features "remote_soem twincat remote_twincat simulator_client" 
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
-        cd examples
-        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client" 
+        cd src/examples
+        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client"
+
+  build-capi:
+    name: build capi ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
@@ -71,7 +84,7 @@ jobs:
         cargo build
         cargo test
 
-  lint:
+  lint-src:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -83,22 +96,25 @@ jobs:
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './examples -> target'
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './capi -> target'
+
     - name: lint src
       run: |
         cd src
         cargo clippy -- -D warnings
-    - name: lint examples
-      run: |
-        cd examples
-        cargo clippy -- -D warnings
+
+  lint-capi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
     - name: lint capi
       run: |
         cd capi
