@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/07/2023
+// Last Modified: 25/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -100,19 +100,36 @@ class Grouped final : public internal::Gain {
   Grouped() = default;
 
   template <class G>
-  void add_gain(const size_t device_idx, G&& gain) {
+  [[deprecated("please use add() instead")]] void add_gain(const size_t device_idx, G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.emplace_back(std::make_pair(device_idx, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
+    _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
+  }
+
+  template <class G>
+  [[deprecated("please use add() instead")]] void add(const size_t device_idx, G&& gain) {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
+  }
+
+  template <class G>
+  void add_by_group(const std::initializer_list<size_t> ids, G&& gain) {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    std::vector<size_t> ids_vec(ids.begin(), ids.end());
+    _gains.emplace_back(std::make_pair(ids_vec, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     auto ptr = internal::native_methods::AUTDGainGrouped();
-    for (auto& [idx, gain] : _gains) ptr = AUTDGainGroupedAdd(ptr, static_cast<uint32_t>(idx), gain->gain_ptr(geometry));
+    for (auto& [ids, gain] : _gains) {
+      std::vector<uint32_t> ids_u32;
+      std::transform(ids.begin(), ids.end(), std::back_inserter(ids_u32), [](const size_t i) { return static_cast<uint32_t>(i); });
+      ptr = AUTDGainGroupedAddByGroup(ptr, ids_u32.data(), static_cast<uint64_t>(ids_u32.size()), gain->gain_ptr(geometry));
+    }
     return ptr;
   }
 
  private:
-  std::vector<std::pair<size_t, std::shared_ptr<Gain>>> _gains;
+  std::vector<std::pair<std::vector<size_t>, std::shared_ptr<Gain>>> _gains;
 };
 
 class Gain : public internal::Gain {
