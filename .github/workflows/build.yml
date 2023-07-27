@@ -84,6 +84,124 @@ jobs:
         cargo build
         cargo test
 
+  build-linux-arm32-src:
+    name: build src for linux-arm32
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install arm32 target
+      run : |
+        sudo apt-get update
+        sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+        rustup target add armv7-unknown-linux-gnueabihf
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+
+    - name: Build src
+      run: |
+        cd src
+        cargo build --target=armv7-unknown-linux-gnueabihf
+    
+    - name: Build examples
+      run: |
+        cd src/examples
+        cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=armv7-unknown-linux-gnueabihf
+
+  build-linux-arm32-capi:
+    name: build capi for linux-arm32
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install arm32 target
+      run : |
+        sudo apt-get update
+        sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+        rustup target add armv7-unknown-linux-gnueabihf
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
+    - name: Build src
+      run: |
+        cd capi
+        cargo build --target=armv7-unknown-linux-gnueabihf
+
+  build-linux-aarch64-src:
+    name: build src for linux-aarch64
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install aarch64 target
+      run : |
+        sudo apt-get update
+        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+        rustup target add aarch64-unknown-linux-gnu
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src -> target'
+
+    - name: Build src
+      run: |
+        cd src
+        cargo build --target=aarch64-unknown-linux-gnu
+    
+    - name: Build examples
+      run: |
+        cd src/examples
+        cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=aarch64-unknown-linux-gnu
+
+  build-linux-aarch64-capi:
+    name: build capi for linux-aarch64
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install aarch64 target
+      run : |
+        sudo apt-get update
+        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+        rustup target add aarch64-unknown-linux-gnu
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+
+    - name: Build src
+      run: |
+        cd capi
+        cargo build --target=aarch64-unknown-linux-gnu
+
   lint-src:
     runs-on: ubuntu-latest
     steps:
