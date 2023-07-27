@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/07/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -79,6 +79,24 @@ async fn save_settings(handle: tauri::AppHandle, options: &str) -> Result<(), St
         .await
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+async fn wpcap_installed() -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        unsafe {
+            if libloading::Library::new("wpcap.dll").is_err() {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+#[tauri::command]
+async fn twincat_installed() -> bool {
+    std::path::Path::new("C:/TwinCAT/3.1/Config/Io/EtherCAT").exists()
 }
 
 #[tauri::command]
@@ -239,7 +257,9 @@ async fn main() {
             save_settings,
             copy_autd_xml,
             run_twincat_server,
-            open_xae_shell
+            open_xae_shell,
+            twincat_installed,
+            wpcap_installed
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

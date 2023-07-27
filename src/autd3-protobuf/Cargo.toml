@@ -1,6 +1,6 @@
 [package]
 name = "autd3-protobuf"
-version = "14.0.1"
+version = "14.1.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -12,13 +12,13 @@ keywords = ["autd"]
 
 [dependencies]
 h2 = "0.3.20"
-prost = "0.11.9"
-tonic = "0.9.2"
-autd3 = {path="../autd3", version="14.0.1"}
-autd3-core = {path="../autd3-core", version="14.0.1"}
-autd3-gain-holo = {path="../autd3-gain-holo", version="14.0.1"}
+prost = { version = "0.11.9" }
+tonic = { version = "0.9.2", default-features = false, features = ["prost", "codegen", "transport"] }
+autd3 = { path = "../autd3", version = "14.1.0" }
+autd3-core = { path = "../autd3-core", version = "14.1.0" }
+autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.1.0" }
 thiserror = "1.0.40"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]
 tonic-build = "0.9.2"

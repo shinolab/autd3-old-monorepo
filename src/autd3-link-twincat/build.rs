@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -81,3 +81,6 @@ fn main() {
         .include("3rdparty/ADS/AdsLib/standalone")
         .compile("ads");
 }
+
+#[cfg(not(feature = "remote"))]
+fn main() {}
