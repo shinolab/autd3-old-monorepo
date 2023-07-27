@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,16 +53,27 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
                 Self {freq_div, ..self}
             }
 
-
             /// Set sampling frequency
             ///
             /// # Arguments
             ///
-            /// * `freq` - Sampling frequency. The sampling frequency. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
+            /// * `freq` - Sampling frequency. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
             ///
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency(self, freq: autd3_core::float) -> Self {
                 let freq_div = autd3_core::FPGA_SUB_CLK_FREQ as autd3_core::float / freq;
+                self.with_sampling_frequency_division(freq_div as _)
+            }
+
+            /// Set sampling period
+            ///
+            /// # Arguments
+            ///
+            /// * `period` - Sampling period. The sampling period closest to `period` from the possible sampling periods is set.
+            ///
+            #[allow(clippy::needless_update)]
+            pub fn with_sampling_period(self, period: std::time::Duration) -> Self {
+                let freq_div = autd3_core::FPGA_SUB_CLK_FREQ as autd3_core::float / 1000000000. * period.as_nanos() as autd3_core::float;
                 self.with_sampling_frequency_division(freq_div as _)
             }
         }

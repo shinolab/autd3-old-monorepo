@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -71,7 +71,7 @@ impl NativeTimerWrapper {
     pub fn start<P>(
         &mut self,
         cb: Option<Waitortimercallback>,
-        period_ns: u32,
+        period: std::time::Duration,
         lp_param: *mut P,
     ) -> Result<bool, TimerError> {
         unsafe {
@@ -88,7 +88,7 @@ impl NativeTimerWrapper {
             dispatch_source_set_event_handler_f(timer, cb.unwrap());
 
             let start = dispatch_time(DISPATCH_TIME_NOW, 0);
-            dispatch_source_set_timer(timer, start, period_ns as u64, 0);
+            dispatch_source_set_timer(timer, start, period.as_nanos() as u64, 0);
             dispatch_resume(timer);
 
             self.timer_handle = Some(TimerHandle { timer });

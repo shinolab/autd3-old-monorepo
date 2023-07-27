@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/07/2023
+ * Last Modified: 25/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -583,21 +583,39 @@ namespace AUTD3Sharp
 
         public sealed class Grouped : GainBase
         {
-            private readonly List<(int, GainBase)> _gains;
+            private readonly List<(int[], GainBase)> _gains;
 
             public Grouped()
             {
-                _gains = new List<(int, GainBase)>();
+                _gains = new List<(int[], GainBase)>();
             }
 
-            public void AddGain(int deviceIdx, GainBase gain)
+            [Obsolete("Use Add(int deviceIdx, GainBase gain) instead")]
+            public Grouped AddGain(int deviceIdx, GainBase gain)
             {
-                _gains.Add((deviceIdx, gain));
+                _gains.Add((new int[] { deviceIdx }, gain));
+                return this;
+            }
+
+            public Grouped Add(int deviceIdx, GainBase gain)
+            {
+                _gains.Add((new int[] { deviceIdx }, gain));
+                return this;
+            }
+
+            public Grouped AddByGroup(IEnumerable<int> deviceIdxs, GainBase gain)
+            {
+                _gains.Add((deviceIdxs.ToArray(), gain));
+                return this;
             }
 
             public override GainPtr GainPtr(Geometry geometry)
             {
-                return _gains.Aggregate(Base.AUTDGainGrouped(), (current, gain) => Base.AUTDGainGroupedAdd(current, (uint)gain.Item1, gain.Item2.GainPtr(geometry)));
+                return _gains.Aggregate(Base.AUTDGainGrouped(), (current, gain) =>
+                {
+                    var ids = gain.Item1.Select(i => (uint)i).ToArray();
+                    return Base.AUTDGainGroupedAddByGroup(current, ids, (ulong)ids.Length, gain.Item2.GainPtr(geometry));
+                });
             }
         }
 

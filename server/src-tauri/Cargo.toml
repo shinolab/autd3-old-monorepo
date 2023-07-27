@@ -1,6 +1,6 @@
 [package]
 name = "autd-server"
-version = "14.0.1"
+version = "14.1.0"
 description = "AUTD Server app"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
@@ -20,9 +20,12 @@ tauri-build = { version = "1.4.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.4.0", features = [ "window-all", "shell-sidecar", "dialog-all", "notification-all", "os-all", "path-all"] }
+tauri = { version = "1.4.0", features = ["window-all", "shell-sidecar", "dialog-all", "notification-all", "os-all", "path-all"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "time", "process"] }
-autd3-core = {path="../../src/autd3-core", version="14.0.1"}
+autd3-core = { path = "../../src/autd3-core", version = "14.1.0" }
+
+[target.'cfg(windows)'.dependencies]
+libloading = "0.8.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

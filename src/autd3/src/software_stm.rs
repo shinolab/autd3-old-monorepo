@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,11 +12,10 @@
  */
 
 use std::sync::{
-    atomic::{AtomicBool, AtomicUsize},
+    atomic::{AtomicBool, AtomicUsize, Ordering},
     Arc,
 };
 
-use atomic::Ordering;
 use autd3_core::{
     datagram::Datagram,
     geometry::Transducer,
@@ -177,7 +176,7 @@ impl<
                         i: i.clone(),
                         now: now.clone(),
                     },
-                    interval.as_nanos() as _,
+                    interval,
                 ) {
                     Ok(handle) => handle,
                     Err(e) => {

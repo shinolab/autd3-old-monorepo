@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,5 +68,11 @@ impl Settings {
 
     pub(crate) fn camera_rot(&self) -> Vector3 {
         Vector3::new(self.camera_rot_x, self.camera_rot_y, self.camera_rot_z)
+    }
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self::new(0)
     }
 }

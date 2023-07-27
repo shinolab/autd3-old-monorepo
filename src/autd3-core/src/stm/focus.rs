@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -187,6 +187,16 @@ impl FocusSTM {
     ///
     /// # Arguments
     ///
+    /// * `period` - Period. The period closest to `period` from the possible periods is set.
+    ///
+    pub fn with_period(period: std::time::Duration) -> Self {
+        Self::new(1000000000. / period.as_nanos() as float)
+    }
+
+    /// constructor
+    ///
+    /// # Arguments
+    ///
     /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/`freq_div`.
     ///
     pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
@@ -206,6 +216,19 @@ impl FocusSTM {
         Self {
             control_points: vec![],
             props: STMProps::with_sampling_frequency(freq),
+        }
+    }
+
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `period` - Sampling period. The sampling period closest to `period` from the possible sampling periods is set.
+    ///
+    pub fn with_sampling_period(period: std::time::Duration) -> Self {
+        Self {
+            control_points: vec![],
+            props: STMProps::with_sampling_period(period),
         }
     }
 
@@ -243,12 +266,20 @@ impl FocusSTM {
         self.props.freq(self.size())
     }
 
+    pub fn period(&self) -> std::time::Duration {
+        self.props.period(self.size())
+    }
+
     pub fn sampling_frequency(&self) -> float {
         self.props.sampling_frequency(self.size())
     }
 
     pub fn sampling_frequency_division(&self) -> u32 {
         self.props.sampling_frequency_division(self.size())
+    }
+
+    pub fn sampling_period(&self) -> std::time::Duration {
+        self.props.sampling_period(self.size())
     }
 }
 
@@ -270,6 +301,16 @@ mod tests {
         let stm = FocusSTM::with_sampling_frequency(40e3)
             .add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
         assert_approx_eq!(stm.freq(), 40e3 / 10.);
+    }
+
+    #[test]
+    fn period() {
+        let stm = FocusSTM::with_period(std::time::Duration::from_millis(1));
+        assert_eq!(stm.period(), std::time::Duration::from_millis(1));
+
+        let stm = FocusSTM::with_sampling_period(std::time::Duration::from_millis(1))
+            .add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
+        assert_eq!(stm.period(), std::time::Duration::from_millis(10));
     }
 
     #[test]
@@ -300,5 +341,15 @@ mod tests {
 
         let stm = FocusSTM::new(1.0).add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
         assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
+    }
+
+    #[test]
+    fn sampling_period() {
+        let stm = FocusSTM::with_sampling_period(std::time::Duration::from_millis(1));
+        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
+
+        let stm = FocusSTM::with_period(std::time::Duration::from_millis(10))
+            .add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
+        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
     }
 }

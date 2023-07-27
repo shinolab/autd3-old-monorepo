@@ -4,16 +4,14 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use atomic::Atomic;
-use spin::RwLock as SpinRwLock;
-use std::sync::{atomic::*, Arc};
+use std::sync::{Arc, RwLock};
 
 use spdlog::{
     formatter::{Formatter, FullFormatter},
@@ -22,7 +20,7 @@ use spdlog::{
     ErrorHandler, StringBuf,
 };
 
-type SinkErrorHandler = Atomic<Option<ErrorHandler>>;
+type SinkErrorHandler = Option<ErrorHandler>;
 
 /// logger with custom output and flush callback
 pub struct CustomSink<O, F>
@@ -30,9 +28,9 @@ where
     O: Fn(&str) -> spdlog::Result<()> + Send + Sync,
     F: Fn() -> spdlog::Result<()> + Send + Sync,
 {
-    level_filter: Atomic<LevelFilter>,
-    formatter: SpinRwLock<Box<dyn Formatter>>,
-    error_handler: SinkErrorHandler,
+    level_filter: RwLock<LevelFilter>,
+    formatter: RwLock<Box<dyn Formatter>>,
+    error_handler: RwLock<SinkErrorHandler>,
     out: O,
     flush: F,
 }
@@ -44,9 +42,9 @@ where
 {
     pub fn new(out: O, flush: F) -> Self {
         Self {
-            level_filter: Atomic::new(LevelFilter::All),
-            formatter: SpinRwLock::new(Box::new(FullFormatter::new())),
-            error_handler: SinkErrorHandler::new(None),
+            level_filter: RwLock::new(LevelFilter::All),
+            formatter: RwLock::new(Box::new(FullFormatter::new())),
+            error_handler: RwLock::new(None),
             out,
             flush,
         }
@@ -63,7 +61,10 @@ where
             return Ok(());
         }
         let mut string_buf = StringBuf::new();
-        self.formatter.read().format(record, &mut string_buf)?;
+        self.formatter
+            .read()
+            .unwrap()
+            .format(record, &mut string_buf)?;
         (self.out)(string_buf.as_str())
     }
 
@@ -72,19 +73,19 @@ where
     }
 
     fn level_filter(&self) -> LevelFilter {
-        self.level_filter.load(Ordering::Relaxed)
+        *self.level_filter.read().unwrap()
     }
 
     fn set_level_filter(&self, level_filter: LevelFilter) {
-        self.level_filter.store(level_filter, Ordering::Relaxed);
+        *self.level_filter.write().unwrap() = level_filter;
     }
 
     fn set_formatter(&self, formatter: Box<dyn spdlog::formatter::Formatter>) {
-        *self.formatter.write() = formatter;
+        *self.formatter.write().unwrap() = formatter;
     }
 
     fn set_error_handler(&self, handler: Option<spdlog::ErrorHandler>) {
-        self.error_handler.store(handler, Ordering::Relaxed);
+        *self.error_handler.write().unwrap() = handler;
     }
 }
 

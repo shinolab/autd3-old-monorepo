@@ -19,7 +19,8 @@ As a rough outline,
 
 To configure the silencer, send `SilencerConfig` to the controller.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,7 +52,8 @@ You can set `step` to `SilencerConfig`.
 Refer to the followwing for details.
 Roughly, the smaller the `step`, the quieter it becomes.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -79,7 +81,8 @@ config = SilencerConfig(step)
 The silencer is enabled by default.
 To disable the silencer, do the following.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
