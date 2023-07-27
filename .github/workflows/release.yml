@@ -307,6 +307,108 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}-x64.tar.gz
           asset_content_type: application/octet-stream
   
+  publish_linux-arm32:
+    needs: [release]
+    name: Upload Release Asset Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: install arm32 target
+        run : |
+          sudo apt-get update
+          sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+          rustup target add armv7-unknown-linux-gnueabihf
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get the version
+        id: get_version
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+      - name: Build project arm32
+        run: |
+          cp LICENSE cpp/
+          cd cpp
+          chmod +x build-arm32.sh
+          ./build-arm32.sh
+          tar -zcvf assets_arm32.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
+        shell: bash
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo "upload_url=$value" >> $GITHUB_OUTPUT
+      - name: Upload Release Asset
+        id: upload-release-asset-arm32
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./cpp/assets_arm32.tar.gz
+          asset_name: ${{ steps.get_version.outputs.result }}-armv7.tar.gz
+          asset_content_type: application/octet-stream
+  
+  publish_linux-aarch64:
+    needs: [release]
+    name: Upload Release Asset Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: install aarch64 target
+        run : |
+          sudo apt-get update
+          sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get the version
+        id: get_version
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+      - name: Build project aarch64
+        run: |
+          cp LICENSE cpp/
+          cd cpp
+          chmod +x build-aarch64.sh
+          ./build-aarch64.sh
+          tar -zcvf assets_aarch64.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
+        shell: bash
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo "upload_url=$value" >> $GITHUB_OUTPUT
+      - name: Upload Release Asset
+        id: upload-release-asset-aarch64
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./cpp/assets_aarch64.tar.gz
+          asset_name: ${{ steps.get_version.outputs.result }}-aarch64.tar.gz
+          asset_content_type: application/octet-stream
+  
   publish_mac:
     needs: [release]
     name: Upload Release Asset macOS
