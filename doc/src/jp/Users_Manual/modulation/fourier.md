@@ -14,3 +14,16 @@ let m = Fourier::new()
         .add_components_from_iter([Sine::new(150), Sine::new(200)]);
 # }
 ```
+
+`+`演算子も定義されている.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+use autd3::modulation::Fourier;
+
+# #[allow(unused_variables)]
+# fn main()  {
+let m: Fourier = Sine::new(100) + Sine::new(150) + Sine::new(200);
+# }
+```
