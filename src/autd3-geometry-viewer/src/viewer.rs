@@ -39,6 +39,7 @@ pub struct GeometryViewer {
     window_height: u32,
     window_width: u32,
     vsync: bool,
+    settings: Settings,
 }
 
 impl GeometryViewer {
@@ -47,20 +48,27 @@ impl GeometryViewer {
             window_width: 800,
             window_height: 600,
             vsync: true,
+            settings: Settings::new(0),
         }
     }
 
     /// Set window size
-    pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
-        self.window_width = width;
-        self.window_height = height;
-        self
+    pub fn with_window_size(self, width: u32, height: u32) -> Self {
+        Self {
+            window_width: width,
+            window_height: height,
+            ..self
+        }
     }
 
     /// Set vsync
-    pub fn with_vsync(mut self, vsync: bool) -> Self {
-        self.vsync = vsync;
-        self
+    pub fn with_vsync(self, vsync: bool) -> Self {
+        Self { vsync, ..self }
+    }
+
+    /// Set settings
+    pub fn with_settings(self, settings: Settings) -> Self {
+        Self { settings, ..self }
     }
 
     /// Run viewer
@@ -102,7 +110,10 @@ impl GeometryViewer {
             })
             .collect();
 
-        let mut settings = Settings::new(num_dev);
+        let mut settings = self.settings.clone();
+        if settings.shows.len() < num_dev {
+            settings.shows.resize(num_dev, true);
+        }
 
         render.move_camera(settings.camera_pos(), settings.camera_rot());
 
