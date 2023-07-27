@@ -1,3 +1,7 @@
+# 14.2.0
+
+- Fix [#115](https://github.com/shinolab/autd3/issues/115): `autd3-geometry-viewer` from git does not work
+
 # 14.1.0
 
 - Fix [#93](https://github.com/shinolab/autd3/issues/93): pyautd3 package contains unnecessary dynamic libraries
