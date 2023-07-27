@@ -16,7 +16,9 @@ You can select the backend for the calculation of the algorithm from the followi
 * `NalgebraBackend` (`DefaultBackend`) - uses [Nalgebra](hthttps://nalgebra.org/)
 * `CUDABackend` - uses CUDA, which runs on GPUs
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{NalgebraBackend, GSPAT};
 
@@ -80,7 +82,9 @@ This can be controlled by `with_constraint`, and one of the following four must 
 - Uniform: Set the amplitude of all transducers to the specified value. (Values outside the range $\[0, 1\]$ are clamped to the range $\[0, 1\]$.)
 - Clamp: Clamp the amplitude to the specified range.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{NalgebraBackend, GSPAT, Constraint};
 
@@ -120,7 +124,9 @@ Each algorithm has additional parameters.
 These are all specified by `with_xxx`.
 
 - e.g.,
-    ```rust
+    ```rust,edition2021
+    # extern crate autd3;
+    # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
     # use autd3_gain_holo::{NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]
