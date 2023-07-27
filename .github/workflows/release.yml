@@ -22,9 +22,9 @@ jobs:
         cache: 'npm'
         cache-dependency-path: server/package-lock.json
     - name: install frontend dependencies
-        run: |
-          cd server 
-          npm install
+      run: |
+        cd server 
+        npm install
     - name: Check license
       run: |
         cd license-checker
