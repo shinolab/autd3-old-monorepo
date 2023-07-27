@@ -505,6 +505,61 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
+
+  publish_pypi-linux-arm32:
+    needs: [build, publish_linux-arm32]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install twine wheel build
+        cd python
+        python download_bin.py --arch armv7
+    - name: Build whl
+      run: |
+        cd python
+        python -m build -w -C="--build-option=--plat-name" -C="--build-option=linux_armv7l"
+    - name: Publish
+      run: |
+        cd python
+        twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
+
+
+  publish_pypi-linux-aarch64:
+    needs: [build, publish_linux-aarch64]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install twine wheel build
+        cd python
+        python download_bin.py --arch aarch64
+    - name: Build whl
+      run: |
+        cd python
+        python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux2014_aarch64"
+    - name: Publish
+      run: |
+        cd python
+        twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
+
+
   publish_nuget:
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
