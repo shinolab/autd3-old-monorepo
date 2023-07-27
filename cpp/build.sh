@@ -20,5 +20,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     lipo -create $x64_file ./capi/target/aarch64-apple-darwin/release/$file_basename -output cpp/bin/$file_basename
   done
 fi
+cp -f ./capi/ThirdPartyNotice.txt ./cpp/ThirdPartyNotice.txt
 
 popd
