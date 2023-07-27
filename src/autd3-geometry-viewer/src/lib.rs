@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,6 +19,7 @@ mod renderer;
 mod settings;
 mod viewer;
 
+pub use settings::Settings;
 pub use viewer::GeometryViewer;
 
 pub type Vector2 = cgmath::Vector2<f32>;
