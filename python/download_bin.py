@@ -19,6 +19,7 @@ import tarfile
 import os
 import sys
 import platform
+import argparse
 
 
 def _get_version():
@@ -41,54 +42,65 @@ def _set_package_version(version):
         f.write(init_py)
 
 
-_set_package_version(_get_version())
-
-_VERSION_TRIPLE = ".".join(_get_version().split(".")[0:3])
-
-
 class Target:
-    bin_ext = ""
-    archive_ext = ""
-    os_name = ""
-    arch = "x64"
+    bin_ext: str = ""
+    archive_ext: str = ""
+    os_name: str = ""
+    arch: str = ""
 
-    def __init__(self, os_name, arch, bin_ext, archive_ext):
-        self.os_name = os_name
-        self.arch = arch
-        self.bin_ext = bin_ext
-        self.archive_ext = archive_ext
+    def __init__(self, arch=None):
+        is_32bit = sys.maxsize <= 2**32
+        is_amd64 = platform.machine() in ("AMD64", "x86_64")
+
+        if platform.system() == "Windows":
+            if is_32bit:
+                print("32bit is not supported")
+                exit(1)
+            if not is_amd64:
+                print("Unsupported architecture:", platform.machine())
+                exit(1)
+            self.os_name = "win"
+            self.bin_ext = "dll"
+            self.archive_ext = "zip"
+            self.arch = "x64"
+        elif platform.system() == "Darwin":
+            if is_32bit:
+                print("32bit is not supported")
+                exit(1)
+            self.os_name = "macos"
+            self.bin_ext = "dylib"
+            self.archive_ext = "tar.gz"
+            self.arch = "universal"
+        elif platform.system() == "Linux":
+            self.os_name = "linux"
+            self.bin_ext = "so"
+            self.archive_ext = "tar.gz"
+            if arch is not None:
+               self.arch = arch
+            else:
+                if is_32bit:
+                    print("32bit is not supported")
+                    exit(1)
+                if not is_amd64:
+                    print("Unsupported architecture:", platform.machine())
+                    exit(1)
+                self.arch = "x64"
 
 
-asset_base_url = "https://github.com/shinolab/autd3/releases/download/"
-version = f"v{_VERSION_TRIPLE}"
+if __name__ == "__main__":
+    _set_package_version(_get_version())
 
-targets = []
-pf = platform.system()
-if pf == "Windows":
-    if sys.maxsize <= 2**32:
-        print("32bit is not supported")
-        exit(1)
-    if platform.machine() in ("i386", "AMD64", "x86_64"):
-        targets.append(Target("win", "x64", "dll", "zip"))
-    else:
-        print("Unsupported architecture:", platform.machine())
-        exit(1)
-elif pf == "Darwin":
-    if sys.maxsize <= 2**32:
-        print("32bit is not supported")
-        exit(1)
-    targets.append(Target("macos", "universal", "dylib", "tar.gz"))
-elif pf == "Linux":
-    if sys.maxsize <= 2**32:
-        print("32bit is not supported")
-        exit(1)
-    if platform.machine() in ("i386", "AMD64", "x86_64"):
-        targets.append(Target("linux", "x64", "so", "tar.gz"))
-    else:
-        print("Unsupported architecture:", platform.machine())
-        exit(1)
+    _VERSION_TRIPLE = ".".join(_get_version().split(".")[0:3])
 
-for target in targets:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--arch", required=False, metavar="NAME", type=str)
+
+    args = parser.parse_args()
+
+    asset_base_url = "https://github.com/shinolab/autd3/releases/download/"
+    version = f"v{_VERSION_TRIPLE}"
+
+    target = Target(args.arch)
     url = f"{asset_base_url}{version}/autd3-{version}-{target.os_name}-{target.arch}.{target.archive_ext}"
 
     tmp_archive_path = f"tmp.{target.archive_ext}"
