@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/06/2023
+ * Last Modified: 25/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ message TransducerTest {
 
 message Grouped {
   message Group {
-    uint32 id = 1;
+    repeated uint32 ids = 1;
     Gain gain = 2;
   }
   repeated Group groups = 1;

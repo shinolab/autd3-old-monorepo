@@ -113,6 +113,12 @@ void AUTDGetLatestFirmware(char *latest);
 
 [[nodiscard]] GainPtr AUTDGainGroupedAdd(GainPtr grouped_gain, uint32_t device_id, GainPtr gain);
 
+[[nodiscard]]
+GainPtr AUTDGainGroupedAddByGroup(GainPtr grouped_gain,
+                                  const uint32_t *device_ids,
+                                  uint64_t device_ids_len,
+                                  GainPtr gain);
+
 [[nodiscard]] GainPtr AUTDGainFocus(double x, double y, double z);
 
 [[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);

@@ -25,22 +25,18 @@ let g = autd3::gain::Grouped::new().add(0, g1).add(1, g2);
 
 ```cpp
 auto g = autd3::gain::Grouped();
-g.add_gain(0, g1);
-g.add_gain(0, g2);
+g.add(0, g1);
+g.add(1, g2);
 ```
 
 ```cs
-var g = new Grouped();
-g.AddGain(0, g1);
-g.AddGain(0, g2);
+var g = new Grouped().Add(0, g1).Add(1, g2);
 ```
 
 ```python
 from pyautd3.gain import Grouped
 
-g = Grouped()
-g.add_gain(0, g1)
-g.add_gain(0, g2)
+g = Grouped().add(0, g1).add(1, g2)
 ```
 
 In the above case, device 0 uses `g0` and device 1 uses `g1`.

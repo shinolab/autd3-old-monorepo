@@ -11,6 +11,8 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
+import warnings
+
 import functools
 import numpy as np
 from typing import Optional, List, Callable, Iterator
@@ -103,20 +105,37 @@ class Null(IGain):
 
 class Grouped(IGain):
     _gains: List[IGain]
-    _indices: List[int]
+    _indices: List[np.ndarray]
 
     def __init__(self):
         super().__init__()
         self._gains = []
         self._indices = []
 
-    def add_gain(self, device_idx: int, gain: IGain):
+    def add_gain(self, device_idx: int, gain: IGain) -> "Grouped":
+        warnings.warn("`add_gain` is deprecated, use `add` instead", UserWarning)
         self._gains.append(gain)
-        self._indices.append(device_idx)
+        self._indices.append(np.array([device_idx], dtype=np.uint32))
+        return self
+
+    def add(self, device_idx: int, gain: IGain) -> "Grouped":
+        self._gains.append(gain)
+        self._indices.append(np.array([device_idx], dtype=np.uint32))
+        return self
+
+    def add_by_group(self, device_ids: List[int], gain: IGain) -> "Grouped":
+        self._gains.append(gain)
+        self._indices.append(np.array(device_ids, dtype=np.uint32))
+        return self
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
         return functools.reduce(
-            lambda acc, v: Base().gain_grouped_add(acc, v[0], v[1].gain_ptr(geometry)),
+            lambda acc, v: Base().gain_grouped_add_by_group(
+                acc,
+                np.ctypeslib.as_ctypes(v[0]),
+                len(v[0]),
+                v[1].gain_ptr(geometry),
+            ),
             zip(self._indices, self._gains),
             Base().gain_grouped(),
         )

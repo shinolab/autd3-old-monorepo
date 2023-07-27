@@ -151,6 +151,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainGroupedAdd.argtypes = [GainPtr, ctypes.c_uint32, GainPtr]  # type: ignore 
         self.dll.AUTDGainGroupedAdd.restype = GainPtr
 
+        self.dll.AUTDGainGroupedAddByGroup.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint64, GainPtr]  # type: ignore 
+        self.dll.AUTDGainGroupedAddByGroup.restype = GainPtr
+
         self.dll.AUTDGainFocus.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainFocus.restype = GainPtr
 
@@ -453,6 +456,9 @@ class NativeMethods(metaclass=Singleton):
 
     def gain_grouped_add(self, grouped_gain: GainPtr, device_id: int, gain: GainPtr) -> GainPtr:
         return self.dll.AUTDGainGroupedAdd(grouped_gain, device_id, gain)
+
+    def gain_grouped_add_by_group(self, grouped_gain: GainPtr, device_ids: ctypes.Array[ctypes.c_uint32], device_ids_len: int, gain: GainPtr) -> GainPtr:
+        return self.dll.AUTDGainGroupedAddByGroup(grouped_gain, device_ids, device_ids_len, gain)
 
     def gain_focus(self, x: float, y: float, z: float) -> GainPtr:
         return self.dll.AUTDGainFocus(x, y, z)
