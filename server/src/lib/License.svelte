@@ -4,7 +4,7 @@ Project: autd-server
 Created Date: 12/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 12/07/2023
+Last Modified: 27/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     <p>Copyright (c) 2023 Shun Suzuki. All rights reserved.</p>
     <p>
         AUTD Server is MIT licensed. For the licenses of the programs used by
-        AUTD Server, please see Third party.
+        AUTD Server, please see NOTICE file.
     </p>
     <p>
         AUTD Server is distributed at https://github.com/shinolab/autd3. For
