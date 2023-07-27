@@ -1,5 +1,7 @@
 # 14.1.0
 
+- Fix [#93](https://github.com/shinolab/autd3/issues/93): pyautd3 package contains unnecessary dynamic libraries
+- Fix [#94](https://github.com/shinolab/autd3/issues/94): pyautd3 library should clarify its dependence on numpy
 - Fix [#108](https://github.com/shinolab/autd3/issues/108): OsalTimer on macOS causes segmentation fault
 
 # 14.0.1
