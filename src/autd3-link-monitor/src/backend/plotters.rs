@@ -13,9 +13,8 @@
 
 use std::{ffi::OsString, io::Write};
 
-use scarlet::colormap::{ColorMap, ListedColorMap};
-
 use plotters::{coord::Shift, prelude::*};
+use scarlet::colormap::{ColorMap, ListedColorMap};
 
 use crate::{colormap, error::MonitorError, Backend, Config};
 
