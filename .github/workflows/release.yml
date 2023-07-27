@@ -10,7 +10,18 @@ env:
 
 
 jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    name: Check license
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check license
+      run: |
+        cd license-checker
+        cargo run
+
   build:
+    needs: [license-check]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -89,6 +100,7 @@ jobs:
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
+    needs: [license-check]
     name: Create Github Release
     runs-on: ubuntu-latest
     steps:
@@ -148,7 +160,7 @@ jobs:
           cd cpp
           ./build.ps1
           cd ..
-          Compress-Archive -Path LICENSE, cpp/bin, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, cpp/bin, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md, cpp/ThirdPartyNotice.txt -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -187,7 +199,6 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 
   publish_firmware:
     needs: [release]
@@ -265,7 +276,7 @@ jobs:
           cd cpp
           chmod +x build.sh
           ./build.sh
-          tar -zcvf assets_x64.tar.gz bin include CMakeLists.txt LICENSE README.md
+          tar -zcvf assets_x64.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
         shell: bash
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
@@ -322,7 +333,7 @@ jobs:
           cd cpp
           chmod +x build.sh
           ./build.sh
-          tar -zcvf assets.tar.gz bin include CMakeLists.txt LICENSE README.md
+          tar -zcvf assets.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -401,7 +412,9 @@ jobs:
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
     - name: Replace latest binary
       run: |
-        cp LICENSE dotnet/cs/src/LICENSE.md
+        cp LICENSE dotnet/cs/src/LICENSE.txt
+        echo "\n=========================================================\n" >> dotnet/cs/src/LICENSE.txt
+        cat ./capi/ThirdPartyNotice.txt >> dotnet/cs/src/LICENSE.txt
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
         rm -f ./dotnet/cs/src/native/linux/x64/*
         \cp bin/*.so ./dotnet/cs/src/native/linux/x64/

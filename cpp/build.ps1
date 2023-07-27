@@ -3,7 +3,7 @@
 # Created Date: 28/05/2023
 # Author: Shun Suzuki
 # -----
-# Last Modified: 24/06/2023
+# Last Modified: 27/07/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,4 +34,5 @@ foreach($dll in Get-ChildItem -Path capi/target/$target_dir | Where {$_.FullName
 foreach($dll in Get-ChildItem -Path capi/target/$target_dir | Where {$_.FullName -match ".*\.dll$"}){
     Copy-Item -Path $dll -Destination cpp/bin
 }
+Copy-Item -Path capi/ThirdPartyNotice.txt -Destination cpp/ThirdPartyNotice.txt -Force
 popd
