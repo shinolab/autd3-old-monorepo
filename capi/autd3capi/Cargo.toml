@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi"
-version = "14.0.1"
+version = "14.1.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,11 +8,11 @@ license = "MIT"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="14.0.1"}
-autd3-core = {path="../../src/autd3-core", version="14.0.1"}
+autd3capi-def = { path = "../autd3capi-def", version = "14.1.0" }
+autd3-core = { path = "../../src/autd3-core", version = "14.1.0" }
 
 [build-dependencies]
-wrapper-generator = {path="../wrapper-generator"}
+wrapper-generator = { path = "../wrapper-generator" }
 
 [features]
 single_float = ["autd3capi-def/single_float", "autd3-core/single_float"]

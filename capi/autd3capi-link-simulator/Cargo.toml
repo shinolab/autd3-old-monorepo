@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-simulator"
-version = "14.0.1"
+version = "14.1.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-autd3capi-def = {path="../autd3capi-def", version="14.0.1"}
-autd3-link-simulator = {path="../../src/autd3-link-simulator", version="14.0.1"}
+autd3capi-def = { path = "../autd3capi-def", version = "14.1.0" }
+autd3-link-simulator = { path = "../../src/autd3-link-simulator", version = "14.1.0" }
 
 [build-dependencies]
-wrapper-generator = {path="../wrapper-generator"}
+wrapper-generator = { path = "../wrapper-generator" }
