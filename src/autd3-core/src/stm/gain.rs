@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -127,6 +127,16 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
     ///
     /// # Arguments
     ///
+    /// * `period` - Period. The period closest to `period` from the possible periods is set.
+    ///
+    pub fn with_period(period: std::time::Duration) -> Self {
+        Self::new(1000000000. / period.as_nanos() as float)
+    }
+
+    /// constructor
+    ///
+    /// # Arguments
+    ///
     /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_SUB_CLK_FREQ]/`freq_div`.
     ///
     pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
@@ -148,6 +158,20 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
             props: STMProps::with_sampling_frequency(freq),
+        }
+    }
+
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `period` - Sampling period. The sampling period closest to `period` from the possible sampling periods is set.
+    ///
+    pub fn with_sampling_period(period: std::time::Duration) -> Self {
+        Self {
+            gains: vec![],
+            mode: Mode::PhaseDutyFull,
+            props: STMProps::with_sampling_period(period),
         }
     }
 
@@ -185,12 +209,20 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         self.props.freq(self.size())
     }
 
+    pub fn period(&self) -> std::time::Duration {
+        self.props.period(self.size())
+    }
+
     pub fn sampling_frequency(&self) -> float {
         self.props.sampling_frequency(self.size())
     }
 
     pub fn sampling_frequency_division(&self) -> u32 {
         self.props.sampling_frequency_division(self.size())
+    }
+
+    pub fn sampling_period(&self) -> std::time::Duration {
+        self.props.sampling_period(self.size())
     }
 }
 
@@ -256,6 +288,17 @@ mod tests {
     }
 
     #[test]
+    fn period() {
+        let stm = GainSTM::<LegacyTransducer>::with_period(std::time::Duration::from_millis(1));
+        assert_eq!(stm.period(), std::time::Duration::from_millis(1));
+
+        let stm =
+            GainSTM::<LegacyTransducer>::with_sampling_period(std::time::Duration::from_millis(1))
+                .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
+        assert_eq!(stm.period(), std::time::Duration::from_millis(10));
+    }
+
+    #[test]
     fn sampling_frequency_division() {
         let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency_division(512);
         assert_eq!(stm.sampling_frequency_division(), 512);
@@ -285,5 +328,16 @@ mod tests {
         let stm = GainSTM::<LegacyTransducer>::new(1.0)
             .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
         assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
+    }
+
+    #[test]
+    fn sampling_period() {
+        let stm =
+            GainSTM::<LegacyTransducer>::with_sampling_period(std::time::Duration::from_millis(1));
+        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
+
+        let stm = GainSTM::<LegacyTransducer>::with_period(std::time::Duration::from_millis(10))
+            .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
+        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
     }
 }
