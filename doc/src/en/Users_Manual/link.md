@@ -15,7 +15,9 @@ Set the default timeout with `with_timeout`.
 
 - The details of the timeout are described in [Controller#send#Timeout](./controller.md#timeout)
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 # use autd3_link_soem::SOEM;
 # #[allow(unused_variables)]

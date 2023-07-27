@@ -4,7 +4,9 @@ You can create your own `Gain`.
 
 Here, we will define a `FocalPoint` that generates a single focus just like `Focus`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
+# extern crate autd3_core;
 use autd3::{
     core::{
         error::AUTDInternalError,

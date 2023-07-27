@@ -32,25 +32,25 @@ At this time, **check** "TwinCAT XAE Shell install" and **uncheck** "Visual Stud
 
 After installation, restart the PC and run `C:/TwinCAT/3.1/System/win8settick.bat` as an administrator, and restart again.
 
-Finally, copy `dist/TwinCATAUTDServer/AUTD.xml` in the SDK to `C:/TwinCAT/3.1/Config/Io/EtherCAT`.
+## AUTD Server
 
-## TwinCATAUTDServer
+To use TwinCAT Link, install `AUTD Server` first.
+The AUTD server's installer is distributed on [GitHub Releases](https://github.com/shinolab/autd3/releases).
 
-To use TwinCAT Link, first run `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe`.
+When you run `AUTD Server`, the following screen will appear, so open the "TwinCAT" tab.
 
-At the first time, you need to run `TwinCATAUTDServer.exe` with `-k` option to install the driver.
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_twincat.jpg"/>
+</figure>
 
-```shell
-TwinCATAUTDServer.exe -k
-```
+### Config file and driver installation
 
-> Note: If you accidentally close the window, you can open `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln` as a TcXaeShell Application. `%TEMP%` is an environment variable, usually `C:/Users/(user name)/AppData/Local/Temp`.
+At the first time, you need to install configuration file and driver for EherCAT.
 
-Note that TwinCATAUTDServer will lose the Link when the PC is turned off or enters sleep mode, so you need to run it again each time.
+First click "Copy AUTD.xml" button.
+If you see a message like "AUTD.xml is successfully copied", it is successful.
 
-### Driver installation
-
-At the first time, you need to install the driver for EherCAT.
+Then, click "Open XAE shell" button".
 Open the upper menu of TwinCAT XAE Shell, select "TwinCAT" → "Show Realtime Ethernet Compatible Devices", select the corresponding device in "Compatible devices", and click "Install".
 If you see the installed device in "Installed and ready to use devices (realtime capable)", it is successful.
 
@@ -62,13 +62,27 @@ In that case, you can install the driver in "Incompatible devices", but it is no
 In addition, the first time you run it, you will get a license error.
 Open "Solution Explorer" → "SYSTEM" → "License" in XAE Shell, click "7 Days Trial License ...", and enter the characters displayed on the screen.
 Note that the license is a 7-day trial license, but you can reissue it by doing the same thing again.
-After issuing the license, close TwinCAT XAE Shell and run `TwinCATAUTDServer.exe` again.
+After issuing the license, close TwinCAT XAE Shell and run again.
+
+### Run AUTD Server
+
+Connect AUTD3 devices and PC, and power on the devices.
+Then, click "Run" button on AUTD Server.
+Here, let "Client IP address" be empty.
+
+If you got a message like "AUTDs are found and added", it is successful.
+
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_twincat_run.jpg"/>
+</figure>
 
 ## TwinCAT link API
 
 ### Constructor
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::TwinCAT;
 
@@ -109,11 +123,7 @@ When using a large number of devices, the following error may occur.
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
-In this case, increase the values of the `-s` and `-t` options of `TwinCATAUTDServer` and run TwinCATAUTDServer again.
-
-```shell
-TwinCATAUTDServer.exe -s 3 -t 3
-```
+In this case, increase the values of the `Sync0 cycle time` and `Send task cycle time` options of `AUTD Server` and run again.
 
 The values should be as small as possible while no error occurs.
 
@@ -129,54 +139,35 @@ In this case, one of the PCs must be able to use the above TwinCAT link.
 This PC is called "server" here.
 On the other hand, there are no particular restrictions on the PC on the development side, that is, the side using the SDK, and it just needs to be connected to the same LAN as the server.
 
-<figure>
-  <img src="../../fig/Users_Manual/remotetwincat.jpg"/>
-  <figcaption>Network Configuration</figcaption>
-</figure>
-
 First, connect the server and the AUTD device.
 The LAN adapter used at this time must be a TwinCAT compatible adapter, just like the TwinCAT link.
 Also, connect the server and the client on different LANs.
 The LAN adapter here does not need to be TwinCAT compatible.
 Then, check the IP of the LAN between the server and the client.
-Here, for example, the server side is "169.254.205.219", and the client side is "169.254.175.45".
+Here, for example, the server side is "172.16.99.104", and the client side is "172.16.99.62".
 
-Next, start `TwinCATAUTDServer` on the server.
-At this time, specify the IP address of the client (in this example, `169.254.175.45`) with the `-c` option.
-And, add the `-k` option at the end to keep TwinCATAUTDServer open.
-
-```ignore
-TwinCATAUTDServer.exe -c 169.254.175.45 -k
-```
-
-And, as shown in the figure below, open System → Routes and check the Local NetId in the NetId Management tab.
+Next, start `AUTD Server` on the server.
+At this time, specify the IP address of the client (in this example, `172.16.99.62`) with the `Client IP address` option.
 
 <figure>
-  <img src="../../fig/Users_Manual/NetId_Management.jpg"/>
-  <figcaption>Server AmsNetId</figcaption>
+  <img src="../../fig/Users_Manual/autdserver_remotetwincat.jpg"/>
 </figure>
 
-Here, we assume that it was "172.16.99.194.1.1"
-
-Also, check the client's AMS NetId.
-You can check this by opening "System" → "Routes" in TwinCAT, and checking the AmsNetId in the "Current Route" tab.
-
-<figure>
-  <img src="../../fig/Users_Manual/Current_Route.jpg"/>
-  <figcaption>Client AmsNetId</figcaption>
-</figure>
+You can see "Server AmsNetId" and "Client AmsNetId" on the right panel.
 
 ## RemoteTwinCAT link API
 
 ### Constructor
 
-You must specify the server's NetId in the constructor of `RemoteTwinCAT` link.
+You must specify the "Server AmsNetId" in the constructor of `RemoteTwinCAT` link.
 
-And, specify the client's NetId in the `with_client_ams_net_id` method.
+And, specify the "Client AmsNetId" in the `with_client_ams_net_id` method.
 Also, specify the IP address of the server in the `with_server_ip` method.
 These two values is optional, but it is recommended to specify them.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_twincat;
 # use autd3::prelude::*;
 use autd3_link_twincat::RemoteTwinCAT;
 
@@ -186,9 +177,9 @@ use autd3_link_twincat::RemoteTwinCAT;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #      .open_with(
-RemoteTwinCAT::new("172.16.99.194.1.1")?
-            .with_server_ip("169.254.205.219")
-            .with_client_ams_net_id("169.254.175.45.1.1")
+RemoteTwinCAT::new("172.16.99.111.1.1")?
+            .with_server_ip("172.16.99.104")
+            .with_client_ams_net_id("172.16.99.62.1.1")
 # )?;
 # Ok(())
 # }
@@ -197,27 +188,26 @@ RemoteTwinCAT::new("172.16.99.194.1.1")?
 ```cpp
 #include "autd3/link/twincat.hpp"
 
-autd3::link::RemoteTwinCAT("172.16.99.194.1.1")
-				.with_server_ip("169.254.205.219")
-				.with_client_ams_net_id("169.254.175.45.1.1");
+autd3::link::RemoteTwinCAT("172.16.99.111.1.1")
+				.with_server_ip("172.16.99.104")
+				.with_client_ams_net_id("172.16.99.62.1.1");
 ```
 
 ```cs
-new RemoteTwinCAT("172.16.99.194.1.1")
-        .WithServerIp(IPAddress.Parse("169.254.205.219"))
-        .WithClientAmsNetId("169.254.175.45.1.1");
+new RemoteTwinCAT("172.16.99.111.1.1")
+        .WithServerIp(IPAddress.Parse("172.16.99.104"))
+        .WithClientAmsNetId("172.16.99.62.1.1");
 ```
 
 ```python
 from pyautd3.link import RemoteTwinCAT
 
-RemoteTwinCAT("172.16.99.194.1.1")\
-    .with_server_ip("169.254.205.219")\
-    .with_client_ams_net_id("169.254.175.45.1.1")
+RemoteTwinCAT("172.16.99.111.1.1")\
+    .with_server_ip("172.16.99.104")\
+    .with_client_ams_net_id("172.16.99.62.1.1")
 ```
 
 ## Firewall
 
 If you get a TCP-related error when using RemoteTwinCAT, the ADS protocol may be blocked by the firewall.
 In that case, allow the connection of TCP/UDP port 48898 in the firewall settings.
-
