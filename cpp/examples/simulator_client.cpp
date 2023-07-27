@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 25/07/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ int main() try {
                   .open_with(autd3::link::Simulator(8080).with_timeout(std::chrono::milliseconds(200)));
 
   // std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) { tr.set_frequency(70e3); });
+  // autd.send(autd3::Synchronize());
 
   return run(autd);
 } catch (std::exception& e) {
