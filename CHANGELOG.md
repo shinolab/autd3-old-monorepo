@@ -1,3 +1,7 @@
+# 14.1.0
+
+- Fix [#108](https://github.com/shinolab/autd3/issues/108): OsalTimer on macOS causes segmentation fault
+
 # 14.0.1
 
 - Fix [#107](https://github.com/shinolab/autd3/issues/107): There is no with_sampling_frequency method in FocusSTM and GainSTM in pyautd3

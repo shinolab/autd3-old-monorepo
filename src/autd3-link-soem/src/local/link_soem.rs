@@ -59,8 +59,6 @@ impl TimerCallback for SoemCallback {
             if let Ok(tx) = self.receiver.try_recv() {
                 self.io_map.lock().unwrap().copy_from(&tx);
             }
-
-            ec_send_processdata();
         }
     }
 }
@@ -450,11 +448,11 @@ impl<T: Transducer> Link<T> for SOEM {
         if let Some(timer) = self.ecatth_handle.take() {
             let _ = timer.join();
         }
-        if let Some(th) = self.ecat_check_th.take() {
-            let _ = th.join();
-        }
         if let Some(timer) = self.timer_handle.take() {
             timer.close()?;
+        }
+        if let Some(th) = self.ecat_check_th.take() {
+            let _ = th.join();
         }
 
         unsafe {
