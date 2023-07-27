@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 24/07/2023
+Last Modified: 27/07/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,13 +25,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import RightPanel from "./lib/RightPanel.svelte";
 
   import License from "./lib/License.svelte";
-  import Notice from "./lib/Notice.svelte";
   import Modal, { bind } from "svelte-simple-modal";
 
   const licenseModal = writable<any>(null);
   const noticeModal = writable<any>(null);
   const showLicenseModal = () => licenseModal.set(bind(License, {}));
-  const showNoticeModal = () => noticeModal.set(bind(Notice, {}));
 
   let options: null | Options = null;
 
@@ -69,13 +67,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       styleWindow={{ backgroundColor: "#101923" }}
     >
       <button on:click={showLicenseModal}>License</button>
-    </Modal>
-    <Modal
-      show={$noticeModal}
-      closeButton={false}
-      styleWindow={{ backgroundColor: "#101923" }}
-    >
-      <button on:click={showNoticeModal}>Third party</button>
     </Modal>
   </footer>
 </main>
