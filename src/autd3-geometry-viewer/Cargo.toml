@@ -1,6 +1,6 @@
 [package]
 name = "autd3-geometry-viewer"
-version = "14.0.1"
+version = "14.1.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,13 +11,13 @@ readme = "../README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="14.0.1"}
-autd3-model = {path="../autd3-model", version="14.0.1"}
+autd3-core = { path = "../autd3-core", version = "14.1.0" }
+autd3-model = { path = "../autd3-model", version = "14.1.0" }
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"
-imgui = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" } # for winit 0.28
-imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" } # for winit 0.28
+imgui = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                               # for winit 0.28
+imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = "refs/pull/716/head" }                 # for winit 0.28
 png = "0.17.8"
 vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"

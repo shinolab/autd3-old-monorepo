@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -30,7 +30,7 @@ pub struct Timer<F: TimerCallback> {
 }
 
 impl<F: TimerCallback> Timer<F> {
-    pub fn start(cb: F, period_ns: u32) -> Result<Box<Self>, TimerError> {
+    pub fn start(cb: F, period: std::time::Duration) -> Result<Box<Self>, TimerError> {
         let mut timer = Box::new(Self {
             lock: AtomicBool::new(false),
             native_timer: NativeTimerWrapper::new(),
@@ -39,7 +39,7 @@ impl<F: TimerCallback> Timer<F> {
         let ptr = &mut *timer as *mut Self;
         timer
             .native_timer
-            .start(Some(Self::rt_thread), period_ns, ptr)?;
+            .start(Some(Self::rt_thread), period, ptr)?;
         Ok(timer)
     }
 
@@ -127,7 +127,11 @@ mod tests {
 
     #[test]
     fn test_timer() {
-        let timer = Timer::start(CountCallback { count: 0 }, 1000 * 1000 * 1).unwrap();
+        let timer = Timer::start(
+            CountCallback { count: 0 },
+            std::time::Duration::from_millis(1),
+        )
+        .unwrap();
         std::thread::sleep(std::time::Duration::from_millis(100));
         let count = timer.cb.count;
         assert!(90 < count && count < 110);

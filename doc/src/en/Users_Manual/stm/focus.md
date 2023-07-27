@@ -5,7 +5,8 @@
 
 THe following is an example of using `FocusSTM` to focus on a point $\SI{150}{mm}$ directly above the center of the array with a radius of $\SI{30}{mm}$ centered on the center of the array.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;

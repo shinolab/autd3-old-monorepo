@@ -2,7 +2,8 @@
 
 Without modulation.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -30,7 +31,8 @@ m = Static()
 You can set the amplitude of the static wave with `with_amp`.
 The value is clamped to $\[0, 1\]$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

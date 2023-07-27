@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use std::{
-    ffi::CStr,
+    ffi::{c_void, CStr},
     sync::{
         atomic::{AtomicBool, AtomicI32, Ordering},
         Arc, Mutex,
@@ -23,10 +23,10 @@ use std::{
 };
 
 use crossbeam_channel::{bounded, Receiver, Sender};
-use libc::{c_void, timeval};
+use time::ext::NumericalDuration;
 
 use autd3_core::{
-    autd3_device::NUM_TRANS_IN_UNIT,
+    autd3_device::AUTD3,
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::{get_logger, Link},
@@ -37,11 +37,7 @@ use autd3_core::{
 };
 
 use crate::local::{
-    ecat::{add_timespec, ec_sync, ecat_setup, gettimeofday},
-    error::SOEMError,
-    error_handler::EcatErrorHandler,
-    iomap::IOMap,
-    soem_bindings::*,
+    error::SOEMError, error_handler::EcatErrorHandler, iomap::IOMap, soem_bindings::*,
     EthernetAdapters, SyncMode,
 };
 
@@ -63,8 +59,6 @@ impl TimerCallback for SoemCallback {
             if let Ok(tx) = self.receiver.try_recv() {
                 self.io_map.lock().unwrap().copy_from(&tx);
             }
-
-            ec_send_processdata();
         }
     }
 }
@@ -84,8 +78,8 @@ pub struct SOEM {
     timeout: std::time::Duration,
     sender: Option<Sender<TxDatagram>>,
     is_open: Arc<AtomicBool>,
-    ec_sync0_cycle_time_ns: u32,
-    ec_send_cycle_time_ns: u32,
+    ec_sync0_cycle: std::time::Duration,
+    ec_send_cycle: std::time::Duration,
     on_lost: Option<OnLostCallBack>,
     io_map: Arc<Mutex<IOMap>>,
     logger: Logger,
@@ -109,8 +103,8 @@ impl SOEM {
             timer_handle: None,
             sender: None,
             is_open: Arc::new(AtomicBool::new(false)),
-            ec_sync0_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * 2,
-            ec_send_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * 2,
+            ec_sync0_cycle: std::time::Duration::from_nanos(EC_CYCLE_TIME_BASE_NANO_SEC as u64 * 2),
+            ec_send_cycle: std::time::Duration::from_nanos(EC_CYCLE_TIME_BASE_NANO_SEC as u64 * 2),
             io_map: Arc::new(Mutex::new(IOMap::new(&[0]))),
         }
     }
@@ -118,7 +112,9 @@ impl SOEM {
     /// Set sync0 cycle (the unit is 500us)
     pub fn with_sync0_cycle(self, sync0_cycle: u16) -> Self {
         Self {
-            ec_sync0_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * sync0_cycle as u32,
+            ec_sync0_cycle: std::time::Duration::from_nanos(
+                EC_CYCLE_TIME_BASE_NANO_SEC as u64 * sync0_cycle as u64,
+            ),
             ..self
         }
     }
@@ -126,7 +122,9 @@ impl SOEM {
     /// Set send cycle (the unit is 500us)
     pub fn with_send_cycle(self, send_cycle: u16) -> Self {
         Self {
-            ec_send_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * send_cycle as u32,
+            ec_send_cycle: std::time::Duration::from_nanos(
+                EC_CYCLE_TIME_BASE_NANO_SEC as u64 * send_cycle as u64,
+            ),
             ..self
         }
     }
@@ -246,7 +244,7 @@ impl SOEM {
                 return Err(e.into());
             }
 
-            ecx_context.userdata = &mut self.ec_sync0_cycle_time_ns as *mut _ as *mut c_void;
+            ecx_context.userdata = &mut self.ec_sync0_cycle as *mut _ as *mut c_void;
             if self.sync_mode == SyncMode::DC {
                 (1..=ec_slavecount as usize).for_each(|i| {
                     ec_slave[i].PO2SOconfigx = Some(dc_config);
@@ -256,7 +254,7 @@ impl SOEM {
             ec_configdc();
 
             let dev_map = if device_map.is_empty() {
-                vec![NUM_TRANS_IN_UNIT; wc as _]
+                vec![AUTD3::NUM_TRANS_IN_UNIT; wc as _]
             } else {
                 device_map.to_vec()
             };
@@ -288,32 +286,20 @@ impl SOEM {
 
             self.is_open.store(true, Ordering::Release);
             let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
-            let cycletime = self.ec_send_cycle_time_ns;
             let is_open = self.is_open.clone();
+            let cycle = self.ec_send_cycle;
             let wkc = Arc::new(AtomicI32::new(0));
             let wkc_clone = wkc.clone();
             let io_map = self.io_map.clone();
             match self.timer_strategy {
                 TimerStrategy::Sleep => {
                     self.ecatth_handle = Some(std::thread::spawn(move || {
-                        Self::ecat_run_with_sleep(
-                            is_open,
-                            io_map,
-                            wkc_clone,
-                            tx_receiver,
-                            cycletime,
-                        )
+                        Self::ecat_run::<StdSleep>(is_open, io_map, wkc_clone, tx_receiver, cycle)
                     }))
                 }
                 TimerStrategy::BusyWait => {
                     self.ecatth_handle = Some(std::thread::spawn(move || {
-                        Self::ecat_run_with_busywait(
-                            is_open,
-                            io_map,
-                            wkc_clone,
-                            tx_receiver,
-                            cycletime,
-                        )
+                        Self::ecat_run::<BusyWait>(is_open, io_map, wkc_clone, tx_receiver, cycle)
                     }))
                 }
                 TimerStrategy::NativeTimer => {
@@ -323,7 +309,7 @@ impl SOEM {
                             receiver: tx_receiver,
                             io_map,
                         },
-                        self.ec_send_cycle_time_ns,
+                        self.ec_send_cycle,
                     )?)
                 }
             }
@@ -425,8 +411,8 @@ fn lookup_autd() -> Result<String, SOEMError> {
 }
 
 unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
-    let cyc_time = *((*context).userdata as *mut u32);
-    ec_dcsync0(slave, 1, cyc_time, 0);
+    let cyc_time = *((*context).userdata as *mut std::time::Duration);
+    ec_dcsync0(slave, 1, cyc_time.as_nanos() as _, 0);
     0
 }
 
@@ -455,18 +441,18 @@ impl<T: Transducer> Link<T> for SOEM {
         }
 
         while !self.sender.as_ref().unwrap().is_empty() {
-            std::thread::sleep(Duration::from_nanos(self.ec_sync0_cycle_time_ns as _));
+            std::thread::sleep(self.ec_sync0_cycle);
         }
 
         self.is_open.store(false, Ordering::Release);
         if let Some(timer) = self.ecatth_handle.take() {
             let _ = timer.join();
         }
-        if let Some(th) = self.ecat_check_th.take() {
-            let _ = th.join();
-        }
         if let Some(timer) = self.timer_handle.take() {
             timer.close()?;
+        }
+        if let Some(th) = self.ecat_check_th.take() {
+            let _ = th.join();
         }
 
         unsafe {
@@ -518,89 +504,113 @@ impl<T: Transducer> Link<T> for SOEM {
     }
 }
 
+trait Sleep {
+    fn sleep(duration: time::Duration);
+}
+
+struct StdSleep {}
+
+impl Sleep for StdSleep {
+    fn sleep(duration: time::Duration) {
+        if duration > time::Duration::ZERO {
+            std::thread::sleep(std::time::Duration::from_nanos(
+                duration.whole_nanoseconds() as _,
+            ));
+        }
+    }
+}
+
+struct BusyWait {}
+
+impl Sleep for BusyWait {
+    fn sleep(duration: time::Duration) {
+        let expired = time::OffsetDateTime::now_utc() + duration;
+        while time::OffsetDateTime::now_utc() < expired {
+            std::hint::spin_loop();
+        }
+    }
+}
+
 impl SOEM {
     #[allow(clippy::unnecessary_cast)]
-    fn ecat_run_with_sleep(
+    fn ecat_run<S: Sleep>(
         is_open: Arc<AtomicBool>,
         io_map: Arc<Mutex<IOMap>>,
         wkc: Arc<AtomicI32>,
         receiver: Receiver<TxDatagram>,
-        cycletime: u32,
+        cycle: std::time::Duration,
     ) {
         unsafe {
-            let mut ts = ecat_setup(cycletime as _);
+            #[cfg(target_os = "windows")]
+            let priority = {
+                let priority = windows::Win32::System::Threading::GetPriorityClass(
+                    windows::Win32::System::Threading::GetCurrentProcess(),
+                );
+                windows::Win32::System::Threading::SetPriorityClass(
+                    windows::Win32::System::Threading::GetCurrentProcess(),
+                    windows::Win32::System::Threading::REALTIME_PRIORITY_CLASS,
+                );
+                windows::Win32::System::Threading::SetThreadPriority(
+                    windows::Win32::System::Threading::GetCurrentThread(),
+                    windows::Win32::System::Threading::THREAD_PRIORITY_TIME_CRITICAL,
+                );
+                windows::Win32::Media::timeBeginPeriod(1);
+                priority
+            };
 
-            let mut toff = 0;
+            let mut ts = {
+                let tp = time::OffsetDateTime::now_utc();
+                let tp_unix_ns = tp.unix_timestamp_nanos();
+
+                let cycle_ns = cycle.as_nanos() as i128;
+                let ts_unix_ns = (tp_unix_ns / cycle_ns + 1) * cycle_ns;
+                time::OffsetDateTime::from_unix_timestamp_nanos(ts_unix_ns).unwrap()
+            };
+
+            let mut toff = time::Duration::ZERO;
+            let mut integral = 0;
             ec_send_processdata();
             while is_open.load(Ordering::Acquire) {
-                add_timespec(&mut ts, cycletime as i64 + toff);
+                ts += cycle;
+                ts += toff;
 
-                let mut tp = timeval {
-                    tv_sec: 0,
-                    tv_usec: 0,
-                };
-                gettimeofday(&mut tp as *mut _ as *mut _, std::ptr::null_mut());
-                let sleep = (ts.tv_sec - tp.tv_sec as i64) * 1000000000i64
-                    + (ts.tv_nsec as i64 - tp.tv_usec as i64 * 1000i64);
-                if sleep > 0 {
-                    std::thread::sleep(Duration::from_nanos(sleep as _));
-                }
+                S::sleep(ts - time::OffsetDateTime::now_utc());
 
                 wkc.store(
                     ec_receive_processdata(EC_TIMEOUTRET as i32),
                     Ordering::Release,
                 );
-                ec_sync(ec_DCtime, cycletime as _, &mut toff);
+
+                toff = Self::ec_sync(ec_DCtime, cycle.as_nanos() as _, &mut integral);
 
                 if let Ok(tx) = receiver.try_recv() {
                     io_map.lock().unwrap().copy_from(&tx);
                 }
-
                 ec_send_processdata();
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                windows::Win32::Media::timeEndPeriod(1);
+                windows::Win32::System::Threading::SetPriorityClass(
+                    windows::Win32::System::Threading::GetCurrentProcess(),
+                    windows::Win32::System::Threading::PROCESS_CREATION_FLAGS(priority),
+                );
             }
         }
     }
 
-    #[allow(clippy::unnecessary_cast)]
-    fn ecat_run_with_busywait(
-        is_open: Arc<AtomicBool>,
-        io_map: Arc<Mutex<IOMap>>,
-        wkc: Arc<AtomicI32>,
-        receiver: Receiver<TxDatagram>,
-        cycletime: u32,
-    ) {
-        unsafe {
-            let mut ts = ecat_setup(cycletime as _);
-
-            let mut toff = 0;
-            ec_send_processdata();
-            while is_open.load(Ordering::Acquire) {
-                add_timespec(&mut ts, cycletime as i64 + toff);
-
-                let mut tp = timeval {
-                    tv_sec: 0,
-                    tv_usec: 0,
-                };
-                gettimeofday(&mut tp as *mut _ as *mut _, std::ptr::null_mut());
-                let sleep = (ts.tv_sec - tp.tv_sec as i64) * 1000000000i64
-                    + (ts.tv_nsec as i64 - tp.tv_usec as i64 * 1000i64);
-                let expired = std::time::Instant::now() + Duration::from_nanos(sleep as _);
-                while std::time::Instant::now() < expired {
-                    std::hint::spin_loop();
-                }
-
-                wkc.store(
-                    ec_receive_processdata(EC_TIMEOUTRET as i32),
-                    Ordering::Release,
-                );
-                ec_sync(ec_DCtime, cycletime as _, &mut toff);
-
-                if let Ok(tx) = receiver.try_recv() {
-                    io_map.lock().unwrap().copy_from(&tx);
-                }
-
-                ec_send_processdata();
-            }
+    fn ec_sync(reftime: i64, cycletime: i64, integral: &mut i64) -> time::Duration {
+        let mut delta = (reftime - 50000) % cycletime;
+        if delta > (cycletime / 2) {
+            delta -= cycletime;
         }
+        if delta > 0 {
+            *integral += 1;
+        }
+        if delta < 0 {
+            *integral -= 1;
+        }
+        (-(delta / 100) - (*integral / 20)).nanoseconds()
     }
 }

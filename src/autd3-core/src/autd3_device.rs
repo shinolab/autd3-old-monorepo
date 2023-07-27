@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,20 +13,26 @@
 
 use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
 use autd3_driver::{float, MILLIMETER};
-use num::FromPrimitive;
 
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_IN_UNIT instead")]
 /// Number of transducer in an AUTD3 device
 pub const NUM_TRANS_IN_UNIT: usize = 249;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_X instead")]
 /// Number of transducer in x-axis of AUTD3 device
 pub const NUM_TRANS_X: usize = 18;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::NUM_TRANS_Y instead")]
 /// Number of transducer in y-axis of AUTD3 device
 pub const NUM_TRANS_Y: usize = 14;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::TRANS_SPACING_MM instead")]
 /// Spacing between transducers in mm
 pub const TRANS_SPACING_MM: float = 10.16;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::TRANS_SPACING instead")]
 /// Spacing between transducers
-pub const TRANS_SPACING: float = TRANS_SPACING_MM * MILLIMETER;
+pub const TRANS_SPACING: float = AUTD3::TRANS_SPACING_MM * MILLIMETER;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::DEVICE_WIDTH instead")]
 /// Device width including substrate
 pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+#[deprecated(since = "14.1.0", note = "Use AUTD3::DEVICE_HEIGHT instead")]
 /// Device height including substrate
 pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
 
@@ -38,6 +44,21 @@ pub struct AUTD3 {
 }
 
 impl AUTD3 {
+    /// Number of transducer in an AUTD3 device
+    pub const NUM_TRANS_IN_UNIT: usize = 249;
+    /// Number of transducer in x-axis of AUTD3 device
+    pub const NUM_TRANS_X: usize = 18;
+    /// Number of transducer in y-axis of AUTD3 device
+    pub const NUM_TRANS_Y: usize = 14;
+    /// Spacing between transducers in mm
+    pub const TRANS_SPACING_MM: float = 10.16;
+    /// Spacing between transducers
+    pub const TRANS_SPACING: float = Self::TRANS_SPACING_MM * MILLIMETER;
+    /// Device width including substrate
+    pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+    /// Device height including substrate
+    pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
+
     /// Constructor
     ///
     /// # Arguments
@@ -73,13 +94,19 @@ impl AUTD3 {
     /// This is used only for internal.
     pub fn is_missing_transducer<T1, T2>(x: T1, y: T2) -> bool
     where
-        T1: FromPrimitive + PartialEq<T1>,
-        T2: FromPrimitive + PartialEq<T2>,
+        T1: TryInto<u8> + PartialEq<T1>,
+        T2: TryInto<u8> + PartialEq<T2>,
     {
-        y == FromPrimitive::from_u8(1).unwrap()
-            && (x == FromPrimitive::from_u8(1).unwrap()
-                || x == FromPrimitive::from_u8(2).unwrap()
-                || x == FromPrimitive::from_u8(16).unwrap())
+        let x = match x.try_into() {
+            Ok(v) => v,
+            Err(_) => return true,
+        };
+        let y = match y.try_into() {
+            Ok(v) => v,
+            Err(_) => return true,
+        };
+
+        y == 1 && (x == 1 || x == 2 || x == 16)
     }
 
     /// Get grid id from transducer id
@@ -103,7 +130,7 @@ impl AUTD3 {
     /// ```
     ///
     pub fn grid_id(idx: usize) -> (usize, usize) {
-        let local_id = idx % NUM_TRANS_IN_UNIT;
+        let local_id = idx % Self::NUM_TRANS_IN_UNIT;
         let mut offset = 0;
         if local_id >= 19 {
             offset += 2;
@@ -112,7 +139,7 @@ impl AUTD3 {
             offset += 1;
         }
         let uid = local_id + offset;
-        (uid % NUM_TRANS_X, uid / NUM_TRANS_X)
+        (uid % Self::NUM_TRANS_X, uid / Self::NUM_TRANS_X)
     }
 }
 
@@ -120,12 +147,13 @@ impl Device for AUTD3 {
     fn get_transducers(&self, start_id: usize) -> Vec<(usize, Vector3, UnitQuaternion)> {
         let rot_mat: Matrix4 = From::from(self.rotation);
         let trans_mat = rot_mat.append_translation(&self.position);
-        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
-            .filter(|&(y, x)| !Self::is_missing_transducer(x, y))
-            .map(|(y, x)| {
+        (0..Self::NUM_TRANS_Y)
+            .flat_map(|y| (0..Self::NUM_TRANS_X).map(move |x| (x, y)))
+            .filter(|&(x, y)| !Self::is_missing_transducer(x, y))
+            .map(|(x, y)| {
                 Vector4::new(
-                    x as float * TRANS_SPACING,
-                    y as float * TRANS_SPACING,
+                    x as float * Self::TRANS_SPACING,
+                    y as float * Self::TRANS_SPACING,
                     0.,
                     1.,
                 )
@@ -144,7 +172,15 @@ mod tests {
     #[test]
     fn autd3_device() {
         let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
-        assert_eq!(Device::get_transducers(&dev, 0).len(), 249);
+        let transducers = Device::get_transducers(&dev, 0);
+        assert_eq!(transducers.len(), 249);
+
+        assert_approx_eq::assert_approx_eq!(transducers[0].1.x, 0.);
+        assert_approx_eq::assert_approx_eq!(transducers[0].1.y, 0.);
+        assert_approx_eq::assert_approx_eq!(transducers[1].1.x, AUTD3::TRANS_SPACING);
+        assert_approx_eq::assert_approx_eq!(transducers[1].1.y, 0.);
+        assert_approx_eq::assert_approx_eq!(transducers[18].1.x, 0.);
+        assert_approx_eq::assert_approx_eq!(transducers[18].1.y, AUTD3::TRANS_SPACING);
     }
 
     #[test]
@@ -404,6 +440,17 @@ mod tests {
         assert!(!AUTD3::is_missing_transducer(15, 13));
         assert!(!AUTD3::is_missing_transducer(16, 13));
         assert!(!AUTD3::is_missing_transducer(17, 13));
+
+        assert!(!AUTD3::is_missing_transducer(0i8, 0i8));
+        assert!(!AUTD3::is_missing_transducer(0i16, 0i16));
+        assert!(!AUTD3::is_missing_transducer(0i32, 0i32));
+        assert!(!AUTD3::is_missing_transducer(0i64, 0i64));
+        assert!(!AUTD3::is_missing_transducer(0i128, 0i128));
+        assert!(!AUTD3::is_missing_transducer(0u8, 0u8));
+        assert!(!AUTD3::is_missing_transducer(0u16, 0u16));
+        assert!(!AUTD3::is_missing_transducer(0u32, 0u32));
+        assert!(!AUTD3::is_missing_transducer(0u64, 0u64));
+        assert!(!AUTD3::is_missing_transducer(0u128, 0u128));
     }
 
     #[test]

@@ -7,7 +7,8 @@ The default mode is Legacy mode.
 
 You can change to the Advanced mode by the following.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -39,9 +40,10 @@ The frequency can be specified as $\clkf/N,N=2,...,8191$.
 The `cycle` represents this $N$.
 In the case of `set_frequency`, the closest value of the possible $N$ is chosen.
 
-Note that frequency configuratino must be done before sending `Synchronize`.
+Note that you must send `Synchronize` after frequency configuration.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -53,20 +55,30 @@ Note that frequency configuratino must be done before sending `Synchronize`.
 for tr in autd.geometry_mut().iter_mut() {
   tr.set_frequency(70e3)?;
 }
+
+autd.send(Synchronize::new())?;
 #    Ok(())
 # }
 ```
 ```cpp
 for (auto& tr : autd.geometry())
     tr.set_frequency(70e3);
+
+autd.send(autd3::Synchronize());
 ```
 ```cs
 foreach (var tr in autd.Geometry)
     tr.Frequency = 70e3;
+
+autd.Send(new Synchronize());
 ```
 ```python
+from pyautd3 import Synchronize
+
 for tr in autd.geometry:
     tr.frequency = 70e3
+
+autd.send(Synchronize())
 ```
 
 ## AdvancedPhase mode
@@ -74,7 +86,8 @@ for tr in autd.geometry:
 The communication latency in Advanced mode is twice as long as in Legacy mode, because the amplitude/phase data must be sent in one frame each.
 In practice, amplitude data is not expected to be updated frequently, so the AdvancedPhase mode is provided to send only phase data.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 
@@ -102,7 +115,8 @@ autd = Controller.builder().advanced_phase_mode()
 In this mode, the amplitude is controlled by sending the `Amplitudes` class in advance.
 All `Gain` amplitude parameters are ignored in this mode.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 

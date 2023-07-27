@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Platforms>AnyCPU</Platforms>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>14.0.1</Version>
+    <Version>14.1.0</Version>
     <Authors>Shun Suzuki</Authors>
     <Company>Shinolab</Company>
     <Description>AUTD3 library wrapper for .Net</Description>
@@ -16,13 +16,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-      <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+      <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
       <PackageReadmeFile>README.md</PackageReadmeFile>
       <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-      <None Include="LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+      <None Include="LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
       <None Include="../README.md" Pack="true" PackagePath="README.md" />

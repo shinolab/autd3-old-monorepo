@@ -1,3 +1,14 @@
+# 14.1.0
+
+- Fix [#93](https://github.com/shinolab/autd3/issues/93): pyautd3 package contains unnecessary dynamic libraries
+- Fix [#94](https://github.com/shinolab/autd3/issues/94): pyautd3 library should clarify its dependence on numpy
+- Fix [#108](https://github.com/shinolab/autd3/issues/108): OsalTimer on macOS causes segmentation fault
+- Fix [#112](https://github.com/shinolab/autd3/issues/112): Add gain to Grouped by device group
+- Fix [#113](https://github.com/shinolab/autd3/issues/113): simulator_client example is broken in C++/C#/F#/Python
+- Fix [#114](https://github.com/shinolab/autd3/issues/114): AUTD Server on Windows without npcap installed causes an error
+- Add `with_sampling_period` to `Modulation`
+- Add `with_period` and `with_sampling_period` to `STM`
+
 # 14.0.1
 
 - Fix [#107](https://github.com/shinolab/autd3/issues/107): There is no with_sampling_frequency method in FocusSTM and GainSTM in pyautd3

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 26/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -52,7 +52,7 @@ impl NativeTimerWrapper {
     pub fn start<P>(
         &mut self,
         cb: Option<Waitortimercallback>,
-        period_ns: u32,
+        period: std::time::Duration,
         lp_param: *mut P,
     ) -> Result<bool, TimerError> {
         unsafe {
@@ -81,12 +81,12 @@ impl NativeTimerWrapper {
 
             let new_value = itimerspec {
                 it_interval: timespec {
-                    tv_sec: 0,
-                    tv_nsec: period_ns as i64,
+                    tv_sec: period.as_secs() as _,
+                    tv_nsec: period.subsec_nanos() as _,
                 },
                 it_value: timespec {
-                    tv_sec: 0,
-                    tv_nsec: period_ns as i64,
+                    tv_sec: period.as_secs() as _,
+                    tv_nsec: period.subsec_nanos() as _,
                 },
             };
 

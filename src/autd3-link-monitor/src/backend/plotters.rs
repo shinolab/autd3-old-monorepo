@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use plotters::{coord::Shift, prelude::*};
 
 use crate::{colormap, error::MonitorError, Backend, Config};
 
-use autd3_core::{autd3_device::TRANS_SPACING, float};
+use autd3_core::{autd3_device::AUTD3, float};
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
@@ -327,10 +327,14 @@ impl PlottersBackend {
                 .map(|t| (t.position().x, t.position().y))
                 .collect::<Vec<_>>();
 
-            let min_x = p.iter().fold(float::MAX, |acc, &(x, _)| acc.min(x)) - TRANS_SPACING / 2.0;
-            let min_y = p.iter().fold(float::MAX, |acc, &(_, y)| acc.min(y)) - TRANS_SPACING / 2.0;
-            let max_x = p.iter().fold(float::MIN, |acc, &(x, _)| acc.max(x)) + TRANS_SPACING / 2.0;
-            let max_y = p.iter().fold(float::MIN, |acc, &(_, y)| acc.max(y)) + TRANS_SPACING / 2.0;
+            let min_x =
+                p.iter().fold(float::MAX, |acc, &(x, _)| acc.min(x)) - AUTD3::TRANS_SPACING / 2.0;
+            let min_y =
+                p.iter().fold(float::MAX, |acc, &(_, y)| acc.min(y)) - AUTD3::TRANS_SPACING / 2.0;
+            let max_x =
+                p.iter().fold(float::MIN, |acc, &(x, _)| acc.max(x)) + AUTD3::TRANS_SPACING / 2.0;
+            let max_y =
+                p.iter().fold(float::MIN, |acc, &(_, y)| acc.max(y)) + AUTD3::TRANS_SPACING / 2.0;
 
             let plot_range_x = max_x - min_x;
             let plot_range_y = max_y - min_y;
@@ -382,7 +386,7 @@ impl PlottersBackend {
                 let c = cmap[((v * color_map_size as float) as usize).clamp(0, cmap.len() - 1)];
                 Circle::new(
                     (x, y),
-                    TRANS_SPACING * px_per_ps / 2.0,
+                    AUTD3::TRANS_SPACING * px_per_ps / 2.0,
                     RGBColor(c.int_r(), c.int_g(), c.int_b())
                         .filled()
                         .stroke_width(0),

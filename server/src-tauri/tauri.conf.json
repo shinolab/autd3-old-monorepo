@@ -3,12 +3,12 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:3000",
+    "devPath": "http://localhost:1420",
     "distDir": "../dist"
   },
   "package": {
     "productName": "AUTD Server",
-    "version": "14.0.1"
+    "version": "14.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -70,6 +70,10 @@
         "icons/icon.ico"
       ],
       "resources": [
+        "./LICENSE",
+        "./NOTICE",
+        "./TwinCATAUTDServer/LICENSE",
+        "./TwinCATAUTDServer/README.md",
         "./TwinCATAUTDServer/AUTD.xml",
         "./TwinCATAUTDServer/TwinCATAUTDServer.exe",
         "./TwinCATAUTDServer/System.Buffers.dll",
@@ -84,14 +88,19 @@
       "shortDescription": "AUTD Server application",
       "longDescription": "",
       "deb": {
-        "depends": []
+        "depends": [],
+        "files": {
+          "LICENSE": "LICENSE",
+          "NOTICE": "NOTICE"
+        }
       },
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
         "frameworks": [],
         "providerShortName": null,
-        "signingIdentity": null
+        "signingIdentity": null,
+        "license": "LICENSE.txt"
       },
       "externalBin": [
         "simulator",
@@ -100,7 +109,10 @@
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "",
+        "wix": {
+          "license": "LICENSE.rtf"
+        }
       }
     },
     "security": {

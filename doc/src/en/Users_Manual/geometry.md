@@ -23,14 +23,15 @@ For example, suppose you have two devices as shown in the figure above.
 The left device is the first device, and the right device is the second device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
 #    .open_with(Debug::new())?;
 # Ok(())
 # }
@@ -39,7 +40,7 @@ let autd = Controller::builder()
 ```cpp
 auto autd = autd3::Controller::builder()
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
 ```
 
 ```cs
@@ -51,12 +52,12 @@ var autd = Controller.Builder()
 ```python
 auto = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 
 Here, the first argument of the `AUTD3` constructor is the position, and the second argument is the rotation.
 The rotation is specified by ZYZ Euler angles or quaternions.
-Also, `DEVICE_WIDTH` is the width of the device (including the outline of the board).
+Also, `AUTD3::DEVICE_WIDTH` is the width of the device (including the outline of the board).
 In this example, no rotation is performed, so the second argument can be zero.
 
 <figure>
@@ -67,13 +68,14 @@ In this example, no rotation is performed, so the second argument can be zero.
 And, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the left device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::new(-DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #    .open_with(Debug::new())?;
 # Ok(())
@@ -82,7 +84,7 @@ let autd = Controller::builder()
 
 ```cpp
 auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
 ```
 
@@ -94,7 +96,7 @@ var autd = Controller.Builder()
 
 ```python
 auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([-DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([-AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 
@@ -106,14 +108,15 @@ auto = Controller.builder()\
 Furthermore, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the lower device.
 Then, the code is as follows.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # Ok(())
 # }
@@ -122,7 +125,7 @@ let autd = Controller::builder()
 ```cpp
 auto autd = autd3::Controller::builder()
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
+                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
 ```
 
 ```cs
@@ -134,7 +137,7 @@ var autd = Controller.Builder()
 ```python
 autd = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3::DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
 ```
 
 ## Device/Transducer index
@@ -156,14 +159,15 @@ When calculating the phase of the transducer, there are some cases where the wav
 The wavelength $\lambda$ of the sound wave is calculated from the sound speed $v$ and the frequency $f$ as $\lambda = v/f$.
 The `sound_speed` member of `Geometry` represents this sound speed $v$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().sound_speed = 340e3;
 # Ok(())
@@ -186,14 +190,15 @@ The unit of the sound speed is mm/s.
 
 You can also set the sound speed from the temperature.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().set_sound_speed_from_temp(15.);
 # Ok(())
@@ -223,14 +228,15 @@ $$
 where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
 `attenuation` member of `Geometry` represents this attenuation coefficient $\alpha$.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().attenuation = 340e3;
 # Ok(())
@@ -257,14 +263,15 @@ The default value is 0.0.
 
 You can get the center of all devices with `center`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let center = autd.geometry().center();
 # Ok(())
@@ -285,14 +292,15 @@ center = autd.geometry.center
 
 You can get the center of a device by `center_of` method.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let center = autd.geometry().center_of(0);
 # Ok(())
@@ -315,14 +323,15 @@ center = autd.geometry.center_of(0)
 
 You can get the number of devices and transducers by `num_devices` and `num_transducers` methods.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let num_dev = autd.geometry().num_devices();
 let num_tr = autd.geometry().num_transducers();
@@ -352,14 +361,15 @@ To modify the position of the device added to `Geometry`, use the following func
 - `rotate`
 - `affine`
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
@@ -372,14 +382,15 @@ autd.geometry_mut().affine(t, r);
 
 You can move and rotate only a specific device by using the following functions.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
@@ -396,14 +407,15 @@ autd.geometry_mut().affine_of(0, t, r);
 
 To access `Transducer`, use the following methods.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let tr = &autd.geometry()[0];
 # Ok(())
@@ -424,14 +436,15 @@ tr = autd.geometry[0]
 
 Or, you can use an iterator.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 for tr in autd.geometry().iter() {
   // do something
@@ -458,14 +471,15 @@ for tr in autd.geometry:
 
 Get the global index of the transducer.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let idx = tr.idx();
@@ -490,14 +504,15 @@ idx = tr.idx
 Get the position and rotation of the transducer.
 The rotation is represented by a quaternion.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let position = tr.position();
@@ -525,14 +540,15 @@ rotation = tr.rotation
 
 Get the direction of the transducer.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let x_dir = tr.x_direction();
@@ -566,14 +582,15 @@ Set/get the modulation delay of the transducer.
 
 See [Modulation](./modulation.md) for more details.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let delay = tr.mod_delay();
@@ -603,7 +620,8 @@ Set/get the cycle of the transducer.
 
 Note: The cycle setting is not available in Legacy mode.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -611,7 +629,7 @@ Note: The cycle setting is not available in Legacy mode.
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let cycle = tr.cycle();
@@ -646,7 +664,8 @@ When setting the frequency $f$, the closest period $N$ to $\clkf/f$ is selected.
 
 Note: The frequency setting is not available in Legacy mode.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -654,7 +673,7 @@ Note: The frequency setting is not available in Legacy mode.
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let freq = tr.frequency();
@@ -688,7 +707,8 @@ Get the wavelength and wavenumber of the transducer.
 
 You need to pass the speed of sound as an argument to `wavelength` and `wavenumber`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
 # 
@@ -696,7 +716,7 @@ You need to pass the speed of sound as an argument to `wavelength` and `wavenumb
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let sound_speed = autd.geometry().sound_speed;
 # let mut tr = &mut autd.geometry_mut()[0];

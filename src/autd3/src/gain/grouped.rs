@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 25/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3_traits::Gain;
 /// Gain to group multiple gains
 #[derive(Gain, Default)]
 pub struct Grouped<T: Transducer + 'static> {
-    gain_map: HashMap<usize, Box<dyn Gain<T> + 'static>>,
+    gain_map: HashMap<Vec<usize>, Box<dyn Gain<T> + 'static>>,
 }
 
 impl<T: Transducer> Grouped<T> {
@@ -31,33 +31,19 @@ impl<T: Transducer> Grouped<T> {
     }
 
     fn calc_impl(
-        mut drives: HashMap<usize, Vec<Drive>>,
+        drives: HashMap<&Vec<usize>, Vec<Drive>>,
         geometry: &Geometry<T>,
     ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok((0..geometry.num_devices())
-            .flat_map(|i| {
-                drives
-                    .get_mut(&i)
-                    .map(|g| {
-                        let start = if i == 0 {
-                            0
-                        } else {
-                            geometry.device_map()[i - 1]
-                        };
-                        let end = start + geometry.device_map()[i];
-                        g[start..end].to_vec()
-                    })
-                    .unwrap_or_else(|| {
-                        vec![
-                            Drive {
-                                phase: 0.0,
-                                amp: 0.0,
-                            };
-                            geometry.device_map()[i]
-                        ]
-                    })
+        let mut m = drives
+            .iter()
+            .flat_map(|(k, v)| {
+                k.iter()
+                    .flat_map(|&i| geometry.transducers_of(i).map(|tr| (tr.idx(), v[tr.idx()])))
+                    .collect::<Vec<(usize, Drive)>>()
             })
-            .collect())
+            .collect::<Vec<(usize, Drive)>>();
+        m.sort_by(|a, b| a.0.cmp(&b.0));
+        Ok(m.iter().map(|&(_, v)| v).collect::<Vec<_>>())
     }
 
     /// add gain
@@ -68,7 +54,7 @@ impl<T: Transducer> Grouped<T> {
     /// * `gain` - Gain
     ///
     pub fn add<G: Gain<T> + 'static>(mut self, id: usize, gain: G) -> Self {
-        self.gain_map.insert(id, Box::new(gain));
+        self.gain_map.insert(vec![id], Box::new(gain));
         self
     }
 
@@ -80,12 +66,36 @@ impl<T: Transducer> Grouped<T> {
     /// * `gain` - Gain
     ///
     pub fn add_boxed(mut self, id: usize, gain: Box<dyn Gain<T>>) -> Self {
-        self.gain_map.insert(id, gain);
+        self.gain_map.insert(vec![id], gain);
+        self
+    }
+
+    /// add gain by group
+    ///
+    /// # Arguments
+    ///
+    /// * `ids` - Device ids
+    /// * `gain` - Gain
+    ///
+    pub fn add_by_group<G: Gain<T> + 'static>(mut self, ids: &[usize], gain: G) -> Self {
+        self.gain_map.insert(ids.to_vec(), Box::new(gain));
+        self
+    }
+
+    /// add boxed gain by group
+    ///
+    /// # Arguments
+    ///
+    /// * `ids` - Device ids
+    /// * `gain` - Gain
+    ///
+    pub fn add_boxed_by_group(mut self, ids: &[usize], gain: Box<dyn Gain<T>>) -> Self {
+        self.gain_map.insert(ids.to_vec(), gain);
         self
     }
 
     /// get gain map which maps device id to gain
-    pub fn gain_map(&self) -> &HashMap<usize, Box<dyn Gain<T>>> {
+    pub fn gain_map(&self) -> &HashMap<Vec<usize>, Box<dyn Gain<T>>> {
         &self.gain_map
     }
 
@@ -100,10 +110,10 @@ impl<T: Transducer> Grouped<T> {
     /// * Gain of specified device id if the type is matched, otherwise None
     ///
     pub fn get_gain<G: Gain<T> + 'static>(&self, idx: usize) -> Option<&G> {
-        if !self.gain_map.contains_key(&idx) {
-            return None;
+        match self.gain_map.keys().find(|&k| k.contains(&idx)) {
+            Some(k) => self.gain_map[k].as_any().downcast_ref::<G>(),
+            None => None,
         }
-        self.gain_map[&idx].as_any().downcast_ref::<G>()
     }
 }
 
@@ -112,9 +122,9 @@ impl<T: Transducer> Gain<T> for Grouped<T> {
         Self::calc_impl(
             self.gain_map
                 .iter()
-                .map(|(&i, gain)| -> Result<_, AUTDInternalError> {
+                .map(|(k, gain)| -> Result<_, AUTDInternalError> {
                     let d = gain.calc(geometry)?;
-                    Ok((i, d))
+                    Ok((k, d))
                 })
                 .collect::<Result<HashMap<_, _>, _>>()?,
             geometry,
@@ -129,31 +139,69 @@ mod tests {
 
     use super::*;
 
-    use crate::prelude::{Null, Plane};
+    use crate::prelude::{Focus, Null, Plane};
     use crate::tests::GeometryBuilder;
 
     #[test]
     fn test_grouped() {
         let geometry = GeometryBuilder::<LegacyTransducer>::new()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .add_device(AUTD3::new(Vector3::new(10.0, 0.0, 0.0), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .build()
             .unwrap();
 
         let mut grouped_gain = Grouped::new();
         grouped_gain = grouped_gain.add(0, Null::new());
         grouped_gain = grouped_gain.add(1, Plane::new(Vector3::zeros()));
+        grouped_gain =
+            grouped_gain.add_by_group(&[2, 3], Plane::new(Vector3::zeros()).with_amp(0.5));
 
         let drives = grouped_gain.calc(&geometry).unwrap();
 
         for (i, drive) in drives.iter().enumerate() {
-            if i < geometry.device_map()[0] {
-                assert_eq!(drive.phase, 0.0);
-                assert_eq!(drive.amp, 0.0);
-            } else {
-                assert_eq!(drive.phase, 0.0);
-                assert_eq!(drive.amp, 1.0);
+            match i {
+                i if i < geometry.device_map()[0] => {
+                    assert_eq!(drive.phase, 0.0);
+                    assert_eq!(drive.amp, 0.0);
+                }
+                i if i < geometry.device_map()[0] + geometry.device_map()[1] => {
+                    assert_eq!(drive.phase, 0.0);
+                    assert_eq!(drive.amp, 1.0);
+                }
+                _ => {
+                    assert_eq!(drive.phase, 0.0);
+                    assert_eq!(drive.amp, 0.5);
+                }
             }
         }
+    }
+
+    #[test]
+    fn get() {
+        let grouped_gain = Grouped::<LegacyTransducer>::new()
+            .add(0, Null::new())
+            .add(1, Plane::new(Vector3::zeros()))
+            .add_by_group(&[2, 3], Plane::new(Vector3::zeros()).with_amp(0.5));
+
+        assert!(grouped_gain.get_gain::<Null>(0).is_some());
+        assert!(grouped_gain.get_gain::<Focus>(0).is_none());
+
+        assert!(grouped_gain.get_gain::<Plane>(1).is_some());
+        assert!(grouped_gain.get_gain::<Null>(1).is_none());
+        assert_eq!(grouped_gain.get_gain::<Plane>(1).unwrap().amp(), 1.0);
+
+        assert!(grouped_gain.get_gain::<Plane>(2).is_some());
+        assert!(grouped_gain.get_gain::<Null>(2).is_none());
+        assert_eq!(grouped_gain.get_gain::<Plane>(2).unwrap().amp(), 0.5);
+
+        assert!(grouped_gain.get_gain::<Plane>(3).is_some());
+        assert!(grouped_gain.get_gain::<Null>(3).is_none());
+        assert_eq!(grouped_gain.get_gain::<Plane>(3).unwrap().amp(), 0.5);
+
+        assert!(grouped_gain.get_gain::<Null>(4).is_none());
+        assert!(grouped_gain.get_gain::<Focus>(4).is_none());
+        assert!(grouped_gain.get_gain::<Plane>(4).is_none());
     }
 }

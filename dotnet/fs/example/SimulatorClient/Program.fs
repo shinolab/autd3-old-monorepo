@@ -24,4 +24,6 @@ let autd = Controller.Builder()
 for tr in autd.Geometry do
     tr.Frequency <- 70e3
 
+new Synchronize() |> autd.Send |> ignore
+
 SampleRunner.Run autd

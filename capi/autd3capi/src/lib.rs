@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -381,6 +381,23 @@ pub unsafe extern "C" fn AUTDGainGroupedAdd(
     GainPtr::new(
         take_gain!(grouped_gain, DynamicGrouped)
             .add_boxed(device_id as _, *Box::from_raw(gain.0 as *mut Box<G>)),
+    )
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGainGroupedAddByGroup(
+    grouped_gain: GainPtr,
+    device_ids: *const u32,
+    device_ids_len: u64,
+    gain: GainPtr,
+) -> GainPtr {
+    let mut ids = vec![0u32; device_ids_len as _];
+    std::ptr::copy_nonoverlapping(device_ids, ids.as_mut_ptr(), device_ids_len as _);
+    let ids = ids.iter().map(|&i| i as usize).collect::<Vec<_>>();
+    GainPtr::new(
+        take_gain!(grouped_gain, DynamicGrouped)
+            .add_boxed_by_group(&ids, *Box::from_raw(gain.0 as *mut Box<G>)),
     )
 }
 

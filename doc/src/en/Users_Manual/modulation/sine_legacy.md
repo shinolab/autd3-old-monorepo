@@ -6,7 +6,8 @@ And, the duty ratio follows Sin wave, not sound pressure.
 
 The other APIs are equivalent to `Sine`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

@@ -2,7 +2,7 @@
 authors = ["shun suzuki"]
 language = "en"
 multilingual = true
-title = "AUTD3 Developers Manual v14.0.1"
+title = "AUTD3 Developers Manual v14.1.0"
 
 src = "src"
 destination = "book"
@@ -25,7 +25,7 @@ git-branch = "master"
 curly-quotes = true
 additional-js = ["./theme/codeblock_filename.js"]
 additional-css = ["./theme/codeblock_filename.css"]
- 
+
 [output.html.playground]
 runnable = false
 

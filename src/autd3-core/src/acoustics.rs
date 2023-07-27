@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 24/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -130,10 +130,9 @@ pub fn propagate<D: Directivity>(
     let diff = target_pos - source_pos;
     let dist = diff.norm();
     let theta = (source_dir.cross(&diff).norm()).atan2(source_dir.dot(&diff)) * 180. / PI;
-    Complex::from_polar(
-        D::directivity(theta) * (-dist * attenuation).exp() / dist,
-        -wavenumber * dist,
-    )
+    let r = D::directivity(theta) * (-dist * attenuation).exp() / dist;
+    let phase = -wavenumber * dist;
+    Complex::new(r * phase.cos(), r * phase.sin())
 }
 
 #[cfg(test)]

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -209,7 +209,7 @@ pub mod tests {
     use assert_approx_eq::assert_approx_eq;
     use autd3_driver::PI;
 
-    use crate::autd3_device::{AUTD3, NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y};
+    use crate::autd3_device::AUTD3;
 
     use super::*;
 
@@ -290,7 +290,7 @@ pub mod tests {
             .build()
             .unwrap();
 
-        let expected = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        let expected = itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .fold(Vector3::zeros(), |acc, (y, x)| {
                 acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.)
@@ -308,7 +308,7 @@ pub mod tests {
             .build()
             .unwrap();
 
-        let expected_0 = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        let expected_0 = itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .fold(Vector3::zeros(), |acc, (y, x)| {
                 acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.)
@@ -317,7 +317,7 @@ pub mod tests {
 
         assert_vec3_approx_eq!(geometry.center_of(0), expected_0);
 
-        let expected_1 = itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        let expected_1 = itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .fold(Vector3::zeros(), |acc, (y, x)| {
                 acc + 10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(40., 50., 60.)
@@ -369,70 +369,70 @@ pub mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[NUM_TRANS_IN_UNIT].position(),
+            geometry[AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom + left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + Vector3::new(0., 10.16 * 17., 0.)
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) - Vector3::new(10.16 * 13., 0., 0.)
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + Vector3::new(0., 10.16 * 17., 0.)
                 - Vector3::new(10.16 * 13., 0., 0.)
         );
@@ -487,70 +487,70 @@ pub mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[NUM_TRANS_IN_UNIT].position(),
+            geometry[AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 2 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom + left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 3 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + Vector3::new(0., 10.16 * 17., 0.)
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) - Vector3::new(10.16 * 13., 0., 0.)
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + 4 * AUTD3::NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + Vector3::new(0., 10.16 * 17., 0.)
                 - Vector3::new(10.16 * 13., 0., 0.)
         );
@@ -567,11 +567,11 @@ pub mod tests {
         let t = Vector3::new(40., 50., 60.);
         geometry.translate(t);
 
-        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
             .chain(
-                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
                     .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
                     .map(|(y, x)| {
                         10.16 * Vector3::new(x as float, y as float, 0.)
@@ -595,11 +595,11 @@ pub mod tests {
 
         let t = Vector3::new(40., 50., 60.);
         geometry.translate_of(0, t);
-        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
             .chain(
-                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
                     .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
                     .map(|(y, x)| {
                         10.16 * Vector3::new(x as float, y as float, 0.)
@@ -612,11 +612,11 @@ pub mod tests {
             });
 
         geometry.translate_of(1, t);
-        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
             .chain(
-                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
                     .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
                     .map(|(y, x)| {
                         10.16 * Vector3::new(x as float, y as float, 0.)
@@ -722,11 +722,11 @@ pub mod tests {
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
         });
 
-        itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+        itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
             .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
             .map(|(y, x)| 10.16 * Vector3::new(-(y as float), x as float, 0.) + t)
             .chain(
-                itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
+                itertools::iproduct!((0..AUTD3::NUM_TRANS_Y), (0..AUTD3::NUM_TRANS_X))
                     .filter(|&(y, x)| !AUTD3::is_missing_transducer(x, y))
                     .map(|(y, x)| {
                         10.16 * Vector3::new(-(y as float), x as float, 0.)

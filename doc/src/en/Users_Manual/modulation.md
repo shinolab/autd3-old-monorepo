@@ -24,7 +24,8 @@ The SDK has `Modulation` by default to generate several types of AM.
 
 You can get the sampling frequency with `sampling_frequency`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
@@ -50,7 +51,8 @@ Some `Modulation` can set the sampling frequency with `with_sampling_frequency`.
 However, due to the constraints of `Modulation`, the sampling frequency may not be exactly the specified value.
 
 - e.g.,
-  ```rust
+  ```rust,edition2021
+  # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
   # fn main()  {
@@ -74,7 +76,8 @@ However, due to the constraints of `Modulation`, the sampling frequency may not 
 
 You can get the sampling frequency division $N$ with `sampling_frequency_division`.
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
@@ -99,7 +102,8 @@ fs = m.sampling_frequency_division
 Some `Modulation` can set the sampling frequency division with `with_sampling_frequency_division`.
 
 - e.g.,
-  ```rust
+  ```rust,edition2021
+  # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
   # fn main()  {
@@ -128,7 +132,8 @@ To compensate for this, each transducer has a function to delay the sampling ind
 
 The following example shows how to set the delay of the $0$th transducer to $1$.
 
-```rust,should_panic
+```rust,should_panic,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {

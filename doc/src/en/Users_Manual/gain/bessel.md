@@ -3,7 +3,8 @@
 `BesselBeam` generates a Bessel beam.
 This `Gain` is based on the paper by Hasegawa et al [^hasegawa2017].
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -44,7 +45,8 @@ The first argument of the constructor is the apex of the virtual cone producing 
 You can change amplitude by `with_amp` method.
 The amplitude is normalized to 0-1 (1 by default).
 
-```rust
+```rust,edition2021
+# extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
