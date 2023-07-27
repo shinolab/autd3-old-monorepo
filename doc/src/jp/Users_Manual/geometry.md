@@ -34,7 +34,7 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を**接
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
 #    .open_with(Debug::new())?;
 # Ok(())
 # }
@@ -43,7 +43,7 @@ let autd = Controller::builder()
 ```cpp
 auto autd = autd3::Controller::builder()
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
 ```
 
 ```cs
@@ -55,13 +55,13 @@ var autd = Controller.Builder()
 ```python
 auto = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 
 とすれば良い.
 ここで, `AUTD3`コンストラクタの第1引数は位置, 第2引数は回転を表す.
 回転はZYZのオイラー角, または, クオータニオンで指定する.
-また, `DEVICE_WIDTH`はデバイスの (基板外形を含めた) 横幅である.
+また, `AUTD3::DEVICE_WIDTH`はデバイスの (基板外形を含めた) 横幅である.
 この例では, 回転はしないので, 第2引数はゼロで良い.
 
 <figure>
@@ -77,7 +77,7 @@ auto = Controller.builder()\
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::new(-DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #    .open_with(Debug::new())?;
 # Ok(())
@@ -86,7 +86,7 @@ let autd = Controller::builder()
 
 ```cpp
 auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
 ```
 
@@ -98,7 +98,7 @@ var autd = Controller.Builder()
 
 ```python
 auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([-DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([-AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 とすれば良い.
@@ -117,7 +117,7 @@ auto = Controller.builder()\
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # Ok(())
 # }
@@ -126,7 +126,7 @@ let autd = Controller::builder()
 ```cpp
 auto autd = autd3::Controller::builder()
                 .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
+                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
 ```
 
 ```cs
@@ -138,7 +138,7 @@ var autd = Controller.Builder()
 ```python
 autd = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3::DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
 ```
 
 のように指定する.
@@ -181,7 +181,7 @@ $$
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().sound_speed = 340e3;
 # Ok(())
@@ -213,7 +213,7 @@ autd.geometry.sound_speed = 340e3
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().set_sound_speed_from_temp(15.);
 # Ok(())
@@ -254,7 +254,7 @@ $$
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 autd.geometry_mut().attenuation = 0.;
 # Ok(())
@@ -289,7 +289,7 @@ autd.geometry.attenuation = 0.0
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let center = autd.geometry().center();
 # Ok(())
@@ -318,7 +318,7 @@ center = autd.geometry.center
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let center = autd.geometry().center_of(0);
 # Ok(())
@@ -349,7 +349,7 @@ center = autd.geometry.center_of(0)
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let num_dev = autd.geometry().num_devices();
 let num_tr = autd.geometry().num_transducers();
@@ -388,7 +388,7 @@ num_tr = autd.geometry.num_transducers
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
@@ -409,7 +409,7 @@ autd.geometry_mut().affine(t, r);
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
@@ -436,7 +436,7 @@ autd.geometry_mut().affine_of(0, t, r);
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 let tr = &autd.geometry()[0];
 # Ok(())
@@ -465,7 +465,7 @@ tr = autd.geometry[0]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 for tr in autd.geometry().iter() {
   // do something
@@ -500,7 +500,7 @@ for tr in autd.geometry:
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let idx = tr.idx();
@@ -533,7 +533,7 @@ idx = tr.idx
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let position = tr.position();
@@ -569,7 +569,7 @@ rotation = tr.rotation
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let tr = &autd.geometry()[0];
 let x_dir = tr.x_direction();
@@ -610,7 +610,7 @@ z_dir = tr.z_direction
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let delay = tr.mod_delay();
@@ -650,7 +650,7 @@ tr.mod_delay = 0
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let cycle = tr.cycle();
@@ -694,7 +694,7 @@ tr.cycle = 4096
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let mut tr = &mut autd.geometry_mut()[0];
 let freq = tr.frequency();
@@ -737,7 +737,7 @@ tr.frequency = 40e3
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
 # let sound_speed = autd.geometry().sound_speed;
 # let mut tr = &mut autd.geometry_mut()[0];
@@ -780,15 +780,15 @@ use autd3_geometry_viewer::GeometryViewer;
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .add_device(AUTD3::new(
-        Vector3::new(0., 0., DEVICE_WIDTH),
+        Vector3::new(0., 0., AUTD3::DEVICE_WIDTH),
         Vector3::new(0., PI / 2., 0.),
     ))
     .add_device(AUTD3::new(
-        Vector3::new(DEVICE_WIDTH, 0., DEVICE_WIDTH),
+        Vector3::new(AUTD3::DEVICE_WIDTH, 0., AUTD3::DEVICE_WIDTH),
         Vector3::new(0., PI, 0.),
     ))
     .add_device(AUTD3::new(
-        Vector3::new(DEVICE_WIDTH, 0., 0.),
+        Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
         Vector3::new(0., -PI / 2., 0.),
     ))
     .open_with(NullLink {})?;
@@ -809,10 +809,10 @@ GeometryViewer::new().run(autd.geometry())
 
 const auto autd = autd3::Controller::builder()
                         .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                        .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
-                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, autd3::AUTD3::DEVICE_WIDTH),
+                        .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
+                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH),
                                                  autd3::Vector3(0, autd3::pi, 0)))
-                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0)))
+                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0)))
                         .open_with(autd3::link::Debug());
 
 autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).run(autd.geometry());
@@ -833,7 +833,7 @@ new AUTD3Sharp.Extra.GeometryViewer().WindowSize(800, 600).Vsync(true).Run(autd.
 
 
 ```python
-from pyautd3 import AUTD3, DEVICE_WIDTH, Controller, Level
+from pyautd3 import AUTD3, AUTD3::DEVICE_WIDTH, Controller, Level
 from pyautd3.link import Debug
 from pyautd3.extra import GeometryViewer
 from math import pi
@@ -841,11 +841,11 @@ from math import pi
 autd = (
     Controller.builder()
     .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, DEVICE_WIDTH], [0.0, pi / 2, 0.0]))
+    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3::DEVICE_WIDTH], [0.0, pi / 2, 0.0]))
     .add_device(
-        AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, DEVICE_WIDTH], [0.0, pi, 0.0])
+        AUTD3.from_euler_zyz([AUTD3::DEVICE_WIDTH, 0.0, AUTD3::DEVICE_WIDTH], [0.0, pi, 0.0])
     )
-    .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, -pi / 2, 0.0]))
+    .add_device(AUTD3.from_euler_zyz([AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, -pi / 2, 0.0]))
     .open_with(Debug().with_log_level(Level.Off))
 )
 
