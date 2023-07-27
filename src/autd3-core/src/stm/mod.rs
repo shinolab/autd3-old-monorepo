@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -57,6 +57,17 @@ impl STMProps {
         }
     }
 
+    pub fn with_sampling_period(period: std::time::Duration) -> Self {
+        Self {
+            freq_div: Some(
+                (FPGA_SUB_CLK_FREQ as float / 1000000000. * period.as_nanos() as float) as u32,
+            ),
+            freq: 0.,
+            start_idx: None,
+            finish_idx: None,
+        }
+    }
+
     pub fn with_start_idx(self, idx: Option<u16>) -> Self {
         Self {
             start_idx: idx,
@@ -85,11 +96,33 @@ impl STMProps {
         })
     }
 
+    pub fn period(&self, size: usize) -> std::time::Duration {
+        self.freq_div.map_or(
+            std::time::Duration::from_nanos((1000000000. / self.freq) as _),
+            |div| {
+                std::time::Duration::from_nanos(
+                    (div as float / FPGA_SUB_CLK_FREQ as float * size as float * 1000000000.) as _,
+                )
+            },
+        )
+    }
+
     pub fn sampling_frequency(&self, size: usize) -> float {
         self.freq_div
             .map_or((self.freq * size as float) as _, |div| {
                 FPGA_SUB_CLK_FREQ as float / div as float
             })
+    }
+
+    pub fn sampling_period(&self, size: usize) -> std::time::Duration {
+        self.freq_div.map_or(
+            std::time::Duration::from_nanos((1000000000. / self.freq / size as float) as _),
+            |div| {
+                std::time::Duration::from_nanos(
+                    (div as float / FPGA_SUB_CLK_FREQ as float * 1000000000.) as _,
+                )
+            },
+        )
     }
 
     pub fn sampling_frequency_division(&self, size: usize) -> u32 {
