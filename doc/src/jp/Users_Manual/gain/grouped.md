@@ -17,7 +17,7 @@
 # let ny = 0.;
 # let nz = 0.;
 # let theta = 0.;
-# let mut autd = autd3::Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = autd3::Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
 # let g1 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
 # let g2 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
 let g = autd3::gain::Grouped::new().add(0, g1).add(1, g2);
@@ -57,10 +57,10 @@ g = Grouped().add(0, g1).add(1, g2)
 # let ny = 0.;
 # let nz = 0.;
 # let theta = 0.;
-# let mut autd = autd3::Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = autd3::Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
 # let g1 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
 # let g2 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-let g = autd3::gain::Grouped::new().add_by_group(&[0, 2], g1).add(&[1, 3], g2);
+let g = autd3::gain::Grouped::new().add_by_group(&[0, 2], g1).add_by_group(&[1, 3], g2);
 # autd.send(g);
 # }
 ```
