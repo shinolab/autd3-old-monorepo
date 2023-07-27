@@ -16,6 +16,7 @@ members = [
     "autd3-simulator",
     "autd3-geometry-viewer",
     "autd3-protobuf",
+    "examples",
 ]
 
 default-members = ["autd3", "autd3-core", "autd3-driver", "autd3-traits", "autd3-gain-holo", "autd3-link-soem", "autd3-link-twincat", "autd3-modulation-audio-file", "autd3-firmware-emulator"]
