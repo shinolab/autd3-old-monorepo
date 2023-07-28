@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-gain-holo"
-version = "14.1.0"
+version = "14.2.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,13 +8,13 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-autd3capi-def = { path = "../autd3capi-def", version = "14.1.0" }
+autd3capi-def = { path = "../autd3capi-def", version = "14.2.0" }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }
 
 [dev-dependencies]
-autd3capi = { path = "../autd3capi", version = "14.1.0" }
+autd3capi = { path = "../autd3capi", version = "14.2.0" }
 
 [features]
 single_float = ["autd3capi-def/single_float"]

@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-firmware-emulator",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-backend-cuda"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-gain-holo",
@@ -200,7 +200,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-driver",
  "bitflags 2.3.3",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "bitflags 2.3.3",
  "thiserror",
@@ -223,7 +223,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "num-integer",
@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-traits",
@@ -244,17 +244,14 @@ dependencies = [
 
 [[package]]
 name = "autd3-geometry-viewer"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
- "autd3-model",
  "bytemuck",
  "camera_controllers",
  "cgmath",
  "gltf",
  "imgui",
- "imgui-vulkano-renderer",
- "imgui-winit-support",
  "png",
  "vulkano",
  "vulkano-shaders",
@@ -264,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-simulator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
@@ -275,7 +272,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-protobuf",
@@ -291,7 +288,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "cc",
@@ -301,12 +298,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3-model"
-version = "14.1.0"
-
-[[package]]
 name = "autd3-modulation-audio-file"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3-traits",
@@ -317,7 +310,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -332,7 +325,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-simulator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -346,8 +339,6 @@ dependencies = [
  "futures-util",
  "image",
  "imgui",
- "imgui-vulkano-renderer",
- "imgui-winit-support",
  "png",
  "scarlet",
  "serde",
@@ -362,7 +353,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "quote",
  "syn 2.0.27",
@@ -370,7 +361,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-core",
  "autd3capi-def",
@@ -380,7 +371,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-backend-cuda"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-backend-cuda",
  "autd3capi-def",
@@ -390,7 +381,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-common"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -401,7 +392,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-def"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3capi-common",
  "wrapper-generator",
@@ -409,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-gain-holo"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3capi",
  "autd3capi-def",
@@ -418,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-geometry-viewer"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-geometry-viewer",
  "autd3capi-def",
@@ -427,7 +418,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-simulator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-link-simulator",
  "autd3capi-def",
@@ -436,7 +427,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-soem"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-link-soem",
  "autd3capi-def",
@@ -445,7 +436,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-twincat"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-link-twincat",
  "autd3capi-def",
@@ -454,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-modulation-audio-file"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-modulation-audio-file",
  "autd3capi-def",
@@ -463,7 +454,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-simulator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "autd3-simulator",
  "autd3capi-def",
@@ -1393,8 +1384,9 @@ dependencies = [
 
 [[package]]
 name = "imgui"
-version = "0.10.0"
-source = "git+https://github.com/imgui-rs/imgui-rs.git?rev=refs/pull/716/head#4d0c9ebc0faaea421e59e0a58f712abbb18c3093"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "122d677d0efcd64ca15f12907beaf46b26bbd2cdc855ee5b227f29cf50f75bb5"
 dependencies = [
  "bitflags 1.3.2",
  "cfg-if",
@@ -1405,33 +1397,14 @@ dependencies = [
 
 [[package]]
 name = "imgui-sys"
-version = "0.10.0"
-source = "git+https://github.com/imgui-rs/imgui-rs.git?rev=refs/pull/716/head#4d0c9ebc0faaea421e59e0a58f712abbb18c3093"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d785272a57cb8058a53a1e6f376f48e2ec4f40fbc6a9bb197dabf7b6b59c03bf"
 dependencies = [
  "cc",
  "cfg-if",
  "chlorine",
  "mint",
-]
-
-[[package]]
-name = "imgui-vulkano-renderer"
-version = "0.9.0"
-source = "git+https://github.com/s5suzuki/imgui-vulkano-renderer.git?branch=vulkano-0.33.0#4b07855528efc794a334eb9bfd6b2b9ff9cc1aae"
-dependencies = [
- "bytemuck",
- "imgui",
- "vulkano",
- "vulkano-shaders",
-]
-
-[[package]]
-name = "imgui-winit-support"
-version = "0.11.0"
-source = "git+https://github.com/imgui-rs/imgui-rs.git?rev=refs/pull/716/head#4d0c9ebc0faaea421e59e0a58f712abbb18c3093"
-dependencies = [
- "imgui",
- "winit",
 ]
 
 [[package]]
@@ -3630,7 +3603,7 @@ dependencies = [
 
 [[package]]
 name = "wrapper-generator"
-version = "14.1.0"
+version = "14.2.0"
 dependencies = [
  "anyhow",
  "cbindgen",

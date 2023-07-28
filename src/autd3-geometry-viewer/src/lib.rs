@@ -4,17 +4,19 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
  *
  */
 
+mod autd3_model;
 mod camera_helper;
 mod device_viewer;
 mod imgui_renderer;
 mod model;
+mod patch;
 mod renderer;
 mod settings;
 mod viewer;
