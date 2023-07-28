@@ -1,3 +1,8 @@
+# 14.2.0
+
+- Add `modulation::Fourier`
+  - Fix [#110](https://github.com/shinolab/autd3/issues/110): Multi-frequency sine modulation? 
+
 # 14.1.0
 
 - Fix [#93](https://github.com/shinolab/autd3/issues/93): pyautd3 package contains unnecessary dynamic libraries
