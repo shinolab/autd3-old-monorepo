@@ -17,5 +17,6 @@ Unity Package Manager経由でインストールする.
 1. 以下のパッケージをインストールする
   1. Windowsの場合,「autd3-unity」
   1. macOSの場合,「autd3-unity-mac」
+  1. Linuxの場合,「autd3-unity-linux」
 
 Unity版はサンプルプログラムが付属しているので, そちらを参照されたい.

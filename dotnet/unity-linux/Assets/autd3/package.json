@@ -1,0 +1,30 @@
+{
+    "name": "com.shinolab.autd3-linux",
+    "displayName": "autd3-unity-linux",
+    "description": "autd3 library wrapper for Unity",
+    "version": "14.1.0",
+    "author": "Shun Suzuki",
+    "unity": "2021.3",
+    "keywords": [
+        "unity",
+        "autd3"
+    ],
+    "license": "See LICENSE.md file",
+    "homepage": "https://github.com/shinolab/autd3",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shinolab/autd3"
+    },
+    "samples": [
+        {
+            "displayName": "Simple",
+            "description": "Sample to display the focus at target object",
+            "path": "Samples~/Simple"
+        },
+        {
+            "displayName": "MultiDevice",
+            "description": "Sample to use 2 devices with Simulator",
+            "path": "Samples~/MultiDevice"
+        }
+    ]
+}
