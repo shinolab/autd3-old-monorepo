@@ -20,7 +20,6 @@ camera_controllers = "0.33.0"
 cgmath = "0.18.0"
 png = "0.17.8"
 imgui = "0.11.0"
-imgui-winit-support = "0.11.0"
 scarlet = "~1.1.0"
 serde = { version = "1.0.174", features = ["derive"] }
 vulkano = "0.33.0"
