@@ -309,6 +309,11 @@ fn main() -> anyhow::Result<()> {
 https://github.com/Tenebryo/imgui-vulkano-renderer
 Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.jp>",
     );
+    let imgui_winit_support = (
+        "MIT",
+        r"imgui-winit-support 0.11.0 (MIT)
+https://github.com/imgui-rs/imgui-rs",
+    );
     let sdr_rs_dep = (
         "MIT",
         r"sdr 0.7.0 (MIT)
@@ -321,14 +326,24 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../capi/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[imgui_vulkano_render, sdr_rs_dep, notofont_dep],
+        &[
+            imgui_vulkano_render,
+            imgui_winit_support,
+            sdr_rs_dep,
+            notofont_dep,
+        ],
     )?;
 
     check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/simulator/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[imgui_vulkano_render, sdr_rs_dep, notofont_dep],
+        &[
+            imgui_vulkano_render,
+            imgui_winit_support,
+            sdr_rs_dep,
+            notofont_dep,
+        ],
     )?;
 
     check(
