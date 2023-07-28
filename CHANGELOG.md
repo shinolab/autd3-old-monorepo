@@ -2,6 +2,7 @@
 
 - Add `modulation::Fourier`
   - Fix [#110](https://github.com/shinolab/autd3/issues/110): Multi-frequency sine modulation? 
+- Fix [#115](https://github.com/shinolab/autd3/issues/115): `autd3-geometry-viewer` from git does not work
 
 # 14.1.0
 

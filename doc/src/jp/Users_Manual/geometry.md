@@ -796,10 +796,6 @@ let autd = Controller::builder()
 GeometryViewer::new().run(autd.geometry())
 # }
 ```
-  - 諸事情により, crate.ioでは公開していないので, GitHubから追加する必要がある
-    ```shell
-    cargo add --git https://github.com/shinolab/autd3.git autd3-geometry-viewer
-    ```
 
 ```cpp
 #include "autd3/extra/geometry_viewer.hpp"

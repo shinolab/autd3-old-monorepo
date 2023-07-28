@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -15,6 +15,7 @@ mod camera_helper;
 mod common;
 mod field_compute_pipeline;
 mod imgui_renderer;
+mod patch;
 mod renderer;
 mod simulator;
 mod slice_viewer;
