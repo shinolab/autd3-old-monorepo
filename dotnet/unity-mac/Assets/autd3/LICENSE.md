@@ -110,39 +110,39 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 14.1.0 (MIT)
+autd3 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-backend-cuda 14.1.0 (MIT)
+autd3-backend-cuda 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-core 14.1.0 (MIT)
+autd3-core 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 14.1.0 (MIT)
+autd3-driver 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 14.1.0 (MIT)
+autd3-firmware-emulator 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 14.1.0 (MIT)
+autd3-gain-holo 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-geometry-viewer 14.1.0 (MIT)
+autd3-geometry-viewer 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 14.1.0 (MIT)
+autd3-link-simulator 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 14.1.0
+autd3-link-soem 14.2.0
 https://github.com/shinolab/autd3
 
 ---
@@ -208,7 +208,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 14.1.0
+autd3-link-twincat 14.2.0
 https://github.com/shinolab/autd3
 
 ---
@@ -260,56 +260,56 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-model 14.1.0 (MIT)
+autd3-model 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 14.1.0 (MIT)
+autd3-modulation-audio-file 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 14.1.0 (MIT)
+autd3-protobuf 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-simulator 14.1.0 (MIT)
+autd3-simulator 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-traits 14.1.0 (MIT)
+autd3-traits 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 14.1.0 (MIT)
+autd3capi 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-backend-cuda 14.1.0 (MIT)
+autd3capi-backend-cuda 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-common 14.1.0 (MIT)
+autd3capi-common 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 14.1.0 (MIT)
+autd3capi-def 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-gain-holo 14.1.0 (MIT)
+autd3capi-gain-holo 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-geometry-viewer 14.1.0 (MIT)
+autd3capi-geometry-viewer 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 14.1.0 (MIT)
+autd3capi-link-simulator 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 14.1.0 (MIT)
+autd3capi-link-soem 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 14.1.0 (MIT)
+autd3capi-link-twincat 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 14.1.0 (MIT)
+autd3capi-modulation-audio-file 14.2.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-simulator 14.1.0 (MIT)
+autd3capi-simulator 14.2.0 (MIT)
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
@@ -1651,7 +1651,7 @@ winnow 0.5.1 (MIT)
 https://github.com/winnow-rs/winnow
 ---------------------------------------------------------
 
-wrapper-generator 14.1.0 (MIT)
+wrapper-generator 14.2.0 (MIT)
 ---------------------------------------------------------
 
 x11-dl 2.21.0 (MIT)
