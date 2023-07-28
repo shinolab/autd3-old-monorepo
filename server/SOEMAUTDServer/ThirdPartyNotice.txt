@@ -6,7 +6,7 @@ The license terms for each of these components are provided later in this notice
 
 ---------------------------------------------------------
 
-SOEMAUTDServer 14.1.0 (MIT)
+SOEMAUTDServer 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -70,27 +70,27 @@ atomic 0.5.3 (Apache-2.0 OR MIT)
 https://github.com/Amanieu/atomic-rs
 ---------------------------------------------------------
 
-autd3 14.1.0 (MIT)
+autd3 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-core 14.1.0 (MIT)
+autd3-core 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 14.1.0 (MIT)
+autd3-driver 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 14.1.0 (MIT)
+autd3-firmware-emulator 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 14.1.0 (MIT)
+autd3-gain-holo 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 14.1.0
+autd3-link-soem 14.2.0
 https://github.com/shinolab/autd3
 
 ---
@@ -156,11 +156,11 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-protobuf 14.1.0 (MIT)
+autd3-protobuf 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-traits 14.1.0 (MIT)
+autd3-traits 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
