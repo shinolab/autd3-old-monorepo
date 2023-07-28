@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,9 @@ pub fn show_diff<T>(old: &T, new: &T) -> bool
 where
     T: DiffableStrRef + ?Sized,
 {
-    let diff = TextDiff::from_lines(old, new);
+    let diff = TextDiff::configure()
+        .newline_terminated(false)
+        .diff_lines(old, new);
 
     let group = diff.grouped_ops(3);
 

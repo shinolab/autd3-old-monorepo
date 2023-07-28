@@ -173,11 +173,13 @@ where
         fs::File::open(&old)
             .map(BufReader::new)?
             .read_to_string(&mut old_license)?;
+        let old_license = old_license.replace("\r", "");
 
         let mut new_license = String::new();
         fs::File::open(&new)
             .map(BufReader::new)?
             .read_to_string(&mut new_license)?;
+        let new_license = new_license.replace("\r", "");
 
         if diff::show_diff(&old_license, &new_license) {
             return Err(anyhow::anyhow!(
@@ -279,11 +281,13 @@ where
         fs::File::open(&old)
             .map(BufReader::new)?
             .read_to_string(&mut old_license)?;
+        let old_license = old_license.replace("\r", "");
 
         let mut new_license = String::new();
         fs::File::open(&new)
             .map(BufReader::new)?
             .read_to_string(&mut new_license)?;
+        let new_license = new_license.replace("\r", "");
 
         if diff::show_diff(&old_license, &new_license) {
             return Err(anyhow::anyhow!(
