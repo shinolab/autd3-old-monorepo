@@ -465,6 +465,27 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}
           asset_content_type: application/octet-stream
 
+      - name: Build project for Unity
+        run: |
+          cd dotnet/unity-mac
+          chmod +x ./build.sh
+          ./build.sh
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Publish on npmjs
+        continue-on-error: true
+        run: |
+          mv dotnet/unity-mac/Assets/autd3/Samples dotnet/unity-mac/Assets/autd3/Samples~
+          rm -f dotnet/unity-mac/Assets/autd3/Samples.meta
+          cd dotnet/unity-mac/Assets/autd3
+          npm install
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   publish_pypi:
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ${{ matrix.os }}
