@@ -52,6 +52,11 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
         &crate_path,
         true,
     )?;
+    gen::<CSharpGenerator, _, _>(
+        "../../dotnet/unity/Assets/autd3-linux/Scripts/NativeMethods",
+        &crate_path,
+        true,
+    )?;
     if crate_path.as_ref().file_name().unwrap().to_str().unwrap() != "autd3capi-backend-cuda" {
         gen::<CSharpGenerator, _, _>(
             "../../dotnet/unity-mac/Assets/autd3/Scripts/NativeMethods",
