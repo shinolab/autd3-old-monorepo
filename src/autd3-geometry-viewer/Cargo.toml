@@ -16,7 +16,6 @@ bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_
 camera_controllers = "0.33.0"
 cgmath = "0.18.0"
 imgui = "0.11.0"
-imgui-winit-support = "0.11.0"
 png = "0.17.8"
 vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
