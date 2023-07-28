@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,8 @@ pub struct Model {
 impl Model {
     pub fn new() -> Self {
         #[allow(clippy::needless_borrow)]
-        let (document, buffers, images) = gltf::import_slice(&autd3_model::AUTD3_MODEL).unwrap();
+        let (document, buffers, images) =
+            gltf::import_slice(&crate::autd3_model::AUTD3_MODEL).unwrap();
         let node = document.scenes().next().unwrap().nodes().next().unwrap();
 
         let materials = Self::load_materials(&document);
