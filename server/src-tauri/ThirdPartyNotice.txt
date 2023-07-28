@@ -102,15 +102,15 @@ atomic-waker 1.1.1 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/atomic-waker
 ---------------------------------------------------------
 
-autd-server 14.1.0 (MIT)
+autd-server 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-core 14.1.0 (MIT)
+autd3-core 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 14.1.0 (MIT)
+autd3-driver 14.2.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
