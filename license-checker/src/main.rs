@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -303,6 +303,12 @@ where
 fn main() -> anyhow::Result<()> {
     let license_file_map = license_file::load_license_file_map()?;
 
+    let imgui_vulkano_render = (
+        "MIT",
+        r"imgui-vulkano-renderer 0.9.0 (MIT)
+https://github.com/Tenebryo/imgui-vulkano-renderer
+Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.jp>",
+    );
     let sdr_rs_dep = (
         "MIT",
         r"sdr 0.7.0 (MIT)
@@ -315,14 +321,14 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../capi/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[sdr_rs_dep, notofont_dep],
+        &[imgui_vulkano_render, sdr_rs_dep, notofont_dep],
     )?;
 
     check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/simulator/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[sdr_rs_dep, notofont_dep],
+        &[imgui_vulkano_render, sdr_rs_dep, notofont_dep],
     )?;
 
     check(
