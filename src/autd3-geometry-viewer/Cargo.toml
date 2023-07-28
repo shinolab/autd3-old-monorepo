@@ -7,7 +7,7 @@ edition = "2021"
 license = "MIT"
 description = "AUTD viewer for Geometry"
 repository = "https://github.com/shinolab/autd3"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
