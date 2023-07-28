@@ -1,5 +1,5 @@
 {
-    "name": "com.shinolab.autd3",
+    "name": "com.shinolab.autd3-mac",
     "displayName": "autd3-unity-mac",
     "description": "autd3 library wrapper for Unity",
     "version": "14.1.0",
@@ -9,7 +9,7 @@
         "unity",
         "autd3"
     ],
-    "license": "MIT",
+    "license": "See LICENSE.md file",
     "homepage": "https://github.com/shinolab/autd3",
     "repository": {
         "type": "git",
