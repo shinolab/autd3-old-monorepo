@@ -2,6 +2,7 @@
 
 - Add `modulation::Fourier`
   - Fix [#110](https://github.com/shinolab/autd3/issues/110): Multi-frequency sine modulation? 
+- Fix [#111](https://github.com/shinolab/autd3/issues/111): Add macOS and Linux support for autd3-unity
 - Fix [#115](https://github.com/shinolab/autd3/issues/115): `autd3-geometry-viewer` from git does not work
 - Fix [#116](https://github.com/shinolab/autd3/issues/116): [autd3-unity] cannot launch simulator
 - Fix [#117](https://github.com/shinolab/autd3/issues/117): [autd3-unity] There is no LICENSE.md but LICENSE.txt
