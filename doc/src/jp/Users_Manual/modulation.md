@@ -21,15 +21,13 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
+  * [Fourier](./modulation/fourier.md)
 * [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
 * [RawPCM](./modulation/rawpcm.md)
 * [Cache](./modulation/cache.md)
 * [RadiationPressure](./modulation/radiation.md)
-
-また, これらを加工するための機能も用意されている.
-
 * [FIR](./modulation/fir.md)
 * [Transform](./modulation/transform.md)
 
