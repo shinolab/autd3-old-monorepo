@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 28/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 use std::{ffi::CString, path::PathBuf, time::Instant};
 
+use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
 use autd3_core::{autd3_device::AUTD3, CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
@@ -20,7 +21,6 @@ use imgui::{
     sys::{igDragFloat, igDragFloat2},
     Context, FontConfig, FontGlyphRanges, FontSource,
 };
-use imgui_winit_support::{HiDpiMode, WinitPlatform};
 use vulkano::{
     command_buffer::{AutoCommandBufferBuilder, PrimaryAutoCommandBuffer},
     image::view::ImageView,
@@ -29,6 +29,7 @@ use winit::{event::Event, window::Window};
 
 use crate::{
     common::transform::quaternion_to,
+    patch::imgui_vulkano_renderer,
     renderer::Renderer,
     sound_sources::SoundSources,
     update_flag::UpdateFlag,
