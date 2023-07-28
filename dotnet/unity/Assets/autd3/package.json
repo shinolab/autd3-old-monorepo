@@ -9,7 +9,7 @@
         "unity",
         "autd3"
     ],
-    "license": "MIT",
+    "license": "See LICENSE.md file",
     "homepage": "https://github.com/shinolab/autd3",
     "repository": {
         "type": "git",
