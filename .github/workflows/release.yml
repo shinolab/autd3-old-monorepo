@@ -108,6 +108,14 @@ jobs:
         cd autd3-modulation-audio-file
         cargo publish --dry-run
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-geometry-viewer
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-simulator
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
     needs: [license-check]
