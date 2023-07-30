@@ -30,5 +30,6 @@ rand = "0.8.5"
 criterion = { version = "0.4", features = ["html_reports"] }
 
 [[bench]]
-name = "my_benchmark"
+name = "focus"
+path = "benches/gain/focus.rs"
 harness = false
