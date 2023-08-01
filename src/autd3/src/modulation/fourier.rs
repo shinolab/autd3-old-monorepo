@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -111,7 +111,7 @@ impl std::ops::Add<Sine> for Sine {
 }
 
 impl ModulationProperty for Fourier {
-    fn sampling_frequency(&self) -> f64 {
+    fn sampling_frequency(&self) -> float {
         autd3_core::FPGA_SUB_CLK_FREQ as float / self.freq_div as float
     }
 

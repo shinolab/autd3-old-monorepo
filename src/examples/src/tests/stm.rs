@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/06/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -85,6 +85,6 @@ pub fn software_stm<T: Transducer, L: Link<T>>(
     )
     .with_timer_strategy(TimerStrategy::Sleep)
     .start(std::time::Duration::from_secs_f64(
-        1. / freq / point_num as float,
+        1. / freq / point_num as f64,
     ))
 }

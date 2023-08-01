@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -200,6 +200,7 @@ impl TransViewer {
                 .positions()
                 .zip(sources.rotations())
                 .map(|(pos, rot)| {
+                    #[allow(clippy::unnecessary_cast)]
                     let s = 0.5 * AUTD3::TRANS_SPACING as f32;
                     let mut m = Matrix4::from_scale(s);
                     m[3][0] = pos[0];
