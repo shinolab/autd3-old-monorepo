@@ -1,6 +1,6 @@
 [package]
 name = "autd3-backend-cuda"
-version = "14.2.0"
+version = "14.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = { path = "../autd3-core", version = "14.2.0" }
-autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.2.0" }
+autd3-core = { path = "../autd3-core", version = "14.2.1" }
+autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.2.1" }
 cuda-sys = "0.2.0"
 nalgebra = { version = "0.32.1", default-features = false, features = ["std"] }
 rand = "0.8.5"
