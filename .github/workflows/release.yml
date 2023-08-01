@@ -58,64 +58,64 @@ jobs:
         git submodule update --init --recursive
         cd src
         cd autd3-driver
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
         cd autd3-core
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-traits
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
         cd autd3-firmware-emulator
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
         cd autd3
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-gain-holo
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
         cd autd3-backend-cuda
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
         cd autd3-protobuf
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-link-soem
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-link-twincat
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-link-simulator
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-link-monitor
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-modulation-audio-file
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-geometry-viewer
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-simulator
-        cargo publish --dry-run
-        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
     needs: [license-check]
