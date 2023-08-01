@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -142,7 +142,7 @@ mod tests {
             assert_approx_eq::assert_approx_eq!(b.phase, expected_phase);
         });
 
-        let f = random_vector3(-500f64..500.0, -500f64..500.0, 50f64..500.0);
+        let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
