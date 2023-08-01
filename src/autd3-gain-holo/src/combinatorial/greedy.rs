@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use crate::{constraint::Constraint, impl_holo, Complex};
 use autd3_core::{
-    acoustics::{propagate, Sphere},
+    acoustics::{propagate_tr, Sphere},
     error::AUTDInternalError,
     float,
     gain::Gain,
@@ -54,20 +54,13 @@ impl Greedy {
 
     fn transfer_foci<T: Transducer>(
         trans: &T,
-        phase: Complex,
         sound_speed: float,
         attenuation: float,
         foci: &[Vector3],
         res: &mut [Complex],
     ) {
         res.iter_mut().zip(foci.iter()).for_each(|(r, f)| {
-            *r = propagate::<Sphere>(
-                trans.position(),
-                &trans.z_direction(),
-                attenuation,
-                trans.wavenumber(sound_speed),
-                f,
-            ) * phase;
+            *r = propagate_tr::<Sphere, T>(trans, attenuation, sound_speed, f);
         });
     }
 
@@ -84,12 +77,7 @@ impl<T: Transducer> Gain<T> for Greedy {
 
         let m = self.foci.len();
 
-        let mut tmp = vec![vec![Complex::new(0., 0.); m]; phase_candidates.len()];
-
         let mut cache = vec![Complex::new(0., 0.); m];
-
-        let sound_speed = geometry.sound_speed;
-        let attenuation = geometry.attenuation;
 
         let amp = self.constraint.convert(1.0, 1.0);
         let mut res = vec![Drive { amp, phase: 0.0 }; geometry.num_transducers()];
@@ -97,20 +85,20 @@ impl<T: Transducer> Gain<T> for Greedy {
         let mut rng = rand::thread_rng();
         tr_idx.shuffle(&mut rng);
 
+        let mut tmp = vec![Complex::new(0., 0.); m];
         tr_idx.iter().for_each(|&i| {
+            Self::transfer_foci(
+                &geometry[i],
+                geometry.sound_speed,
+                geometry.attenuation,
+                &self.foci,
+                &mut tmp,
+            );
             let (min_idx, _) = phase_candidates.iter().enumerate().fold(
                 (0usize, float::INFINITY),
                 |acc, (idx, &phase)| {
-                    Self::transfer_foci(
-                        &geometry[i],
-                        phase,
-                        sound_speed,
-                        attenuation,
-                        &self.foci,
-                        &mut tmp[idx],
-                    );
                     let v = cache.iter().enumerate().fold(0., |acc, (j, c)| {
-                        acc + (self.amps[j] - (tmp[idx][j] + c).abs()).abs()
+                        acc + (self.amps[j] - (tmp[j] * phase + c).abs()).abs()
                     });
                     if v < acc.1 {
                         (idx, v)
@@ -119,12 +107,12 @@ impl<T: Transducer> Gain<T> for Greedy {
                     }
                 },
             );
-            cache.iter_mut().enumerate().for_each(|(j, c)| {
-                *c += tmp[min_idx][j];
+            let phase = phase_candidates[min_idx];
+            cache.iter_mut().zip(tmp.iter()).for_each(|(c, a)| {
+                *c += a * phase;
             });
-            res[i].phase = phase_candidates[min_idx].argument() + PI;
+            res[i].phase = phase.argument() + PI;
         });
-
         Ok(res)
     }
 }
