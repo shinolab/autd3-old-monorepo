@@ -18,8 +18,16 @@ rand = "0.8.5"
 rayon = { version = "1.7.0", optional = true }
 thiserror = "1.0.31"
 
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+
 [features]
 default = []
 single_float = ["autd3-core/single_float"]
 use_meter = ["autd3-core/use_meter"]
 parallel = ["rayon", "autd3-core/parallel"]
+
+[[bench]]
+name = "holo"
+path = "benches/holo.rs"
+harness = false

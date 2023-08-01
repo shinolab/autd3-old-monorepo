@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,22 +83,18 @@ __global__ void get_diagonal_kernel(const autd3_float_t *a, uint32_t row, uint32
   }
 }
 
-__global__ void set_diagonal_kernel(const autd3_complex_t *a, uint32_t row, uint32_t col, autd3_complex_t *b) {
+__global__ void set_diagonal_kernel_c(const autd3_complex_t *a, uint32_t n, autd3_complex_t *b) {
   unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
-  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
-  if (xi >= col || yi >= row) return;
-
-  unsigned int idx = yi + xi * row;
-  b[idx] = xi == yi ? a[xi] : makeAUTDComplex(0.0, 0.0);
+  if (xi >= n) return;
+  unsigned int idx = xi + xi * n;
+  b[idx] = a[xi];
 }
 
-__global__ void set_diagonal_kernel(const autd3_float_t *a, uint32_t row, uint32_t col, autd3_float_t *b) {
+__global__ void set_diagonal_kernel(const autd3_float_t *a, uint32_t n, autd3_float_t *b) {
   unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
-  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
-  if (xi >= col || yi >= row) return;
-
-  unsigned int idx = yi + xi * row;
-  b[idx] = xi == yi ? a[xi] : 0;
+  if (xi >= n) return;
+  unsigned int idx = xi + xi * n;
+  b[idx] = a[xi];
 }
 
 __global__ void reciprocal_kernel(const autd3_complex_t *a, const uint32_t row, const uint32_t col, autd3_complex_t *b) {
@@ -213,37 +209,11 @@ __global__ void imag_kernel(const autd3_complex_t *src, const uint32_t row, cons
 }
 
 __global__ void col_sum_kernel(const autd3_float_t *din, uint32_t m, uint32_t n, autd3_float_t *dout) {
-  extern __shared__ autd3_float_t smem[];
-
   uint32_t row = blockIdx.y * blockDim.y + threadIdx.y;
   if (row >= m) return;
-
-  uint32_t tid = threadIdx.x;
-  uint32_t i = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
-  autd3_float_t local_sum = i < n ? din[i * m + row] : 0;
-  if (i + blockDim.x < n) {
-    local_sum += din[(i + blockDim.x) * m + row];
-  }
-  smem[tid] = local_sum;
-  __syncthreads();
-
-  for (unsigned int s = blockDim.x >> 1; s > 32; s >>= 1) {
-    if (tid < s) {
-      smem[tid] = local_sum = local_sum + smem[tid + s];
-    }
-    __syncthreads();
-  }
-  if (tid < 32) {
-    if (blockDim.x >= 64) {
-      local_sum += smem[tid + 32];
-    }
-    for (int offset = 32 >> 1; offset > 0; offset >>= 1) {
-      local_sum += __shfl_down_sync(0xffffffff, local_sum, offset);
-    }
-  }
-  if (tid == 0) {
-    dout[blockIdx.x * m + row] = local_sum;
-  }
+  autd3_float_t sum = 0;
+  for (uint32_t col = 0; col < n; col++) sum += din[col * m + row];
+  dout[row] = sum;
 }
 
 #ifdef __cplusplus
@@ -279,16 +249,16 @@ void cu_get_diagonal_c(const autd3_complex_t *a, const uint32_t row, const uint3
   get_diagonal_kernel<<<grid, block>>>(a, row, col, b);
 }
 
-void cu_set_diagonal(const autd3_float_t *a, const uint32_t row, const uint32_t col, autd3_float_t *b) {
-  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
-  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
-  set_diagonal_kernel<<<grid, block>>>(a, row, col, b);
+void cu_set_diagonal(const autd3_float_t *a, const uint32_t n, autd3_float_t *b) {
+  dim3 block(BLOCK_SIZE * BLOCK_SIZE, 1, 1);
+  dim3 grid((n - 1) / (BLOCK_SIZE * BLOCK_SIZE) + 1, 1, 1);
+  set_diagonal_kernel<<<grid, block>>>(a, n, b);
 }
 
-void cu_set_diagonal_c(const autd3_complex_t *a, const uint32_t row, const uint32_t col, autd3_complex_t *b) {
-  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
-  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
-  set_diagonal_kernel<<<grid, block>>>(a, row, col, b);
+void cu_set_diagonal_c(const autd3_complex_t *a, const uint32_t n, autd3_complex_t *b) {
+  dim3 block(BLOCK_SIZE * BLOCK_SIZE, 1, 1);
+  dim3 grid((n - 1) / (BLOCK_SIZE * BLOCK_SIZE) + 1, 1, 1);
+  set_diagonal_kernel_c<<<grid, block>>>(a, n, b);
 }
 
 void cu_reciprocal(const autd3_complex_t *a, const uint32_t row, const uint32_t col, autd3_complex_t *b) {
@@ -357,13 +327,10 @@ void cu_imag(const autd3_complex_t *src, const uint32_t row, const uint32_t col,
   imag_kernel<<<grid, block>>>(src, row, col, dst);
 }
 
-uint32_t cu_reduce_col_buffer_size(const uint32_t m) { return m * BLOCK_SIZE / 2 * sizeof(autd3_float_t); }
-
-void cu_reduce_col(const autd3_float_t *mat, const uint32_t m, const uint32_t n, autd3_float_t *result, autd3_float_t *buffer) {
-  dim3 block(BLOCK_SIZE / 2, 1, 1);
-  dim3 grid((n - 1) / BLOCK_SIZE + 1, m, 1);
-  col_sum_kernel<<<grid, block, BLOCK_SIZE * sizeof(autd3_float_t)>>>(mat, m, n, buffer);
-  col_sum_kernel<<<dim3(1, m, 1), dim3(max((grid.x + 1) / 2, 1), 1, 1), max(grid.x, 2) * sizeof(autd3_float_t)>>>(buffer, m, grid.x, result);
+void cu_reduce_col(const autd3_float_t *mat, const uint32_t m, const uint32_t n, autd3_float_t *result) {
+  dim3 block(1, BLOCK_SIZE * BLOCK_SIZE, 1);
+  dim3 grid(1, (m - 1) / (BLOCK_SIZE * BLOCK_SIZE) + 1, 1);
+  col_sum_kernel<<<grid, block>>>(mat, m, n, result);
 }
 
 #ifdef __cplusplus

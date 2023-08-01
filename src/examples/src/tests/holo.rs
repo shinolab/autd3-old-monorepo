@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -40,6 +40,10 @@ pub fn holo<T: Transducer, L: Link<T>>(
 
     let mut s = String::new();
     io::stdin().read_line(&mut s).unwrap();
+
+    #[cfg(feature = "cuda")]
+    let backend = autd3_backend_cuda::CUDABackend::new().unwrap();
+    #[cfg(not(feature = "cuda"))]
     let backend = NalgebraBackend::new();
 
     match s.trim().parse::<usize>() {
