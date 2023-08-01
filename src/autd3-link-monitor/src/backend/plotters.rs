@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -78,7 +78,7 @@ impl PlottersBackend {
             .margin(config.margin)
             .x_label_area_size(config.label_area_size)
             .y_label_area_size(config.label_area_size)
-            .build_cartesian_2d(0..modulation.len(), 0.0..1.0)?;
+            .build_cartesian_2d::<_, std::ops::Range<float>>(0..modulation.len(), 0.0..1.0)?;
 
         chart
             .configure_mesh()
@@ -177,7 +177,7 @@ impl PlottersBackend {
         let color_map_size = 1000;
         let cmap: Vec<scarlet::color::RGBColor> = config
             .cmap
-            .transform((0..=color_map_size).map(|x| x as float / color_map_size as float));
+            .transform((0..=color_map_size).map(|x| x as f64 / color_map_size as f64));
 
         {
             let xrange = observe_points_x
@@ -243,9 +243,10 @@ impl PlottersBackend {
                 itertools::iproduct!(observe_points_y, observe_points_x)
                     .zip(acoustic_pressures.iter())
                     .map(|((&y, &x), c)| {
-                        let c: scarlet::color::RGBColor = config
-                            .cmap
-                            .transform_single((c.norm() - zrange.0) / (zrange.1 - zrange.0));
+                        #[allow(clippy::unnecessary_cast)]
+                        let c: scarlet::color::RGBColor = config.cmap.transform_single(
+                            ((c.norm() - zrange.0) / (zrange.1 - zrange.0)) as f64,
+                        );
                         Rectangle::new(
                             [(x, y), (x + resolution, y + resolution)],
                             RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
@@ -318,7 +319,7 @@ impl PlottersBackend {
         let color_map_size = 1000;
         let cmap: Vec<scarlet::color::RGBColor> = config
             .cmap
-            .transform((0..=color_map_size).map(|x| x as float / color_map_size as float));
+            .transform((0..=color_map_size).map(|x| x as f64 / color_map_size as f64));
 
         {
             let p = geometry

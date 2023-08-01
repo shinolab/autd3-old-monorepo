@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 30/07/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -108,7 +108,7 @@ mod tests {
             )
         });
 
-        let f = random_vector3(-500f64..500.0, -500f64..500.0, 50f64..500.0);
+        let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
         let d = Focus::new(f).with_amp(0.5).calc(&geometry).unwrap();
         assert_eq!(d.len(), geometry.num_transducers());
         d.iter().for_each(|d| assert_eq!(d.amp, 0.5));
