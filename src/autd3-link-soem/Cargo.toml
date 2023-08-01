@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-soem"
-version = "14.2.0"
+version = "14.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -15,8 +15,8 @@ cc = { version = "1.0.73", features = ["parallel"], optional = true }
 glob = { version = "0.3.0", optional = true }
 
 [dependencies]
-autd3-core = { path = "../autd3-core", version = "14.2.0", optional = true }
-autd3-protobuf = { path = "../autd3-protobuf", version = "14.2.0", optional = true }
+autd3-core = { path = "../autd3-core", version = "14.2.1", optional = true }
+autd3-protobuf = { path = "../autd3-protobuf", version = "14.2.1", optional = true }
 crossbeam-channel = { version = "0.5.4", optional = true }
 thiserror = { version = "1.0.30", optional = true }
 time = { version = "0.3.23", default-features = false, features = ["std"], optional = true }

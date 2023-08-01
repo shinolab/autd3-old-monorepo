@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "14.2.0"
+version = "14.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -66,16 +66,17 @@ required-features = ["lightweight"]
 [dependencies]
 anyhow = "1.0.57"
 autd3 = { path = "../autd3" }
-autd3-core = { path = "../autd3-core", version = "14.2.0" }
-autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.2.0" }
-autd3-link-simulator = { path = "../autd3-link-simulator", optional = true, version = "14.2.0" }
-autd3-simulator = { path = "../autd3-simulator", optional = true, version = "14.2.0" }
-autd3-geometry-viewer = { path = "../autd3-geometry-viewer", optional = true, version = "14.2.0" }
-autd3-link-soem = { path = "../autd3-link-soem", optional = true, version = "14.2.0" }
-autd3-link-twincat = { path = "../autd3-link-twincat", optional = true, version = "14.2.0" }
-autd3-link-monitor = { path = "../autd3-link-monitor", optional = true, version = "14.2.0" }
-autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file", version = "14.2.0" }
-autd3-protobuf = { path = "../autd3-protobuf", optional = true, version = "14.2.0" }
+autd3-core = { path = "../autd3-core", version = "14.2.1" }
+autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.2.1" }
+autd3-link-simulator = { path = "../autd3-link-simulator", optional = true, version = "14.2.1" }
+autd3-backend-cuda = { path = "../autd3-backend-cuda", optional = true, version = "14.2.1" }
+autd3-simulator = { path = "../autd3-simulator", optional = true, version = "14.2.1" }
+autd3-geometry-viewer = { path = "../autd3-geometry-viewer", optional = true, version = "14.2.1" }
+autd3-link-soem = { path = "../autd3-link-soem", optional = true, version = "14.2.1" }
+autd3-link-twincat = { path = "../autd3-link-twincat", optional = true, version = "14.2.1" }
+autd3-link-monitor = { path = "../autd3-link-monitor", optional = true, version = "14.2.1" }
+autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file", version = "14.2.1" }
+autd3-protobuf = { path = "../autd3-protobuf", optional = true, version = "14.2.1" }
 colored = "2.0.0"
 tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional = true }
 
@@ -93,5 +94,6 @@ geometry_viewer = ["autd3-geometry-viewer"]
 lightweight = ["autd3-protobuf", "tokio"]
 all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async", "lightweight"]
 
+cuda = ["autd3-backend-cuda"]
 single_float = ["autd3/single_float"]
 use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
