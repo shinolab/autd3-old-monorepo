@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3_driver::{float, PI};
 
-use crate::geometry::Vector3;
+use crate::geometry::{Transducer, Vector3};
 
 pub type Complex = nalgebra::Complex<float>;
 
@@ -72,6 +72,14 @@ static DIR_COEF_D: &[float] = &[
 /// Directivity
 pub trait Directivity: Send + Sync {
     fn directivity(theta_deg: float) -> float;
+    fn directivity_from_dir(source_dir: &Vector3, target: &Vector3) -> float {
+        Self::directivity(
+            (source_dir.cross(target).norm()).atan2(source_dir.dot(target)) * 180. / PI,
+        )
+    }
+    fn directivity_from_tr<T: Transducer>(tr: &T, target: &Vector3) -> float {
+        Self::directivity_from_dir(&tr.z_direction(), target)
+    }
 }
 
 /// Directivity of T4010A1
@@ -108,6 +116,14 @@ impl Directivity for Sphere {
     fn directivity(_: float) -> float {
         1.
     }
+
+    fn directivity_from_dir(_: &Vector3, _: &Vector3) -> float {
+        1.
+    }
+
+    fn directivity_from_tr<T: Transducer>(_: &T, _: &Vector3) -> float {
+        1.
+    }
 }
 
 /// Calculate propagation of ultrasound wave
@@ -129,9 +145,30 @@ pub fn propagate<D: Directivity>(
 ) -> Complex {
     let diff = target_pos - source_pos;
     let dist = diff.norm();
-    let theta = (source_dir.cross(&diff).norm()).atan2(source_dir.dot(&diff)) * 180. / PI;
-    let r = D::directivity(theta) * (-dist * attenuation).exp() / dist;
+    let r = D::directivity_from_dir(source_dir, &diff) * (-dist * attenuation).exp() / dist;
     let phase = -wavenumber * dist;
+    Complex::new(r * phase.cos(), r * phase.sin())
+}
+
+/// Calculate propagation of ultrasound wave
+///
+/// # Arguments
+///
+/// * `tr` - Source transducer
+/// * `attenuation` - Attenuation coefficient
+/// * `sound_speed` - Speed of sound
+/// * `target_pos` - Position of target
+///
+pub fn propagate_tr<D: Directivity, T: Transducer>(
+    tr: &T,
+    attenuation: float,
+    sound_speed: float,
+    target_pos: &Vector3,
+) -> Complex {
+    let diff = target_pos - tr.position();
+    let dist = diff.norm();
+    let r = D::directivity_from_tr(tr, &diff) * (-dist * attenuation).exp() / dist;
+    let phase = -tr.wavenumber(sound_speed) * dist;
     Complex::new(r * phase.cos(), r * phase.sin())
 }
 
