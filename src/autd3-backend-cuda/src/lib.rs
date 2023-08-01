@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -63,8 +63,8 @@ extern "C" {
 
     fn cu_get_diagonal(x: *const float, row: u32, col: u32, y: *mut float);
     fn cu_get_diagonal_c(x: *const CuComplex, row: u32, col: u32, y: *mut CuComplex);
-    fn cu_set_diagonal(x: *const float, row: u32, col: u32, y: *mut float);
-    fn cu_set_diagonal_c(x: *const CuComplex, row: u32, col: u32, y: *mut CuComplex);
+    fn cu_set_diagonal(x: *const float, n: u32, y: *mut float);
+    fn cu_set_diagonal_c(x: *const CuComplex, n: u32, y: *mut CuComplex);
     fn cu_reciprocal(x: *const CuComplex, row: u32, col: u32, y: *mut CuComplex);
     fn cu_hadamard_product(
         x: *const CuComplex,
@@ -87,8 +87,7 @@ extern "C" {
     fn cu_real(a: *const CuComplex, row: u32, col: u32, b: *mut float);
     fn cu_imag(a: *const CuComplex, row: u32, col: u32, b: *mut float);
 
-    fn cu_reduce_col_buffer_size(m: u32) -> u32;
-    fn cu_reduce_col(mat: *const float, m: u32, n: u32, result: *mut float, buffer: *mut float);
+    fn cu_reduce_col(mat: *const float, m: u32, n: u32, result: *mut float);
 }
 
 #[derive(Error, Debug)]
@@ -521,7 +520,12 @@ impl CUDABackend {
             1,
             denominator.0
         ));
-        cu_call!(cu_set_diagonal_c(denominator.0, g.1 as _, g.1 as _, tmp.0));
+        cuda_call!(cuda_sys::cudart::cudaMemset(
+            tmp.0 as _,
+            0,
+            std::mem::size_of::<CuComplex>() * g.1 * g.1
+        ));
+        cu_call!(cu_set_diagonal_c(denominator.0, g.1 as _, tmp.0));
 
         self.mul_mat_mat_c(
             cuda_sys::cublas::cublasOperation_t_CUBLAS_OP_C,
@@ -1086,17 +1090,7 @@ impl CUDABackend {
     ) -> Result<(), CUDABackendError> {
         let m = a.1;
         let n = a.2;
-        let buf_size = cu_call!(cu_reduce_col_buffer_size(m as _)) as usize;
-        let buffer = alloc_uninitialized!(float, buf_size);
-        cu_call!(cu_reduce_col(
-            a.0 as _,
-            m as _,
-            n as _,
-            b.0 as _,
-            buffer.0 as _
-        ));
-        free!(buffer);
-
+        cu_call!(cu_reduce_col(a.0 as _, m as _, n as _, b.0 as _,));
         Ok(())
     }
 }
@@ -1302,8 +1296,8 @@ impl Backend for CUDABackend {
                     sigma_tmp.0,
                 ));
 
-                let sigma = alloc_uninitialized!(CuComplex, n, n);
-                cu_set_diagonal_c(sigma_tmp.0, n as _, n as _, sigma.0);
+                let sigma = alloc_zeroed!(CuComplex, n, n);
+                cu_set_diagonal_c(sigma_tmp.0, n as _, sigma.0);
 
                 free!(sigma_tmp);
                 free!(sigma_tmp_real);
@@ -1380,8 +1374,8 @@ impl Backend for CUDABackend {
             let b = alloc_uninitialized!(CuComplex, m, n);
             cpy_host_to_device!(CuComplex, g.as_ptr(), b, m * n);
 
-            let p = alloc_uninitialized!(CuComplex, m, m);
-            cu_call!(cu_set_diagonal_c(amps.0, m as _, m as _, p.0));
+            let p = alloc_zeroed!(CuComplex, m, m);
+            cu_call!(cu_set_diagonal_c(amps.0, m as _, p.0));
 
             let b_tmp = alloc_uninitialized!(CuComplex, m, n);
             cpy_device_to_device!(CuComplex, b, b_tmp, m * n);
@@ -1389,11 +1383,11 @@ impl Backend for CUDABackend {
             let pseudo_inv_b = alloc_uninitialized!(CuComplex, n, m);
             self.pseudo_inverse(b_tmp, alpha, pseudo_inv_b)?;
 
-            let mm = alloc_uninitialized!(CuComplex, m, m);
+            let mm = alloc_zeroed!(CuComplex, m, m);
             let ones_ = vec![one; m];
             let ones = alloc_uninitialized!(CuComplex, m);
             cpy_host_to_device!(CuComplex, ones_.as_ptr(), ones, m);
-            cu_call!(cu_set_diagonal_c(ones.0, m as _, m as _, mm.0));
+            cu_call!(cu_set_diagonal_c(ones.0, m as _, mm.0));
 
             self.mul_mat_mat_c(
                 cublasOperation_t_CUBLAS_OP_N,
@@ -1425,8 +1419,8 @@ impl Backend for CUDABackend {
                 mm,
             )?;
 
-            let x_mat = alloc_uninitialized!(CuComplex, m, m);
-            cu_call!(cu_set_diagonal_c(ones.0, m as _, m as _, x_mat.0));
+            let x_mat = alloc_zeroed!(CuComplex, m, m);
+            cu_call!(cu_set_diagonal_c(ones.0, m as _, x_mat.0));
 
             let mut rng = thread_rng();
 
@@ -1527,7 +1521,7 @@ impl Backend for CUDABackend {
                     zero.0 as _,
                     x.0 as _,
                     len as _,
-                    len as _,
+                    1,
                     t.0 as _
                 ));
                 self.scale_c_vec(make_complex(-1., 0.), t)?;
@@ -1591,8 +1585,8 @@ impl Backend for CUDABackend {
                 let mamps = alloc_uninitialized!(CuComplex, m);
                 cpy_host_to_device!(CuComplex, mamps_.as_ptr(), mamps, m);
 
-                let p = alloc_uninitialized!(CuComplex, m, m);
-                cu_call!(cu_set_diagonal_c(mamps.0, m as _, m as _, p.0));
+                let p = alloc_zeroed!(CuComplex, m, m);
+                cu_call!(cu_set_diagonal_c(mamps.0, m as _, p.0));
 
                 let b = alloc_uninitialized!(CuComplex, m, n + m);
                 self.concat_col(gp, p, b)?;
@@ -1636,6 +1630,12 @@ impl Backend for CUDABackend {
                 n_param as _,
                 a_diag.0
             ));
+
+            {
+                let mut tmp_: Vec<float> = vec![1.; n_param];
+                cpy_device_to_host!(float, zeros, tmp_.as_mut_ptr(), n_param);
+            }
+
             let a_max = self.max_element(a_diag)?;
 
             let mut mu = tau * a_max;
@@ -1644,17 +1644,12 @@ impl Backend for CUDABackend {
             let t_ = alloc_uninitialized!(CuComplex, n_param);
             let mut fx = cal_fx(zeros, x, bhb, tmp, t_)?;
 
-            let identity = alloc_uninitialized!(float, n_param, n_param);
+            let identity = alloc_zeroed!(float, n_param, n_param);
             {
                 let ones_: Vec<float> = vec![1.; n_param];
                 let ones = alloc_uninitialized!(float, n_param);
                 cpy_host_to_device!(float, ones_.as_ptr(), ones, n_param);
-                cu_call!(cu_set_diagonal(
-                    ones.0 as _,
-                    n_param as _,
-                    n_param as _,
-                    identity.0
-                ));
+                cu_call!(cu_set_diagonal(ones.0 as _, n_param as _, identity.0));
                 free!(ones);
             }
 
@@ -1734,5 +1729,48 @@ impl Backend for CUDABackend {
 
             Ok(res)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use autd3_core::{autd3_device::AUTD3, float};
+
+    const DEV_NUM: usize = 9;
+
+    #[test]
+    fn reduce_col() -> anyhow::Result<()> {
+        let n = DEV_NUM * AUTD3::NUM_TRANS_IN_UNIT;
+
+        let mut rng = rand::thread_rng();
+        let data = (0..n * n).map(|_| rng.gen::<float>()).collect::<Vec<_>>();
+        let result = vec![0.; n];
+
+        let expected = (0..n)
+            .map(|i| data.iter().skip(i).step_by(n).sum::<float>())
+            .collect::<Vec<_>>();
+
+        unsafe {
+            let cdata = alloc_uninitialized!(float, n, n);
+            cpy_host_to_device!(float, data.as_ptr(), cdata, n * n);
+            let cresult = alloc_uninitialized!(float, n);
+
+            cu_call!(cu_reduce_col(
+                cdata.0 as _,
+                cdata.1 as _,
+                cdata.2 as _,
+                cresult.0 as _,
+            ));
+
+            cpy_device_to_host!(float, cresult, result.as_ptr(), n);
+        }
+
+        result
+            .iter()
+            .zip(expected.iter())
+            .for_each(|(r, e)| assert_approx_eq::assert_approx_eq!(r, e));
+
+        Ok(())
     }
 }
