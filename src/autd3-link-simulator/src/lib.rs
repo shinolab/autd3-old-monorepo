@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -161,7 +161,9 @@ impl<T: Transducer> Link<T> for Simulator {
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
         if let Some(client) = &mut self.client {
             let rx_ = Self::receive_impl(client, &self.runtime)?;
-            rx.copy_from(&rx_);
+            if rx.len() == rx_.len() {
+                rx.copy_from(&rx_);
+            }
         } else {
             return Err(AUTDInternalError::LinkClosed);
         }
