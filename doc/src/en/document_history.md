@@ -44,3 +44,4 @@
 | 2023/07/19 | Version 14.0.1 Initial release                |
 | 2023/07/27 | Version 14.1.0 Initial release                |
 | 2023/07/28 | Version 14.2.0 Initial release                |
+| 2023/08/01 | Version 14.2.1 Initial release                |

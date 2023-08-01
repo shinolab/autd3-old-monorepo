@@ -1,3 +1,11 @@
+# 14.2.1
+
+- Improve `autd3-gain-holo` performance
+  - Close [#98](https://github.com/shinolab/autd3/issues/98): Add benchmarking
+- Fix [#118](https://github.com/shinolab/autd3/issues/118): Cannot compile and test with `single_float` features
+- Fix [#119](https://github.com/shinolab/autd3/issues/119): link-simulator sometimes panic
+- Fix [#120](https://github.com/shinolab/autd3/issues/120): With 9 devices, CUDABackend causes an error with LM algorithm
+
 # 14.2.0
 
 - Add `modulation::Fourier`
