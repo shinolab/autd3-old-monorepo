@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-simulator"
-version = "14.2.0"
+version = "14.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-protobuf = { path = "../autd3-protobuf", version = "14.2.0" }
-autd3-core = { path = "../autd3-core", version = "14.2.0" }
+autd3-protobuf = { path = "../autd3-protobuf", version = "14.2.1" }
+autd3-core = { path = "../autd3-core", version = "14.2.1" }
 tokio = { version = "1.0", features = ["rt-multi-thread"] }
 thiserror = "1.0.30"
 tonic = "0.9.2"
