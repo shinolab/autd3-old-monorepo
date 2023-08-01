@@ -1,3 +1,8 @@
+# 14.2.1
+
+- Improve `autd3-gain-holo` performance
+  - Close [#98](https://github.com/shinolab/autd3/issues/98): Add benchmarking
+
 # 14.2.0
 
 - Add `modulation::Fourier`
