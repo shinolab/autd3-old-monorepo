@@ -2,6 +2,7 @@
 
 - Improve `autd3-gain-holo` performance
   - Close [#98](https://github.com/shinolab/autd3/issues/98): Add benchmarking
+- Fix [#118](https://github.com/shinolab/autd3/issues/118): Cannot compile and test with `single_float` features
 
 # 14.2.0
 
