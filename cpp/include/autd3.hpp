@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/08/2023
+// Last Modified: 02/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,8 +26,14 @@
 
 namespace autd3 {
 
+/**
+ * @brief Mathematical constant pi
+ */
 constexpr double pi = internal::pi;
 
+/**
+ * @brief AUTD3 software version
+ */
 static inline std::string version = "14.2.1";
 
 using internal::Geometry;
