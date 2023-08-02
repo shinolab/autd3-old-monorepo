@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 02/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,20 +16,53 @@
 
 namespace autd3::extra {
 
+/**
+ * @brief Graphical viewer for Geometry
+ */
 class GeometryViewer {
  public:
   GeometryViewer() : _ptr(internal::native_methods::AUTDGeometryViewer()) {}
 
-  [[nodiscard]] GeometryViewer& window_size(const uint32_t width, const uint32_t height) {
+  /**
+   * @brief Set window size
+   *
+   * @param width Width of window
+   * @param height Height of window
+   * @return GeometryViewer&
+   */
+  GeometryViewer& with_window_size(const uint32_t width, const uint32_t height) {
     _ptr = AUTDGeometryViewerSize(_ptr, width, height);
     return *this;
   }
 
-  [[nodiscard]] GeometryViewer& vsync(const uint32_t vsync) {
+  [[deprecated("please use with_window_size instead")]] [[nodiscard]] GeometryViewer& window_size(const uint32_t width, const uint32_t height) {
+    _ptr = AUTDGeometryViewerSize(_ptr, width, height);
+    return *this;
+  }
+
+  /**
+   * @brief Set vsync
+   *
+   * @param vsync vsync
+   * @return GeometryViewer&
+   */
+  GeometryViewer& with_vsync(const uint32_t vsync) {
     _ptr = AUTDGeometryViewerVsync(_ptr, vsync);
     return *this;
   }
 
+  [[deprecated("please use with_vsync instead")]] [[nodiscard]] GeometryViewer& vsync(const uint32_t vsync) {
+    _ptr = AUTDGeometryViewerVsync(_ptr, vsync);
+    return *this;
+  }
+
+  /**
+   * @brief Run viewer
+   *
+   * @param geometry Geometry
+   *
+   * @return 0 if success, otherwise error code
+   */
   [[nodiscard]] int32_t run(const internal::Geometry& geometry) const { return AUTDGeometryViewerRun(_ptr, geometry.ptr()); }
 
  private:
