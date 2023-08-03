@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 04/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,9 @@
 
 namespace autd3::link {
 
+/**
+ * @brief Link using TwinCAT3
+ */
 class TwinCAT : public internal::Link {
  public:
   TwinCAT() : Link(internal::native_methods::LinkPtr{nullptr}) {
@@ -36,19 +39,39 @@ class TwinCAT : public internal::Link {
   }
 };
 
+/**
+ * @brief Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
+ */
 class RemoteTwinCAT : public internal::Link {
  public:
+  /**
+   * @brief Constructor
+   *
+   * @param server_ams_net_id Server AMS Net ID
+   */
   explicit RemoteTwinCAT(const std::string& server_ams_net_id) : Link(internal::native_methods::LinkPtr{nullptr}) {
     char err[256];
     _ptr = internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str(), err);
     if (_ptr._0 == nullptr) throw internal::AUTDException(err);
   }
 
+  /**
+   * @brief Set server IP address
+   *
+   * @param ip Server IP address
+   * @return RemoteTwinCAT
+   */
   RemoteTwinCAT with_server_ip(const std::string& ip) {
     _ptr = AUTDLinkRemoteTwinCATServerIP(_ptr, ip.c_str());
     return *this;
   }
 
+  /**
+   * @brief Set client AMS Net ID
+   *
+   * @param id AMS Net ID
+   * @return RemoteTwinCAT
+   */
   RemoteTwinCAT with_client_ams_net_id(const std::string& id) {
     _ptr = AUTDLinkRemoteTwinCATClientAmsNetId(_ptr, id.c_str());
     return *this;
