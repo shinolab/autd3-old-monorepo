@@ -29,9 +29,12 @@ use vulkano::{
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoopBuilder},
+    event_loop::{EventLoop, EventLoopBuilder},
     platform::run_return::EventLoopExtRunReturn,
 };
+
+#[cfg(target_os = "windows")]
+use winit::platform::windows::WindowExtWindows;
 
 /// Viewer for [autd3_core::geometry::Geometry]
 #[derive(Default)]
@@ -72,6 +75,8 @@ impl GeometryViewer {
     }
 
     /// Run viewer
+    ///
+    /// DO NOT call this method multiple times.
     ///
     /// # Arguments
     ///
@@ -147,15 +152,18 @@ impl GeometryViewer {
 
         let mut imgui = ImGuiRenderer::new(&render);
 
+        #[cfg(target_os = "windows")]
+        let hwnd = render.window().hwnd();
+
         let mut is_running = true;
-        event_loop.run_return(move |event, _, control_flow| {
+        let r = event_loop.run_return(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
                     ..
                 } => {
                     is_running = false;
-                    *control_flow = ControlFlow::Exit;
+                    control_flow.set_exit();
                 }
                 Event::WindowEvent {
                     event: WindowEvent::Resized(..),
@@ -256,8 +264,17 @@ impl GeometryViewer {
                 }
             }
             if !is_running {
-                *control_flow = ControlFlow::Exit;
+                control_flow.set_exit();
             }
-        })
+        });
+
+        #[cfg(target_os = "windows")]
+        unsafe {
+            windows::Win32::UI::WindowsAndMessaging::DestroyWindow(
+                windows::Win32::Foundation::HWND(hwnd),
+            );
+        }
+
+        r
     }
 }
