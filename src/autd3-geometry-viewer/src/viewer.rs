@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 03/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,6 +84,33 @@ impl GeometryViewer {
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
     pub fn run<T: Transducer>(&mut self, geometry: &Geometry<T>) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
+        self.run_with_event_loop(geometry, &mut event_loop)
+    }
+
+    /// Create event loop
+    ///
+    /// DO NOT call this method multiple times.
+    pub fn create_event_loop() -> EventLoop<()> {
+        EventLoopBuilder::<()>::with_user_event().build()
+    }
+
+    /// Run viewer with provided event loop
+    ///
+    /// # Arguments
+    ///
+    /// * `geometry` - Geometry
+    /// * `event_loop` - EventLoop
+    ///
+    /// # Returns
+    ///
+    /// ## Platform-specific
+    ///
+    /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
+    pub fn run_with_event_loop<T: Transducer>(
+        &mut self,
+        geometry: &Geometry<T>,
+        event_loop: &mut EventLoop<()>,
+    ) -> i32 {
         let mut render = Renderer::new(
             &event_loop,
             "AUTD GeometryViewer",
