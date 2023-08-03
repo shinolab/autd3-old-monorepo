@@ -118,6 +118,7 @@ impl GeometryViewer {
             self.window_height as _,
             self.vsync,
         );
+        render.window().focus_window();
 
         let model = Model::new();
         let mut device_viewer = DeviceViewer::new(&render, &model);
