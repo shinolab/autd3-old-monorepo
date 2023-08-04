@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/07/2023
+// Last Modified: 05/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,10 +16,19 @@
 
 namespace autd3::modulation {
 
+/**
+ * @brief Without modulation
+ */
 class Static final : public internal::Modulation {
  public:
   Static() = default;
 
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (0.0 - 1.0)
+   * @return Static
+   */
   Static with_amp(const double amp) {
     _amp = amp;
     return *this;
@@ -35,25 +44,54 @@ class Static final : public internal::Modulation {
   std::optional<double> _amp;
 };
 
+/**
+ * @brief Sine wave modulation
+ */
 class Sine final : public internal::Modulation {
  public:
+  /**
+   * @brief Constructor.
+   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset
+   * = 0.5` by default.
+   *
+   * @param freq Frequency of sine wave
+   */
   explicit Sine(const int32_t freq) : _freq(freq) {}
 
+  /**
+   * @brief Set amplitude
+   *
+   * @param amp peek to peek amplitude of sine wave
+   * @return Sine
+   */
   Sine with_amp(const double amp) {
     _amp = amp;
     return *this;
   }
 
+  /**
+   * @brief Set offset
+   *
+   * @param offset Offset of sine wave
+   * @return Sine
+   */
   Sine with_offset(const double offset) {
     _offset = offset;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency division
+   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
+   */
   Sine with_sampling_frequency_division(const uint32_t div) {
     _freq_div = div;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency
+   */
   Sine with_sampling_frequency(const double freq) {
     return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
   }
@@ -73,25 +111,54 @@ class Sine final : public internal::Modulation {
   std::optional<uint32_t> _freq_div;
 };
 
+/**
+ * @brief Sine wave modulation
+ */
 class SineLegacy final : public internal::Modulation {
  public:
+  /**
+   * @brief Constructor.
+   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset
+   * = 0.5` by default.
+   *
+   * @param freq Frequency of sine wave
+   */
   explicit SineLegacy(const double freq) : _freq(freq) {}
 
+  /**
+   * @brief Set amplitude
+   *
+   * @param amp peek to peek amplitude of sine wave
+   * @return Sine
+   */
   SineLegacy with_amp(const double amp) {
     _amp = amp;
     return *this;
   }
 
+  /**
+   * @brief Set offset
+   *
+   * @param offset Offset of sine wave
+   * @return Sine
+   */
   SineLegacy with_offset(const double offset) {
     _offset = offset;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency division
+   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
+   */
   SineLegacy with_sampling_frequency_division(const uint32_t div) {
     _freq_div = div;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency
+   */
   SineLegacy with_sampling_frequency(const double freq) {
     return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
   }
@@ -111,30 +178,64 @@ class SineLegacy final : public internal::Modulation {
   std::optional<uint32_t> _freq_div;
 };
 
+/**
+ * @brief Square wave modulation
+ */
 class Square final : public internal::Modulation {
  public:
+  /**
+   * @brief Constructor
+   *
+   * @param freq Frequency of square wave
+   */
   explicit Square(const int32_t freq) : _freq(freq) {}
 
+  /**
+   * @brief set low level amplitude
+   *
+   * @param low low level amplitude (0.0 - 1.0)
+   * @return Square
+   */
   Square with_low(const double low) {
     _low = low;
     return *this;
   }
 
+  /**
+   * @brief set high level amplitude
+   *
+   * @param high high level amplitude (0.0 - 1.0)
+   * @return Square
+   */
   Square with_high(const double high) {
     _high = high;
     return *this;
   }
 
+  /**
+   * @brief set duty ratio.
+   * @details Duty ratio is defined as `Th / (Th + Tl)`, where `Th` is high level duration, and `Tl` is low level duration.
+   *
+   * @param duty duty ratio (0.0 - 1.0)
+   * @return Square
+   */
   Square with_duty(const double duty) {
     _duty = duty;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency division
+   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
+   */
   Square with_sampling_frequency_division(const uint32_t div) {
     _freq_div = div;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency
+   */
   Square with_sampling_frequency(const double freq) {
     return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
   }
@@ -156,6 +257,9 @@ class Square final : public internal::Modulation {
   std::optional<uint32_t> _freq_div;
 };
 
+/**
+ * @brief Base class for custom modulation
+ */
 class Modulation : public internal::Modulation {
  public:
   explicit Modulation(const double sampling_freq)
@@ -174,6 +278,9 @@ class Modulation : public internal::Modulation {
   uint32_t _freq_div;
 };
 
+/**
+ * @brief Modulation to cache the result of calculation
+ */
 class Cache : public internal::Modulation {
  public:
   template <class M>
@@ -206,6 +313,9 @@ class Cache : public internal::Modulation {
   uint32_t _freq_div;
 };
 
+/**
+ * @brief Modulation for modulating radiation pressure
+ */
 class RadiationPressure : public internal::Modulation {
  public:
   template <class M>
