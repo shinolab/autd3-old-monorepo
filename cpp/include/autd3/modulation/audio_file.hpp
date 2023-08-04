@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/07/2023
+// Last Modified: 05/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,15 +19,31 @@
 
 namespace autd3::modulation {
 
+/**
+ * @brief Modulation constructed from wav file
+ * @details The wav data is resampled to the sampling frequency of Modulation.
+ */
 class Wav final : public internal::Modulation {
  public:
+  /**
+   * @brief Constructor
+   *
+   * @param path Path to wav file
+   */
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
 
+  /**
+   * @brief Set sampling frequency division
+   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
+   */
   Wav with_sampling_frequency_division(const uint32_t div) {
     _freq_div = div;
     return *this;
   }
 
+  /**
+   * @brief Set sampling frequency
+   */
   Wav with_sampling_frequency(const double freq) {
     return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
   }
