@@ -6,6 +6,7 @@
 - Fix [#122](https://github.com/shinolab/autd3/issues/122): Calling GeometryViewer::run multiple times causes an error
 - Fix [#123](https://github.com/shinolab/autd3/issues/123): impl Default for autd3-link-monitor::PyPlotConfig
 - Fix [#124](https://github.com/shinolab/autd3/issues/124): Python backend of autd3-link-monitor causes indentation errors
+- Fix [#125](https://github.com/shinolab/autd3/issues/125): Grouped without specified Gain for all devices causes an error
 
 # 14.2.1
 
