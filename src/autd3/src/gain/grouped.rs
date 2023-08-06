@@ -36,7 +36,7 @@ impl<T: Transducer> Grouped<T> {
     ) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok((0..geometry.num_devices())
             .flat_map(|dev| {
-                if let Some(i) = drives.keys().find(|indices| indices.contains(&&dev)) {
+                if let Some(i) = drives.keys().find(|indices| indices.contains(&dev)) {
                     geometry
                         .transducers_of(dev)
                         .map(|tr| drives[i][tr.idx()])
