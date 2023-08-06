@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 04/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -143,6 +143,8 @@ impl SOEM {
     }
 
     /// Set sync mode
+    ///
+    /// See [Beckhoff's site](https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html) for more details.
     pub fn with_sync_mode(self, sync_mode: SyncMode) -> Self {
         Self { sync_mode, ..self }
     }

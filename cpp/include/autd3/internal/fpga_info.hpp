@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 06/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,9 @@ class FPGAInfo {
   FPGAInfo(FPGAInfo&& obj) = default;
   FPGAInfo& operator=(FPGAInfo&& obj) = default;
 
+  /**
+   * @brief Check if thermal sensor is asserted
+   */
   [[nodiscard]] bool is_thermal_assert() const noexcept { return (_info & 0x01) != 0; }
 
   [[nodiscard]] std::string to_string() const { return "Thermal assert = " + std::to_string(is_thermal_assert()); }
