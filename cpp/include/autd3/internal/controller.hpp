@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/07/2023
+// Last Modified: 06/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,12 +24,25 @@
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
+
+/**
+ * @brief Controller class for AUTD3
+ */
 class Controller {
  public:
+  /**
+   * @brief Builder for Controller
+   */
   class Builder {
     friend class Controller;
 
    public:
+    /**
+     * @brief Add device
+     *
+     * @param device AUTD3 device
+     * @return Builder
+     */
     Builder add_device(const AUTD3& device) {
       if (const auto euler = device.euler(); euler.has_value())
         _ptr = AUTDAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
@@ -42,21 +55,43 @@ class Controller {
       return *this;
     }
 
+    /**
+     * @brief Set legacy mode
+     *
+     * @return Builder
+     */
     Builder legacy_mode() {
       _mode = native_methods::TransMode::Legacy;
       return *this;
     }
 
+    /**
+     * @brief Set advanced mode
+     *
+     * @return Builder
+     */
     Builder advanced_mode() {
       _mode = native_methods::TransMode::Advanced;
       return *this;
     }
 
+    /**
+     * @brief Set advanced phase mode
+     *
+     * @return Builder
+     */
     Builder advanced_phase_mode() {
       _mode = native_methods::TransMode::AdvancedPhase;
       return *this;
     }
 
+    /**
+     * @brief Open controller
+     *
+     * @tparam L Link
+     * @param link link
+     * @return Controller
+     */
     template <class L>
     Controller open_with(L&& link) {
       static_assert(std::is_base_of_v<Link, std::remove_reference_t<L>>, "This is not Link");
@@ -70,6 +105,11 @@ class Controller {
     native_methods::TransMode _mode;
   };
 
+  /**
+   * @brief Create Controller builder
+   *
+   * @return Builder
+   */
   static Builder builder() noexcept { return {}; }
 
   Controller() = delete;
@@ -103,11 +143,19 @@ class Controller {
   [[nodiscard]] const Geometry& geometry() const { return _geometry; }
   [[nodiscard]] Geometry& geometry() { return _geometry; }
 
+  /**
+   * @brief Close connection
+   */
   void close() const {
     if (char err[256]{}; !AUTDClose(_ptr, err)) throw AUTDException(err);
   }
 
-  std::vector<FPGAInfo> fpga_info() {
+  /**
+   * @brief Get FPGA information
+   *
+   * @return List of FPGA information
+   */
+  [[nodiscard]] std::vector<FPGAInfo> fpga_info() {
     char err[256]{};
     const size_t num_devices = geometry().num_devices();
     std::vector<uint8_t> info(num_devices);
@@ -118,6 +166,11 @@ class Controller {
     return ret;
   }
 
+  /**
+   * @brief Get firmware information
+   *
+   * @return List of firmware information
+   */
   [[nodiscard]] std::vector<FirmwareInfo> firmware_infos() {
     char err[256]{};
     const auto handle = AUTDGetFirmwareInfoListPointer(_ptr, err);
@@ -133,42 +186,134 @@ class Controller {
     return ret;
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam H Header type (SilencerConfig or Modulation)
+   * @tparam Rep
+   * @tparam Period
+   * @param header header
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename H, typename Rep, typename Period>
   auto send(H&& header, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_header_v<H>, bool> {
     return send(std::forward<H>(header), std::optional(timeout));
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam H Header type (SilencerConfig or Modulation)
+   * @tparam Rep
+   * @tparam Period
+   * @param header header
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename H, typename Rep = uint64_t, typename Period = std::milli>
   auto send(H&& header, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_header_v<H>, bool> {
     return send(std::forward<H>(header), NullBody(), timeout);
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam B body type (Gain, STM, or Amplitudes)
+   * @tparam Rep
+   * @tparam Period
+   * @param body body
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename B, typename Rep, typename Period>
   auto send(B&& body, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_body_v<B>, bool> {
     return send(std::forward<B>(body), std::optional(timeout));
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam B body type (Gain, STM, or Amplitudes)
+   * @tparam Rep
+   * @tparam Period
+   * @param body body
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename B, typename Rep = uint64_t, typename Period = std::milli>
   auto send(B&& body, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_body_v<B>, bool> {
     return send(NullHeader(), std::forward<B>(body), timeout);
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam H Header type (SilencerConfig or Modulation)
+   * @tparam B body type (Gain, STM, or Amplitudes)
+   * @tparam Rep
+   * @tparam Period
+   * @param header header
+   * @param body body
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename H, typename B, typename Rep, typename Period>
   auto send(H&& header, B&& body, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_header_v<H> && is_body_v<B>, bool> {
     return send(std::forward<H>(header), std::forward<B>(body), std::optional(timeout));
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam H Header type (SilencerConfig or Modulation)
+   * @tparam B body type (Gain, STM, or Amplitudes)
+   * @tparam Rep
+   * @tparam Period
+   * @param header header
+   * @param body body
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename H, typename B, typename Rep = uint64_t, typename Period = std::milli>
   auto send(H&& header, B&& body, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
       -> std::enable_if_t<is_header_v<H> && is_body_v<B>, bool> {
     return send(&header, &body, timeout);
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam S Special type (Clear, Synchronize, Stop, ModDelay, or UpdateFlag)
+   * @tparam Rep
+   * @tparam Period
+   * @param s special data
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename S, typename Rep, typename Period>
   auto send(S&& s, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<S>, bool> {
     return send(std::forward<S>(s), std::optional(timeout));
   }
 
+  /**
+   * @brief Send data to the devices
+   *
+   * @tparam S Special type (Clear, Synchronize, Stop, ModDelay, or UpdateFlag)
+   * @tparam Rep
+   * @tparam Period
+   * @param s special data
+   * @param timeout timeout
+   * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
+   * data has been sent reliably or not.
+   */
   template <typename S, typename Rep = uint64_t, typename Period = std::milli>
   auto send(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_special_v<S>, bool> {
     char err[256]{};
@@ -179,7 +324,18 @@ class Controller {
     return res == native_methods::AUTD3_TRUE;
   }
 
+  /**
+   * @brief set force fan flag
+   *
+   * @param value
+   */
   void force_fan(const bool value) const { AUTDSetForceFan(_ptr, value); }
+
+  /**
+   * @brief set reads fpga info flag
+   *
+   * @param value
+   */
   void reads_fpga_info(const bool value) const { AUTDSetReadsFPGAInfo(_ptr, value); }
 
  private:

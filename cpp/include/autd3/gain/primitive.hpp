@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/07/2023
+// Last Modified: 03/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,9 @@
 
 namespace autd3::gain {
 
+/**
+ * @brief Gain to output nothing
+ */
 class Null final : public internal::Gain {
  public:
   Null() = default;
@@ -33,10 +36,18 @@ class Null final : public internal::Gain {
   }
 };
 
+/**
+ * @brief Gain to produce single focal point
+ */
 class Focus final : public internal::Gain {
  public:
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
 
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   */
   Focus with_amp(const double amp) {
     _amp = amp;
     return *this;
@@ -53,10 +64,18 @@ class Focus final : public internal::Gain {
   std::optional<double> _amp;
 };
 
+/**
+ * @brief Gain to produce a Bessel beam
+ */
 class Bessel final : public internal::Gain {
  public:
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
 
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   */
   Bessel with_amp(const double amp) {
     _amp = amp;
     return *this;
@@ -75,10 +94,19 @@ class Bessel final : public internal::Gain {
   std::optional<double> _amp;
 };
 
+/**
+ * @brief Gain to produce a plane wave
+ */
 class Plane final : public internal::Gain {
  public:
   explicit Plane(internal::Vector3 d) : _d(std::move(d)) {}
 
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   * @return Plane
+   */
   Plane with_amp(const double amp) {
     _amp = amp;
     return *this;
@@ -95,6 +123,9 @@ class Plane final : public internal::Gain {
   std::optional<double> _amp;
 };
 
+/**
+ * @brief Gain to group multiple gains
+ */
 class Grouped final : public internal::Gain {
  public:
   Grouped() = default;
@@ -105,12 +136,26 @@ class Grouped final : public internal::Gain {
     _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
   }
 
+  /**
+   * @brief Add gain
+   *
+   * @tparam G Gain
+   * @param device_idx Device index
+   * @param gain Gain
+   */
   template <class G>
-  [[deprecated("please use add() instead")]] void add(const size_t device_idx, G&& gain) {
+  void add(const size_t device_idx, G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
   }
 
+  /**
+   * @brief Add gain by group
+   *
+   * @tparam G Gain
+   * @param ids Device indices
+   * @param gain Gain
+   */
   template <class G>
   void add_by_group(const std::initializer_list<size_t> ids, G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
@@ -152,6 +197,9 @@ class Gain : public internal::Gain {
   }
 };
 
+/**
+ * @brief Gain to cache the result of calculation
+ */
 class Cache : public internal::Gain {
  public:
   template <class G>
