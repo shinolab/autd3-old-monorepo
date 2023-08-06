@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,6 +50,25 @@ pub struct PyPlotConfig {
     pub interval: i32,
     #[pyo3(get)]
     pub print_progress: bool,
+}
+
+impl Default for PyPlotConfig {
+    fn default() -> Self {
+        Self {
+            figsize: (8, 6),
+            dpi: 72,
+            cbar_position: "right".to_string(),
+            cbar_size: "5%".to_string(),
+            cbar_pad: "3%".to_string(),
+            fontsize: 12,
+            ticks_step: 10.,
+            cmap: "jet".to_string(),
+            show: false,
+            fname: "fig.png".into(),
+            interval: 100,
+            print_progress: false,
+        }
+    }
 }
 
 impl Config for PyPlotConfig {
