@@ -26,6 +26,7 @@ use num::integer::gcd;
 pub struct Sine {
     freq: usize,
     amp: float,
+    phase: float,
     offset: float,
     freq_div: u32,
 }
@@ -33,7 +34,7 @@ pub struct Sine {
 impl Sine {
     /// constructor
     ///
-    /// The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.
+    /// The sine wave is defined as `amp / 2 * sin(2π * freq * t + phase) + offset`, where `t` is time, and `amp = 1`, `phase = 0`, `offset = 0.5` by default.
     ///
     /// # Arguments
     ///
@@ -43,6 +44,7 @@ impl Sine {
         Self {
             freq,
             amp: 1.0,
+            phase: 0.0,
             offset: 0.5,
             freq_div: 5120,
         }
@@ -68,6 +70,16 @@ impl Sine {
         Self { offset, ..self }
     }
 
+    /// set phase
+    ///
+    /// # Arguments
+    ///
+    /// * `phase` - Phase of the wave
+    ///
+    pub fn with_phase(self, phase: float) -> Self {
+        Self { phase, ..self }
+    }
+
     pub fn freq(&self) -> usize {
         self.freq
     }
@@ -78,6 +90,10 @@ impl Sine {
 
     pub fn offset(&self) -> float {
         self.offset
+    }
+
+    pub fn phase(&self) -> float {
+        self.phase
     }
 }
 
@@ -90,7 +106,7 @@ impl Modulation for Sine {
         let rep = freq / d;
         Ok((0..n)
             .map(|i| {
-                self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float).sin() + self.offset
+                self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float + self.phase).sin() + self.offset
             })
             .collect())
     }
@@ -225,6 +241,18 @@ mod tests {
     fn test_sine_with_offset() {
         let m = Sine::new(100).with_offset(1.0);
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
+
+        let vec = m.calc().unwrap();
+        assert!(vec.len() > 0);
+        assert!(vec
+            .iter()
+            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+    }
+
+    #[test]
+    fn test_sine_with_phase() {
+        let m = Sine::new(100).with_phase(PI/4.0);
+        assert_approx_eq::assert_approx_eq!(m.phase, PI/4.0);
 
         let vec = m.calc().unwrap();
         assert!(vec.len() > 0);
