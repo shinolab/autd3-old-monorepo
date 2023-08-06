@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -120,27 +120,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
-plot = axes.plot(acoustic_pressures)
-x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
-x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
-x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-axes.set_xticks(np.array(x_ticks), minor=False)
-axes.set_xticklabels(x_labels, minor=False)
-return plot
+    plot = axes.plot(acoustic_pressures)
+    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    axes.set_xticks(np.array(x_ticks), minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    return plot
 
 def plot(observe, acoustic_pressures, resolution, x_label, config):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111)
-plot_acoustic_field_1d(ax, acoustic_pressures, observe, resolution, config)
-ax.set_xlabel(x_label)
-ax.set_ylabel("Amplitude [-]")
-plt.tight_layout()
-if config.fname != "":
-    plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-if config.show:
-    plt.show()
-plt.close()"#,
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111)
+    plot_acoustic_field_1d(ax, acoustic_pressures, observe, resolution, config)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel("Amplitude [-]")
+    plt.tight_layout()
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()"#,
                 "",
                 "",
             )?
@@ -182,42 +182,42 @@ import numpy as np
 import mpl_toolkits.axes_grid1
 
 def plot_acoustic_field_2d(axes, acoustic_pressures, observe_x, observe_y, resolution, config):
-heatmap = axes.pcolor(acoustic_pressures, cmap=config.cmap)
-x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
-y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
-x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
-y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
-x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
-axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
-axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
-axes.set_xticklabels(x_labels, minor=False)
-axes.set_yticklabels(y_labels, minor=False)
-return heatmap
+    heatmap = axes.pcolor(acoustic_pressures, cmap=config.cmap)
+    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
+    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
+    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
+    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
+    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    axes.set_yticklabels(y_labels, minor=False)
+    return heatmap
 
 def add_colorbar(fig, axes, mappable, config):
-divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-cbar = fig.colorbar(mappable, cax=cax)
-cbar.ax.set_ylabel("Amplitude [-]")
+    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
+    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
+    cbar = fig.colorbar(mappable, cax=cax)
+    cbar.ax.set_ylabel("Amplitude [-]")
 
 def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111, aspect="equal")
-nx = len(observe_x)
-ny = len(observe_y)
-acoustic_pressures = np.array(acoustic_pressures).reshape((ny, nx))
-heatmap = plot_acoustic_field_2d(ax, acoustic_pressures, observe_x, observe_y, resolution, config)
-add_colorbar(fig, ax, heatmap, config)
-ax.set_xlabel(x_label)
-ax.set_ylabel(y_label)
-plt.tight_layout()
-if config.fname != "":
-    plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-if config.show:
-    plt.show()
-plt.close()"#,
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111, aspect="equal")
+    nx = len(observe_x)
+    ny = len(observe_y)
+    acoustic_pressures = np.array(acoustic_pressures).reshape((ny, nx))
+    heatmap = plot_acoustic_field_2d(ax, acoustic_pressures, observe_x, observe_y, resolution, config)
+    add_colorbar(fig, ax, heatmap, config)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    plt.tight_layout()
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()"#,
                 "",
                 "",
             )?
@@ -249,20 +249,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plot(modulation, config):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111)
-ax.plot(modulation)
-ax.set_xlim(0, len(modulation))
-ax.set_ylim(0, 1)
-ax.set_xlabel("Index")
-ax.set_ylabel("Modulation")
-plt.tight_layout()
-if config.fname != "":
-    plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-if config.show:
-    plt.show()
-plt.close()"#,
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111)
+    ax.plot(modulation)
+    ax.set_xlim(0, len(modulation))
+    ax.set_ylim(0, 1)
+    ax.set_xlabel("Index")
+    ax.set_ylabel("Modulation")
+    plt.tight_layout()
+    if config.fname != "":
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()"#,
                 "",
                 "",
             )?
@@ -299,53 +299,53 @@ import numpy as np
 import mpl_toolkits.axes_grid1
 
 def adjust_marker_size(fig, axes, scat, radius):
-fig.canvas.draw()
-r_pix = axes.transData.transform((radius, radius)) - axes.transData.transform((0, 0))
-sizes = (2 * r_pix * 72 / fig.dpi)**2
-scat.set_sizes(sizes)
+    fig.canvas.draw()
+    r_pix = axes.transData.transform((radius, radius)) - axes.transData.transform((0, 0))
+    sizes = (2 * r_pix * 72 / fig.dpi)**2
+    scat.set_sizes(sizes)
 
 def add_colorbar(fig, axes, mappable, config):
-divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-cbar = fig.colorbar(mappable, cax=cax)
-cbar.ax.set_ylim((0, 2 * np.pi))
-cbar.ax.set_yticks([0, np.pi, 2 * np.pi])
-cbar.ax.set_yticklabels(['0', '$\\pi$', '$2\\pi$'])
+    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
+    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
+    cbar = fig.colorbar(mappable, cax=cax)
+    cbar.ax.set_ylim((0, 2 * np.pi))
+    cbar.ax.set_yticks([0, np.pi, 2 * np.pi])
+    cbar.ax.set_yticklabels(['0', '$\\pi$', '$2\\pi$'])
 
 def plot_phase_2d(fig, axes, trans_x, trans_y, trans_phase, trans_size, config, cmap='jet', marker='o'):
-scat = axes.scatter(trans_x, trans_y, c=trans_phase, cmap=cmap, s=0,
-                    marker=marker, vmin=0, vmax=2 * np.pi,
-                    clip_on=False)
-add_colorbar(fig, axes, scat, config)
-adjust_marker_size(fig, axes, scat, trans_size / 2)
-return scat
+    scat = axes.scatter(trans_x, trans_y, c=trans_phase, cmap=cmap, s=0,
+                        marker=marker, vmin=0, vmax=2 * np.pi,
+                        clip_on=False)
+    add_colorbar(fig, axes, scat, config)
+    adjust_marker_size(fig, axes, scat, trans_size / 2)
+    return scat
 
 def plot(trans_x, trans_y, trans_phase, config, trans_size):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111, aspect='equal')
-trans_x = np.array(trans_x)
-trans_y = np.array(trans_y)
-x_min = np.min(trans_x) - trans_size / 2
-x_max = np.max(trans_x) + trans_size / 2
-y_min = np.min(trans_y) - trans_size / 2
-y_max = np.max(trans_y) + trans_size / 2
-ax.set_xlim((x_min, x_max))
-ax.set_ylim((y_min, y_max))
-scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
-plt.tight_layout()
-if config.fname != '':
-    plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
-if config.show:
-    plt.show()
-plt.close()"#, "", "")?
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111, aspect='equal')
+    trans_x = np.array(trans_x)
+    trans_y = np.array(trans_y)
+    x_min = np.min(trans_x) - trans_size / 2
+    x_max = np.max(trans_x) + trans_size / 2
+    y_min = np.min(trans_y) - trans_size / 2
+    y_max = np.max(trans_y) + trans_size / 2
+    ax.set_xlim((x_min, x_max))
+    ax.set_ylim((y_min, y_max))
+    scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
+    plt.tight_layout()
+    if config.fname != '':
+        plt.savefig(config.fname, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()"#, "", "")?
             .getattr("plot")?;
             fun.call1((
                 trans_x,
                 trans_y,
                 phases,
                 config,
-                autd3_core::autd3_device::TRANS_SPACING,
+                autd3_core::autd3_device::AUTD3::TRANS_SPACING,
             ))?;
             Ok(())
         })?;
@@ -375,45 +375,45 @@ from matplotlib.animation import FuncAnimation
 import sys
 
 def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
-plot = axes.plot(acoustic_pressures)
-x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
-x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
-x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-axes.set_xticks(np.array(x_ticks), minor=False)
-axes.set_xticklabels(x_labels, minor=False)
-return plot
+    plot = axes.plot(acoustic_pressures)
+    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    axes.set_xticks(np.array(x_ticks), minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    return plot
 
 def plot(observe, acoustic_pressures, resolution, x_label, config):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111)
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111)
 
-nx = len(observe)
-size = len(acoustic_pressures) // nx
-acoustic_pressures = np.array(acoustic_pressures)
-max_p = np.max(acoustic_pressures)
-acoustic_pressures = acoustic_pressures.reshape((size, nx))
+    nx = len(observe)
+    size = len(acoustic_pressures) // nx
+    acoustic_pressures = np.array(acoustic_pressures)
+    max_p = np.max(acoustic_pressures)
+    acoustic_pressures = acoustic_pressures.reshape((size, nx))
 
-def plot_frame(frame):
-    ax.cla()
-    plot_acoustic_field_1d(ax, acoustic_pressures[frame], observe, resolution, config)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel("Amplitude [-]")
-    ax.set_ylim([0, max_p*1.1])
-    plt.tight_layout()
-    if config.print_progress:
-        percent = 100 * (frame+1) / size
-        sys.stdout.write('\r')
-        sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-        sys.stdout.flush()
+    def plot_frame(frame):
+        ax.cla()
+        plot_acoustic_field_1d(ax, acoustic_pressures[frame], observe, resolution, config)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel("Amplitude [-]")
+        ax.set_ylim([0, max_p*1.1])
+        plt.tight_layout()
+        if config.print_progress:
+            percent = 100 * (frame+1) / size
+            sys.stdout.write('\r')
+            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
+            sys.stdout.flush()
 
-ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-if config.fname != "":
-    ani.save(config.fname, dpi=fig.dpi)
+    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
+    if config.fname != "":
+        ani.save(config.fname, dpi=fig.dpi)
 
-if config.show:
-    plt.show()
-plt.close()"#,
+    if config.show:
+        plt.show()
+    plt.close()"#,
             "",
             "",
         )?
@@ -458,55 +458,55 @@ import sys
 from matplotlib.colors import Normalize
 
 def config_heatmap(axes, observe_x, observe_y, resolution, config):
-x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
-y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
-x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
-y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
-x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
-axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
-axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
-axes.set_xticklabels(x_labels, minor=False)
-axes.set_yticklabels(y_labels, minor=False)
+    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
+    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
+    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
+    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
+    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
+    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
+    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
+    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
+    axes.set_xticklabels(x_labels, minor=False)
+    axes.set_yticklabels(y_labels, minor=False)
 
 def add_colorbar(fig, axes, mappable, max_p, config):
-divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-cbar = fig.colorbar(mappable, cax=cax)
-cbar.ax.set_ylabel("Amplitude [-]")
-cbar.ax.set_ylim(0, max_p)
+    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
+    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
+    cbar = fig.colorbar(mappable, cax=cax)
+    cbar.ax.set_ylabel("Amplitude [-]")
+    cbar.ax.set_ylim(0, max_p)
 
 def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
-plt.rcParams["font.size"] = config.fontsize
-fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-ax = fig.add_subplot(111, aspect="equal")
-nx = len(observe_x)
-ny = len(observe_y)
-size = len(acoustic_pressures) // (nx * ny)
-acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111, aspect="equal")
+    nx = len(observe_x)
+    ny = len(observe_y)
+    size = len(acoustic_pressures) // (nx * ny)
+    acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
 
-max_p = np.max(acoustic_pressures)
-heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap, norm=Normalize(vmin=0, vmax=max_p))
-config_heatmap(ax, observe_x, observe_y, resolution, config)
-add_colorbar(fig, ax, heatmap, max_p, config)
-ax.set_xlabel(x_label)
-ax.set_ylabel(y_label)
-plt.tight_layout()
+    max_p = np.max(acoustic_pressures)
+    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap, norm=Normalize(vmin=0, vmax=max_p))
+    config_heatmap(ax, observe_x, observe_y, resolution, config)
+    add_colorbar(fig, ax, heatmap, max_p, config)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    plt.tight_layout()
 
-def plot_frame(frame):
-    heatmap.set_array(acoustic_pressures[frame].flatten())
-    if config.print_progress:
-        percent = 100 * (frame+1) / size
-        sys.stdout.write('\r')
-        sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-        sys.stdout.flush()
-    
-ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-if config.fname != "":
-    ani.save(config.fname, dpi=fig.dpi)
-if config.show:
-    plt.show()
-plt.close()"#,
+    def plot_frame(frame):
+        heatmap.set_array(acoustic_pressures[frame].flatten())
+        if config.print_progress:
+            percent = 100 * (frame+1) / size
+            sys.stdout.write('\r')
+            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
+            sys.stdout.flush()
+        
+    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
+    if config.fname != "":
+        ani.save(config.fname, dpi=fig.dpi)
+    if config.show:
+        plt.show()
+    plt.close()"#,
             "",
             "",
         )?
