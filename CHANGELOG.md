@@ -2,6 +2,7 @@
 
 - Add C++ documentation
   - Fix [#89](https://github.com/shinolab/autd3/issues/89): [C++] Poor documentation
+- Fix [#121](https://github.com/shinolab/autd3/issues/121): Phase parameters of autd3::modulation::Fourier
 - Fix [#122](https://github.com/shinolab/autd3/issues/122): Calling GeometryViewer::run multiple times causes an error
 
 # 14.2.1
