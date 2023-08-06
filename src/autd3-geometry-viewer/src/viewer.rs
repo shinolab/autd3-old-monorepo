@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/08/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -111,13 +111,14 @@ impl GeometryViewer {
     /// ## Platform-specific
     ///
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
+    #[allow(clippy::let_and_return)]
     pub fn run_with_event_loop<T: Transducer>(
         &mut self,
         geometry: &Geometry<T>,
         event_loop: &mut EventLoop<()>,
     ) -> i32 {
         let mut render = Renderer::new(
-            &event_loop,
+            event_loop,
             "AUTD GeometryViewer",
             self.window_width as _,
             self.window_height as _,
