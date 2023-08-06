@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,9 +29,12 @@ use vulkano::{
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoopBuilder},
+    event_loop::{EventLoop, EventLoopBuilder},
     platform::run_return::EventLoopExtRunReturn,
 };
+
+#[cfg(target_os = "windows")]
+use winit::platform::windows::WindowExtWindows;
 
 /// Viewer for [autd3_core::geometry::Geometry]
 #[derive(Default)]
@@ -73,6 +76,8 @@ impl GeometryViewer {
 
     /// Run viewer
     ///
+    /// DO NOT call this method multiple times.
+    ///
     /// # Arguments
     ///
     /// * `geometry` - Geometry
@@ -84,13 +89,42 @@ impl GeometryViewer {
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
     pub fn run<T: Transducer>(&mut self, geometry: &Geometry<T>) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
+        self.run_with_event_loop(geometry, &mut event_loop)
+    }
+
+    /// Create event loop
+    ///
+    /// DO NOT call this method multiple times.
+    pub fn create_event_loop() -> EventLoop<()> {
+        EventLoopBuilder::<()>::with_user_event().build()
+    }
+
+    /// Run viewer with provided event loop
+    ///
+    /// # Arguments
+    ///
+    /// * `geometry` - Geometry
+    /// * `event_loop` - EventLoop
+    ///
+    /// # Returns
+    ///
+    /// ## Platform-specific
+    ///
+    /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
+    #[allow(clippy::let_and_return)]
+    pub fn run_with_event_loop<T: Transducer>(
+        &mut self,
+        geometry: &Geometry<T>,
+        event_loop: &mut EventLoop<()>,
+    ) -> i32 {
         let mut render = Renderer::new(
-            &event_loop,
+            event_loop,
             "AUTD GeometryViewer",
             self.window_width as _,
             self.window_height as _,
             self.vsync,
         );
+        render.window().focus_window();
 
         let model = Model::new();
         let mut device_viewer = DeviceViewer::new(&render, &model);
@@ -119,15 +153,18 @@ impl GeometryViewer {
 
         let mut imgui = ImGuiRenderer::new(&render);
 
+        #[cfg(target_os = "windows")]
+        let hwnd = render.window().hwnd();
+
         let mut is_running = true;
-        event_loop.run_return(move |event, _, control_flow| {
+        let r = event_loop.run_return(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
                     ..
                 } => {
                     is_running = false;
-                    *control_flow = ControlFlow::Exit;
+                    control_flow.set_exit();
                 }
                 Event::WindowEvent {
                     event: WindowEvent::Resized(..),
@@ -228,8 +265,17 @@ impl GeometryViewer {
                 }
             }
             if !is_running {
-                *control_flow = ControlFlow::Exit;
+                control_flow.set_exit();
             }
-        })
+        });
+
+        #[cfg(target_os = "windows")]
+        unsafe {
+            windows::Win32::UI::WindowsAndMessaging::DestroyWindow(
+                windows::Win32::Foundation::HWND(hwnd),
+            );
+        }
+
+        r
     }
 }

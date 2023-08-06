@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/06/2023
+// Last Modified: 06/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -73,25 +73,31 @@ class STM : public Body {
   int16_t _finish_idx{-1};
 };
 
+/**
+ * @brief Control point for FocusSTM
+ */
 struct ControlPoint {
+  /**
+   * @brief Focus point
+   */
   Vector3 point;
+  /**
+   * @brief Duty shift
+   * @details Duty ratio of ultrasound will be `50% >> duty_shift`. If `duty_shift` is 0, duty ratio is 50%, which means the amplitude is the maximum.
+   */
   uint8_t duty_shift;
 };
 
+/**
+ * @brief FocusSTM is an STM for moving Gain.
+ * @details The sampling timing is determined by hardware, thus the sampling time is precise.
+ * FocusSTM has following restrictions:
+ * - The maximum number of sampling points is 65536.
+ * - The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
+ * 4096.
+ */
 class FocusSTM final : public STM {
  public:
-  struct Focus {
-    Vector3 point;
-    uint8_t shift;
-
-    explicit Focus(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
-    ~Focus() = default;
-    Focus(const Focus& v) noexcept = default;
-    Focus& operator=(const Focus& obj) = default;
-    Focus(Focus&& obj) = default;
-    Focus& operator=(Focus&& obj) = default;
-  };
-
   explicit FocusSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
 
   FocusSTM(const FocusSTM& obj) = default;
@@ -108,12 +114,25 @@ class FocusSTM final : public STM {
     return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), static_cast<uint64_t>(_shifts.size()));
   }
 
+  /**
+   * @brief Add focus point
+   *
+   * @param point Focus point
+   * @param duty_shift Duty shift. see [ControlPoint] for details.
+   * @return FocusSTM
+   */
   FocusSTM add_focus(Vector3 point, const uint8_t duty_shift = 0) {
     _points.emplace_back(std::move(point));
     _shifts.emplace_back(duty_shift);
     return std::move(*this);
   }
 
+  /**
+   * @brief Add ControlPoint
+   *
+   * @param p control point
+   * @return FocusSTM
+   */
   FocusSTM add_focus(ControlPoint p) {
     _points.emplace_back(std::move(p.point));
     _shifts.emplace_back(p.duty_shift);
@@ -121,6 +140,12 @@ class FocusSTM final : public STM {
   }
 
 #if __cplusplus >= 202002L
+  /**
+   * @brief Add foci
+   *
+   * @tparam R
+   * @param iter iterator of focus points
+   */
   template <std::ranges::viewable_range R>
   auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>, FocusSTM> {
     for (Vector3 e : iter) {
@@ -130,6 +155,12 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
+  /**
+   * @brief Add foci
+   *
+   * @tparam R
+   * @param iter iterator of [ControlPoint]s
+   */
   template <std::ranges::viewable_range R>
   auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>, FocusSTM> {
     for (ControlPoint e : iter) {
@@ -164,8 +195,21 @@ class FocusSTM final : public STM {
   std::vector<uint8_t> _shifts;
 };
 
+/**
+ * @brief GainSTM is an STM for moving Gain.
+ * @details The sampling timing is determined by hardware, thus the sampling time is precise.
+ * GainSTM has following restrictions:
+ * - The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
+ * - The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
+ * 4096.
+ */
 class GainSTM final : public STM {
  public:
+  /**
+   * @brief Constructor
+   *
+   * @param freq STM frequency
+   */
   explicit GainSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
   GainSTM(const GainSTM& obj) = default;
   GainSTM& operator=(const GainSTM& obj) = default;
@@ -173,8 +217,20 @@ class GainSTM final : public STM {
   GainSTM& operator=(GainSTM&& obj) = default;
   ~GainSTM() override = default;
 
+  /**
+   * @brief Constructor
+   *
+   * @param freq Sampling frequency
+   * @return GainSTM
+   */
   static GainSTM with_sampling_frequency(const double freq) { return GainSTM(std::nullopt, freq, std::nullopt); }
 
+  /**
+   * @brief Constructor
+   *
+   * @param div  Sampling frequency division
+   * @return GainSTM
+   */
   static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
 
   [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry& geometry) const override {
@@ -183,6 +239,13 @@ class GainSTM final : public STM {
     return ptr;
   }
 
+  /**
+   * @brief Add Gain to the GainSTM
+   *
+   * @tparam G Gain
+   * @param gain gain
+   * @return GainSTM
+   */
   template <typename G>
   GainSTM add_gain(G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
@@ -191,6 +254,13 @@ class GainSTM final : public STM {
   }
 
 #if __cplusplus >= 202002L
+  /**
+   * @brief Add Gains to the GainSTM
+   *
+   * @tparam G Gain
+   * @param gain gain
+   * @return GainSTM
+   */
   template <std::ranges::viewable_range R>
   auto add_gains_from_iter(R&& iter) -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>, GainSTM> {
     for (auto e : iter)

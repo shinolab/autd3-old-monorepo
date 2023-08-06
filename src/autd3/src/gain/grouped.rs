@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/07/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,16 +34,24 @@ impl<T: Transducer> Grouped<T> {
         drives: HashMap<&Vec<usize>, Vec<Drive>>,
         geometry: &Geometry<T>,
     ) -> Result<Vec<Drive>, AUTDInternalError> {
-        let mut m = drives
-            .iter()
-            .flat_map(|(k, v)| {
-                k.iter()
-                    .flat_map(|&i| geometry.transducers_of(i).map(|tr| (tr.idx(), v[tr.idx()])))
-                    .collect::<Vec<(usize, Drive)>>()
+        Ok((0..geometry.num_devices())
+            .flat_map(|dev| {
+                if let Some(i) = drives.keys().find(|indices| indices.contains(&dev)) {
+                    geometry
+                        .transducers_of(dev)
+                        .map(|tr| drives[i][tr.idx()])
+                        .collect()
+                } else {
+                    vec![
+                        Drive {
+                            amp: 0.0,
+                            phase: 0.0
+                        };
+                        geometry.transducers_of(dev).len()
+                    ]
+                }
             })
-            .collect::<Vec<(usize, Drive)>>();
-        m.sort_by(|a, b| a.0.cmp(&b.0));
-        Ok(m.iter().map(|&(_, v)| v).collect::<Vec<_>>())
+            .collect())
     }
 
     /// add gain
@@ -173,6 +181,34 @@ mod tests {
                 _ => {
                     assert_eq!(drive.phase, 0.0);
                     assert_eq!(drive.amp, 0.5);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_grouped_without_specified() {
+        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .build()
+            .unwrap();
+
+        let grouped_gain = Grouped::new().add(0, Plane::new(Vector3::zeros()));
+
+        let drives = grouped_gain.calc(&geometry).unwrap();
+
+        assert_eq!(drives.len(), geometry.num_transducers());
+
+        for (i, drive) in drives.iter().enumerate() {
+            match i {
+                i if i < geometry.device_map()[0] => {
+                    assert_eq!(drive.phase, 0.0);
+                    assert_eq!(drive.amp, 1.0);
+                }
+                _ => {
+                    assert_eq!(drive.phase, 0.0);
+                    assert_eq!(drive.amp, 0.0);
                 }
             }
         }
