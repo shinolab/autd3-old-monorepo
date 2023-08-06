@@ -102,35 +102,35 @@ atomic 0.5.3 (Apache-2.0 OR MIT)
 https://github.com/Amanieu/atomic-rs
 ---------------------------------------------------------
 
-autd3 14.2.1 (MIT)
+autd3 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-core 14.2.1 (MIT)
+autd3-core 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 14.2.1 (MIT)
+autd3-driver 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 14.2.1 (MIT)
+autd3-firmware-emulator 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 14.2.1 (MIT)
+autd3-gain-holo 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 14.2.1 (MIT)
+autd3-protobuf 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-simulator 14.2.1 (MIT)
+autd3-simulator 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-traits 14.2.1 (MIT)
+autd3-traits 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -992,7 +992,7 @@ simd-adler32 0.3.7 (MIT)
 https://github.com/mcountryman/simd-adler32
 ---------------------------------------------------------
 
-simulator 14.2.1 (MIT)
+simulator 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
