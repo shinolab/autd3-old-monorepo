@@ -18,6 +18,7 @@ use autd3_core::{
     error::AUTDInternalError,
     float,
     modulation::{Modulation, ModulationProperty},
+    PI,
 };
 
 use num::integer::lcm;
@@ -163,9 +164,9 @@ mod tests {
 
     #[test]
     fn test_fourier() {
-        let f0 = Sine::new(50);
-        let f1 = Sine::new(100);
-        let f2 = Sine::new(150);
+        let f0 = Sine::new(50).with_phase(PI/2.0);
+        let f1 = Sine::new(100).with_phase(PI/3.0);
+        let f2 = Sine::new(150).with_phase(PI/4.0);
         let f3 = Sine::new(200);
         let f4 = Sine::new(250);
 
