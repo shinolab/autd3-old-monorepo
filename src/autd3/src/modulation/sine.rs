@@ -248,4 +248,16 @@ mod tests {
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
     }
+
+    #[test]
+    fn test_sine_with_phase() {
+        let m = Sine::new(100).with_phase(PI/4.0);
+        assert_approx_eq::assert_approx_eq!(m.phase, PI/4.0);
+
+        let vec = m.calc().unwrap();
+        assert!(vec.len() > 0);
+        assert!(vec
+            .iter()
+            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+    }
 }
