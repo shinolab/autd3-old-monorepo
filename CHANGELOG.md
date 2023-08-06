@@ -1,3 +1,8 @@
+# 14.2.2
+
+- Add C++ documentation
+  - Fix [#89](https://github.com/shinolab/autd3/issues/89): [C++] Poor documentation
+
 # 14.2.1
 
 - Improve `autd3-gain-holo` performance
