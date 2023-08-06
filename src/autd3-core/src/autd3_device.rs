@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 07/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,25 +14,25 @@
 use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
 use autd3_driver::{float, MILLIMETER};
 
-#[deprecated(since = "14.2.1", note = "Use AUTD3::NUM_TRANS_IN_UNIT instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::NUM_TRANS_IN_UNIT instead")]
 /// Number of transducer in an AUTD3 device
 pub const NUM_TRANS_IN_UNIT: usize = 249;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::NUM_TRANS_X instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::NUM_TRANS_X instead")]
 /// Number of transducer in x-axis of AUTD3 device
 pub const NUM_TRANS_X: usize = 18;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::NUM_TRANS_Y instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::NUM_TRANS_Y instead")]
 /// Number of transducer in y-axis of AUTD3 device
 pub const NUM_TRANS_Y: usize = 14;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::TRANS_SPACING_MM instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::TRANS_SPACING_MM instead")]
 /// Spacing between transducers in mm
 pub const TRANS_SPACING_MM: float = 10.16;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::TRANS_SPACING instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::TRANS_SPACING instead")]
 /// Spacing between transducers
 pub const TRANS_SPACING: float = AUTD3::TRANS_SPACING_MM * MILLIMETER;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::DEVICE_WIDTH instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::DEVICE_WIDTH instead")]
 /// Device width including substrate
 pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
-#[deprecated(since = "14.2.1", note = "Use AUTD3::DEVICE_HEIGHT instead")]
+#[deprecated(since = "14.2.2", note = "Use AUTD3::DEVICE_HEIGHT instead")]
 /// Device height including substrate
 pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
 
