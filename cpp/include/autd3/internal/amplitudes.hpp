@@ -3,7 +3,7 @@
 // Created Date: 04/06/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 06/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,9 @@
 
 namespace autd3::internal {
 
+/**
+ * @brief Amplitudes settings for AdvancedPhase mode
+ */
 class Amplitudes final : public Body {
  public:
   Amplitudes() noexcept : Amplitudes(1.0) {}

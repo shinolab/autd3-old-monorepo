@@ -1,6 +1,6 @@
 [package]
 name = "autd3-core"
-version = "14.2.1"
+version = "14.2.2"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-driver = { path = "../autd3-driver", version = "14.2.1" }
+autd3-driver = { path = "../autd3-driver", version = "14.2.2" }
 bitflags = "2.0.2"
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
 rayon = { version = "1.7.0", optional = true }
