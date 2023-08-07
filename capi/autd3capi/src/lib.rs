@@ -537,6 +537,12 @@ pub unsafe extern "C" fn AUTDModulationSineWithAmp(m: ModulationPtr, amp: float)
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDModulationSineWithPhase(m: ModulationPtr, phase: float) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(m, Sine).with_phase(phase))
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSineWithOffset(
     m: ModulationPtr,
     offset: float,
