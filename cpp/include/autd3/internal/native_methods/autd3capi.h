@@ -6,6 +6,9 @@
 
 namespace autd3::internal::native_methods {
 
+template<typename T = void>
+struct Vec;
+
 struct ControllerBuilderPtr {
   void* _0;
 };
@@ -167,6 +170,10 @@ ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m,
 [[nodiscard]] ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
+
+[[nodiscard]] ModulationPtr AUTDModulationFourier(ModulationPtr m1, ModulationPtr m2);
+
+[[nodiscard]] ModulationPtr AUTDModulationFourierIter(ModulationPtr m, Vec<double> m_vec);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m,
