@@ -124,6 +124,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, float amp);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, float phase);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, float offset);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m, uint div);
