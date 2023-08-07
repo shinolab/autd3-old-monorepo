@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 08/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,19 +16,18 @@ use std::rc::Rc;
 use nalgebra::ComplexField;
 use rand::{thread_rng, Rng};
 
-use autd3_core::float;
+use autd3_core::{
+    acoustics::{propagate_tr, Sphere},
+    float,
+};
 
-use crate::{error::HoloError, Backend, Complex, MatrixX, MatrixXc, VectorX, VectorXc};
+use crate::{
+    error::HoloError, Backend, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc,
+};
 
 /// Backend using nalgebra
 #[derive(Default)]
 pub struct NalgebraBackend {}
-
-impl NalgebraBackend {
-    pub fn new() -> Rc<Self> {
-        Rc::new(Self {})
-    }
-}
 
 impl Backend for NalgebraBackend {
     fn gs(&self, repeat: usize, amps: &[float], g: MatrixXc) -> Result<VectorXc, HoloError> {
@@ -318,5 +317,68 @@ impl Backend for NalgebraBackend {
         }
 
         Ok(x)
+    }
+}
+
+impl LinAlgBackend for NalgebraBackend {
+    type MatrixXc = MatrixXc;
+    type MatrixX = MatrixX;
+    type VectorXc = VectorXc;
+    type VectorX = VectorX;
+
+    fn new() -> Result<Rc<Self>, HoloError> {
+        Ok(Rc::new(Self {}))
+    }
+
+    fn generate_propagation_matrix<T: autd3_core::geometry::Transducer>(
+        &self,
+        geometry: &autd3_core::geometry::Geometry<T>,
+        foci: &[autd3_core::geometry::Vector3],
+    ) -> Self::MatrixXc {
+        MatrixXc::from_iterator(
+            foci.len(),
+            geometry.num_transducers(),
+            geometry.transducers().flat_map(|trans| {
+                foci.iter().map(move |fp| {
+                    propagate_tr::<Sphere, T>(trans, geometry.attenuation, geometry.sound_speed, fp)
+                })
+            }),
+        )
+    }
+
+    fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc {
+        v
+    }
+
+    fn alloc_zeros_cv(&self, size: usize) -> Self::VectorXc {
+        Self::VectorXc::zeros(size)
+    }
+
+    fn make_complex_v(&self, real: &[float]) -> Self::VectorXc {
+        Self::VectorXc::from_iterator(real.len(), real.iter().map(|&v| Complex::new(v, 0.)))
+    }
+
+    fn c_gemv(
+        &self,
+        trans: crate::Trans,
+        alpha: Complex,
+        a: &Self::MatrixXc,
+        x: &Self::VectorXc,
+        beta: Complex,
+        y: &mut Self::VectorXc,
+    ) {
+        match trans {
+            crate::Trans::NoTrans => y.gemv(alpha, a, x, beta),
+            crate::Trans::Trans => y.gemv_tr(alpha, a, x, beta),
+            crate::Trans::ConjTrans => y.gemv_ad(alpha, a, x, beta),
+        }
+    }
+
+    fn normalize_cv(&self, v: &mut Self::VectorXc) {
+        v.apply(|v| *v = *v / v.abs())
+    }
+
+    fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc) {
+        y.component_mul_assign(x)
     }
 }
