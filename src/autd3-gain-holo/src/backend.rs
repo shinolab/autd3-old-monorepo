@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 09/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -76,6 +76,7 @@ pub trait LinAlgBackend {
     ) -> Self::MatrixXc;
 
     fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc;
+    fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc;
 
     fn alloc_cv(&self, size: usize) -> Self::VectorXc;
     fn alloc_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
@@ -83,8 +84,19 @@ pub trait LinAlgBackend {
     fn alloc_zeros_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
 
     fn clone_cv(&self, v: &Self::VectorXc) -> Self::VectorXc;
+    fn clone_cm(&self, v: &Self::MatrixXc) -> Self::MatrixXc;
 
     fn make_complex_v(&self, real: &[float]) -> Self::VectorXc;
+    fn make_complex2_v(&self, real: &[float], imag: &[float]) -> Self::VectorXc;
+    fn make_complex_m(&self, rows: usize, cols: usize, real: &[float]) -> Self::MatrixXc;
+    fn make_complex2_m(
+        &self,
+        rows: usize,
+        cols: usize,
+        real: &[float],
+        imag: &[float],
+    ) -> Self::MatrixXc;
+
     fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc);
     fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc);
 
@@ -117,12 +129,13 @@ pub trait LinAlgBackend {
 
     fn gen_back_prop(
         &self,
-        m: usize,
+        _m: usize,
+        n: usize,
         transfer: &Self::MatrixXc,
         amps: &Self::VectorXc,
         b: &mut Self::MatrixXc,
     ) {
-        let mut tmp = self.alloc_zeros_cm(m, m);
+        let mut tmp = self.alloc_zeros_cm(n, n);
 
         self.gemm_c(
             Trans::NoTrans,
@@ -134,7 +147,7 @@ pub trait LinAlgBackend {
             &mut tmp,
         );
 
-        let mut denominator = self.alloc_cv(m);
+        let mut denominator = self.alloc_cv(n);
         self.get_diagonal_c(&tmp, &mut denominator);
         self.reciprocal_c(&mut denominator);
         self.hadamard_product_assign_cv(amps, &mut denominator);
