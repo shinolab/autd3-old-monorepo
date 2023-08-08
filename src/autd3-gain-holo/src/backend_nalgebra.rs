@@ -358,7 +358,7 @@ impl LinAlgBackend for NalgebraBackend {
         Self::VectorXc::from_iterator(real.len(), real.iter().map(|&v| Complex::new(v, 0.)))
     }
 
-    fn c_gemv(
+    fn gemv_c(
         &self,
         trans: crate::Trans,
         alpha: Complex,
@@ -378,7 +378,82 @@ impl LinAlgBackend for NalgebraBackend {
         v.apply(|v| *v = *v / v.abs())
     }
 
-    fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc) {
+    fn hadamard_product_assign_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc) {
         y.component_mul_assign(x)
+    }
+
+    fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &Self::VectorXc, z: &mut Self::VectorXc) {
+        *z = x.component_mul(y)
+    }
+
+    fn alloc_cv(&self, size: usize) -> Self::VectorXc {
+        Self::VectorXc::zeros(size)
+    }
+
+    fn alloc_zeros_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc {
+        Self::MatrixXc::zeros(rows, cols)
+    }
+
+    fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc) {
+        *v = a.diagonal()
+    }
+
+    fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc) {
+        a.fill(Complex::new(0., 0.));
+        a.set_diagonal(&v)
+    }
+
+    fn reciprocal_c(&self, v: &mut Self::VectorXc) {
+        v.apply(|v| *v = Complex::new(1., 0.) / *v);
+    }
+
+    fn gemm_c(
+        &self,
+        trans_a: crate::Trans,
+        trans_b: crate::Trans,
+        alpha: Complex,
+        a: &Self::MatrixXc,
+        b: &Self::MatrixXc,
+        beta: Complex,
+        y: &mut Self::MatrixXc,
+    ) {
+        match trans_a {
+            crate::Trans::NoTrans => match trans_b {
+                crate::Trans::NoTrans => y.gemm(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm(alpha, a, &b.adjoint(), beta),
+            },
+            crate::Trans::Trans => match trans_b {
+                crate::Trans::NoTrans => y.gemm_tr(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm_tr(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm_tr(alpha, a, &b.adjoint(), beta),
+            },
+            crate::Trans::ConjTrans => match trans_b {
+                crate::Trans::NoTrans => y.gemm_ad(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm_ad(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm_ad(alpha, a, &b.adjoint(), beta),
+            },
+        }
+    }
+
+    fn alloc_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc {
+        Self::MatrixXc::zeros(rows, cols)
+    }
+
+    fn clone_cv(&self, v: &Self::VectorXc) -> Self::VectorXc {
+        v.clone()
+    }
+
+    fn gen_back_prop(
+        &self,
+        _m: usize,
+        transfer: &Self::MatrixXc,
+        amps: &Self::VectorXc,
+        b: &mut Self::MatrixXc,
+    ) {
+        let denomi = transfer.column_sum();
+        *b = transfer
+            .map_with_location(|i, _, a| amps[i] * a.conj() / denomi[i])
+            .transpose();
     }
 }

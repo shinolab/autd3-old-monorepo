@@ -57,7 +57,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
 
         let p = self.backend.make_complex_v(&self.amps);
         let mut q = self.backend.alloc_zeros_cv(m);
-        self.backend.c_gemv(
+        self.backend.gemv_c(
             Trans::ConjTrans,
             Complex::new(1., 0.),
             &g,
