@@ -27,7 +27,7 @@ use nalgebra::ComplexField;
 /// Gain to produce multiple foci with GS-PAT algorithm
 ///
 /// Reference
-/// * Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on Graphics (TOG), 39(4):138–1, 2020.
+/// * Plasencia, Diego Martinez, et al. "GS-PAT: high-speed multi-point sound-fields for phased arrays of transducers." ACM Transactions on Graphics (TOG) 39.4 (2020): 138-1.
 #[derive(Gain)]
 pub struct GSPAT<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
