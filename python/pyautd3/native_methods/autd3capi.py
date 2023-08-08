@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode, Vec
+from .autd3capi_def import ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -208,11 +208,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
-        self.dll.AUTDModulationFourier.argtypes = [ModulationPtr, ModulationPtr]  # type: ignore 
+        self.dll.AUTDModulationFourier.argtypes = [] 
         self.dll.AUTDModulationFourier.restype = ModulationPtr
 
-        self.dll.AUTDModulationFourierIter.argtypes = [ModulationPtr, Vec]  # type: ignore 
-        self.dll.AUTDModulationFourierIter.restype = ModulationPtr
+        self.dll.AUTDModulationFourierAddComponent.argtypes = [ModulationPtr, ModulationPtr]  # type: ignore 
+        self.dll.AUTDModulationFourierAddComponent.restype = ModulationPtr
 
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.restype = ModulationPtr
@@ -523,11 +523,11 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
 
-    def modulation_fourier(self, m1: ModulationPtr, m2: ModulationPtr) -> ModulationPtr:
-        return self.dll.AUTDModulationFourier(m1, m2)
+    def modulation_fourier(self) -> ModulationPtr:
+        return self.dll.AUTDModulationFourier()
 
-    def modulation_fourier_iter(self, m: ModulationPtr, m_vec: Vec) -> ModulationPtr:
-        return self.dll.AUTDModulationFourierIter(m, m_vec)
+    def modulation_fourier_add_component(self, fourier: ModulationPtr, m: ModulationPtr) -> ModulationPtr:
+        return self.dll.AUTDModulationFourierAddComponent(fourier, m)
 
     def modulation_sine_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithSamplingFrequencyDivision(m, div)

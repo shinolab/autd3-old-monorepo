@@ -552,15 +552,18 @@ pub unsafe extern "C" fn AUTDModulationSineWithOffset(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationFourier(m1: ModulationPtr, m2: ModulationPtr) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m1, Fourier).add_component(m2))
+pub unsafe extern "C" fn AUTDModulationFourier() -> ModulationPtr {
+    ModulationPtr::new(Fourier::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationFourierIter(m: ModulationPtr, m_vec: Vec<f64>) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Fourier).add_components_from_iter(m_vec))
-}
+pub unsafe extern "C" fn AUTDModulationFourierAddComponent(
+    fourier: ModulationPtr,
+    m: ModulationPtr,
+) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(fourier, Fourier).add_component(**take_mod!(m, Sine)))
+} 
 
 #[no_mangle]
 #[must_use]
