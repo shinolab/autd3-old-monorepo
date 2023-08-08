@@ -64,40 +64,43 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GS<B> {
         let m = geometry.num_transducers();
         let n = self.foci.len();
 
-        let g = self
-            .backend
-            .generate_propagation_matrix(geometry, &self.foci);
-
-        let amps = self.backend.make_complex_v(&self.amps);
-
         let ones = vec![1.; m];
-        let q0 = self.backend.make_complex_v(&ones);
         let mut q = self.backend.make_complex_v(&ones);
 
-        let mut p = self.backend.alloc_zeros_cv(n);
-        for _ in 0..self.repeat {
-            self.backend.c_gemv(
-                Trans::NoTrans,
-                Complex::new(1., 0.),
-                &g,
-                &q,
-                Complex::new(0., 0.),
-                &mut p,
-            );
-            self.backend.normalize_cv(&mut p);
-            self.backend.hadamard_product_cv(&amps, &mut p);
+        {
+            let g = self
+                .backend
+                .generate_propagation_matrix(geometry, &self.foci);
 
-            self.backend.c_gemv(
-                Trans::ConjTrans,
-                Complex::new(1., 0.),
-                &g,
-                &p,
-                Complex::new(0., 0.),
-                &mut q,
-            );
+            let amps = self.backend.make_complex_v(&self.amps);
 
-            self.backend.normalize_cv(&mut q);
-            self.backend.hadamard_product_cv(&q0, &mut q);
+            let q0 = self.backend.make_complex_v(&ones);
+
+            let mut p = self.backend.alloc_zeros_cv(n);
+            for _ in 0..self.repeat {
+                self.backend.gemv_c(
+                    Trans::NoTrans,
+                    Complex::new(1., 0.),
+                    &g,
+                    &q,
+                    Complex::new(0., 0.),
+                    &mut p,
+                );
+                self.backend.normalize_cv(&mut p);
+                self.backend.hadamard_product_assign_cv(&amps, &mut p);
+
+                self.backend.gemv_c(
+                    Trans::ConjTrans,
+                    Complex::new(1., 0.),
+                    &g,
+                    &p,
+                    Complex::new(0., 0.),
+                    &mut q,
+                );
+
+                self.backend.normalize_cv(&mut q);
+                self.backend.hadamard_product_assign_cv(&q0, &mut q);
+            }
         }
 
         let q = self.backend.to_host_cv(q);
