@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 09/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -350,12 +350,45 @@ impl LinAlgBackend for NalgebraBackend {
         v
     }
 
+    fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc {
+        v
+    }
+
     fn alloc_zeros_cv(&self, size: usize) -> Self::VectorXc {
         Self::VectorXc::zeros(size)
     }
 
     fn make_complex_v(&self, real: &[float]) -> Self::VectorXc {
         Self::VectorXc::from_iterator(real.len(), real.iter().map(|&v| Complex::new(v, 0.)))
+    }
+
+    fn make_complex2_v(&self, real: &[float], imag: &[float]) -> Self::VectorXc {
+        Self::VectorXc::from_iterator(
+            real.len(),
+            real.iter()
+                .zip(imag.iter())
+                .map(|(&r, &i)| Complex::new(r, i)),
+        )
+    }
+
+    fn make_complex_m(&self, rows: usize, cols: usize, real: &[float]) -> Self::MatrixXc {
+        Self::MatrixXc::from_iterator(rows, cols, real.iter().map(|&v| Complex::new(v, 0.)))
+    }
+
+    fn make_complex2_m(
+        &self,
+        rows: usize,
+        cols: usize,
+        real: &[float],
+        imag: &[float],
+    ) -> Self::MatrixXc {
+        Self::MatrixXc::from_iterator(
+            rows,
+            cols,
+            real.iter()
+                .zip(imag.iter())
+                .map(|(&r, &i)| Complex::new(r, i)),
+        )
     }
 
     fn gemv_c(
@@ -444,16 +477,42 @@ impl LinAlgBackend for NalgebraBackend {
         v.clone()
     }
 
+    fn clone_cm(&self, v: &Self::MatrixXc) -> Self::MatrixXc {
+        v.clone()
+    }
+
     fn gen_back_prop(
         &self,
-        _m: usize,
+        m: usize,
+        n: usize,
         transfer: &Self::MatrixXc,
         amps: &Self::VectorXc,
         b: &mut Self::MatrixXc,
     ) {
-        let denomi = transfer.column_sum();
-        *b = transfer
-            .map_with_location(|i, _, a| amps[i] * a.conj() / denomi[i])
-            .transpose();
+        (0..n).for_each(|i| {
+            let x = amps[i]
+                / transfer
+                    .rows(i, 1)
+                    .iter()
+                    .map(|x| x.norm_sqr())
+                    .sum::<float>();
+            (0..m).for_each(|j| {
+                b[(j, i)] = transfer[(i, j)].conj() * x;
+            })
+        });
+    }
+}
+
+#[cfg(all(test, feature = "test-utilities"))]
+mod tests {
+    use super::*;
+
+    use crate::test_utilities::test_utils::*;
+
+    #[test]
+    fn test_nalgebra_backend() {
+        LinAlgBackendTestHelper::<NalgebraBackend>::new()
+            .unwrap()
+            .test();
     }
 }
