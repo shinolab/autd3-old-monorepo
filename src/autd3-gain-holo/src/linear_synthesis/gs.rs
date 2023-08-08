@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 09/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ use nalgebra::ComplexField;
 /// Gain to produce multiple foci with GS algorithm
 ///
 /// Reference
-/// * Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
+/// * Marzo, Asier, and Bruce W. Drinkwater. "Holographic acoustic tweezers." Proceedings of the National Academy of Sciences 116.1 (2019): 84-89.
 #[derive(Gain)]
 pub struct GS<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
