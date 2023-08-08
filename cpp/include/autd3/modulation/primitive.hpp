@@ -125,6 +125,34 @@ class Sine final : public internal::Modulation {
 };
 
 /**
+ * @brief Multi-frequency sine wave modulation
+ */
+class Fourier final : public internal::Modulation {
+ public:
+  Fourier() = default;
+
+  /**
+   * @brief add components
+   *
+   * @param component sine wave component
+   * @return Fourier
+   */
+  Fourier add_component(internal::native_methods::ModulationPtr component) {
+    _component = component;
+    return *this;
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationFourier();
+    if (&_component != nullptr) ptr = AUTDModulationFourierAddComponent(ptr, _component);
+    return ptr;
+  }
+
+ private:
+  internal::native_methods::ModulationPtr _component;
+};
+
+/**
  * @brief Sine wave modulation
  */
 class SineLegacy final : public internal::Modulation {
