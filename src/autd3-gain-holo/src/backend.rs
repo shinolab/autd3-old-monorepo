@@ -62,10 +62,15 @@ pub trait LinAlgBackend {
     fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc;
     fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc;
 
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice_v(&self, v: &[float]) -> Self::VectorX;
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice_m(&self, rows: usize, cols: usize, v: &[float]) -> Self::MatrixX;
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice_cv(&self, v: &[float]) -> Self::VectorXc;
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice2_cv(&self, r: &[float], i: &[float]) -> Self::VectorXc;
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice2_cm(&self, rows: usize, cols: usize, r: &[float], i: &[float]) -> Self::MatrixXc;
 
     fn copy_from_slice_v(&self, v: &[float], dst: &mut Self::VectorX);
@@ -133,6 +138,7 @@ pub trait LinAlgBackend {
     fn add_v(&self, alpha: float, a: &Self::VectorX, b: &mut Self::VectorX);
     fn add_m(&self, alpha: float, a: &Self::MatrixX, b: &mut Self::MatrixX);
 
+    #[allow(clippy::too_many_arguments)]
     fn gevv_c(
         &self,
         trans_a: Trans,
@@ -154,6 +160,7 @@ pub trait LinAlgBackend {
         y: &mut Self::VectorXc,
     );
 
+    #[allow(clippy::too_many_arguments)]
     fn gemm_c(
         &self,
         trans_a: Trans,
@@ -165,6 +172,7 @@ pub trait LinAlgBackend {
         y: &mut Self::MatrixXc,
     );
 
+    #[allow(clippy::too_many_arguments)]
     fn pseudo_inverse_svd(
         &self,
         a: Self::MatrixXc,
