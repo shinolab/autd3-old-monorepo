@@ -26,112 +26,6 @@ use crate::{error::HoloError, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX
 #[derive(Default)]
 pub struct NalgebraBackend {}
 
-//     fn lm(
-//         &self,
-//         eps1: float,
-//         eps2: float,
-//         tau: float,
-//         kmax: usize,
-//         initial: &[float],
-//         amps: &[float],
-//         g: MatrixXc,
-//     ) -> Result<VectorX, HoloError> {
-//         let m = g.nrows();
-//         let n = g.ncols();
-//         let n_param = n + m;
-
-//         let bhb = {
-//             let p = MatrixXc::from_diagonal(&VectorXc::from_iterator(
-//                 m,
-//                 amps.iter().map(|a| Complex::new(-a, 0.)),
-//             ));
-
-//             let rows = g.nrows();
-//             let cols = g.ncols();
-//             let mut b = g.resize(rows, cols + p.ncols(), Default::default());
-//             b.view_mut((0, cols), (p.nrows(), p.ncols())).copy_from(&p);
-
-//             b.adjoint() * b
-//         };
-
-//         let mut x = VectorX::zeros(n_param);
-//         x.view_mut((0, 0), (initial.len(), 1))
-//             .copy_from_slice(initial);
-
-//         let mut nu = 2.0;
-
-//         fn calc_t_th(x: &VectorX) -> MatrixXc {
-//             let len = x.len();
-//             let t = MatrixXc::from_iterator(len, 1, x.iter().map(|v| Complex::new(0., -v).exp()));
-//             &t * t.adjoint()
-//         }
-
-//         let mut tth = calc_t_th(&x);
-
-//         let mut bhb_tth = bhb.component_mul(&tth);
-
-//         let mut a = bhb_tth.map(|v| v.re);
-//         let mut g = bhb_tth.column_sum().map(|v| v.im);
-
-//         let a_max = a.diagonal().max();
-
-//         let mut mu = tau * a_max;
-
-//         let mut t = VectorXc::from_iterator(x.len(), x.iter().map(|&v| Complex::new(0., v).exp()));
-
-//         let tmp_vec_c = &bhb * &t;
-//         let mut fx = t.dotc(&tmp_vec_c).real();
-
-//         let identity = MatrixX::identity(n_param, n_param);
-//         for _ in 0..kmax {
-//             if g.camax().abs() <= eps1 {
-//                 break;
-//             }
-
-//             let tmp_mat = &a + &identity * mu;
-//             let mut h_lm = g.clone();
-//             if !tmp_mat.qr().solve_mut(&mut h_lm) {
-//                 return Err(HoloError::SolveFailed);
-//             }
-//             if h_lm.norm() <= eps2 * (x.norm() * eps2) {
-//                 break;
-//             }
-
-//             let x_new = &x - &h_lm;
-//             t = VectorXc::from_iterator(
-//                 x_new.len(),
-//                 x_new.iter().map(|&v| Complex::new(0., v).exp()),
-//             );
-
-//             let tmp_vec_c = &bhb * &t;
-//             let fx_new = t.dotc(&tmp_vec_c).real();
-
-//             let tmp_vec = &g + mu * &h_lm;
-
-//             let l0_lhlm = h_lm.dot(&tmp_vec) / 2.0;
-//             let rho = (fx - fx_new) / l0_lhlm;
-//             fx = fx_new;
-
-//             if rho > 0. {
-//                 x = x_new;
-//                 tth = calc_t_th(&x);
-//                 bhb_tth = bhb.component_mul(&tth);
-//                 a = bhb_tth.map(|v| v.re);
-//                 g = bhb_tth.column_sum().map(|v| v.im);
-
-//                 const THIRD: float = 1. / 3.;
-//                 mu *= THIRD.max((1. - (2. * rho - 1.)).powi(3));
-//                 nu = 2.0;
-//             } else {
-//                 mu *= nu;
-//                 nu *= 2.0;
-//             }
-//         }
-
-//         Ok(x)
-//     }
-// }
-
 impl LinAlgBackend for NalgebraBackend {
     type MatrixXc = MatrixXc;
     type MatrixX = MatrixX;
@@ -184,6 +78,10 @@ impl LinAlgBackend for NalgebraBackend {
 
     fn from_slice_v(&self, v: &[float]) -> Self::VectorX {
         Self::VectorX::from_row_slice(v)
+    }
+
+    fn from_slice_m(&self, rows: usize, cols: usize, v: &[float]) -> Self::MatrixX {
+        Self::MatrixX::from_iterator(rows, cols, v.iter().copied())
     }
 
     fn make_complex2_v(&self, real: &Self::VectorX, imag: &Self::VectorX, v: &mut Self::VectorXc) {
@@ -290,6 +188,10 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn clone_v(&self, v: &Self::VectorX) -> Self::VectorX {
+        v.clone()
+    }
+
+    fn clone_m(&self, v: &Self::MatrixX) -> Self::MatrixX {
         v.clone()
     }
 
@@ -414,7 +316,7 @@ impl LinAlgBackend for NalgebraBackend {
     fn pseudo_inverse_svd(
         &self,
         a: Self::MatrixXc,
-        alpha: f64,
+        alpha: float,
         _u: &mut Self::MatrixXc,
         _s: &mut Self::MatrixXc,
         _vt: &mut Self::MatrixXc,
@@ -430,6 +332,113 @@ impl LinAlgBackend for NalgebraBackend {
             (Some(v_t), Some(u)) => *b = v_t.adjoint() * s_inv * u.adjoint(),
             _ => unreachable!(),
         }
+    }
+
+    fn alloc_m(&self, rows: usize, cols: usize) -> Self::MatrixX {
+        Self::MatrixX::zeros(rows, cols)
+    }
+
+    fn to_host_m(&self, v: Self::MatrixX) -> MatrixX {
+        v
+    }
+
+    fn copy_from_slice_v(&self, v: &[float], dst: &mut Self::VectorX) {
+        dst.view_mut((0, 0), (v.len(), 1)).copy_from_slice(v)
+    }
+
+    fn copy_to_v(&self, src: &Self::VectorX, dst: &mut Self::VectorX) {
+        dst.copy_from(src)
+    }
+
+    fn copy_to_m(&self, src: &Self::MatrixX, dst: &mut Self::MatrixX) {
+        dst.copy_from(src)
+    }
+
+    fn create_diagonal(&self, v: &Self::VectorX, a: &mut Self::MatrixX) {
+        a.fill(0.);
+        a.set_diagonal(&v)
+    }
+
+    fn get_diagonal(&self, a: &Self::MatrixX, v: &mut Self::VectorX) {
+        *v = a.diagonal();
+    }
+
+    fn real_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX) {
+        *b = a.map(|v| v.re);
+    }
+
+    fn imag_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX) {
+        *b = a.map(|v| v.im);
+    }
+
+    fn exp_assign_cv(&self, v: &mut Self::VectorXc) {
+        v.apply(|v| *v = v.exp())
+    }
+
+    fn concat_col_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc) {
+        c.view_mut((0, 0), (a.nrows(), a.ncols())).copy_from(&a);
+        c.view_mut((0, a.ncols()), (b.nrows(), b.ncols()))
+            .copy_from(&b);
+    }
+
+    fn max_v(&self, m: &Self::VectorX) -> float {
+        m.max()
+    }
+
+    fn hadamard_product_cm(&self, x: &Self::MatrixXc, y: &Self::MatrixXc, z: &mut Self::MatrixXc) {
+        *z = x.component_mul(y)
+    }
+
+    fn dot(&self, x: &Self::VectorX, y: &Self::VectorX) -> float {
+        x.dot(&y)
+    }
+
+    fn add_v(&self, alpha: float, a: &Self::VectorX, b: &mut Self::VectorX) {
+        *b += alpha * a;
+    }
+
+    fn add_m(&self, alpha: float, a: &Self::MatrixX, b: &mut Self::MatrixX) {
+        *b += alpha * a;
+    }
+
+    fn gevv_c(
+        &self,
+        trans_a: crate::Trans,
+        trans_b: crate::Trans,
+        alpha: Complex,
+        a: &Self::VectorXc,
+        b: &Self::VectorXc,
+        beta: Complex,
+        y: &mut Self::MatrixXc,
+    ) {
+        match trans_a {
+            crate::Trans::NoTrans => match trans_b {
+                crate::Trans::NoTrans => y.gemm(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm(alpha, a, &b.adjoint(), beta),
+            },
+            crate::Trans::Trans => match trans_b {
+                crate::Trans::NoTrans => y.gemm_tr(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm_tr(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm_tr(alpha, a, &b.adjoint(), beta),
+            },
+            crate::Trans::ConjTrans => match trans_b {
+                crate::Trans::NoTrans => y.gemm_ad(alpha, a, b, beta),
+                crate::Trans::Trans => y.gemm_ad(alpha, a, &b.transpose(), beta),
+                crate::Trans::ConjTrans => y.gemm_ad(alpha, a, &b.adjoint(), beta),
+            },
+        }
+    }
+
+    fn solve_inplace(&self, a: &Self::MatrixX, x: &mut Self::VectorX) -> Result<(), HoloError> {
+        if !a.clone().qr().solve_mut(x) {
+            return Err(HoloError::SolveFailed);
+        }
+        Ok(())
+    }
+
+    fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX) {
+        *b = a.column_sum();
     }
 }
 

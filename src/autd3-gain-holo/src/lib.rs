@@ -19,7 +19,7 @@ mod error;
 mod helper;
 mod linear_synthesis;
 mod matrix;
-// mod nls;
+mod nls;
 
 #[cfg(feature = "test-utilities")]
 pub mod test_utilities;
@@ -31,4 +31,4 @@ pub use constraint::*;
 pub use error::HoloError;
 pub use linear_synthesis::*;
 pub use matrix::*;
-// pub use nls::*;
+pub use nls::*;
