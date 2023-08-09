@@ -12,5 +12,4 @@
  */
 
 pub mod bench_utils;
-#[cfg(test)]
 pub mod test_utils;

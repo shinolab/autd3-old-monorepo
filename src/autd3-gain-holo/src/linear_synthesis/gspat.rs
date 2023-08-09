@@ -64,18 +64,18 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
         let m = geometry.num_transducers();
         let n = self.foci.len();
 
-        let mut q = self.backend.alloc_zeros_cv(m);
+        let mut q = self.backend.alloc_zeros_cv(m)?;
 
         {
             let g = self
                 .backend
-                .generate_propagation_matrix(geometry, &self.foci);
-            let amps = self.backend.from_slice_cv(&self.amps);
+                .generate_propagation_matrix(geometry, &self.foci)?;
+            let amps = self.backend.from_slice_cv(&self.amps)?;
 
-            let mut b = self.backend.alloc_cm(m, n);
-            self.backend.gen_back_prop(m, n, &g, &amps, &mut b);
+            let mut b = self.backend.alloc_cm(m, n)?;
+            self.backend.gen_back_prop(m, n, &g, &amps, &mut b)?;
 
-            let mut r = self.backend.alloc_zeros_cm(n, n);
+            let mut r = self.backend.alloc_zeros_cm(n, n)?;
             self.backend.gemm_c(
                 Trans::NoTrans,
                 Trans::NoTrans,
@@ -84,10 +84,10 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 &b,
                 Complex::new(0., 0.),
                 &mut r,
-            );
+            )?;
 
-            let mut p = self.backend.clone_cv(&amps);
-            let mut gamma = self.backend.clone_cv(&amps);
+            let mut p = self.backend.clone_cv(&amps)?;
+            let mut gamma = self.backend.clone_cv(&amps)?;
             self.backend.gemv_c(
                 Trans::NoTrans,
                 Complex::new(1., 0.),
@@ -95,10 +95,10 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 &p,
                 Complex::new(0., 0.),
                 &mut gamma,
-            );
+            )?;
             for _ in 0..self.repeat {
-                self.backend.normalize_assign_cv(&mut gamma);
-                self.backend.hadamard_product_cv(&gamma, &amps, &mut p);
+                self.backend.normalize_assign_cv(&mut gamma)?;
+                self.backend.hadamard_product_cv(&gamma, &amps, &mut p)?;
                 self.backend.gemv_c(
                     Trans::NoTrans,
                     Complex::new(1., 0.),
@@ -106,15 +106,15 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                     &p,
                     Complex::new(0., 0.),
                     &mut gamma,
-                );
+                )?;
             }
 
-            let mut tmp = self.backend.clone_cv(&gamma);
-            self.backend.reciprocal_assign_c(&mut tmp);
-            self.backend.normalize_assign_cv(&mut gamma);
-            self.backend.hadamard_product_assign_cv(&tmp, &mut p);
-            self.backend.hadamard_product_assign_cv(&amps, &mut p);
-            self.backend.hadamard_product_assign_cv(&amps, &mut p);
+            let mut tmp = self.backend.clone_cv(&gamma)?;
+            self.backend.reciprocal_assign_c(&mut tmp)?;
+            self.backend.normalize_assign_cv(&mut gamma)?;
+            self.backend.hadamard_product_assign_cv(&tmp, &mut p)?;
+            self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
+            self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
 
             self.backend.gemv_c(
                 Trans::NoTrans,
@@ -123,10 +123,10 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 &p,
                 Complex::new(0., 0.),
                 &mut q,
-            );
+            )?;
         }
 
-        let q = self.backend.to_host_cv(q);
+        let q = self.backend.to_host_cv(q)?;
 
         let max_coefficient = q.camax().abs();
         Ok(geometry
