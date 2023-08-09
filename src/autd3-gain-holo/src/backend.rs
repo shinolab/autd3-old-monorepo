@@ -75,33 +75,42 @@ pub trait LinAlgBackend {
         foci: &[Vector3],
     ) -> Self::MatrixXc;
 
-    fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc;
-    fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc;
-
+    fn alloc_v(&self, size: usize) -> Self::VectorX;
     fn alloc_cv(&self, size: usize) -> Self::VectorXc;
     fn alloc_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
+    fn alloc_zeros_v(&self, size: usize) -> Self::VectorX;
     fn alloc_zeros_cv(&self, size: usize) -> Self::VectorXc;
     fn alloc_zeros_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
 
+    fn to_host_v(&self, v: Self::VectorX) -> VectorX;
+    fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc;
+    fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc;
+
+    fn from_slice_v(&self, v: &[float]) -> Self::VectorX;
+    fn from_slice_cv(&self, v: &[float]) -> Self::VectorXc;
+    fn from_slice2_cv(&self, r: &[float], i: &[float]) -> Self::VectorXc;
+    fn from_slice2_cm(&self, rows: usize, cols: usize, r: &[float], i: &[float]) -> Self::MatrixXc;
+
+    fn clone_v(&self, v: &Self::VectorX) -> Self::VectorX;
     fn clone_cv(&self, v: &Self::VectorXc) -> Self::VectorXc;
     fn clone_cm(&self, v: &Self::MatrixXc) -> Self::MatrixXc;
 
-    fn make_complex_v(&self, real: &[float]) -> Self::VectorXc;
-    fn make_complex2_v(&self, real: &[float], imag: &[float]) -> Self::VectorXc;
-    fn make_complex_m(&self, rows: usize, cols: usize, real: &[float]) -> Self::MatrixXc;
-    fn make_complex2_m(
-        &self,
-        rows: usize,
-        cols: usize,
-        real: &[float],
-        imag: &[float],
-    ) -> Self::MatrixXc;
+    fn make_complex2_v(&self, real: &Self::VectorX, imag: &Self::VectorX, v: &mut Self::VectorXc);
 
     fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc);
     fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc);
 
-    fn normalize_cv(&self, v: &mut Self::VectorXc);
-    fn reciprocal_c(&self, v: &mut Self::VectorXc);
+    fn abs_cv(&self, a: &Self::VectorXc, b: &mut Self::VectorX);
+    fn scale_assign_v(&self, a: float, b: &mut Self::VectorX);
+    fn sqrt_assign_v(&self, v: &mut Self::VectorX);
+    fn normalize_assign_cv(&self, v: &mut Self::VectorXc);
+    fn reciprocal_assign_c(&self, v: &mut Self::VectorXc);
+    fn pow_assign_v(&self, a: float, v: &mut Self::VectorX);
+
+    fn concat_row_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc);
+    fn concat_col_cv(&self, a: &Self::VectorXc, b: &Self::VectorXc, c: &mut Self::VectorXc);
+
+    fn max_eigen_vector_c(&self, m: Self::MatrixXc) -> Self::VectorXc;
 
     fn hadamard_product_assign_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc);
     fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &Self::VectorXc, z: &mut Self::VectorXc);
@@ -127,6 +136,8 @@ pub trait LinAlgBackend {
         y: &mut Self::MatrixXc,
     );
 
+    fn solve_inplace_h(&self, a: Self::MatrixXc, x: &mut Self::VectorXc) -> Result<(), HoloError>;
+
     fn gen_back_prop(
         &self,
         _m: usize,
@@ -149,7 +160,7 @@ pub trait LinAlgBackend {
 
         let mut denominator = self.alloc_cv(n);
         self.get_diagonal_c(&tmp, &mut denominator);
-        self.reciprocal_c(&mut denominator);
+        self.reciprocal_assign_c(&mut denominator);
         self.hadamard_product_assign_cv(amps, &mut denominator);
 
         self.create_diagonal_c(&denominator, &mut tmp);

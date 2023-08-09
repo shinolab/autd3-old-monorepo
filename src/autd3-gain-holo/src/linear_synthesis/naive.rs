@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 09/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
             .backend
             .generate_propagation_matrix(geometry, &self.foci);
 
-        let p = self.backend.make_complex_v(&self.amps);
+        let p = self.backend.from_slice_cv(&self.amps);
         let mut q = self.backend.alloc_zeros_cv(m);
         self.backend.gemv_c(
             Trans::ConjTrans,
