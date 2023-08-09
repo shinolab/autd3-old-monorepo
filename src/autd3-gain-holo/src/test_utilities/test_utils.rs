@@ -53,11 +53,18 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         self.test_make_complex2_v();
 
+        self.test_get_col_c();
+        self.set_cv();
+        self.set_col_c();
+        self.set_row_c();
+
         self.test_get_diagonal_c();
         self.test_create_diagonal_c();
 
         self.test_abs_cv();
         self.test_scale_assign_v();
+        self.test_scale_assign_cv();
+        self.test_conj_assign_v();
         self.test_sqrt_assign_v();
         self.test_normalize_assign_cv();
         self.test_reciprocal_assign_c();
@@ -71,9 +78,12 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         self.test_hadamard_product_assign_cv();
         self.test_hadamard_product_cv();
 
+        self.test_dot_c();
+
         self.test_gemv_c();
         self.test_gemm_c();
 
+        self.pseudo_inverse_svd();
         self.test_solve_inplace_h();
 
         self.test_generate_propagation_matrix();
@@ -304,6 +314,95 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             });
     }
 
+    fn test_get_col_c(&self) {
+        let a = self.make_random_cm(N, N);
+        let ac = self.backend.clone_cm(&a);
+
+        let ac = self.backend.to_host_cm(ac);
+        (0..N).for_each(|col| {
+            let mut v = self.backend.alloc_cv(N);
+            self.backend.get_col_c(&a, col, &mut v);
+            let v = self.backend.to_host_cv(v);
+            (0..N).for_each(|row| {
+                assert_eq!(ac[(row, col)].re, v[row].re);
+                assert_eq!(ac[(row, col)].im, v[row].im);
+            });
+        })
+    }
+
+    fn set_cv(&self) {
+        let mut a = self.backend.alloc_zeros_cv(N);
+
+        let mut rng = rand::thread_rng();
+        let i = rng.gen_range(0..N);
+        let v = Complex::new(rng.gen(), rng.gen());
+
+        self.backend.set_cv(i, v, &mut a);
+
+        let a = self.backend.to_host_cv(a);
+        (0..N).for_each(|j| {
+            if j == i {
+                assert_eq!(v.re, a[j].re);
+                assert_eq!(v.im, a[j].im);
+            } else {
+                assert_eq!(0.0, a[j].re);
+                assert_eq!(0.0, a[j].im);
+            }
+        });
+    }
+
+    fn set_col_c(&self) {
+        let mut a = self.backend.alloc_zeros_cm(N, 2 * N);
+        let b = self.make_random_cv(N);
+
+        let mut rng = rand::thread_rng();
+        let i = rng.gen_range(0..2 * N);
+        let start = rng.gen_range(1..N / 2);
+        let end = rng.gen_range(N / 2..N - 1);
+
+        self.backend.set_col_c(&b, i, start, end, &mut a);
+
+        let a = self.backend.to_host_cm(a);
+        let b = self.backend.to_host_cv(b);
+        (0..N).for_each(|row| {
+            (0..2 * N).for_each(|col| {
+                if col == i && (start <= row && row < end) {
+                    assert_eq!(b[row].re, a[(row, col)].re);
+                    assert_eq!(b[row].im, a[(row, col)].im);
+                } else {
+                    assert_eq!(0.0, a[(row, col)].re);
+                    assert_eq!(0.0, a[(row, col)].im);
+                }
+            })
+        });
+    }
+
+    fn set_row_c(&self) {
+        let mut a = self.backend.alloc_zeros_cm(N, 2 * N);
+        let b = self.make_random_cv(2 * N);
+
+        let mut rng = rand::thread_rng();
+        let i = rng.gen_range(0..N);
+        let start = rng.gen_range(1..N);
+        let end = rng.gen_range(N..2 * N - 1);
+
+        self.backend.set_row_c(&b, i, start, end, &mut a);
+
+        let a = self.backend.to_host_cm(a);
+        let b = self.backend.to_host_cv(b);
+        (0..N).for_each(|row| {
+            (0..2 * N).for_each(|col| {
+                if row == i && (start <= col && col < end) {
+                    assert_eq!(b[col].re, a[(row, col)].re);
+                    assert_eq!(b[col].im, a[(row, col)].im);
+                } else {
+                    assert_eq!(0.0, a[(row, col)].re);
+                    assert_eq!(0.0, a[(row, col)].im);
+                }
+            })
+        });
+    }
+
     fn test_get_diagonal_c(&self) {
         let c = self.make_random_cm(N, N);
 
@@ -365,6 +464,35 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let vc = self.backend.to_host_v(vc);
         v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
             assert_approx_eq::assert_approx_eq!(scale * vc, v);
+        });
+    }
+
+    fn test_scale_assign_cv(&self) {
+        let mut v = self.make_random_cv(N);
+        let vc = self.backend.clone_cv(&v);
+        let mut rng = rand::thread_rng();
+        let scale = Complex::new(rng.gen(), rng.gen());
+
+        self.backend.scale_assign_cv(scale, &mut v);
+
+        let v = self.backend.to_host_cv(v);
+        let vc = self.backend.to_host_cv(vc);
+        v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
+            assert_approx_eq::assert_approx_eq!(scale * vc, v);
+        });
+    }
+
+    fn test_conj_assign_v(&self) {
+        let mut v = self.make_random_cv(N);
+        let vc = self.backend.clone_cv(&v);
+
+        self.backend.conj_assign_v(&mut v);
+
+        let v = self.backend.to_host_cv(v);
+        let vc = self.backend.to_host_cv(vc);
+        v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
+            assert_eq!(vc.re, v.re);
+            assert_eq!(vc.im, -v.im);
         });
     }
 
@@ -554,6 +682,23 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
                 assert_approx_eq::assert_approx_eq!(a.re * b.re - a.im * b.im, c.re);
                 assert_approx_eq::assert_approx_eq!(a.re * b.im + a.im * b.re, c.im);
             });
+    }
+
+    fn test_dot_c(&self) {
+        let a = self.make_random_cv(N);
+        let b = self.make_random_cv(N);
+
+        let dot = self.backend.dot_c(&a, &b);
+
+        let a = self.backend.to_host_cv(a);
+        let b = self.backend.to_host_cv(b);
+        let expect = a
+            .iter()
+            .zip(b.iter())
+            .map(|(a, b)| a.conj() * b)
+            .sum::<Complex>();
+        assert_approx_eq::assert_approx_eq!(dot.re, expect.re);
+        assert_approx_eq::assert_approx_eq!(dot.im, expect.im);
     }
 
     fn test_gemv_c(&self) {
@@ -854,6 +999,43 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
                 assert_approx_eq::assert_approx_eq!(c.im, expected.im);
             });
         }
+    }
+
+    fn pseudo_inverse_svd(&self) {
+        let a = self.make_random_cm(N, 5 * N);
+        let mut b = self.backend.alloc_zeros_cm(5 * N, N);
+        let mut u = self.backend.alloc_zeros_cm(N, N);
+        let mut s = self.backend.alloc_zeros_cm(5 * N, N);
+        let mut vt = self.backend.alloc_zeros_cm(5 * N, 5 * N);
+        let mut buf = self.backend.alloc_zeros_cm(5 * N, N);
+        let tmp = self.backend.clone_cm(&a);
+        self.backend
+            .pseudo_inverse_svd(tmp, 0., &mut u, &mut s, &mut vt, &mut buf, &mut b);
+
+        let mut c = self.backend.alloc_zeros_cm(N, N);
+        self.backend.gemm_c(
+            Trans::NoTrans,
+            Trans::NoTrans,
+            Complex::new(1., 0.),
+            &a,
+            &b,
+            Complex::new(0., 0.),
+            &mut c,
+        );
+
+        let c = self.backend.to_host_cm(c);
+
+        (0..N).for_each(|col| {
+            (0..N).for_each(|row| {
+                if row == col {
+                    assert_approx_eq::assert_approx_eq!(c[(row, col)].re, 1., 0.1);
+                    assert_approx_eq::assert_approx_eq!(c[(row, col)].im, 0., 0.1);
+                } else {
+                    assert_approx_eq::assert_approx_eq!(c[(row, col)].re, 0., 0.1);
+                    assert_approx_eq::assert_approx_eq!(c[(row, col)].im, 0., 0.1);
+                }
+            })
+        })
     }
 
     fn test_solve_inplace_h(&self) {
