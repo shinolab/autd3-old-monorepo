@@ -70,7 +70,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
             let g = self
                 .backend
                 .generate_propagation_matrix(geometry, &self.foci);
-            let amps = self.backend.make_complex_v(&self.amps);
+            let amps = self.backend.from_slice_cv(&self.amps);
 
             let mut b = self.backend.alloc_cm(m, n);
             self.backend.gen_back_prop(m, n, &g, &amps, &mut b);
@@ -97,7 +97,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 &mut gamma,
             );
             for _ in 0..self.repeat {
-                self.backend.normalize_cv(&mut gamma);
+                self.backend.normalize_assign_cv(&mut gamma);
                 self.backend.hadamard_product_cv(&gamma, &amps, &mut p);
                 self.backend.gemv_c(
                     Trans::NoTrans,
@@ -110,8 +110,8 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
             }
 
             let mut tmp = self.backend.clone_cv(&gamma);
-            self.backend.reciprocal_c(&mut tmp);
-            self.backend.normalize_cv(&mut gamma);
+            self.backend.reciprocal_assign_c(&mut tmp);
+            self.backend.normalize_assign_cv(&mut gamma);
             self.backend.hadamard_product_assign_cv(&tmp, &mut p);
             self.backend.hadamard_product_assign_cv(&amps, &mut p);
             self.backend.hadamard_product_assign_cv(&amps, &mut p);

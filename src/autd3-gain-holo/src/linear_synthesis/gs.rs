@@ -65,16 +65,16 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GS<B> {
         let n = self.foci.len();
 
         let ones = vec![1.; m];
-        let mut q = self.backend.make_complex_v(&ones);
+        let mut q = self.backend.from_slice_cv(&ones);
 
         {
             let g = self
                 .backend
                 .generate_propagation_matrix(geometry, &self.foci);
 
-            let amps = self.backend.make_complex_v(&self.amps);
+            let amps = self.backend.from_slice_cv(&self.amps);
 
-            let q0 = self.backend.make_complex_v(&ones);
+            let q0 = self.backend.from_slice_cv(&ones);
 
             let mut p = self.backend.alloc_zeros_cv(n);
             for _ in 0..self.repeat {
@@ -86,7 +86,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GS<B> {
                     Complex::new(0., 0.),
                     &mut p,
                 );
-                self.backend.normalize_cv(&mut p);
+                self.backend.normalize_assign_cv(&mut p);
                 self.backend.hadamard_product_assign_cv(&amps, &mut p);
 
                 self.backend.gemv_c(
@@ -98,7 +98,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GS<B> {
                     &mut q,
                 );
 
-                self.backend.normalize_cv(&mut q);
+                self.backend.normalize_assign_cv(&mut q);
                 self.backend.hadamard_product_assign_cv(&q0, &mut q);
             }
         }
