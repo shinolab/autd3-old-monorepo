@@ -3,7 +3,7 @@ name: build-cs
 on:
   push:
     branches:
-      - 'dev'
+      - 'develop'
 
 env:
   CARGO_INCREMENTAL: 0
