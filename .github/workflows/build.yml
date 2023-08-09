@@ -3,7 +3,9 @@ name: build
 on:
   push:
     branches:
-      - 'dev'
+      - 'develop'
+  pull_request:
+    types: [opened, reopened, review_requested]
 
 env:
   CARGO_INCREMENTAL: 0
