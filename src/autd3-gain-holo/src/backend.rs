@@ -97,11 +97,32 @@ pub trait LinAlgBackend {
 
     fn make_complex2_v(&self, real: &Self::VectorX, imag: &Self::VectorX, v: &mut Self::VectorXc);
 
+    fn get_col_c(&self, a: &Self::MatrixXc, col: usize, v: &mut Self::VectorXc);
+    fn set_cv(&self, i: usize, val: Complex, v: &mut Self::VectorXc);
+    fn set_col_c(
+        &self,
+        a: &Self::VectorXc,
+        col: usize,
+        start: usize,
+        end: usize,
+        v: &mut Self::MatrixXc,
+    );
+    fn set_row_c(
+        &self,
+        a: &Self::VectorXc,
+        row: usize,
+        start: usize,
+        end: usize,
+        v: &mut Self::MatrixXc,
+    );
+
     fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc);
     fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc);
 
     fn abs_cv(&self, a: &Self::VectorXc, b: &mut Self::VectorX);
     fn scale_assign_v(&self, a: float, b: &mut Self::VectorX);
+    fn scale_assign_cv(&self, a: Complex, b: &mut Self::VectorXc);
+    fn conj_assign_v(&self, b: &mut Self::VectorXc);
     fn sqrt_assign_v(&self, v: &mut Self::VectorX);
     fn normalize_assign_cv(&self, v: &mut Self::VectorXc);
     fn reciprocal_assign_c(&self, v: &mut Self::VectorXc);
@@ -114,6 +135,8 @@ pub trait LinAlgBackend {
 
     fn hadamard_product_assign_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc);
     fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &Self::VectorXc, z: &mut Self::VectorXc);
+
+    fn dot_c(&self, x: &Self::VectorXc, y: &Self::VectorXc) -> Complex;
 
     fn gemv_c(
         &self,
@@ -134,6 +157,17 @@ pub trait LinAlgBackend {
         b: &Self::MatrixXc,
         beta: Complex,
         y: &mut Self::MatrixXc,
+    );
+
+    fn pseudo_inverse_svd(
+        &self,
+        a: Self::MatrixXc,
+        alpha: float,
+        u: &mut Self::MatrixXc,
+        s: &mut Self::MatrixXc,
+        vt: &mut Self::MatrixXc,
+        buf: &mut Self::MatrixXc,
+        b: &mut Self::MatrixXc,
     );
 
     fn solve_inplace_h(&self, a: Self::MatrixXc, x: &mut Self::VectorXc) -> Result<(), HoloError>;
