@@ -110,7 +110,7 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn normalize_assign_cv(&self, v: &mut Self::VectorXc) {
-        v.apply(|v| *v = *v / v.abs())
+        v.apply(|v| *v /= v.abs())
     }
 
     fn hadamard_product_assign_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc) {
@@ -135,7 +135,7 @@ impl LinAlgBackend for NalgebraBackend {
 
     fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc) {
         a.fill(Complex::new(0., 0.));
-        a.set_diagonal(&v)
+        a.set_diagonal(v)
     }
 
     fn reciprocal_assign_c(&self, v: &mut Self::VectorXc) {
@@ -253,9 +253,9 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn concat_row_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc) {
-        c.view_mut((0, 0), (a.nrows(), a.ncols())).copy_from(&a);
+        c.view_mut((0, 0), (a.nrows(), a.ncols())).copy_from(a);
         c.view_mut((a.nrows(), 0), (b.nrows(), b.ncols()))
-            .copy_from(&b);
+            .copy_from(b);
     }
 
     fn concat_col_cv(&self, a: &Self::VectorXc, b: &Self::VectorXc, c: &mut Self::VectorXc) {
@@ -356,7 +356,7 @@ impl LinAlgBackend for NalgebraBackend {
 
     fn create_diagonal(&self, v: &Self::VectorX, a: &mut Self::MatrixX) {
         a.fill(0.);
-        a.set_diagonal(&v)
+        a.set_diagonal(v)
     }
 
     fn get_diagonal(&self, a: &Self::MatrixX, v: &mut Self::VectorX) {
@@ -376,9 +376,9 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn concat_col_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc) {
-        c.view_mut((0, 0), (a.nrows(), a.ncols())).copy_from(&a);
+        c.view_mut((0, 0), (a.nrows(), a.ncols())).copy_from(a);
         c.view_mut((0, a.ncols()), (b.nrows(), b.ncols()))
-            .copy_from(&b);
+            .copy_from(b);
     }
 
     fn max_v(&self, m: &Self::VectorX) -> float {
@@ -390,7 +390,7 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn dot(&self, x: &Self::VectorX, y: &Self::VectorX) -> float {
-        x.dot(&y)
+        x.dot(y)
     }
 
     fn add_v(&self, alpha: float, a: &Self::VectorX, b: &mut Self::VectorX) {
