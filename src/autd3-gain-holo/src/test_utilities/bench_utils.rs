@@ -29,7 +29,8 @@ const ENABLE_NAIVE_BENCH: bool = false;
 const ENABLE_GS_BENCH: bool = false;
 const ENABLE_GSPAT_BENCH: bool = false;
 const ENABLE_EVP_BENCH: bool = false;
-const ENABLE_SDP_BENCH: bool = true;
+const ENABLE_SDP_BENCH: bool = false;
+const ENABLE_LM_BENCH: bool = true;
 
 pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
     let mut transducers = Vec::new();
@@ -153,18 +154,20 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 },
             );
         }
-        // group.bench_with_input(
-        //     BenchmarkId::new("LM", size * size),
-        //     &generate_geometry::<LegacyTransducer>(size),
-        //     |b, geometry| {
-        //         b.iter(|| {
-        //             LM::new(backend.clone())
-        //                 .add_foci_from_iter(gen_foci(N))
-        //                 .calc(geometry)
-        //                 .unwrap();
-        //         })
-        //     },
-        // );
+        if ENABLE_LM_BENCH {
+            group.bench_with_input(
+                BenchmarkId::new("LM", size * size),
+                &generate_geometry::<LegacyTransducer>(size),
+                |b, geometry| {
+                    b.iter(|| {
+                        LM::new(backend.clone())
+                            .add_foci_from_iter(gen_foci(N))
+                            .calc(geometry)
+                            .unwrap();
+                    })
+                },
+            );
+        }
         if ENABLE_GREEDY_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Greedy", size * size),
@@ -261,18 +264,20 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 },
             );
         }
-        // group.bench_with_input(
-        //     BenchmarkId::new("LM", size),
-        //     &generate_geometry::<LegacyTransducer>(N),
-        //     |b, geometry| {
-        //         b.iter(|| {
-        //             LM::new(backend.clone())
-        //                 .add_foci_from_iter(gen_foci(size))
-        //                 .calc(geometry)
-        //                 .unwrap();
-        //         })
-        //     },
-        // );
+        if ENABLE_LM_BENCH {
+            group.bench_with_input(
+                BenchmarkId::new("LM", size),
+                &generate_geometry::<LegacyTransducer>(N),
+                |b, geometry| {
+                    b.iter(|| {
+                        LM::new(backend.clone())
+                            .add_foci_from_iter(gen_foci(size))
+                            .calc(geometry)
+                            .unwrap();
+                    })
+                },
+            );
+        }
         if ENABLE_GREEDY_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Greedy", size),
