@@ -107,6 +107,7 @@ impl<B: LinAlgBackend> LM<B> {
         self.backend.exp_assign_cv(t);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn calc_jtj_jtf(
         &self,
         t: &B::VectorXc,
@@ -121,8 +122,8 @@ impl<B: LinAlgBackend> LM<B> {
             Trans::NoTrans,
             Trans::ConjTrans,
             Complex::new(1., 0.),
-            &t,
-            &t,
+            t,
+            t,
             Complex::new(0., 0.),
             tth,
         );
