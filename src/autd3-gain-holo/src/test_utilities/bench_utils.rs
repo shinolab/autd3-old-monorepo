@@ -25,9 +25,10 @@ use crate::*;
 
 const NUM_SAMPLES: usize = 10;
 const ENABLE_GREEDY_BENCH: bool = false;
-const ENABLE_NAIVE_BENCH: bool = false;
-const ENABLE_GS_BENCH: bool = false;
+const ENABLE_NAIVE_BENCH: bool = true;
+const ENABLE_GS_BENCH: bool = true;
 const ENABLE_GSPAT_BENCH: bool = true;
+const ENABLE_EVP_BENCH: bool = true;
 
 pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
     let mut transducers = Vec::new();
@@ -123,18 +124,20 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 },
             );
         }
-        // group.bench_with_input(
-        //     BenchmarkId::new("EVP", size * size),
-        //     &generate_geometry::<LegacyTransducer>(size),
-        //     |b, geometry| {
-        //         b.iter(|| {
-        //             EVP::new(backend.clone())
-        //                 .add_foci_from_iter(gen_foci(N))
-        //                 .calc(geometry)
-        //                 .unwrap();
-        //         })
-        //     },
-        // );
+        if ENABLE_EVP_BENCH {
+            group.bench_with_input(
+                BenchmarkId::new("EVP", size * size),
+                &generate_geometry::<LegacyTransducer>(size),
+                |b, geometry| {
+                    b.iter(|| {
+                        EVP::new(backend.clone())
+                            .add_foci_from_iter(gen_foci(N))
+                            .calc(geometry)
+                            .unwrap();
+                    })
+                },
+            );
+        }
         // group.bench_with_input(
         //     BenchmarkId::new("SDP", size * size),
         //     &generate_geometry::<LegacyTransducer>(size),
@@ -227,18 +230,20 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 },
             );
         }
-        // group.bench_with_input(
-        //     BenchmarkId::new("EVP", size),
-        //     &generate_geometry::<LegacyTransducer>(N),
-        //     |b, geometry| {
-        //         b.iter(|| {
-        //             EVP::new(backend.clone())
-        //                 .add_foci_from_iter(gen_foci(size))
-        //                 .calc(geometry)
-        //                 .unwrap();
-        //         })
-        //     },
-        // );
+        if ENABLE_EVP_BENCH {
+            group.bench_with_input(
+                BenchmarkId::new("EVP", size),
+                &generate_geometry::<LegacyTransducer>(N),
+                |b, geometry| {
+                    b.iter(|| {
+                        EVP::new(backend.clone())
+                            .add_foci_from_iter(gen_foci(size))
+                            .calc(geometry)
+                            .unwrap();
+                    })
+                },
+            );
+        }
         // group.bench_with_input(
         //     BenchmarkId::new("SDP", size),
         //     &generate_geometry::<LegacyTransducer>(N),
