@@ -86,23 +86,23 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
         let m = geometry.num_transducers();
         let n = self.foci.len();
 
-        let mut q = self.backend.alloc_zeros_cv(m);
+        let mut q = self.backend.alloc_zeros_cv(m)?;
 
-        let amps = self.backend.from_slice_cv(&self.amps);
+        let amps = self.backend.from_slice_cv(&self.amps)?;
 
-        let mut p = self.backend.alloc_zeros_cm(n, n);
-        self.backend.create_diagonal_c(&amps, &mut p);
+        let mut p = self.backend.alloc_zeros_cm(n, n)?;
+        self.backend.create_diagonal_c(&amps, &mut p)?;
 
         let b = self
             .backend
-            .generate_propagation_matrix(geometry, &self.foci);
+            .generate_propagation_matrix(geometry, &self.foci)?;
 
-        let mut pseudo_inv_b = self.backend.alloc_zeros_cm(m, n);
-        let mut u_ = self.backend.alloc_cm(n, n);
-        let mut s = self.backend.alloc_cm(m, n);
-        let mut vt = self.backend.alloc_cm(m, m);
-        let mut buf = self.backend.alloc_zeros_cm(m, n);
-        let b_tmp = self.backend.clone_cm(&b);
+        let mut pseudo_inv_b = self.backend.alloc_zeros_cm(m, n)?;
+        let mut u_ = self.backend.alloc_cm(n, n)?;
+        let mut s = self.backend.alloc_cm(m, n)?;
+        let mut vt = self.backend.alloc_cm(m, m)?;
+        let mut buf = self.backend.alloc_zeros_cm(m, n)?;
+        let b_tmp = self.backend.clone_cm(&b)?;
         self.backend.pseudo_inverse_svd(
             b_tmp,
             self.alpha,
@@ -111,12 +111,12 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &mut vt,
             &mut buf,
             &mut pseudo_inv_b,
-        );
+        )?;
 
-        let mut mm = self.backend.alloc_cm(n, n);
+        let mut mm = self.backend.alloc_cm(n, n)?;
         let ones = vec![1.; n];
-        let ones = self.backend.from_slice_cv(&ones);
-        self.backend.create_diagonal_c(&ones, &mut mm);
+        let ones = self.backend.from_slice_cv(&ones)?;
+        self.backend.create_diagonal_c(&ones, &mut mm)?;
 
         self.backend.gemm_c(
             Trans::NoTrans,
@@ -126,9 +126,9 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &pseudo_inv_b,
             Complex::new(1., 0.),
             &mut mm,
-        );
+        )?;
 
-        let mut tmp = self.backend.alloc_zeros_cm(n, n);
+        let mut tmp = self.backend.alloc_zeros_cm(n, n)?;
         self.backend.gemm_c(
             Trans::NoTrans,
             Trans::NoTrans,
@@ -137,7 +137,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &mm,
             Complex::new(0., 0.),
             &mut tmp,
-        );
+        )?;
         self.backend.gemm_c(
             Trans::NoTrans,
             Trans::NoTrans,
@@ -146,21 +146,21 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &p,
             Complex::new(0., 0.),
             &mut mm,
-        );
+        )?;
 
-        let mut x_mat = self.backend.alloc_cm(n, n);
-        self.backend.create_diagonal_c(&ones, &mut x_mat);
+        let mut x_mat = self.backend.alloc_cm(n, n)?;
+        self.backend.create_diagonal_c(&ones, &mut x_mat)?;
 
         let mut rng = rand::thread_rng();
 
-        let zero = self.backend.alloc_zeros_cv(n);
-        let mut x = self.backend.alloc_zeros_cv(n);
-        let mut mmc = self.backend.alloc_cv(n);
+        let zero = self.backend.alloc_zeros_cv(n)?;
+        let mut x = self.backend.alloc_zeros_cv(n)?;
+        let mut mmc = self.backend.alloc_cv(n)?;
         for _ in 0..self.repeat {
             let ii = (n as float * rng.gen_range(0.0..1.0)) as usize;
 
-            self.backend.get_col_c(&mm, ii, &mut mmc);
-            self.backend.set_cv(ii, Complex::new(0., 0.), &mut mmc);
+            self.backend.get_col_c(&mm, ii, &mut mmc)?;
+            self.backend.set_cv(ii, Complex::new(0., 0.), &mut mmc)?;
 
             self.backend.gemv_c(
                 Trans::NoTrans,
@@ -169,31 +169,31 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
                 &mmc,
                 Complex::new(0., 0.),
                 &mut x,
-            );
+            )?;
 
-            let gamma = self.backend.dot_c(&x, &mmc);
+            let gamma = self.backend.dot_c(&x, &mmc)?;
             if gamma.re > 0. {
                 self.backend
-                    .scale_assign_cv(Complex::new(-(self.lambda / gamma.re).sqrt(), 0.), &mut x);
+                    .scale_assign_cv(Complex::new(-(self.lambda / gamma.re).sqrt(), 0.), &mut x)?;
 
-                self.backend.set_col_c(&x, ii, 0, ii, &mut x_mat);
-                self.backend.set_col_c(&x, ii, ii + 1, n, &mut x_mat);
+                self.backend.set_col_c(&x, ii, 0, ii, &mut x_mat)?;
+                self.backend.set_col_c(&x, ii, ii + 1, n, &mut x_mat)?;
 
-                self.backend.conj_assign_v(&mut x);
+                self.backend.conj_assign_v(&mut x)?;
 
-                self.backend.set_row_c(&x, ii, 0, ii, &mut x_mat);
-                self.backend.set_row_c(&x, ii, ii + 1, n, &mut x_mat);
+                self.backend.set_row_c(&x, ii, 0, ii, &mut x_mat)?;
+                self.backend.set_row_c(&x, ii, ii + 1, n, &mut x_mat)?;
             } else {
-                self.backend.set_col_c(&zero, ii, 0, ii, &mut x_mat);
-                self.backend.set_col_c(&zero, ii, ii + 1, n, &mut x_mat);
-                self.backend.set_row_c(&zero, ii, 0, ii, &mut x_mat);
-                self.backend.set_row_c(&zero, ii, ii + 1, n, &mut x_mat);
+                self.backend.set_col_c(&zero, ii, 0, ii, &mut x_mat)?;
+                self.backend.set_col_c(&zero, ii, ii + 1, n, &mut x_mat)?;
+                self.backend.set_row_c(&zero, ii, 0, ii, &mut x_mat)?;
+                self.backend.set_row_c(&zero, ii, ii + 1, n, &mut x_mat)?;
             }
         }
 
-        let u = self.backend.max_eigen_vector_c(x_mat);
+        let u = self.backend.max_eigen_vector_c(x_mat)?;
 
-        let mut ut = self.backend.alloc_zeros_cv(n);
+        let mut ut = self.backend.alloc_zeros_cv(n)?;
         self.backend.gemv_c(
             Trans::NoTrans,
             Complex::new(1., 0.),
@@ -201,7 +201,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &u,
             Complex::new(0., 0.),
             &mut ut,
-        );
+        )?;
 
         self.backend.gemv_c(
             Trans::NoTrans,
@@ -210,9 +210,9 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
             &ut,
             Complex::new(0., 0.),
             &mut q,
-        );
+        )?;
 
-        let q = self.backend.to_host_cv(q);
+        let q = self.backend.to_host_cv(q)?;
 
         let max_coefficient = q.camax().abs();
         Ok(geometry

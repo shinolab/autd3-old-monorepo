@@ -11,6 +11,7 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
+assert_approx_eq = { version = "1.1.0", optional = true }
 autd3-core = { path = "../autd3-core", version = "14.2.2" }
 autd3-traits = { path = "../autd3-traits", version = "14.2.2" }
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
@@ -20,16 +21,13 @@ thiserror = "1.0.31"
 criterion = { version = "0.4", features = ["html_reports"], optional = true }
 
 [features]
-default = ["test-utilities"]
+default = []
 single_float = ["autd3-core/single_float"]
 use_meter = ["autd3-core/use_meter"]
 parallel = ["rayon", "autd3-core/parallel"]
-test-utilities = ["criterion"]
+test-utilities = ["criterion", "assert_approx_eq"]
 
 [[bench]]
 name = "holo"
 path = "benches/holo.rs"
 harness = false
-
-[dev-dependencies]
-assert_approx_eq = "1.1.0"

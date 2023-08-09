@@ -47,46 +47,67 @@ pub trait LinAlgBackend {
         &self,
         geometry: &Geometry<T>,
         foci: &[Vector3],
-    ) -> Self::MatrixXc;
+    ) -> Result<Self::MatrixXc, HoloError>;
 
-    fn alloc_v(&self, size: usize) -> Self::VectorX;
-    fn alloc_m(&self, rows: usize, cols: usize) -> Self::MatrixX;
-    fn alloc_cv(&self, size: usize) -> Self::VectorXc;
-    fn alloc_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
-    fn alloc_zeros_v(&self, size: usize) -> Self::VectorX;
-    fn alloc_zeros_cv(&self, size: usize) -> Self::VectorXc;
-    fn alloc_zeros_cm(&self, rows: usize, cols: usize) -> Self::MatrixXc;
+    fn alloc_v(&self, size: usize) -> Result<Self::VectorX, HoloError>;
+    fn alloc_m(&self, rows: usize, cols: usize) -> Result<Self::MatrixX, HoloError>;
+    fn alloc_cv(&self, size: usize) -> Result<Self::VectorXc, HoloError>;
+    fn alloc_cm(&self, rows: usize, cols: usize) -> Result<Self::MatrixXc, HoloError>;
+    fn alloc_zeros_v(&self, size: usize) -> Result<Self::VectorX, HoloError>;
+    fn alloc_zeros_cv(&self, size: usize) -> Result<Self::VectorXc, HoloError>;
+    fn alloc_zeros_cm(&self, rows: usize, cols: usize) -> Result<Self::MatrixXc, HoloError>;
 
-    fn to_host_v(&self, v: Self::VectorX) -> VectorX;
-    fn to_host_m(&self, v: Self::MatrixX) -> MatrixX;
-    fn to_host_cv(&self, v: Self::VectorXc) -> VectorXc;
-    fn to_host_cm(&self, v: Self::MatrixXc) -> MatrixXc;
+    fn to_host_v(&self, v: Self::VectorX) -> Result<VectorX, HoloError>;
+    fn to_host_m(&self, v: Self::MatrixX) -> Result<MatrixX, HoloError>;
+    fn to_host_cv(&self, v: Self::VectorXc) -> Result<VectorXc, HoloError>;
+    fn to_host_cm(&self, v: Self::MatrixXc) -> Result<MatrixXc, HoloError>;
 
     #[allow(clippy::wrong_self_convention)]
-    fn from_slice_v(&self, v: &[float]) -> Self::VectorX;
+    fn from_slice_v(&self, v: &[float]) -> Result<Self::VectorX, HoloError>;
     #[allow(clippy::wrong_self_convention)]
-    fn from_slice_m(&self, rows: usize, cols: usize, v: &[float]) -> Self::MatrixX;
+    fn from_slice_m(
+        &self,
+        rows: usize,
+        cols: usize,
+        v: &[float],
+    ) -> Result<Self::MatrixX, HoloError>;
     #[allow(clippy::wrong_self_convention)]
-    fn from_slice_cv(&self, v: &[float]) -> Self::VectorXc;
+    fn from_slice_cv(&self, v: &[float]) -> Result<Self::VectorXc, HoloError>;
     #[allow(clippy::wrong_self_convention)]
-    fn from_slice2_cv(&self, r: &[float], i: &[float]) -> Self::VectorXc;
+    fn from_slice2_cv(&self, r: &[float], i: &[float]) -> Result<Self::VectorXc, HoloError>;
     #[allow(clippy::wrong_self_convention)]
-    fn from_slice2_cm(&self, rows: usize, cols: usize, r: &[float], i: &[float]) -> Self::MatrixXc;
+    fn from_slice2_cm(
+        &self,
+        rows: usize,
+        cols: usize,
+        r: &[float],
+        i: &[float],
+    ) -> Result<Self::MatrixXc, HoloError>;
 
-    fn copy_from_slice_v(&self, v: &[float], dst: &mut Self::VectorX);
+    fn copy_from_slice_v(&self, v: &[float], dst: &mut Self::VectorX) -> Result<(), HoloError>;
 
-    fn copy_to_v(&self, src: &Self::VectorX, dst: &mut Self::VectorX);
-    fn copy_to_m(&self, src: &Self::MatrixX, dst: &mut Self::MatrixX);
+    fn copy_to_v(&self, src: &Self::VectorX, dst: &mut Self::VectorX) -> Result<(), HoloError>;
+    fn copy_to_m(&self, src: &Self::MatrixX, dst: &mut Self::MatrixX) -> Result<(), HoloError>;
 
-    fn clone_v(&self, v: &Self::VectorX) -> Self::VectorX;
-    fn clone_m(&self, v: &Self::MatrixX) -> Self::MatrixX;
-    fn clone_cv(&self, v: &Self::VectorXc) -> Self::VectorXc;
-    fn clone_cm(&self, v: &Self::MatrixXc) -> Self::MatrixXc;
+    fn clone_v(&self, v: &Self::VectorX) -> Result<Self::VectorX, HoloError>;
+    fn clone_m(&self, v: &Self::MatrixX) -> Result<Self::MatrixX, HoloError>;
+    fn clone_cv(&self, v: &Self::VectorXc) -> Result<Self::VectorXc, HoloError>;
+    fn clone_cm(&self, v: &Self::MatrixXc) -> Result<Self::MatrixXc, HoloError>;
 
-    fn make_complex2_v(&self, real: &Self::VectorX, imag: &Self::VectorX, v: &mut Self::VectorXc);
+    fn make_complex2_v(
+        &self,
+        real: &Self::VectorX,
+        imag: &Self::VectorX,
+        v: &mut Self::VectorXc,
+    ) -> Result<(), HoloError>;
 
-    fn get_col_c(&self, a: &Self::MatrixXc, col: usize, v: &mut Self::VectorXc);
-    fn set_cv(&self, i: usize, val: Complex, v: &mut Self::VectorXc);
+    fn get_col_c(
+        &self,
+        a: &Self::MatrixXc,
+        col: usize,
+        v: &mut Self::VectorXc,
+    ) -> Result<(), HoloError>;
+    fn set_cv(&self, i: usize, val: Complex, v: &mut Self::VectorXc) -> Result<(), HoloError>;
     fn set_col_c(
         &self,
         a: &Self::VectorXc,
@@ -94,7 +115,7 @@ pub trait LinAlgBackend {
         start: usize,
         end: usize,
         v: &mut Self::MatrixXc,
-    );
+    ) -> Result<(), HoloError>;
     fn set_row_c(
         &self,
         a: &Self::VectorXc,
@@ -102,41 +123,84 @@ pub trait LinAlgBackend {
         start: usize,
         end: usize,
         v: &mut Self::MatrixXc,
-    );
+    ) -> Result<(), HoloError>;
 
-    fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc);
-    fn create_diagonal(&self, v: &Self::VectorX, a: &mut Self::MatrixX);
-    fn create_diagonal_c(&self, v: &Self::VectorXc, a: &mut Self::MatrixXc);
-    fn get_diagonal(&self, a: &Self::MatrixX, v: &mut Self::VectorX);
+    fn get_diagonal_c(&self, a: &Self::MatrixXc, v: &mut Self::VectorXc) -> Result<(), HoloError>;
+    fn create_diagonal(&self, v: &Self::VectorX, a: &mut Self::MatrixX) -> Result<(), HoloError>;
+    fn create_diagonal_c(
+        &self,
+        v: &Self::VectorXc,
+        a: &mut Self::MatrixXc,
+    ) -> Result<(), HoloError>;
+    fn get_diagonal(&self, a: &Self::MatrixX, v: &mut Self::VectorX) -> Result<(), HoloError>;
 
-    fn abs_cv(&self, a: &Self::VectorXc, b: &mut Self::VectorX);
-    fn real_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX);
-    fn imag_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX);
-    fn scale_assign_v(&self, a: float, b: &mut Self::VectorX);
-    fn scale_assign_cv(&self, a: Complex, b: &mut Self::VectorXc);
-    fn conj_assign_v(&self, b: &mut Self::VectorXc);
-    fn sqrt_assign_v(&self, v: &mut Self::VectorX);
-    fn normalize_assign_cv(&self, v: &mut Self::VectorXc);
-    fn reciprocal_assign_c(&self, v: &mut Self::VectorXc);
-    fn pow_assign_v(&self, a: float, v: &mut Self::VectorX);
-    fn exp_assign_cv(&self, v: &mut Self::VectorXc);
+    fn abs_cv(&self, a: &Self::VectorXc, b: &mut Self::VectorX) -> Result<(), HoloError>;
+    fn real_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX) -> Result<(), HoloError>;
+    fn imag_cm(&self, a: &Self::MatrixXc, b: &mut Self::MatrixX) -> Result<(), HoloError>;
+    fn scale_assign_v(&self, a: float, b: &mut Self::VectorX) -> Result<(), HoloError>;
+    fn scale_assign_cv(&self, a: Complex, b: &mut Self::VectorXc) -> Result<(), HoloError>;
+    fn conj_assign_v(&self, b: &mut Self::VectorXc) -> Result<(), HoloError>;
+    fn sqrt_assign_v(&self, v: &mut Self::VectorX) -> Result<(), HoloError>;
+    fn normalize_assign_cv(&self, v: &mut Self::VectorXc) -> Result<(), HoloError>;
+    fn reciprocal_assign_c(&self, v: &mut Self::VectorXc) -> Result<(), HoloError>;
+    fn pow_assign_v(&self, a: float, v: &mut Self::VectorX) -> Result<(), HoloError>;
+    fn exp_assign_cv(&self, v: &mut Self::VectorXc) -> Result<(), HoloError>;
 
-    fn concat_row_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc);
-    fn concat_col_cv(&self, a: &Self::VectorXc, b: &Self::VectorXc, c: &mut Self::VectorXc);
-    fn concat_col_cm(&self, a: &Self::MatrixXc, b: &Self::MatrixXc, c: &mut Self::MatrixXc);
+    fn concat_row_cm(
+        &self,
+        a: &Self::MatrixXc,
+        b: &Self::MatrixXc,
+        c: &mut Self::MatrixXc,
+    ) -> Result<(), HoloError>;
+    fn concat_col_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &Self::VectorXc,
+        c: &mut Self::VectorXc,
+    ) -> Result<(), HoloError>;
+    fn concat_col_cm(
+        &self,
+        a: &Self::MatrixXc,
+        b: &Self::MatrixXc,
+        c: &mut Self::MatrixXc,
+    ) -> Result<(), HoloError>;
 
-    fn max_v(&self, m: &Self::VectorX) -> float;
-    fn max_eigen_vector_c(&self, m: Self::MatrixXc) -> Self::VectorXc;
+    fn max_v(&self, m: &Self::VectorX) -> Result<float, HoloError>;
+    fn max_eigen_vector_c(&self, m: Self::MatrixXc) -> Result<Self::VectorXc, HoloError>;
 
-    fn hadamard_product_assign_cv(&self, x: &Self::VectorXc, y: &mut Self::VectorXc);
-    fn hadamard_product_cv(&self, x: &Self::VectorXc, y: &Self::VectorXc, z: &mut Self::VectorXc);
-    fn hadamard_product_cm(&self, x: &Self::MatrixXc, y: &Self::MatrixXc, z: &mut Self::MatrixXc);
+    fn hadamard_product_assign_cv(
+        &self,
+        x: &Self::VectorXc,
+        y: &mut Self::VectorXc,
+    ) -> Result<(), HoloError>;
+    fn hadamard_product_cv(
+        &self,
+        x: &Self::VectorXc,
+        y: &Self::VectorXc,
+        z: &mut Self::VectorXc,
+    ) -> Result<(), HoloError>;
+    fn hadamard_product_cm(
+        &self,
+        x: &Self::MatrixXc,
+        y: &Self::MatrixXc,
+        z: &mut Self::MatrixXc,
+    ) -> Result<(), HoloError>;
 
-    fn dot(&self, x: &Self::VectorX, y: &Self::VectorX) -> float;
-    fn dot_c(&self, x: &Self::VectorXc, y: &Self::VectorXc) -> Complex;
+    fn dot(&self, x: &Self::VectorX, y: &Self::VectorX) -> Result<float, HoloError>;
+    fn dot_c(&self, x: &Self::VectorXc, y: &Self::VectorXc) -> Result<Complex, HoloError>;
 
-    fn add_v(&self, alpha: float, a: &Self::VectorX, b: &mut Self::VectorX);
-    fn add_m(&self, alpha: float, a: &Self::MatrixX, b: &mut Self::MatrixX);
+    fn add_v(
+        &self,
+        alpha: float,
+        a: &Self::VectorX,
+        b: &mut Self::VectorX,
+    ) -> Result<(), HoloError>;
+    fn add_m(
+        &self,
+        alpha: float,
+        a: &Self::MatrixX,
+        b: &mut Self::MatrixX,
+    ) -> Result<(), HoloError>;
 
     #[allow(clippy::too_many_arguments)]
     fn gevv_c(
@@ -148,7 +212,7 @@ pub trait LinAlgBackend {
         x: &Self::VectorXc,
         beta: Complex,
         y: &mut Self::MatrixXc,
-    );
+    ) -> Result<(), HoloError>;
 
     fn gemv_c(
         &self,
@@ -158,7 +222,7 @@ pub trait LinAlgBackend {
         x: &Self::VectorXc,
         beta: Complex,
         y: &mut Self::VectorXc,
-    );
+    ) -> Result<(), HoloError>;
 
     #[allow(clippy::too_many_arguments)]
     fn gemm_c(
@@ -170,7 +234,7 @@ pub trait LinAlgBackend {
         b: &Self::MatrixXc,
         beta: Complex,
         y: &mut Self::MatrixXc,
-    );
+    ) -> Result<(), HoloError>;
 
     #[allow(clippy::too_many_arguments)]
     fn pseudo_inverse_svd(
@@ -182,11 +246,11 @@ pub trait LinAlgBackend {
         vt: &mut Self::MatrixXc,
         buf: &mut Self::MatrixXc,
         b: &mut Self::MatrixXc,
-    );
+    ) -> Result<(), HoloError>;
     fn solve_inplace(&self, a: &Self::MatrixX, x: &mut Self::VectorX) -> Result<(), HoloError>;
     fn solve_inplace_h(&self, a: Self::MatrixXc, x: &mut Self::VectorXc) -> Result<(), HoloError>;
 
-    fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX);
+    fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX) -> Result<(), HoloError>;
 
     fn gen_back_prop(
         &self,
@@ -195,8 +259,8 @@ pub trait LinAlgBackend {
         transfer: &Self::MatrixXc,
         amps: &Self::VectorXc,
         b: &mut Self::MatrixXc,
-    ) {
-        let mut tmp = self.alloc_zeros_cm(n, n);
+    ) -> Result<(), HoloError> {
+        let mut tmp = self.alloc_zeros_cm(n, n)?;
 
         self.gemm_c(
             Trans::NoTrans,
@@ -206,14 +270,14 @@ pub trait LinAlgBackend {
             transfer,
             Complex::new(0., 0.),
             &mut tmp,
-        );
+        )?;
 
-        let mut denominator = self.alloc_cv(n);
-        self.get_diagonal_c(&tmp, &mut denominator);
-        self.reciprocal_assign_c(&mut denominator);
-        self.hadamard_product_assign_cv(amps, &mut denominator);
+        let mut denominator = self.alloc_cv(n)?;
+        self.get_diagonal_c(&tmp, &mut denominator)?;
+        self.reciprocal_assign_c(&mut denominator)?;
+        self.hadamard_product_assign_cv(amps, &mut denominator)?;
 
-        self.create_diagonal_c(&denominator, &mut tmp);
+        self.create_diagonal_c(&denominator, &mut tmp)?;
         self.gemm_c(
             Trans::ConjTrans,
             Trans::NoTrans,

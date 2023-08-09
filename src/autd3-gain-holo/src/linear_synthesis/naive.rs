@@ -53,10 +53,10 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
 
         let g = self
             .backend
-            .generate_propagation_matrix(geometry, &self.foci);
+            .generate_propagation_matrix(geometry, &self.foci)?;
 
-        let p = self.backend.from_slice_cv(&self.amps);
-        let mut q = self.backend.alloc_zeros_cv(m);
+        let p = self.backend.from_slice_cv(&self.amps)?;
+        let mut q = self.backend.alloc_zeros_cv(m)?;
         self.backend.gemv_c(
             Trans::ConjTrans,
             Complex::new(1., 0.),
@@ -64,9 +64,9 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
             &p,
             Complex::new(0., 0.),
             &mut q,
-        );
+        )?;
 
-        let q = self.backend.to_host_cv(q);
+        let q = self.backend.to_host_cv(q)?;
 
         let max_coefficient = q.camax().abs();
         Ok(geometry

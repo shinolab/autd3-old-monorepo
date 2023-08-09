@@ -64,18 +64,18 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for EVP<B> {
         let m = geometry.num_transducers();
         let n = self.foci.len();
 
-        let mut q = self.backend.alloc_zeros_cv(m);
+        let mut q = self.backend.alloc_zeros_cv(m)?;
 
         {
             let g = self
                 .backend
-                .generate_propagation_matrix(geometry, &self.foci);
-            let amps = self.backend.from_slice_cv(&self.amps);
+                .generate_propagation_matrix(geometry, &self.foci)?;
+            let amps = self.backend.from_slice_cv(&self.amps)?;
 
-            let mut x = self.backend.alloc_cm(m, n);
-            self.backend.gen_back_prop(m, n, &g, &amps, &mut x);
+            let mut x = self.backend.alloc_cm(m, n)?;
+            self.backend.gen_back_prop(m, n, &g, &amps, &mut x)?;
 
-            let mut r = self.backend.alloc_cm(n, n);
+            let mut r = self.backend.alloc_cm(n, n)?;
             self.backend.gemm_c(
                 Trans::NoTrans,
                 Trans::NoTrans,
@@ -84,13 +84,13 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for EVP<B> {
                 &x,
                 Complex::new(0., 0.),
                 &mut r,
-            );
+            )?;
 
-            let mut max_ev = self.backend.max_eigen_vector_c(r);
+            let mut max_ev = self.backend.max_eigen_vector_c(r)?;
 
-            let mut sigma = self.backend.alloc_cm(m, m);
+            let mut sigma = self.backend.alloc_cm(m, m)?;
             {
-                let mut sigma_tmp = self.backend.alloc_zeros_cv(m);
+                let mut sigma_tmp = self.backend.alloc_zeros_cv(m)?;
                 self.backend.gemv_c(
                     Trans::Trans,
                     Complex::new(1., 0.),
@@ -98,31 +98,32 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for EVP<B> {
                     &amps,
                     Complex::new(0., 0.),
                     &mut sigma_tmp,
-                );
+                )?;
 
-                let mut sigma_tmp_real = self.backend.alloc_v(m);
-                self.backend.abs_cv(&sigma_tmp, &mut sigma_tmp_real);
+                let mut sigma_tmp_real = self.backend.alloc_v(m)?;
+                self.backend.abs_cv(&sigma_tmp, &mut sigma_tmp_real)?;
                 self.backend
-                    .scale_assign_v(1. / (n as float), &mut sigma_tmp_real);
-                self.backend.sqrt_assign_v(&mut sigma_tmp_real);
-                self.backend.pow_assign_v(self.gamma, &mut sigma_tmp_real);
-                let zero = self.backend.alloc_zeros_v(m);
+                    .scale_assign_v(1. / (n as float), &mut sigma_tmp_real)?;
+                self.backend.sqrt_assign_v(&mut sigma_tmp_real)?;
+                self.backend.pow_assign_v(self.gamma, &mut sigma_tmp_real)?;
+                let zero = self.backend.alloc_zeros_v(m)?;
                 self.backend
-                    .make_complex2_v(&sigma_tmp_real, &zero, &mut sigma_tmp);
-                self.backend.create_diagonal_c(&sigma_tmp, &mut sigma);
+                    .make_complex2_v(&sigma_tmp_real, &zero, &mut sigma_tmp)?;
+                self.backend.create_diagonal_c(&sigma_tmp, &mut sigma)?;
             }
 
-            let mut gr = self.backend.alloc_cm(n + m, m);
-            self.backend.concat_row_cm(&g, &sigma, &mut gr);
+            let mut gr = self.backend.alloc_cm(n + m, m)?;
+            self.backend.concat_row_cm(&g, &sigma, &mut gr)?;
 
-            self.backend.normalize_assign_cv(&mut max_ev);
-            self.backend.hadamard_product_assign_cv(&amps, &mut max_ev);
+            self.backend.normalize_assign_cv(&mut max_ev)?;
+            self.backend
+                .hadamard_product_assign_cv(&amps, &mut max_ev)?;
 
-            let fn_ = self.backend.alloc_zeros_cv(m);
-            let mut f = self.backend.alloc_cv(m + n);
-            self.backend.concat_col_cv(&max_ev, &fn_, &mut f);
+            let fn_ = self.backend.alloc_zeros_cv(m)?;
+            let mut f = self.backend.alloc_cv(m + n)?;
+            self.backend.concat_col_cv(&max_ev, &fn_, &mut f)?;
 
-            let mut gtg = self.backend.alloc_zeros_cm(m, m);
+            let mut gtg = self.backend.alloc_zeros_cm(m, m)?;
             self.backend.gemm_c(
                 Trans::ConjTrans,
                 Trans::NoTrans,
@@ -131,7 +132,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for EVP<B> {
                 &gr,
                 Complex::new(0., 0.),
                 &mut gtg,
-            );
+            )?;
             self.backend.gemv_c(
                 Trans::ConjTrans,
                 Complex::new(1., 0.),
@@ -139,11 +140,11 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for EVP<B> {
                 &f,
                 Complex::new(0., 0.),
                 &mut q,
-            );
+            )?;
             self.backend.solve_inplace_h(gtg, &mut q)?;
         }
 
-        let q = self.backend.to_host_cv(q);
+        let q = self.backend.to_host_cv(q)?;
         let max_coefficient = q.camax().abs();
         Ok(geometry
             .transducers()
