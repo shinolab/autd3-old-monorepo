@@ -26,81 +26,6 @@ use crate::{error::HoloError, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX
 #[derive(Default)]
 pub struct NalgebraBackend {}
 
-//     fn sdp(
-//         &self,
-//         alpha: float,
-//         repeat: usize,
-//         lambda: float,
-//         amps: &[float],
-//         g: MatrixXc,
-//     ) -> Result<VectorXc, HoloError> {
-//         let m = g.nrows();
-
-//         let p = MatrixXc::from_diagonal(&VectorXc::from_iterator(
-//             m,
-//             amps.iter().map(|&a| Complex::new(a, 0.)),
-//         ));
-//         let b = g;
-
-//         let pseudo_inv_b = {
-//             let svd = b.clone().svd(true, true);
-//             let s_inv = MatrixXc::from_diagonal(
-//                 &svd.singular_values
-//                     .map(|s| Complex::new(s / (s * s + alpha * alpha), 0.)),
-//             );
-//             match (&svd.v_t, &svd.u) {
-//                 (Some(v_t), Some(u)) => v_t.adjoint() * s_inv * u.adjoint(),
-//                 _ => unreachable!(),
-//             }
-//         };
-
-//         let mm = b * &pseudo_inv_b - MatrixXc::identity(m, m);
-
-//         let mm = &p * mm * &p;
-
-//         let mut x_mat = MatrixXc::identity(m, m);
-
-//         let mut rng = thread_rng();
-//         let zero = VectorXc::zeros(m);
-
-//         fn set_bcd_result(mat: &mut MatrixXc, vec: &VectorXc, idx: usize) {
-//             let m = vec.len();
-//             mat.view_mut((idx, 0), (1, idx))
-//                 .copy_from(&vec.view((0, 0), (idx, 1)).adjoint());
-//             mat.view_mut((idx, idx + 1), (1, m - idx - 1))
-//                 .copy_from(&vec.view((0, 0), (m - idx - 1, 1)).adjoint());
-//             mat.view_mut((0, idx), (idx, 1))
-//                 .copy_from(&vec.view((0, 0), (idx, 1)));
-//             mat.view_mut((idx + 1, idx), (m - idx - 1, 1))
-//                 .copy_from(&vec.view((0, 0), (m - idx - 1, 1)));
-//         }
-
-//         for _ in 0..repeat {
-//             let ii = (m as float * rng.gen_range(0.0..1.0)) as usize;
-
-//             let mut mmc: VectorXc = mm.column(ii).into();
-//             mmc[ii] = Complex::new(0., 0.);
-
-//             let mut x = &x_mat * &mmc;
-//             let gamma = x.dotc(&mmc);
-//             if gamma.real() > 0.0 {
-//                 x *= Complex::new((lambda / gamma.real()).sqrt(), 0.);
-//                 set_bcd_result(&mut x_mat, &x, ii);
-//             } else {
-//                 set_bcd_result(&mut x_mat, &zero, ii);
-//             }
-//         }
-
-//         let u: VectorXc = {
-//             let eig = x_mat.symmetric_eigen();
-//             eig.eigenvectors.column(eig.eigenvalues.imax()).into()
-//         };
-
-//         let ut = p * u;
-
-//         Ok(pseudo_inv_b * ut)
-//     }
-
 //     fn lm(
 //         &self,
 //         eps1: float,
@@ -440,6 +365,71 @@ impl LinAlgBackend for NalgebraBackend {
             return Err(HoloError::SolveFailed);
         }
         Ok(())
+    }
+
+    fn get_col_c(&self, a: &Self::MatrixXc, col: usize, v: &mut Self::VectorXc) {
+        *v = a.column(col).into();
+    }
+
+    fn set_cv(&self, i: usize, val: Complex, v: &mut Self::VectorXc) {
+        v[i] = val;
+    }
+
+    fn set_col_c(
+        &self,
+        a: &Self::VectorXc,
+        col: usize,
+        start: usize,
+        end: usize,
+        v: &mut Self::MatrixXc,
+    ) {
+        v.view_mut((start, col), (end - start, 1))
+            .copy_from(&a.view((start, 0), (end - start, 1)));
+    }
+
+    fn set_row_c(
+        &self,
+        a: &Self::VectorXc,
+        row: usize,
+        start: usize,
+        end: usize,
+        v: &mut Self::MatrixXc,
+    ) {
+        v.view_mut((row, start), (1, end - start))
+            .copy_from(&a.view((start, 0), (end - start, 1)).transpose());
+    }
+
+    fn scale_assign_cv(&self, a: Complex, b: &mut Self::VectorXc) {
+        b.apply(|x| *x *= a)
+    }
+
+    fn conj_assign_v(&self, b: &mut Self::VectorXc) {
+        b.apply(|x| *x = x.conj())
+    }
+
+    fn dot_c(&self, x: &Self::VectorXc, y: &Self::VectorXc) -> Complex {
+        x.dotc(y)
+    }
+
+    fn pseudo_inverse_svd(
+        &self,
+        a: Self::MatrixXc,
+        alpha: f64,
+        _u: &mut Self::MatrixXc,
+        _s: &mut Self::MatrixXc,
+        _vt: &mut Self::MatrixXc,
+        _buf: &mut Self::MatrixXc,
+        b: &mut Self::MatrixXc,
+    ) {
+        let svd = a.svd(true, true);
+        let s_inv = MatrixXc::from_diagonal(
+            &svd.singular_values
+                .map(|s| Complex::new(s / (s * s + alpha * alpha), 0.)),
+        );
+        match (&svd.v_t, &svd.u) {
+            (Some(v_t), Some(u)) => *b = v_t.adjoint() * s_inv * u.adjoint(),
+            _ => unreachable!(),
+        }
     }
 }
 
