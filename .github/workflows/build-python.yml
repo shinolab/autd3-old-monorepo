@@ -3,7 +3,7 @@ name: build-python
 on:
   push:
     branches:
-      - 'dev'
+      - 'develop'
 
 env:
   CARGO_INCREMENTAL: 0
