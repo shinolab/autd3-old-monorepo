@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/08/2023
+ * Last Modified: 10/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,12 +24,12 @@ use autd3_core::{
 use crate::*;
 
 const NUM_SAMPLES: usize = 10;
-const ENABLE_GREEDY_BENCH: bool = false;
-const ENABLE_NAIVE_BENCH: bool = false;
-const ENABLE_GS_BENCH: bool = false;
-const ENABLE_GSPAT_BENCH: bool = false;
-const ENABLE_EVP_BENCH: bool = false;
-const ENABLE_SDP_BENCH: bool = false;
+const ENABLE_GREEDY_BENCH: bool = true;
+const ENABLE_NAIVE_BENCH: bool = true;
+const ENABLE_GS_BENCH: bool = true;
+const ENABLE_GSPAT_BENCH: bool = true;
+const ENABLE_EVP_BENCH: bool = true;
+const ENABLE_SDP_BENCH: bool = true;
 const ENABLE_LM_BENCH: bool = true;
 
 pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
