@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 10/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,22 +43,12 @@ __device__ autd3_complex_t divcr(const autd3_complex_t x, const autd3_float_t y)
   return makeAUTDComplex(r, i);
 }
 
-__global__ void cu_gs_normalize_kernel(const autd3_complex_t *x, uint32_t n, autd3_complex_t *y) {
-  unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i >= n) return;
-  y[i] = mulcr(divcr(y[i], absc(y[i])), x[i].x);
-}
-
-__global__ void cu_gspat_normalize_kernel(const autd3_complex_t *x, const autd3_complex_t *y, uint32_t n, autd3_complex_t *z) {
-  unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i >= n) return;
-  z[i] = mulcr(divcr(y[i], absc(y[i])), x[i].x);
-}
-
-__global__ void cu_gspat_normalize2_kernel(const autd3_complex_t *x, const autd3_complex_t *y, uint32_t n, autd3_complex_t *z) {
-  unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i >= n) return;
-  z[i] = mulcr(divcr(y[i], absc2(y[i])), x[i].x * x[i].x);
+__global__ void normalize_kernel(const autd3_complex_t *x, uint32_t row, uint32_t col, autd3_complex_t *y) {
+  unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
+  if (xi >= col || yi >= row) return;
+  unsigned int i = yi + xi * row;
+  y[i] = divcr(x[i], absc(x[i]));
 }
 
 __global__ void get_diagonal_kernel(const autd3_complex_t *a, uint32_t row, uint32_t col, autd3_complex_t *b) {
@@ -137,7 +127,16 @@ __global__ void sqrt_kernel(const autd3_float_t *a, const uint32_t row, const ui
   b[idx] = sqrt(a[idx]);
 }
 
-__global__ void make_complex_kernel(const autd3_float_t *re, const autd3_float_t *im, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+__global__ void make_complex_kernel(const autd3_float_t *re, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+  unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
+  if (xi >= col || yi >= row) return;
+
+  unsigned int idx = yi + xi * row;
+  dst[idx] = makeAUTDComplex(re[idx], 0);
+}
+
+__global__ void make_complex2_kernel(const autd3_float_t *re, const autd3_float_t *im, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
   unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
   if (xi >= col || yi >= row) return;
@@ -199,6 +198,7 @@ __global__ void real_kernel(const autd3_complex_t *src, const uint32_t row, cons
   unsigned int idx = yi + xi * row;
   dst[idx] = src[idx].x;
 }
+
 __global__ void imag_kernel(const autd3_complex_t *src, const uint32_t row, const uint32_t col, autd3_float_t *dst) {
   unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
@@ -216,25 +216,31 @@ __global__ void col_sum_kernel(const autd3_float_t *din, uint32_t m, uint32_t n,
   dout[row] = sum;
 }
 
+__global__ void generate_propagation_matrix_kernel(const autd3_float_t *positions, const autd3_float_t *foci, const autd3_float_t *wavenums,
+                                                   const autd3_float_t attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+  unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
+  if (xi >= col || yi >= row) return;
+
+  autd3_float_t xd = foci[3 * yi] - positions[3 * xi];
+  autd3_float_t yd = foci[3 * yi + 1] - positions[3 * xi + 1];
+  autd3_float_t zd = foci[3 * yi + 2] - positions[3 * xi + 2];
+  autd3_float_t dist = sqrt(xd * xd + yd * yd + zd * zd);
+  autd3_float_t r = exp(-dist * attens) / dist;
+  autd3_float_t phase = -wavenums[xi] * dist;
+  dst[yi + xi * row] = makeAUTDComplex(r * cos(phase), r * sin(phase));
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define BLOCK_SIZE (32)
 
-void cu_gs_normalize(const autd3_complex_t *x, const uint32_t len, autd3_complex_t *y) {
-  unsigned int blocksPerGrid = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-  cu_gs_normalize_kernel<<<blocksPerGrid, BLOCK_SIZE>>>(x, len, y);
-}
-
-void cu_gspat_normalize(const autd3_complex_t *x, const autd3_complex_t *y, const uint32_t len, autd3_complex_t *z) {
-  unsigned int blocksPerGrid = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-  cu_gspat_normalize_kernel<<<blocksPerGrid, BLOCK_SIZE>>>(x, y, len, z);
-}
-
-void cu_gspat_normalize2(const autd3_complex_t *x, const autd3_complex_t *y, const uint32_t len, autd3_complex_t *z) {
-  unsigned int blocksPerGrid = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-  cu_gspat_normalize2_kernel<<<blocksPerGrid, BLOCK_SIZE>>>(x, y, len, z);
+void cu_normalize(const autd3_complex_t *x, const uint32_t row, const uint32_t col, autd3_complex_t *y) {
+  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
+  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
+  normalize_kernel<<<grid, block>>>(x, row, col, y);
 }
 
 void cu_get_diagonal(const autd3_float_t *a, const uint32_t row, const uint32_t col, autd3_float_t *b) {
@@ -285,10 +291,16 @@ void cu_sqrt(const autd3_float_t *a, const uint32_t row, const uint32_t col, aut
   sqrt_kernel<<<grid, block>>>(a, row, col, b);
 }
 
-void cu_make_complex(const autd3_float_t *re, const autd3_float_t *im, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+void cu_make_complex(const autd3_float_t *re, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
   dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
   dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
-  make_complex_kernel<<<grid, block>>>(re, im, row, col, dst);
+  make_complex_kernel<<<grid, block>>>(re, row, col, dst);
+}
+
+void cu_make_complex2(const autd3_float_t *re, const autd3_float_t *im, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
+  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
+  make_complex2_kernel<<<grid, block>>>(re, im, row, col, dst);
 }
 
 void cu_pow(const autd3_float_t *a, const autd3_float_t p, const uint32_t row, const uint32_t col, autd3_float_t *b) {
@@ -331,6 +343,13 @@ void cu_reduce_col(const autd3_float_t *mat, const uint32_t m, const uint32_t n,
   dim3 block(1, BLOCK_SIZE * BLOCK_SIZE, 1);
   dim3 grid(1, (m - 1) / (BLOCK_SIZE * BLOCK_SIZE) + 1, 1);
   col_sum_kernel<<<grid, block>>>(mat, m, n, result);
+}
+
+void cu_generate_propagation_matrix(const autd3_float_t *positions, const autd3_float_t *foci, const autd3_float_t *wavenums,
+                                    const autd3_float_t attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
+  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
+  generate_propagation_matrix_kernel<<<grid, block>>>(positions, foci, wavenums, attens, row, col, dst);
 }
 
 #ifdef __cplusplus
