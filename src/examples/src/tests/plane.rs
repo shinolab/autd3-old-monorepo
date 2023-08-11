@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn plane<T: Transducer, L: Link<T>>(
-    autd: &mut Controller<T, L>,
-) -> anyhow::Result<bool, AUTDError> {
+pub fn plane<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::default())?;
 
     let dir = Vector3::z();
@@ -23,5 +21,7 @@ pub fn plane<T: Transducer, L: Link<T>>(
     let g = Plane::new(dir);
     let m = Sine::new(150);
 
-    autd.send((m, g))
+    autd.send((m, g))?;
+
+    Ok(true)
 }

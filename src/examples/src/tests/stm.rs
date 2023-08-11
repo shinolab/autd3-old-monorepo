@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/07/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -15,9 +15,7 @@ use std::io;
 
 use autd3::prelude::*;
 
-pub fn focus_stm<T: Transducer, L: Link<T>>(
-    autd: &mut Controller<T, L>,
-) -> Result<bool, AUTDError> {
+pub fn focus_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::none())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
@@ -32,10 +30,12 @@ pub fn focus_stm<T: Transducer, L: Link<T>>(
 
     let m = Static::new();
 
-    autd.send((m, stm))
+    autd.send((m, stm))?;
+
+    Ok(true)
 }
 
-pub fn gain_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bool, AUTDError> {
+pub fn gain_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::none())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
@@ -53,12 +53,14 @@ pub fn gain_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Resul
 
     let m = Static::new();
 
-    autd.send((m, stm))
+    autd.send((m, stm))?;
+
+    Ok(true)
 }
 
 pub fn software_stm<T: Transducer, L: Link<T>>(
     autd: &mut Controller<T, L>,
-) -> Result<bool, AUTDError> {
+) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::none())?;
 
     let m = Static::new();
@@ -86,5 +88,7 @@ pub fn software_stm<T: Transducer, L: Link<T>>(
     .with_timer_strategy(TimerStrategy::Sleep)
     .start(std::time::Duration::from_secs_f64(
         1. / freq / point_num as f64,
-    ))
+    ))?;
+
+    Ok(true)
 }
