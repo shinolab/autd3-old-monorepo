@@ -14,9 +14,9 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_gain_holo";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern BackendPtr AUTDDefaultBackend();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern BackendPtr AUTDNalgebraBackend();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteBackend(BackendPtr backend);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteNalgebraBackend(BackendPtr backend);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloDotCareConstraint();
 
@@ -78,12 +78,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithInitial(GainPtr holo, double[]? initialPtr, ulong len);
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ConstraintPtr
-    {
-        public IntPtr _0;
     }
 
 }

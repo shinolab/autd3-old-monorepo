@@ -2,11 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import BackendPtr, GainPtr
-
-
-class ConstraintPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+from .autd3capi_def import BackendPtr, ConstraintPtr, GainPtr
 
 
 class Singleton(type):
@@ -29,11 +25,11 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDDefaultBackend.argtypes = [] 
-        self.dll.AUTDDefaultBackend.restype = BackendPtr
+        self.dll.AUTDNalgebraBackend.argtypes = [] 
+        self.dll.AUTDNalgebraBackend.restype = BackendPtr
 
-        self.dll.AUTDDeleteBackend.argtypes = [BackendPtr]  # type: ignore 
-        self.dll.AUTDDeleteBackend.restype = None
+        self.dll.AUTDDeleteNalgebraBackend.argtypes = [BackendPtr]  # type: ignore 
+        self.dll.AUTDDeleteNalgebraBackend.restype = None
 
         self.dll.AUTDGainHoloDotCareConstraint.argtypes = [] 
         self.dll.AUTDGainHoloDotCareConstraint.restype = ConstraintPtr
@@ -125,11 +121,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloLMWithInitial.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDGainHoloLMWithInitial.restype = GainPtr
 
-    def default_backend(self) -> BackendPtr:
-        return self.dll.AUTDDefaultBackend()
+    def nalgebra_backend(self) -> BackendPtr:
+        return self.dll.AUTDNalgebraBackend()
 
-    def delete_backend(self, backend: BackendPtr) -> None:
-        return self.dll.AUTDDeleteBackend(backend)
+    def delete_nalgebra_backend(self, backend: BackendPtr) -> None:
+        return self.dll.AUTDDeleteNalgebraBackend(backend)
 
     def gain_holo_dot_care_constraint(self) -> ConstraintPtr:
         return self.dll.AUTDGainHoloDotCareConstraint()

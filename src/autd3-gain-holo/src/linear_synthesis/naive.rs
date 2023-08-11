@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 09/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::rc::Rc;
 
-use crate::{constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend};
+use crate::{constraint::Constraint, impl_holo, Complex, LinAlgBackend, Trans};
 use autd3_core::{
     error::AUTDInternalError,
     float,
@@ -27,7 +27,7 @@ use nalgebra::ComplexField;
 
 /// Gain to produce multiple foci with naive linear synthesis
 #[derive(Gain)]
-pub struct Naive<B: Backend + 'static> {
+pub struct Naive<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     constraint: Constraint,
@@ -36,7 +36,7 @@ pub struct Naive<B: Backend + 'static> {
 
 impl_holo!(B, Naive<B>);
 
-impl<B: Backend + 'static> Naive<B> {
+impl<B: LinAlgBackend + 'static> Naive<B> {
     pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
@@ -47,10 +47,27 @@ impl<B: Backend + 'static> Naive<B> {
     }
 }
 
-impl<B: Backend + 'static, T: Transducer> Gain<T> for Naive<B> {
+impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
     fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let g = generate_propagation_matrix(geometry, &self.foci);
-        let q = self.backend.naive(&self.amps, g)?;
+        let m = geometry.num_transducers();
+
+        let g = self
+            .backend
+            .generate_propagation_matrix(geometry, &self.foci)?;
+
+        let p = self.backend.from_slice_cv(&self.amps)?;
+        let mut q = self.backend.alloc_zeros_cv(m)?;
+        self.backend.gemv_c(
+            Trans::ConjTrans,
+            Complex::new(1., 0.),
+            &g,
+            &p,
+            Complex::new(0., 0.),
+            &mut q,
+        )?;
+
+        let q = self.backend.to_host_cv(q)?;
+
         let max_coefficient = q.camax().abs();
         Ok(geometry
             .transducers()
