@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 pub use autd3capi_common as common;
-pub use autd3capi_common::holo as holo;
+pub use autd3capi_common::holo;
 
 use autd3capi_common::float;
 use common::{
@@ -225,6 +225,43 @@ impl STMPropsPtr {
     }
 }
 
+#[macro_export]
+macro_rules! create_holo {
+    ($type:tt, $backend_type:tt, $backend:expr, $points:expr, $amps:expr, $size:expr) => {
+        GainPtr::new(
+            $type::new(cast!($backend.0, Rc<$backend_type>).clone()).add_foci_from_iter(
+                (0..$size as usize).map(|i| {
+                    let p = Vector3::new(
+                        $points.add(i * 3).read(),
+                        $points.add(i * 3 + 1).read(),
+                        $points.add(i * 3 + 2).read(),
+                    );
+                    let amp = *$amps.add(i);
+                    (p, amp)
+                }),
+            ),
+        )
+    };
+
+    ($type:tt, $points:expr, $amps:expr, $size:expr) => {
+        GainPtr::new(
+            $type::new().add_foci_from_iter((0..$size as usize).map(|i| {
+                let p = Vector3::new(
+                    $points.add(i * 3).read(),
+                    $points.add(i * 3 + 1).read(),
+                    $points.add(i * 3 + 2).read(),
+                );
+                let amp = *$amps.add(i);
+                (p, amp)
+            })),
+        )
+    };
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct BackendPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct ConstraintPtr(pub ConstPtr);
