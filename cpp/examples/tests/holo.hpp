@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 11/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,30 +31,74 @@ inline void holo_test(autd3::Controller& autd) {
 
   std::cout << "Select Optimization Method (default is GSPAT)" << std::endl;
 
-  std::vector<std::pair<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
-  opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>());
-  opts.emplace_back("EVP", std::make_shared<autd3::gain::holo::EVP>());
-  opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>());
-  opts.emplace_back("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>());
-  opts.emplace_back("Naive", std::make_shared<autd3::gain::holo::Naive>());
-  opts.emplace_back("LM", std::make_shared<autd3::gain::holo::LM>());
-  opts.emplace_back("Greedy", std::make_shared<autd3::gain::holo::Greedy>());
-
-  size_t i = 0;
-  std::transform(opts.begin(), opts.end(), std::ostream_iterator<std::string>(std::cout, "\n"),
-                 [&i](const auto& opt) { return "[" + std::to_string(i++) + "]: " + opt.first; });
+  std::cout << "[0]: SDP" << std::endl;
+  std::cout << "[1]: EVP" << std::endl;
+  std::cout << "[2]: GS" << std::endl;
+  std::cout << "[3]: GSPAT" << std::endl;
+  std::cout << "[4]: Naive" << std::endl;
+  std::cout << "[5]: LM" << std::endl;
+  std::cout << "[6]: Greedy" << std::endl;
+  std::cout << "[Others]: GS-PAT" << std::endl;
+  std::cout << "Choose number: ";
 
   std::string in;
   size_t idx;
   getline(std::cin, in);
   std::stringstream s(in);
-  if (const auto empty = in == "\n"; !(s >> idx) || idx >= opts.size() || empty) idx = 3;
+  if (const auto empty = in == "\n"; !(s >> idx) || idx >= 7 || empty) idx = 3;
 
-  auto& [_, g] = opts[idx];
-  g->add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0);
-  g->add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0);
-  g->add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0);
-  g->add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0);
-
-  autd.send(m, *g);
+  auto backend = std::make_shared<autd3::gain::holo::DefaultBackend>();
+  switch (idx) {
+    case 0:
+      autd.send(m, autd3::gain::holo::SDP(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 1:
+      autd.send(m, autd3::gain::holo::EVP(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 2:
+      autd.send(m, autd3::gain::holo::GS(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 3:
+      autd.send(m, autd3::gain::holo::GSPAT(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 4:
+      autd.send(m, autd3::gain::holo::Naive(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 5:
+      autd.send(m, autd3::gain::holo::LM(backend)
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    case 6:
+      autd.send(m, autd3::gain::holo::Greedy()
+                       .add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0)
+                       .add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0)
+                       .add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0));
+      break;
+    default:
+      break;
+  }
 }
