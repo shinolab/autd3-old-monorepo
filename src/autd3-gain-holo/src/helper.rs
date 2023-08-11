@@ -4,7 +4,7 @@ macro_rules! impl_holo {
     ($backend:tt, $t:ty) => {
         impl<$backend> $t
         where
-            $backend: $crate::Backend,
+            $backend: $crate::LinAlgBackend,
         {
             /// Add focus
             pub fn add_focus(self, focus: Vector3, amp: float) -> Self {

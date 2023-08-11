@@ -15,6 +15,60 @@ namespace AUTD3Sharp
             private const string DLL = "autd3capi_backend_cuda";
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern BackendPtr AUTDCUDABackend(byte[] err);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteCUDABackend(BackendPtr backend);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloSDPCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloSDPWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloSDPWithAlphaCUDA(GainPtr holo, double alpha);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloSDPWithLambdaCUDA(GainPtr holo, double lambda);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloSDPWithRepeatCUDA(GainPtr holo, uint repeat);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloEVPCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloEVPWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloEVPWithGammaCUDA(GainPtr holo, double gamma);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSWithRepeatCUDA(GainPtr holo, uint repeat);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSPATCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSPATWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGSPATWithRepeatCUDA(GainPtr holo, uint repeat);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloNaiveCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloNaiveWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGreedyCUDA(double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGreedyWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloGreedyWithPhaseDivCUDA(GainPtr holo, uint div);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMCUDA(BackendPtr backend, double[]? points, double[]? amps, ulong size);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithEps1CUDA(GainPtr holo, double eps);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithEps2CUDA(GainPtr holo, double eps);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithTauCUDA(GainPtr holo, double tau);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithKMaxCUDA(GainPtr holo, uint kMax);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithInitialCUDA(GainPtr holo, double[]? initialPtr, ulong len);
         }
     }
 

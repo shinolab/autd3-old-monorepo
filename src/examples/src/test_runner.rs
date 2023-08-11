@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ pub fn run<T: Transducer + 'static, L: Link<T>>(mut autd: Controller<T, L>) -> a
 
     let mut examples: Vec<(
         &'static str,
-        &dyn Fn(&mut Controller<T, L>) -> Result<bool, AUTDError>,
+        &dyn Fn(&mut Controller<T, L>) -> anyhow::Result<bool>,
     )> = vec![
         ("Single focus test", &focus),
         ("Bessel beam test", &bessel),
