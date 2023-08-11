@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/06/2023
+ * Last Modified: 08/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,6 +20,8 @@ pub enum HoloError {
     SolveFailed,
     #[error("{0}")]
     BackendError(String),
+    #[error("{0}")]
+    BackendCreationError(String),
 }
 
 impl From<HoloError> for AUTDInternalError {
