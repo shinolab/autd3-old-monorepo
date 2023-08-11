@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -69,6 +69,13 @@ extern "C" {
     );
 
     fn cu_normalize(x: *const CuComplex, row: u32, col: u32, y: *mut CuComplex);
+    fn cu_scaled_to(
+        a: *const CuComplex,
+        b: *const CuComplex,
+        row: u32,
+        col: u32,
+        c: *mut CuComplex,
+    );
 
     fn cu_get_diagonal(x: *const float, row: u32, col: u32, y: *mut float);
     fn cu_get_diagonal_c(x: *const CuComplex, row: u32, col: u32, y: *mut CuComplex);
@@ -1643,6 +1650,33 @@ impl LinAlgBackend for CUDABackend {
                 a.rows as _,
                 a.cols as _,
                 b.ptr as _,
+            ));
+        }
+        Ok(())
+    }
+
+    fn scaled_to_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &Self::VectorXc,
+        c: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        unsafe {
+            cu_call!(cu_scaled_to(
+                a.ptr as _, b.ptr as _, a.len as _, 1, c.ptr as _
+            ));
+        }
+        Ok(())
+    }
+
+    fn scaled_to_assign_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        unsafe {
+            cu_call!(cu_scaled_to(
+                b.ptr as _, a.ptr as _, a.len as _, 1, b.ptr as _
             ));
         }
         Ok(())
