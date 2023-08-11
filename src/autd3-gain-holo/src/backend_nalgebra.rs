@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -542,6 +542,25 @@ impl LinAlgBackend for NalgebraBackend {
 
     fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX) -> Result<(), HoloError> {
         *b = a.column_sum();
+        Ok(())
+    }
+
+    fn scaled_to_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &Self::VectorXc,
+        c: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        *c = a.zip_map(b, |a, b| a / a.abs() * b);
+        Ok(())
+    }
+
+    fn scaled_to_assign_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        b.zip_apply(a, |b, a| *b = *b / b.abs() * a);
         Ok(())
     }
 }

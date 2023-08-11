@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -251,6 +251,28 @@ pub trait LinAlgBackend {
     fn solve_inplace_h(&self, a: Self::MatrixXc, x: &mut Self::VectorXc) -> Result<(), HoloError>;
 
     fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX) -> Result<(), HoloError>;
+
+    fn scaled_to_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &Self::VectorXc,
+        c: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        let mut tmp = self.clone_cv(a)?;
+        self.normalize_assign_cv(&mut tmp)?;
+        self.hadamard_product_cv(&tmp, b, c)?;
+        Ok(())
+    }
+
+    fn scaled_to_assign_cv(
+        &self,
+        a: &Self::VectorXc,
+        b: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        self.normalize_assign_cv(b)?;
+        self.hadamard_product_assign_cv(a, b)?;
+        Ok(())
+    }
 
     fn gen_back_prop(
         &self,

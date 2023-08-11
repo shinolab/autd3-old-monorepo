@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -97,8 +97,7 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 &mut gamma,
             )?;
             for _ in 0..self.repeat {
-                self.backend.normalize_assign_cv(&mut gamma)?;
-                self.backend.hadamard_product_cv(&gamma, &amps, &mut p)?;
+                self.backend.scaled_to_cv(&gamma, &amps, &mut p)?;
                 self.backend.gemv_c(
                     Trans::NoTrans,
                     Complex::new(1., 0.),

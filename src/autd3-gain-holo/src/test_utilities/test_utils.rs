@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -114,6 +114,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         self.test_solve_inplace_h()?;
 
         self.test_reduce_col()?;
+
+        self.test_scaled_to_cv()?;
+        self.test_scaled_to_assign_cv()?;
 
         self.test_generate_propagation_matrix()?;
         self.test_gen_back_prop()?;
@@ -1525,6 +1528,46 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let sum = a.row(row).iter().sum::<float>();
             assert_approx_eq::assert_approx_eq!(sum, b[row]);
         });
+        Ok(())
+    }
+
+    fn test_scaled_to_cv(&self) -> Result<(), HoloError> {
+        let a = self.make_random_cv(N)?;
+        let b = self.make_random_cv(N)?;
+        let mut c = self.backend.alloc_cv(N)?;
+
+        self.backend.scaled_to_cv(&a, &b, &mut c)?;
+
+        let a = self.backend.to_host_cv(a)?;
+        let b = self.backend.to_host_cv(b)?;
+        let c = self.backend.to_host_cv(c)?;
+        c.iter()
+            .zip(a.iter())
+            .zip(b.iter())
+            .for_each(|((&c, &a), &b)| {
+                assert_approx_eq::assert_approx_eq!(c, a / a.abs() * b);
+            });
+
+        Ok(())
+    }
+
+    fn test_scaled_to_assign_cv(&self) -> Result<(), HoloError> {
+        let a = self.make_random_cv(N)?;
+        let mut b = self.make_random_cv(N)?;
+        let bc = self.backend.clone_cv(&b)?;
+
+        self.backend.scaled_to_assign_cv(&a, &mut b)?;
+
+        let a = self.backend.to_host_cv(a)?;
+        let b = self.backend.to_host_cv(b)?;
+        let bc = self.backend.to_host_cv(bc)?;
+        b.iter()
+            .zip(a.iter())
+            .zip(bc.iter())
+            .for_each(|((&b, &a), &bc)| {
+                assert_approx_eq::assert_approx_eq!(b, bc / bc.abs() * a);
+            });
+
         Ok(())
     }
 

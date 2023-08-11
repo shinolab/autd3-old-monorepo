@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,6 +49,14 @@ __global__ void normalize_kernel(const autd3_complex_t *x, uint32_t row, uint32_
   if (xi >= col || yi >= row) return;
   unsigned int i = yi + xi * row;
   y[i] = divcr(x[i], absc(x[i]));
+}
+
+__global__ void scaled_to_kernel(const autd3_complex_t *a, const autd3_complex_t *b, uint32_t row, uint32_t col, autd3_complex_t *c) {
+  unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
+  if (xi >= col || yi >= row) return;
+  unsigned int i = yi + xi * row;
+  c[i] = mulc(divcr(a[i], absc(a[i])), b[i]);
 }
 
 __global__ void get_diagonal_kernel(const autd3_complex_t *a, uint32_t row, uint32_t col, autd3_complex_t *b) {
@@ -241,6 +249,12 @@ void cu_normalize(const autd3_complex_t *x, const uint32_t row, const uint32_t c
   dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
   dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
   normalize_kernel<<<grid, block>>>(x, row, col, y);
+}
+
+void cu_scaled_to(const autd3_complex_t *a, const autd3_complex_t *b, const uint32_t row, const uint32_t col, autd3_complex_t *c) {
+  dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
+  dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
+  scaled_to_kernel<<<grid, block>>>(a, b, row, col, c);
 }
 
 void cu_get_diagonal(const autd3_float_t *a, const uint32_t row, const uint32_t col, autd3_float_t *b) {
