@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/08/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
-use autd3_traits::Gain;
+use autd3_derive::Gain;
 
 /// Gain to group multiple gains
 #[derive(Gain, Default)]
