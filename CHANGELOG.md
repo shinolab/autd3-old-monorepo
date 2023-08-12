@@ -1,3 +1,7 @@
+# 14.5.0
+
+- Remove `autd3-gain-holo::Backend`, add `autd3-gain-holo::LinAlgBackend` instead
+
 # 14.2.2
 
 - Add C++ documentation
