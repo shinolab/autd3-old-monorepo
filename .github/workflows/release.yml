@@ -65,7 +65,7 @@ jobs:
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
-        cd autd3-traits
+        cd autd3-derive
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
