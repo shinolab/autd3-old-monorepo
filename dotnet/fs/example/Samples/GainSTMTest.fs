@@ -24,12 +24,12 @@ module GainSTMTest =
         (new Static()) |> autd.Send |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
-        let stm = new GainSTM(1.0);
-        [0..199]
+        let stm = 
+            [0..199]
             |> List.map (fun i -> (2.0 * AUTD3.Pi * (float)i / 200.0))
             |> List.map (fun theta -> (center + 30.0 * Vector3d(cos(theta), sin(theta), 0.0)))
             |> List.map (fun p -> (new Focus(p)))
-            |> List.iter stm.AddGain
+            |> List.fold (fun (acc: GainSTM) v -> acc.AddGain v) (new GainSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
         (stm )|> autd.Send |> ignore

@@ -336,6 +336,15 @@ namespace AUTD3Sharp
                     _amps = new List<float_t>();
                 }
 
+                public EVP<B> AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
+                }
+
                 public EVP<B> WithGamma(float_t value)
                 {
                     _gamma = value;
@@ -372,6 +381,15 @@ namespace AUTD3Sharp
                     _backend = backend;
                     _foci = new List<float_t>();
                     _amps = new List<float_t>();
+                }
+
+                public GS<B> AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
                 }
 
 
@@ -413,6 +431,15 @@ namespace AUTD3Sharp
                     _amps = new List<float_t>();
                 }
 
+                public GSPAT<B> AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
+                }
+
                 public GSPAT<B> WithRepeat(uint value)
                 {
                     _repeat = value;
@@ -452,6 +479,16 @@ namespace AUTD3Sharp
 
                 }
 
+                public Naive<B> AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
+                }
+
+
                 public Naive<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -486,6 +523,15 @@ namespace AUTD3Sharp
                     _backend = backend;
                     _foci = new List<float_t>();
                     _amps = new List<float_t>();
+                }
+
+                public LM<B> AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
                 }
 
                 public LM<B> WithEps1(float_t value)
@@ -550,6 +596,15 @@ namespace AUTD3Sharp
                 {
                     _foci = new List<float_t>();
                     _amps = new List<float_t>();
+                }
+
+                public Greedy AddFocus(Vector3 focus, float_t amp)
+                {
+                    _foci.Add(focus.x);
+                    _foci.Add(focus.y);
+                    _foci.Add(focus.z);
+                    _amps.Add(amp);
+                    return this;
                 }
 
                 public Greedy WithPhaseDiv(uint value)
