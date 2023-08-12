@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/08/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -287,27 +287,33 @@ impl SOEM {
             ec_writestate(0);
 
             self.is_open.store(true, Ordering::Release);
-            let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
-            let is_open = self.is_open.clone();
-            let cycle = self.ec_send_cycle;
             let wkc = Arc::new(AtomicI32::new(0));
-            let wkc_clone = wkc.clone();
-            let io_map = self.io_map.clone();
+
             match self.timer_strategy {
                 TimerStrategy::Sleep => {
-                    self.ecatth_handle = Some(std::thread::spawn(move || {
-                        Self::ecat_run::<StdSleep>(is_open, io_map, wkc_clone, tx_receiver, cycle)
+                    self.ecatth_handle = Some(std::thread::spawn({
+                        let is_open = self.is_open.clone();
+                        let io_map = self.io_map.clone();
+                        let wkc = wkc.clone();
+                        let cycle = self.ec_send_cycle;
+                        move || Self::ecat_run::<StdSleep>(is_open, io_map, wkc, tx_receiver, cycle)
                     }))
                 }
                 TimerStrategy::BusyWait => {
-                    self.ecatth_handle = Some(std::thread::spawn(move || {
-                        Self::ecat_run::<BusyWait>(is_open, io_map, wkc_clone, tx_receiver, cycle)
+                    self.ecatth_handle = Some(std::thread::spawn({
+                        let is_open = self.is_open.clone();
+                        let io_map = self.io_map.clone();
+                        let wkc = wkc.clone();
+                        let cycle = self.ec_send_cycle;
+                        move || Self::ecat_run::<BusyWait>(is_open, io_map, wkc, tx_receiver, cycle)
                     }))
                 }
                 TimerStrategy::NativeTimer => {
+                    let io_map = self.io_map.clone();
+
                     self.timer_handle = Some(Timer::start(
                         SoemCallback {
-                            wkc: wkc_clone,
+                            wkc: wkc.clone(),
                             receiver: tx_receiver,
                             io_map,
                         },
@@ -349,17 +355,22 @@ impl SOEM {
                 });
             }
 
-            let is_open = self.is_open.clone();
-            let on_lost = self.on_lost.take();
-            let logger = self.logger.clone();
-            let state_check_interval = self.state_check_interval;
-            self.ecat_check_th = Some(std::thread::spawn(move || {
-                let error_handler = EcatErrorHandler { on_lost, logger };
-                while is_open.load(Ordering::Acquire) {
-                    if wkc.load(Ordering::Acquire) < expected_wkc || ec_group[0].docheckstate != 0 {
-                        error_handler.handle();
+            self.ecat_check_th = Some(std::thread::spawn({
+                let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
+                let is_open = self.is_open.clone();
+                let on_lost = self.on_lost.take();
+                let logger = self.logger.clone();
+                let state_check_interval = self.state_check_interval;
+                move || {
+                    let error_handler = EcatErrorHandler { on_lost, logger };
+                    while is_open.load(Ordering::Acquire) {
+                        if wkc.load(Ordering::Acquire) < expected_wkc
+                            || ec_group[0].docheckstate != 0
+                        {
+                            error_handler.handle();
+                        }
+                        std::thread::sleep(state_check_interval);
                     }
-                    std::thread::sleep(state_check_interval);
                 }
             }));
 

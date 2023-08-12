@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -190,31 +190,33 @@ impl Simulator {
         let port = self.port.unwrap_or(self.settings.port);
 
         let rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(0)));
-        let rx_buf_clone = rx_buf.clone();
 
-        let server_th = std::thread::spawn(move || {
-            spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
-            let body = async {
-                Server::builder()
-                    .add_service(simulator_server::SimulatorServer::new(SimulatorServer {
-                        rx_buf: rx_buf_clone,
-                        sender: tx,
-                    }))
-                    .serve_with_shutdown(
-                        format!("0.0.0.0:{port}")
-                            .to_socket_addrs()
-                            .unwrap()
-                            .next()
-                            .unwrap(),
-                        rx_shutdown.map(drop),
-                    )
-                    .await
-            };
-            Builder::new_multi_thread()
-                .enable_all()
-                .build()
-                .unwrap()
-                .block_on(body)
+        let server_th = std::thread::spawn({
+            let rx_buf = rx_buf.clone();
+            move || {
+                spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
+                let body = async {
+                    Server::builder()
+                        .add_service(simulator_server::SimulatorServer::new(SimulatorServer {
+                            rx_buf,
+                            sender: tx,
+                        }))
+                        .serve_with_shutdown(
+                            format!("0.0.0.0:{port}")
+                                .to_socket_addrs()
+                                .unwrap()
+                                .next()
+                                .unwrap(),
+                            rx_shutdown.map(drop),
+                        )
+                        .await
+                };
+                Builder::new_multi_thread()
+                    .enable_all()
+                    .build()
+                    .unwrap()
+                    .block_on(body)
+            }
         });
 
         self.run_simulator(server_th, rx_buf, rx, tx_shutdown)

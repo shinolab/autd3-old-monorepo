@@ -149,7 +149,7 @@ version = "14.2.2"
 dependencies = [
  "autd3-core",
  "autd3-firmware-emulator",
- "autd3-traits",
+ "autd3-derive",
  "num",
  "spdlog-rs",
  "thiserror",
@@ -191,7 +191,7 @@ name = "autd3-gain-holo"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
- "autd3-traits",
+ "autd3-derive",
  "nalgebra",
  "rand",
  "thiserror",
@@ -226,7 +226,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3-traits"
+name = "autd3-derive"
 version = "14.2.2"
 dependencies = [
  "quote",
