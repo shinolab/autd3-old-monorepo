@@ -1,3 +1,7 @@
+# 15.0.0
+
+- Rename `autd3-traits` to `autd3-derive`
+
 # 14.2.2
 
 - Add C++ documentation

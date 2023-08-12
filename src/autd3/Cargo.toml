@@ -12,7 +12,7 @@ keywords = ["autd"]
 
 [dependencies]
 autd3-core = { path = "../autd3-core", version = "14.2.2" }
-autd3-traits = { path = "../autd3-traits", version = "14.2.2" }
+autd3-derive = { path = "../autd3-derive", version = "14.2.2" }
 autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "14.2.2" }
 num = "0.4.0"
 thiserror = "1.0.31"

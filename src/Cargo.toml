@@ -4,7 +4,7 @@ members = [
     "autd3",
     "autd3-core",
     "autd3-driver",
-    "autd3-traits",
+    "autd3-derive",
     "autd3-gain-holo",
     "autd3-backend-cuda",
     "autd3-link-simulator",
@@ -19,6 +19,6 @@ members = [
     "examples",
 ]
 
-default-members = ["autd3", "autd3-core", "autd3-driver", "autd3-traits", "autd3-gain-holo", "autd3-link-soem", "autd3-link-twincat", "autd3-modulation-audio-file", "autd3-firmware-emulator"]
+default-members = ["autd3", "autd3-core", "autd3-driver", "autd3-derive", "autd3-gain-holo", "autd3-link-soem", "autd3-link-twincat", "autd3-modulation-audio-file", "autd3-firmware-emulator"]
 
 resolver = "2"
