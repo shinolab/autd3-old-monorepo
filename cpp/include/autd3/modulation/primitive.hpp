@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <numeric>
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -131,25 +132,19 @@ class Fourier final : public internal::Modulation {
  public:
   Fourier() = default;
 
-  /**
-   * @brief add components
-   *
-   * @param component sine wave component
-   * @return Fourier
-   */
-  Fourier add_component(internal::native_methods::ModulationPtr component) {
-    _component = component;
-    return *this;
+  Fourier add_component(Sine component) {
+    _components.emplace_back(component);
+    return std::move(*this);
   }
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    auto ptr = internal::native_methods::AUTDModulationFourier();
-    if (&_component != nullptr) ptr = AUTDModulationFourierAddComponent(ptr, _component);
-    return ptr;
+    return std::accumulate(_components.begin(), _components.end(), internal::native_methods::AUTDModulationFourier(), [](internal::native_methods::ModulationPtr ptr, Sine sine) {
+        return internal::native_methods::AUTDModulationFourierAddComponent(ptr, sine.modulation_ptr());
+    });
   }
 
  private:
-  internal::native_methods::ModulationPtr _component;
+  std::vector<Sine> _components;
 };
 
 /**
