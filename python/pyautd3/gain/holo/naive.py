@@ -13,26 +13,38 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 import ctypes
 
-from .backend import Backend, DefaultBackend
+from .backend import Backend
 from .constraint import AmplitudeConstraint
 
-from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Geometry
 
-from .holo import Holo
+
+from pyautd3.gain.gain import IGain
 
 
-class Naive(Holo):
+class Naive(IGain):
+    _foci: List[float]
+    _amps: List[float]
+    _backend: Backend
     _constraint: Optional[AmplitudeConstraint]
 
-    def __init__(self, backend: Backend = DefaultBackend()):
-        super().__init__(backend)
+    def __init__(self, backend: Backend):
+        self._foci = []
+        self._amps = []
+        self._backend = backend
         self._repeat = None
         self._constraint = None
+
+    def add_focus(self, focus: np.ndarray, amp: float) -> "Naive":
+        self._foci.append(focus[0])
+        self._foci.append(focus[1])
+        self._foci.append(focus[2])
+        self._amps.append(amp)
+        return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "Naive":
         self._constraint = constraint
@@ -42,9 +54,7 @@ class Naive(Holo):
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
-        ptr = GainHolo().gain_holo_naive(self._backend.ptr(), foci_, amps, size)
+        ptr = self._backend.naive(foci_, amps, size)
         if self._constraint is not None:
-            ptr = GainHolo().gain_holo_naive_with_constraint(
-                ptr, self._constraint.ptr()
-            )
+            ptr = self._backend.naive_with_constraint(ptr, self._constraint)
         return ptr
