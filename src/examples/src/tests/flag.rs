@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/06/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use std::{
 
 use autd3::prelude::*;
 
-pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bool, AUTDError> {
+pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.reads_fpga_info(true);
 
     println!("press any key to force fan...");
@@ -60,5 +60,7 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bo
 
     autd.reads_fpga_info(false);
     autd.force_fan(false);
-    autd.send(UpdateFlags::default())
+    autd.send(UpdateFlags::default())?;
+
+    Ok(true)
 }

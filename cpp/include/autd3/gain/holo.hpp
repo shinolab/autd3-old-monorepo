@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/08/2023
+// Last Modified: 11/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,34 +18,6 @@
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::gain::holo {
-
-/**
- * @brief Calculation backend
- */
-class Backend {
- public:
-  Backend() noexcept : _ptr(internal::native_methods::BackendPtr{nullptr}){};
-  explicit Backend(internal::native_methods::BackendPtr ptr) noexcept : _ptr(ptr){};
-  Backend(const Backend& obj) = default;
-  Backend& operator=(const Backend& obj) = default;
-  Backend(Backend&& obj) = default;
-  Backend& operator=(Backend&& obj) = default;
-  virtual ~Backend() { internal::native_methods::AUTDDeleteBackend(_ptr); }
-
-  [[nodiscard]] internal::native_methods::BackendPtr ptr() { return _ptr; }
-
- protected:
-  internal::native_methods::BackendPtr _ptr;
-};
-
-/**
- * @brief Backend using [Nalgebra](https://nalgebra.org/)
- */
-class DefaultBackend final : public Backend {
- public:
-  DefaultBackend() : Backend(internal::native_methods::AUTDDefaultBackend()) {}
-  ~DefaultBackend() override = default;
-};
 
 /**
  * @brief Amplitude constraint
@@ -89,29 +61,159 @@ class AmplitudeConstraint {
 };
 
 /**
- * @brief Multi-focus gain
+ * @brief Calculation backend
  */
-class Holo : public internal::Gain {
+class Backend {
  public:
-  Holo() : _backend(std::make_shared<DefaultBackend>()) {}
-  explicit Holo(std::shared_ptr<Backend> backend) : _backend(std::move(backend)) {}
+  Backend() noexcept : _ptr(internal::native_methods::BackendPtr{nullptr}){};
+  explicit Backend(internal::native_methods::BackendPtr ptr) noexcept : _ptr(ptr){};
+  Backend(const Backend& obj) = default;
+  Backend& operator=(const Backend& obj) = default;
+  Backend(Backend&& obj) = default;
+  Backend& operator=(Backend&& obj) = default;
+  virtual ~Backend() = default;
 
-  Holo(const Holo& obj) = default;
-  Holo& operator=(const Holo& obj) = default;
-  Holo(Holo&& obj) = default;
-  Holo& operator=(Holo&& obj) = default;
-  ~Holo() override = default;
+  [[nodiscard]] internal::native_methods::BackendPtr ptr() { return _ptr; }
 
-  void add_focus(internal::Vector3 focus, double amp) {
-    _foci.emplace_back(std::move(focus));
-    _amps.emplace_back(amp);
-  }
+  [[nodiscard]] virtual internal::native_methods::GainPtr sdp(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_alpha(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_lambda(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
+
+  [[nodiscard]] virtual internal::native_methods::GainPtr evp(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr evp_with_gamma(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr evp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
+
+  [[nodiscard]] virtual internal::native_methods::GainPtr gs(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr gs_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr gs_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
+
+  [[nodiscard]] virtual internal::native_methods::GainPtr gspat(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr gspat_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr gspat_with_constraint(internal::native_methods::GainPtr ptr,
+                                                                                AmplitudeConstraint v) const = 0;
+
+  [[nodiscard]] virtual internal::native_methods::GainPtr naive(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr naive_with_constraint(internal::native_methods::GainPtr ptr,
+                                                                                AmplitudeConstraint v) const = 0;
+
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm(const double* foci, const double* amps, const uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_eps1(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_eps2(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_tau(internal::native_methods::GainPtr ptr, double v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_kmax(internal::native_methods::GainPtr ptr, uint32_t v) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_initial(internal::native_methods::GainPtr ptr, const double* v,
+                                                                          uint64_t size) const = 0;
+  [[nodiscard]] virtual internal::native_methods::GainPtr lm_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
 
  protected:
-  std::vector<internal::Vector3> _foci;
-  std::vector<double> _amps;
-  std::shared_ptr<Backend> _backend;
+  internal::native_methods::BackendPtr _ptr;
 };
+
+/**
+ * @brief Backend using [Nalgebra](https://nalgebra.org/)
+ */
+class NalgebraBackend final : public Backend {
+ public:
+  NalgebraBackend() : Backend(internal::native_methods::AUTDNalgebraBackend()) {}
+  ~NalgebraBackend() override {
+    if (_ptr._0 != nullptr) {
+      internal::native_methods::AUTDDeleteNalgebraBackend(_ptr);
+      _ptr._0 = nullptr;
+    }
+  }
+
+  internal::native_methods::GainPtr sdp(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloSDP(this->_ptr, foci, amps, size);
+  }
+  internal::native_methods::GainPtr sdp_with_alpha(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloSDPWithAlpha(ptr, v);
+  }
+  internal::native_methods::GainPtr sdp_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const override {
+    return internal::native_methods::AUTDGainHoloSDPWithRepeat(ptr, v);
+  }
+  internal::native_methods::GainPtr sdp_with_lambda(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloSDPWithLambda(ptr, v);
+  }
+  internal::native_methods::GainPtr sdp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloSDPWithConstraint(ptr, v.ptr());
+  }
+
+  internal::native_methods::GainPtr evp(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloEVP(this->_ptr, foci, amps, size);
+  }
+
+  internal::native_methods::GainPtr evp_with_gamma(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloEVPWithGamma(ptr, v);
+  }
+
+  internal::native_methods::GainPtr evp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloEVPWithConstraint(ptr, v.ptr());
+  }
+
+  internal::native_methods::GainPtr gs(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloGS(this->_ptr, foci, amps, size);
+  }
+
+  internal::native_methods::GainPtr gs_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const override {
+    return internal::native_methods::AUTDGainHoloGSWithRepeat(ptr, v);
+  }
+
+  internal::native_methods::GainPtr gs_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloGSWithConstraint(ptr, v.ptr());
+  }
+
+  internal::native_methods::GainPtr gspat(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloGS(this->_ptr, foci, amps, size);
+  }
+
+  internal::native_methods::GainPtr gspat_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const override {
+    return internal::native_methods::AUTDGainHoloGSWithRepeat(ptr, v);
+  }
+
+  internal::native_methods::GainPtr gspat_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloGSWithConstraint(ptr, v.ptr());
+  }
+
+  internal::native_methods::GainPtr naive(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloNaive(this->_ptr, foci, amps, size);
+  }
+
+  internal::native_methods::GainPtr naive_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloNaiveWithConstraint(ptr, v.ptr());
+  }
+
+  internal::native_methods::GainPtr lm(const double* foci, const double* amps, const uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloLM(this->_ptr, foci, amps, size);
+  }
+
+  internal::native_methods::GainPtr lm_with_eps1(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloLMWithEps1(ptr, v);
+  }
+
+  internal::native_methods::GainPtr lm_with_eps2(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloLMWithEps2(ptr, v);
+  }
+
+  internal::native_methods::GainPtr lm_with_tau(internal::native_methods::GainPtr ptr, double v) const override {
+    return internal::native_methods::AUTDGainHoloLMWithTau(ptr, v);
+  }
+
+  internal::native_methods::GainPtr lm_with_kmax(internal::native_methods::GainPtr ptr, uint32_t v) const override {
+    return internal::native_methods::AUTDGainHoloLMWithKMax(ptr, v);
+  }
+
+  internal::native_methods::GainPtr lm_with_initial(internal::native_methods::GainPtr ptr, const double* v, uint64_t size) const override {
+    return internal::native_methods::AUTDGainHoloLMWithInitial(ptr, v, size);
+  }
+
+  internal::native_methods::GainPtr lm_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const override {
+    return internal::native_methods::AUTDGainHoloLMWithConstraint(ptr, v.ptr());
+  }
+};
+
+using DefaultBackend = NalgebraBackend;
 
 /**
  * @brief Gain to produce multiple foci by solving Semi-Denfinite Programming
@@ -119,10 +221,18 @@ class Holo : public internal::Gain {
  * @details Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE
  * World Haptics Conference (WHC). IEEE, 2015.
  */
-class SDP final : public Holo {
+template <class B>
+class SDP final : public internal::Gain {
  public:
-  SDP() = default;
-  explicit SDP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit SDP(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  SDP add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the paper for details.
@@ -157,15 +267,18 @@ class SDP final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloSDP(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_alpha.has_value()) ptr = AUTDGainHoloSDPWithAlpha(ptr, _alpha.value());
-    if (_repeat.has_value()) ptr = AUTDGainHoloSDPWithRepeat(ptr, _repeat.value());
-    if (_lambda.has_value()) ptr = AUTDGainHoloSDPWithLambda(ptr, _lambda.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloSDPWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->sdp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_alpha.has_value()) ptr = _backend->sdp_with_alpha(ptr, _alpha.value());
+    if (_repeat.has_value()) ptr = _backend->sdp_with_repeat(ptr, _repeat.value());
+    if (_lambda.has_value()) ptr = _backend->sdp_with_lambda(ptr, _lambda.value());
+    if (_constraint.has_value()) ptr = _backend->sdp_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<double> _alpha;
   std::optional<uint32_t> _repeat;
   std::optional<double> _lambda;
@@ -178,10 +291,18 @@ class SDP final : public Holo {
  * @details Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014):
  * 1-10.
  */
-class EVP final : public Holo {
+template <class B>
+class EVP final : public internal::Gain {
  public:
-  EVP() = default;
-  explicit EVP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit EVP(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  EVP add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the paper for details.
@@ -200,13 +321,16 @@ class EVP final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloEVP(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_gamma.has_value()) ptr = AUTDGainHoloEVPWithGamma(ptr, _gamma.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloEVPWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->evp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_gamma.has_value()) ptr = _backend->evp_with_gamma(ptr, _gamma.value());
+    if (_constraint.has_value()) ptr = _backend->evp_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<double> _gamma;
   std::optional<AmplitudeConstraint> _constraint;
 };
@@ -216,10 +340,18 @@ class EVP final : public Holo {
  *
  * @details Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
  */
-class GS final : public Holo {
+template <class B>
+class GS final : public internal::Gain {
  public:
-  GS() = default;
-  explicit GS(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit GS(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  GS add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the paper for details.
@@ -238,13 +370,16 @@ class GS final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloGS(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_repeat.has_value()) ptr = AUTDGainHoloGSWithRepeat(ptr, _repeat.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloGSWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->gs(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_repeat.has_value()) ptr = _backend->gs_with_repeat(ptr, _repeat.value());
+    if (_constraint.has_value()) ptr = _backend->gs_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<uint32_t> _repeat;
   std::optional<AmplitudeConstraint> _constraint;
 };
@@ -255,10 +390,18 @@ class GS final : public Holo {
  * @details Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on
  * Graphics (TOG), 39(4):138–1, 2020.
  */
-class GSPAT final : public Holo {
+template <class B>
+class GSPAT final : public internal::Gain {
  public:
-  GSPAT() = default;
-  explicit GSPAT(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit GSPAT(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  GSPAT add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the paper for details.
@@ -277,13 +420,16 @@ class GSPAT final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloGSPAT(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_repeat.has_value()) ptr = AUTDGainHoloGSPATWithRepeat(ptr, _repeat.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloGSPATWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->gspat(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_repeat.has_value()) ptr = _backend->gspat_with_repeat(ptr, _repeat.value());
+    if (_constraint.has_value()) ptr = _backend->gspat_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<uint32_t> _repeat;
   std::optional<AmplitudeConstraint> _constraint;
 };
@@ -291,10 +437,18 @@ class GSPAT final : public Holo {
 /**
  * @brief Gain to produce multiple foci with naive linear synthesis
  */
-class Naive final : public Holo {
+template <class B>
+class Naive final : public internal::Gain {
  public:
-  Naive() = default;
-  explicit Naive(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit Naive(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  Naive add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Set amplitude constraint
@@ -305,14 +459,20 @@ class Naive final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloNaive(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_constraint.has_value()) ptr = AUTDGainHoloNaiveWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->naive(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_constraint.has_value()) ptr = _backend->naive_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<AmplitudeConstraint> _constraint;
 };
+
+template <class B>
+using LSS = Naive<B>;
 
 /**
  * @brief Gain to produce multiple foci with Levenberg-Marquardt algorithm
@@ -324,10 +484,18 @@ class Naive final : public Holo {
  * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
  * * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
-class LM final : public Holo {
+template <class B>
+class LM final : public internal::Gain {
  public:
-  LM() = default;
-  explicit LM(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+  explicit LM(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
+    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
+  }
+
+  LM add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the papers for details.
@@ -378,17 +546,20 @@ class LM final : public Holo {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = AUTDGainHoloLM(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
-    if (_eps1.has_value()) ptr = AUTDGainHoloLMWithEps1(ptr, _eps1.value());
-    if (_eps2.has_value()) ptr = AUTDGainHoloLMWithEps2(ptr, _eps2.value());
-    if (_tau.has_value()) ptr = AUTDGainHoloLMWithTau(ptr, _tau.value());
-    if (_kmax.has_value()) ptr = AUTDGainHoloLMWithKMax(ptr, _kmax.value());
-    if (!_initial.empty()) ptr = AUTDGainHoloLMWithInitial(ptr, _initial.data(), static_cast<uint64_t>(_initial.size()));
-    if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());
+    auto ptr = _backend->lm(reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_eps1.has_value()) ptr = _backend->lm_with_eps1(ptr, _eps1.value());
+    if (_eps2.has_value()) ptr = _backend->lm_with_eps2(ptr, _eps2.value());
+    if (_tau.has_value()) ptr = _backend->lm_with_tau(ptr, _tau.value());
+    if (_kmax.has_value()) ptr = _backend->lm_with_kmax(ptr, _kmax.value());
+    if (!_initial.empty()) ptr = _backend->lm_with_initial(ptr, _initial.data(), static_cast<uint64_t>(_initial.size()));
+    if (_constraint.has_value()) ptr = _backend->lm_with_constraint(ptr, _constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<double> _eps1;
   std::optional<double> _eps2;
   std::optional<double> _tau;
@@ -403,9 +574,15 @@ class LM final : public Holo {
  * @details Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair
  * Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
  */
-class Greedy final : public Holo {
+class Greedy final : public internal::Gain {
  public:
   Greedy() = default;
+
+  Greedy add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+    return std::move(*this);
+  }
 
   /**
    * @brief Parameter. See the paper for details.
@@ -432,6 +609,8 @@ class Greedy final : public Holo {
   }
 
  private:
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
   std::optional<uint32_t> _div;
   std::optional<AmplitudeConstraint> _constraint;
 };

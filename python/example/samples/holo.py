@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from pyautd3 import Controller, SilencerConfig
-from pyautd3.gain.holo import GSPAT
+from pyautd3.gain.holo import GSPAT, NalgebraBackend
 from pyautd3.modulation import Sine
 import numpy as np
 
@@ -22,11 +22,13 @@ def holo(autd: Controller):
     config = SilencerConfig()
     autd.send(config)
 
-    f = GSPAT()
     center = autd.geometry.center + np.array([0.0, 0.0, 150.0])
-    f.add_focus(center - np.array([30.0, 0.0, 0.0]), 1.0)
-    f.add_focus(center + np.array([30.0, 0.0, 0.0]), 1.0)
-
+    backend = NalgebraBackend()
+    f = (
+        GSPAT(backend)
+        .add_focus(center - np.array([30.0, 0.0, 0.0]), 1.0)
+        .add_focus(center + np.array([30.0, 0.0, 0.0]), 1.0)
+    )
     m = Sine(150)
 
     autd.send((m, f))
