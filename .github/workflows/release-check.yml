@@ -72,19 +72,19 @@ jobs:
       run: |
         cd src
         cargo build --all --release
-        cargo test --workspace --release --exclude autd3-backend-cuda --exclude autd3-link-soem -- --skip test_timer
+        cargo test --workspace --release --exclude autd3-backend-cuda --exclude autd3-link-soem  --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
-        cargo build --all --release
-        cargo test --all --release --exclude autd3-backend-cuda -- --skip test_timer
+        cargo build --all --release --exclude autd3-backend-arrayfire
+        cargo test --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
-        cargo build --all --release --exclude autd3-backend-cuda
-        cargo test --all --release --exclude autd3-backend-cuda -- --skip test_timer
+        cargo build --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire
+        cargo test --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
@@ -199,7 +199,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-monitor
+        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
     
     - name: Build examples
       run: |
@@ -258,7 +258,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-monitor
+        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
     
     - name: Build examples
       run: |
@@ -323,7 +323,7 @@ jobs:
     - name: lint src
       run: |
         cd src
-        cargo clippy --all --release -- -D warnings
+        cargo clippy --all --release --exclude autd3-backend-arrayfire -- -D warnings
 
   lint-capi:
     runs-on: ubuntu-latest
