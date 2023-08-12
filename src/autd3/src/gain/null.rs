@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3_core::{
     Drive,
 };
 
-use autd3_traits::Gain;
+use autd3_derive::Gain;
 
 /// Gain to output nothing
 #[derive(Gain, Default, Clone, Copy)]

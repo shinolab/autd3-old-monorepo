@@ -1,7 +1,8 @@
-# 14.5.0
+# 15.0.0
 
 - Remove `autd3-gain-holo::Backend`, add `autd3-gain-holo::LinAlgBackend` instead
 - Add `autd3-backend-arrayfire` 
+- Rename `autd3-traits` to `autd3-derive`
 
 # 14.2.2
 

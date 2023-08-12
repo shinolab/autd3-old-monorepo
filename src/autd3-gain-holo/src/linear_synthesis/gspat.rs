@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_core::{
     geometry::{Geometry, Transducer, Vector3},
     Drive, PI,
 };
-use autd3_traits::Gain;
+use autd3_derive::Gain;
 use nalgebra::ComplexField;
 
 /// Gain to produce multiple foci with GS-PAT algorithm

@@ -177,8 +177,8 @@ name = "autd3"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
+ "autd3-derive",
  "autd3-firmware-emulator",
- "autd3-traits",
  "num 0.4.1",
  "spdlog-rs",
  "thiserror",
@@ -214,6 +214,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "autd3-derive"
+version = "14.2.2"
+dependencies = [
+ "quote",
+ "syn 2.0.27",
+]
+
+[[package]]
 name = "autd3-driver"
 version = "14.2.2"
 dependencies = [
@@ -235,7 +243,7 @@ name = "autd3-gain-holo"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
- "autd3-traits",
+ "autd3-derive",
  "nalgebra",
  "rand",
  "rayon",
@@ -303,7 +311,7 @@ name = "autd3-modulation-audio-file"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
- "autd3-traits",
+ "autd3-derive",
  "hound",
  "thiserror",
  "wav_io",
@@ -353,14 +361,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3-traits"
-version = "14.2.2"
-dependencies = [
- "quote",
- "syn 2.0.27",
-]
-
-[[package]]
 name = "autd3capi"
 version = "14.2.2"
 dependencies = [
@@ -386,8 +386,8 @@ version = "14.2.2"
 dependencies = [
  "autd3",
  "autd3-core",
+ "autd3-derive",
  "autd3-gain-holo",
- "autd3-traits",
  "libc",
 ]
 
