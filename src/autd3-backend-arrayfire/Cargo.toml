@@ -26,7 +26,7 @@ rand = "0.8.5"
 criterion = { version = "0.4", features = ["html_reports"] }
 
 [features]
-default = ["test-utilities"]
+default = []
 single_float = ["autd3-core/single_float", "autd3-gain-holo/single_float"]
 use_meter = ["autd3-core/use_meter"]
 parallel = ["rayon", "autd3-core/parallel"]

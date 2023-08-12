@@ -72,19 +72,19 @@ jobs:
       run: |
         cd src
         cargo build --all --release
-        cargo test --workspace --release --exclude autd3-backend-cuda --exclude autd3-link-soem  --exclude autd3-backend-arrayfire -- --skip test_timer
+        cargo test --workspace --release --features test-utilities --exclude autd3-backend-cuda --exclude autd3-link-soem  --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
         cargo build --all --release --exclude autd3-backend-arrayfire
-        cargo test --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
+        cargo test --all --release --features test-utilities --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
         cargo build --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire
-        cargo test --all --release --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
+        cargo test --all --release --features test-utilities --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
