@@ -35,13 +35,13 @@ jobs:
       run: |
         cd src
         cargo build
-        cargo test --workspace --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
+        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd src
         cargo build
-        cargo test -- --skip test_timer
+        cargo test --features test-utilities -- --skip test_timer
 
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
