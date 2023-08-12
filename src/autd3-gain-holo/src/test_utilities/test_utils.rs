@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,85 +41,147 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
     pub fn test(&self) -> Result<(), HoloError> {
         self.test_alloc_v()?;
+        println!("test_alloc_v done");
         self.test_alloc_m()?;
+        println!("test_alloc_m done");
         self.test_alloc_cv()?;
+        println!("test_alloc_cv done");
         self.test_alloc_cm()?;
+        println!("test_alloc_cm done");
         self.test_alloc_zeros_v()?;
+        println!("test_alloc_zeros_v done");
         self.test_alloc_zeros_cv()?;
+        println!("test_alloc_zeros_cv done");
         self.test_alloc_zeros_cm()?;
+        println!("test_alloc_zeros_cm done");
 
         self.test_from_slice_v()?;
+        println!("test_from_slice_v done");
         self.test_from_slice_m()?;
+        println!("test_from_slice_m done");
         self.test_from_slice_cv()?;
+        println!("test_from_slice_cv done");
         self.test_from_slice2_cv()?;
+        println!("test_from_slice2_cv done");
         self.test_from_slice2_cm()?;
+        println!("test_from_slice2_cm done");
 
         self.test_copy_from_slice_v()?;
+        println!("test_copy_from_slice_v done");
 
         self.test_copy_to_v()?;
+        println!("test_copy_to_v done");
         self.test_copy_to_m()?;
+        println!("test_copy_to_m done");
 
         self.test_clone_v()?;
+        println!("test_clone_v done");
         self.test_clone_m()?;
+        println!("test_clone_m done");
         self.test_clone_cv()?;
+        println!("test_clone_cv done");
         self.test_clone_cm()?;
+        println!("test_clone_cm done");
 
         self.test_make_complex2_v()?;
+        println!("test_make_complex2_v done");
 
         self.test_get_col_c()?;
+        println!("test_get_col_c done");
         self.set_cv()?;
+        println!("set_cv done");
         self.set_col_c()?;
+        println!("set_col_c done");
         self.set_row_c()?;
+        println!("set_row_c done");
 
         self.test_get_diagonal_c()?;
+        println!("test_get_diagonal_c done");
         self.test_create_diagonal()?;
+        println!("test_create_diagonal done");
         self.test_create_diagonal_c()?;
+        println!("test_create_diagonal_c done");
         self.test_get_diagonal()?;
+        println!("test_get_diagonal done");
 
         self.test_abs_cv()?;
+        println!("test_abs_cv done");
         self.test_real_cm()?;
+        println!("test_real_cm done");
         self.test_imag_cm()?;
+        println!("test_imag_cm done");
         self.test_scale_assign_v()?;
+        println!("test_scale_assign_v done");
         self.test_scale_assign_cv()?;
+        println!("test_scale_assign_cv done");
         self.test_conj_assign_v()?;
+        println!("test_conj_assign_v done");
         self.test_sqrt_assign_v()?;
+        println!("test_sqrt_assign_v done");
         self.test_normalize_assign_cv()?;
+        println!("test_normalize_assign_cv done");
         self.test_reciprocal_assign_c()?;
+        println!("test_reciprocal_assign_c done");
         self.test_pow_assign_v()?;
+        println!("test_pow_assign_v done");
         self.test_exp_assign_cv()?;
+        println!("test_exp_assign_cv done");
 
         self.test_concat_row_cm()?;
+        println!("test_concat_row_cm done");
         self.test_concat_col_cv()?;
+        println!("test_concat_col_cv done");
         self.test_concat_col_cm()?;
+        println!("test_concat_col_cm done");
 
         self.test_max_v()?;
+        println!("test_max_v done");
         self.test_max_eigen_vector_c()?;
+        println!("test_max_eigen_vector_c done");
 
         self.test_hadamard_product_assign_cv()?;
+        println!("test_hadamard_product_assign_cv done");
         self.test_hadamard_product_cv()?;
+        println!("test_hadamard_product_cv done");
         self.test_hadamard_product_cm()?;
+        println!("test_hadamard_product_cm done");
 
         self.test_dot()?;
+        println!("test_dot done");
         self.test_dot_c()?;
+        println!("test_dot_c done");
 
         self.test_add_v()?;
+        println!("test_add_v done");
         self.test_add_m()?;
+        println!("test_add_m done");
 
         self.test_gevv_c()?;
+        println!("test_gevv_c done");
         self.test_gemv_c()?;
+        println!("test_gemv_c done");
         self.test_gemm_c()?;
+        println!("test_gemm_c done");
 
         self.pseudo_inverse_svd()?;
+        println!("pseudo_inverse_svd done");
         self.test_solve_inplace()?;
+        println!("test_solve_inplace done");
         self.test_solve_inplace_h()?;
+        println!("test_solve_inplace_h done");
 
         self.test_reduce_col()?;
+        println!("test_reduce_col done");
 
         self.test_scaled_to_cv()?;
+        println!("test_scaled_to_cv done");
         self.test_scaled_to_assign_cv()?;
+        println!("test_scaled_to_assign_cv done");
 
         self.test_generate_propagation_matrix()?;
+        println!("test_generate_propagation_matrix done");
         self.test_gen_back_prop()?;
+        println!("test_gen_back_prop done");
 
         Ok(())
     }
@@ -341,22 +403,37 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_copy_from_slice_v(&self) -> Result<(), HoloError> {
-        let mut a = self.backend.alloc_zeros_v(N)?;
-        let mut rng = rand::thread_rng();
-        let v = (&mut rng)
-            .sample_iter(rand::distributions::Standard)
-            .take(N / 2)
-            .collect::<Vec<float>>();
+        {
+            let mut a = self.backend.alloc_zeros_v(N)?;
+            let mut rng = rand::thread_rng();
+            let v = (&mut rng)
+                .sample_iter(rand::distributions::Standard)
+                .take(N / 2)
+                .collect::<Vec<float>>();
 
-        self.backend.copy_from_slice_v(&v, &mut a)?;
+            self.backend.copy_from_slice_v(&v, &mut a)?;
 
-        let a = self.backend.to_host_v(a)?;
-        (0..N / 2).for_each(|i| {
-            assert_eq!(v[i], a[i]);
-        });
-        (N / 2..N).for_each(|i| {
-            assert_eq!(0., a[i]);
-        });
+            let a = self.backend.to_host_v(a)?;
+            (0..N / 2).for_each(|i| {
+                assert_eq!(v[i], a[i]);
+            });
+            (N / 2..N).for_each(|i| {
+                assert_eq!(0., a[i]);
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_v(N)?;
+            let v = [];
+
+            self.backend.copy_from_slice_v(&v, &mut a)?;
+
+            let a = self.backend.to_host_v(a)?;
+            a.iter().for_each(|&a| {
+                assert_eq!(0., a);
+            });
+        }
+
         Ok(())
     }
 
@@ -505,56 +582,216 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn set_col_c(&self) -> Result<(), HoloError> {
-        let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
-        let b = self.make_random_cv(N)?;
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(N)?;
 
-        let mut rng = rand::thread_rng();
-        let i = rng.gen_range(0..2 * N);
-        let start = rng.gen_range(1..N / 2);
-        let end = rng.gen_range(N / 2..N - 1);
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..2 * N);
+            let start = rng.gen_range(1..N / 2);
+            let end = rng.gen_range(N / 2..N - 1);
 
-        self.backend.set_col_c(&b, i, start, end, &mut a)?;
+            self.backend.set_col_c(&b, i, start, end, &mut a)?;
 
-        let a = self.backend.to_host_cm(a)?;
-        let b = self.backend.to_host_cv(b)?;
-        (0..N).for_each(|row| {
-            (0..2 * N).for_each(|col| {
-                if col == i && (start <= row && row < end) {
-                    assert_eq!(b[row].re, a[(row, col)].re);
-                    assert_eq!(b[row].im, a[(row, col)].im);
-                } else {
-                    assert_eq!(0.0, a[(row, col)].re);
-                    assert_eq!(0.0, a[(row, col)].im);
-                }
-            })
-        });
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if col == i && (start <= row && row < end) {
+                        assert_eq!(b[row].re, a[(row, col)].re);
+                        assert_eq!(b[row].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..2 * N);
+            let start = 0;
+            let end = N - 1;
+
+            self.backend.set_col_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if col == i && (start <= row && row < end) {
+                        assert_eq!(b[row].re, a[(row, col)].re);
+                        assert_eq!(b[row].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..2 * N);
+            let start = 0;
+            let end = 0;
+
+            self.backend.set_col_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if col == i && (start <= row && row < end) {
+                        assert_eq!(b[row].re, a[(row, col)].re);
+                        assert_eq!(b[row].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..2 * N);
+            let start = N - 1;
+            let end = N - 1;
+
+            self.backend.set_col_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if col == i && (start <= row && row < end) {
+                        assert_eq!(b[row].re, a[(row, col)].re);
+                        assert_eq!(b[row].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
         Ok(())
     }
 
     fn set_row_c(&self) -> Result<(), HoloError> {
-        let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
-        let b = self.make_random_cv(2 * N)?;
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(2 * N)?;
 
-        let mut rng = rand::thread_rng();
-        let i = rng.gen_range(0..N);
-        let start = rng.gen_range(1..N);
-        let end = rng.gen_range(N..2 * N - 1);
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..N);
+            let start = rng.gen_range(1..N);
+            let end = rng.gen_range(N..2 * N - 1);
 
-        self.backend.set_row_c(&b, i, start, end, &mut a)?;
+            self.backend.set_row_c(&b, i, start, end, &mut a)?;
 
-        let a = self.backend.to_host_cm(a)?;
-        let b = self.backend.to_host_cv(b)?;
-        (0..N).for_each(|row| {
-            (0..2 * N).for_each(|col| {
-                if row == i && (start <= col && col < end) {
-                    assert_eq!(b[col].re, a[(row, col)].re);
-                    assert_eq!(b[col].im, a[(row, col)].im);
-                } else {
-                    assert_eq!(0.0, a[(row, col)].re);
-                    assert_eq!(0.0, a[(row, col)].im);
-                }
-            })
-        });
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if row == i && (start <= col && col < end) {
+                        assert_eq!(b[col].re, a[(row, col)].re);
+                        assert_eq!(b[col].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(2 * N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..N);
+            let start = 0;
+            let end = 2 * N - 1;
+
+            self.backend.set_row_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if row == i && (start <= col && col < end) {
+                        assert_eq!(b[col].re, a[(row, col)].re);
+                        assert_eq!(b[col].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(2 * N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..N);
+            let start = 0;
+            let end = 0;
+
+            self.backend.set_row_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if row == i && (start <= col && col < end) {
+                        assert_eq!(b[col].re, a[(row, col)].re);
+                        assert_eq!(b[col].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
+
+        {
+            let mut a = self.backend.alloc_zeros_cm(N, 2 * N)?;
+            let b = self.make_random_cv(2 * N)?;
+
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0..N);
+            let start = 2 * N - 1;
+            let end = 2 * N - 1;
+
+            self.backend.set_row_c(&b, i, start, end, &mut a)?;
+
+            let a = self.backend.to_host_cm(a)?;
+            let b = self.backend.to_host_cv(b)?;
+            (0..N).for_each(|row| {
+                (0..2 * N).for_each(|col| {
+                    if row == i && (start <= col && col < end) {
+                        assert_eq!(b[col].re, a[(row, col)].re);
+                        assert_eq!(b[col].im, a[(row, col)].im);
+                    } else {
+                        assert_eq!(0.0, a[(row, col)].re);
+                        assert_eq!(0.0, a[(row, col)].im);
+                    }
+                })
+            });
+        }
         Ok(())
     }
 

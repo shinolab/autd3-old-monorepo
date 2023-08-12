@@ -7,6 +7,7 @@ members = [
     "autd3-traits",
     "autd3-gain-holo",
     "autd3-backend-cuda",
+    "autd3-backend-arrayfire",
     "autd3-link-simulator",
     "autd3-link-soem",
     "autd3-link-twincat",
