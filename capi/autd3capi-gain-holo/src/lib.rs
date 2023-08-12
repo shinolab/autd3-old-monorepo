@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -304,7 +304,7 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let cnt = AUTDControllerOpenWith(builder, link, err.as_mut_ptr());
 
-            let backend = AUTDDefaultBackend();
+            let backend = AUTDNalgebraBackend();
 
             {
                 let size = 2;
@@ -341,7 +341,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -375,7 +375,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -439,7 +439,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -473,7 +473,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -543,7 +543,7 @@ mod tests {
                 }
             }
 
-            AUTDDeleteBackend(backend);
+            AUTDDeleteNalgebraBackend(backend);
         }
     }
 }
