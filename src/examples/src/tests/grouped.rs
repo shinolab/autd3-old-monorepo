@@ -4,7 +4,7 @@
  * Created Date: 13/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use autd3::prelude::*;
 
 pub fn grouped<T: Transducer + 'static, L: Link<T>>(
     autd: &mut Controller<T, L>,
-) -> anyhow::Result<bool, AUTDError> {
+) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::default())?;
 
     let g1 = Focus::new(autd.geometry().center_of(0) + Vector3::new(0., 0., 150.0 * MILLIMETER));
@@ -25,5 +25,7 @@ pub fn grouped<T: Transducer + 'static, L: Link<T>>(
 
     let m = Sine::new(150);
 
-    autd.send((m, g))
+    autd.send((m, g))?;
+
+    Ok(true)
 }

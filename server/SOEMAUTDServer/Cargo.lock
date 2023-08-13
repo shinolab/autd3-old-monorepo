@@ -148,8 +148,8 @@ name = "autd3"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
+ "autd3-derive",
  "autd3-firmware-emulator",
- "autd3-traits",
  "num",
  "spdlog-rs",
  "thiserror",
@@ -167,6 +167,14 @@ dependencies = [
  "spdlog-rs",
  "thiserror",
  "windows",
+]
+
+[[package]]
+name = "autd3-derive"
+version = "14.2.2"
+dependencies = [
+ "quote",
+ "syn 2.0.27",
 ]
 
 [[package]]
@@ -191,7 +199,7 @@ name = "autd3-gain-holo"
 version = "14.2.2"
 dependencies = [
  "autd3-core",
- "autd3-traits",
+ "autd3-derive",
  "nalgebra",
  "rand",
  "thiserror",
@@ -223,14 +231,6 @@ dependencies = [
  "tokio",
  "tonic",
  "tonic-build",
-]
-
-[[package]]
-name = "autd3-traits"
-version = "14.2.2"
-dependencies = [
- "quote",
- "syn 2.0.27",
 ]
 
 [[package]]
