@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name: build ${{ matrix.os }} with python ${{ matrix.python-version }}
+    name: build-python-${{ matrix.python-version }}-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

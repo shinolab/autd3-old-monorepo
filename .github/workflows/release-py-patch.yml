@@ -7,6 +7,7 @@ on:
 
 jobs:
   publish_pypi:
+    name: publish-python-patch-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,8 +46,8 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-arm32:
+    name: publish-python-patch-linux-arm32
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -71,8 +72,8 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-aarch64:
+    name: publish-python-patch-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -96,4 +97,3 @@ jobs:
       run: |
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
-

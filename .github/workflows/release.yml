@@ -12,7 +12,7 @@ env:
 jobs:
   license-check:
     runs-on: ubuntu-latest
-    name: Check license
+    name: check-license
     steps:
     - uses: actions/checkout@v3
     - name: Sync node version and setup cache
@@ -31,6 +31,7 @@ jobs:
         cargo run
 
   build:
+    name: publish-src
     needs: [license-check]
     runs-on: ubuntu-latest
     steps:
@@ -123,7 +124,7 @@ jobs:
 
   release:
     needs: [license-check]
-    name: Create Github Release
+    name: create-github-release
     runs-on: ubuntu-latest
     steps:
     - name: Create Release
@@ -150,7 +151,7 @@ jobs:
 
   publish_win:
     needs: [release]
-    name: Upload Release Asset Windows
+    name: upload-release-asset-windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -225,7 +226,7 @@ jobs:
 
   publish_firmware:
     needs: [release]
-    name: Upload Release Asset Windows
+    name: upload-firmware-asset
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -262,7 +263,7 @@ jobs:
 
   publish_linux:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -343,7 +344,7 @@ jobs:
   
   publish_linux-arm32:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux-arm32
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -394,7 +395,7 @@ jobs:
   
   publish_linux-aarch64:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux-aarch64
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -445,7 +446,7 @@ jobs:
   
   publish_mac:
     needs: [release]
-    name: Upload Release Asset macOS
+    name: upload-release-asset-macos
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -521,6 +522,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish_pypi:
+    name: publish-python-${{ matrix.os }}
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -560,8 +562,8 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-arm32:
+    name: publish-python-linux-arm32
     needs: [build, publish_linux-arm32]
     runs-on: ubuntu-latest
     strategy:
@@ -587,8 +589,8 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-aarch64:
+    name: publish-python-linux-aarch64
     needs: [build, publish_linux-aarch64]
     runs-on: ubuntu-latest
     strategy:
@@ -614,8 +616,8 @@ jobs:
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_nuget:
+    name: publish-nuget
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
@@ -654,6 +656,7 @@ jobs:
       working-directory: ./dotnet/cs/src
 
   publish-server:
+    name: publish-server-${{ matrix.os }}
     needs: [release]
     permissions:
       contents: write
