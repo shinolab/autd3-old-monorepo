@@ -1,3 +1,10 @@
+/*
+ * @Author: Mingxin Zhang m.zhang@hapis.k.u-tokyo.ac.jp
+ * @Date: 2023-07-27 22:01:35
+ * @LastEditors: Mingxin Zhang
+ * @LastEditTime: 2023-08-13 21:39:52
+ * Copyright (c) 2023 by Mingxin Zhang, All Rights Reserved. 
+ */
 // File: runner.hpp
 // Project: examples
 // Created Date: 16/05/2022
@@ -25,6 +32,7 @@
 #include "tests/flag.hpp"
 #include "tests/focus.hpp"
 #include "tests/focus_stm.hpp"
+#include "tests/fourier.hpp"
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
 #include "tests/holo.hpp"
@@ -38,7 +46,7 @@ inline int run(autd3::Controller& autd) {
       std::pair(F{plane_test}, "Plane wave Test"),   std::pair(F{mod_audio_file_test}, "Wav and RawPCM modulation Test"),
       std::pair(F{focus_stm}, "FocusSTM Test"),      std::pair(F{gain_stm}, "GainSTM Test"),
       std::pair(F{holo_test}, "Holo Test"),          std::pair(F{advanced_test}, "Custom Gain & Modulation Test"),
-      std::pair(F{flag_test}, "Flag Test"),
+      std::pair(F{flag_test}, "Flag Test"),          std::pair(F{fourier_test}, "Multi-frequency Sine Test"),
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
