@@ -6,7 +6,7 @@ on:
 
 jobs:
   check-cs:
-    name: build cs
+    name: doc-check-sample-cs
     runs-on: ubuntu-latest
     steps: 
     - uses: actions/checkout@v3
@@ -19,7 +19,7 @@ jobs:
         dotnet build ./doc/samples/cs/cs.csproj -c:Release
 
   check-cpp:
-    name: build cpp on ${{ matrix.os }}
+    name: doc-check-sample-cpp-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -35,7 +35,7 @@ jobs:
         cmake --build .
 
   check-python:
-    name: build python
+    name: doc-check-sample-python
     runs-on: ubuntu-latest
     steps: 
     - uses: actions/checkout@v3
@@ -49,6 +49,7 @@ jobs:
         echo a | python main.py || true
 
   build:
+    name: build-doc
     needs: [check-cs, check-cpp, check-python]
     runs-on: ubuntu-latest
     steps:
