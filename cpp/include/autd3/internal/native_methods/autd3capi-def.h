@@ -54,6 +54,10 @@ struct ControllerPtr {
   void* _0;
 };
 
+struct ConstraintPtr {
+  void* _0;
+};
+
 struct GeometryPtr {
   void* _0;
 };

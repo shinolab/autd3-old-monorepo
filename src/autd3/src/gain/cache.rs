@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
-use autd3_traits::Gain;
+use autd3_derive::Gain;
 
 use std::ops::{Deref, DerefMut};
 

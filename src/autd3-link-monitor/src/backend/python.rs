@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/08/2023
+ * Last Modified: 08/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,15 +83,30 @@ pub struct PythonBackend {}
 impl PythonBackend {
     #[cfg(target_os = "windows")]
     fn initialize_python() -> PyResult<()> {
-        let python_exe = which::which("python").unwrap();
-        let python_home = python_exe.parent().unwrap();
+        use std::os::windows::ffi::OsStrExt;
 
-        let mut python_home = python_home
-            .to_str()
-            .unwrap()
-            .encode_utf16()
-            .collect::<Vec<u16>>();
-        python_home.push(0);
+        let python_exe = match which::which("python") {
+            Ok(p) => p,
+            Err(_) => {
+                return Err(PyErr::new::<pyo3::exceptions::PyImportError, _>(
+                    "Python not found",
+                ))
+            }
+        };
+        let python_home = match python_exe.parent() {
+            Some(p) => p,
+            None => {
+                return Err(PyErr::new::<pyo3::exceptions::PyImportError, _>(
+                    "Python not found",
+                ))
+            }
+        };
+
+        let python_home = python_home
+            .as_os_str()
+            .encode_wide()
+            .chain(Some(0))
+            .collect::<Vec<_>>();
         unsafe {
             pyo3::ffi::Py_SetPythonHome(python_home.as_ptr());
         }
@@ -298,8 +313,6 @@ def plot(modulation, config):
         geometry: &Geometry<T>,
         phases: Vec<float>,
     ) -> Result<(), MonitorError> {
-        Self::initialize_python()?;
-
         let trans_x = geometry
             .transducers()
             .map(|t| t.position().x)

@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/07/2023
+ * Last Modified: 11/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn audio_file<T: Transducer, L: Link<T>>(
-    autd: &mut Controller<T, L>,
-) -> anyhow::Result<bool, AUTDError> {
+pub fn audio_file<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(SilencerConfig::default())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
@@ -29,5 +27,7 @@ pub fn audio_file<T: Transducer, L: Link<T>>(
     // let m = autd3_modulation_audio_file::RawPCM::new(WAV_FILE, 4000)
     //     .map_err(|e| AUTDError::Internal(e.into()))?;
 
-    autd.send((m, g))
+    autd.send((m, g))?;
+
+    Ok(true)
 }

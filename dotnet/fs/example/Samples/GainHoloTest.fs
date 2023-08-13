@@ -23,8 +23,9 @@ module GainHoloTest =
         let m = new Sine 150;
 
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
-        let g = (new GSPAT()).WithConstraint(new Uniform());
-        g.AddFocus(center + 20.0 * Vector3d.UnitX, 1.0);
-        g.AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
+        let backend = new NalgebraBackend();
+        let g = (new GSPAT<NalgebraBackend>(backend)).WithConstraint(new Uniform())
+                    .AddFocus(center + 20.0 * Vector3d.UnitX, 1.0)
+                    .AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
 
         (m, g) |> autd.Send |> ignore

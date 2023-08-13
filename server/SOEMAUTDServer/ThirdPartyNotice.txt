@@ -160,7 +160,7 @@ autd3-protobuf 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-traits 14.2.2 (MIT)
+autd3-derive 14.2.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 

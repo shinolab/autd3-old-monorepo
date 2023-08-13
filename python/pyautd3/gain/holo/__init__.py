@@ -11,7 +11,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from .backend import DefaultBackend
+from .backend import NalgebraBackend
 
 from .constraint import AmplitudeConstraint
 
@@ -24,7 +24,7 @@ from .greedy import Greedy
 from .naive import Naive
 
 __all__ = [
-    "DefaultBackend",
+    "NalgebraBackend",
     "AmplitudeConstraint",
     "EVP",
     "SDP",

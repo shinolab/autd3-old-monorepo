@@ -10,6 +10,90 @@ extern "C" {
 
 [[nodiscard]] BackendPtr AUTDCUDABackend(char *err);
 
+void AUTDDeleteCUDABackend(BackendPtr backend);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloSDPCUDA(BackendPtr backend,
+                            const double *points,
+                            const double *amps,
+                            uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloSDPWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloSDPWithAlphaCUDA(GainPtr holo, double alpha);
+
+[[nodiscard]] GainPtr AUTDGainHoloSDPWithLambdaCUDA(GainPtr holo, double lambda);
+
+[[nodiscard]] GainPtr AUTDGainHoloSDPWithRepeatCUDA(GainPtr holo, uint32_t repeat);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloEVPCUDA(BackendPtr backend,
+                            const double *points,
+                            const double *amps,
+                            uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloEVPWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloEVPWithGammaCUDA(GainPtr holo, double gamma);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloGSCUDA(BackendPtr backend,
+                           const double *points,
+                           const double *amps,
+                           uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloGSWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloGSWithRepeatCUDA(GainPtr holo, uint32_t repeat);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloGSPATCUDA(BackendPtr backend,
+                              const double *points,
+                              const double *amps,
+                              uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloGSPATWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloGSPATWithRepeatCUDA(GainPtr holo, uint32_t repeat);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloNaiveCUDA(BackendPtr backend,
+                              const double *points,
+                              const double *amps,
+                              uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloNaiveWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloGreedyCUDA(const double *points,
+                               const double *amps,
+                               uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloGreedyWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloGreedyWithPhaseDivCUDA(GainPtr holo, uint32_t div);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloLMCUDA(BackendPtr backend,
+                           const double *points,
+                           const double *amps,
+                           uint64_t size);
+
+[[nodiscard]] GainPtr AUTDGainHoloLMWithConstraintCUDA(GainPtr holo, ConstraintPtr constraint);
+
+[[nodiscard]] GainPtr AUTDGainHoloLMWithEps1CUDA(GainPtr holo, double eps);
+
+[[nodiscard]] GainPtr AUTDGainHoloLMWithEps2CUDA(GainPtr holo, double eps);
+
+[[nodiscard]] GainPtr AUTDGainHoloLMWithTauCUDA(GainPtr holo, double tau);
+
+[[nodiscard]] GainPtr AUTDGainHoloLMWithKMaxCUDA(GainPtr holo, uint32_t k_max);
+
+[[nodiscard]]
+GainPtr AUTDGainHoloLMWithInitialCUDA(GainPtr holo,
+                                      const double *initial_ptr,
+                                      uint64_t len);
+
 } // extern "C"
 
 } // namespace autd3::internal::native_methods

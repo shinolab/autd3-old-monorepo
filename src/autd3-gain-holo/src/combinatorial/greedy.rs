@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,14 +20,14 @@ use autd3_core::{
     geometry::{Geometry, Transducer, Vector3},
     Drive, PI,
 };
-use autd3_traits::Gain;
+use autd3_derive::Gain;
 use nalgebra::ComplexField;
 use rand::seq::SliceRandom;
 
 /// Gain to produce multiple foci with greedy algorithm
 ///
 /// Reference
-/// * Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
+/// * Suzuki, Shun, et al. "Radiation pressure field reconstruction for ultrasound midair haptics by Greedy algorithm with brute-force search." IEEE Transactions on Haptics 14.4 (2021): 914-921.
 #[derive(Gain)]
 pub struct Greedy {
     foci: Vec<Vector3>,

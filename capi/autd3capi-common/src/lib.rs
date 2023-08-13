@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/06/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,13 +12,12 @@
  */
 
 pub use autd3_gain_holo as holo;
-pub mod dynamic_backend;
 mod dynamic_datagram;
 pub mod dynamic_transducer;
 
 pub use autd3;
 pub use autd3_core as core;
-pub use autd3_traits as traits;
+pub use autd3_derive as traits;
 pub use libc;
 
 pub use autd3::{

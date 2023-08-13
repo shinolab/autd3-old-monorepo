@@ -23,11 +23,11 @@ module FocusSTMTest =
         (new Static()) |> autd.Send |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
-        let stm = new FocusSTM(1.);
-        [0..199]
+        let stm = 
+            [0..199]
             |> List.map (fun i -> (2.0 * AUTD3.Pi * (float)i / 200.0))
             |> List.map (fun theta -> (center + 30.0 * Vector3d(cos(theta), sin(theta), 0.0)))
-            |> List.iter stm.AddFocus
+            |> List.fold (fun (acc: FocusSTM) v -> acc.AddFocus v) (new FocusSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
         (stm)|> autd.Send |> ignore

@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-src:
-    name: build src ${{ matrix.os }}
+    name: build-src-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,41 +21,51 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          src/**/*.rs
+          src/*.toml
+          src/**/*.toml
+          src/**/*.proto
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build src on ${{ matrix.os }}
-      if: matrix.os == 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd src
         cargo build
-        cargo test --workspace --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda -- --skip test_timer
+        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
     - name: Build src on ${{ matrix.os }}
-      if: matrix.os != 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src
         cargo build
-        cargo test -- --skip test_timer
+        cargo test --features test-utilities -- --skip test_timer
 
     - name: Build examples on ${{ matrix.os }}
-      if: matrix.os == 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd src/examples
         cargo build --bins --features "remote_soem twincat remote_twincat simulator_client" 
     - name: Build examples on ${{ matrix.os }}
-      if: matrix.os != 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src/examples
         cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client"
 
   build-capi:
-    name: build capi ${{ matrix.os }}
+    name: build-capi-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -64,178 +74,258 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          capi/**/*.rs
+          src/*.toml
+          src/**/*.toml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build capi on ${{ matrix.os }}
-      if: matrix.os == 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd capi
         cargo build
         cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-simulator --exclude autd3capi-geometry-viewer --exclude autd3capi-backend-cuda
     - name: Build capi on ${{ matrix.os }}
-      if: matrix.os != 'windows-latest'
+      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd capi
         cargo build
         cargo test
 
   build-linux-arm32-src:
-    name: build src for linux-arm32
+    name: build-src-linux-arm32
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          src/**/*.rs
+          src/*.toml
+          src/**/*.toml
+          src/**/*.proto
     - name: install arm32 target
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
         rustup target add armv7-unknown-linux-gnueabihf
+      if: steps.changed-files.outputs.modified_files
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build src
       run: |
         cd src
         cargo build --target=armv7-unknown-linux-gnueabihf
+      if: steps.changed-files.outputs.modified_files
     
     - name: Build examples
       run: |
         cd src/examples
         cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=armv7-unknown-linux-gnueabihf
+      if: steps.changed-files.outputs.modified_files
 
   build-linux-arm32-capi:
-    name: build capi for linux-arm32
+    name: build-capi-linux-arm32
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          capi/**/*.rs
+          src/*.toml
+          src/**/*.toml
     - name: install arm32 target
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
         rustup target add armv7-unknown-linux-gnueabihf
+      if: steps.changed-files.outputs.modified_files
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build src
       run: |
         cd capi
         cargo build --target=armv7-unknown-linux-gnueabihf
+      if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-src:
-    name: build src for linux-aarch64
+    name: build-src-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          src/**/*.rs
+          src/*.toml
+          src/**/*.toml
+          src/**/*.proto
     - name: install aarch64 target
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         rustup target add aarch64-unknown-linux-gnu
+      if: steps.changed-files.outputs.modified_files
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build src
       run: |
         cd src
         cargo build --target=aarch64-unknown-linux-gnu
+      if: steps.changed-files.outputs.modified_files
     
     - name: Build examples
       run: |
         cd src/examples
         cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=aarch64-unknown-linux-gnu
+      if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-capi:
-    name: build capi for linux-aarch64
+    name: build-capi-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          capi/**/*.rs
+          src/*.toml
+          src/**/*.toml
     - name: install aarch64 target
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         rustup target add aarch64-unknown-linux-gnu
+      if: steps.changed-files.outputs.modified_files
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: Build src
       run: |
         cd capi
         cargo build --target=aarch64-unknown-linux-gnu
+      if: steps.changed-files.outputs.modified_files
 
   lint-src:
+    name: lint-src
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          src/**/*.rs
+          src/*.toml
+          src/**/*.toml
+          src/**/*.proto
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: lint src
       run: |
         cd src
         cargo clippy -- -D warnings
+      if: steps.changed-files.outputs.modified_files
 
   lint-capi:
+    name: lint-capi
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          capi/**/*.rs
+          src/*.toml
+          src/**/*.toml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files
 
     - name: lint capi
       run: |
         cd capi
         cargo clippy -- -D warnings
+      if: steps.changed-files.outputs.modified_files

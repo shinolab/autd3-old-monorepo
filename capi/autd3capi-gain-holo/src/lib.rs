@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,24 +15,20 @@
 
 use std::rc::Rc;
 
-use autd3capi_def::common::dynamic_backend::DynamicBackend;
-use autd3capi_def::{common::*, holo::*, take_gain, BackendPtr, GainPtr};
+use autd3capi_def::{
+    common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr,
+};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDefaultBackend() -> BackendPtr {
-    let backend: Box<Rc<dyn Backend>> = Box::new(NalgebraBackend::new());
-    BackendPtr(Box::into_raw(backend) as _)
+pub unsafe extern "C" fn AUTDNalgebraBackend() -> BackendPtr {
+    BackendPtr(Box::into_raw(Box::new(NalgebraBackend::new().unwrap())) as _)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteBackend(backend: BackendPtr) {
-    let _ = Box::from_raw(backend.0 as *mut Rc<dyn Backend>);
+pub unsafe extern "C" fn AUTDDeleteNalgebraBackend(backend: BackendPtr) {
+    let _ = Box::from_raw(backend.0 as *mut Rc<NalgebraBackend>);
 }
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C)]
-pub struct ConstraintPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
@@ -58,43 +54,6 @@ pub unsafe extern "C" fn AUTDGainHoloClampConstraint(min_v: float, max_v: float)
     ConstraintPtr(Box::into_raw(Box::new(Constraint::Clamp(min_v, max_v))) as _)
 }
 
-#[macro_export]
-macro_rules! create_holo {
-    ($type:tt, $backend:expr, $points:expr, $amps:expr, $size:expr) => {
-        GainPtr::new(
-            $type::new(DynamicBackend::new(
-                ($backend.0 as *const Rc<dyn Backend>)
-                    .as_ref()
-                    .unwrap()
-                    .clone(),
-            ))
-            .add_foci_from_iter((0..$size as usize).map(|i| {
-                let p = Vector3::new(
-                    $points.add(i * 3).read(),
-                    $points.add(i * 3 + 1).read(),
-                    $points.add(i * 3 + 2).read(),
-                );
-                let amp = *$amps.add(i);
-                (p, amp)
-            })),
-        )
-    };
-
-    ($type:tt, $points:expr, $amps:expr, $size:expr) => {
-        GainPtr::new(
-            $type::new().add_foci_from_iter((0..$size as usize).map(|i| {
-                let p = Vector3::new(
-                    $points.add(i * 3).read(),
-                    $points.add(i * 3 + 1).read(),
-                    $points.add(i * 3 + 2).read(),
-                );
-                let amp = *$amps.add(i);
-                (p, amp)
-            })),
-        )
-    };
-}
-
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDP(
@@ -103,7 +62,7 @@ pub unsafe extern "C" fn AUTDGainHoloSDP(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(SDP, backend, points, amps, size)
+    create_holo!(SDP, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -113,26 +72,26 @@ pub unsafe extern "C" fn AUTDGainHoloSDPWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, SDP<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, SDP<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDPWithAlpha(holo: GainPtr, alpha: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, SDP<DynamicBackend>).with_alpha(alpha))
+    GainPtr::new(take_gain!(holo, SDP<NalgebraBackend>).with_alpha(alpha))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDPWithLambda(holo: GainPtr, lambda: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, SDP<DynamicBackend>).with_lambda(lambda))
+    GainPtr::new(take_gain!(holo, SDP<NalgebraBackend>).with_lambda(lambda))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDPWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
-    GainPtr::new(take_gain!(holo, SDP<DynamicBackend>).with_repeat(repeat as _))
+    GainPtr::new(take_gain!(holo, SDP<NalgebraBackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
@@ -143,7 +102,7 @@ pub unsafe extern "C" fn AUTDGainHoloEVP(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(EVP, backend, points, amps, size)
+    create_holo!(EVP, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -153,14 +112,14 @@ pub unsafe extern "C" fn AUTDGainHoloEVPWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, EVP<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, EVP<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloEVPWithGamma(holo: GainPtr, gamma: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, EVP<DynamicBackend>).with_gamma(gamma))
+    GainPtr::new(take_gain!(holo, EVP<NalgebraBackend>).with_gamma(gamma))
 }
 
 #[no_mangle]
@@ -171,7 +130,7 @@ pub unsafe extern "C" fn AUTDGainHoloGS(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(GS, backend, points, amps, size)
+    create_holo!(GS, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -181,14 +140,14 @@ pub unsafe extern "C" fn AUTDGainHoloGSWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, GS<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, GS<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGSWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
-    GainPtr::new(take_gain!(holo, GS<DynamicBackend>).with_repeat(repeat as _))
+    GainPtr::new(take_gain!(holo, GS<NalgebraBackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
@@ -199,7 +158,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSPAT(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(GSPAT, backend, points, amps, size)
+    create_holo!(GSPAT, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -209,14 +168,14 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, GSPAT<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, GSPAT<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGSPATWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
-    GainPtr::new(take_gain!(holo, GSPAT<DynamicBackend>).with_repeat(repeat as _))
+    GainPtr::new(take_gain!(holo, GSPAT<NalgebraBackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
@@ -227,7 +186,7 @@ pub unsafe extern "C" fn AUTDGainHoloNaive(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(Naive, backend, points, amps, size)
+    create_holo!(Naive, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -237,7 +196,7 @@ pub unsafe extern "C" fn AUTDGainHoloNaiveWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, Naive<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, Naive<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
@@ -274,7 +233,7 @@ pub unsafe extern "C" fn AUTDGainHoloLM(
     amps: *const float,
     size: u64,
 ) -> GainPtr {
-    create_holo!(LM, backend, points, amps, size)
+    create_holo!(LM, NalgebraBackend, backend, points, amps, size)
 }
 
 #[no_mangle]
@@ -284,32 +243,32 @@ pub unsafe extern "C" fn AUTDGainHoloLMWithConstraint(
     constraint: ConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
-        take_gain!(holo, LM<DynamicBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
+        take_gain!(holo, LM<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLMWithEps1(holo: GainPtr, eps: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, LM<DynamicBackend>).with_eps_1(eps))
+    GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_eps_1(eps))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLMWithEps2(holo: GainPtr, eps: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, LM<DynamicBackend>).with_eps_2(eps))
+    GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_eps_2(eps))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLMWithTau(holo: GainPtr, tau: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, LM<DynamicBackend>).with_tau(tau))
+    GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_tau(tau))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLMWithKMax(holo: GainPtr, k_max: u32) -> GainPtr {
-    GainPtr::new(take_gain!(holo, LM<DynamicBackend>).with_k_max(k_max as _))
+    GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_k_max(k_max as _))
 }
 
 #[no_mangle]
@@ -321,7 +280,7 @@ pub unsafe extern "C" fn AUTDGainHoloLMWithInitial(
 ) -> GainPtr {
     let mut initial = vec![0.; len as usize];
     std::ptr::copy_nonoverlapping(initial_ptr, initial.as_mut_ptr(), len as usize);
-    GainPtr::new(take_gain!(holo, LM<DynamicBackend>).with_initial(initial))
+    GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_initial(initial))
 }
 
 #[cfg(test)]
@@ -345,7 +304,7 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let cnt = AUTDControllerOpenWith(builder, link, err.as_mut_ptr());
 
-            let backend = AUTDDefaultBackend();
+            let backend = AUTDNalgebraBackend();
 
             {
                 let size = 2;
@@ -382,7 +341,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -416,7 +375,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -480,7 +439,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -514,7 +473,7 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
+                let backend = AUTDNalgebraBackend();
 
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
@@ -584,7 +543,7 @@ mod tests {
                 }
             }
 
-            AUTDDeleteBackend(backend);
+            AUTDDeleteNalgebraBackend(backend);
         }
     }
 }

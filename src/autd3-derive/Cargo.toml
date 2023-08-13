@@ -1,5 +1,5 @@
 [package]
-name = "autd3-traits"
+name = "autd3-derive"
 version = "14.2.2"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
@@ -18,3 +18,6 @@ proc-macro = true
 [dependencies]
 quote = "1.0.18"
 syn = "2.0.3"
+
+[features]
+default = []
