@@ -674,19 +674,6 @@ jobs:
         run: |
           rustup target add aarch64-apple-darwin
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/src-tauri -> target'
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/simulator -> target'
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/SOEMAUTDServer -> target'
-
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
         with:
@@ -733,6 +720,26 @@ jobs:
         run: |
           cd server 
           npm install
+      - name: build
+        if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
+        run: |
+          cd server
+          cd simulator
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+          cd ..
+          cd SOEMAUTDServer
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+      - name: build
+        if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
+        run: |
+          cd server
+          cd simulator
+          cargo build --release
+          cd ..
+          cd SOEMAUTDServer
+          cargo build --release
       - name: Load Release ID File from release job
         uses: actions/download-artifact@v1
         with:
