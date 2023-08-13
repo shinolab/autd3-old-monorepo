@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/07/2023
+ * Last Modified: 12/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use autd3_core::{
     float,
     modulation::{Modulation, ModulationProperty},
 };
-use autd3_traits::Modulation;
+use autd3_derive::Modulation;
 
 use std::{
     fs::File,
