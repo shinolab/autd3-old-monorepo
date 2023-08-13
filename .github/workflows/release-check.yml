@@ -10,7 +10,7 @@ env:
 
 jobs:
   build-src:
-    name: build src ${{ matrix.os }}
+    name: release-build-src-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -107,7 +107,7 @@ jobs:
         cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
 
   build-capi:
-    name: build capi ${{ matrix.os }}
+    name: release-build-capi-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -193,7 +193,7 @@ jobs:
         cargo test --all --release --exclude autd3capi-backend-cuda
 
   build-linux-arm32-src:
-    name: build src for linux-arm32
+    name: release-build-src-linux-arm32
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -238,7 +238,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   build-linux-arm32-capi:
-    name: build capi for linux-arm32
+    name: release-build-capi-linux-arm32
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -276,7 +276,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-src:
-    name: build src for linux-aarch64
+    name: release-build-src-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -321,7 +321,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-capi:
-    name: build capi for linux-aarch64
+    name: release-build-capi-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -359,6 +359,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   lint-src:
+    name: release-lint-src
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -405,6 +406,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   lint-capi:
+    name: release-lint-capi
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -451,6 +453,7 @@ jobs:
       if: steps.changed-files.outputs.modified_files
 
   publish-server:
+    name: release-build-server
     strategy:
       fail-fast: false
       matrix:
