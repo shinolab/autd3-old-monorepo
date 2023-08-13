@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - 'develop'
+  pull_request:
+    types: [opened, reopened, review_requested]
 
 env:
   CARGO_INCREMENTAL: 0
-
 
 jobs:
   build:
@@ -21,7 +22,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: tj-actions/changed-files@v37
+      id: changed-files
+      with:
+        files: |
+          python/pyautd3/*.py
+          python/pyautd3/**/*.py
     - run: |
         python3 -m pip install mypy numpy
         cd python
         python3 -m mypy pyautd3
+      if: steps.changed-files.outputs.modified_files

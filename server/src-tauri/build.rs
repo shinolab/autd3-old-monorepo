@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 13/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,33 +37,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     if cfg!(target_os = "macos") {
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../simulator"))
-            .args(["build", "--release", "--target=x86_64-apple-darwin"])
-            .spawn()?
-            .wait()?;
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../simulator"))
-            .args(["build", "--release", "--target=aarch64-apple-darwin"])
-            .spawn()?
-            .wait()?;
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../SOEMAUTDServer"))
-            .args(["build", "--release", "--target=x86_64-apple-darwin"])
-            .spawn()?
-            .wait()?;
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../SOEMAUTDServer"))
-            .args(["build", "--release", "--target=aarch64-apple-darwin"])
-            .spawn()?
-            .wait()?;
-
         std::fs::copy(
-            manifest_dir.join("../simulator/target/x86_64-apple-darwin/release/simulator"),
+            manifest_dir.join("./target/x86_64-apple-darwin/release/simulator"),
             manifest_dir.join("simulator-x86_64-apple-darwin"),
         )?;
         std::fs::copy(
-            manifest_dir.join("../simulator/target/aarch64-apple-darwin/release/simulator"),
+            manifest_dir.join("./target/aarch64-apple-darwin/release/simulator"),
             manifest_dir.join("simulator-aarch64-apple-darwin"),
         )?;
         Command::new("lipo")
@@ -78,13 +57,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .spawn()?
             .wait()?;
         std::fs::copy(
-            manifest_dir
-                .join("../SOEMAUTDServer/target/x86_64-apple-darwin/release/SOEMAUTDServer"),
+            manifest_dir.join("./target/x86_64-apple-darwin/release/SOEMAUTDServer"),
             manifest_dir.join("SOEMAUTDServer-x86_64-apple-darwin"),
         )?;
         std::fs::copy(
-            manifest_dir
-                .join("../SOEMAUTDServer/target/aarch64-apple-darwin/release/SOEMAUTDServer"),
+            manifest_dir.join("./target/aarch64-apple-darwin/release/SOEMAUTDServer"),
             manifest_dir.join("SOEMAUTDServer-aarch64-apple-darwin"),
         )?;
         Command::new("lipo")
@@ -99,26 +76,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .spawn()?
             .wait()?;
     } else {
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../simulator"))
-            .args(["build", "--release"])
-            .spawn()?
-            .wait()?;
-        Command::new("cargo")
-            .current_dir(manifest_dir.join("../SOEMAUTDServer"))
-            .args(["build", "--release"])
-            .spawn()?
-            .wait()?;
-
         std::fs::copy(
-            manifest_dir.join(format!("../simulator/target/release/simulator{}", ext)),
+            manifest_dir.join(format!("./target/release/simulator{}", ext)),
             manifest_dir.join(format!("simulator-{}{}", std::env::var("TARGET")?, ext)),
         )?;
         std::fs::copy(
-            manifest_dir.join(format!(
-                "../SOEMAUTDServer/target/release/SOEMAUTDServer{}",
-                ext
-            )),
+            manifest_dir.join(format!("./target/release/SOEMAUTDServer{}", ext)),
             manifest_dir.join(format!(
                 "SOEMAUTDServer-{}{}",
                 std::env::var("TARGET")?,
