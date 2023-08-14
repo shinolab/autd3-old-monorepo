@@ -1,10 +1,3 @@
-/*
- * @Author: Mingxin Zhang m.zhang@hapis.k.u-tokyo.ac.jp
- * @Date: 2023-07-27 22:01:35
- * @LastEditors: Mingxin Zhang
- * @LastEditTime: 2023-08-13 21:39:52
- * Copyright (c) 2023 by Mingxin Zhang, All Rights Reserved. 
- */
 // File: runner.hpp
 // Project: examples
 // Created Date: 16/05/2022
