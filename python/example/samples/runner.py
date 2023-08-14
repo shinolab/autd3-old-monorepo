@@ -13,12 +13,13 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Stop, FirmwareInfo
 
-from . import focus, bessel, holo, custom, stm_gain, stm_focus, grouped
+from . import focus, fourier, bessel, holo, custom, stm_gain, stm_focus, grouped
 
 
 def run(autd: Controller):
     samples = [
         (focus.simple, "Single Focal Point Sample"),
+        (fourier.fourier, "Multi-frequency Sine"),
         (bessel.bessel, "Bessel beam Sample"),
         (holo.holo, "Multiple Focal Points Sample"),
         (stm_focus.stm_focus, "FocusSTM (Hardware STM) Sample"),

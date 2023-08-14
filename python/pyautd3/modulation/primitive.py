@@ -13,6 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
+from functools import reduce
 from ctypes import c_double, create_string_buffer
 from typing import Optional, Iterator
 
@@ -89,6 +90,26 @@ class Sine(IModulation):
                 ptr, self._freq_div
             )
         return ptr
+    
+
+class Fourier(IModulation):
+    _components: list[Sine]
+
+    def __init__(self):
+        super().__init__()
+        self._components = []
+
+    def add_component(self, component: Sine) -> "Fourier":
+        self._components.append(component)
+        return self
+
+    def modulation_ptr(self) -> ModulationPtr:
+        initial_ptr = Base().modulation_fourier()
+        final_ptr = initial_ptr
+        for sine in self._components:
+            component_ptr = sine.modulation_ptr()
+            final_ptr = Base().modulation_fourier_add_component(final_ptr, component_ptr)
+        return final_ptr
 
 
 class SineLegacy(IModulation):

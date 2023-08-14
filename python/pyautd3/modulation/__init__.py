@@ -16,6 +16,7 @@ from .primitive import (
     Static,
     Modulation,
     Sine,
+    Fourier,
     SineLegacy,
     Square,
     RadiationPressure,
@@ -28,6 +29,7 @@ __all__ = [
     "Static",
     "Modulation",
     "Sine",
+    "Fourier"
     "SineLegacy",
     "Square",
     "Cache",
