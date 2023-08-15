@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/07/2023
+ * Last Modified: 14/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -43,28 +43,75 @@ namespace AUTD3Sharp
     using Base = NativeMethods.Base;
     using Def = NativeMethods.Def;
 
+    /// <summary>
+    /// AUTD3 device
+    /// </summary>
     public class AUTD3
     {
         #region const
 
+        /// <summary>
+        /// Meter
+        /// </summary>
 #if DIMENSION_M
         public const float_t Meter = 1;
 #else
         public const float_t Meter = 1000;
 #endif
 
+        /// <summary>
+        /// Millimeter
+        /// </summary>
         public const float_t Millimeter = Meter / 1000;
 
+        /// <summary>
+        /// Mathematical constant pi
+        /// </summary>
         public const float_t Pi = Math.PI;
 
+        /// <summary>
+        /// Number of transducer in an AUTD3 device
+        /// </summary>
         public const uint NumTransInUnit = Def.NumTransInUnit;
+
+        /// <summary>
+        /// Spacing between transducers in mm
+        /// </summary>
         public const float_t TransSpacingMm = Def.TransSpacingMm;
+
+        /// <summary>
+        /// Spacing between transducers in m
+        /// </summary>
         public const float_t TransSpacing = Def.TransSpacingMm * Millimeter;
+
+        /// <summary>
+        /// Number of transducer in x-axis of AUTD3 device
+        /// </summary>
         public const uint NumTransInX = Def.NumTransInX;
-        public const uint FpgaClkFreq = Def.FpgaClkFreq;
-        public const float_t DeviceHeight = Def.DeviceHeightMm * Millimeter;
-        public const float_t DeviceWidth = Def.DeviceWidthMm * Millimeter;
+
+        /// <summary>
+        /// Number of transducer in y-axis of AUTD3 device
+        /// </summary>
         public const uint NumTransInY = Def.NumTransInY;
+
+        /// <summary>
+        /// FPGA main clock frequency
+        /// </summary>
+        public const uint FpgaClkFreq = Def.FpgaClkFreq;
+
+        /// <summary>
+        /// Device height including substrate
+        /// </summary>
+        public const float_t DeviceHeight = Def.DeviceHeightMm * Millimeter;
+
+        /// <summary>
+        /// Device width including substrate
+        /// </summary>
+        public const float_t DeviceWidth = Def.DeviceWidthMm * Millimeter;
+
+        /// <summary>
+        /// FPGA sub clock frequency
+        /// </summary>
         public const uint FpgaSubClkFreq = Def.FpgaSubClkFreq;
 
         #endregion
@@ -73,6 +120,11 @@ namespace AUTD3Sharp
         internal Vector3? Rot;
         internal Quaternion? Quat;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="pos">Global position</param>
+        /// <param name="rot">ZYZ euler angels</param>
         public AUTD3(Vector3 pos, Vector3 rot)
         {
             Pos = pos;
@@ -80,6 +132,11 @@ namespace AUTD3Sharp
             Quat = null;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="pos">Global position</param>
+        /// <param name="quat">Rotation quaternion</param>
         public AUTD3(Vector3 pos, Quaternion quat)
         {
             Pos = pos;
@@ -98,8 +155,14 @@ namespace AUTD3Sharp
             _ptr = ptr;
         }
 
+        /// <summary>
+        /// Index of the transducer
+        /// </summary>
         public int Idx { get; }
 
+        /// <summary>
+        /// Position of the transducer
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -110,6 +173,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Rotation of the transducer
+        /// </summary>
         public Quaternion Rotation
         {
             get
@@ -120,6 +186,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// X-direction of the transducer
+        /// </summary>
         public Vector3 XDirection
         {
             get
@@ -130,6 +199,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Y-direction of the transducer
+        /// </summary>
         public Vector3 YDirection
         {
             get
@@ -140,6 +212,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Z-direction of the transducer
+        /// </summary>
         public Vector3 ZDirection
         {
             get
@@ -149,6 +224,10 @@ namespace AUTD3Sharp
                 return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
+
+        /// <summary>
+        /// Frequency of the transducer
+        /// </summary>
         public float_t Frequency
         {
             get => Base.AUTDGetTransFrequency(_ptr, (uint)Idx);
@@ -160,6 +239,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Cycle of the transducer
+        /// </summary>
         public ushort Cycle
         {
             get => Base.AUTDGetTransCycle(_ptr, (uint)Idx);
@@ -171,15 +253,27 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Modulation delay of the transducer
+        /// </summary>
         public ushort ModDelay
         {
             get => Base.AUTDGetTransModDelay(_ptr, (uint)Idx);
             set => Base.AUTDSetTransModDelay(_ptr, (uint)Idx, value);
         }
 
-
+        /// <summary>
+        /// Wavelength of the transducer
+        /// </summary>
+        /// <param name="soundSpeed">Speed of sound</param>
+        /// <returns></returns>
         public float_t Wavelength(float_t soundSpeed) => Base.AUTDGetWavelength(_ptr, (uint)Idx, soundSpeed);
 
+        /// <summary>
+        /// Wavenumber of the transducer
+        /// </summary>
+        /// <param name="soundSpeed">Speed of sound</param>
+        /// <returns></returns>
         public float_t Wavenumber(float_t soundSpeed) => 2 * AUTD3.Pi / Wavelength(soundSpeed);
     }
 
@@ -196,22 +290,37 @@ namespace AUTD3Sharp
             _transducers = new List<Transducer>();
         }
 
+        /// <summary>
+        /// Number of transducers
+        /// </summary>
         public int NumTransducers => (int)Base.AUTDNumTransducers(Ptr);
 
+        /// <summary>
+        /// Number of devices
+        /// </summary>
         public int NumDevices => (int)Base.AUTDNumDevices(Ptr);
 
+        /// <summary>
+        /// Speed of sound
+        /// </summary>
         public float_t SoundSpeed
         {
             get => Base.AUTDGetSoundSpeed(Ptr);
             set => Base.AUTDSetSoundSpeed(Ptr, value);
         }
 
+        /// <summary>
+        /// Attenuation coefficient
+        /// </summary>
         public float_t Attenuation
         {
             get => Base.AUTDGetAttenuation(Ptr);
             set => Base.AUTDSetAttenuation(Ptr, value);
         }
 
+        /// <summary>
+        /// Get center position of all transducers
+        /// </summary>
         public Vector3 Center
         {
             get
@@ -224,11 +333,23 @@ namespace AUTD3Sharp
 
         public Transducer this[int index] => _transducers[index];
 
+        /// <summary>
+        /// Set the sound speed from temperature
+        /// </summary>
+        /// <param name="temp">Temperature in celsius</param>
+        /// <param name="k">Ratio of specific heat</param>
+        /// <param name="r">Gas constant</param>
+        /// <param name="m">Molar mass</param>
         public void SetSoundSpeedFromTemp(float_t temp, float_t k = (float_t)1.4, float_t r = (float_t)8.31446261815324, float_t m = (float_t)28.9647e-3)
         {
             Base.AUTDSetSoundSpeedFromTemp(Ptr, temp, k, r, m);
         }
 
+        /// <summary>
+        /// Get center position of transducers in the specified device
+        /// </summary>
+        /// <param name="devIdx"></param>
+        /// <returns></returns>
         public Vector3 CenterOf(int devIdx)
         {
             var center = new float_t[3];
@@ -255,10 +376,15 @@ namespace AUTD3Sharp
             _info = info;
         }
 
+        /// <summary>
+        /// Check if thermal sensor is asserted
+        /// </summary>
         public bool IsThermalAssert => (_info & 0x01) != 0;
     }
 
-
+    /// <summary>
+    /// Controller class for AUTD3
+    /// </summary>
     public sealed class Controller : IDisposable
     {
         #region field
@@ -277,6 +403,11 @@ namespace AUTD3Sharp
             private ControllerBuilderPtr _ptr;
             private TransMode _mode;
 
+            /// <summary>
+            /// Add device
+            /// </summary>
+            /// <param name="device">AUTD3 device</param>
+            /// <returns></returns>
             public ControllerBuilder AddDevice(AUTD3 device)
             {
                 if (device.Rot != null)
@@ -286,26 +417,42 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            /// <summary>
+            /// Set legacy mode
+            /// </summary>
+            /// <returns></returns>
             public ControllerBuilder LegacyMode()
             {
                 _mode = TransMode.Legacy;
                 return this;
             }
 
+            /// <summary>
+            /// Set advanced mode
+            /// </summary>
+            /// <returns></returns>
             public ControllerBuilder AdvancedMode()
             {
                 _mode = TransMode.Advanced;
                 return this;
             }
 
+            /// <summary>
+            /// Set advanced phase mode
+            /// </summary>
+            /// <returns></returns>
             public ControllerBuilder AdvancedPhaseMode()
             {
                 _mode = TransMode.AdvancedPhase;
                 return this;
             }
 
-            public
-               Controller OpenWith(Link.Link link)
+            /// <summary>
+            /// Open controller
+            /// </summary>
+            /// <param name="link">link</param>
+            /// <returns>Controller</returns>
+            public Controller OpenWith(Link.Link link)
             {
                 return Controller.OpenImpl(_ptr, _mode, link.Ptr);
             }
@@ -317,6 +464,10 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Create Controller builder
+        /// </summary>
+        /// <returns>ControllerBuilder</returns>
         public static ControllerBuilder Builder() { return new ControllerBuilder(); }
 
         internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkPtr link)
@@ -342,6 +493,10 @@ namespace AUTD3Sharp
             _mode = mode;
         }
 
+        /// <summary>
+        /// Get list of FPGA information
+        /// </summary>
+        /// <exception cref="AUTDException"></exception>
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
         {
             var err = new byte[256];
@@ -360,6 +515,10 @@ namespace AUTD3Sharp
             Base.AUTDFreeFirmwareInfoListPointer(handle);
         }
 
+        /// <summary>
+        /// Close connection
+        /// </summary>
+        /// <exception cref="AUTDException"></exception>
         public void Close()
         {
             if (Ptr._0 == IntPtr.Zero) return;
@@ -375,7 +534,8 @@ namespace AUTD3Sharp
             if (Ptr._0 != IntPtr.Zero) Base.AUTDFreeController(Ptr);
             Ptr._0 = IntPtr.Zero;
 
-            _isDisposed = true; GC.SuppressFinalize(this);
+            _isDisposed = true;
+            GC.SuppressFinalize(this);
         }
 
         ~Controller()
@@ -388,16 +548,27 @@ namespace AUTD3Sharp
         #region Property
         public Geometry Geometry { get; }
 
+        /// <summary>
+        /// set force fan flag
+        /// </summary>
+        /// <param name="value"></param>
         public void ForceFan(bool value)
         {
             Base.AUTDSetForceFan(Ptr, value);
         }
 
+        /// <summary>
+        /// set reads FPGA info flag
+        /// </summary>
+        /// <param name="value"></param>
         public void ReadsFPGAInfo(bool value)
         {
             Base.AUTDSetReadsFPGAInfo(Ptr, value);
         }
 
+        /// <summary>
+        /// List of FPGA information
+        /// </summary>
         public FPGAInfo[] FPGAInfo
         {
             get
@@ -411,6 +582,14 @@ namespace AUTD3Sharp
         }
         #endregion
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="special">Special data (Clear, Synchronize, Stop, ModDelay, or UpdateFlag)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send(ISpecialData special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
@@ -423,6 +602,14 @@ namespace AUTD3Sharp
             return res == Def.Autd3True;
         }
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send(IHeader header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
@@ -435,6 +622,14 @@ namespace AUTD3Sharp
             return res == Def.Autd3True;
         }
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send(IBody body, TimeSpan? timeout = null)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
@@ -447,6 +642,15 @@ namespace AUTD3Sharp
             return res == Def.Autd3True;
         }
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send(IHeader header, IBody body, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
@@ -461,6 +665,15 @@ namespace AUTD3Sharp
 
         }
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
+        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send(IBody body, IHeader header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
@@ -474,6 +687,15 @@ namespace AUTD3Sharp
             return res == Def.Autd3True;
         }
 
+        /// <summary>
+        /// Send data to the devices
+        /// </summary>
+        /// <param name="data">Tuple of header data (SilencerConfig or Modulation) and body data (Gain, STM, or Amplitudes)</param>
+        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="timeout"></param>
+        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AUTDException"></exception>
         public bool Send((IHeader, IBody) data, TimeSpan? timeout = null)
         {
             var (header, body) = data;
@@ -489,35 +711,57 @@ namespace AUTD3Sharp
         }
     }
 
+    /// <summary>
+    /// SpecialData to update flags (Force fan flag and reads FPGA info flag)
+    /// </summary>
     public sealed class UpdateFlags : ISpecialData
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDUpdateFlags();
     }
 
+    /// <summary>
+    /// SpecialData for clear all data in devices
+    /// </summary>
     public sealed class Clear : ISpecialData
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDClear();
     }
 
+    /// <summary>
+    /// SpecialData to synchronize devices
+    /// </summary>
     public sealed class Synchronize : ISpecialData
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDSynchronize();
     }
 
+    /// <summary>
+    /// SpecialData to stop output
+    /// </summary>
     public sealed class Stop : ISpecialData
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDStop();
     }
 
+    /// <summary>
+    /// SpecialData to set modulation delay
+    /// </summary>
     public sealed class ModDelayConfig : ISpecialData
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDModDelayConfig();
     }
 
+    /// <summary>
+    /// Header to configure silencer
+    /// </summary>
     public sealed class SilencerConfig : IHeader
     {
         private readonly ushort _step;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="step">Update step of silencer. The smaller step is, the quieter the output is.</param>
         public SilencerConfig(ushort step = 10)
         {
             _step = step;
@@ -525,13 +769,19 @@ namespace AUTD3Sharp
 
         public DatagramHeaderPtr Ptr() => Base.AUTDCreateSilencer(_step);
 
-
+        /// <summary>
+        /// Disable silencer
+        /// </summary>
+        /// <returns></returns>
         public static SilencerConfig None()
         {
             return new SilencerConfig(0xFFFF);
         }
     }
 
+    /// <summary>
+    /// Amplitudes settings for advanced phase mode
+    /// </summary>
     public sealed class Amplitudes : IBody
     {
         private readonly float_t _amp;
@@ -555,6 +805,9 @@ namespace AUTD3Sharp
             public abstract GainPtr GainPtr(Geometry geometry);
         }
 
+        /// <summary>
+        /// Gain to produce single focal point
+        /// </summary>
         public sealed class Focus : GainBase
         {
             private readonly Vector3 _point;
@@ -566,6 +819,11 @@ namespace AUTD3Sharp
                 _amp = null;
             }
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+            /// <returns></returns>
             public Focus WithAmp(float_t amp)
             {
                 _amp = amp;
@@ -581,6 +839,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Gain to group multiple gains
+        /// </summary>
         public sealed class Grouped : GainBase
         {
             private readonly List<(int[], GainBase)> _gains;
@@ -597,12 +858,24 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            /// <summary>
+            /// Add gain
+            /// </summary>
+            /// <param name="deviceIdx">Device index</param>
+            /// <param name="gain">gain</param>
+            /// <returns></returns>
             public Grouped Add(int deviceIdx, GainBase gain)
             {
                 _gains.Add((new int[] { deviceIdx }, gain));
                 return this;
             }
 
+            /// <summary>
+            /// Add gain by group
+            /// </summary>
+            /// <param name="deviceIdxs">Device indices</param>
+            /// <param name="gain">gain</param>
+            /// <returns></returns>
             public Grouped AddByGroup(IEnumerable<int> deviceIdxs, GainBase gain)
             {
                 _gains.Add((deviceIdxs.ToArray(), gain));
@@ -619,6 +892,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Gain to produce a Bessel beam
+        /// </summary>
         public sealed class Bessel : GainBase
         {
             private readonly Vector3 _point;
@@ -634,6 +910,11 @@ namespace AUTD3Sharp
                 _amp = null;
             }
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+            /// <returns></returns>
             public Bessel WithAmp(float_t amp)
             {
                 _amp = amp;
@@ -649,6 +930,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Gain to produce a plane wave
+        /// </summary>
         public sealed class Plane : GainBase
         {
             private readonly Vector3 _dir;
@@ -660,6 +944,11 @@ namespace AUTD3Sharp
                 _amp = null;
             }
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+            /// <returns></returns>
             public Plane WithAmp(float_t amp)
             {
                 _amp = amp;
@@ -691,6 +980,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Gain to cache the result of calculation
+        /// </summary>
         public sealed class Cache : GainBase, IEnumerable<Drive>
         {
             public Cache(GainBase g, Geometry geometry)
@@ -719,6 +1011,9 @@ namespace AUTD3Sharp
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// Gain to output nothing
+        /// </summary>
         public sealed class Null : GainBase
         {
             public override GainPtr GainPtr(Geometry geometry) => Base.AUTDGainNull();
@@ -739,10 +1034,18 @@ namespace AUTD3Sharp
             public abstract ModulationPtr ModulationPtr();
         }
 
+        /// <summary>
+        /// Without modulation
+        /// </summary>
         public sealed class Static : ModulationBase
         {
             private float_t? _amp;
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public Static WithAmp(float_t amp)
             {
                 _amp = amp;
@@ -758,6 +1061,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Sine wave modulation
+        /// </summary>
         public sealed class Sine : ModulationBase
         {
             private readonly int _freq;
@@ -765,6 +1071,11 @@ namespace AUTD3Sharp
             private float_t? _offset;
             private uint? _freqDiv;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="freq">Frequency of sine wave</param>
+            /// <remarks>The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.</remarks>
             public Sine(int freq)
             {
                 _freq = freq;
@@ -773,24 +1084,43 @@ namespace AUTD3Sharp
                 _freqDiv = null;
             }
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public Sine WithAmp(float_t amp)
             {
                 _amp = amp;
                 return this;
             }
 
+            /// <summary>
+            /// Set offset
+            /// </summary>
+            /// <param name="offset">Offset of the sine wave</param>
+            /// <returns></returns>
             public Sine WithOffset(float_t offset)
             {
                 _offset = offset;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency division
+            /// </summary>
+            /// <param name="div">The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
+            /// <returns></returns>
             public Sine WithSamplingFrequencyDivision(uint div)
             {
                 _freqDiv = div;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency
+            /// </summary>
+            /// <returns></returns>
             public Sine WithSamplingFrequency(float_t freq)
             {
                 return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
@@ -809,6 +1139,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Sine wave modulation
+        /// </summary>
         public sealed class SineLegacy : ModulationBase
         {
             private readonly float_t _freq;
@@ -816,6 +1149,11 @@ namespace AUTD3Sharp
             private float_t? _offset;
             private uint? _freqDiv;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="freq">Frequency of sine wave</param>
+            /// <remarks>The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.</remarks>
             public SineLegacy(float_t freq)
             {
                 _freq = freq;
@@ -824,24 +1162,43 @@ namespace AUTD3Sharp
                 _freqDiv = null;
             }
 
+            /// <summary>
+            /// Set amplitude
+            /// </summary>
+            /// <param name="amp">normalized amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public SineLegacy WithAmp(float_t amp)
             {
                 _amp = amp;
                 return this;
             }
 
+            /// <summary>
+            /// Set offset
+            /// </summary>
+            /// <param name="offset">Offset of the sine wave</param>
+            /// <returns></returns>
             public SineLegacy WithOffset(float_t offset)
             {
                 _offset = offset;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency division
+            /// </summary>
+            /// <param name="div">The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
+            /// <returns></returns>
             public SineLegacy WithSamplingFrequencyDivision(uint div)
             {
                 _freqDiv = div;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency
+            /// </summary>
+            /// <returns></returns>
             public SineLegacy WithSamplingFrequency(float_t freq)
             {
                 return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
@@ -860,6 +1217,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Square wave modulation
+        /// </summary>
         public sealed class Square : ModulationBase
         {
             private readonly int _freq;
@@ -877,30 +1237,55 @@ namespace AUTD3Sharp
                 _freqDiv = null;
             }
 
+            /// <summary>
+            /// Set low level amplitude
+            /// </summary>
+            /// <param name="low">low level amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public Square WithLow(float_t low)
             {
                 _low = low;
                 return this;
             }
 
+            /// <summary>
+            /// Set high level amplitude
+            /// </summary>
+            /// <param name="high">high level amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public Square WithHigh(float_t high)
             {
                 _high = high;
                 return this;
             }
 
+            /// <summary>
+            /// Set duty ratio
+            /// </summary>
+            /// <remarks>Duty ratio is defined as `Th / (Th + Tl)`, where `Th` is high level duration, and `Tl` is low level duration.</remarks>
+            /// <param name="duty">normalized amplitude (0.0 - 1.0)</param>
+            /// <returns></returns>
             public Square WithDuty(float_t duty)
             {
                 _duty = duty;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency division
+            /// </summary>
+            /// <param name="div">The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
+            /// <returns></returns>
             public Square WithSamplingFrequencyDivision(uint div)
             {
                 _freqDiv = div;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency
+            /// </summary>
+            /// <returns></returns>
             public Square WithSamplingFrequency(float_t freq)
             {
                 return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
@@ -921,6 +1306,9 @@ namespace AUTD3Sharp
             }
         }
 
+        /// <summary>
+        /// Base class for custom modulation
+        /// </summary>
         public abstract class Modulation : ModulationBase
         {
             private readonly uint _freqDiv;
@@ -944,7 +1332,9 @@ namespace AUTD3Sharp
             public abstract float_t[] Calc();
         }
 
-
+        /// <summary>
+        /// Modulation to cache the result of calculation
+        /// </summary>
         public class Cache : ModulationBase, IEnumerable<float_t>
         {
             private readonly uint _freqDiv;
@@ -979,6 +1369,9 @@ namespace AUTD3Sharp
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// Modulation for modulating radiation pressure
+        /// </summary>
         public sealed class RadiationPressure : ModulationBase
         {
             private readonly uint _freqDiv;
@@ -1050,6 +1443,16 @@ namespace AUTD3Sharp
             protected uint SamplFreqDivFromSize(int size) => Base.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
         }
 
+        /// <summary>
+        /// FocusSTM is an STM for moving a focal point
+        /// </summary>
+        /// <remarks>
+        /// <para>The sampling timing is determined by hardware, thus the sampling time is precise.</para>
+        /// <para>FocusSTM has following restrictions:</para>
+        /// <list>
+        /// <item>The maximum number of sampling points is 65536.</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// </list></remarks>
         public sealed class FocusSTM : STM
         {
             private readonly List<float_t> _points;
@@ -1075,6 +1478,12 @@ namespace AUTD3Sharp
                 return new FocusSTM(null, null, freqDiv);
             }
 
+            /// <summary>
+            /// Add focus point
+            /// </summary>
+            /// <param name="point">Focus point</param>
+            /// <param name="shift">Duty shift. Duty ratio of ultrasound will be `50% >> duty_shift`. If `duty_shift` is 0, duty ratio is 50%, which means the amplitude is the maximum.</param>
+            /// <returns></returns>
             public FocusSTM AddFocus(Vector3 point, byte shift = 0)
             {
                 _points.Add(point.x);
@@ -1084,11 +1493,19 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci</param>
             public FocusSTM AddFociFromIter(IEnumerable<Vector3> iter)
             {
                 return iter.Aggregate(this, (stm, point) => stm.AddFocus(point));
             }
 
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and duty shifts</param>
             public FocusSTM AddFociFromIter(IEnumerable<(Vector3, byte)> iter)
             {
                 return iter.Aggregate(this, (stm, point) => stm.AddFocus(point.Item1, point.Item2));
@@ -1116,7 +1533,16 @@ namespace AUTD3Sharp
             }
         }
 
-
+        /// <summary>
+        /// FocusSTM is an STM for moving Gains
+        /// </summary>
+        /// <remarks>
+        /// <para>The sampling timing is determined by hardware, thus the sampling time is precise.</para>
+        /// <para>FocusSTM has following restrictions:</para>
+        /// <list>
+        /// <item>The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// </list></remarks>
         public sealed class GainSTM : STM
         {
             private readonly List<GainBase> _gains;
@@ -1142,12 +1568,21 @@ namespace AUTD3Sharp
                 return new GainSTM(null, null, freqDiv);
             }
 
+            /// <summary>
+            /// Add Gain
+            /// </summary>
+            /// <param name="gain">Gain</param>
+            /// <returns></returns>
             public GainSTM AddGain(GainBase gain)
             {
                 _gains.Add(gain);
                 return this;
             }
 
+            /// <summary>
+            /// Add Gains
+            /// </summary>
+            /// <param name="iter">Enumerable of Gains</param>
             public GainSTM AddGainsFromIter(IEnumerable<GainBase> iter)
             {
                 return iter.Aggregate(this, (stm, gain) => stm.AddGain(gain));
