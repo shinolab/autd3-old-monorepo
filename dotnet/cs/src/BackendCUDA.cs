@@ -4,7 +4,7 @@
  * Created Date: 08/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 15/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,9 @@ namespace AUTD3Sharp
     {
         namespace Holo
         {
+            /// <summary>
+            /// Backend using CUDA
+            /// </summary>
             [ComVisible(false)]
             public class BackendCUDA : Backend
             {
