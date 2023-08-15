@@ -164,7 +164,15 @@ ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
 
+[[nodiscard]] ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
+
 [[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
+
+[[nodiscard]] ModulationPtr AUTDModulationFourier();
+
+[[nodiscard]]
+ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
+                                                ModulationPtr m);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m,

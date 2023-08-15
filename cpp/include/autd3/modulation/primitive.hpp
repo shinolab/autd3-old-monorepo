@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <numeric>
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -51,7 +52,7 @@ class Sine final : public internal::Modulation {
  public:
   /**
    * @brief Constructor.
-   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset
+   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t + phase) + offset`, where `t` is time, and `amp = 1`, `offset
    * = 0.5` by default.
    *
    * @param freq Frequency of sine wave
@@ -66,6 +67,17 @@ class Sine final : public internal::Modulation {
    */
   Sine with_amp(const double amp) {
     _amp = amp;
+    return *this;
+  }
+
+  /**
+   * @brief Set phase
+   *
+   * @param phase Phase of sine wave
+   * @return Sine
+   */
+    Sine with_phase(const double phase) {
+    _phase = phase;
     return *this;
   }
 
@@ -99,6 +111,7 @@ class Sine final : public internal::Modulation {
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSine(_freq);
     if (_amp.has_value()) ptr = AUTDModulationSineWithAmp(ptr, _amp.value());
+    if (_phase.has_value()) ptr = AUTDModulationSineWithPhase(ptr, _phase.value());
     if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value());
     if (_freq_div.has_value()) ptr = AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.value());
     return ptr;
@@ -107,8 +120,31 @@ class Sine final : public internal::Modulation {
  private:
   int32_t _freq;
   std::optional<double> _amp;
+  std::optional<double> _phase;
   std::optional<double> _offset;
   std::optional<uint32_t> _freq_div;
+};
+
+/**
+ * @brief Multi-frequency sine wave modulation
+ */
+class Fourier final : public internal::Modulation {
+ public:
+  Fourier() = default;
+
+  Fourier add_component(Sine component) {
+    _components.emplace_back(component);
+    return std::move(*this);
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    return std::accumulate(_components.begin(), _components.end(), internal::native_methods::AUTDModulationFourier(), [](internal::native_methods::ModulationPtr ptr, Sine sine) {
+        return internal::native_methods::AUTDModulationFourierAddComponent(ptr, sine.modulation_ptr());
+    });
+  }
+
+ private:
+  std::vector<Sine> _components;
 };
 
 /**

@@ -202,8 +202,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationSineWithAmp.restype = ModulationPtr
 
+        self.dll.AUTDModulationSineWithPhase.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineWithPhase.restype = ModulationPtr
+
         self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
+
+        self.dll.AUTDModulationFourier.argtypes = [] 
+        self.dll.AUTDModulationFourier.restype = ModulationPtr
+
+        self.dll.AUTDModulationFourierAddComponent.argtypes = [ModulationPtr, ModulationPtr]  # type: ignore 
+        self.dll.AUTDModulationFourierAddComponent.restype = ModulationPtr
 
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDModulationSineWithSamplingFrequencyDivision.restype = ModulationPtr
@@ -508,8 +517,17 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithAmp(m, amp)
 
+    def modulation_sine_with_phase(self, m: ModulationPtr, phase: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithPhase(m, phase)
+
     def modulation_sine_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
+
+    def modulation_fourier(self) -> ModulationPtr:
+        return self.dll.AUTDModulationFourier()
+
+    def modulation_fourier_add_component(self, fourier: ModulationPtr, m: ModulationPtr) -> ModulationPtr:
+        return self.dll.AUTDModulationFourierAddComponent(fourier, m)
 
     def modulation_sine_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithSamplingFrequencyDivision(m, div)

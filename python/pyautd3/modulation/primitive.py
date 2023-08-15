@@ -13,6 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
+from functools import reduce
 from ctypes import c_double, create_string_buffer
 from typing import Optional, Iterator
 
@@ -45,6 +46,7 @@ class Sine(IModulation):
     _freq: int
     _amp: Optional[float]
     _offset: Optional[float]
+    _phase: Optional[float]
     _freq_div: Optional[int]
 
     def __init__(self, freq: int):
@@ -52,6 +54,7 @@ class Sine(IModulation):
         self._freq = freq
         self._amp = None
         self._offset = None
+        self._phase = None
         self._freq_div = None
 
     def with_amp(self, amp: float) -> "Sine":
@@ -60,6 +63,10 @@ class Sine(IModulation):
 
     def with_offset(self, offset: float) -> "Sine":
         self._offset = offset
+        return self
+
+    def with_phase(self, phase: float) -> "Sine":
+        self._phase = phase
         return self
 
     def with_sampling_frequency_division(self, div: int) -> "Sine":
@@ -76,11 +83,34 @@ class Sine(IModulation):
             ptr = Base().modulation_sine_with_amp(ptr, self._amp)
         if self._offset is not None:
             ptr = Base().modulation_sine_with_offset(ptr, self._offset)
+        if self._phase is not None:
+            ptr = Base().modulation_sine_with_phase(ptr, self._phase)
         if self._freq_div is not None:
             ptr = Base().modulation_sine_with_sampling_frequency_division(
                 ptr, self._freq_div
             )
         return ptr
+
+
+class Fourier(IModulation):
+    _components: list[Sine]
+
+    def __init__(self):
+        super().__init__()
+        self._components = []
+
+    def add_component(self, component: Sine) -> "Fourier":
+        self._components.append(component)
+        return self
+
+    def modulation_ptr(self) -> ModulationPtr:
+        return reduce(
+            lambda acc, s: Base().modulation_fourier_add_component(
+                acc, s.modulation_ptr()
+            ),
+            self._components,
+            Base().modulation_fourier(),
+        )
 
 
 class SineLegacy(IModulation):
