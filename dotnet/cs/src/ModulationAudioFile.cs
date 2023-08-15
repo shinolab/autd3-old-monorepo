@@ -27,22 +27,39 @@ namespace AUTD3Sharp
 {
     namespace Modulation
     {
+        /// <summary>
+        /// Modulation constructed from wav file
+        /// <remarks>The wav data is resampled to the sampling frequency of Modulation.</remarks>
+        /// </summary>
         public sealed class Wav : ModulationBase
         {
             private readonly string _filename;
             private uint? _freqDiv;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="filename">Path to wav file</param>
             public Wav(string filename)
             {
                 _filename = filename;
             }
 
+            /// <summary>
+            /// Set sampling frequency division
+            /// </summary>
+            /// <param name="div">The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
+            /// <returns></returns>
             public Wav WithSamplingFrequencyDivision(uint div)
             {
                 _freqDiv = div;
                 return this;
             }
 
+            /// <summary>
+            /// Set sampling frequency
+            /// </summary>
+            /// <returns></returns>
             public Wav WithSamplingFrequency(float_t freq)
             {
                 return WithSamplingFrequencyDivision((uint)((float_t)NativeMethods.Def.FpgaSubClkFreq / freq));
