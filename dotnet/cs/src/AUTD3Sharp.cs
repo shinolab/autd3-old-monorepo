@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2023
+ * Last Modified: 15/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -1136,6 +1136,33 @@ namespace AUTD3Sharp
                 if (_freqDiv != null)
                     ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
                 return ptr;
+            }
+        }
+
+        /// <summary>
+        /// Multi-frequency sine wave modulation
+        /// </summary>
+        public sealed class Fourier : ModulationBase
+        {
+            private List<Sine> _components;
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            public Fourier()
+            {
+                _components = new List<Sine>();
+            }
+
+            public Fourier AddComponent(Sine sine)
+            {
+                _components.Add(sine);
+                return this;
+            }
+
+            public override ModulationPtr ModulationPtr()
+            {
+                return _components.Aggregate(Base.AUTDModulationFourier(), (current, sine) => Base.AUTDModulationFourierAddComponent(current, sine.ModulationPtr()));
             }
         }
 
