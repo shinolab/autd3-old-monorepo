@@ -80,6 +80,9 @@ namespace AUTD3Sharp
                 public abstract GainPtr LMWithConstraint(GainPtr ptr, ConstraintPtr v);
             }
 
+            /// <summary>
+            /// Backend using <see cref="https://nalgebra.org/">Nalgebra</see>
+            /// </summary>
             public sealed class NalgebraBackend : Backend
             {
                 public NalgebraBackend()
@@ -213,21 +216,33 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Amplitude constraint
+            /// </summary>
             public interface IAmplitudeConstraint
             {
                 public ConstraintPtr Ptr();
             }
 
+            /// <summary>
+            /// Do nothing (this is equivalent to `Clamp(0, 1)`)
+            /// </summary>
             public sealed class DontCare : IAmplitudeConstraint
             {
                 public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloDotCareConstraint();
             }
 
+            /// <summary>
+            /// Normalize the value by dividing the maximum value
+            /// </summary>
             public sealed class Normalize : IAmplitudeConstraint
             {
                 public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloNormalizeConstraint();
             }
 
+            /// <summary>
+            /// Set all amplitudes to the specified value
+            /// </summary>
             public sealed class Uniform : IAmplitudeConstraint
             {
 
@@ -241,6 +256,9 @@ namespace AUTD3Sharp
                 public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloUniformConstraint(Value);
             }
 
+            /// <summary>
+            /// Clamp all amplitudes to the specified range
+            /// </summary>
             public sealed class Clamp : IAmplitudeConstraint
             {
                 internal readonly float_t Min;
@@ -255,7 +273,11 @@ namespace AUTD3Sharp
                 public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloClampConstraint(Min, Max);
             }
 
-
+            /// <summary>
+            /// Gain to produce multiple foci by solving Semi-Denfinite Programming
+            /// </summary>
+            /// <remarks>Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.</remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class SDP<B> : GainBase
                 where B : Backend
             {
@@ -283,24 +305,44 @@ namespace AUTD3Sharp
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public SDP<B> WithAlpha(float_t value)
                 {
                     _alpha = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public SDP<B> WithLambda(float_t value)
                 {
                     _lambda = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public SDP<B> WithRepeat(uint value)
                 {
                     _repeat = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public SDP<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -319,7 +361,11 @@ namespace AUTD3Sharp
                 }
             }
 
-
+            /// <summary>
+            /// Gain to produce multiple foci by solving Eigen Value Problem
+            /// </summary>
+            /// <remarks>Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.</remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class EVP<B> : GainBase
                 where B : Backend
             {
@@ -345,12 +391,22 @@ namespace AUTD3Sharp
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public EVP<B> WithGamma(float_t value)
                 {
                     _gamma = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public EVP<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -367,6 +423,11 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Gain to produce multiple foci with GS algorithm
+            /// </summary>
+            /// <remarks>Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.</remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class GS<B> : GainBase
                 where B : Backend
             {
@@ -392,13 +453,22 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public GS<B> WithRepeat(uint value)
                 {
                     _repeat = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public GS<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -415,6 +485,11 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Gain to produce multiple foci with GS-PAT algorithm
+            /// </summary>
+            /// <remarks>Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on Graphics (TOG), 39(4):138–1, 2020.</remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class GSPAT<B> : GainBase
                 where B : Backend
             {
@@ -440,12 +515,22 @@ namespace AUTD3Sharp
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public GSPAT<B> WithRepeat(uint value)
                 {
                     _repeat = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public GSPAT<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -462,6 +547,10 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Gain to produce multiple foci with naive linear synthesis
+            /// </summary>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class Naive<B> : GainBase
                 where B : Backend
             {
@@ -488,7 +577,11 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public Naive<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
@@ -504,6 +597,15 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Gain to produce multiple foci with Levenberg-Marquardt algorithm
+            /// </summary>
+            /// <remarks>
+            /// <para>K.Levenberg, “A method for the solution of certain non-linear problems in least squares,” Quarterly of applied mathematics, vol.2, no.2, pp.164–168, 1944.</para> 
+            /// <para> D.W.Marquardt, “An algorithm for least-squares estimation of non-linear parameters,” Journal of the society for Industrial and AppliedMathematics, vol.11, no.2, pp.431–441, 1963.</para> 
+            /// <para>K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.</para> 
+            /// </remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class LM<B> : GainBase
                 where B : Backend
             {
@@ -525,6 +627,11 @@ namespace AUTD3Sharp
                     _amps = new List<float_t>();
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> AddFocus(Vector3 focus, float_t amp)
                 {
                     _foci.Add(focus.x);
@@ -534,36 +641,66 @@ namespace AUTD3Sharp
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> WithEps1(float_t value)
                 {
                     _eps1 = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> WithEps2(float_t value)
                 {
                     _eps2 = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> WithTau(float_t value)
                 {
                     _tau = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> WithKMax(uint value)
                 {
                     _kMax = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public LM<B> WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public LM<B> WithInitial(float_t[] initial)
                 {
                     _initial = initial;
@@ -585,6 +722,13 @@ namespace AUTD3Sharp
                 }
             }
 
+            /// <summary>
+            /// Gain to produce multiple foci with greedy algorithm
+            /// </summary>
+            /// <remarks>
+            /// Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
+            /// </remarks>
+            /// <typeparam name="B">Backend</typeparam>
             public sealed class Greedy : GainBase
             {
                 private readonly List<float_t> _foci;
@@ -607,12 +751,22 @@ namespace AUTD3Sharp
                     return this;
                 }
 
+                /// <summary>
+                /// Parameter. See the paper for details.
+                /// </summary>
+                /// <param name="value"></param>
+                /// <returns></returns>
                 public Greedy WithPhaseDiv(uint value)
                 {
                     _phaseDiv = value;
                     return this;
                 }
 
+                /// <summary>
+                /// Set amplitude constraint
+                /// </summary>
+                /// <param name="constraint"></param>
+                /// <returns></returns>
                 public Greedy WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
