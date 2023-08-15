@@ -18,7 +18,7 @@ mod custom;
 use autd3_core::stm::STMProps;
 use autd3capi_def::{
     common::{
-        autd3::link::{log::LogImpl, Log},
+        autd3::{link::{log::LogImpl, Log}, modulation::Fourier},
         *,
     },
     take_gain, take_link, take_mod, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr,
@@ -537,12 +537,33 @@ pub unsafe extern "C" fn AUTDModulationSineWithAmp(m: ModulationPtr, amp: float)
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDModulationSineWithPhase(m: ModulationPtr, phase: float) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(m, Sine).with_phase(phase))
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSineWithOffset(
     m: ModulationPtr,
     offset: float,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Sine).with_offset(offset))
 }
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationFourier() -> ModulationPtr {
+    ModulationPtr::new(Fourier::new())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationFourierAddComponent(
+    fourier: ModulationPtr,
+    m: ModulationPtr,
+) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(fourier, Fourier).add_component(**take_mod!(m, Sine)))
+} 
 
 #[no_mangle]
 #[must_use]
