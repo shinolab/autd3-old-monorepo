@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -139,7 +139,7 @@ pub struct Controller<T: Transducer, L: Link<T>> {
     rx_buf: RxDatagram,
     force_fan: autd3_core::ForceFan,
     reads_fpga_info: autd3_core::ReadsFPGAInfo,
-    msg_id: AtomicU8,
+    msg_id: u8,
 }
 
 impl Controller<LegacyTransducer, NullLink> {
@@ -162,7 +162,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             rx_buf: RxDatagram::new(num_devices),
             force_fan: autd3_core::ForceFan::default(),
             reads_fpga_info: autd3_core::ReadsFPGAInfo::default(),
-            msg_id: AtomicU8::new(MSG_BEGIN),
+            msg_id: MSG_BEGIN,
         };
         cnt.send(Clear::new())?;
         cnt.send(Synchronize::new())?;
@@ -362,19 +362,12 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
     fn get_id(&mut self) -> u8 {
-        if self
-            .msg_id
-            .compare_exchange(
-                MSG_END,
-                MSG_BEGIN,
-                atomic::Ordering::SeqCst,
-                atomic::Ordering::SeqCst,
-            )
-            .is_err()
-        {
-            self.msg_id.fetch_add(1, atomic::Ordering::SeqCst);
+        if self.msg_id == MSG_END {
+            self.msg_id = MSG_BEGIN;
+        } else {
+            self.msg_id += 1;
         }
-        self.msg_id.load(atomic::Ordering::SeqCst)
+        self.msg_id
     }
 }
 
