@@ -43,6 +43,24 @@ pub struct GroupByTransducer<
 }
 
 impl Group {
+    /// Group by device
+    ///
+    /// # Arguments
+    /// `f` - function to get key from device index
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use autd3::prelude::*;
+    /// # let gain : autd3::gain::group::GroupByDevice<_, LegacyTransducer, _> =
+    /// Group::by_device(|dev| match dev {
+    ///                 0 => Some("null"),
+    ///                 1 => Some("focus"),
+    ///                 _ => None,
+    ///             })
+    ///             .set("null", Null::new())
+    ///             .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
+    /// ```
     pub fn by_device<K, T, F>(f: F) -> GroupByDevice<K, T, F>
     where
         K: Hash + Eq + Clone + 'static,
@@ -55,6 +73,24 @@ impl Group {
         }
     }
 
+    /// Group by transducer
+    ///
+    /// # Arguments
+    /// `f` - function to get key from transducer (currentry, transducer type annotation is required)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use autd3::prelude::*;
+    /// # let gain : autd3::gain::group::GroupByTransducer<_, LegacyTransducer, _> =
+    /// Group::by_transducer(|tr: &LegacyTransducer| match tr.idx() {
+    ///                 0..=100 => Some("null"),
+    ///                 101.. => Some("focus"),
+    ///                 _ => None,
+    ///             })
+    ///             .set("null", Null::new())
+    ///             .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
+    /// ```
     pub fn by_transducer<K, T, F>(f: F) -> GroupByTransducer<K, T, F>
     where
         K: Hash + Eq + Clone + 'static,
