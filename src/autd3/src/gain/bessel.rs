@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, UnitQuaternion, Vector3},
     Drive,
 };
@@ -76,7 +76,11 @@ impl Bessel {
 }
 
 impl<T: Transducer> Gain<T> for Bessel {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);
         let theta_v = v.norm().asin();
@@ -87,7 +91,7 @@ impl<T: Transducer> Gain<T> for Bessel {
         };
 
         let sound_speed = geometry.sound_speed;
-        Ok(Self::transform(geometry, |tr| {
+        Ok(Self::transform(geometry, filter, |tr| {
             let r = tr.position() - self.pos;
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
@@ -121,7 +125,9 @@ mod tests {
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let mut rng = rand::thread_rng();
         let theta = rng.gen_range(-PI..PI);
-        let b = Bessel::new(f, d, theta).calc(&geometry).unwrap();
+        let b = Bessel::new(f, d, theta)
+            .calc(&geometry, GainFilter::All)
+            .unwrap();
         assert_eq!(b.len(), geometry.num_transducers());
         b.iter().for_each(|d| assert_eq!(d.amp, 1.0));
         b.iter().zip(geometry.iter()).for_each(|(b, tr)| {
@@ -147,7 +153,7 @@ mod tests {
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
             .with_amp(0.5)
-            .calc(&geometry)
+            .calc(&geometry, GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), geometry.num_transducers());
         b.iter().for_each(|b| assert_eq!(b.amp, 0.5));

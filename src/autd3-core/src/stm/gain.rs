@@ -4,14 +4,19 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, error::AUTDInternalError, gain::Gain, geometry::*};
+use crate::{
+    datagram::*,
+    error::AUTDInternalError,
+    gain::{Gain, GainFilter},
+    geometry::*,
+};
 
 use autd3_driver::{float, GainSTMProps, Mode};
 
@@ -234,7 +239,7 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
         let drives = self
             .gains
             .iter()
-            .map(|g| g.calc(geometry))
+            .map(|g| g.calc(geometry, GainFilter::All))
             .collect::<Result<Vec<_>, _>>()?;
         let props = GainSTMProps {
             mode: self.mode,
@@ -268,7 +273,11 @@ mod tests {
     }
 
     impl<T: Transducer> Gain<T> for NullGain {
-        fn calc(&self, _: &Geometry<T>) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {
+        fn calc(
+            &self,
+            _: &Geometry<T>,
+            _: GainFilter,
+        ) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {
             unimplemented!()
         }
     }

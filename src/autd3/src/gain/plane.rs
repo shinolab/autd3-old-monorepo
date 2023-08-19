@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, Vector3},
     Drive,
 };
@@ -59,9 +59,13 @@ impl Plane {
 }
 
 impl<T: Transducer> Gain<T> for Plane {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
-        Ok(Self::transform(geometry, |tr| {
+        Ok(Self::transform(geometry, filter, |tr| {
             let dist = self.dir.dot(tr.position());
             let phase = dist * tr.wavenumber(sound_speed);
             Drive {
@@ -89,7 +93,7 @@ mod tests {
             .unwrap();
 
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
-        let p = Plane::new(d).calc(&geometry).unwrap();
+        let p = Plane::new(d).calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(p.len(), geometry.num_transducers());
         p.iter().for_each(|d| assert_eq!(d.amp, 1.0));
         p.iter().zip(geometry.iter()).for_each(|(p, tr)| {
@@ -98,7 +102,10 @@ mod tests {
         });
 
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
-        let p = Plane::new(d).with_amp(0.5).calc(&geometry).unwrap();
+        let p = Plane::new(d)
+            .with_amp(0.5)
+            .calc(&geometry, GainFilter::All)
+            .unwrap();
         assert_eq!(p.len(), geometry.num_transducers());
         p.iter().for_each(|p| assert_eq!(p.amp, 0.5));
         p.iter().zip(geometry.iter()).for_each(|(p, tr)| {

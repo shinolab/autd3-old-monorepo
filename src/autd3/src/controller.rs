@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -386,7 +386,7 @@ mod tests {
         acoustics::Complex,
         amplitude::Amplitudes,
         autd3_device::AUTD3,
-        gain::Gain,
+        gain::{Gain, GainFilter},
         geometry::Vector3,
         modulation::Modulation,
         silencer_config::SilencerConfig,
@@ -986,7 +986,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .for_each(|((d, p), g)| {
                     assert_eq!(
                         d,
@@ -1012,7 +1012,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1033,7 +1033,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1091,7 +1091,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1120,7 +1120,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1180,7 +1180,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1209,7 +1209,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()

@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ mod cusolver;
 
 use std::{ffi::CStr, fmt::Display, rc::Rc};
 
-use autd3_core::float;
+use autd3_core::{float, gain::GainFilter};
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
 use cuda_sys::cublas::{
     cublasOperation_t_CUBLAS_OP_C, cublasOperation_t_CUBLAS_OP_N, cublasOperation_t_CUBLAS_OP_T,
@@ -360,17 +360,49 @@ impl LinAlgBackend for CUDABackend {
         &self,
         geometry: &autd3_core::geometry::Geometry<T>,
         foci: &[autd3_core::geometry::Vector3],
+        filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
         let rows = foci.len();
-        let cols = geometry.num_transducers();
-        let positions = geometry
-            .transducers()
-            .flat_map(|t| t.position().iter().copied())
-            .collect::<Vec<_>>();
+
         let foci = foci
             .iter()
             .flat_map(|f| f.iter().copied())
             .collect::<Vec<_>>();
+
+        let mut positions = Vec::with_capacity(geometry.num_transducers() * 3);
+        let mut wavenums = Vec::with_capacity(geometry.num_transducers() * 3);
+
+        match filter {
+            GainFilter::All => {
+                geometry.transducers().for_each(|tr| {
+                    let p = tr.position();
+                    positions.push(p.x);
+                    positions.push(p.y);
+                    positions.push(p.z);
+                    wavenums.push(tr.wavenumber(geometry.sound_speed));
+                });
+            }
+            GainFilter::Filter(filter) => {
+                geometry
+                    .transducers()
+                    .filter(|tr| filter[tr.idx()])
+                    .for_each(|tr| {
+                        let p = tr.position();
+                        positions.push(p.x);
+                        positions.push(p.y);
+                        positions.push(p.z);
+                        wavenums.push(tr.wavenumber(geometry.sound_speed));
+                    });
+            }
+        }
+
+        let cols = wavenums.len();
+
+        let positions = geometry
+            .transducers()
+            .flat_map(|t| t.position().iter().copied())
+            .collect::<Vec<_>>();
+
         let wavenums = geometry
             .transducers()
             .map(|t| t.wavenumber(geometry.sound_speed))
@@ -1680,6 +1712,10 @@ impl LinAlgBackend for CUDABackend {
             ));
         }
         Ok(())
+    }
+
+    fn cols_c(&self, m: &Self::MatrixXc) -> Result<usize, HoloError> {
+        Ok(m.cols)
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ use rand::Rng;
 use autd3_core::{
     acoustics::{propagate_tr, Sphere},
     float,
+    gain::GainFilter,
 };
 
 #[cfg(feature = "single_float")]
@@ -54,6 +55,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         println!("test_alloc_zeros_cv done");
         self.test_alloc_zeros_cm()?;
         println!("test_alloc_zeros_cm done");
+
+        self.test_cols_c()?;
+        println!("test_cols_c done");
 
         self.test_from_slice_v()?;
         println!("test_from_slice_v done");
@@ -289,6 +293,14 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         assert_eq!(N, m.nrows());
         assert_eq!(2 * N, m.ncols());
         assert!(m.iter().all(|&v| v == Complex::new(0., 0.)));
+        Ok(())
+    }
+
+    fn test_cols_c(&self) -> Result<(), HoloError> {
+        let m = self.backend.alloc_cm(N, 2 * N)?;
+
+        assert_eq!(2 * N, self.backend.cols_c(&m)?);
+
         Ok(())
     }
 
@@ -1828,7 +1840,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             g
         };
 
-        let g = self.backend.generate_propagation_matrix(&geometry, &foci)?;
+        let g = self
+            .backend
+            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let g = self.backend.to_host_cm(g)?;
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
             assert_approx_eq::assert_approx_eq!(r.re, g.re);
@@ -1844,7 +1858,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let m = geometry.num_transducers();
         let n = foci.len();
 
-        let g = self.backend.generate_propagation_matrix(&geometry, &foci)?;
+        let g = self
+            .backend
+            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let amps = self.make_random_cv(n)?;
 
         let mut b = self.backend.alloc_cm(m, n)?;

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,8 +23,8 @@ use autd3::{
     prelude::*,
     traits::{Gain, Modulation},
 };
+use autd3_core::gain::GainFilter;
 
-/// Gain to produce single focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Uniform {}
 
@@ -35,8 +35,12 @@ impl Uniform {
 }
 
 impl<T: Transducer> Gain<T> for Uniform {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, |_| Drive {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |_| Drive {
             phase: 0.0,
             amp: 1.0,
         }))

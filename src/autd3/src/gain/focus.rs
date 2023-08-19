@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, Vector3},
     Drive,
 };
@@ -59,9 +59,13 @@ impl Focus {
 }
 
 impl<T: Transducer> Gain<T> for Focus {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
-        Ok(Self::transform(geometry, |tr| {
+        Ok(Self::transform(geometry, filter, |tr| {
             let phase = tr.align_phase_at(self.pos, sound_speed);
             Drive {
                 phase,
@@ -91,7 +95,7 @@ mod tests {
             .unwrap();
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
-        let d = Focus::new(f).calc(&geometry).unwrap();
+        let d = Focus::new(f).calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(d.len(), geometry.num_transducers());
         d.iter().for_each(|d| assert_eq!(d.amp, 1.0));
         d.iter().zip(geometry.iter()).for_each(|(d, tr)| {
@@ -109,7 +113,10 @@ mod tests {
         });
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
-        let d = Focus::new(f).with_amp(0.5).calc(&geometry).unwrap();
+        let d = Focus::new(f)
+            .with_amp(0.5)
+            .calc(&geometry, GainFilter::All)
+            .unwrap();
         assert_eq!(d.len(), geometry.num_transducers());
         d.iter().for_each(|d| assert_eq!(d.amp, 0.5));
         d.iter().zip(geometry.iter()).for_each(|(d, tr)| {
