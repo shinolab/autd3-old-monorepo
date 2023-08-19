@@ -20,10 +20,10 @@ pub fn group<T: Transducer + 'static, L: Link<T>>(
 
     let m = Sine::new(150);
 
-    let g1 = Focus::new(autd.geometry().center_of(0) + Vector3::new(0., 0., 150.0 * MILLIMETER));
-    let g2 = Bessel::new(autd.geometry().center_of(1), Vector3::z(), 18. / 180. * PI);
-
     if autd.geometry().num_devices() > 1 {
+        let g1 =
+            Focus::new(autd.geometry().center_of(0) + Vector3::new(0., 0., 150.0 * MILLIMETER));
+        let g2 = Bessel::new(autd.geometry().center_of(1), Vector3::z(), 18. / 180. * PI);
         let g = Group::by_device(|dev| match dev {
             0 => Some("focus"),
             1.. => Some("bessel"),
@@ -34,15 +34,18 @@ pub fn group<T: Transducer + 'static, L: Link<T>>(
         autd.send((m, g))?;
     } else {
         let cx = autd.geometry().center().x;
+        let g1 =
+            Focus::new(autd.geometry().center_of(0) + Vector3::new(0., 0., 150.0 * MILLIMETER));
+        let g2 = Null::new();
         let g = Group::by_transducer(move |tr: &T| {
             if tr.position().x < cx {
                 Some("focus")
             } else {
-                Some("bessel")
+                Some("null")
             }
         })
         .set("focus", g1)
-        .set("bessel", g2);
+        .set("null", g2);
         autd.send((m, g))?;
     };
 
