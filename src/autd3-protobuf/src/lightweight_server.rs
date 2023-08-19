@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -149,22 +149,18 @@ impl<
                 }
             }
         }
-        *self.autd.write().unwrap() =
-            match Vec::<autd3::prelude::AUTD3>::from_msg(&req.into_inner())
-                .iter()
-                .fold(autd3::prelude::Controller::builder(), |acc, &dev| {
-                    acc.add_device(dev)
-                })
-                .open_with((self.link)())
-            {
-                Ok(autd) => Some(autd),
-                Err(e) => {
-                    return Ok(Response::new(GeometryLightResponse {
-                        success: false,
-                        msg: format!("{}", e),
-                    }))
-                }
-            };
+        *self.autd.write().unwrap() = match autd3::Controller::open_impl(
+            autd3::core::geometry::Geometry::from_msg(&req.into_inner()),
+            (self.link)(),
+        ) {
+            Ok(autd) => Some(autd),
+            Err(e) => {
+                return Ok(Response::new(GeometryLightResponse {
+                    success: false,
+                    msg: format!("{}", e),
+                }))
+            }
+        };
 
         Ok(Response::new(GeometryLightResponse {
             success: true,

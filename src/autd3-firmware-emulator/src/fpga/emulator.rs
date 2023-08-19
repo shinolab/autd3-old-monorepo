@@ -4,14 +4,12 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/06/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
-
-use crate::error::AUTDExtraError;
 
 use autd3_core::geometry::Vector3;
 
@@ -340,9 +338,9 @@ impl FPGAEmulator {
             .iter()
             .zip(ultrasound_cycles.iter())
             .map(|(&tr, &cycle)| {
-                let tr_z = (tr >> 32 & 0xFFFF) as i32;
-                let tr_x = (tr >> 16 & 0xFFFF) as i32;
-                let tr_y = (tr & 0xFFFF) as i32;
+                let tr_z = ((tr >> 32) & 0xFFFF) as i16 as i32;
+                let tr_x = ((tr >> 16) & 0xFFFF) as i16 as i32;
+                let tr_y = (tr & 0xFFFF) as i16 as i32;
                 let d2 =
                     (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
                 let dist = d2.sqrt() as u64;
@@ -353,22 +351,17 @@ impl FPGAEmulator {
             .collect()
     }
 
-    pub fn configure_local_trans_pos(
-        &mut self,
-        local_trans_pos: Vec<Vector3>,
-    ) -> Result<(), AUTDExtraError> {
-        if local_trans_pos.len() != self.num_transducers {}
-
+    pub fn configure_local_trans_pos(&mut self, local_trans_pos: Vec<Vector3>) {
         self.tr_pos = local_trans_pos
             .iter()
             .map(|tr| {
-                let x = (tr.x * TRANS_SIZE_FIXED_POINT_UNIT).round() as u16;
-                let y = (tr.y * TRANS_SIZE_FIXED_POINT_UNIT).round() as u16;
-                let z = (tr.z * TRANS_SIZE_FIXED_POINT_UNIT).round() as u16;
-                ((z as u64) << 32) | ((x as u64) << 16) | (y as u64)
+                let x = (tr.x * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
+                let y = (tr.y * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
+                let z = (tr.z * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
+                (((z as u64) << 32) & 0xFFFF00000000)
+                    | (((x as u64) << 16) & 0xFFFF0000)
+                    | ((y as u64) & 0xFFFF)
             })
             .collect();
-
-        Ok(())
     }
 }

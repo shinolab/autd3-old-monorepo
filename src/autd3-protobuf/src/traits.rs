@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::rc::Rc;
 
 use crate::pb::*;
-use autd3_core::modulation::ModulationProperty;
+use autd3_core::{geometry::LegacyTransducer, modulation::ModulationProperty};
 
 pub trait ToMessage {
     type Message: prost::Message;
@@ -58,12 +58,20 @@ impl<T: autd3_core::geometry::Transducer> ToMessage for autd3_core::geometry::Ge
 
     fn to_msg(&self) -> Self::Message {
         Self::Message {
-            geometries: (0..self.num_devices())
-                .map(|dev| geometry::Autd3 {
-                    position: Some(self.transducers_of(dev).next().unwrap().position().to_msg()),
-                    rotation: Some(self.transducers_of(dev).next().unwrap().rotation().to_msg()),
+            devices: (0..self.num_devices())
+                .map(|dev| geometry::Device {
+                    transducers: self
+                        .transducers_of(dev)
+                        .map(|t| geometry::Transducer {
+                            id: t.idx() as _,
+                            pos: Some(t.position().to_msg()),
+                            rot: Some(t.rotation().to_msg()),
+                        })
+                        .collect(),
                 })
                 .collect(),
+            sound_speed: self.sound_speed as _,
+            attenuation: self.attenuation as _,
         }
     }
 }
@@ -73,7 +81,8 @@ impl ToMessage for autd3_core::TxDatagram {
 
     fn to_msg(&self) -> Self::Message {
         Self::Message {
-            data: self.data().to_vec(),
+            data: self.data()[0..self.transmitting_size()].to_vec(),
+            dev_map: self.dev_map().iter().map(|&v| v as _).collect(),
         }
     }
 }
@@ -887,41 +896,43 @@ impl FromMessage<Greedy> for autd3_gain_holo::Greedy {
     }
 }
 
-impl FromMessage<Geometry> for Vec<autd3_core::autd3_device::AUTD3> {
+impl FromMessage<Geometry> for autd3_core::geometry::Geometry<LegacyTransducer> {
     fn from_msg(msg: &Geometry) -> Self {
-        msg.geometries
+        use autd3_core::geometry::Transducer;
+        let transducers = msg
+            .devices
             .iter()
-            .map(|dev| {
-                autd3_core::autd3_device::AUTD3::with_quaternion(
-                    autd3_core::geometry::Vector3::from_msg(dev.position.as_ref().unwrap()),
-                    autd3_core::geometry::UnitQuaternion::from_msg(dev.rotation.as_ref().unwrap()),
-                )
+            .flat_map(|dev| {
+                dev.transducers.iter().map(|tr| {
+                    LegacyTransducer::new(
+                        tr.id as _,
+                        autd3_core::geometry::Vector3::from_msg(tr.pos.as_ref().unwrap()),
+                        autd3_core::geometry::UnitQuaternion::from_msg(tr.rot.as_ref().unwrap()),
+                    )
+                })
             })
-            .collect()
+            .collect();
+        let device_map = msg
+            .devices
+            .iter()
+            .map(|dev| dev.transducers.len())
+            .collect();
+        Self::new(
+            transducers,
+            device_map,
+            msg.sound_speed as _,
+            msg.attenuation as _,
+        )
+        .unwrap()
     }
 }
 
 impl FromMessage<TxRawData> for autd3_core::TxDatagram {
     fn from_msg(msg: &TxRawData) -> Self {
-        let len = msg.data.len();
         let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
-        let body_size =
-            std::mem::size_of::<u16>() * autd3_core::autd3_device::AUTD3::NUM_TRANS_IN_UNIT;
-        let body_num = if len > header_size {
-            if (len - header_size) % body_size != 0 {
-                0
-            } else {
-                (len - header_size) / body_size
-            }
-        } else {
-            0
-        };
-        let mut tx = autd3_core::TxDatagram::new(&vec![
-            autd3_core::autd3_device::AUTD3::NUM_TRANS_IN_UNIT;
-            body_num
-        ]);
-        tx.num_bodies = body_num;
-        let body_len = body_num * body_size;
+        let dev_map = msg.dev_map.iter().map(|&i| i as usize).collect::<Vec<_>>();
+        let mut tx = autd3_core::TxDatagram::new(&dev_map);
+        let body_len = std::mem::size_of::<u16>() * dev_map.iter().sum::<usize>();
         unsafe {
             std::ptr::copy_nonoverlapping(
                 msg.data[header_size..].as_ptr(),
