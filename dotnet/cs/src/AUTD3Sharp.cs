@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/08/2023
+ * Last Modified: 17/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -1011,6 +1011,14 @@ namespace AUTD3Sharp
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        public static class CacheGainExtensions
+        {
+            public static Cache WithCache(this GainBase s, Geometry geometry)
+            {
+                return new Cache(s, geometry);
+            }
+        }
+
         /// <summary>
         /// Gain to output nothing
         /// </summary>
@@ -1396,6 +1404,14 @@ namespace AUTD3Sharp
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        public static class CacheModulationExtensions
+        {
+            public static Cache WithCache(this ModulationBase s)
+            {
+                return new Cache(s);
+            }
+        }
+
         /// <summary>
         /// Modulation for modulating radiation pressure
         /// </summary>
@@ -1420,6 +1436,14 @@ namespace AUTD3Sharp
             public override ModulationPtr ModulationPtr()
             {
                 return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            }
+        }
+
+        public static class RadiationPressureModulationExtensions
+        {
+            public static RadiationPressure WithRadiationPressure(this ModulationBase s)
+            {
+                return new RadiationPressure(s);
             }
         }
     }

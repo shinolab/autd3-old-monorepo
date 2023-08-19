@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/08/2023
+// Last Modified: 17/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,11 +25,48 @@
 namespace autd3::gain {
 
 /**
+ * @brief Gain to cache the result of calculation
+ */
+class Cache : public internal::Gain {
+ public:
+  template <class G>
+  Cache(G&& g, const internal::Geometry& geometry) {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _drives.resize(geometry.num_transducers());
+    if (char err[256]{};
+        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), _drives.data(), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
+  }
+
+  [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
+  std::vector<internal::native_methods::Drive>& drives() { return _drives; }
+
+  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator begin() const noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator end() const noexcept { return _drives.end(); }
+  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator begin() noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator end() noexcept { return _drives.end(); }
+  [[nodiscard]] const internal::native_methods::Drive& operator[](const size_t i) const { return _drives[i]; }
+  [[nodiscard]] internal::native_methods::Drive& operator[](const size_t i) { return _drives[i]; }
+
+ private:
+  std::vector<internal::native_methods::Drive> _drives;
+};
+
+#define AUTD3_IMPL_WITH_CACHE_GAIN \
+  Cache with_cache(const internal::Geometry& geometry) { return Cache(std::move(*this), geometry); }
+
+/**
  * @brief Gain to output nothing
  */
 class Null final : public internal::Gain {
  public:
   Null() = default;
+
+  AUTD3_IMPL_WITH_CACHE_GAIN
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return internal::native_methods::AUTDGainNull();
@@ -42,6 +79,8 @@ class Null final : public internal::Gain {
 class Focus final : public internal::Gain {
  public:
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
+
+  AUTD3_IMPL_WITH_CACHE_GAIN
 
   /**
    * @brief set amplitude
@@ -70,6 +109,8 @@ class Focus final : public internal::Gain {
 class Bessel final : public internal::Gain {
  public:
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
+
+  AUTD3_IMPL_WITH_CACHE_GAIN
 
   /**
    * @brief set amplitude
@@ -101,6 +142,8 @@ class Plane final : public internal::Gain {
  public:
   explicit Plane(internal::Vector3 d) : _d(std::move(d)) {}
 
+  AUTD3_IMPL_WITH_CACHE_GAIN
+
   /**
    * @brief set amplitude
    *
@@ -129,6 +172,8 @@ class Plane final : public internal::Gain {
 class Grouped final : public internal::Gain {
  public:
   Grouped() = default;
+
+  AUTD3_IMPL_WITH_CACHE_GAIN
 
   template <class G>
   [[deprecated("please use add() instead")]] void add_gain(const size_t device_idx, G&& gain) {
@@ -195,38 +240,6 @@ class Gain : public internal::Gain {
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), func);
     return drives;
   }
-};
-
-/**
- * @brief Gain to cache the result of calculation
- */
-class Cache : public internal::Gain {
- public:
-  template <class G>
-  Cache(G&& g, const internal::Geometry& geometry) {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _drives.resize(geometry.num_transducers());
-    if (char err[256]{};
-        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), _drives.data(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
-  }
-
-  [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
-  std::vector<internal::native_methods::Drive>& drives() { return _drives; }
-
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator begin() const noexcept { return _drives.begin(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator end() const noexcept { return _drives.end(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator begin() noexcept { return _drives.begin(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator end() noexcept { return _drives.end(); }
-  [[nodiscard]] const internal::native_methods::Drive& operator[](const size_t i) const { return _drives[i]; }
-  [[nodiscard]] internal::native_methods::Drive& operator[](const size_t i) { return _drives[i]; }
-
- private:
-  std::vector<internal::native_methods::Drive> _drives;
 };
 
 }  // namespace autd3::gain

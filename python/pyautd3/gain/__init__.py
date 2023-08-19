@@ -21,7 +21,6 @@ from .primitive import (
     Grouped,
     TransTest,
     Drive,
-    Cache,
 )
 
 
@@ -34,5 +33,4 @@ __all__ = [
     "Grouped",
     "TransTest",
     "Drive",
-    "Cache",
 ]
