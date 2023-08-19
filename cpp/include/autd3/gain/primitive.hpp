@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/08/2023
+// Last Modified: 19/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -166,54 +166,151 @@ class Plane final : public internal::Gain {
   std::optional<double> _amp;
 };
 
-/**
- * @brief Gain to group multiple gains
- */
-class Grouped final : public internal::Gain {
+template <typename K, class F>
+class GroupByDevice : public internal::Gain {
  public:
-  Grouped() = default;
+  GroupByDevice(const F& f) : _f(f) {}
 
   AUTD3_IMPL_WITH_CACHE_GAIN
 
   /**
-   * @brief Add gain
+   * @brief Set gain
    *
+   * @tparam K Key
    * @tparam G Gain
-   * @param device_idx Device index
+   * @param key Key
    * @param gain Gain
    */
   template <class G>
-  void add(const size_t device_idx, G&& gain) {
+  void set(const K key, G&& gain) & {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
   }
 
   /**
-   * @brief Add gain by group
+   * @brief Set gain
    *
+   * @tparam K Key
    * @tparam G Gain
-   * @param ids Device indices
+   * @param key Key
    * @param gain Gain
    */
   template <class G>
-  void add_by_group(const std::initializer_list<size_t> ids, G&& gain) {
+  GroupByDevice set(const K key, G&& gain) && {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    std::vector<size_t> ids_vec(ids.begin(), ids.end());
-    _gains.emplace_back(std::make_pair(ids_vec, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+    return std::move(*this);
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    auto ptr = internal::native_methods::AUTDGainGrouped();
-    for (auto& [ids, gain] : _gains) {
-      std::vector<uint32_t> ids_u32;
-      std::transform(ids.begin(), ids.end(), std::back_inserter(ids_u32), [](const size_t i) { return static_cast<uint32_t>(i); });
-      ptr = AUTDGainGroupedAddByGroup(ptr, ids_u32.data(), static_cast<uint64_t>(ids_u32.size()), gain->gain_ptr(geometry));
+    std::unordered_map<K, int32_t> keymap;
+    std::vector<int32_t> map;
+    map.reserve(geometry.num_devices());
+    int32_t k = 0;
+    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
+      auto key = _f(dev);
+      if (key.has_value()) {
+        if (keymap.find(key.value()) == keymap.end()) {
+          keymap[key.value()] = k++;
+        }
+        map.emplace_back(keymap[key.value()]);
+      } else {
+        map.emplace_back(-1);
+      }
     }
-    return ptr;
+    std::vector<int32_t> keys;
+    std::vector<internal::native_methods::GainPtr> values;
+    for (auto& kv : _map) {
+      keys.emplace_back(keymap[kv.first]);
+      values.emplace_back(kv.second->gain_ptr(geometry));
+    }
+    return internal::native_methods::AUTDGainGroupByDevice(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
+                                                           static_cast<uint64_t>(keys.size()));
   }
 
  private:
-  std::vector<std::pair<std::vector<size_t>, std::shared_ptr<Gain>>> _gains;
+  const F& _f;
+  std::unordered_map<K, std::shared_ptr<Gain>> _map;
+};
+
+template <typename K, class F>
+class GroupByTransducer : public internal::Gain {
+ public:
+  GroupByTransducer(const F& f) : _f(f) {}
+
+  AUTD3_IMPL_WITH_CACHE_GAIN
+
+  /**
+   * @brief Set gain
+   *
+   * @tparam K Key
+   * @tparam G Gain
+   * @param key Key
+   * @param gain Gain
+   */
+  template <class G>
+  void set(const K key, G&& gain) & {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+  }
+
+  /**
+   * @brief Set gain
+   *
+   * @tparam K Key
+   * @tparam G Gain
+   * @param key Key
+   * @param gain Gain
+   */
+  template <class G>
+  GroupByTransducer set(const K key, G&& gain) && {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+    return std::move(*this);
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+    std::unordered_map<K, int32_t> keymap;
+    std::vector<int32_t> map;
+    map.reserve(geometry.num_transducers());
+    int32_t k = 0;
+    for (auto& tr : geometry) {
+      auto key = _f(tr);
+      if (key.has_value()) {
+        if (keymap.find(key.value()) == keymap.end()) {
+          keymap[key.value()] = k++;
+        }
+        map.emplace_back(keymap[key.value()]);
+      } else {
+        map.emplace_back(-1);
+      }
+    }
+    std::vector<int32_t> keys;
+    std::vector<internal::native_methods::GainPtr> values;
+    for (auto& kv : _map) {
+      keys.emplace_back(keymap[kv.first]);
+      values.emplace_back(kv.second->gain_ptr(geometry));
+    }
+    return internal::native_methods::AUTDGainGroupByTransducer(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
+                                                               static_cast<uint64_t>(keys.size()));
+  }
+
+ private:
+  const F& _f;
+  std::unordered_map<K, std::shared_ptr<Gain>> _map;
+};
+
+class Group {
+ public:
+  template <class F>
+  static GroupByDevice<typename std::invoke_result_t<F, size_t>::value_type, F> by_device(const F& f) {
+    return GroupByDevice<typename std::invoke_result_t<F, size_t>::value_type, F>(f);
+  }
+
+  template <class F>
+  static GroupByTransducer<typename std::invoke_result_t<F, const internal::Transducer&>::value_type, F> by_transducer(const F& f) {
+    return GroupByTransducer<typename std::invoke_result_t<F, const internal::Transducer&>::value_type, F>(f);
+  }
 };
 
 class Gain : public internal::Gain {

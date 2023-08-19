@@ -122,6 +122,18 @@ impl<
         self
     }
 
+    /// set boxed gain
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - key
+    /// * `gain` - Boxed gain
+    ///
+    pub fn set_boxed(mut self, key: K, gain: Box<dyn Gain<T>>) -> Self {
+        self.gain_map.insert(key, gain);
+        self
+    }
+
     /// get gain map which maps device id to gain
     pub fn gain_map(&self) -> &HashMap<K, Box<dyn Gain<T>>> {
         &self.gain_map
@@ -156,6 +168,18 @@ impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Optio
     ///
     pub fn set<G: Gain<T> + 'static>(mut self, key: K, gain: G) -> Self {
         self.gain_map.insert(key, Box::new(gain));
+        self
+    }
+
+    /// set boxed gain
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - key
+    /// * `gain` - Boxed gain
+    ///
+    pub fn set_boxed(mut self, key: K, gain: Box<dyn Gain<T>>) -> Self {
+        self.gain_map.insert(key, gain);
         self
     }
 

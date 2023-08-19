@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,11 @@ mod custom;
 use autd3_core::stm::STMProps;
 use autd3capi_def::{
     common::{
-        autd3::{link::{log::LogImpl, Log}, modulation::Fourier},
+        autd3::{
+            core::gain::GainFilter,
+            link::{log::LogImpl, Log},
+            modulation::Fourier,
+        },
         *,
     },
     take_gain, take_link, take_mod, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr,
@@ -363,42 +367,60 @@ pub unsafe extern "C" fn AUTDGainNull() -> GainPtr {
     GainPtr::new(Null::new())
 }
 
-type DynamicGrouped = Grouped<DynamicTransducer>;
-
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainGrouped() -> GainPtr {
-    GainPtr::new(DynamicGrouped::new())
+pub unsafe extern "C" fn AUTDGainGroupByDevice(
+    map_ptr: *const i32,
+    map_len: u64,
+    keys_ptr: *const i32,
+    values_ptr: *const GainPtr,
+    kv_len: u64,
+) -> GainPtr {
+    let mut map = vec![0i32; map_len as usize];
+    std::ptr::copy_nonoverlapping(map_ptr, map.as_mut_ptr(), map_len as usize);
+    let mut keys = vec![0i32; kv_len as usize];
+    std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
+    let mut values = vec![GainPtr(std::ptr::null()); kv_len as usize];
+    std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
+    GainPtr::new(keys.iter().zip(values.iter()).fold(
+        Group::by_device(move |dev| {
+            let key = map[dev];
+            if key < 0 {
+                None
+            } else {
+                Some(key)
+            }
+        }),
+        |acc, (&k, v)| acc.set_boxed(k, *Box::from_raw(v.0 as *mut Box<G>)),
+    ))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainGroupedAdd(
-    grouped_gain: GainPtr,
-    device_id: u32,
-    gain: GainPtr,
+pub unsafe extern "C" fn AUTDGainGroupByTransducer(
+    map_ptr: *const i32,
+    map_len: u64,
+    keys_ptr: *const i32,
+    values_ptr: *const GainPtr,
+    kv_len: u64,
 ) -> GainPtr {
-    GainPtr::new(
-        take_gain!(grouped_gain, DynamicGrouped)
-            .add_boxed(device_id as _, *Box::from_raw(gain.0 as *mut Box<G>)),
-    )
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainGroupedAddByGroup(
-    grouped_gain: GainPtr,
-    device_ids: *const u32,
-    device_ids_len: u64,
-    gain: GainPtr,
-) -> GainPtr {
-    let mut ids = vec![0u32; device_ids_len as _];
-    std::ptr::copy_nonoverlapping(device_ids, ids.as_mut_ptr(), device_ids_len as _);
-    let ids = ids.iter().map(|&i| i as usize).collect::<Vec<_>>();
-    GainPtr::new(
-        take_gain!(grouped_gain, DynamicGrouped)
-            .add_boxed_by_group(&ids, *Box::from_raw(gain.0 as *mut Box<G>)),
-    )
+    let mut map = vec![0i32; map_len as usize];
+    std::ptr::copy_nonoverlapping(map_ptr, map.as_mut_ptr(), map_len as usize);
+    let mut keys = vec![0i32; kv_len as usize];
+    std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
+    let mut values = vec![GainPtr(std::ptr::null()); kv_len as usize];
+    std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
+    GainPtr::new(keys.iter().zip(values.iter()).fold(
+        Group::by_transducer(move |tr: &DynamicTransducer| {
+            let key = map[tr.idx()];
+            if key < 0 {
+                None
+            } else {
+                Some(key)
+            }
+        }),
+        |acc, (&k, v)| acc.set_boxed(k, *Box::from_raw(v.0 as *mut Box<G>)),
+    ))
 }
 
 #[no_mangle]
@@ -491,7 +513,7 @@ pub unsafe extern "C" fn AUTDGainCalc(
     err: *mut c_char,
 ) -> i32 {
     let res = try_or_return!(
-        Box::from_raw(gain.0 as *mut Box<G>).calc(cast!(geometry.0, Geo)),
+        Box::from_raw(gain.0 as *mut Box<G>).calc(cast!(geometry.0, Geo), GainFilter::All),
         err,
         AUTD3_ERR
     );
@@ -537,7 +559,10 @@ pub unsafe extern "C" fn AUTDModulationSineWithAmp(m: ModulationPtr, amp: float)
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSineWithPhase(m: ModulationPtr, phase: float) -> ModulationPtr {
+pub unsafe extern "C" fn AUTDModulationSineWithPhase(
+    m: ModulationPtr,
+    phase: float,
+) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Sine).with_phase(phase))
 }
 
@@ -563,7 +588,7 @@ pub unsafe extern "C" fn AUTDModulationFourierAddComponent(
     m: ModulationPtr,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(fourier, Fourier).add_component(**take_mod!(m, Sine)))
-} 
+}
 
 #[no_mangle]
 #[must_use]
@@ -1181,13 +1206,45 @@ mod tests {
             }
 
             {
-                let g = AUTDGainGrouped();
+                let map = vec![0, 1];
+                let keys = vec![0, 1];
+                let values = vec![AUTDGainNull(), AUTDGainNull()];
 
-                let g0 = AUTDGainNull();
-                let g = AUTDGainGroupedAdd(g, 0, g0);
+                let g = AUTDGainGroupByDevice(
+                    map.as_ptr(),
+                    map.len() as _,
+                    keys.as_ptr(),
+                    values.as_ptr(),
+                    values.len() as _,
+                );
 
-                let g1 = AUTDGainNull();
-                let g = AUTDGainGroupedAdd(g, 1, g1);
+                let g = AUTDGainIntoDatagram(g);
+
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    DatagramHeaderPtr(std::ptr::null()),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == AUTD3_ERR
+                {
+                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
+                }
+            }
+
+            {
+                let map = vec![0; num_transducers as _];
+                let keys = vec![0];
+                let values = vec![AUTDGainNull()];
+
+                let g = AUTDGainGroupByTransducer(
+                    map.as_ptr(),
+                    map.len() as _,
+                    keys.as_ptr(),
+                    values.as_ptr(),
+                    values.len() as _,
+                );
 
                 let g = AUTDGainIntoDatagram(g);
 

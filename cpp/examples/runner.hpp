@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/07/2023
+// Last Modified: 19/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,9 +38,7 @@ inline int run(autd3::Controller& autd) {
       std::pair(F{plane_test}, "Plane wave Test"),   std::pair(F{mod_audio_file_test}, "Wav and RawPCM modulation Test"),
       std::pair(F{focus_stm}, "FocusSTM Test"),      std::pair(F{gain_stm}, "GainSTM Test"),
       std::pair(F{holo_test}, "Holo Test"),          std::pair(F{advanced_test}, "Custom Gain & Modulation Test"),
-      std::pair(F{flag_test}, "Flag Test"),
-  };
-  if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
+      std::pair(F{flag_test}, "Flag Test"),          std::pair(F{group_test}, "Grouped Gain Test")};
 
   const auto firm_infos = autd.firmware_infos();
 
