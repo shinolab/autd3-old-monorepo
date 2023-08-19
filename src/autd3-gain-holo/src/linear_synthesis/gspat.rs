@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,16 +13,17 @@
 
 use std::rc::Rc;
 
-use crate::{constraint::Constraint, impl_holo, Complex, LinAlgBackend, Trans};
+use crate::{
+    constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
+};
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, Vector3},
-    Drive, PI,
+    Drive,
 };
 use autd3_derive::Gain;
-use nalgebra::ComplexField;
 
 /// Gain to produce multiple foci with GS-PAT algorithm
 ///
@@ -60,34 +61,48 @@ impl<B: LinAlgBackend + 'static> GSPAT<B> {
 }
 
 impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let m = geometry.num_transducers();
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        let g = self
+            .backend
+            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+
+        let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
 
         let mut q = self.backend.alloc_zeros_cv(m)?;
 
-        {
-            let g = self
-                .backend
-                .generate_propagation_matrix(geometry, &self.foci)?;
-            let amps = self.backend.from_slice_cv(&self.amps)?;
+        let amps = self.backend.from_slice_cv(&self.amps)?;
 
-            let mut b = self.backend.alloc_cm(m, n)?;
-            self.backend.gen_back_prop(m, n, &g, &amps, &mut b)?;
+        let mut b = self.backend.alloc_cm(m, n)?;
+        self.backend.gen_back_prop(m, n, &g, &amps, &mut b)?;
 
-            let mut r = self.backend.alloc_zeros_cm(n, n)?;
-            self.backend.gemm_c(
-                Trans::NoTrans,
-                Trans::NoTrans,
-                Complex::new(1., 0.),
-                &g,
-                &b,
-                Complex::new(0., 0.),
-                &mut r,
-            )?;
+        let mut r = self.backend.alloc_zeros_cm(n, n)?;
+        self.backend.gemm_c(
+            Trans::NoTrans,
+            Trans::NoTrans,
+            Complex::new(1., 0.),
+            &g,
+            &b,
+            Complex::new(0., 0.),
+            &mut r,
+        )?;
 
-            let mut p = self.backend.clone_cv(&amps)?;
-            let mut gamma = self.backend.clone_cv(&amps)?;
+        let mut p = self.backend.clone_cv(&amps)?;
+        let mut gamma = self.backend.clone_cv(&amps)?;
+        self.backend.gemv_c(
+            Trans::NoTrans,
+            Complex::new(1., 0.),
+            &r,
+            &p,
+            Complex::new(0., 0.),
+            &mut gamma,
+        )?;
+        for _ in 0..self.repeat {
+            self.backend.scaled_to_cv(&gamma, &amps, &mut p)?;
             self.backend.gemv_c(
                 Trans::NoTrans,
                 Complex::new(1., 0.),
@@ -96,45 +111,29 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for GSPAT<B> {
                 Complex::new(0., 0.),
                 &mut gamma,
             )?;
-            for _ in 0..self.repeat {
-                self.backend.scaled_to_cv(&gamma, &amps, &mut p)?;
-                self.backend.gemv_c(
-                    Trans::NoTrans,
-                    Complex::new(1., 0.),
-                    &r,
-                    &p,
-                    Complex::new(0., 0.),
-                    &mut gamma,
-                )?;
-            }
-
-            let mut tmp = self.backend.clone_cv(&gamma)?;
-            self.backend.reciprocal_assign_c(&mut tmp)?;
-            self.backend.normalize_assign_cv(&mut gamma)?;
-            self.backend.hadamard_product_assign_cv(&tmp, &mut p)?;
-            self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
-            self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
-
-            self.backend.gemv_c(
-                Trans::NoTrans,
-                Complex::new(1., 0.),
-                &b,
-                &p,
-                Complex::new(0., 0.),
-                &mut q,
-            )?;
         }
 
-        let q = self.backend.to_host_cv(q)?;
+        let mut tmp = self.backend.clone_cv(&gamma)?;
+        self.backend.reciprocal_assign_c(&mut tmp)?;
+        self.backend.normalize_assign_cv(&mut gamma)?;
+        self.backend.hadamard_product_assign_cv(&tmp, &mut p)?;
+        self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
+        self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
 
-        let max_coefficient = q.camax().abs();
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let phase = q[tr.idx()].argument() + PI;
-                let amp = self.constraint.convert(q[tr.idx()].abs(), max_coefficient);
-                Drive { amp, phase }
-            })
-            .collect())
+        self.backend.gemv_c(
+            Trans::NoTrans,
+            Complex::new(1., 0.),
+            &b,
+            &p,
+            Complex::new(0., 0.),
+            &mut q,
+        )?;
+
+        generate_result(
+            geometry,
+            self.backend.to_host_cv(q)?,
+            &self.constraint,
+            filter,
+        )
     }
 }

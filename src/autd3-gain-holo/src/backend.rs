@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ use std::rc::Rc;
 
 use autd3_core::{
     float,
+    gain::GainFilter,
     geometry::{Geometry, Transducer, Vector3},
 };
 use nalgebra::{Dyn, VecStorage, U1};
@@ -47,6 +48,7 @@ pub trait LinAlgBackend {
         &self,
         geometry: &Geometry<T>,
         foci: &[Vector3],
+        filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError>;
 
     fn alloc_v(&self, size: usize) -> Result<Self::VectorX, HoloError>;
@@ -61,6 +63,8 @@ pub trait LinAlgBackend {
     fn to_host_m(&self, v: Self::MatrixX) -> Result<MatrixX, HoloError>;
     fn to_host_cv(&self, v: Self::VectorXc) -> Result<VectorXc, HoloError>;
     fn to_host_cm(&self, v: Self::MatrixXc) -> Result<MatrixXc, HoloError>;
+
+    fn cols_c(&self, m: &Self::MatrixXc) -> Result<usize, HoloError>;
 
     #[allow(clippy::wrong_self_convention)]
     fn from_slice_v(&self, v: &[float]) -> Result<Self::VectorX, HoloError>;

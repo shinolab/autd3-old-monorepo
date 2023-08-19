@@ -14,7 +14,7 @@
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer},
     Drive,
 };
@@ -51,8 +51,12 @@ impl Uniform {
 }
 
 impl<T: Transducer> Gain<T> for Uniform {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, |_| Drive {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |_| Drive {
             phase: self.phase,
             amp: self.amp,
         }))
@@ -77,14 +81,14 @@ mod tests {
 
         let gain = Uniform::new(0.5);
 
-        for drive in gain.calc(&geometry).unwrap() {
+        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
             assert_eq!(drive.phase, 0.0);
             assert_eq!(drive.amp, 0.5);
         }
 
         let gain = gain.with_phase(0.2);
 
-        for drive in gain.calc(&geometry).unwrap() {
+        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
             assert_eq!(drive.phase, 0.2);
             assert_eq!(drive.amp, 0.5);
         }

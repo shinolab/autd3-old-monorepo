@@ -5,6 +5,7 @@
 - Rename `autd3-traits` to `autd3-derive`
 - Add C# documentation
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
+- Rename `gain::Grouped` to `gain::Group`, and improve performance
 
 # 14.2.2
 

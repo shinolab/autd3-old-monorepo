@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -239,101 +239,6 @@ impl ToMessage for autd3::gain::TransducerTest {
                         .collect(),
                 })),
             })),
-        }
-    }
-}
-
-impl<T: autd3_core::geometry::Transducer> ToMessage for autd3::gain::Grouped<T> {
-    type Message = Grouped;
-
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            groups: self
-                .gain_map()
-                .keys()
-                .map(|ks| {
-                    let k = ks[0];
-                    let gain = if let Some(g) = self.get_gain::<autd3::gain::Focus>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) = self.get_gain::<autd3::gain::Bessel>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) = self.get_gain::<autd3::gain::Null>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) = self.get_gain::<autd3::gain::Plane>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) = self.get_gain::<autd3::gain::TransducerTest>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::SDP<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::EVP<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::Naive<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::GS<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::GSPAT<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) =
-                        self.get_gain::<autd3_gain_holo::LM<autd3_gain_holo::NalgebraBackend>>(k)
-                    {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else if let Some(g) = self.get_gain::<autd3_gain_holo::Greedy>(k) {
-                        match g.to_msg().datagram.unwrap() {
-                            datagram::Datagram::Gain(g) => Some(g),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-                    grouped::Group {
-                        ids: ks.iter().map(|&i| i as u32).collect(),
-                        gain,
-                    }
-                })
-                .collect(),
         }
     }
 }
@@ -698,66 +603,6 @@ impl FromMessage<TransducerTest> for autd3::gain::TransducerTest {
     }
 }
 
-impl<T: autd3_core::geometry::Transducer> FromMessage<Grouped> for autd3::gain::Grouped<T> {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Grouped) -> Self {
-        msg.groups.iter().fold(Self::new(), |acc, v| {
-            let ids = v.ids.iter().map(|&i| i as usize).collect::<Vec<_>>();
-            if let Some(g) = &v.gain {
-                match &g.gain {
-                    Some(gain::Gain::Focus(g)) => acc
-                        .add_by_group::<autd3::gain::Focus>(&ids, autd3::gain::Focus::from_msg(g)),
-                    Some(gain::Gain::Bessel(g)) => acc.add_by_group::<autd3::gain::Bessel>(
-                        &ids,
-                        autd3::gain::Bessel::from_msg(g),
-                    ),
-                    Some(gain::Gain::Null(g)) => {
-                        acc.add_by_group::<autd3::gain::Null>(&ids, autd3::gain::Null::from_msg(g))
-                    }
-                    Some(gain::Gain::Plane(g)) => acc
-                        .add_by_group::<autd3::gain::Plane>(&ids, autd3::gain::Plane::from_msg(g)),
-                    Some(gain::Gain::TransTest(g)) => acc
-                        .add_by_group::<autd3::gain::TransducerTest>(
-                            &ids,
-                            autd3::gain::TransducerTest::from_msg(g),
-                        ),
-                    Some(gain::Gain::Sdp(g)) => acc.add_by_group::<autd3_gain_holo::SDP<_>>(
-                        &ids,
-                        autd3_gain_holo::SDP::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Evp(g)) => acc.add_by_group::<autd3_gain_holo::EVP<_>>(
-                        &ids,
-                        autd3_gain_holo::EVP::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Naive(g)) => acc.add_by_group::<autd3_gain_holo::Naive<_>>(
-                        &ids,
-                        autd3_gain_holo::Naive::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Gs(g)) => acc.add_by_group::<autd3_gain_holo::GS<_>>(
-                        &ids,
-                        autd3_gain_holo::GS::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Gspat(g)) => acc.add_by_group::<autd3_gain_holo::GSPAT<_>>(
-                        &ids,
-                        autd3_gain_holo::GSPAT::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Lm(g)) => acc.add_by_group::<autd3_gain_holo::LM<_>>(
-                        &ids,
-                        autd3_gain_holo::LM::<autd3_gain_holo::NalgebraBackend>::from_msg(g),
-                    ),
-                    Some(gain::Gain::Greedy(g)) => acc.add_by_group::<autd3_gain_holo::Greedy>(
-                        &ids,
-                        autd3_gain_holo::Greedy::from_msg(g),
-                    ),
-                    _ => acc,
-                }
-            } else {
-                acc
-            }
-        })
-    }
-}
-
 impl FromMessage<Constraint> for autd3_gain_holo::Constraint {
     fn from_msg(msg: &Constraint) -> Self {
         match &msg.constraint {
@@ -1023,8 +868,6 @@ impl<'a, T: autd3_core::geometry::Transducer + 'a + 'static> FromMessage<GainStm
                     Box::new(autd3::prelude::TransducerTest::from_msg(msg))
                         as Box<dyn autd3_core::gain::Gain<T>>
                 }
-                gain::Gain::Grouped(msg) => Box::new(autd3::prelude::Grouped::<T>::from_msg(msg))
-                    as Box<dyn autd3_core::gain::Gain<T>>,
                 gain::Gain::Sdp(msg) => Box::new(autd3_gain_holo::SDP::from_msg(msg))
                     as Box<dyn autd3_core::gain::Gain<T>>,
                 gain::Gain::Evp(msg) => Box::new(autd3_gain_holo::EVP::from_msg(msg))

@@ -16,7 +16,7 @@ pub use spdlog::{Level, LevelFilter};
 pub use crate::{
     controller::Controller,
     error::AUTDError,
-    gain::{Bessel, Focus, Grouped, Null, Plane, TransducerTest},
+    gain::{Bessel, Focus, Group, Null, Plane, TransducerTest},
     link::NullLink,
     modulation::{RadiationPressure, Sine, SineLegacy, Square, Static},
 };

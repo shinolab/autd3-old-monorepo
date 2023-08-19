@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ use arrayfire::*;
 use autd3_core::{
     acoustics::{propagate_tr, Sphere},
     float,
+    gain::GainFilter,
 };
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, Trans, VectorX, VectorXc};
 
@@ -83,19 +84,41 @@ impl LinAlgBackend for ArrayFireBackend {
         &self,
         geometry: &autd3_core::geometry::Geometry<T>,
         foci: &[autd3_core::geometry::Vector3],
+        filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
-        let g = geometry
-            .transducers()
-            .flat_map(|trans| {
-                foci.iter().map(move |fp| {
-                    propagate_tr::<Sphere, T>(trans, geometry.attenuation, geometry.sound_speed, fp)
+        let g = match filter {
+            GainFilter::All => geometry
+                .transducers()
+                .flat_map(|trans| {
+                    foci.iter().map(move |fp| {
+                        propagate_tr::<Sphere, T>(
+                            trans,
+                            geometry.attenuation,
+                            geometry.sound_speed,
+                            fp,
+                        )
+                    })
                 })
-            })
-            .collect::<Vec<_>>();
+                .collect::<Vec<_>>(),
+            GainFilter::Filter(filter) => geometry
+                .transducers()
+                .filter(|tr| filter[tr.idx()])
+                .flat_map(|trans| {
+                    foci.iter().map(move |fp| {
+                        propagate_tr::<Sphere, T>(
+                            trans,
+                            geometry.attenuation,
+                            geometry.sound_speed,
+                            fp,
+                        )
+                    })
+                })
+                .collect::<Vec<_>>(),
+        };
         unsafe {
             Ok(Array::new(
                 std::slice::from_raw_parts(g.as_ptr() as *const AfC, g.len()),
-                Dim4::new(&[foci.len() as u64, geometry.num_transducers() as _, 1, 1]),
+                Dim4::new(&[foci.len() as u64, (g.len() / foci.len()) as _, 1, 1]),
             ))
         }
     }
@@ -627,6 +650,10 @@ impl LinAlgBackend for ArrayFireBackend {
     fn reduce_col(&self, a: &Self::MatrixX, b: &mut Self::VectorX) -> Result<(), HoloError> {
         *b = arrayfire::sum(a, 1);
         Ok(())
+    }
+
+    fn cols_c(&self, m: &Self::MatrixXc) -> Result<usize, HoloError> {
+        Ok(m.dims()[1] as _)
     }
 }
 

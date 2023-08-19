@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,17 +13,18 @@
 
 use std::rc::Rc;
 
-use crate::{constraint::Constraint, impl_holo, Complex, LinAlgBackend, Trans};
+use crate::{
+    constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
+};
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, Vector3},
-    Drive, PI,
+    Drive,
 };
 
 use autd3_derive::Gain;
-use nalgebra::ComplexField;
 
 /// Gain to produce multiple foci with naive linear synthesis
 #[derive(Gain)]
@@ -48,12 +49,16 @@ impl<B: LinAlgBackend + 'static> Naive<B> {
 }
 
 impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let m = geometry.num_transducers();
-
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         let g = self
             .backend
-            .generate_propagation_matrix(geometry, &self.foci)?;
+            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+
+        let m = self.backend.cols_c(&g)?;
 
         let p = self.backend.from_slice_cv(&self.amps)?;
         let mut q = self.backend.alloc_zeros_cv(m)?;
@@ -66,16 +71,11 @@ impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for Naive<B> {
             &mut q,
         )?;
 
-        let q = self.backend.to_host_cv(q)?;
-
-        let max_coefficient = q.camax().abs();
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let phase = q[tr.idx()].argument() + PI;
-                let amp = self.constraint.convert(q[tr.idx()].abs(), max_coefficient);
-                Drive { amp, phase }
-            })
-            .collect())
+        generate_result(
+            geometry,
+            self.backend.to_host_cv(q)?,
+            &self.constraint,
+            filter,
+        )
     }
 }
