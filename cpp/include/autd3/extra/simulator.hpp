@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/08/2023
+// Last Modified: 18/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,11 +36,6 @@ class Simulator {
     return *this;
   }
 
-  [[deprecated("please use with_port instead")]] [[nodiscard]] Simulator& port(const uint16_t port) {
-    _ptr = internal::native_methods::AUTDSimulatorPort(_ptr, port);
-    return *this;
-  }
-
   /**
    * @brief Set window size
    *
@@ -49,11 +44,6 @@ class Simulator {
    * @return Simulator&
    */
   Simulator& with_window_size(const uint32_t width, const uint32_t height) {
-    _ptr = internal::native_methods::AUTDSimulatorWindowSize(_ptr, width, height);
-    return *this;
-  }
-
-  [[deprecated("please use with_window_size instead")]] [[nodiscard]] Simulator& window_size(const uint32_t width, const uint32_t height) {
     _ptr = internal::native_methods::AUTDSimulatorWindowSize(_ptr, width, height);
     return *this;
   }
@@ -69,11 +59,6 @@ class Simulator {
     return *this;
   }
 
-  [[deprecated("please use with_vsync instead")]] [[nodiscard]] Simulator& vsync(const uint32_t vsync) {
-    _ptr = internal::native_methods::AUTDSimulatorVsync(_ptr, vsync);
-    return *this;
-  }
-
   /**
    * @brief Set GPU index
    *
@@ -85,11 +70,6 @@ class Simulator {
     return *this;
   }
 
-  [[deprecated("please use with_gpu_idx instead")]] [[nodiscard]] Simulator& gpu_idx(const int32_t idx) {
-    _ptr = internal::native_methods::AUTDSimulatorGpuIdx(_ptr, idx);
-    return *this;
-  }
-
   /**
    * @brief Set settings path
    *
@@ -97,12 +77,6 @@ class Simulator {
    * @return Simulator&
    */
   Simulator& with_settings_path(const std::filesystem::path& path) {
-    char err[256]{};
-    if (auto* ptr = internal::native_methods::AUTDSimulatorSettingsPath(_ptr, path.string().c_str(), err); ptr != nullptr) _ptr = ptr;
-    return *this;
-  }
-
-  [[deprecated("please use with_settings_path instead")]] [[nodiscard]] Simulator& settings_path(const std::filesystem::path& path) {
     char err[256]{};
     if (auto* ptr = internal::native_methods::AUTDSimulatorSettingsPath(_ptr, path.string().c_str(), err); ptr != nullptr) _ptr = ptr;
     return *this;

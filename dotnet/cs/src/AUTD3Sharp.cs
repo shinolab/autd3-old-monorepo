@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -851,12 +851,6 @@ namespace AUTD3Sharp
                 _gains = new List<(int[], GainBase)>();
             }
 
-            [Obsolete("Use Add(int deviceIdx, GainBase gain) instead")]
-            public Grouped AddGain(int deviceIdx, GainBase gain)
-            {
-                _gains.Add((new int[] { deviceIdx }, gain));
-                return this;
-            }
 
             /// <summary>
             /// Add gain

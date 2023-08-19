@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/08/2023
+// Last Modified: 18/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -174,12 +174,6 @@ class Grouped final : public internal::Gain {
   Grouped() = default;
 
   AUTD3_IMPL_WITH_CACHE_GAIN
-
-  template <class G>
-  [[deprecated("please use add() instead")]] void add_gain(const size_t device_idx, G&& gain) {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.emplace_back(std::make_pair(std::vector{device_idx}, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain))));
-  }
 
   /**
    * @brief Add gain
