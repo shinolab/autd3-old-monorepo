@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,8 +23,14 @@ pub use libc;
 pub use autd3::{
     controller::ControllerBuilder,
     core::{
-        datagram::Datagram, firmware_version::FirmwareInfo, gain::Gain,
-        link::get_logger_with_custom_func, modulation::Modulation, spdlog, stm::STMProps,
+        datagram::Datagram,
+        error::AUTDInternalError,
+        firmware_version::FirmwareInfo,
+        gain::{Gain, GainAsAny, GainFilter},
+        link::get_logger_with_custom_func,
+        modulation::Modulation,
+        spdlog,
+        stm::STMProps,
     },
     link::debug::Debug,
     prelude::*,

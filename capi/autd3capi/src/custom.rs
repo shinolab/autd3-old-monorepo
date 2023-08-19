@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,12 @@
  */
 
 use autd3capi_def::common::{
-    core::{error::AUTDInternalError, geometry::Geometry, geometry::Transducer, Drive},
+    core::{
+        error::AUTDInternalError,
+        gain::GainFilter,
+        geometry::{Geometry, Transducer},
+        Drive,
+    },
     float,
     traits::{Gain, Modulation},
     Gain, Modulation,
@@ -24,7 +29,11 @@ pub struct CustomGain {
 }
 
 impl<T: Transducer> autd3capi_def::common::core::gain::Gain<T> for CustomGain {
-    fn calc(&self, _geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        _geometry: &Geometry<T>,
+        _filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok(self.drives.clone())
     }
 }
