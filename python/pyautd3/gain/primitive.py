@@ -14,9 +14,9 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import functools
 import numpy as np
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, TypeVar, Generic, Dict
 from abc import ABCMeta, abstractmethod
-from ctypes import POINTER
+from ctypes import POINTER, c_int32
 
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -101,36 +101,97 @@ class Null(IGain):
         return Base().gain_null()
 
 
-class Grouped(IGain):
-    _gains: List[IGain]
-    _indices: List[np.ndarray]
+K = TypeVar("K")
 
-    def __init__(self):
+
+class GroupByDevice(IGain, Generic[K]):
+    _map: Dict[K, IGain]
+    _f: Callable[[int], Optional[K]]
+
+    def __init__(self, f: Callable[[int], Optional[K]]):
         super().__init__()
-        self._gains = []
-        self._indices = []
+        self._map = {}
+        self._f = f
 
-    def add(self, device_idx: int, gain: IGain) -> "Grouped":
-        self._gains.append(gain)
-        self._indices.append(np.array([device_idx], dtype=np.uint32))
-        return self
-
-    def add_by_group(self, device_ids: List[int], gain: IGain) -> "Grouped":
-        self._gains.append(gain)
-        self._indices.append(np.array(device_ids, dtype=np.uint32))
+    def set(self, key: K, gain: IGain) -> "GroupByDevice":
+        self._map[key] = gain
         return self
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        return functools.reduce(
-            lambda acc, v: Base().gain_grouped_add_by_group(
-                acc,
-                np.ctypeslib.as_ctypes(v[0]),
-                len(v[0]),
-                v[1].gain_ptr(geometry),
-            ),
-            zip(self._indices, self._gains),
-            Base().gain_grouped(),
+        keymap: Dict[K, int] = {}
+        map: np.ndarray = np.ndarray(geometry.num_devices, dtype=np.int32)
+        k: int = 0
+        for dev in range(geometry.num_devices):
+            key = self._f(dev)
+            if key is not None:
+                if key not in keymap:
+                    keymap[key] = k
+                    k += 1
+                map[dev] = keymap[key]
+            else:
+                map[dev] = -1
+        keys: np.ndarray = np.ndarray(len(self._map), dtype=np.int32)
+        values: np.ndarray = np.ndarray(len(self._map), dtype=GainPtr)
+        for i, (key, value) in enumerate(self._map.items()):
+            keys[i] = keymap[key]
+            values[i]["_0"] = value.gain_ptr(geometry)._0
+        return Base().gain_group_by_device(
+            np.ctypeslib.as_ctypes(map.astype(c_int32)),
+            len(map),
+            np.ctypeslib.as_ctypes(keys.astype(c_int32)),
+            values.ctypes.data_as(POINTER(GainPtr)),  # type: ignore
+            len(keys),
         )
+
+
+class GroupByTransducer(IGain, Generic[K]):
+    _map: Dict[K, IGain]
+    _f: Callable[[Transducer], Optional[K]]
+
+    def __init__(self, f: Callable[[Transducer], Optional[K]]):
+        super().__init__()
+        self._map = {}
+        self._f = f
+
+    def set(self, key: K, gain: IGain) -> "GroupByTransducer":
+        self._map[key] = gain
+        return self
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        keymap: Dict[K, int] = {}
+        map: np.ndarray = np.ndarray(geometry.num_transducers, dtype=np.int32)
+        k: int = 0
+        for tr in geometry:
+            key = self._f(tr)
+            if key is not None:
+                if key not in keymap:
+                    keymap[key] = k
+                    k += 1
+                map[tr.idx] = keymap[key]
+            else:
+                map[tr.idx] = -1
+        keys: np.ndarray = np.ndarray(len(self._map), dtype=np.int32)
+        values: np.ndarray = np.ndarray(len(self._map), dtype=GainPtr)
+        for i, (key, value) in enumerate(self._map.items()):
+            keys[i] = keymap[key]
+            values[i]["_0"] = value.gain_ptr(geometry)._0
+        return Base().gain_group_by_transducer(
+            np.ctypeslib.as_ctypes(map.astype(c_int32)),
+            len(map),
+            np.ctypeslib.as_ctypes(keys.astype(c_int32)),
+            values.ctypes.data_as(POINTER(GainPtr)),  # type: ignore
+            len(keys),
+        )
+
+
+class Group:
+    @staticmethod
+    def by_device(f: Callable[[int], Optional[K]]) -> GroupByDevice[K]:
+        return GroupByDevice(f)
+
+    @staticmethod
+    def by_transducer(f: Callable[[Transducer], Optional[K]]) -> GroupByTransducer[K]:
+        return GroupByTransducer(f)
 
 
 class TransTest(IGain):
