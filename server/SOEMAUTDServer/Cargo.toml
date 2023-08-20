@@ -16,7 +16,7 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 autd3-protobuf = { path = "../../src/autd3-protobuf", version = "14.2.2" }
 autd3-link-soem = { path = "../../src/autd3-link-soem", version = "14.2.2" }
 autd3-core = { path = "../../src/autd3-core", version = "14.2.2" }
-anyhow = "1.0.71"
+anyhow = "1.0.72"
 ctrlc = "3.3.0"
 spdlog-rs = "0.3.8"
 tonic = "0.9.2"

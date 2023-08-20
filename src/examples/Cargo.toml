@@ -69,7 +69,7 @@ path = "src/custom_device.rs"
 required-features = ["simulator_client"]
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1.0.72"
 autd3 = { path = "../autd3" }
 autd3-core = { path = "../autd3-core" }
 autd3-gain-holo = { path = "../autd3-gain-holo" }
