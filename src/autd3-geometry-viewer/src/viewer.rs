@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -271,7 +271,7 @@ impl GeometryViewer {
 
         #[cfg(target_os = "windows")]
         unsafe {
-            windows::Win32::UI::WindowsAndMessaging::DestroyWindow(
+            let _ = windows::Win32::UI::WindowsAndMessaging::DestroyWindow(
                 windows::Win32::Foundation::HWND(hwnd),
             );
         }
