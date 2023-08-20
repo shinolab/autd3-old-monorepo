@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 20/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
         true,
     )?;
     gen::<CSharpGenerator, _, _>(
-        "../../dotnet/unity/Assets/autd3-linux/Scripts/NativeMethods",
+        "../../dotnet/unity-linux/Assets/autd3/Scripts/NativeMethods",
         &crate_path,
         true,
     )?;

@@ -86,11 +86,9 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainNull();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGrouped();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroupByDevice(int[]? mapPtr, ulong mapLen, int[]? keysPtr, GainPtr[]? valuesPtr, ulong kvLen);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroupedAdd(GainPtr groupedGain, uint deviceId, GainPtr gain);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroupedAddByGroup(GainPtr groupedGain, uint[]? deviceIds, ulong deviceIdsLen, GainPtr gain);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroupByTransducer(int[]? mapPtr, ulong mapLen, int[]? keysPtr, GainPtr[]? valuesPtr, ulong kvLen);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainFocus(float x, float y, float z);
 
@@ -124,7 +122,13 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, float amp);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, float phase);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, float offset);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationFourier();
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier, ModulationPtr m);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m, uint div);
 
