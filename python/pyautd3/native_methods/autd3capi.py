@@ -145,14 +145,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainNull.argtypes = [] 
         self.dll.AUTDGainNull.restype = GainPtr
 
-        self.dll.AUTDGainGrouped.argtypes = [] 
-        self.dll.AUTDGainGrouped.restype = GainPtr
+        self.dll.AUTDGainGroupByDevice.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.c_uint64, ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(GainPtr), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainGroupByDevice.restype = GainPtr
 
-        self.dll.AUTDGainGroupedAdd.argtypes = [GainPtr, ctypes.c_uint32, GainPtr]  # type: ignore 
-        self.dll.AUTDGainGroupedAdd.restype = GainPtr
-
-        self.dll.AUTDGainGroupedAddByGroup.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint64, GainPtr]  # type: ignore 
-        self.dll.AUTDGainGroupedAddByGroup.restype = GainPtr
+        self.dll.AUTDGainGroupByTransducer.argtypes = [ctypes.POINTER(ctypes.c_int32), ctypes.c_uint64, ctypes.POINTER(ctypes.c_int32), ctypes.POINTER(GainPtr), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainGroupByTransducer.restype = GainPtr
 
         self.dll.AUTDGainFocus.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainFocus.restype = GainPtr
@@ -460,14 +457,11 @@ class NativeMethods(metaclass=Singleton):
     def gain_null(self) -> GainPtr:
         return self.dll.AUTDGainNull()
 
-    def gain_grouped(self) -> GainPtr:
-        return self.dll.AUTDGainGrouped()
+    def gain_group_by_device(self, map_ptr: ctypes.Array[ctypes.c_int32], map_len: int, keys_ptr: ctypes.Array[ctypes.c_int32], values_ptr: ctypes.Array, kv_len: int) -> GainPtr:
+        return self.dll.AUTDGainGroupByDevice(map_ptr, map_len, keys_ptr, values_ptr, kv_len)
 
-    def gain_grouped_add(self, grouped_gain: GainPtr, device_id: int, gain: GainPtr) -> GainPtr:
-        return self.dll.AUTDGainGroupedAdd(grouped_gain, device_id, gain)
-
-    def gain_grouped_add_by_group(self, grouped_gain: GainPtr, device_ids: ctypes.Array[ctypes.c_uint32], device_ids_len: int, gain: GainPtr) -> GainPtr:
-        return self.dll.AUTDGainGroupedAddByGroup(grouped_gain, device_ids, device_ids_len, gain)
+    def gain_group_by_transducer(self, map_ptr: ctypes.Array[ctypes.c_int32], map_len: int, keys_ptr: ctypes.Array[ctypes.c_int32], values_ptr: ctypes.Array, kv_len: int) -> GainPtr:
+        return self.dll.AUTDGainGroupByTransducer(map_ptr, map_len, keys_ptr, values_ptr, kv_len)
 
     def gain_focus(self, x: float, y: float, z: float) -> GainPtr:
         return self.dll.AUTDGainFocus(x, y, z)
