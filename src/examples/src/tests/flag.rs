@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,12 +33,12 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::R
 
     let fin = Arc::new(AtomicBool::new(false));
     std::thread::scope(|s| -> anyhow::Result<bool, AUTDError> {
+        println!("press any key to stop checking FPGA status...");
         s.spawn(|| {
-            println!("press any key to stop checking FPGA status...");
             let mut _s = String::new();
             io::stdin().read_line(&mut _s).unwrap();
 
-            fin.store(true, Ordering::Release);
+            fin.store(true, Ordering::Relaxed);
         });
         s.spawn(|| -> anyhow::Result<bool, AUTDError> {
             let prompts = ['-', '/', '|', '\\'];
@@ -52,6 +52,7 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::R
                 });
                 print!("\x1b[{}A", states.len() + 1);
             }
+            print!("\x1b[1F\x1b[0J");
             Ok(true)
         })
         .join()
