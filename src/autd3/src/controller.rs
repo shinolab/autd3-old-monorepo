@@ -4,18 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{
-    marker::PhantomData,
-    sync::atomic::{self, AtomicU8},
-    time::Duration,
-};
+use std::{marker::PhantomData, time::Duration};
 
 use autd3_core::{
     clear::Clear, datagram::Datagram, float, geometry::*, link::Link, stop::Stop,

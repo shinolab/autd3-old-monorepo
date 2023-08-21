@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ impl TimerCallback for SoemCallback {
             ec_send_processdata();
             self.wkc.store(
                 ec_receive_processdata(EC_TIMEOUTRET as i32),
-                Ordering::Release,
+                Ordering::Relaxed,
             );
 
             if let Ok(tx) = self.receiver.try_recv() {
@@ -364,7 +364,7 @@ impl SOEM {
                 move || {
                     let error_handler = EcatErrorHandler { on_lost, logger };
                     while is_open.load(Ordering::Acquire) {
-                        if wkc.load(Ordering::Acquire) < expected_wkc
+                        if wkc.load(Ordering::Relaxed) < expected_wkc
                             || ec_group[0].docheckstate != 0
                         {
                             error_handler.handle();
@@ -431,7 +431,7 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
 
 impl<T: Transducer> Link<T> for SOEM {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.is_open.load(Ordering::Acquire) {
+        if <Self as Link<T>>::is_open(self) {
             return Ok(());
         }
 
@@ -449,7 +449,7 @@ impl<T: Transducer> Link<T> for SOEM {
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
-        if !self.is_open.load(Ordering::Acquire) {
+        if !<Self as Link<T>>::is_open(self) {
             return Ok(());
         }
 
@@ -484,7 +484,7 @@ impl<T: Transducer> Link<T> for SOEM {
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open.load(Ordering::Acquire) {
+        if !<Self as Link<T>>::is_open(self) {
             return Err(AUTDInternalError::LinkClosed);
         }
 
@@ -495,7 +495,7 @@ impl<T: Transducer> Link<T> for SOEM {
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open.load(Ordering::Acquire) {
+        if !<Self as Link<T>>::is_open(self) {
             return Err(AUTDInternalError::LinkClosed);
         }
         unsafe {
@@ -591,7 +591,7 @@ impl SOEM {
 
                 wkc.store(
                     ec_receive_processdata(EC_TIMEOUTRET as i32),
-                    Ordering::Release,
+                    Ordering::Relaxed,
                 );
 
                 toff = Self::ec_sync(ec_DCtime, cycle.as_nanos() as _, &mut integral);

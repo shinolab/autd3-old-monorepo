@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -61,7 +61,7 @@ impl<F: TimerCallback> Timer<F> {
             if let Ok(false) =
                 timer
                     .lock
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             {
                 timer.cb.rt_thread();
                 timer.lock.store(false, Ordering::Release);
@@ -77,7 +77,7 @@ impl<F: TimerCallback> Timer<F> {
             if let Ok(false) =
                 timer
                     .lock
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             {
                 timer.cb.rt_thread();
                 timer.lock.store(false, Ordering::Release);
@@ -101,7 +101,7 @@ impl<F: TimerCallback> Timer<F> {
             if let Ok(false) =
                 timer
                     .lock
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             {
                 timer.cb.rt_thread();
                 timer.lock.store(false, Ordering::Release);
