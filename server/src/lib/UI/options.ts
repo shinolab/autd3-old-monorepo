@@ -4,7 +4,7 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ import type { Duration } from "./utils/duration.js";
 export const SyncModeValues = ["DC", "FreeRun"] as const
 export type SyncMode = typeof SyncModeValues[number]
 
-
 export const TimerStrategyValues = ["NativeTimer", "Sleep", "BusyWait"] as const
 export type TimerStrategy = typeof TimerStrategyValues[number]
 
@@ -27,6 +26,12 @@ export interface TwinCATOptions {
     base: number;
     mode: SyncMode;
     keep: boolean;
+}
+
+export interface LightweightTwinCATOptions {
+    enable: boolean;
+    port: number;
+    timeout: Duration;
 }
 
 export interface SOEMOptions {
@@ -53,6 +58,7 @@ export interface SimulatorOptions {
 
 export interface Options {
     twincat: TwinCATOptions;
+    lightweight_twincat: LightweightTwinCATOptions;
     soem: SOEMOptions;
     simulator: SimulatorOptions;
 }
