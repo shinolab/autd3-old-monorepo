@@ -4,7 +4,7 @@
  * Created Date: 31/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -203,7 +203,7 @@ fn group_trans(c: &mut Criterion) {
             b.iter(|| {
                 (0..geometry.num_devices())
                     .fold(
-                        Group::<_, LegacyTransducer>::by_transducer(|tr| {
+                        Group::by_transducer(|tr: &LegacyTransducer| {
                             Some(tr.idx() / autd3_core::autd3_device::AUTD3::NUM_TRANS_IN_UNIT)
                         }),
                         |acc, i| {

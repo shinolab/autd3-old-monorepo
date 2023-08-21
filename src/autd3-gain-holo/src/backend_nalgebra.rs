@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -73,7 +73,11 @@ impl LinAlgBackend for NalgebraBackend {
                         })
                     })
                     .collect::<Vec<_>>();
-                Ok(MatrixXc::from_iterator(foci.len(), iter.len(), iter))
+                Ok(MatrixXc::from_iterator(
+                    foci.len(),
+                    iter.len() / foci.len(),
+                    iter,
+                ))
             }
         }
     }

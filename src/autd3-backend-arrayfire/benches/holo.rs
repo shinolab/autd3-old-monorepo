@@ -4,21 +4,27 @@
  * Created Date: 12/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_backend_arrayfire::ArrayFireBackend;
-use criterion::{criterion_group, criterion_main};
-
-use autd3_gain_holo::test_utilities::bench_utils::*;
-
-criterion_group!(
+#[cfg(feature = "test-utilities")]
+criterion::criterion_group!(
     benches,
-    foci::<ArrayFireBackend, 4>,
-    devices::<ArrayFireBackend, 2>
+    autd3_gain_holo::test_utilities::bench_utils::foci::<
+        autd3_backend_arrayfire::ArrayFireBackend,
+        4,
+    >,
+    autd3_gain_holo::test_utilities::bench_utils::devices::<
+        autd3_backend_arrayfire::ArrayFireBackend,
+        2,
+    >
 );
-criterion_main!(benches);
+#[cfg(feature = "test-utilities")]
+criterion::criterion_main!(benches);
+
+#[cfg(not(feature = "test-utilities"))]
+fn main() {}

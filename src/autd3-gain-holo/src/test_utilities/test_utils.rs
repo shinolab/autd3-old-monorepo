@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -184,6 +184,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         self.test_generate_propagation_matrix()?;
         println!("test_generate_propagation_matrix done");
+        self.test_generate_propagation_matrix_with_filter()?;
+        println!("test_generate_propagation_matrix_with_filter done");
         self.test_gen_back_prop()?;
         println!("test_gen_back_prop done");
 
@@ -1844,6 +1846,51 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .backend
             .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let g = self.backend.to_host_cm(g)?;
+        reference.iter().zip(g.iter()).for_each(|(r, g)| {
+            assert_approx_eq::assert_approx_eq!(r.re, g.re);
+            assert_approx_eq::assert_approx_eq!(r.im, g.im);
+        });
+        Ok(())
+    }
+
+    fn test_generate_propagation_matrix_with_filter(&self) -> Result<(), HoloError> {
+        use autd3_core::geometry::Transducer;
+
+        let geometry = generate_geometry::<autd3_core::geometry::LegacyTransducer>(4);
+        let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
+
+        let mut filter = bitvec::prelude::BitVec::new();
+        for tr in geometry.iter() {
+            filter.push(tr.idx() >= geometry.num_transducers() / 2);
+        }
+
+        let reference = {
+            let transducers = geometry
+                .transducers()
+                .filter(|tr| filter[tr.idx()])
+                .collect::<Vec<_>>();
+            let mut g = MatrixXc::zeros(foci.len(), transducers.len());
+            (0..foci.len()).for_each(|i| {
+                (0..transducers.len()).for_each(|j| {
+                    g[(i, j)] = propagate_tr::<Sphere, autd3_core::geometry::LegacyTransducer>(
+                        &transducers[j],
+                        geometry.attenuation,
+                        geometry.sound_speed,
+                        &foci[i],
+                    )
+                })
+            });
+            g
+        };
+
+        let g = self.backend.generate_propagation_matrix(
+            &geometry,
+            &foci,
+            &GainFilter::Filter(&filter),
+        )?;
+        let g = self.backend.to_host_cm(g)?;
+        assert_eq!(g.nrows(), foci.len());
+        assert_eq!(g.ncols(), geometry.num_transducers() / 2);
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
             assert_approx_eq::assert_approx_eq!(r.re, g.re);
             assert_approx_eq::assert_approx_eq!(r.im, g.im);

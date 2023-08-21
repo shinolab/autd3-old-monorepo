@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -398,15 +398,6 @@ impl LinAlgBackend for CUDABackend {
 
         let cols = wavenums.len();
 
-        let positions = geometry
-            .transducers()
-            .flat_map(|t| t.position().iter().copied())
-            .collect::<Vec<_>>();
-
-        let wavenums = geometry
-            .transducers()
-            .map(|t| t.wavenumber(geometry.sound_speed))
-            .collect::<Vec<_>>();
         unsafe {
             let p_positions = alloc_uninitialized!(float, positions.len());
             cpy_host_to_device!(float, positions.as_ptr(), p_positions, positions.len());
