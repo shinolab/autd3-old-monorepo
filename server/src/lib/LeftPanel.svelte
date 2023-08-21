@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 26/07/2023
+Last Modified: 21/08/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
   import { platform } from "@tauri-apps/api/os";
   import { invoke } from "@tauri-apps/api";
-  import { Command, Child } from "@tauri-apps/api/shell";
+  import { Command } from "@tauri-apps/api/shell";
 
   import TwinCAT from "./UI/TwinCAT.svelte";
   import SOEM from "./UI/SOEM.svelte";
@@ -72,7 +72,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
       {#if twincatAvailable}
         <TabPanel>
-          <TwinCAT twincatOptions={options.twincat} />
+          <TwinCAT
+            twincatOptions={options.twincat}
+            lightweightTwincatOptions={options.lightweight_twincat}
+          />
         </TabPanel>
       {/if}
       {#if soemAvailable}

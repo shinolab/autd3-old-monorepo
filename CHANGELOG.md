@@ -1,7 +1,8 @@
 # 15.0.0
 
 - Remove `autd3-gain-holo::Backend`, add `autd3-gain-holo::LinAlgBackend` instead
-- Add `autd3-backend-arrayfire` 
+- Add `autd3-backend-arrayfire`
+- Add `LightweightTwinCATAUTDServer`
 - Rename `autd3-traits` to `autd3-derive`
 - Add C# documentation
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
