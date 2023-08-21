@@ -4,17 +4,21 @@
  * Created Date: 31/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_backend_cuda::CUDABackend;
-use criterion::{criterion_group, criterion_main};
+#[cfg(feature = "test-utilities")]
+criterion::criterion_group!(
+    benches,
+    autd3_gain_holo::test_utilities::bench_utils::foci::<autd3_backend_cuda::CUDABackend, 4>,
+    autd3_gain_holo::test_utilities::bench_utils::devices::<autd3_backend_cuda::CUDABackend, 2>
+);
+#[cfg(feature = "test-utilities")]
+criterion::criterion_main!(benches);
 
-use autd3_gain_holo::test_utilities::bench_utils::*;
-
-criterion_group!(benches, foci::<CUDABackend, 4>, devices::<CUDABackend, 2>);
-criterion_main!(benches);
+#[cfg(not(feature = "test-utilities"))]
+fn main() {}

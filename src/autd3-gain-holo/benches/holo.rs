@@ -4,20 +4,21 @@
  * Created Date: 31/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use criterion::{criterion_group, criterion_main};
-
-use autd3_gain_holo::{test_utilities::bench_utils::*, NalgebraBackend};
-
-criterion_group!(
+#[cfg(feature = "test-utilities")]
+criterion::criterion_group!(
     benches,
-    foci::<NalgebraBackend, 4>,
-    devices::<NalgebraBackend, 2>
+    autd3_gain_holo::test_utilities::bench_utils::foci::<autd3_gain_holo::NalgebraBackend, 4>,
+    autd3_gain_holo::test_utilities::bench_utils::devices::<autd3_gain_holo::NalgebraBackend, 2>
 );
-criterion_main!(benches);
+#[cfg(feature = "test-utilities")]
+criterion::criterion_main!(benches);
+
+#[cfg(not(feature = "test-utilities"))]
+fn main() {}
