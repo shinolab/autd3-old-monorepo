@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,10 @@
 
 use autd3_core::{
     error::AUTDInternalError,
-    gain::{Gain, GainFilter},
+    gain::{Gain, GainAsAny, GainFilter},
     geometry::*,
     Drive,
 };
-use autd3_derive::Gain;
 
 use std::{
     cell::UnsafeCell,
@@ -25,25 +24,24 @@ use std::{
 };
 
 /// Gain to cache the result of calculation
-#[derive(Gain)]
-pub struct CacheImpl<T: Transducer + 'static, G: Gain<T> + 'static> {
+pub struct CacheImpl<T: Transducer, G: Gain<T>> {
     gain: G,
     cache: UnsafeCell<Vec<Drive>>,
     _phantom: std::marker::PhantomData<T>,
 }
 
-pub trait Cache<T: Transducer + 'static, G: Gain<T> + 'static> {
+pub trait Cache<T: Transducer, G: Gain<T>> {
     /// Cache the result of calculation
     fn with_cache(self) -> CacheImpl<T, G>;
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> Cache<T, G> for G {
+impl<T: Transducer, G: Gain<T>> Cache<T, G> for G {
     fn with_cache(self) -> CacheImpl<T, G> {
         CacheImpl::new(self)
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static + Clone> Clone for CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T> + Clone> Clone for CacheImpl<T, G> {
     fn clone(&self) -> Self {
         Self {
             gain: self.gain.clone(),
@@ -53,7 +51,7 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static + Clone> Clone for CacheImpl<
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T>> CacheImpl<T, G> {
     /// constructor
     fn new(gain: G) -> Self {
         Self {
@@ -87,6 +85,31 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static> CacheImpl<T, G> {
     }
 }
 
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_core::datagram::Datagram<T>
+    for CacheImpl<T, G>
+{
+    type H = autd3_core::NullHeader;
+    type B = T::Gain;
+
+    fn operation(
+        &self,
+        geometry: &Geometry<T>,
+    ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            <Self::B as autd3_core::GainOp>::new(self.calc(geometry, GainFilter::All)?, || {
+                geometry.transducers().map(|tr| tr.cycle()).collect()
+            }),
+        ))
+    }
+}
+
+impl<T: Transducer + 'static, G: Gain<T> + 'static> GainAsAny for CacheImpl<T, G> {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
 impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for CacheImpl<T, G> {
     fn calc(
         &self,
@@ -98,7 +121,7 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for CacheImpl<T, G> 
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> Deref for CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T>> Deref for CacheImpl<T, G> {
     type Target = [Drive];
 
     fn deref(&self) -> &Self::Target {
@@ -106,7 +129,7 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static> Deref for CacheImpl<T, G> {
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> DerefMut for CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T>> DerefMut for CacheImpl<T, G> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.drives_mut()
     }

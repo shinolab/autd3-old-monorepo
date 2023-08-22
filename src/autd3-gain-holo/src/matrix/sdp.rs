@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -82,7 +82,7 @@ impl<B: LinAlgBackend + 'static> SDP<B> {
     }
 }
 
-impl<B: LinAlgBackend + 'static, T: Transducer> Gain<T> for SDP<B> {
+impl<B: LinAlgBackend, T: Transducer> Gain<T> for SDP<B> {
     fn calc(
         &self,
         geometry: &Geometry<T>,

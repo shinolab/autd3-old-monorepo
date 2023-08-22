@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -80,5 +80,21 @@ pub trait Gain<T: Transducer>: GainAsAny {
                     .collect(),
             }
         }
+    }
+}
+
+impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self.as_ref().as_any()
+    }
+}
+
+impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        self.as_ref().calc(geometry, filter)
     }
 }
