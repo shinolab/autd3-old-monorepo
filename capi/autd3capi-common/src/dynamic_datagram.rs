@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3::{
     core::{
         datagram::{Datagram, NullBody, NullHeader},
         error::AUTDInternalError,
-        gain::GainFilter,
+        gain::{Gain, GainFilter},
         Drive, GainOp, GainSTMOp, GainSTMProps, Operation, SyncOp,
     },
     prelude::*,
@@ -287,7 +287,7 @@ impl DynamicDatagram for FocusSTM {
     }
 }
 
-impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
+impl<'a, G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, G> {
     fn operation(
         &self,
         mode: TransMode,

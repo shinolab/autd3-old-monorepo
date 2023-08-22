@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -391,7 +391,7 @@ pub unsafe extern "C" fn AUTDGainGroupByDevice(
                 Some(key)
             }
         }),
-        |acc, (&k, v)| acc.set_boxed(k, *Box::from_raw(v.0 as *mut Box<G>)),
+        |acc, (&k, v)| acc.set(k, *Box::from_raw(v.0 as *mut Box<G>)),
     ))
 }
 
@@ -419,7 +419,7 @@ pub unsafe extern "C" fn AUTDGainGroupByTransducer(
                 Some(key)
             }
         }),
-        |acc, (&k, v)| acc.set_boxed(k, *Box::from_raw(v.0 as *mut Box<G>)),
+        |acc, (&k, v)| acc.set(k, *Box::from_raw(v.0 as *mut Box<G>)),
     ))
 }
 
@@ -834,10 +834,12 @@ pub unsafe extern "C" fn AUTDGainSTMWithMode(
     props: STMPropsPtr,
     mode: GainSTMMode,
 ) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(GainSTM::with_props_mode(
-        *Box::from_raw(props.0 as *mut STMProps),
-        mode.into(),
-    ))
+    DatagramBodyPtr::new(
+        GainSTM::<DynamicTransducer, Box<dyn Gain<DynamicTransducer>>>::with_props_mode(
+            *Box::from_raw(props.0 as *mut STMProps),
+            mode.into(),
+        ),
+    )
 }
 
 #[no_mangle]
@@ -853,8 +855,8 @@ pub unsafe extern "C" fn AUTDGainSTMAddGain(
     gain: GainPtr,
 ) -> DatagramBodyPtr {
     DatagramBodyPtr::new(
-        Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer>>)
-            .add_gain_boxed(*Box::from_raw(gain.0 as *mut Box<G>)),
+        Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer, _>>)
+            .add_gain(*Box::from_raw(gain.0 as *mut Box<G>)),
     )
 }
 

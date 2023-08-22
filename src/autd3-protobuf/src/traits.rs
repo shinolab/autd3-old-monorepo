@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -851,7 +851,7 @@ impl FromMessage<FocusStm> for autd3_core::stm::FocusSTM {
 }
 
 impl<'a, T: autd3_core::geometry::Transducer + 'a + 'static> FromMessage<GainStm>
-    for autd3_core::stm::GainSTM<'a, T>
+    for autd3_core::stm::GainSTM<T, Box<dyn autd3_core::gain::Gain<T>>>
 {
     fn from_msg(msg: &GainStm) -> Self {
         autd3_core::stm::GainSTM::with_sampling_frequency_division(msg.freq_div)

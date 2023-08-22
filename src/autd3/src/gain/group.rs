@@ -4,45 +4,49 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 22/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 
 use bitvec::prelude::*;
 
 use autd3_core::{
     error::AUTDInternalError,
-    gain::{Gain, GainFilter},
+    gain::{Gain, GainAsAny, GainFilter},
     geometry::*,
     Drive,
 };
 
-pub struct Group {}
+pub trait GroupBy {}
 
-pub struct GroupByDevice<
-    K: Hash + Eq + Clone + 'static,
-    T: Transducer + 'static,
-    F: Fn(usize) -> Option<K> + 'static,
-> {
-    group_by: F,
-    gain_map: HashMap<K, Box<dyn Gain<T> + 'static>>,
+impl GroupBy for () {}
+
+pub struct ByDevice<K, F> {
+    phantom: PhantomData<K>,
+    f: F,
 }
 
-pub struct GroupByTransducer<
-    K: Hash + Eq + Clone + 'static,
-    T: Transducer + 'static,
-    F: Fn(&T) -> Option<K> + 'static,
-> {
-    group_by: F,
-    gain_map: HashMap<K, Box<dyn Gain<T> + 'static>>,
+impl<K, F> GroupBy for ByDevice<K, F> {}
+
+pub struct ByTransducer<K, F> {
+    phantom: PhantomData<K>,
+    f: F,
 }
 
-impl Group {
+impl<K, F> GroupBy for ByTransducer<K, F> {}
+
+pub struct Group<B: GroupBy, K: Hash + Eq + Clone, T: Transducer, G: Gain<T>> {
+    group_by: B,
+    gain_map: HashMap<K, G>,
+    _phantom: PhantomData<T>,
+}
+
+impl<K: Hash + Eq + Clone, T: Transducer> Group<(), K, T, Box<dyn Gain<T>>> {
     /// Group by device
     ///
     /// # Arguments
@@ -52,7 +56,7 @@ impl Group {
     ///
     /// ```
     /// # use autd3::prelude::*;
-    /// # let gain : autd3::gain::group::GroupByDevice<_, LegacyTransducer, _> =
+    /// # let gain : autd3::gain::group::Group<_, _, LegacyTransducer, _> =
     /// Group::by_device(|dev| match dev {
     ///                 0 => Some("null"),
     ///                 1 => Some("focus"),
@@ -61,15 +65,19 @@ impl Group {
     ///             .set("null", Null::new())
     ///             .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
     /// ```
-    pub fn by_device<K, T, F>(f: F) -> GroupByDevice<K, T, F>
+    pub fn by_device<F>(f: F) -> Group<ByDevice<K, F>, K, T, Box<dyn Gain<T>>>
     where
-        K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        F: Fn(usize) -> Option<K> + 'static,
+        K: Hash + Eq + Clone,
+        T: Transducer,
+        F: Fn(usize) -> Option<K>,
     {
-        GroupByDevice {
-            group_by: f,
+        Group {
+            group_by: ByDevice {
+                phantom: PhantomData,
+                f,
+            },
             gain_map: HashMap::new(),
+            _phantom: PhantomData,
         }
     }
 
@@ -82,7 +90,7 @@ impl Group {
     ///
     /// ```
     /// # use autd3::prelude::*;
-    /// # let gain : autd3::gain::group::GroupByTransducer<_, LegacyTransducer, _> =
+    /// # let gain : autd3::gain::group::Group<_, _, LegacyTransducer, _> =
     /// Group::by_transducer(|tr: &LegacyTransducer| match tr.idx() {
     ///                 0..=100 => Some("null"),
     ///                 101.. => Some("focus"),
@@ -91,25 +99,31 @@ impl Group {
     ///             .set("null", Null::new())
     ///             .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
     /// ```
-    pub fn by_transducer<K, T, F>(f: F) -> GroupByTransducer<K, T, F>
+    pub fn by_transducer<F>(f: F) -> Group<ByTransducer<K, F>, K, T, Box<dyn Gain<T>>>
     where
-        K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        F: Fn(&T) -> Option<K> + 'static,
+        K: Hash + Eq + Clone,
+        T: Transducer,
+        F: Fn(&T) -> Option<K>,
     {
-        GroupByTransducer {
-            group_by: f,
+        Group {
+            group_by: ByTransducer {
+                phantom: PhantomData,
+                f,
+            },
             gain_map: HashMap::new(),
+            _phantom: PhantomData,
         }
     }
 }
 
-impl<
-        K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        F: Fn(usize) -> Option<K> + 'static,
-    > GroupByDevice<K, T, F>
-{
+impl<B: GroupBy, K: Hash + Eq + Clone, T: Transducer, G: Gain<T>> Group<B, K, T, G> {
+    /// get gain map which maps device id to gain
+    pub fn gain_map(&self) -> &HashMap<K, G> {
+        &self.gain_map
+    }
+}
+
+impl<'a, B: GroupBy, K: Hash + Eq + Clone, T: Transducer> Group<B, K, T, Box<dyn Gain<T> + 'a>> {
     /// set gain
     ///
     /// # Arguments
@@ -117,28 +131,13 @@ impl<
     /// * `key` - key
     /// * `gain` - Gain
     ///
-    pub fn set<G: Gain<T> + 'static>(mut self, key: K, gain: G) -> Self {
+    pub fn set<G: Gain<T> + 'a>(mut self, key: K, gain: G) -> Self {
         self.gain_map.insert(key, Box::new(gain));
         self
     }
+}
 
-    /// set boxed gain
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - key
-    /// * `gain` - Boxed gain
-    ///
-    pub fn set_boxed(mut self, key: K, gain: Box<dyn Gain<T>>) -> Self {
-        self.gain_map.insert(key, gain);
-        self
-    }
-
-    /// get gain map which maps device id to gain
-    pub fn gain_map(&self) -> &HashMap<K, Box<dyn Gain<T>>> {
-        &self.gain_map
-    }
-
+impl<B: GroupBy, K: Hash + Eq + Clone, T: Transducer + 'static> Group<B, K, T, Box<dyn Gain<T>>> {
     /// get Gain of specified key
     ///
     /// # Arguments
@@ -149,72 +148,25 @@ impl<
     ///
     /// * Gain of specified key if exists and the type is matched, otherwise None
     ///
-    pub fn get_gain<G: Gain<T> + 'static>(&self, key: K) -> Option<&G> {
+    pub fn get<G: Gain<T> + 'static>(&self, key: K) -> Option<&G> {
         self.gain_map
             .get(&key)
-            .and_then(|g| g.as_any().downcast_ref::<G>())
-    }
-}
-
-impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Option<K> + 'static>
-    GroupByTransducer<K, T, F>
-{
-    /// set gain
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - key
-    /// * `gain` - Gain
-    ///
-    pub fn set<G: Gain<T> + 'static>(mut self, key: K, gain: G) -> Self {
-        self.gain_map.insert(key, Box::new(gain));
-        self
-    }
-
-    /// set boxed gain
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - key
-    /// * `gain` - Boxed gain
-    ///
-    pub fn set_boxed(mut self, key: K, gain: Box<dyn Gain<T>>) -> Self {
-        self.gain_map.insert(key, gain);
-        self
-    }
-
-    /// get gain map which maps device id to gain
-    pub fn gain_map(&self) -> &HashMap<K, Box<dyn Gain<T>>> {
-        &self.gain_map
-    }
-
-    /// get Gain of specified key
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - key
-    ///
-    /// # Returns
-    ///
-    /// * Gain of specified key if exists and the type is matched, otherwise None
-    ///
-    pub fn get_gain<G: Gain<T> + 'static>(&self, key: K) -> Option<&G> {
-        self.gain_map
-            .get(&key)
-            .and_then(|g| g.as_any().downcast_ref::<G>())
+            .and_then(|g| g.as_ref().as_any().downcast_ref::<G>())
     }
 }
 
 impl<
-        K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        F: Fn(usize) -> Option<K> + 'static,
-    > GroupByDevice<K, T, F>
+        'a,
+        K: Hash + Eq + Clone + 'a,
+        T: Transducer + 'a,
+        F: Fn(usize) -> Option<K> + 'a,
+        G: Gain<T> + 'a,
+    > Group<ByDevice<K, F>, K, T, G>
 {
     fn get_filters(&self, geometry: &Geometry<T>) -> HashMap<K, BitVec> {
         let mut filters = HashMap::new();
         (0..geometry.num_devices()).for_each(|dev| {
-            if let Some(key) = (self.group_by)(dev) {
+            if let Some(key) = (self.group_by.f)(dev) {
                 if !filters.contains_key(&key) {
                     let mut filter = BitVec::new();
                     filter.resize(geometry.num_transducers(), false);
@@ -230,13 +182,17 @@ impl<
     }
 }
 
-impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Option<K> + 'static>
-    GroupByTransducer<K, T, F>
+impl<
+        K: Hash + Eq + Clone + 'static,
+        T: Transducer + 'static,
+        F: Fn(&T) -> Option<K> + 'static,
+        G: Gain<T> + 'static,
+    > Group<ByTransducer<K, F>, K, T, G>
 {
     fn get_filters(&self, geometry: &Geometry<T>) -> HashMap<K, BitVec> {
         let mut filters = HashMap::new();
         geometry.transducers().for_each(|tr| {
-            if let Some(key) = (self.group_by)(tr) {
+            if let Some(key) = (self.group_by.f)(tr) {
                 if !filters.contains_key(&key) {
                     let mut filter = BitVec::<usize, Lsb0>::new();
                     filter.resize(geometry.num_transducers(), false);
@@ -253,26 +209,8 @@ impl<
         K: Hash + Eq + Clone + 'static,
         T: Transducer + 'static,
         F: Fn(usize) -> Option<K> + 'static,
-    > autd3_core::gain::GainAsAny for GroupByDevice<K, T, F>
-{
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
-
-impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Option<K> + 'static>
-    autd3_core::gain::GainAsAny for GroupByTransducer<K, T, F>
-{
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
-
-impl<
-        K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        F: Fn(usize) -> Option<K> + 'static,
-    > autd3_core::datagram::Datagram<T> for GroupByDevice<K, T, F>
+        G: Gain<T> + 'static,
+    > autd3_core::datagram::Datagram<T> for Group<ByDevice<K, F>, K, T, G>
 {
     type H = autd3_core::NullHeader;
     type B = T::Gain;
@@ -290,8 +228,12 @@ impl<
     }
 }
 
-impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Option<K> + 'static>
-    autd3_core::datagram::Datagram<T> for GroupByTransducer<K, T, F>
+impl<
+        K: Hash + Eq + Clone + 'static,
+        T: Transducer + 'static,
+        F: Fn(&T) -> Option<K> + 'static,
+        G: Gain<T> + 'static,
+    > autd3_core::datagram::Datagram<T> for Group<ByTransducer<K, F>, K, T, G>
 {
     type H = autd3_core::NullHeader;
     type B = T::Gain;
@@ -313,7 +255,32 @@ impl<
         K: Hash + Eq + Clone + 'static,
         T: Transducer + 'static,
         F: Fn(usize) -> Option<K> + 'static,
-    > Gain<T> for GroupByDevice<K, T, F>
+        G: Gain<T> + 'static,
+    > GainAsAny for Group<ByDevice<K, F>, K, T, G>
+{
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+impl<
+        K: Hash + Eq + Clone + 'static,
+        T: Transducer + 'static,
+        F: Fn(&T) -> Option<K> + 'static,
+        G: Gain<T> + 'static,
+    > GainAsAny for Group<ByTransducer<K, F>, K, T, G>
+{
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+impl<
+        K: Hash + Eq + Clone + 'static,
+        T: Transducer + 'static,
+        F: Fn(usize) -> Option<K> + 'static,
+        G: Gain<T> + 'static,
+    > Gain<T> for Group<ByDevice<K, F>, K, T, G>
 {
     #[allow(clippy::uninit_vec)]
     fn calc(
@@ -330,7 +297,7 @@ impl<
 
         let mut drives_cache = HashMap::new();
         for dev in 0..geometry.num_devices() {
-            if let Some(key) = (self.group_by)(dev) {
+            if let Some(key) = (self.group_by.f)(dev) {
                 if let Some(gain) = self.gain_map.get(&key) {
                     if !drives_cache.contains_key(&key) {
                         let filter = filters.get(&key).unwrap();
@@ -364,8 +331,12 @@ impl<
     }
 }
 
-impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Option<K> + 'static>
-    Gain<T> for GroupByTransducer<K, T, F>
+impl<
+        K: Hash + Eq + Clone + 'static,
+        T: Transducer + 'static,
+        F: Fn(&T) -> Option<K> + 'static,
+        G: Gain<T> + 'static,
+    > Gain<T> for Group<ByTransducer<K, F>, K, T, G>
 {
     #[allow(clippy::uninit_vec)]
     fn calc(
@@ -383,7 +354,7 @@ impl<K: Hash + Eq + Clone + 'static, T: Transducer + 'static, F: Fn(&T) -> Optio
         let mut drives_cache = HashMap::new();
 
         for tr in geometry.transducers() {
-            if let Some(key) = (self.group_by)(tr) {
+            if let Some(key) = (self.group_by.f)(tr) {
                 if let Some(gain) = self.gain_map.get(&key) {
                     if !drives_cache.contains_key(&key) {
                         let filter = filters.get(&key).unwrap();
@@ -569,8 +540,8 @@ mod tests {
     }
 
     #[test]
-    fn get() {
-        let gain = Group::by_device::<_, LegacyTransducer, _>(|dev| match dev {
+    fn test_get() {
+        let gain: Group<_, _, LegacyTransducer, _> = Group::by_device(|dev| match dev {
             0 => Some("null"),
             1 => Some("plane"),
             2 | 3 => Some("plane2"),
@@ -580,19 +551,19 @@ mod tests {
         .set("plane", Plane::new(Vector3::zeros()))
         .set("plane2", Plane::new(Vector3::zeros()).with_amp(0.5));
 
-        assert!(gain.get_gain::<Null>("null").is_some());
-        assert!(gain.get_gain::<Focus>("null").is_none());
+        assert!(gain.get::<Null>("null").is_some());
+        assert!(gain.get::<Focus>("null").is_none());
 
-        assert!(gain.get_gain::<Plane>("plane").is_some());
-        assert!(gain.get_gain::<Null>("plane").is_none());
-        assert_eq!(gain.get_gain::<Plane>("plane").unwrap().amp(), 1.0);
+        assert!(gain.get::<Plane>("plane").is_some());
+        assert!(gain.get::<Null>("plane").is_none());
+        assert_eq!(gain.get::<Plane>("plane").unwrap().amp(), 1.0);
 
-        assert!(gain.get_gain::<Plane>("plane2").is_some());
-        assert!(gain.get_gain::<Null>("plane2").is_none());
-        assert_eq!(gain.get_gain::<Plane>("plane2").unwrap().amp(), 0.5);
+        assert!(gain.get::<Plane>("plane2").is_some());
+        assert!(gain.get::<Null>("plane2").is_none());
+        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp(), 0.5);
 
-        assert!(gain.get_gain::<Null>("focus").is_none());
-        assert!(gain.get_gain::<Focus>("focus").is_none());
-        assert!(gain.get_gain::<Plane>("focus").is_none());
+        assert!(gain.get::<Null>("focus").is_none());
+        assert!(gain.get::<Focus>("focus").is_none());
+        assert!(gain.get::<Plane>("focus").is_none());
     }
 }
