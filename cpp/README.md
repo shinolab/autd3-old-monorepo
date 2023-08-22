@@ -38,12 +38,10 @@ version: 14.2.2
 
     ```
     git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp
-    pwsh build.ps1
-    cd examples
+    cd autd3/cpp/examples
     mkdir build
     cd build
-    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake ..
     cmake --build . --config Release
     ```
 
@@ -51,13 +49,10 @@ version: 14.2.2
 
     ```
     git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp
-    chmod +x ./build.sh
-    ./build.sh
-    cd examples
+    cd autd3/cpp/examples
     mkdir build
     cd build
-    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake ..
     cmake --build . --config Release
     ```
 
