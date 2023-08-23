@@ -396,6 +396,7 @@ dependencies = [
 name = "autd3capi"
 version = "14.2.2"
 dependencies = [
+ "assert_approx_eq",
  "autd3-core",
  "autd3capi-def",
  "memoffset 0.9.0",
