@@ -20,4 +20,5 @@ use_meter = ["autd3capi-def/use_meter", "autd3-core/use_meter"]
 parallel = ["autd3capi-def/parallel", "autd3-core/parallel"]
 
 [dev-dependencies]
+assert_approx_eq = "1.1.0"
 memoffset = "0.9.0"
