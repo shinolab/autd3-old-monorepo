@@ -15,8 +15,13 @@ use crate::error::AUTDInternalError;
 use autd3_driver::float;
 
 pub trait ModulationProperty {
-    fn sampling_frequency(&self) -> float;
+    fn sampling_frequency(&self) -> float {
+        autd3_driver::FPGA_SUB_CLK_FREQ as float / self.sampling_frequency_division() as float
+    }
     fn sampling_frequency_division(&self) -> u32;
+    fn sampling_period(&self) -> std::time::Duration {
+        std::time::Duration::from_nanos((1000000000. / self.sampling_frequency()) as u64)
+    }
 }
 
 /// Modulation controls the amplitude modulation data.
@@ -38,6 +43,10 @@ impl ModulationProperty for Box<dyn Modulation> {
 
     fn sampling_frequency_division(&self) -> u32 {
         self.as_ref().sampling_frequency_division()
+    }
+
+    fn sampling_period(&self) -> std::time::Duration {
+        self.as_ref().sampling_period()
     }
 }
 

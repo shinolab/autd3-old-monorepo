@@ -39,6 +39,14 @@ pub unsafe extern "C" fn AUTDSTMPropsWithSamplingFreqDiv(div: u32) -> STMPropsPt
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDSTMPropsWithSamplingPeriod(period_ns: u64) -> STMPropsPtr {
+    STMPropsPtr::new(STMProps::with_sampling_period(
+        std::time::Duration::from_nanos(period_ns),
+    ))
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsWithStartIdx(props: STMPropsPtr, idx: i32) -> STMPropsPtr {
     let props = Box::from_raw(props.0 as *mut STMProps);
     STMPropsPtr::new(if idx < 0 {
@@ -82,6 +90,14 @@ pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequencyDivision(
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDSTMPropsSamplingPeriod(props: STMPropsPtr, size: u64) -> u64 {
+    Box::from_raw(props.0 as *mut STMProps)
+        .sampling_period(size as usize)
+        .as_nanos() as u64
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsStartIdx(props: STMPropsPtr) -> i32 {
     if let Some(idx) = cast!(props.0, STMProps).start_idx() {
         idx as i32
@@ -116,6 +132,9 @@ mod tests {
 
             let props = AUTDSTMPropsWithSamplingFreqDiv(512);
             assert_eq!(512, AUTDSTMPropsSamplingFrequencyDivision(props, 0));
+
+            let props = AUTDSTMPropsWithSamplingPeriod(250 * 1000);
+            assert_eq!(250 * 1000, AUTDSTMPropsSamplingPeriod(props, 0));
 
             let props = AUTDSTMProps(1.);
             let props = AUTDSTMPropsWithStartIdx(props, 0);
