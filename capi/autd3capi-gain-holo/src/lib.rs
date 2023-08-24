@@ -27,7 +27,7 @@ pub mod sdp;
 mod tests {
     use std::ffi::c_char;
 
-    use autd3capi::*;
+    use autd3capi::{link::debug::*, *};
     use autd3capi_def::{common::*, ControllerPtr, Level, LinkPtr};
 
     pub unsafe fn make_debug_link() -> LinkPtr {

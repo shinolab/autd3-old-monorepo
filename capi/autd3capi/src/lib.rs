@@ -15,22 +15,15 @@
 
 pub mod gain;
 pub mod geometry;
+pub mod link;
 pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::{
-        autd3::link::{log::LogImpl, Log},
-        *,
-    },
-    take_link, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, Level,
-    LinkPtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    common::*, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, LinkPtr,
+    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
-use std::{
-    ffi::c_char,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{ffi::c_char, time::Duration};
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -42,6 +35,9 @@ pub struct Drive {
     pub phase: float,
     pub amp: float,
 }
+
+struct CallbackPtr(ConstPtr);
+unsafe impl Send for CallbackPtr {}
 
 #[no_mangle]
 #[must_use]
@@ -300,108 +296,13 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     }
 }
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkDebug() -> LinkPtr {
-    LinkPtr::new(Debug::new())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugWithLogLevel(debug: LinkPtr, level: Level) -> LinkPtr {
-    LinkPtr::new(take_link!(debug, Debug).with_log_level(level.into()))
-}
-
-struct CallbackPtr(ConstPtr);
-unsafe impl Send for CallbackPtr {}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugWithLogFunc(
-    debug: LinkPtr,
-    out_func: ConstPtr,
-    flush_func: ConstPtr,
-) -> LinkPtr {
-    if out_func.is_null() || flush_func.is_null() {
-        return debug;
-    }
-
-    let out_f = Arc::new(Mutex::new(CallbackPtr(out_func)));
-    let out_func = move |msg: &str| -> spdlog::Result<()> {
-        let msg = std::ffi::CString::new(msg).unwrap();
-        let out_f =
-            std::mem::transmute::<_, unsafe extern "C" fn(*const c_char)>(out_f.lock().unwrap().0);
-        out_f(msg.as_ptr());
-        Ok(())
-    };
-    let flush_f = Arc::new(Mutex::new(CallbackPtr(flush_func)));
-    let flush_func = move || -> spdlog::Result<()> {
-        let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
-        flush_f();
-        Ok(())
-    };
-
-    LinkPtr::new(
-        take_link!(debug, Debug).with_logger(get_logger_with_custom_func(out_func, flush_func)),
-    )
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugWithTimeout(debug: LinkPtr, timeout_ns: u64) -> LinkPtr {
-    LinkPtr::new(take_link!(debug, Debug).with_timeout(Duration::from_nanos(timeout_ns)))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkLog(link: LinkPtr) -> LinkPtr {
-    let link: Box<Box<L>> = Box::from_raw(link.0 as *mut Box<L>);
-    LinkPtr::new(link.with_log())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkLogWithLogLevel(log: LinkPtr, level: Level) -> LinkPtr {
-    LinkPtr::new(take_link!(log, LogImpl<DynamicTransducer, Box<L>>).with_log_level(level.into()))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkLogWithLogFunc(
-    log: LinkPtr,
-    out_func: ConstPtr,
-    flush_func: ConstPtr,
-) -> LinkPtr {
-    if out_func.is_null() || flush_func.is_null() {
-        return log;
-    }
-
-    let out_f = Arc::new(Mutex::new(CallbackPtr(out_func)));
-    let out_func = move |msg: &str| -> spdlog::Result<()> {
-        let msg = std::ffi::CString::new(msg).unwrap();
-        let out_f =
-            std::mem::transmute::<_, unsafe extern "C" fn(*const c_char)>(out_f.lock().unwrap().0);
-        out_f(msg.as_ptr());
-        Ok(())
-    };
-    let flush_f = Arc::new(Mutex::new(CallbackPtr(flush_func)));
-    let flush_func = move || -> spdlog::Result<()> {
-        let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
-        flush_f();
-        Ok(())
-    };
-
-    LinkPtr::new(
-        take_link!(log, LogImpl<DynamicTransducer, Box<L>>)
-            .with_logger(get_logger_with_custom_func(out_func, flush_func)),
-    )
-}
-
 #[cfg(test)]
 mod tests {
-    use autd3capi_def::DatagramHeaderPtr;
+    use autd3capi_def::{DatagramHeaderPtr, Level};
 
     use super::*;
+
+    use crate::link::debug::*;
 
     use std::ffi::CStr;
 
