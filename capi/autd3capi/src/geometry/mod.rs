@@ -84,6 +84,84 @@ pub unsafe extern "C" fn AUTDGeometryCenterOf(geo: GeometryPtr, dev_idx: u32, ce
     center.add(2).write(c.z);
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryTranslate(geo: GeometryPtr, x: float, y: float, z: float) {
+    cast_mut!(geo.0, Geo).translate(Vector3::new(x, y, z));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryRotate(
+    geo: GeometryPtr,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo).rotate(UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryAffine(
+    geo: GeometryPtr,
+    x: float,
+    y: float,
+    z: float,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo).affine(
+        Vector3::new(x, y, z),
+        UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)),
+    );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryTranslateOf(
+    geo: GeometryPtr,
+    dev_idx: u32,
+    x: float,
+    y: float,
+    z: float,
+) {
+    cast_mut!(geo.0, Geo).translate_of(dev_idx as _, Vector3::new(x, y, z));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryRotateOf(
+    geo: GeometryPtr,
+    dev_idx: u32,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo).rotate_of(
+        dev_idx as _,
+        UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)),
+    );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGeometryAffineOf(
+    geo: GeometryPtr,
+    dev_idx: u32,
+    x: float,
+    y: float,
+    z: float,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo).affine_of(
+        dev_idx as _,
+        Vector3::new(x, y, z),
+        UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)),
+    );
+}
+
 #[cfg(test)]
 mod tests {
 
