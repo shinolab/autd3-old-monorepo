@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-autd3capi-def = { path = "../autd3capi-def", version = "14.2.2" }
-autd3-link-simulator = { path = "../../src/autd3-link-simulator", version = "14.2.2" }
+autd3capi-def = { path = "../autd3capi-def" }
+autd3-link-simulator = { path = "../../src/autd3-link-simulator" }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }

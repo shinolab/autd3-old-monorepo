@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3capi-def = { path = "../autd3capi-def", version = "14.2.2" }
-autd3-core = { path = "../../src/autd3-core", version = "14.2.2" }
+autd3capi-def = { path = "../autd3capi-def" }
+autd3-core = { path = "../../src/autd3-core" }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }
