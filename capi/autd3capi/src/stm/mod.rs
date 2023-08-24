@@ -117,9 +117,11 @@ mod tests {
             let props = AUTDSTMPropsWithSamplingFreqDiv(512);
             assert_eq!(512, AUTDSTMPropsSamplingFrequencyDivision(props, 0));
 
+            let props = AUTDSTMProps(1.);
             let props = AUTDSTMPropsWithStartIdx(props, 0);
             assert_eq!(0, AUTDSTMPropsStartIdx(props));
 
+            let props = AUTDSTMProps(1.);
             let props = AUTDSTMPropsWithFinishIdx(props, 1);
             assert_eq!(1, AUTDSTMPropsFinishIdx(props));
         }
