@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,15 +33,21 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
 ) -> Result<()> {
     std::fs::create_dir_all(path.as_ref())?;
 
-    let capi_path = crate_path.as_ref().join("src").join("lib.rs");
     let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
 
-    G::new()
-        .register_func(parse_func(&capi_path, use_single)?)
-        .register_const(parse_const(&capi_path, use_single)?)
-        .register_enum(parse_enum(&capi_path, use_single)?)
-        .register_struct(parse_struct(&capi_path, use_single)?)
-        .write(path, crate_name)
+    glob::glob(&format!(
+        "{}/**/*.rs",
+        crate_path.as_ref().join("src").display()
+    ))?
+    .fold(Ok(G::new()), |acc: Result<_>, path| {
+        let path = path?;
+        Ok(acc?
+            .register_func(parse_func(&path, use_single)?)
+            .register_const(parse_const(&path, use_single)?)
+            .register_enum(parse_enum(&path, use_single)?)
+            .register_struct(parse_struct(&path, use_single)?))
+    })?
+    .write(path, crate_name)
 }
 
 pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {

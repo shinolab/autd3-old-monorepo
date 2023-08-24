@@ -13,23 +13,10 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::ModulationPtr;
-
-use autd3capi_def::common::{
-    core::error::AUTDInternalError, float, traits::Modulation, Modulation,
+use autd3capi_def::{
+    common::{core::float, custom::CustomModulation},
+    ModulationPtr,
 };
-
-#[derive(Modulation)]
-pub struct CustomModulation {
-    pub buf: Vec<float>,
-    pub freq_div: u32,
-}
-
-impl autd3capi_def::common::core::modulation::Modulation for CustomModulation {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        Ok(self.buf.clone())
-    }
-}
 
 #[no_mangle]
 #[must_use]

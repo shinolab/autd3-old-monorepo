@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/07/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -212,22 +212,22 @@ impl CSharpGenerator {
 
 impl Generator for CSharpGenerator {
     fn register_const(mut self, constants: Vec<Const>) -> Self {
-        self.constants = constants;
+        self.constants.extend(constants);
         self
     }
 
     fn register_enum(mut self, enums: Vec<Enum>) -> Self {
-        self.enums = enums;
+        self.enums.extend(enums);
         self
     }
 
     fn register_func(mut self, functions: Vec<Function>) -> Self {
-        self.functions = functions;
+        self.functions.extend(functions);
         self
     }
 
     fn register_struct(mut self, e: Vec<Struct>) -> Self {
-        self.structs = e;
+        self.structs.extend(e);
         self
     }
 
