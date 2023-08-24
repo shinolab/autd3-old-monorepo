@@ -3874,6 +3874,7 @@ dependencies = [
  "anyhow",
  "cbindgen",
  "convert_case",
+ "glob",
  "itertools 0.11.0",
  "syn 2.0.29",
 ]

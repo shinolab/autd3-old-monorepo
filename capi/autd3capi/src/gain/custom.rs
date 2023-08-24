@@ -11,32 +11,9 @@
  *
  */
 
-use autd3capi_def::{common::autd3::core::gain::GainFilter, GainPtr};
+use autd3capi_def::{common::custom::CustomGain, GainPtr};
 
-use autd3capi_def::common::{
-    core::{
-        error::AUTDInternalError,
-        geometry::{Geometry, Transducer},
-        Drive,
-    },
-    traits::Gain,
-    Gain,
-};
-
-#[derive(Gain)]
-pub struct CustomGain {
-    pub drives: Vec<Drive>,
-}
-
-impl<T: Transducer> autd3capi_def::common::core::gain::Gain<T> for CustomGain {
-    fn calc(
-        &self,
-        _geometry: &Geometry<T>,
-        _filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(self.drives.clone())
-    }
-}
+use crate::Drive;
 
 #[no_mangle]
 #[must_use]
@@ -55,7 +32,7 @@ mod tests {
     use super::*;
     use crate::{gain::*, geometry::*, tests::*, *};
 
-    use autd3capi_def::{common::autd3::core::Drive, DatagramHeaderPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramHeaderPtr, TransMode, AUTD3_TRUE};
 
     #[test]
     fn test_custom_gain() {
@@ -65,7 +42,7 @@ mod tests {
             let geo = AUTDGetGeometry(cnt);
             let num_transducers = AUTDNumTransducers(geo);
 
-            let drives = vec![Drive { amp: 1., phase: 0. }; num_transducers as _];
+            let drives = vec![crate::Drive { amp: 1., phase: 0. }; num_transducers as _];
             let g = AUTDGainCustom(drives.as_ptr(), drives.len() as _);
             let g = AUTDGainIntoDatagram(g);
 
