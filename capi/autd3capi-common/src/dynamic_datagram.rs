@@ -4,12 +4,14 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
+
+#![allow(clippy::missing_safety_doc)]
 
 use std::time::Duration;
 
@@ -287,7 +289,7 @@ impl DynamicDatagram for FocusSTM {
     }
 }
 
-impl<'a, G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, G> {
+impl<G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, G> {
     fn operation(
         &self,
         mode: TransMode,
