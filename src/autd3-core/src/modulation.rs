@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,4 +29,20 @@ pub trait ModulationProperty {
 /// * The start/end timing of Modulation cannot be controlled.
 pub trait Modulation: ModulationProperty {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError>;
+}
+
+impl ModulationProperty for Box<dyn Modulation> {
+    fn sampling_frequency(&self) -> f64 {
+        self.as_ref().sampling_frequency()
+    }
+
+    fn sampling_frequency_division(&self) -> u32 {
+        self.as_ref().sampling_frequency_division()
+    }
+}
+
+impl Modulation for Box<dyn Modulation> {
+    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+        self.as_ref().calc()
+    }
 }
