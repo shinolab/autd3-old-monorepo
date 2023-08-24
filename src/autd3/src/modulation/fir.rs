@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,15 +66,6 @@ pub trait FIR<M: Modulation> {
     /// * `f_high` - Higher cutoff frequency
     ///
     fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
-    /// Apply resampler
-    ///
-    /// # Arguments
-    ///
-    /// * `n_taps` - Number of taps
-    /// * `decimate` - Decimate factor
-    /// * `interpolate` - Interpolate factor
-    ///
-    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M>;
 }
 
 impl<M: Modulation> FIR<M> for M {
@@ -118,14 +109,6 @@ impl<M: Modulation> FIR<M> for M {
                 (f_low / self.sampling_frequency()) as f64,
                 (f_high / self.sampling_frequency()) as f64,
             ),
-            m: self,
-        }
-    }
-
-    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M> {
-        FIRImpl {
-            freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::resampler(n_taps, decimate, interpolate),
             m: self,
         }
     }
