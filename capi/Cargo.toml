@@ -24,6 +24,8 @@ default-members = [
     "autd3capi-modulation-audio-file",
 ]
 
+resolver = "2"
+
 [profile.release]
 strip = true
 lto = true
