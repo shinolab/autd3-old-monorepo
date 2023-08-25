@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 25/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -141,8 +141,16 @@ mod tests {
             assert_eq!(0, AUTDSTMPropsStartIdx(props));
 
             let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsWithStartIdx(props, -1);
+            assert_eq!(-1, AUTDSTMPropsStartIdx(props));
+
+            let props = AUTDSTMProps(1.);
             let props = AUTDSTMPropsWithFinishIdx(props, 1);
             assert_eq!(1, AUTDSTMPropsFinishIdx(props));
+
+            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsWithFinishIdx(props, -1);
+            assert_eq!(-1, AUTDSTMPropsFinishIdx(props));
         }
     }
 }

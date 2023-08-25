@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 25/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,4 +68,27 @@ pub unsafe extern "C" fn AUTDLinkDebugWithLogFunc(
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugWithTimeout(debug: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(debug, Debug).with_timeout(Duration::from_nanos(timeout_ns)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use autd3capi_def::Level;
+
+    #[test]
+    fn test_link_debug() {
+        unsafe {
+            let link = AUTDLinkDebug();
+            let link = AUTDLinkDebugWithLogLevel(link, Level::Debug);
+
+            let out_f = |_msg: *const c_char| {};
+            let flush_f = || {};
+
+            let link =
+                AUTDLinkDebugWithLogFunc(link, &out_f as *const _ as _, &flush_f as *const _ as _);
+
+            let _link = AUTDLinkDebugWithTimeout(link, 0);
+        }
+    }
 }

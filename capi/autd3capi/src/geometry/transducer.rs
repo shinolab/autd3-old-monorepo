@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 25/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -124,6 +124,48 @@ pub unsafe extern "C" fn AUTDSetTransModDelay(geo: GeometryPtr, tr_idx: u32, del
     cast_mut!(geo.0, Geo)[tr_idx as usize].set_mod_delay(delay)
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn AUTDTransTranslate(
+    geo: GeometryPtr,
+    tr_idx: u32,
+    x: float,
+    y: float,
+    z: float,
+) {
+    cast_mut!(geo.0, Geo)[tr_idx as usize].translate(Vector3::new(x, y, z));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDTransRotate(
+    geo: GeometryPtr,
+    tr_idx: u32,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo)[tr_idx as usize]
+        .rotate(UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDTransAffine(
+    geo: GeometryPtr,
+    tr_idx: u32,
+    x: float,
+    y: float,
+    z: float,
+    w: float,
+    i: float,
+    j: float,
+    k: float,
+) {
+    cast_mut!(geo.0, Geo)[tr_idx as usize].affine(
+        Vector3::new(x, y, z),
+        UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)),
+    );
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -159,6 +201,14 @@ mod tests {
             assert_approx_eq::assert_approx_eq!(v[0], 0.);
             assert_approx_eq::assert_approx_eq!(v[1], 0.);
             assert_approx_eq::assert_approx_eq!(v[2], 0.);
+
+            let mut v = [0., 0., 0., 0.];
+            AUTDTransRotation(geo, 0, v.as_mut_ptr());
+            assert_approx_eq::assert_approx_eq!(v[0], 1.);
+            assert_approx_eq::assert_approx_eq!(v[1], 0.);
+            assert_approx_eq::assert_approx_eq!(v[2], 0.);
+            assert_approx_eq::assert_approx_eq!(v[3], 0.);
+
             AUTDTransXDirection(geo, 0, v.as_mut_ptr());
             assert_approx_eq::assert_approx_eq!(v[0], 1.);
             assert_approx_eq::assert_approx_eq!(v[1], 0.);
@@ -175,6 +225,45 @@ mod tests {
             let delay = 0xFFFF;
             AUTDSetTransModDelay(geo, 0, delay);
             assert_eq!(delay, AUTDGetTransModDelay(geo, 0));
+
+            let mut v = [0., 0., 0.];
+            AUTDTransPosition(geo, 0, v.as_mut_ptr());
+            AUTDTransTranslate(geo, 0, 1., 2., 3.);
+            let mut v_new = [0., 0., 0.];
+            AUTDTransPosition(geo, 0, v_new.as_mut_ptr());
+            assert_approx_eq::assert_approx_eq!(v_new[0], v[0] + 1.);
+            assert_approx_eq::assert_approx_eq!(v_new[1], v[1] + 2.);
+            assert_approx_eq::assert_approx_eq!(v_new[2], v[2] + 3.);
+
+            let mut v = [0., 0., 0., 0.];
+            AUTDTransRotation(geo, 1, v.as_mut_ptr());
+            let q = UnitQuaternion::from_axis_angle(&UnitVector3::new_normalize(Vector3::z()), 1.0);
+            AUTDTransRotate(geo, 1, q.w, q.i, q.j, q.k);
+            let mut v_new = [0., 0., 0., 0.];
+            AUTDTransRotation(geo, 1, v_new.as_mut_ptr());
+            assert_approx_eq::assert_approx_eq!(v_new[0], q.w);
+            assert_approx_eq::assert_approx_eq!(v_new[1], q.i);
+            assert_approx_eq::assert_approx_eq!(v_new[2], q.j);
+            assert_approx_eq::assert_approx_eq!(v_new[3], q.k);
+
+            let mut v = [0., 0., 0.];
+            let mut q = [0., 0., 0., 0.];
+            AUTDTransPosition(geo, 2, v.as_mut_ptr());
+            AUTDTransRotation(geo, 2, q.as_mut_ptr());
+            let rot =
+                UnitQuaternion::from_axis_angle(&UnitVector3::new_normalize(Vector3::z()), PI / 2.);
+            AUTDTransAffine(geo, 2, 1., 2., 3., rot.w, rot.i, rot.j, rot.k);
+            let mut v_new = [0., 0., 0.];
+            let mut q_new = [0., 0., 0., 0.];
+            AUTDTransPosition(geo, 2, v_new.as_mut_ptr());
+            AUTDTransRotation(geo, 2, q_new.as_mut_ptr());
+            assert_approx_eq::assert_approx_eq!(v_new[0], -v[1] + 1.);
+            assert_approx_eq::assert_approx_eq!(v_new[1], v[0] + 2.);
+            assert_approx_eq::assert_approx_eq!(v_new[2], v[2] + 3.);
+            assert_approx_eq::assert_approx_eq!(q_new[0], rot.w);
+            assert_approx_eq::assert_approx_eq!(q_new[1], rot.i);
+            assert_approx_eq::assert_approx_eq!(q_new[2], rot.j);
+            assert_approx_eq::assert_approx_eq!(q_new[3], rot.k);
 
             AUTDFreeController(cnt);
         }

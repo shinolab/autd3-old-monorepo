@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 25/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,6 +69,29 @@ mod tests {
             let m = AUTDModulationStatic();
             let m = AUTDModulationStaticWithSamplingFrequencyDivision(m, div);
             assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
+        }
+    }
+
+    #[test]
+    fn test_modulation_calc() {
+        unsafe {
+            let m = AUTDModulationStatic();
+
+            let mut err = vec![c_char::default(); 256];
+            let size = AUTDModulationSize(m, err.as_mut_ptr());
+            assert_eq!(size, 2);
+
+            let m = AUTDModulationStatic();
+            let m = AUTDModulationStaticWithAmp(m, 0.9);
+            let mut buffer = vec![0.; size as _];
+            assert_eq!(
+                AUTDModulationCalc(m, buffer.as_mut_ptr(), err.as_mut_ptr()),
+                AUTD3_TRUE
+            );
+
+            buffer.iter().for_each(|&b| {
+                assert_eq!(b, 0.9);
+            });
         }
     }
 }
