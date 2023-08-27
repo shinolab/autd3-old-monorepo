@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -530,15 +530,15 @@ impl Renderer {
         self.viewport.clone()
     }
 
-    pub fn command_buffer_allocator(&self) -> &StandardCommandBufferAllocator {
+    pub const fn command_buffer_allocator(&self) -> &StandardCommandBufferAllocator {
         &self.command_buffer_allocator
     }
 
-    pub fn descriptor_set_allocator(&self) -> &StandardDescriptorSetAllocator {
+    pub const fn descriptor_set_allocator(&self) -> &StandardDescriptorSetAllocator {
         &self.descriptor_set_allocator
     }
 
-    pub fn memory_allocator(&self) -> &StandardMemoryAllocator {
+    pub const fn memory_allocator(&self) -> &StandardMemoryAllocator {
         &self.memory_allocator
     }
 
@@ -550,7 +550,7 @@ impl Renderer {
         self.swap_chain.image_format()
     }
 
-    pub fn sample_count(&self) -> SampleCount {
+    pub const fn sample_count(&self) -> SampleCount {
         self.msaa_sample.max_count()
     }
 

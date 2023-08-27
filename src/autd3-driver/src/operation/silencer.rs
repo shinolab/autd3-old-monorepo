@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ pub struct ConfigSilencer {
 }
 
 impl ConfigSilencer {
-    pub fn new(step: u16) -> Self {
+    pub const fn new(step: u16) -> Self {
         Self { sent: false, step }
     }
 }

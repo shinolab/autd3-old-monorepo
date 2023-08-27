@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -107,7 +107,7 @@ impl AUTD3 {
     /// assert_eq!(y, 13);
     /// ```
     ///
-    pub fn grid_id(idx: usize) -> (usize, usize) {
+    pub const fn grid_id(idx: usize) -> (usize, usize) {
         let local_id = idx % Self::NUM_TRANS_IN_UNIT;
         let mut offset = 0;
         if local_id >= 19 {

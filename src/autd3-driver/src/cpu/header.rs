@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/08/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ pub struct SilencerHeader {
 }
 
 impl GlobalHeader {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             msg_id: 0,
             fpga_flag: FPGAControlFlags::NONE,
@@ -64,7 +64,7 @@ impl GlobalHeader {
         }
     }
 
-    pub fn mod_initial(&self) -> &ModInitial {
+    pub const fn mod_initial(&self) -> &ModInitial {
         unsafe { std::mem::transmute(&self.data) }
     }
 
@@ -72,7 +72,7 @@ impl GlobalHeader {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn mod_subsequent(&self) -> &ModSubsequent {
+    pub const fn mod_subsequent(&self) -> &ModSubsequent {
         unsafe { std::mem::transmute(&self.data) }
     }
 
@@ -80,7 +80,7 @@ impl GlobalHeader {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn silencer(&self) -> &SilencerHeader {
+    pub const fn silencer(&self) -> &SilencerHeader {
         unsafe { std::mem::transmute(&self.data) }
     }
 

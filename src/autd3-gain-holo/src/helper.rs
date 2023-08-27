@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -63,7 +63,7 @@ macro_rules! impl_holo {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &Constraint {
                 &self.constraint
             }
         }
@@ -105,7 +105,7 @@ macro_rules! impl_holo {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &Constraint {
                 &self.constraint
             }
         }

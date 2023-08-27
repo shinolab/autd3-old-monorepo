@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -91,16 +91,16 @@ pub struct FPGAInfo {
 }
 
 impl FPGAInfo {
-    pub fn new(info: u8) -> Self {
+    pub const fn new(info: u8) -> Self {
         Self { info }
     }
 
     /// Check if thermal sensor is asserted
-    pub fn is_thermal_assert(&self) -> bool {
+    pub const fn is_thermal_assert(&self) -> bool {
         (self.info & 0x01) != 0
     }
 
-    pub fn info(&self) -> u8 {
+    pub const fn info(&self) -> u8 {
         self.info
     }
 }

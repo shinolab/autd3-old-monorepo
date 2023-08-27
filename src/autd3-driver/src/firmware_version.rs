@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/07/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ pub struct FirmwareInfo {
 }
 
 impl FirmwareInfo {
-    pub fn new(
+    pub const fn new(
         idx: usize,
         cpu_version_number_major: u8,
         cpu_version_number_minor: u8,
@@ -60,23 +60,23 @@ impl FirmwareInfo {
         )
     }
 
-    pub fn stm_enabled(&self) -> bool {
+    pub const fn stm_enabled(&self) -> bool {
         (self.fpga_function_bits & ENABLED_STM_BIT) == ENABLED_STM_BIT
     }
 
-    pub fn modulator_enabled(&self) -> bool {
+    pub const fn modulator_enabled(&self) -> bool {
         (self.fpga_function_bits & ENABLED_MODULATOR_BIT) == ENABLED_MODULATOR_BIT
     }
 
-    pub fn silencer_enabled(&self) -> bool {
+    pub const fn silencer_enabled(&self) -> bool {
         (self.fpga_function_bits & ENABLED_SILENCER_BIT) == ENABLED_SILENCER_BIT
     }
 
-    pub fn modulation_delay_enabled(&self) -> bool {
+    pub const fn modulation_delay_enabled(&self) -> bool {
         (self.fpga_function_bits & ENABLED_MOD_DELAY_BIT) == ENABLED_MOD_DELAY_BIT
     }
 
-    pub fn is_emulator(&self) -> bool {
+    pub const fn is_emulator(&self) -> bool {
         (self.fpga_function_bits & ENABLED_EMULATOR_BIT) == ENABLED_EMULATOR_BIT
     }
 
@@ -94,12 +94,12 @@ impl FirmwareInfo {
         }
     }
 
-    pub fn is_valid(&self) -> bool {
+    pub const fn is_valid(&self) -> bool {
         self.cpu_version_number_major == self.fpga_version_number_major
             && self.cpu_version_number_minor == self.fpga_version_number_minor
     }
 
-    pub fn is_supported(&self) -> bool {
+    pub const fn is_supported(&self) -> bool {
         self.cpu_version_number_major == VERSION_NUM_MAJOR
             && self.fpga_version_number_major == VERSION_NUM_MAJOR
             && self.cpu_version_number_minor == VERSION_NUM_MINOR
@@ -110,23 +110,23 @@ impl FirmwareInfo {
         Self::firmware_version_map(VERSION_NUM_MAJOR, VERSION_NUM_MINOR)
     }
 
-    pub fn cpu_version_number_major(&self) -> u8 {
+    pub const fn cpu_version_number_major(&self) -> u8 {
         self.cpu_version_number_major
     }
 
-    pub fn cpu_version_number_minor(&self) -> u8 {
+    pub const fn cpu_version_number_minor(&self) -> u8 {
         self.cpu_version_number_minor
     }
 
-    pub fn fpga_version_number_major(&self) -> u8 {
+    pub const fn fpga_version_number_major(&self) -> u8 {
         self.fpga_version_number_major
     }
 
-    pub fn fpga_version_number_minor(&self) -> u8 {
+    pub const fn fpga_version_number_minor(&self) -> u8 {
         self.fpga_version_number_minor
     }
 
-    pub fn fpga_function_bits(&self) -> u8 {
+    pub const fn fpga_function_bits(&self) -> u8 {
         self.fpga_function_bits
     }
 }

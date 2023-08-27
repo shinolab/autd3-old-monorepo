@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,16 +25,16 @@ impl SilencerConfig {
     ///
     /// * `step` - Update step of silencer. The smaller `step` is, the quieter the output is.  
     ///
-    pub fn new(step: u16) -> Self {
+    pub const fn new(step: u16) -> Self {
         SilencerConfig { step }
     }
 
     /// Disable silencer
-    pub fn none() -> Self {
+    pub const fn none() -> Self {
         Self::new(0xFFFF)
     }
 
-    pub fn step(&self) -> u16 {
+    pub const fn step(&self) -> u16 {
         self.step
     }
 }
