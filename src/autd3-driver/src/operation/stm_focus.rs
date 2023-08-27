@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ pub struct FocusSTM {
 }
 
 impl FocusSTM {
-    pub fn new(points: Vec<Vec<STMFocus>>, tr_num_min: usize, props: FocusSTMProps) -> Self {
+    pub const fn new(points: Vec<Vec<STMFocus>>, tr_num_min: usize, props: FocusSTMProps) -> Self {
         Self {
             sent: 0,
             points,

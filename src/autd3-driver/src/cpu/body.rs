@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/06/2023
+ * Last Modified: 27/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ pub struct FocusSTMBodyInitial<T: ?Sized> {
 }
 
 impl FocusSTMBodyInitial<[u16]> {
-    pub fn data(&self) -> &[u16] {
+    pub const fn data(&self) -> &[u16] {
         &self.data
     }
 
@@ -92,7 +92,7 @@ pub struct FocusSTMBodySubsequent<T: ?Sized> {
 }
 
 impl FocusSTMBodySubsequent<[u16]> {
-    pub fn data(&self) -> &[u16] {
+    pub const fn data(&self) -> &[u16] {
         &self.data
     }
 
@@ -123,7 +123,7 @@ pub struct GainSTMBodyInitial<T: ?Sized> {
 }
 
 impl GainSTMBodyInitial<[u16]> {
-    pub fn data(&self) -> &[u16] {
+    pub const fn data(&self) -> &[u16] {
         &self.data
     }
 
@@ -207,7 +207,7 @@ impl LegacyPhaseHalf<3> {
 }
 
 impl GainSTMBodySubsequent<[u16]> {
-    pub fn data(&self) -> &[u16] {
+    pub const fn data(&self) -> &[u16] {
         &self.data
     }
 
@@ -238,11 +238,11 @@ pub struct Body<T: ?Sized> {
 }
 
 impl Body<[u16]> {
-    pub fn data(&self) -> &[u16] {
+    pub const fn data(&self) -> &[u16] {
         &self.data
     }
 
-    pub fn focus_stm_initial(&self) -> &FocusSTMBodyInitial<[u16]> {
+    pub const fn focus_stm_initial(&self) -> &FocusSTMBodyInitial<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
@@ -250,7 +250,7 @@ impl Body<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn focus_stm_subsequent(&self) -> &FocusSTMBodySubsequent<[u16]> {
+    pub const fn focus_stm_subsequent(&self) -> &FocusSTMBodySubsequent<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
@@ -258,7 +258,7 @@ impl Body<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_initial(&self) -> &GainSTMBodyInitial<[u16]> {
+    pub const fn gain_stm_initial(&self) -> &GainSTMBodyInitial<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
@@ -266,7 +266,7 @@ impl Body<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_subsequent(&self) -> &GainSTMBodySubsequent<[u16]> {
+    pub const fn gain_stm_subsequent(&self) -> &GainSTMBodySubsequent<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
