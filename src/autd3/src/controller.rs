@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -97,36 +97,36 @@ impl<T: Transducer> ControllerBuilder<T> {
 
 impl ControllerBuilder<LegacyTransducer> {
     /// Set advanced mode
-    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+    pub const fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
     /// Set advanced phase mode
-    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+    pub const fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
 
 impl ControllerBuilder<AdvancedTransducer> {
     /// Set legacy mode
-    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+    pub const fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
     /// Set advanced phase mode
-    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+    pub const fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
 
 impl ControllerBuilder<AdvancedPhaseTransducer> {
     /// Set advanced mode
-    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+    pub const fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 
     /// Set legacy mode
-    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+    pub const fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
         unsafe { std::mem::transmute(self) }
     }
 }
@@ -181,7 +181,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     }
 
     /// get geometry
-    pub fn geometry(&self) -> &Geometry<T> {
+    pub const fn geometry(&self) -> &Geometry<T> {
         &self.geometry
     }
 
@@ -191,7 +191,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     }
 
     /// get link
-    pub fn link(&self) -> &L {
+    pub const fn link(&self) -> &L {
         &self.link
     }
 

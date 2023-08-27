@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -949,11 +949,11 @@ impl ImGuiRenderer {
         }
     }
 
-    pub(crate) fn stm_idx(&self) -> usize {
+    pub(crate) const fn stm_idx(&self) -> usize {
         self.stm_idx as _
     }
 
-    pub(crate) fn mod_idx(&self) -> usize {
+    pub(crate) const fn mod_idx(&self) -> usize {
         self.mod_idx as _
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ impl<
         F: Fn() -> L + Send + Sync + 'static,
     > LightweightServer<L, F>
 {
-    pub fn new(f: F) -> Self {
+    pub const fn new(f: F) -> Self {
         LightweightServer {
             autd: RwLock::new(None),
             link: f,

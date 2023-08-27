@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 pub struct Stop {}
 
 impl Stop {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }

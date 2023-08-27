@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -128,20 +128,20 @@ impl Simulator {
     }
 
     /// Set window size
-    pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
+    pub const fn with_window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = Some(width);
         self.window_height = Some(height);
         self
     }
 
     /// Set vsync
-    pub fn with_vsync(mut self, vsync: bool) -> Self {
+    pub const fn with_vsync(mut self, vsync: bool) -> Self {
         self.vsync = Some(vsync);
         self
     }
 
     /// Set port
-    pub fn with_port(mut self, port: u16) -> Self {
+    pub const fn with_port(mut self, port: u16) -> Self {
         self.port = Some(port);
         self
     }
@@ -152,7 +152,7 @@ impl Simulator {
     ///
     /// * `gpu_idx` - GPU index. If -1, use the most suitable GPU.
     ///
-    pub fn with_gpu_idx(mut self, gpu_idx: i32) -> Self {
+    pub const fn with_gpu_idx(mut self, gpu_idx: i32) -> Self {
         self.gpu_idx = Some(gpu_idx);
         self
     }
@@ -170,7 +170,7 @@ impl Simulator {
     }
 
     /// Get viewer settings
-    pub fn get_settings(&self) -> &ViewerSettings {
+    pub const fn get_settings(&self) -> &ViewerSettings {
         &self.settings
     }
 
