@@ -7,8 +7,9 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1.0.72"
 convert_case = "0.6.0"
 itertools = "0.11.0"
 syn = { version = "2.0.18", features = ["parsing", "full"] }
 cbindgen = "0.24.3"
+glob = "0.3.1"

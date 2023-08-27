@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3_core::{autd3_device::AUTD3, geometry::Device, TxDatagram, FPGA_CLK_FREQ};
+use autd3_core::{geometry::Transducer, TxDatagram, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
@@ -243,8 +243,8 @@ impl Simulator {
         render.move_camera(&self.settings);
 
         let mut sources = SoundSources::new();
-
         let mut cpus: Vec<CPUEmulator> = Vec::new();
+        let mut body_pointer = vec![];
 
         let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings);
         let mut slice_viewer = SliceViewer::new(&render, &self.settings);
@@ -272,9 +272,11 @@ impl Simulator {
                     sources.clear();
                     cpus.clear();
 
-                    let devices = Vec::<_>::from_msg(&geometry);
-                    devices.iter().for_each(|autd3| {
-                        autd3.get_transducers(0).iter().for_each(|(_, p, r)| {
+                    let geometry = autd3_core::geometry::Geometry::<_>::from_msg(&geometry);
+                    (0..geometry.num_devices()).for_each(|dev| {
+                        geometry.transducers_of(dev).for_each(|tr| {
+                            let p = tr.position();
+                            let r = tr.rotation();
                             sources.add(
                                 to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
                                 to_gl_rot(Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _)),
@@ -284,16 +286,34 @@ impl Simulator {
                         });
                     });
 
-                    cpus = (0..sources.len() / AUTD3::NUM_TRANS_IN_UNIT)
-                        .map(|i| CPUEmulator::new(i, AUTD3::NUM_TRANS_IN_UNIT))
+                    cpus = (0..geometry.num_devices())
+                        .map(|i| CPUEmulator::new(i, geometry.device_map()[i]))
                         .collect();
 
-                    *rx_buf.write().unwrap() = autd3_core::RxDatagram::new(devices.len());
+                    cpus.iter_mut().for_each(|cpu| {
+                        let origin = geometry.transducers_of(cpu.id()).next().unwrap().position();
+                        let local_position = geometry
+                            .transducers_of(cpu.id())
+                            .map(|tr| tr.position() - origin)
+                            .collect();
+                        cpu.fpga_mut().configure_local_trans_pos(local_position);
+                    });
+
+                    body_pointer = [0usize]
+                        .iter()
+                        .chain(geometry.device_map().iter())
+                        .scan(0, |state, tr_num| {
+                            *state += tr_num;
+                            Some(*state)
+                        })
+                        .collect::<Vec<_>>();
+
+                    *rx_buf.write().unwrap() = autd3_core::RxDatagram::new(geometry.num_devices());
 
                     field_compute_pipeline.init(&render, &sources);
                     trans_viewer.init(&render, &sources);
                     slice_viewer.init(&self.settings);
-                    imgui.init(devices.len());
+                    imgui.init(geometry.num_devices());
 
                     is_initialized = true;
                 }
@@ -412,6 +432,7 @@ impl Simulator {
                             let mut update_flag = imgui.update(
                                 &mut cpus,
                                 &mut sources,
+                                &body_pointer,
                                 &render,
                                 &mut builder,
                                 &mut self.settings,
@@ -432,8 +453,8 @@ impl Simulator {
                                     };
                                     sources
                                         .drives_mut()
-                                        .skip(cpu.id() * AUTD3::NUM_TRANS_IN_UNIT)
-                                        .take(AUTD3::NUM_TRANS_IN_UNIT)
+                                        .skip(body_pointer[cpu.id()])
+                                        .take(cpu.num_transducers())
                                         .enumerate()
                                         .for_each(|(i, d)| {
                                             d.amp = (PI * drives[i].0 as f32 * m

@@ -109,15 +109,19 @@ void AUTDGetLatestFirmware(char *latest);
 
 [[nodiscard]] GainPtr AUTDGainNull();
 
-[[nodiscard]] GainPtr AUTDGainGrouped();
-
-[[nodiscard]] GainPtr AUTDGainGroupedAdd(GainPtr grouped_gain, uint32_t device_id, GainPtr gain);
+[[nodiscard]]
+GainPtr AUTDGainGroupByDevice(const int32_t *map_ptr,
+                              uint64_t map_len,
+                              const int32_t *keys_ptr,
+                              const GainPtr *values_ptr,
+                              uint64_t kv_len);
 
 [[nodiscard]]
-GainPtr AUTDGainGroupedAddByGroup(GainPtr grouped_gain,
-                                  const uint32_t *device_ids,
-                                  uint64_t device_ids_len,
-                                  GainPtr gain);
+GainPtr AUTDGainGroupByTransducer(const int32_t *map_ptr,
+                                  uint64_t map_len,
+                                  const int32_t *keys_ptr,
+                                  const GainPtr *values_ptr,
+                                  uint64_t kv_len);
 
 [[nodiscard]] GainPtr AUTDGainFocus(double x, double y, double z);
 

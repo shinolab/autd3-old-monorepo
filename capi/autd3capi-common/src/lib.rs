@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,19 +12,26 @@
  */
 
 pub use autd3_gain_holo as holo;
+pub mod custom;
 mod dynamic_datagram;
 pub mod dynamic_transducer;
 
 pub use autd3;
 pub use autd3_core as core;
-pub use autd3_derive as traits;
+pub use autd3_derive as derive;
 pub use libc;
 
 pub use autd3::{
     controller::ControllerBuilder,
     core::{
-        datagram::Datagram, firmware_version::FirmwareInfo, gain::Gain,
-        link::get_logger_with_custom_func, modulation::Modulation, spdlog, stm::STMProps,
+        datagram::Datagram,
+        error::AUTDInternalError,
+        firmware_version::FirmwareInfo,
+        gain::{Gain, GainAsAny, GainFilter},
+        link::get_logger_with_custom_func,
+        modulation::Modulation,
+        spdlog,
+        stm::STMProps,
     },
     link::debug::Debug,
     prelude::*,

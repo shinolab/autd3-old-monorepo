@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/07/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,14 +43,6 @@ message TransducerTest {
     float phase = 3;
   }
   repeated TestDrive drives = 1;
-}
-
-message Grouped {
-  message Group {
-    repeated uint32 ids = 1;
-    Gain gain = 2;
-  }
-  repeated Group groups = 1;
 }
 
 message Holo {
@@ -139,7 +131,6 @@ message Gain {
     Null null = 3;
     Plane plane = 4;
     TransducerTest trans_test = 5;
-    Grouped grouped = 6;
     SDP sdp = 7;
     EVP evp = 8;
     Naive naive = 9;

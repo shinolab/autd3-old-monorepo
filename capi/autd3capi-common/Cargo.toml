@@ -5,10 +5,10 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-autd3 = { path = "../../src/autd3", version = "14.2.2" }
-autd3-core = { path = "../../src/autd3-core", version = "14.2.2" }
-autd3-gain-holo = { path = "../../src/autd3-gain-holo", version = "14.2.2" }
-autd3-derive = { path = "../../src/autd3-derive", version = "14.2.2" }
+autd3 = { path = "../../src/autd3" }
+autd3-core = { path = "../../src/autd3-core" }
+autd3-gain-holo = { path = "../../src/autd3-gain-holo" }
+autd3-derive = { path = "../../src/autd3-derive" }
 libc = "0.2.144"
 
 [features]

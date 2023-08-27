@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/08/2023
+// Last Modified: 18/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,11 +35,6 @@ class GeometryViewer {
     return *this;
   }
 
-  [[deprecated("please use with_window_size instead")]] [[nodiscard]] GeometryViewer& window_size(const uint32_t width, const uint32_t height) {
-    _ptr = AUTDGeometryViewerSize(_ptr, width, height);
-    return *this;
-  }
-
   /**
    * @brief Set vsync
    *
@@ -47,11 +42,6 @@ class GeometryViewer {
    * @return GeometryViewer&
    */
   GeometryViewer& with_vsync(const uint32_t vsync) {
-    _ptr = AUTDGeometryViewerVsync(_ptr, vsync);
-    return *this;
-  }
-
-  [[deprecated("please use with_vsync instead")]] [[nodiscard]] GeometryViewer& vsync(const uint32_t vsync) {
     _ptr = AUTDGeometryViewerVsync(_ptr, vsync);
     return *this;
   }

@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 27/07/2023
+Last Modified: 21/08/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,10 +25,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import RightPanel from "./lib/RightPanel.svelte";
 
   import License from "./lib/License.svelte";
+  // @ts-ignore
   import Modal, { bind } from "svelte-simple-modal";
 
   const licenseModal = writable<any>(null);
-  const noticeModal = writable<any>(null);
   const showLicenseModal = () => licenseModal.set(bind(License, {}));
 
   let options: null | Options = null;

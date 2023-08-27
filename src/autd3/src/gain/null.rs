@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3_core::{
     error::AUTDInternalError,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer},
     Drive,
 };
@@ -32,8 +32,15 @@ impl Null {
 }
 
 impl<T: Transducer> Gain<T> for Null {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, |_| Drive { phase: 0., amp: 0. }))
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |_| Drive {
+            phase: 0.,
+            amp: 0.,
+        }))
     }
 }
 
@@ -55,7 +62,7 @@ mod tests {
 
         let null_gain = Null::new();
 
-        let drives = null_gain.calc(&geometry).unwrap();
+        let drives = null_gain.calc(&geometry, GainFilter::All).unwrap();
 
         for drive in drives {
             assert_eq!(drive.phase, 0.0);

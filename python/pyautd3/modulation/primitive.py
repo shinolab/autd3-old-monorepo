@@ -14,14 +14,12 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from functools import reduce
-from ctypes import c_double, create_string_buffer
-from typing import Optional, Iterator
+from ctypes import c_double
+from typing import Optional
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr, FPGA_SUB_CLK_FREQ
 from .modulation import IModulation
-from pyautd3.autd_error import AUTDError
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR
 
 
 class Static(IModulation):
@@ -222,56 +220,3 @@ class Modulation(IModulation, metaclass=ABCMeta):
         return Base().modulation_custom(
             self._freq_div, np.ctypeslib.as_ctypes(data.astype(c_double)), size
         )
-
-
-class Cache(IModulation):
-    _freq_div: int
-    _buffer: np.ndarray
-
-    def __init__(self, m: IModulation):
-        self._freq_div = m.sampling_frequency_division
-
-        err = create_string_buffer(256)
-        size = Base().modulation_size(m.modulation_ptr(), err)
-        if size == AUTD3_ERR:
-            raise AUTDError(err)
-        self._buffer = np.zeros(int(size), dtype=c_double)
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
-            raise AUTDError(err)
-
-    @property
-    def buffer(self) -> np.ndarray:
-        return self._buffer
-
-    def __getitem__(self, key: int) -> float:
-        return self._buffer[key]
-
-    def __iter__(self) -> Iterator[float]:
-        return iter(self._buffer)
-
-    def modulation_ptr(self) -> ModulationPtr:
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))
-
-
-class RadiationPressure(IModulation):
-    _freq_div: int
-    _buffer: np.ndarray
-
-    def __init__(self, m: IModulation):
-        self._freq_div = m.sampling_frequency_division
-
-        err = create_string_buffer(256)
-        size = Base().modulation_size(m.modulation_ptr(), err)
-        if size == AUTD3_ERR:
-            raise AUTDError(err)
-        buf = np.zeros(int(size), dtype=c_double)
-        bufp = np.ctypeslib.as_ctypes(buf)
-        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
-            raise AUTDError(err)
-        self._buffer = np.sqrt(buf)
-
-    def modulation_ptr(self) -> ModulationPtr:
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))

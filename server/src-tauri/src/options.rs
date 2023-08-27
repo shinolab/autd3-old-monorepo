@@ -4,7 +4,7 @@
  * Created Date: 06/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,6 +34,23 @@ impl Default for TwinCATOptions {
             base: 1,
             mode: SyncMode::DC,
             keep: false,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LightweightTwinCATOptions {
+    pub enable: bool,
+    pub port: u16,
+    pub timeout: std::time::Duration,
+}
+
+impl Default for LightweightTwinCATOptions {
+    fn default() -> Self {
+        Self {
+            enable: false,
+            port: 8080,
+            timeout: std::time::Duration::from_millis(0),
         }
     }
 }
@@ -95,6 +112,8 @@ impl Default for SimulatorOptions {
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Options {
     pub twincat: TwinCATOptions,
+    #[serde(default)]
+    pub lightweight_twincat: LightweightTwinCATOptions,
     pub soem: SOEMOptions,
     pub simulator: SimulatorOptions,
 }
