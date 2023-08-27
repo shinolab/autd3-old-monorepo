@@ -35,14 +35,9 @@ path = "src/remote_twincat.rs"
 required-features = ["remote_twincat"]
 
 [[bin]]
-name = "simulator_client"
-path = "src/simulator_client.rs"
-required-features = ["simulator_client"]
-
-[[bin]]
-name = "simulator_server"
-path = "src/simulator_server.rs"
-required-features = ["simulator_server"]
+name = "simulator"
+path = "src/simulator.rs"
+required-features = ["simulator"]
 
 [[bin]]
 name = "monitor"
@@ -66,7 +61,7 @@ required-features = ["lightweight"]
 [[bin]]
 name = "custom_device"
 path = "src/custom_device.rs"
-required-features = ["simulator_client"]
+required-features = ["simulator"]
 
 [dependencies]
 anyhow = "1.0.72"
@@ -75,7 +70,6 @@ autd3-core = { path = "../autd3-core" }
 autd3-gain-holo = { path = "../autd3-gain-holo" }
 autd3-link-simulator = { path = "../autd3-link-simulator", optional = true }
 autd3-backend-cuda = { path = "../autd3-backend-cuda", optional = true }
-autd3-simulator = { path = "../autd3-simulator", optional = true }
 autd3-geometry-viewer = { path = "../autd3-geometry-viewer", optional = true }
 autd3-link-soem = { path = "../autd3-link-soem", optional = true }
 autd3-link-twincat = { path = "../autd3-link-twincat", optional = true }
@@ -88,8 +82,7 @@ tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional
 [features]
 default = []
 async = ["tokio"]
-simulator_client = ["autd3-link-simulator"]
-simulator_server = ["autd3-simulator"]
+simulator = ["autd3-link-simulator"]
 soem = ["autd3-link-soem/local"]
 remote_soem = ["autd3-link-soem/remote"]
 twincat = ["autd3-link-twincat/local"]
@@ -97,8 +90,8 @@ remote_twincat = ["autd3-link-twincat/remote"]
 monitor = ["autd3-link-monitor"]
 geometry_viewer = ["autd3-geometry-viewer"]
 lightweight = ["autd3-protobuf", "tokio"]
-all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator_client", "simulator_server", "geometry_viewer", "async", "lightweight"]
+all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator", "geometry_viewer", "async", "lightweight"]
 
 cuda = ["autd3-backend-cuda"]
 single_float = ["autd3/single_float"]
-use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
+use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter"]

@@ -314,34 +314,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3-simulator"
-version = "14.2.2"
-dependencies = [
- "anyhow",
- "autd3-core",
- "autd3-firmware-emulator",
- "autd3-protobuf",
- "bitflags 2.4.0",
- "bytemuck",
- "camera_controllers",
- "cgmath",
- "crossbeam-channel",
- "futures-util",
- "image",
- "imgui",
- "png",
- "scarlet",
- "serde",
- "spdlog-rs",
- "tokio",
- "tonic",
- "vulkano",
- "vulkano-shaders",
- "vulkano-win",
- "winit",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2519,10 +2491,29 @@ name = "simulator"
 version = "14.2.2"
 dependencies = [
  "anyhow",
- "autd3-simulator",
+ "autd3-core",
+ "autd3-firmware-emulator",
+ "autd3-protobuf",
+ "bitflags 2.4.0",
+ "bytemuck",
+ "camera_controllers",
+ "cgmath",
  "clap",
+ "crossbeam-channel",
+ "futures-util",
+ "image",
+ "imgui",
+ "png",
+ "scarlet",
+ "serde",
  "serde_json",
  "spdlog-rs",
+ "tokio",
+ "tonic",
+ "vulkano",
+ "vulkano-shaders",
+ "vulkano-win",
+ "winit",
 ]
 
 [[package]]
