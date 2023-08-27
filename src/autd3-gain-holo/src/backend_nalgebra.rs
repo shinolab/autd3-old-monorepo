@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@ use nalgebra::ComplexField;
 use autd3_core::{
     acoustics::{propagate_tr, Sphere},
     float,
+    gain::GainFilter,
 };
 
 use crate::{error::HoloError, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
@@ -40,16 +41,45 @@ impl LinAlgBackend for NalgebraBackend {
         &self,
         geometry: &autd3_core::geometry::Geometry<T>,
         foci: &[autd3_core::geometry::Vector3],
+        filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
-        Ok(MatrixXc::from_iterator(
-            foci.len(),
-            geometry.num_transducers(),
-            geometry.transducers().flat_map(|trans| {
-                foci.iter().map(move |fp| {
-                    propagate_tr::<Sphere, T>(trans, geometry.attenuation, geometry.sound_speed, fp)
-                })
-            }),
-        ))
+        match filter {
+            GainFilter::All => Ok(MatrixXc::from_iterator(
+                foci.len(),
+                geometry.num_transducers(),
+                geometry.transducers().flat_map(|trans| {
+                    foci.iter().map(move |fp| {
+                        propagate_tr::<Sphere, T>(
+                            trans,
+                            geometry.attenuation,
+                            geometry.sound_speed,
+                            fp,
+                        )
+                    })
+                }),
+            )),
+            GainFilter::Filter(filter) => {
+                let iter = geometry
+                    .transducers()
+                    .filter(|tr| filter[tr.idx()])
+                    .flat_map(|trans| {
+                        foci.iter().map(move |fp| {
+                            propagate_tr::<Sphere, T>(
+                                trans,
+                                geometry.attenuation,
+                                geometry.sound_speed,
+                                fp,
+                            )
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                Ok(MatrixXc::from_iterator(
+                    foci.len(),
+                    iter.len() / foci.len(),
+                    iter,
+                ))
+            }
+        }
     }
 
     fn to_host_cv(&self, v: Self::VectorXc) -> Result<VectorXc, HoloError> {
@@ -562,6 +592,10 @@ impl LinAlgBackend for NalgebraBackend {
     ) -> Result<(), HoloError> {
         b.zip_apply(a, |b, a| *b = *b / b.abs() * a);
         Ok(())
+    }
+
+    fn cols_c(&self, m: &Self::MatrixXc) -> Result<usize, HoloError> {
+        Ok(m.ncols())
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -296,7 +296,17 @@ impl SOEM {
                         let io_map = self.io_map.clone();
                         let wkc = wkc.clone();
                         let cycle = self.ec_send_cycle;
-                        move || Self::ecat_run::<StdSleep>(is_open, io_map, wkc, tx_receiver, cycle)
+                        let logger = self.logger.clone();
+                        move || {
+                            Self::ecat_run::<StdSleep>(
+                                is_open,
+                                io_map,
+                                wkc,
+                                tx_receiver,
+                                cycle,
+                                logger,
+                            )
+                        }
                     }))
                 }
                 TimerStrategy::BusyWait => {
@@ -304,8 +314,18 @@ impl SOEM {
                         let is_open = self.is_open.clone();
                         let io_map = self.io_map.clone();
                         let wkc = wkc.clone();
+                        let logger = self.logger.clone();
                         let cycle = self.ec_send_cycle;
-                        move || Self::ecat_run::<BusyWait>(is_open, io_map, wkc, tx_receiver, cycle)
+                        move || {
+                            Self::ecat_run::<BusyWait>(
+                                is_open,
+                                io_map,
+                                wkc,
+                                tx_receiver,
+                                cycle,
+                                logger,
+                            )
+                        }
                     }))
                 }
                 TimerStrategy::NativeTimer => {
@@ -545,6 +565,7 @@ impl Sleep for BusyWait {
 }
 
 impl SOEM {
+    #[allow(unused_variables)]
     #[allow(clippy::unnecessary_cast)]
     fn ecat_run<S: Sleep>(
         is_open: Arc<AtomicBool>,
@@ -552,6 +573,7 @@ impl SOEM {
         wkc: Arc<AtomicI32>,
         receiver: Receiver<TxDatagram>,
         cycle: std::time::Duration,
+        logger: Logger,
     ) {
         unsafe {
             #[cfg(target_os = "windows")]
@@ -559,14 +581,18 @@ impl SOEM {
                 let priority = windows::Win32::System::Threading::GetPriorityClass(
                     windows::Win32::System::Threading::GetCurrentProcess(),
                 );
-                windows::Win32::System::Threading::SetPriorityClass(
+                if let Err(e) = windows::Win32::System::Threading::SetPriorityClass(
                     windows::Win32::System::Threading::GetCurrentProcess(),
                     windows::Win32::System::Threading::REALTIME_PRIORITY_CLASS,
-                );
-                windows::Win32::System::Threading::SetThreadPriority(
+                ) {
+                    warn!(logger: logger, "Failed to set priority class: {}", e);
+                }
+                if let Err(e) = windows::Win32::System::Threading::SetThreadPriority(
                     windows::Win32::System::Threading::GetCurrentThread(),
                     windows::Win32::System::Threading::THREAD_PRIORITY_TIME_CRITICAL,
-                );
+                ) {
+                    warn!(logger: logger, "Failed to set thread priority: {}", e);
+                }
                 windows::Win32::Media::timeBeginPeriod(1);
                 priority
             };
@@ -605,10 +631,12 @@ impl SOEM {
             #[cfg(target_os = "windows")]
             {
                 windows::Win32::Media::timeEndPeriod(1);
-                windows::Win32::System::Threading::SetPriorityClass(
+                if let Err(e) = windows::Win32::System::Threading::SetPriorityClass(
                     windows::Win32::System::Threading::GetCurrentProcess(),
                     windows::Win32::System::Threading::PROCESS_CREATION_FLAGS(priority),
-                );
+                ) {
+                    warn!(logger: logger, "Failed to restore priority class: {}", e);
+                }
             }
         }
     }

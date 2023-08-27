@@ -146,7 +146,8 @@ impl Controller<LegacyTransducer, NullLink> {
 }
 
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
-    fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+    #[doc(hidden)]
+    pub fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
@@ -374,7 +375,7 @@ mod tests {
         acoustics::Complex,
         amplitude::Amplitudes,
         autd3_device::AUTD3,
-        gain::Gain,
+        gain::{Gain, GainFilter},
         geometry::Vector3,
         modulation::Modulation,
         silencer_config::SilencerConfig,
@@ -955,7 +956,7 @@ mod tests {
             })
             .collect::<Vec<_>>();
 
-        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
 
         autd.send(&stm).unwrap();
 
@@ -974,7 +975,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .for_each(|((d, p), g)| {
                     assert_eq!(
                         d,
@@ -1000,7 +1001,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1021,7 +1022,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1060,7 +1061,7 @@ mod tests {
             })
             .collect::<Vec<_>>();
 
-        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
 
         autd.send(&stm).unwrap();
 
@@ -1079,7 +1080,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1108,7 +1109,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1150,7 +1151,7 @@ mod tests {
             })
             .collect::<Vec<_>>();
 
-        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().map(|g| Box::new(*g) as _));
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
         autd.send(&stm).unwrap();
 
         autd.link()
@@ -1168,7 +1169,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()
@@ -1197,7 +1198,7 @@ mod tests {
                 .emulators()
                 .iter()
                 .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-                .zip(gains[k].calc(autd.geometry()).unwrap())
+                .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
                 .zip(
                     autd.link()
                         .emulators()

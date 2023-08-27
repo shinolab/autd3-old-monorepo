@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,6 +53,10 @@ impl TxDatagram {
 
     pub fn num_transducers(&self) -> usize {
         self.body_pointer[self.num_bodies] / std::mem::size_of::<u16>()
+    }
+
+    pub fn dev_map(&self) -> &[usize] {
+        &self.device_map
     }
 
     pub fn transmitting_size(&self) -> usize {

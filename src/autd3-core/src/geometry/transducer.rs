@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 25/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,14 @@ pub trait Transducer: Send + Sync {
 
     /// Create transducer
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
+    /// Translate transducer
+    fn translate(&mut self, pos: Vector3) {
+        self.affine(pos, UnitQuaternion::identity());
+    }
+    /// Rotate transducer
+    fn rotate(&mut self, rot: UnitQuaternion) {
+        self.affine(Vector3::zeros(), rot);
+    }
     /// Affine transformation
     fn affine(&mut self, pos: Vector3, rot: UnitQuaternion);
     /// Calculate the phase of the transducer to align the phase at the specified position

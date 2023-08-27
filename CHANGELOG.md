@@ -1,12 +1,14 @@
 # 15.0.0
 
 - Remove `autd3-gain-holo::Backend`, add `autd3-gain-holo::LinAlgBackend` instead
-- Add `autd3-backend-arrayfire` 
+- Add `autd3-backend-arrayfire`
+- Add `LightweightTwinCATAUTDServer`
 - Rename `autd3-traits` to `autd3-derive`
 - Add C# documentation
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
 - Fix [#135](https://github.com/shinolab/autd3/issues/135): Compile error of 'autd3-backend-cuda v14.2.2'
 - Fix [#137](https://github.com/shinolab/autd3/issues/137): ninja is needed when build cpp examples on Windows
+- Rename `gain::Grouped` to `gain::Group`, and improve performance
 
 # 14.2.2
 

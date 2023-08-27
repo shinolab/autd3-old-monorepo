@@ -17,6 +17,7 @@ autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "14.2
 num = "0.4.0"
 thiserror = "1.0.31"
 spdlog-rs = "0.3.8"
+bitvec = "1.0.1"
 
 [features]
 default = []
@@ -27,7 +28,7 @@ parallel = ["autd3-core/parallel"]
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
 rand = "0.8.5"
-criterion = { version = "0.4", features = ["html_reports"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]
 name = "gain"

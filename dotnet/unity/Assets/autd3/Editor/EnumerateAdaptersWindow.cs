@@ -4,7 +4,7 @@
  * Created Date: 03/07/2020
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/10/2022
+ * Last Modified: 20/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -57,5 +57,5 @@ public class EnumerateAdaptersWindow : EditorWindow
 }
 
 #if UNITY_2020_2_OR_NEWER
-#nullable disable
+#nullable restore
 #endif

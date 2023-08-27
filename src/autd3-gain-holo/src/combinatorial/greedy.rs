@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use autd3_core::{
     acoustics::{propagate_tr, Sphere},
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer, Vector3},
     Drive, PI,
 };
@@ -70,7 +70,11 @@ impl Greedy {
 }
 
 impl<T: Transducer> Gain<T> for Greedy {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)
             .map(|i| Complex::new(0., 2.0 * PI * i as float / self.phase_div as float).exp())
             .collect::<Vec<_>>();
@@ -81,7 +85,20 @@ impl<T: Transducer> Gain<T> for Greedy {
 
         let amp = self.constraint.convert(1.0, 1.0);
         let mut res = vec![Drive { amp, phase: 0.0 }; geometry.num_transducers()];
-        let mut tr_idx: Vec<_> = (0..geometry.num_transducers()).collect();
+        let mut tr_idx: Vec<_> = match filter {
+            GainFilter::All => (0..geometry.num_transducers()).collect(),
+            GainFilter::Filter(filter) => geometry
+                .transducers()
+                .filter_map(|tr| {
+                    if filter[tr.idx()] {
+                        Some(tr.idx())
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
+        };
+
         let mut rng = rand::thread_rng();
         tr_idx.shuffle(&mut rng);
 

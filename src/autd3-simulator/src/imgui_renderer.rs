@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2023
+ * Last Modified: 16/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{ffi::CString, path::PathBuf, time::Instant};
 
 use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
-use autd3_core::{autd3_device::AUTD3, CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ};
+use autd3_core::{CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
 use imgui::{
@@ -133,6 +133,7 @@ impl ImGuiRenderer {
         &mut self,
         cpus: &mut [CPUEmulator],
         sources: &mut SoundSources,
+        body_pointer: &[usize],
         render: &Renderer,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
         settings: &mut ViewerSettings,
@@ -550,7 +551,7 @@ impl ImGuiRenderer {
                             cpus.iter().for_each(|cpu| {
                                 sources
                                     .drives_mut()
-                                    .skip(cpu.id() * AUTD3::NUM_TRANS_IN_UNIT)
+                                    .skip(body_pointer[cpu.id()])
                                     .zip(cpu.fpga().cycles())
                                     .for_each(|(s, c)| {
                                         s.set_wave_number(
@@ -589,7 +590,7 @@ impl ImGuiRenderer {
                             let v = if self.visible[i] { 1. } else { 0. };
                             sources
                                 .visibilities_mut()
-                                .skip(i * AUTD3::NUM_TRANS_IN_UNIT)
+                                .skip(body_pointer[i])
                                 .for_each(|s| *s = v);
                         }
                         ui.same_line();
@@ -598,7 +599,7 @@ impl ImGuiRenderer {
                             let v = if self.enable[i] { 1. } else { 0. };
                             sources
                                 .drives_mut()
-                                .skip(i * AUTD3::NUM_TRANS_IN_UNIT)
+                                .skip(body_pointer[i])
                                 .for_each(|s| s.enable = v);
                         }
                         ui.same_line();

@@ -4,12 +4,14 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 24/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
+
+#![allow(clippy::missing_safety_doc)]
 
 use std::time::Duration;
 
@@ -17,6 +19,7 @@ use autd3::{
     core::{
         datagram::{Datagram, NullBody, NullHeader},
         error::AUTDInternalError,
+        gain::{Gain, GainFilter},
         Drive, GainOp, GainSTMOp, GainSTMProps, Operation, SyncOp,
     },
     prelude::*,
@@ -286,7 +289,7 @@ impl DynamicDatagram for FocusSTM {
     }
 }
 
-impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
+impl<G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, G> {
     fn operation(
         &self,
         mode: TransMode,
@@ -307,7 +310,7 @@ impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
         let drives = self
             .gains()
             .iter()
-            .map(|gain| gain.calc(geometry))
+            .map(|gain| gain.calc(geometry, GainFilter::All))
             .collect::<Result<Vec<_>, _>>()?;
         match mode {
             TransMode::Legacy => Ok((
@@ -383,20 +386,22 @@ impl DynamicDatagram for Box<G> {
         match mode {
             TransMode::Legacy => Ok((
                 Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainLegacy::new(self.calc(geometry)?, || {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
+                Box::new(autd3::core::GainLegacy::new(
+                    self.calc(geometry, GainFilter::All)?,
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
+                )),
             )),
             TransMode::Advanced => Ok((
                 Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainAdvanced::new(self.calc(geometry)?, || {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
+                Box::new(autd3::core::GainAdvanced::new(
+                    self.calc(geometry, GainFilter::All)?,
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
+                )),
             )),
             TransMode::AdvancedPhase => Ok((
                 Box::<autd3::core::NullHeader>::default(),
                 Box::new(autd3::core::GainAdvancedPhase::new(
-                    self.calc(geometry)?,
+                    self.calc(geometry, GainFilter::All)?,
                     || geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),

@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 18/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use autd3_core::{
     error::AUTDInternalError,
     float,
-    gain::Gain,
+    gain::{Gain, GainFilter},
     geometry::{Geometry, Transducer},
     Drive,
 };
@@ -56,8 +56,12 @@ impl TransducerTest {
 }
 
 impl<T: Transducer> Gain<T> for TransducerTest {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, |tr| {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |tr| {
             if let Some(&(phase, amp)) = self.test_drive.get(&tr.idx()) {
                 Drive { phase, amp }
             } else {
@@ -96,7 +100,7 @@ mod tests {
 
         transducer_test = transducer_test.set(test_id, test_phase, test_amp);
 
-        let drives = transducer_test.calc(&geometry).unwrap();
+        let drives = transducer_test.calc(&geometry, GainFilter::All).unwrap();
 
         drives.iter().enumerate().for_each(|(idx, drive)| {
             if idx == test_id {

@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 19/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ pub fn run<T: Transducer + 'static, L: Link<T>>(mut autd: Controller<T, L>) -> a
     });
     println!("*************************************************************************************************");
 
-    let mut examples: Vec<(
+    let examples: Vec<(
         &'static str,
         &dyn Fn(&mut Controller<T, L>) -> anyhow::Result<bool>,
     )> = vec![
@@ -40,10 +40,8 @@ pub fn run<T: Transducer + 'static, L: Link<T>>(mut autd: Controller<T, L>) -> a
         ("Custom Gain & Modulation test", &custom),
         ("Flag test", &flag),
         ("TransducerTest test", &transtest),
+        ("Grouped Gain Test", &group),
     ];
-    if autd.geometry().num_devices() == 2 {
-        examples.push(("Grouped Gain Test", &grouped));
-    }
 
     loop {
         examples.iter().enumerate().for_each(|(i, (name, _))| {
