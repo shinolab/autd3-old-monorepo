@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -133,7 +133,7 @@ impl SliceViewer {
         self.model = model;
     }
 
-    pub fn model(&self) -> Matrix4 {
+    pub const fn model(&self) -> Matrix4 {
         self.model
     }
 

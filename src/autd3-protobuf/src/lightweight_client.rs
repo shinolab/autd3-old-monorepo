@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ impl Default for LightweightClientBuilder {
 }
 
 impl LightweightClientBuilder {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             transducers: vec![],
             device_map: vec![],
@@ -79,7 +79,7 @@ impl LightweightClientBuilder {
 
 impl LightweightClient {
     /// Create Client builder
-    pub fn builder() -> LightweightClientBuilder {
+    pub const fn builder() -> LightweightClientBuilder {
         LightweightClientBuilder::new()
     }
 

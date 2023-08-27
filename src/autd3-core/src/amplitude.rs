@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,16 +27,16 @@ impl Amplitudes {
     ///
     /// * `amp` - Amplitude
     ///
-    pub fn uniform(amp: float) -> Self {
+    pub const fn uniform(amp: float) -> Self {
         Self { amp }
     }
 
     /// Constructor. Set amplitude to 0.
-    pub fn none() -> Self {
+    pub const fn none() -> Self {
         Self::uniform(0.0)
     }
 
-    pub fn amp(&self) -> float {
+    pub const fn amp(&self) -> float {
         self.amp
     }
 }

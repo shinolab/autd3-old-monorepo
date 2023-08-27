@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -70,7 +70,7 @@ impl ViewerSettings {
         Self::default()
     }
 
-    pub(crate) fn slice_pos(&self) -> Vector3 {
+    pub(crate) const fn slice_pos(&self) -> Vector3 {
         Vector3::new(self.slice_pos_x, self.slice_pos_y, self.slice_pos_z)
     }
 

@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -46,9 +46,7 @@ pub fn gain_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyho
     let stm = GainSTM::new(1.0).add_gains_from_iter((0..point_num).map(|i| {
         let theta = 2.0 * PI * i as float / point_num as float;
         let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-
-        let g = Focus::new(center + p);
-        Box::new(g) as _
+        Focus::new(center + p)
     }));
 
     let m = Static::new();
