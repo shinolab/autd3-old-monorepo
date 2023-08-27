@@ -5,6 +5,7 @@
 - Rename `autd3-traits` to `autd3-derive`
 - Add C# documentation
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
+- Fix [#135](https://github.com/shinolab/autd3/issues/135): Compile error of 'autd3-backend-cuda v14.2.2'
 
 # 14.2.2
 
