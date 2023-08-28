@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 29/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION_MAJOR (0x89) /* v2.9 */
+#define CPU_VERSION_MAJOR (0x8A) /* v2.10 */
 #define CPU_VERSION_MINOR (0x00)
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
@@ -50,8 +50,7 @@
 
 #define WDT_CNT_MAX (1000)
 
-extern RX_STR0 _sRx0;
-extern RX_STR1 _sRx1;
+extern RX_STR _sRx;
 extern TX_STR _sTx;
 
 // fire when ethercat packet arrives
@@ -550,8 +549,8 @@ void update(void) {
 }
 
 void recv_ethercat(void) {
-  GlobalHeader* header = (GlobalHeader*)(_sRx1.data);
-  Body* body = (Body*)(_sRx0.data);
+  GlobalHeader* header = (GlobalHeader*)(_sRx.data);
+  Body* body = (Body*)(&_sRx.data[64]);
   if (header->msg_id == _msg_id) return;
   _msg_id = header->msg_id;
   _ack = ((uint16_t)(header->msg_id)) << 8;
