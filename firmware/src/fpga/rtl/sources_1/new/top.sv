@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,11 +34,11 @@ module top (
   bit clk, clk_l;
   bit reset;
 
-  bit PWM_OUT[DEPTH];
+  bit PWM_OUT[NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 
-  for (genvar i = 0; i < DEPTH; i++) begin : gen_output
+  for (genvar i = 0; i < NUM_TRANSDUCERS; i++) begin : gen_output
     assign XDCR_OUT[cvt_uid(i)+1] = PWM_OUT[i];
   end
 
@@ -62,7 +62,7 @@ module top (
 
   main #(
       .WIDTH(13),
-      .DEPTH(249)
+      .DEPTH(NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
       .CLK_L(clk_l),
