@@ -3,7 +3,7 @@
 // Created Date: 25/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 29/08/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,14 +86,8 @@ inline static void memset_volatile(volatile void *restrict dst, const int value,
 }
 
 typedef struct {
-  uint16_t reserved;
-  uint16_t data[TRANS_NUM]; /* Data from PC */
-} RX_STR0;
-
-typedef struct {
-  uint16_t reserved;
-  uint16_t data[64]; /* Header from PC */
-} RX_STR1;
+  uint16_t data[313];
+} RX_STR;
 
 typedef struct {
   uint16_t reserved;
