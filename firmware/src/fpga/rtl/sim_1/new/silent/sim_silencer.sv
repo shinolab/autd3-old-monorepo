@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -104,17 +104,63 @@ module sim_silencer ();
     end
   endtask
 
-  initial begin
+  initial begin  
+    sim_helper_random.init();
+
+    @(posedge locked);
+
+    // from 0 to random
     step = 100;
     n_repeat = int'(MaxCycle / step / 2);
+    for (int i = 0; i < DEPTH; i++) begin
+      cycle[i] = sim_helper_random.range(MaxCycle, 2000);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
+      duty_buf[i]  = sim_helper_random.range(cycle[i] / 2, 0);
+      phase_buf[i] = sim_helper_random.range(cycle[i] - 1, 0);
+    end
+    repeat (n_repeat) begin
+      fork
+        set();
+        wait_calc();
+      join
+    end
+    fork
+      set();
+      check();
+    join
+
+    // from random to random with random step
+    repeat (100) begin
+      step = sim_helper_random.range(MaxCycle, 2);
+      n_repeat = int'(MaxCycle / step / 2);
+      for (int i = 0; i < DEPTH; i++) begin
+        cycle[i] = sim_helper_random.range(MaxCycle, 2000);
+      end
+      for (int i = 0; i < DEPTH; i++) begin
+        duty_buf[i]  = sim_helper_random.range(cycle[i] / 2, 0);
+        phase_buf[i] = sim_helper_random.range(cycle[i] - 1, 0);
+      end
+      repeat (n_repeat) begin
+        fork
+          set();
+          wait_calc();
+        join
+      end
+      fork
+        set();
+        check();
+      join
+    end
+
+    // disable
+    step = 16'hFFFF;
+    n_repeat = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
       cycle[i] = sim_helper_random.range(MaxCycle, 2000);
     end
 
-    @(posedge locked);
-
-    // from 0 to random
     for (int i = 0; i < DEPTH; i++) begin
       duty_buf[i]  = sim_helper_random.range(cycle[i] / 2, 0);
       phase_buf[i] = sim_helper_random.range(cycle[i] - 1, 0);
