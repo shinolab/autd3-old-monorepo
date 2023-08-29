@@ -4,7 +4,7 @@
  * Created Date: 28/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 29/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ module sim_filter ();
       .DOUT_VALID(dout_valid)
   );
 
-  localparam int MaxCycle = 8000;
+  localparam int MaxCycle = 8191;
 
   int phase_expect;
   int duty_expect;
@@ -134,16 +134,57 @@ module sim_filter ();
     filter_duty[3] = -2048;
     // phase overrange
     phase_buf[0] = 2048;
-    filter_phase[0] = 4096;
+    filter_phase[0] = 4095;
     // phase underrange
     phase_buf[1] = 2048;
-    filter_phase[1] = -4096;
+    filter_phase[1] = -4095;
     // phase cycle
     phase_buf[2] = 2048;
     filter_phase[2] = 2048;
     // phase 0
     phase_buf[3] = 2048;
     filter_phase[3] = -2048;
+    
+    fork
+      set();
+      check();
+    join
+
+    for (int i = 0; i < DEPTH; i++) begin
+      cycle[i] = 8191;
+    end
+
+    // coener max
+    duty_buf[4] = 8191;
+    filter_duty[4] = 8191;
+    phase_buf[4] = 8191;
+    filter_phase[4] = -8190;
+    duty_buf[5] = 8191;
+    filter_duty[5] = -8191;
+    phase_buf[5] = 8191;
+    filter_phase[5] = 8190;
+    duty_buf[6] = 8191;
+    filter_duty[6] = 1;
+    phase_buf[6] = 8190;
+    filter_phase[6] = 1;
+    duty_buf[7] = 8191;
+    filter_duty[7] = 0;
+    phase_buf[7] = 8190;
+    filter_phase[7] = 0;
+    
+    // coener min
+    duty_buf[8] = 0;
+    filter_duty[8] = 8191;
+    phase_buf[8] = 0;
+    filter_phase[8] = 8190;
+    duty_buf[9] = 0;
+    filter_duty[9] = -8191;
+    phase_buf[9] = 0;
+    filter_phase[9] = -8190;
+    duty_buf[10] = 0;
+    filter_duty[10] = -1;
+    phase_buf[10] = 0;
+    filter_phase[10] = -1;
     
     fork
       set();
