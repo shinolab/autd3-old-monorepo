@@ -4,14 +4,14 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2023
+ * Last Modified: 31/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{float, PI};
+use crate::{float, PI};
 
 use super::{Quaternion, UnitQuaternion, Vector3};
 
@@ -21,10 +21,6 @@ fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
 }
 
 pub trait Transducer: Send + Sync {
-    type Gain: autd3_driver::operation::GainOp;
-    type Sync: autd3_driver::operation::SyncOp;
-    type GainSTM: autd3_driver::operation::GainSTMOp;
-
     /// Create transducer
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
     /// Translate transducer

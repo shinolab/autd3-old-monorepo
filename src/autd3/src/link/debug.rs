@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,12 @@
 
 use std::time::Duration;
 
-use autd3_core::{
+use autd3_driver::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::{get_logger, Link},
-    CPUControlFlags, RxDatagram, TxDatagram, FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV, MSG_CLEAR,
-    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
-    MSG_RD_FPGA_VERSION_MINOR,
+    link::Link,
+    logger::get_logger,
+    RxDatagram, TxDatagram, FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV,
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -84,11 +83,10 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus = geometry
-            .device_map()
             .iter()
             .enumerate()
-            .map(|(i, &dev)| {
-                let mut cpu = CPUEmulator::new(i, dev);
+            .map(|(i, dev)| {
+                let mut cpu = CPUEmulator::new(i, dev.num_transducers());
                 cpu.init();
                 cpu
             })
@@ -124,111 +122,111 @@ impl<T: Transducer> Link<T> for Debug {
             cpu.send(tx);
         });
 
-        match tx.header().msg_id {
-            MSG_CLEAR => {
-                debug!(logger: self.logger,"\tOP: CLEAR");
-            }
-            MSG_RD_CPU_VERSION => {
-                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION");
-            }
-            MSG_RD_CPU_VERSION_MINOR => {
-                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION_MINOR");
-            }
-            MSG_RD_FPGA_VERSION => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION");
-            }
-            MSG_RD_FPGA_VERSION_MINOR => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION_MINOR");
-            }
-            MSG_RD_FPGA_FUNCTION => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_FUNCTION");
-            }
-            _ => {}
-        }
+        // match tx.header().msg_id {
+        //     MSG_CLEAR => {
+        //         debug!(logger: self.logger,"\tOP: CLEAR");
+        //     }
+        //     MSG_RD_CPU_VERSION => {
+        //         debug!(logger: self.logger,"\tOP: RD_CPU_VERSION");
+        //     }
+        //     MSG_RD_CPU_VERSION_MINOR => {
+        //         debug!(logger: self.logger,"\tOP: RD_CPU_VERSION_MINOR");
+        //     }
+        //     MSG_RD_FPGA_VERSION => {
+        //         debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION");
+        //     }
+        //     MSG_RD_FPGA_VERSION_MINOR => {
+        //         debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION_MINOR");
+        //     }
+        //     MSG_RD_FPGA_FUNCTION => {
+        //         debug!(logger: self.logger,"\tOP: RD_FPGA_FUNCTION");
+        //     }
+        //     _ => {}
+        // }
 
-        debug!(logger: self.logger,"\tCPU Flag: {}", tx.header().cpu_flag);
-        debug!(logger: self.logger,"\tFPGA Flag: {}", tx.header().fpga_flag);
+        // debug!(logger: self.logger,"\tCPU Flag: {}", tx.header().cpu_flag);
+        // debug!(logger: self.logger,"\tFPGA Flag: {}", tx.header().fpga_flag);
 
-        self.cpus.iter().for_each(|cpu| {
-            debug!(logger: self.logger,"Status: {}", cpu.id());
-            let fpga = cpu.fpga();
-            if fpga.is_stm_mode() {
-                if fpga.is_stm_gain_mode() {
-                    if fpga.is_legacy_mode() {
-                        debug!(logger: self.logger,"\tGain STM Legacy mode");
-                    } else {
-                        debug!(logger: self.logger,"\tGain STM mode");
-                    }
-                } else {
-                    debug!(logger: self.logger,"\tFocus STM mode"); 
-                }
-                if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
-                    debug!(logger: self.logger,"\t\tSTM BEGIN");
-                }
-                if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
-                    let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
-                    debug!(logger: self.logger,
-                        "\t\tSTM END: cycle = {}, sampling_frequency = {} ({}/{}))",
-                        fpga.stm_cycle(),
-                        FPGA_SUB_CLK_FREQ / freq_div_stm,
-                        FPGA_SUB_CLK_FREQ,
-                        freq_div_stm
-                    );
-                    if self.logger.should_log(Level::Trace) {
-                        let cycles = fpga.cycles();
-                        ( 0..fpga.stm_cycle()).for_each(|j| {
-                            trace!(logger: self.logger,"\tSTM[{}]:", j);
-                            trace!(logger: self.logger,
-                                "{}",
-                                fpga.duties_and_phases(j).iter()
-                                    .zip(cycles.iter())
-                                    .enumerate()
-                                    .map(|(i, (d, c))| {
-                                        format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
-                                    })
-                                    .collect::<Vec<_>>()
-                                    .join("")
-                            );
-                        });
-                    }
-                }
-            } else if fpga.is_legacy_mode() {
-                debug!(logger: self.logger,"\tNormal Legacy mode");
-            } else {
-                debug!(logger: self.logger,"\tNormal Advanced mode");
-            }
-            debug!(logger: self.logger,
-                "\tSilencer step = {}",
-                fpga.silencer_step(),
-            );
-            let m = fpga.modulation();
-            let freq_div_m = fpga.modulation_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
-            debug!(logger: self.logger,
-                "\tModulation size = {}, sampling_frequency = {} ({}/{})",
-                m.len(),
-                FPGA_SUB_CLK_FREQ / freq_div_m,
-                FPGA_SUB_CLK_FREQ,
-                freq_div_m
-            );
-            if fpga.is_outputting() {
-                debug!(logger: self.logger,"\t\t modulation = {:?}", m);
-                if !fpga.is_stm_mode() && self.logger.should_log(Level::Trace) {
-                    trace!(logger: self.logger,
-                        "{}", 
-                        fpga.duties_and_phases(0).iter()
-                            .zip(fpga.cycles().iter())
-                            .enumerate()
-                            .map(|(i, (d, c))| {
-                                format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
-                            })
-                            .collect::<Vec<_>>()
-                            .join("")
-                    );
-                }
-            } else {
-                info!(logger: self.logger,"\tWithout output");
-            }
-        });
+        // self.cpus.iter().for_each(|cpu| {
+        //     debug!(logger: self.logger,"Status: {}", cpu.id());
+        //     let fpga = cpu.fpga();
+        //     if fpga.is_stm_mode() {
+        //         if fpga.is_stm_gain_mode() {
+        //             if fpga.is_legacy_mode() {
+        //                 debug!(logger: self.logger,"\tGain STM Legacy mode");
+        //             } else {
+        //                 debug!(logger: self.logger,"\tGain STM mode");
+        //             }
+        //         } else {
+        //             debug!(logger: self.logger,"\tFocus STM mode");
+        //         }
+        //         if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
+        //             debug!(logger: self.logger,"\t\tSTM BEGIN");
+        //         }
+        //         if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
+        //             let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
+        //             debug!(logger: self.logger,
+        //                 "\t\tSTM END: cycle = {}, sampling_frequency = {} ({}/{}))",
+        //                 fpga.stm_cycle(),
+        //                 FPGA_SUB_CLK_FREQ / freq_div_stm,
+        //                 FPGA_SUB_CLK_FREQ,
+        //                 freq_div_stm
+        //             );
+        //             if self.logger.should_log(Level::Trace) {
+        //                 let cycles = fpga.cycles();
+        //                 ( 0..fpga.stm_cycle()).for_each(|j| {
+        //                     trace!(logger: self.logger,"\tSTM[{}]:", j);
+        //                     trace!(logger: self.logger,
+        //                         "{}",
+        //                         fpga.duties_and_phases(j).iter()
+        //                             .zip(cycles.iter())
+        //                             .enumerate()
+        //                             .map(|(i, (d, c))| {
+        //                                 format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
+        //                             })
+        //                             .collect::<Vec<_>>()
+        //                             .join("")
+        //                     );
+        //                 });
+        //             }
+        //         }
+        //     } else if fpga.is_legacy_mode() {
+        //         debug!(logger: self.logger,"\tNormal Legacy mode");
+        //     } else {
+        //         debug!(logger: self.logger,"\tNormal Advanced mode");
+        //     }
+        //     debug!(logger: self.logger,
+        //         "\tSilencer step = {}",
+        //         fpga.silencer_step(),
+        //     );
+        //     let m = fpga.modulation();
+        //     let freq_div_m = fpga.modulation_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
+        //     debug!(logger: self.logger,
+        //         "\tModulation size = {}, sampling_frequency = {} ({}/{})",
+        //         m.len(),
+        //         FPGA_SUB_CLK_FREQ / freq_div_m,
+        //         FPGA_SUB_CLK_FREQ,
+        //         freq_div_m
+        //     );
+        //     if fpga.is_outputting() {
+        //         debug!(logger: self.logger,"\t\t modulation = {:?}", m);
+        //         if !fpga.is_stm_mode() && self.logger.should_log(Level::Trace) {
+        //             trace!(logger: self.logger,
+        //                 "{}",
+        //                 fpga.duties_and_phases(0).iter()
+        //                     .zip(fpga.cycles().iter())
+        //                     .enumerate()
+        //                     .map(|(i, (d, c))| {
+        //                         format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
+        //                     })
+        //                     .collect::<Vec<_>>()
+        //                     .join("")
+        //             );
+        //         }
+        //     } else {
+        //         info!(logger: self.logger,"\tWithout output");
+        //     }
+        // });
 
         Ok(true)
     }
@@ -270,19 +268,26 @@ impl<T: Transducer> Link<T> for Debug {
         if timeout.is_zero() {
             return <Self as Link<T>>::receive(self, rx);
         }
-        <Self as Link<T>>::wait_msg_processed(self, tx.header().msg_id, rx, timeout)
+        <Self as Link<T>>::wait_msg_processed(self, tx, rx, timeout)
     }
 
     fn wait_msg_processed(
         &mut self,
-        msg_id: u8,
+        tx: &TxDatagram,
         rx: &mut RxDatagram,
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
         loop {
             std::thread::sleep(std::time::Duration::from_millis(1));
-            if <Self as Link<T>>::receive(self, rx)? && rx.is_msg_processed(msg_id) {
+            if !<Self as Link<T>>::receive(self, rx)? {
+                continue;
+            }
+            if tx
+                .headers()
+                .zip(rx.iter())
+                .all(|(h, r)| h.msg_id == r.msg_id)
+            {
                 return Ok(true);
             }
             if start.elapsed() > timeout {

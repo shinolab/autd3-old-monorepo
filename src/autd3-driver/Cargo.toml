@@ -1,6 +1,6 @@
 [package]
 name = "autd3-driver"
-version = "14.2.2"
+version = "15.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -18,6 +18,9 @@ use_meter = []
 [dependencies]
 bitflags = "2.0.2"
 thiserror = "1.0.31"
+nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
+spdlog-rs = "0.3.10"
+bitvec = "1.0.1"
 
 [dev-dependencies]
 rand = "0.8.5"

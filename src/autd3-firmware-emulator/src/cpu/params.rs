@@ -4,20 +4,26 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-pub const CPU_VERSION_MAJOR: u16 = 0x89;
+pub const CPU_VERSION_MAJOR: u16 = 0x8A;
 pub const CPU_VERSION_MINOR: u16 = 0x00;
 
 pub const BRAM_SELECT_CONTROLLER: u8 = 0x0;
 pub const BRAM_SELECT_MOD: u8 = 0x1;
 pub const BRAM_SELECT_NORMAL: u8 = 0x2;
 pub const BRAM_SELECT_STM: u8 = 0x3;
+
+pub const BRAM_SELECT_CONTROLLER_MAIN: u8 = 0b000;
+pub const BRAM_SELECT_CONTROLLER_CYCLE: u8 = 0b001;
+pub const BRAM_SELECT_CONTROLLER_DELAY: u8 = 0b010;
+pub const BRAM_SELECT_CONTROLLER_FILTER_DUTY: u8 = 0b011;
+pub const BRAM_SELECT_CONTROLLER_FILTER_PHASE: u8 = 0b100;
 
 pub const CTL_FLAG_OP_MODE_BIT: u16 = 9;
 pub const CTL_FLAG_OP_MODE: u16 = 1 << CTL_FLAG_OP_MODE_BIT;
@@ -27,9 +33,9 @@ pub const BRAM_ADDR_FPGA_INFO: u16 = 0x001;
 pub const BRAM_ADDR_MOD_ADDR_OFFSET: u16 = 0x020;
 pub const BRAM_ADDR_MOD_CYCLE: u16 = 0x021;
 pub const BRAM_ADDR_MOD_FREQ_DIV_0: u16 = 0x022;
-pub const BRAM_ADDR_VERSION_NUM: u16 = 0x03F;
-pub const BRAM_ADDR_VERSION_NUM_MINOR: u16 = 0x03E;
-pub const BRAM_ADDR_SILENT_STEP: u16 = 0x041;
+pub const BRAM_ADDR_VERSION_NUM: u16 = 0x030;
+pub const BRAM_ADDR_VERSION_NUM_MINOR: u16 = 0x031;
+pub const BRAM_ADDR_SILENT_STEP: u16 = 0x040;
 pub const BRAM_ADDR_STM_ADDR_OFFSET: u16 = 0x050;
 pub const BRAM_ADDR_STM_CYCLE: u16 = 0x051;
 pub const BRAM_ADDR_STM_FREQ_DIV_0: u16 = 0x052;
@@ -38,6 +44,8 @@ pub const BRAM_ADDR_STM_START_IDX: u16 = 0x056;
 pub const BRAM_ADDR_STM_FINISH_IDX: u16 = 0x057;
 pub const BRAM_ADDR_CYCLE_BASE: u16 = 0x100;
 pub const BRAM_ADDR_MOD_DELAY_BASE: u16 = 0x200;
+pub const BRAM_ADDR_FILTER_DUTY_BASE: u16 = 0x300;
+pub const BRAM_ADDR_FILTER_PHASE_BASE: u16 = 0x400;
 
 pub const MOD_BUF_SEGMENT_SIZE_WIDTH: u32 = 15;
 pub const MOD_BUF_SEGMENT_SIZE: u32 = 1 << MOD_BUF_SEGMENT_SIZE_WIDTH;
@@ -55,3 +63,13 @@ pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK: u32 = GAIN_STM_LEGACY_BUF_SEGME
 pub const GAIN_STM_MODE_PHASE_DUTY_FULL: u16 = 0x0001;
 pub const GAIN_STM_MODE_PHASE_FULL: u16 = 0x0002;
 pub const GAIN_STM_MODE_PHASE_HALF: u16 = 0x0004;
+
+pub const TAG_NONE: u8 = 0x00;
+pub const TAG_CLEAR: u8 = 0x01;
+pub const SYNC: u8 = 0x02;
+pub const MODULATION: u8 = 0x10;
+pub const SILENCER: u8 = 0x20;
+pub const GAIN: u8 = 0x30;
+pub const FOCUS_STM: u8 = 0x40;
+pub const GAIN_STM: u8 = 0x50;
+pub const FILTER: u8 = 0x60;
