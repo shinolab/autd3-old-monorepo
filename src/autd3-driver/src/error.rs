@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 31/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use thiserror::Error;
 use crate::FPGA_SUB_CLK_FREQ_DIV;
 
 #[derive(Error, Debug)]
-pub enum DriverError {
+pub enum AUTDInternalError {
     #[error(
         "{} transducer{} connected, but you try to use {}", a, if *a == 1 {" is"} else {"s are"}, b)]
     NumberOfTransducerMismatch { a: usize, b: usize },

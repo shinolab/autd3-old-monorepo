@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/05/2023
+// Last Modified: 01/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,9 +27,9 @@
 #define BRAM_ADDR_MOD_CYCLE (0x021)
 #define BRAM_ADDR_MOD_FREQ_DIV_0 (0x022)
 #define BRAM_ADDR_MOD_FREQ_DIV_1 (0x023)
-#define BRAM_ADDR_VERSION_NUM (0x03F)
-#define BRAM_ADDR_VERSION_NUM_MINOR (0x03E)
-#define BRAM_ADDR_SILENT_STEP (0x041)
+#define BRAM_ADDR_VERSION_NUM (0x030)
+#define BRAM_ADDR_VERSION_NUM_MINOR (0x031)
+#define BRAM_ADDR_SILENT_STEP (0x040)
 #define BRAM_ADDR_STM_MEM_SEGMENT (0x050)
 #define BRAM_ADDR_STM_CYCLE (0x051)
 #define BRAM_ADDR_STM_FREQ_DIV_0 (0x052)
@@ -40,6 +40,8 @@
 #define BRAM_ADDR_STM_FINISH_IDX (0x057)
 #define BRAM_ADDR_CYCLE_BASE (0x100)
 #define BRAM_ADDR_MOD_DELAY_BASE (0x200)
+#define BRAM_ADDR_FILTER_DUTY_BASE (0x300)
+#define BRAM_ADDR_FILTER_PHASE_BASE (0x400)
 
 #define CTL_FLAG_LEGACY_MODE_BIT (0)
 #define CTL_FLAG_FORCE_FAN_BIT (4)

@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 use std::ops::{Deref, DerefMut};
 
-use crate::{Header, EC_OUTPUT_FRAME_SIZE};
+use crate::{
+    geometry::{Geometry, Transducer},
+    Header, EC_OUTPUT_FRAME_SIZE,
+};
 
 #[derive(Clone)]
 pub struct TxDatagram {
@@ -23,8 +26,11 @@ pub struct TxDatagram {
 }
 
 impl TxDatagram {
-    pub fn new(device_map: &[usize]) -> Self {
-        let device_map = device_map.to_vec();
+    pub fn new<T: Transducer>(geometry: &Geometry<T>) -> Self {
+        let device_map = geometry
+            .iter()
+            .map(|dev| dev.num_transducers())
+            .collect::<Vec<_>>();
         let data_pointer = [0usize]
             .iter()
             .chain(device_map.iter())

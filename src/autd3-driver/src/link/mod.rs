@@ -4,25 +4,21 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-mod logger;
-
-pub use logger::get_logger;
-pub use logger::get_logger_with_custom_func;
-
 use std::time::Duration;
 
 use crate::error::AUTDInternalError;
 use crate::geometry::Geometry;
 use crate::geometry::Transducer;
+use crate::TxDatagram;
 
-use autd3_driver::{RxDatagram, TxDatagram};
+use crate::RxDatagram;
 
 /// Link is a interface to the AUTD device
 pub trait Link<T: Transducer>: Send {
@@ -51,20 +47,27 @@ pub trait Link<T: Transducer>: Send {
         if timeout.is_zero() {
             return self.receive(rx);
         }
-        self.wait_msg_processed(tx.header().msg_id, rx, timeout)
+        self.wait_msg_processed(tx, rx, timeout)
     }
 
     /// Wait until message is processed
     fn wait_msg_processed(
         &mut self,
-        msg_id: u8,
+        tx: &TxDatagram,
         rx: &mut RxDatagram,
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
         loop {
             std::thread::sleep(std::time::Duration::from_millis(1));
-            if self.receive(rx)? && rx.is_msg_processed(msg_id) {
+            if !self.receive(rx)? {
+                continue;
+            }
+            if tx
+                .headers()
+                .zip(rx.iter())
+                .all(|(h, r)| h.msg_id == r.msg_id)
+            {
                 return Ok(true);
             }
             if start.elapsed() > timeout {

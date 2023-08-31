@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 30/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -35,15 +35,28 @@ mod unit {
 pub use unit::*;
 pub const MILLIMETER: float = METER / 1000.0;
 
-pub const VERSION_NUM_MAJOR: u8 = 0x89;
-pub const VERSION_NUM_MINOR: u8 = 0x00;
+#[derive(Clone, Copy, Debug)]
+pub struct Drive {
+    /// Phase of ultrasound (from 0 to 2π)
+    pub phase: float,
+    /// Normalized amplitude of ultrasound (from 0 to 1)
+    pub amp: float,
+}
 
-pub const MAX_CYCLE: u16 = 8191;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-pub const SAMPLING_FREQ_DIV_MIN: u32 = 4096;
+    #[test]
+    fn drive() {
+        let d = Drive {
+            phase: 0.1,
+            amp: 0.2,
+        };
+        let dc = d.clone();
+        assert_eq!(d.phase, dc.phase);
+        assert_eq!(d.amp, dc.amp);
 
-pub const MOD_BUF_SIZE_MAX: usize = 65536;
-
-pub const FOCUS_STM_BUF_SIZE_MAX: usize = 65536;
-pub const GAIN_STM_BUF_SIZE_MAX: usize = 1024;
-pub const GAIN_STM_LEGACY_BUF_SIZE_MAX: usize = 2048;
+        dbg!(d);
+    }
+}
