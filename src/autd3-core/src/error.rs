@@ -24,8 +24,6 @@ pub enum AUTDInternalError {
     LinkError(String),
     #[error("{0}")]
     GainError(String),
-    #[error("{0}")]
-    ModulationError(String),
     #[error("The maximum number of transducers per device is 256")]
     TooManyTransducers,
     #[error("{0}")]

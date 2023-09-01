@@ -4,19 +4,19 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
+use autd3_derive::Modulation;
+use autd3_driver::{
+    defined::float,
     error::AUTDInternalError,
-    float,
     modulation::{Modulation, ModulationProperty},
 };
-use autd3_derive::Modulation;
 use hound::SampleFormat;
 
 use std::path::Path;

@@ -11,7 +11,7 @@
  *
  */
 
-// mod audio_file;
+mod audio_file;
 // mod bessel;
 mod custom;
 // mod flag;
@@ -22,7 +22,7 @@ mod focus;
 // mod stm;
 // mod transtest;
 
-// pub use audio_file::*;
+pub use audio_file::*;
 // pub use bessel::*;
 pub use custom::*;
 // pub use flag::*;
