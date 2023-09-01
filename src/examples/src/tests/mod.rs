@@ -13,7 +13,7 @@
 
 // mod audio_file;
 // mod bessel;
-// mod custom;
+mod custom;
 // mod flag;
 mod focus;
 // mod group;
@@ -24,7 +24,7 @@ mod focus;
 
 // pub use audio_file::*;
 // pub use bessel::*;
-// pub use custom::*;
+pub use custom::*;
 // pub use flag::*;
 pub use focus::*;
 // pub use group::*;

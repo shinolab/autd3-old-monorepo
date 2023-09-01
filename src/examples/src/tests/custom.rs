@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,35 +12,33 @@
  */
 
 use autd3::{
-    core::{
+    derive::{Gain, Modulation},
+    driver::{
+        defined::{float, Drive},
         error::AUTDInternalError,
-        float,
-        gain::Gain,
-        geometry::{Geometry, Transducer},
+        gain::{Gain, GainFilter},
+        geometry::{Device, Transducer},
         modulation::Modulation,
-        Drive,
     },
     prelude::*,
-    traits::{Gain, Modulation},
 };
-use autd3_core::gain::GainFilter;
 
 #[derive(Gain, Clone, Copy)]
-pub struct Uniform {}
+pub struct MyUniform {}
 
-impl Uniform {
+impl MyUniform {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl<T: Transducer> Gain<T> for Uniform {
+impl<T: Transducer> Gain<T> for MyUniform {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        device: &Device<T>,
         filter: GainFilter,
     ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, filter, |_| Drive {
+        Ok(Self::transform(device, filter, |_| Drive {
             phase: 0.0,
             amp: 1.0,
         }))
@@ -66,10 +64,13 @@ impl Modulation for Burst {
     }
 }
 
-pub fn custom<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.send(SilencerConfig::none())?;
+pub fn custom<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+where
+    autd3::driver::operation::GainOp<T, MyUniform>: autd3::driver::operation::Operation<T>,
+{
+    autd.send(Silencer::disable())?;
 
-    let g = Uniform::new();
+    let g = MyUniform::new();
     let m = Burst::new();
 
     autd.send((m, g))?;
