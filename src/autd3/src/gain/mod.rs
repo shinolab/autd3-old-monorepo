@@ -11,7 +11,7 @@
  *
  */
 
-// pub mod bessel;
+pub mod bessel;
 // pub mod cache;
 mod focus;
 mod null;
@@ -20,7 +20,7 @@ mod null;
 // pub mod trans_test;
 // pub mod uniform;
 
-// pub use bessel::Bessel;
+pub use bessel::Bessel;
 // pub use cache::Cache;
 pub use focus::Focus;
 // pub use group::Group;
