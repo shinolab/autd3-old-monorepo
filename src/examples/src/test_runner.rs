@@ -31,7 +31,7 @@ macro_rules! run {
             &dyn Fn(&mut _) -> anyhow::Result<bool>,
         )> = vec![
             ("Single focus test", &focus),
-            // ("Bessel beam test", &bessel),
+            ("Bessel beam test", &bessel),
             // ("Plane wave test", &plane),
             ("Wav modulation test", &audio_file),
             // ("FocusSTM test", &focus_stm),

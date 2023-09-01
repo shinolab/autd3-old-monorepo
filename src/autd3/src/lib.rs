@@ -25,73 +25,52 @@ pub use autd3_driver as driver;
 
 pub use controller::Controller;
 
-// #[cfg(test)]
-// mod tests {
-//     use autd3_driver::{
-//         error::AUTDInternalError,
-//         float,
-//         geometry::{Device, Geometry, Transducer, UnitQuaternion, Vector3},
-//         METER,
-//     };
-//     use std::marker::PhantomData;
+#[cfg(test)]
+mod tests {
+    use autd3_driver::{
+        defined::float,
+        geometry::{Device, Geometry, IntoDevice, Transducer, Vector3},
+    };
 
-//     pub struct GeometryBuilder<T: Transducer> {
-//         attenuation: float,
-//         sound_speed: float,
-//         transducers: Vec<(usize, Vector3, UnitQuaternion)>,
-//         device_map: Vec<usize>,
-//         phantom: PhantomData<T>,
-//     }
+    pub struct GeometryBuilder<T: Transducer> {
+        devices: Vec<Device<T>>,
+    }
 
-//     impl<T: Transducer> Default for GeometryBuilder<T> {
-//         fn default() -> Self {
-//             Self::new()
-//         }
-//     }
+    impl<T: Transducer> Default for GeometryBuilder<T> {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
 
-//     impl<T: Transducer> GeometryBuilder<T> {
-//         pub fn new() -> GeometryBuilder<T> {
-//             GeometryBuilder::<T> {
-//                 attenuation: 0.0,
-//                 sound_speed: 340.0 * METER,
-//                 transducers: vec![],
-//                 device_map: vec![],
-//                 phantom: PhantomData,
-//             }
-//         }
+    impl<T: Transducer> GeometryBuilder<T> {
+        pub fn new() -> GeometryBuilder<T> {
+            GeometryBuilder::<T> { devices: vec![] }
+        }
 
-//         pub fn add_device<D: Device>(&mut self, dev: D) -> &mut Self {
-//             let id = self.transducers.len();
-//             let mut t = dev.get_transducers(id);
-//             self.device_map.push(t.len());
-//             self.transducers.append(&mut t);
-//             self
-//         }
+        pub fn add_device<D: IntoDevice<T>>(&mut self, dev: D) -> &mut Self {
+            self.devices.push(dev.into_device(
+                self.devices.len(),
+                self.devices.iter().map(|dev| dev.num_transducers()).sum(),
+            ));
+            self
+        }
 
-//         pub fn build(&mut self) -> Result<Geometry<T>, AUTDInternalError> {
-//             Geometry::<T>::new(
-//                 self.transducers
-//                     .iter()
-//                     .map(|&(id, pos, rot)| T::new(id, pos, rot))
-//                     .collect(),
-//                 self.device_map.clone(),
-//                 self.sound_speed,
-//                 self.attenuation,
-//             )
-//         }
-//     }
+        pub fn build(mut self) -> Geometry<T> {
+            Geometry::<T>::new(self.devices)
+        }
+    }
 
-//     pub fn random_vector3(
-//         range_x: std::ops::Range<float>,
-//         range_y: std::ops::Range<float>,
-//         range_z: std::ops::Range<float>,
-//     ) -> Vector3 {
-//         use rand::Rng;
-//         let mut rng = rand::thread_rng();
-//         Vector3::new(
-//             rng.gen_range(range_x),
-//             rng.gen_range(range_y),
-//             rng.gen_range(range_z),
-//         )
-//     }
-// }
+    pub fn random_vector3(
+        range_x: std::ops::Range<float>,
+        range_y: std::ops::Range<float>,
+        range_z: std::ops::Range<float>,
+    ) -> Vector3 {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        Vector3::new(
+            rng.gen_range(range_x),
+            rng.gen_range(range_y),
+            rng.gen_range(range_z),
+        )
+    }
+}

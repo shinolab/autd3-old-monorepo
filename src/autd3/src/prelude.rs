@@ -17,8 +17,8 @@ pub use crate::{
     autd3_device::AUTD3,
     controller::Controller,
     error::AUTDError,
-    // gain::{Bessel, Focus, Group, Null, Plane, TransducerTest},
-    gain::{Focus, Null},
+    // gain::{Group, Plane, TransducerTest},
+    gain::{Bessel, Focus, Null},
     link::NullLink,
     // modulation::{RadiationPressure, Sine, SineLegacy, Square, Static},
     modulation::{Sine, Static},
@@ -29,12 +29,10 @@ pub use crate::{
 
 pub use autd3_driver::{
     // modulation::ModulationProperty,
-    // silencer_config::SilencerConfig,
     // stm::{ControlPoint, FocusSTM, GainSTM, GainSTMMode},
     datagram::{Clear, Silencer, Stop},
     // amplitude::Amplitudes,
     // autd3_device::AUTD3,
-    // clear::Clear,
     // datagram::DatagramT,
     // delay::ModDelay,
     defined::{float, METER, MILLIMETER, PI},
