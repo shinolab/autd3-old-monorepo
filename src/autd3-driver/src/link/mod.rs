@@ -13,12 +13,11 @@
 
 use std::time::Duration;
 
-use crate::error::AUTDInternalError;
-use crate::geometry::Geometry;
-use crate::geometry::Transducer;
-use crate::TxDatagram;
-
-use crate::RxDatagram;
+use crate::{
+    cpu::{RxDatagram, TxDatagram},
+    error::AUTDInternalError,
+    geometry::{Geometry, Transducer},
+};
 
 /// Link is a interface to the AUTD device
 pub trait Link<T: Transducer>: Send {

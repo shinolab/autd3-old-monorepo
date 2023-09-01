@@ -11,30 +11,29 @@
  *
  */
 
-use std::time::Duration;
+use crate::{
+    datagram::*,
+    error::AUTDInternalError,
+    geometry::*,
+    operation::{ConfigSilencerOp, StopOp},
+};
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
-
-/// Datagram for clear all data in devices
+/// Datagram to stop output
 #[derive(Default)]
-pub struct Clear {}
+pub struct Stop {}
 
-impl Clear {
+impl Stop {
     pub const fn new() -> Self {
         Self {}
     }
 }
 
-impl<T: Transducer> Datagram<T> for Clear {
-    type O1 = crate::operation::ClearOp;
-    type O2 = crate::operation::NullOp;
-
-    fn timeout(&self) -> Option<Duration> {
-        Some(Duration::from_millis(200))
-    }
+impl<T: Transducer> Datagram<T> for Stop {
+    type O1 = ConfigSilencerOp;
+    type O2 = StopOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        Ok((Self::O1::default(), Self::O2::default()))
+        Ok((Self::O1::new(10), Self::O2::default()))
     }
 }
 
@@ -47,20 +46,20 @@ impl<T: Transducer> Datagram<T> for Clear {
 //     use super::*;
 
 //     #[test]
-//     fn test_clear() {
+//     fn test_stop() {
 //         let geometry = GeometryBuilder::<LegacyTransducer>::new()
 //             .add_device(AUTD3::new(Vector3::new(0., 0., 0.), Vector3::zeros()))
 //             .build()
 //             .unwrap();
 
-//         let datagram = Clear::new();
+//         let datagram = Stop::default();
 //         assert_eq!(
-//             <Clear as Datagram<LegacyTransducer>>::timeout(&datagram),
-//             Some(Duration::from_millis(200))
+//             <Stop as Datagram<LegacyTransducer>>::timeout(&datagram),
+//             None
 //         );
 //         datagram.operation(&geometry).unwrap();
 
-//         let datagram = Clear::new().with_timeout(Duration::from_millis(100));
+//         let datagram = Stop::default().with_timeout(Duration::from_millis(100));
 //         assert_eq!(datagram.timeout(), Some(Duration::from_millis(100)));
 //         datagram.operation(&geometry).unwrap();
 //     }

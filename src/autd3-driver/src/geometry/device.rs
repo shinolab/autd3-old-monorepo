@@ -13,7 +13,7 @@
 
 use std::ops::{Deref, DerefMut};
 
-use crate::{float, METER};
+use crate::defined::{float, METER};
 
 use super::{Transducer, UnitQuaternion, Vector3};
 

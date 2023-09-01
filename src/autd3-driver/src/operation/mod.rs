@@ -13,31 +13,35 @@
 
 mod clear;
 // mod flag;
-// mod gain;
-// mod info;
+mod gain;
+mod info;
 // mod mod_delay;
-// mod modulation;
+mod modulation;
 mod null;
-// mod silencer;
+mod silencer;
+mod stop;
 // mod stm_focus;
 // mod stm_gain;
 // mod sync;
 
 pub use clear::*;
 // pub use flag::*;
-// pub use gain::*;
-// pub use info::*;
+pub use gain::*;
+pub use info::*;
 // pub use mod_delay::*;
-// pub use modulation::*;
+pub use modulation::*;
 pub use null::*;
-// pub use silencer::*;
+pub use silencer::*;
+pub use stop::*;
 // pub use stm_focus::*;
 // pub use stm_gain::*;
 // pub use sync::*;
 
 use crate::{
+    cpu::TxDatagram,
+    error::AUTDInternalError,
+    fpga::FPGAControlFlags,
     geometry::{Device, Transducer},
-    AUTDInternalError, FPGAControlFlags, TxDatagram,
 };
 
 #[repr(u8)]
@@ -45,6 +49,7 @@ pub enum TypeTag {
     NONE = 0x00,
     Clear = 0x01,
     Sync = 0x02,
+    FirmwareInfo = 0x03,
     Modulation = 0x10,
     Silencer = 0x20,
     Gain = 0x30,

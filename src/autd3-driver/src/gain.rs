@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,16 +12,12 @@
  */
 
 use crate::{
+    defined::Drive,
     error::AUTDInternalError,
     geometry::{Device, Transducer},
 };
 
 use bitvec::prelude::*;
-
-use crate::Drive;
-
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
 
 pub enum GainFilter<'a> {
     All,

@@ -11,10 +11,10 @@
  *
  */
 
-use super::Operation;
 use crate::{
+    error::AUTDInternalError,
     geometry::{Device, Transducer},
-    AUTDInternalError,
+    operation::Operation,
 };
 
 #[derive(Default)]

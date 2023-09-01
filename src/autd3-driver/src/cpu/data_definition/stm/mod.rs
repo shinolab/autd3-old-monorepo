@@ -4,7 +4,7 @@
  * Created Date: 30/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ bitflags::bitflags! {
     #[repr(C)]
     pub struct STMControlFlags : u8 {
         const NONE            = 0;
-        const USE_START_IDX   = 1 << 1;
-        const USE_FINISH_IDX  = 1 << 2;
+        const USE_START_IDX   = 1 << 0;
+        const USE_FINISH_IDX  = 1 << 1;
     }
 }
 
