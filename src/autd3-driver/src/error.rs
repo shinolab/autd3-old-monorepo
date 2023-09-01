@@ -56,4 +56,7 @@ pub enum AUTDInternalError {
     PhaseHalfNotSupported,
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
+
+    #[error("{0}")]
+    ModulationError(String),
 }

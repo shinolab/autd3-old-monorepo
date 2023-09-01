@@ -33,7 +33,7 @@ macro_rules! run {
             ("Single focus test", &focus),
             // ("Bessel beam test", &bessel),
             // ("Plane wave test", &plane),
-            // ("Wav modulation test", &audio_file),
+            ("Wav modulation test", &audio_file),
             // ("FocusSTM test", &focus_stm),
             // ("GainSTM test", &gain_stm),
             // ("SoftwareSTM test", &software_stm),

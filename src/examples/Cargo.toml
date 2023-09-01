@@ -74,7 +74,7 @@ autd3-driver = { path = "../autd3-driver" }
 # autd3-link-soem = { path = "../autd3-link-soem", optional = true }
 # autd3-link-twincat = { path = "../autd3-link-twincat", optional = true }
 # autd3-link-monitor = { path = "../autd3-link-monitor", optional = true }
-# autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
+autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
 # autd3-protobuf = { path = "../autd3-protobuf", optional = true }
 colored = "2.0.0"
 # tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional = true }
