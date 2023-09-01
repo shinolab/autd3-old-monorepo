@@ -14,8 +14,8 @@
 use std::ops::{Deref, DerefMut};
 
 use crate::{
+    cpu::{Header, EC_OUTPUT_FRAME_SIZE},
     geometry::{Geometry, Transducer},
-    Header, EC_OUTPUT_FRAME_SIZE,
 };
 
 #[derive(Clone)]

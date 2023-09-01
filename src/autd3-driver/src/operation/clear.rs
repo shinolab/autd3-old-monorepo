@@ -13,10 +13,10 @@
 
 use std::collections::HashMap;
 
-use super::Operation;
 use crate::{
+    error::AUTDInternalError,
     geometry::{Device, Transducer},
-    AUTDInternalError, TypeTag,
+    operation::{Operation, TypeTag},
 };
 
 #[derive(Default)]

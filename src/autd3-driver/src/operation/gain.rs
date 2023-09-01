@@ -4,24 +4,74 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use super::Operation;
+use std::{collections::HashMap, fmt};
+
 use crate::{
+    defined::Drive,
+    error::AUTDInternalError,
+    fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
     gain::{Gain, GainFilter},
-    geometry::{Device, LegacyTransducer, Transducer},
-    AUTDInternalError, LegacyDrive, TypeTag,
+    geometry::{AdvancedTransducer, Device, LegacyTransducer, Transducer},
+    operation::{Operation, TypeTag},
 };
+
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct GainControlFlags : u8 {
+        const NONE    = 0;
+        const LEGACY  = 1 << 0;
+        const DUTY    = 1 << 1;
+    }
+}
+
+impl fmt::Display for GainControlFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut flags = Vec::new();
+        if self.contains(GainControlFlags::LEGACY) {
+            flags.push("LEGACY")
+        }
+        if self.contains(GainControlFlags::DUTY) {
+            flags.push("DUTY")
+        }
+        if self.is_empty() {
+            flags.push("NONE")
+        }
+        write!(
+            f,
+            "{}",
+            flags
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(" | ")
+        )
+    }
+}
 
 pub struct GainOp<T: Transducer, G: Gain<T>> {
     gain: G,
-    remains: usize,
+    drives: HashMap<usize, Vec<Drive>>,
+    remains: HashMap<usize, usize>,
     phantom: std::marker::PhantomData<T>,
+}
+
+impl<T: Transducer, G: Gain<T>> GainOp<T, G> {
+    pub fn new(gain: G) -> Self {
+        Self {
+            gain,
+            drives: Default::default(),
+            remains: Default::default(),
+            phantom: std::marker::PhantomData,
+        }
+    }
 }
 
 impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTransducer, G> {
@@ -29,47 +79,118 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
         &mut self,
         device: &Device<LegacyTransducer>,
         tx: &mut [u8],
-    ) -> Result<(), AUTDInternalError> {
-        assert_eq!(self.remains, 1);
+    ) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
 
         let d = self.gain.calc(device, GainFilter::All)?;
-        assert!(tx.len() > d.len() * std::mem::size_of::<LegacyDrive>());
+        assert!(tx.len() > 2 + d.len() * std::mem::size_of::<LegacyDrive>());
 
-        tx[0] = TypeTag::GainLegacy as u8;
+        tx[0] = TypeTag::Gain as u8;
+        tx[1] = GainControlFlags::LEGACY.bits();
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[1..]).as_mut_ptr() as *mut LegacyDrive,
+                (&mut tx[2..]).as_mut_ptr() as *mut LegacyDrive,
                 d.len(),
             );
             dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
         }
 
-        Ok(())
+        Ok(2 + d.len() * std::mem::size_of::<LegacyDrive>())
     }
 
     fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
-        1 + device.num_transducers() * std::mem::size_of::<LegacyDrive>()
+        2 + device.num_transducers() * std::mem::size_of::<LegacyDrive>()
     }
 
-    fn init(&mut self) {
-        self.remains = 1;
+    fn init(&mut self, device: &Device<LegacyTransducer>) {
+        self.remains.insert(device.idx(), 1);
     }
 
-    fn commit(&mut self) {
-        self.remains -= 1;
+    fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
+        self.remains[&device.idx()]
     }
 
-    fn remains(&self) -> usize {
-        self.remains
+    fn commit(&mut self, device: &Device<LegacyTransducer>) {
+        self.remains.insert(device.idx(), 0);
     }
 }
 
-// pub struct GainAdvanced {
-//     remains: usize,
-//     drives: Vec<Vec<Drive>>,
-//     cycles: Vec<Vec<u16>>,
-// }
+impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<AdvancedTransducer, G> {
+    fn pack(
+        &mut self,
+        device: &Device<AdvancedTransducer>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        tx[0] = TypeTag::Gain as u8;
+
+        if self.remains[&device.idx()] == 2 {
+            let d = self.gain.calc(device, GainFilter::All)?;
+            self.drives.insert(device.idx(), d);
+
+            tx[1] = GainControlFlags::NONE.bits();
+
+            let d = &self.drives[&device.idx()];
+            assert!(tx.len() > 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
+
+            unsafe {
+                let dst = std::slice::from_raw_parts_mut(
+                    (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                    d.len(),
+                );
+                dst.iter_mut()
+                    .zip(d.iter())
+                    .zip(device.iter().map(|tr| tr.cycle()))
+                    .for_each(|((d, s), c)| d.set(s, c));
+            }
+
+            Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
+        } else if self.remains[&device.idx()] == 1 {
+            tx[1] = GainControlFlags::DUTY.bits();
+
+            let d = &self.drives[&device.idx()];
+            assert!(tx.len() > 2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>());
+
+            unsafe {
+                let dst = std::slice::from_raw_parts_mut(
+                    (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                    d.len(),
+                );
+                dst.iter_mut()
+                    .zip(d.iter())
+                    .zip(device.iter().map(|tr| tr.cycle()))
+                    .for_each(|((d, s), c)| d.set(s, c));
+            }
+
+            Ok(2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>())
+        } else {
+            unreachable!()
+        }
+    }
+
+    fn required_size(&self, device: &Device<AdvancedTransducer>) -> usize {
+        if self.remains(device) == 2 {
+            2 + device.num_transducers() * std::mem::size_of::<AdvancedDrivePhase>()
+        } else if self.remains(device) == 1 {
+            2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
+        } else {
+            unreachable!()
+        }
+    }
+
+    fn init(&mut self, device: &Device<AdvancedTransducer>) {
+        self.remains.insert(device.idx(), 2);
+    }
+
+    fn remains(&self, device: &Device<AdvancedTransducer>) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device<AdvancedTransducer>) {
+        self.remains
+            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    }
+}
 
 // impl GainOp for GainAdvanced {
 //     fn new<F: Fn() -> Vec<Vec<u16>>>(drives: Vec<Vec<Drive>>, cycles_fn: F) -> Self {

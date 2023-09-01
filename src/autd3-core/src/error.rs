@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,8 +26,6 @@ pub enum AUTDInternalError {
     GainError(String),
     #[error("{0}")]
     ModulationError(String),
-    #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
-    CycleOutOfRange(u16),
     #[error("The maximum number of transducers per device is 256")]
     TooManyTransducers,
     #[error("{0}")]

@@ -4,16 +4,15 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{float, PI};
-
 use super::{Quaternion, UnitQuaternion, Vector3};
+use crate::defined::{float, PI};
 
 fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
     let dir: UnitQuaternion = UnitQuaternion::from_quaternion(Quaternion::from_imag(dir));

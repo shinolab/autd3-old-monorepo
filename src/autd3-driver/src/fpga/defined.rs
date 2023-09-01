@@ -4,14 +4,17 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/08/2023
+ * Last Modified: 01/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{float, Drive, RxMessage, METER, PI};
+use crate::{
+    cpu::RxMessage,
+    defined::{float, Drive, METER, PI},
+};
 
 /// FPGA main clock frequency
 pub const FPGA_CLK_FREQ: usize = 163840000;
@@ -142,7 +145,7 @@ mod tests {
     use std::mem::size_of;
 
     use super::*;
-    use crate::PI;
+    use crate::defined::PI;
 
     #[test]
     fn legacy_drive() {

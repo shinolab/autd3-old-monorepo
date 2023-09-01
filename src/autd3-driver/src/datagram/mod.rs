@@ -11,11 +11,15 @@
  *
  */
 
-pub mod clear;
+mod clear;
+mod silencer;
+mod stop;
 
 pub use clear::Clear;
+pub use silencer::Silencer;
+pub use stop::Stop;
 
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 use crate::{error::AUTDInternalError, geometry::*, operation::Operation};
 
@@ -24,9 +28,76 @@ pub trait Datagram<T: Transducer> {
     type O1: Operation<T>;
     type O2: Operation<T>;
 
-    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::O1, Self::O2), AUTDInternalError>;
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError>;
 
     fn timeout(&self) -> Option<Duration> {
         None
+    }
+}
+
+/// Datagram with timeout
+pub struct DatagramWithTimeout<T: Transducer, D: Datagram<T>> {
+    datagram: D,
+    timeout: Duration,
+    phantom: std::marker::PhantomData<T>,
+}
+
+impl<T: Transducer, D: Datagram<T>> Datagram<T> for DatagramWithTimeout<T, D> {
+    type O1 = D::O1;
+    type O2 = D::O2;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        self.datagram.operation()
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        Some(self.timeout)
+    }
+}
+
+pub trait DatagramT<T: Transducer, D: Datagram<T>> {
+    /// Set timeout.
+    /// This takes precedence over the timeout specified in Link.
+    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<T, D>;
+}
+
+impl<T: Transducer, D: Datagram<T>> DatagramT<T, D> for D {
+    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<T, D> {
+        DatagramWithTimeout {
+            datagram: self,
+            timeout,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<T: Transducer, D> Datagram<T> for Box<D>
+where
+    D: Datagram<T>,
+{
+    type O1 = D::O1;
+    type O2 = D::O2;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        D::operation(*self)
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        D::timeout(self)
+    }
+}
+
+impl<T: Transducer, D1, D2> Datagram<T> for (D1, D2)
+where
+    D1: Datagram<T, O2 = crate::operation::NullOp>,
+    D2: Datagram<T, O2 = crate::operation::NullOp>,
+{
+    type O1 = D1::O1;
+    type O2 = D2::O1;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let (o1, _) = self.0.operation()?;
+        let (o2, _) = self.1.operation()?;
+        Ok((o1, o2))
     }
 }
