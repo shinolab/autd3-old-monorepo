@@ -16,10 +16,10 @@ pub mod debug;
 // pub mod log;
 
 use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
 };
 // pub use bundle::Bundle;
 pub use debug::Debug;

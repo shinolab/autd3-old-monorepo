@@ -66,10 +66,23 @@ pub const GAIN_STM_MODE_PHASE_HALF: u16 = 0x0004;
 
 pub const TAG_NONE: u8 = 0x00;
 pub const TAG_CLEAR: u8 = 0x01;
-pub const SYNC: u8 = 0x02;
-pub const MODULATION: u8 = 0x10;
-pub const SILENCER: u8 = 0x20;
-pub const GAIN: u8 = 0x30;
-pub const FOCUS_STM: u8 = 0x40;
-pub const GAIN_STM: u8 = 0x50;
-pub const FILTER: u8 = 0x60;
+pub const TAG_SYNC: u8 = 0x02;
+pub const TAG_FIRM_INFO: u8 = 0x03;
+pub const TAG_MODULATION: u8 = 0x10;
+pub const TAG_SILENCER: u8 = 0x20;
+pub const TAG_GAIN: u8 = 0x30;
+pub const TAG_FOCUS_STM: u8 = 0x40;
+pub const TAG_GAIN_STM: u8 = 0x50;
+pub const TAG_FILTER: u8 = 0x60;
+
+pub const TYPE_CPU_VERSION_MAJOR: u8 = 0x01;
+pub const TYPE_CPU_VERSION_MINOR: u8 = 0x02;
+pub const TYPE_FPGA_VERSION_MAJOR: u8 = 0x03;
+pub const TYPE_FPGA_VERSION_MINOR: u8 = 0x04;
+pub const TYPE_FPGA_FUNCTIONS: u8 = 0x05;
+
+pub const MODULATION_FLAG_BEGIN: u8 = 1 << 0;
+pub const MODULATION_FLAG_END: u8 = 1 << 1;
+
+pub const GAIN_FLAG_LEGACY: u8 = 1 << 0;
+pub const GAIN_FLAG_DUTY: u8 = 1 << 1;

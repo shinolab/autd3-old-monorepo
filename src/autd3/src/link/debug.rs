@@ -14,11 +14,12 @@
 use std::time::Duration;
 
 use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
+    fpga::{FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV},
     geometry::{Geometry, Transducer},
     link::Link,
     logger::get_logger,
-    RxDatagram, TxDatagram, FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV,
 };
 use autd3_firmware_emulator::CPUEmulator;
 

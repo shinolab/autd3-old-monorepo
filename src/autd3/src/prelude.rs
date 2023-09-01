@@ -18,32 +18,31 @@ pub use crate::{
     controller::Controller,
     error::AUTDError,
     // gain::{Bessel, Focus, Group, Null, Plane, TransducerTest},
+    gain::{Focus, Null},
     link::NullLink,
     // modulation::{RadiationPressure, Sine, SineLegacy, Square, Static},
+    modulation::{Sine, Static},
 };
 
 // pub use crate::gain::Cache as GainCache;
 // pub use crate::modulation::Cache as ModulationCache;
 
 pub use autd3_driver::{
+    // modulation::ModulationProperty,
+    // silencer_config::SilencerConfig,
+    // stm::{ControlPoint, FocusSTM, GainSTM, GainSTMMode},
+    datagram::{Clear, Silencer, Stop},
     // amplitude::Amplitudes,
     // autd3_device::AUTD3,
     // clear::Clear,
     // datagram::DatagramT,
     // delay::ModDelay,
-    float,
+    defined::{float, METER, MILLIMETER, PI},
     fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},
     geometry::*,
     link::Link,
-    // modulation::ModulationProperty,
-    // silencer_config::SilencerConfig,
-    // stm::{ControlPoint, FocusSTM, GainSTM, GainSTMMode},
-    // stop::Stop,
     // synchronize::Synchronize,
     // timer_strategy::TimerStrategy,
     // update_flag::UpdateFlags,
     // Mode,
-    METER,
-    MILLIMETER,
-    PI,
 };
