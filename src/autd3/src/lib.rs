@@ -14,14 +14,15 @@
 pub mod autd3_device;
 pub mod controller;
 pub mod error;
-// pub mod gain;
+pub mod gain;
 pub mod link;
-// pub mod modulation;
+pub mod modulation;
 pub mod prelude;
 // pub mod software_stm;
 
+pub use autd3_derive as derive;
 pub use autd3_driver as driver;
-// pub use autd3_derive as traits;
+
 pub use controller::Controller;
 
 // #[cfg(test)]

@@ -14,13 +14,13 @@
 use std::time::Duration;
 
 use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     datagram::{Clear, Datagram},
-    geometry::{
-        Device, Geometry, IntoDevice, LegacyTransducer, Transducer, UnitQuaternion, Vector3,
-    },
+    firmware_version::FirmwareInfo,
+    fpga::FPGAInfo,
+    geometry::{Device, Geometry, IntoDevice, LegacyTransducer, Transducer},
     link::Link,
     operation::OperationHandler,
-    FPGAInfo, RxDatagram, TxDatagram,
 };
 
 use crate::{error::AUTDError, link::NullLink};
@@ -124,11 +124,10 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
     ///
     pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
-        let (mut op1, mut op2) = s.operation(&self.geometry)?;
-
-        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter());
-
         let timeout = s.timeout().unwrap_or(self.link.timeout());
+
+        let (mut op1, mut op2) = s.operation()?;
+        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter());
         loop {
             OperationHandler::pack(&mut op1, &mut op2, self.geometry.iter(), &mut self.tx_buf)?;
 
@@ -148,20 +147,20 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(true)
     }
 
-    // /// Send data to the devices asynchronously
-    // ///
-    // /// # Arguments
-    // ///
-    // /// * `s` - Datagram
-    // ///
-    // /// # Returns
-    // ///
-    // /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
-    // /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
-    // ///
-    // pub async fn send_async<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
-    //     async { self.send(s) }.await
-    // }
+    /// Send data to the devices asynchronously
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - Datagram
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
+    ///
+    pub async fn send_async<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+        async { self.send(s) }.await
+    }
 
     // Close connection
     pub fn close(&mut self) -> Result<bool, AUTDError> {
@@ -175,66 +174,81 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(res)
     }
 
-    // /// Get firmware information
-    // ///
-    // /// # Returns
-    // ///
-    // /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
-    // ///
-    // pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
-    //     let mut op = autd3_core::CPUVersionMajor::default();
-    //     op.pack(&mut self.tx_buf);
-    //     self.link
-    //         .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-    //     let cpu_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+    /// Get firmware information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
+    ///
+    pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
+        let mut op = autd3_driver::operation::FirmInfoOp::default();
+        let mut null_op = autd3_driver::operation::NullOp::default();
 
-    //     let mut op = autd3_core::FPGAVersionMajor::default();
-    //     op.pack(&mut self.tx_buf);
-    //     self.link
-    //         .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-    //     let fpga_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        OperationHandler::init(&mut op, &mut null_op, self.geometry.iter());
 
-    //     let mut op = autd3_core::FPGAFunctions::default();
-    //     op.pack(&mut self.tx_buf);
-    //     self.link
-    //         .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-    //     let fpga_functions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        OperationHandler::pack(
+            &mut op,
+            &mut null_op,
+            self.geometry.iter(),
+            &mut self.tx_buf,
+        )?;
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        let cpu_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
-    //     let mut op = autd3_core::FPGAVersionMinor::default();
-    //     op.pack(&mut self.tx_buf);
-    //     let fpga_versions_minor =
-    //         match self
-    //             .link
-    //             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
-    //         {
-    //             Ok(_) => self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>(),
-    //             _ => vec![0x00; self.geometry.num_devices()],
-    //         };
+        OperationHandler::pack(
+            &mut op,
+            &mut null_op,
+            self.geometry.iter(),
+            &mut self.tx_buf,
+        )?;
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
-    //     let mut op = autd3_core::CPUVersionMinor::default();
-    //     op.pack(&mut self.tx_buf);
-    //     let cpu_versions_minor =
-    //         match self
-    //             .link
-    //             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
-    //         {
-    //             Ok(_) => self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>(),
-    //             _ => vec![0x00; self.geometry.num_devices()],
-    //         };
+        OperationHandler::pack(
+            &mut op,
+            &mut null_op,
+            self.geometry.iter(),
+            &mut self.tx_buf,
+        )?;
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        let fpga_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
 
-    //     Ok((0..self.geometry.num_devices())
-    //         .map(|i| {
-    //             FirmwareInfo::new(
-    //                 i,
-    //                 cpu_versions[i],
-    //                 cpu_versions_minor[i],
-    //                 fpga_versions[i],
-    //                 fpga_versions_minor[i],
-    //                 fpga_functions[i],
-    //             )
-    //         })
-    //         .collect())
-    // }
+        OperationHandler::pack(
+            &mut op,
+            &mut null_op,
+            self.geometry.iter(),
+            &mut self.tx_buf,
+        )?;
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+
+        OperationHandler::pack(
+            &mut op,
+            &mut null_op,
+            self.geometry.iter(),
+            &mut self.tx_buf,
+        )?;
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        let fpga_functions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+
+        Ok((0..self.geometry.num_devices())
+            .map(|i| {
+                FirmwareInfo::new(
+                    i,
+                    cpu_versions[i],
+                    cpu_versions_minor[i],
+                    fpga_versions[i],
+                    fpga_versions_minor[i],
+                    fpga_functions[i],
+                )
+            })
+            .collect())
+    }
 
     /// Get FPGA information
     ///

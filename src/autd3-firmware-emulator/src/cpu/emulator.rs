@@ -11,7 +11,10 @@
  *
  */
 
-use autd3_driver::{FPGAControlFlags, Header, TxDatagram};
+use autd3_driver::{
+    cpu::{Header, TxDatagram},
+    fpga::FPGAControlFlags,
+};
 
 use crate::fpga::emulator::FPGAEmulator;
 
@@ -155,72 +158,76 @@ impl CPUEmulator {
         // Do nothing to sync
     }
 
-    // fn write_mod(&mut self, header: &GlobalHeader) {
-    //     let write = header.size;
+    fn write_mod(&mut self, data: &[u8]) {
+        let flag = data[1];
 
-    //     let data = if header.cpu_flag.contains(CPUControlFlags::MOD_BEGIN) {
-    //         self.mod_cycle = 0;
-    //         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
-    //         let freq_div = header.mod_initial().freq_div;
-    //         self.bram_cpy(
-    //             BRAM_SELECT_CONTROLLER,
-    //             BRAM_ADDR_MOD_FREQ_DIV_0,
-    //             &freq_div as *const _ as _,
-    //             std::mem::size_of::<u32>() >> 1,
-    //         );
-    //         header.mod_initial().data[..].as_ptr() as *const u16
-    //     } else {
-    //         header.mod_subsequent().data[..].as_ptr() as *const u16
-    //     };
+        let write = ((data[3] as u16) << 8) | data[2] as u16;
+        let data = if (flag & MODULATION_FLAG_BEGIN) == MODULATION_FLAG_BEGIN {
+            self.mod_cycle = 0;
+            self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
+            let freq_div = ((data[7] as u32) << 24)
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
+            self.bram_cpy(
+                BRAM_SELECT_CONTROLLER,
+                BRAM_ADDR_MOD_FREQ_DIV_0,
+                &freq_div as *const _ as _,
+                std::mem::size_of::<u32>() >> 1,
+            );
+            data[8..].as_ptr() as *const u16
+        } else {
+            data[4..].as_ptr() as *const u16
+        };
 
-    //     let segment_capacity =
-    //         (self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) + MOD_BUF_SEGMENT_SIZE - self.mod_cycle;
+        let segment_capacity =
+            (self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) + MOD_BUF_SEGMENT_SIZE - self.mod_cycle;
 
-    //     if write as u32 <= segment_capacity {
-    //         self.bram_cpy(
-    //             BRAM_SELECT_MOD,
-    //             ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
-    //             data,
-    //             ((write + 1) >> 1) as usize,
-    //         );
-    //         self.mod_cycle += write as u32;
-    //     } else {
-    //         self.bram_cpy(
-    //             BRAM_SELECT_MOD,
-    //             ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
-    //             data,
-    //             (segment_capacity >> 1) as usize,
-    //         );
-    //         self.mod_cycle += segment_capacity;
-    //         let data = unsafe { data.add(segment_capacity as _) };
-    //         self.bram_write(
-    //             BRAM_SELECT_CONTROLLER,
-    //             BRAM_ADDR_MOD_ADDR_OFFSET,
-    //             ((self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH)
-    //                 as u16,
-    //         );
-    //         self.bram_cpy(
-    //             BRAM_SELECT_MOD,
-    //             ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as _,
-    //             data,
-    //             ((write as u32 - segment_capacity + 1) >> 1) as _,
-    //         );
-    //         self.mod_cycle += write as u32 - segment_capacity;
-    //     }
+        if write as u32 <= segment_capacity {
+            self.bram_cpy(
+                BRAM_SELECT_MOD,
+                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
+                data,
+                ((write + 1) >> 1) as usize,
+            );
+            self.mod_cycle += write as u32;
+        } else {
+            self.bram_cpy(
+                BRAM_SELECT_MOD,
+                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
+                data,
+                (segment_capacity >> 1) as usize,
+            );
+            self.mod_cycle += segment_capacity;
+            let data = unsafe { data.add(segment_capacity as _) };
+            self.bram_write(
+                BRAM_SELECT_CONTROLLER,
+                BRAM_ADDR_MOD_ADDR_OFFSET,
+                ((self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH)
+                    as u16,
+            );
+            self.bram_cpy(
+                BRAM_SELECT_MOD,
+                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as _,
+                data,
+                ((write as u32 - segment_capacity + 1) >> 1) as _,
+            );
+            self.mod_cycle += write as u32 - segment_capacity;
+        }
 
-    //     if header.cpu_flag.contains(CPUControlFlags::MOD_END) {
-    //         self.bram_write(
-    //             BRAM_SELECT_CONTROLLER,
-    //             BRAM_ADDR_MOD_CYCLE,
-    //             (self.mod_cycle.max(1) - 1) as _,
-    //         );
-    //     }
-    // }
+        if (flag & MODULATION_FLAG_END) == MODULATION_FLAG_END {
+            self.bram_write(
+                BRAM_SELECT_CONTROLLER,
+                BRAM_ADDR_MOD_CYCLE,
+                (self.mod_cycle.max(1) - 1) as _,
+            );
+        }
+    }
 
-    // fn config_silencer(&mut self, header: &GlobalHeader) {
-    //     let step = header.silencer().step;
-    //     self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
-    // }
+    fn config_silencer(&mut self, data: &[u8]) {
+        let step = ((data[3] as u16) << 8) | data[2] as u16;
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
+    }
 
     // fn set_mod_delay(&mut self, body: &Body<[u16]>) {
     //     self.bram_cpy(
@@ -231,19 +238,24 @@ impl CPUEmulator {
     //     );
     // }
 
-    // fn write_normal_op(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-    //     if header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE) {
-    //         (0..self.num_transducers)
-    //             .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as _, body.data()[i]));
-    //     } else if header.cpu_flag.contains(CPUControlFlags::IS_DUTY) {
-    //         (0..self.num_transducers).for_each(|i| {
-    //             self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16 + 1, body.data()[i])
-    //         });
-    //     } else {
-    //         (0..self.num_transducers)
-    //             .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16, body.data()[i]));
-    //     }
-    // }
+    fn write_gain(&mut self, data: &[u8]) {
+        let flag = data[1];
+
+        let data = unsafe {
+            std::slice::from_raw_parts(data[2..].as_ptr() as *const u16, (data.len() - 2) >> 1)
+        };
+
+        if (flag & GAIN_FLAG_LEGACY) == GAIN_FLAG_LEGACY {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as _, data[i]));
+        } else if (flag & GAIN_FLAG_DUTY) == GAIN_FLAG_DUTY {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16 + 1, data[i]));
+        } else {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16, data[i]));
+        }
+    }
 
     // fn write_focus_stm(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
     //     let size: u32;
@@ -643,6 +655,32 @@ impl CPUEmulator {
         match data[std::mem::size_of::<Header>()] {
             TAG_NONE => {}
             TAG_CLEAR => self.clear(),
+            TAG_FIRM_INFO => {
+                self.read_fpga_info = false;
+                match data[std::mem::size_of::<Header>() + 1] {
+                    TYPE_CPU_VERSION_MAJOR => {
+                        self.ack = (self.get_cpu_version() & 0xFF) as _;
+                    }
+                    TYPE_CPU_VERSION_MINOR => {
+                        self.ack = (self.get_cpu_version_minor() & 0xFF) as _;
+                    }
+                    TYPE_FPGA_VERSION_MAJOR => {
+                        self.ack = (self.get_fpga_version() & 0xFF) as _;
+                    }
+                    TYPE_FPGA_VERSION_MINOR => {
+                        self.ack = (self.get_fpga_version_minor() & 0xFF) as _;
+                    }
+                    TYPE_FPGA_FUNCTIONS => {
+                        self.ack = ((self.get_fpga_version() >> 8) & 0xFF) as _;
+                    }
+                    _ => {
+                        unimplemented!("Unsupported firmware info type")
+                    }
+                }
+            }
+            TAG_SILENCER => self.config_silencer(&data[std::mem::size_of::<Header>()..]),
+            TAG_MODULATION => self.write_mod(&data[std::mem::size_of::<Header>()..]),
+            TAG_GAIN => self.write_gain(&data[std::mem::size_of::<Header>()..]),
             _ => {
                 unimplemented!("Unsupported tag")
             }

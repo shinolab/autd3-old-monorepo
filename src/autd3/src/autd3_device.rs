@@ -12,9 +12,8 @@
  */
 
 use autd3_driver::{
-    float,
+    defined::{float, MILLIMETER},
     geometry::{Device, IntoDevice, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4},
-    MILLIMETER,
 };
 
 /// AUTD3 device

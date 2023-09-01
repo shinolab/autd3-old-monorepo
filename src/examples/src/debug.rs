@@ -11,8 +11,9 @@
  *
  */
 
-// mod test_runner;
-// mod tests;
+#[macro_use]
+mod test_runner;
+mod tests;
 
 use anyhow::Result;
 
@@ -24,9 +25,5 @@ fn main() -> Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .open_with(Debug::new())?;
 
-    autd.close()?;
-
-    Ok(())
-
-    // test_runner::run(autd)
+    run!(autd)
 }
