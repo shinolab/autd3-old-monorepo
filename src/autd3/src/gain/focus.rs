@@ -4,12 +4,14 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use autd3_driver::{
     defined::{float, Drive},
@@ -60,12 +62,11 @@ impl Focus {
 impl<T: Transducer> Gain<T> for Focus {
     fn calc(
         &self,
-        device: &Device<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        let sound_speed = device.sound_speed;
-        Ok(Self::transform(device, filter, |tr| {
-            let phase = tr.align_phase_at(self.pos, sound_speed);
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(devices, filter, |dev, tr| {
+            let phase = tr.align_phase_at(self.pos, dev.sound_speed);
             Drive {
                 phase,
                 amp: self.amp,

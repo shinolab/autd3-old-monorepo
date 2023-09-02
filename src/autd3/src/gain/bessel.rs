@@ -4,12 +4,14 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use autd3_driver::{
     defined::{float, Drive},
@@ -77,9 +79,9 @@ impl Bessel {
 impl<T: Transducer> Gain<T> for Bessel {
     fn calc(
         &self,
-        device: &Device<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);
         let theta_v = v.norm().asin();
@@ -88,13 +90,11 @@ impl<T: Transducer> Gain<T> for Bessel {
         } else {
             UnitQuaternion::identity()
         };
-
-        let sound_speed = device.sound_speed;
-        Ok(Self::transform(device, filter, |tr| {
+        Ok(Self::transform(devices, filter, |dev, tr| {
             let r = tr.position() - self.pos;
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-            let phase = dist * tr.wavenumber(sound_speed);
+            let phase = dist * tr.wavenumber(dev.sound_speed);
             Drive {
                 phase,
                 amp: self.amp,
@@ -126,11 +126,11 @@ mod tests {
         let mut rng = rand::thread_rng();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
-            .calc(&device, GainFilter::All)
+            .calc(&[&device], GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), device.num_transducers());
-        b.iter().for_each(|d| assert_eq!(d.amp, 1.0));
-        b.iter().zip(device.iter()).for_each(|(b, tr)| {
+        b[&0].iter().for_each(|d| assert_eq!(d.amp, 1.0));
+        b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d;
                 let v = Vector3::new(dir.y, -dir.x, 0.);
@@ -153,11 +153,11 @@ mod tests {
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
             .with_amp(0.5)
-            .calc(&device, GainFilter::All)
+            .calc(&[&device], GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), device.num_transducers());
-        b.iter().for_each(|b| assert_eq!(b.amp, 0.5));
-        b.iter().zip(device.iter()).for_each(|(b, tr)| {
+        b[&0].iter().for_each(|b| assert_eq!(b.amp, 0.5));
+        b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d;
                 let v = Vector3::new(dir.y, -dir.x, 0.);

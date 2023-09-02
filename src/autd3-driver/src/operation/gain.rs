@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,7 +82,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
     ) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
-        let d = self.gain.calc(device, GainFilter::All)?;
+        let d = &self.drives[&device.idx()];
         assert!(tx.len() > 2 + d.len() * std::mem::size_of::<LegacyDrive>());
 
         tx[0] = TypeTag::Gain as u8;
@@ -103,8 +103,10 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
         2 + device.num_transducers() * std::mem::size_of::<LegacyDrive>()
     }
 
-    fn init(&mut self, device: &Device<LegacyTransducer>) {
-        self.remains.insert(device.idx(), 1);
+    fn init(&mut self, devices: &[&Device<LegacyTransducer>]) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(devices, GainFilter::All)?;
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+        Ok(())
     }
 
     fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
@@ -125,9 +127,6 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
         tx[0] = TypeTag::Gain as u8;
 
         if self.remains[&device.idx()] == 2 {
-            let d = self.gain.calc(device, GainFilter::All)?;
-            self.drives.insert(device.idx(), d);
-
             tx[1] = GainControlFlags::NONE.bits();
 
             let d = &self.drives[&device.idx()];
@@ -178,8 +177,10 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
         }
     }
 
-    fn init(&mut self, device: &Device<AdvancedTransducer>) {
-        self.remains.insert(device.idx(), 2);
+    fn init(&mut self, devices: &[&Device<AdvancedTransducer>]) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(devices, GainFilter::All)?;
+        self.remains = devices.iter().map(|device| (device.idx(), 2)).collect();
+        Ok(())
     }
 
     fn remains(&self, device: &Device<AdvancedTransducer>) -> usize {

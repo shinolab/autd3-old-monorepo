@@ -4,12 +4,14 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use autd3_driver::{
     defined::Drive,
@@ -34,10 +36,10 @@ impl Null {
 impl<T: Transducer> Gain<T> for Null {
     fn calc(
         &self,
-        device: &Device<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(device, filter, |_| Drive {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(devices, filter, |_, _| Drive {
             phase: 0.,
             amp: 0.,
         }))
