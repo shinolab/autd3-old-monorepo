@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/08/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -291,7 +291,7 @@ mod tests {
         assert_eq!("v3.0.0", info.fpga_version());
 
         let info = FirmwareInfo::new(0, 139, 0, 139, 0, 0);
-        assert_eq!("unknown (138)", info.cpu_version());
-        assert_eq!("unknown (138)", info.fpga_version());
+        assert_eq!("unknown (139)", info.cpu_version());
+        assert_eq!("unknown (139)", info.fpga_version());
     }
 }
