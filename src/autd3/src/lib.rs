@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,38 +27,7 @@ pub use controller::Controller;
 
 #[cfg(test)]
 mod tests {
-    use autd3_driver::{
-        defined::float,
-        geometry::{Device, Geometry, IntoDevice, Transducer, Vector3},
-    };
-
-    pub struct GeometryBuilder<T: Transducer> {
-        devices: Vec<Device<T>>,
-    }
-
-    impl<T: Transducer> Default for GeometryBuilder<T> {
-        fn default() -> Self {
-            Self::new()
-        }
-    }
-
-    impl<T: Transducer> GeometryBuilder<T> {
-        pub fn new() -> GeometryBuilder<T> {
-            GeometryBuilder::<T> { devices: vec![] }
-        }
-
-        pub fn add_device<D: IntoDevice<T>>(&mut self, dev: D) -> &mut Self {
-            self.devices.push(dev.into_device(
-                self.devices.len(),
-                self.devices.iter().map(|dev| dev.num_transducers()).sum(),
-            ));
-            self
-        }
-
-        pub fn build(mut self) -> Geometry<T> {
-            Geometry::<T>::new(self.devices)
-        }
-    }
+    use autd3_driver::{defined::float, geometry::Vector3};
 
     pub fn random_vector3(
         range_x: std::ops::Range<float>,

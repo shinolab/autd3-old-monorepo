@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,16 +16,16 @@ use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 use crate::defined::float;
 
 pub struct LegacyTransducer {
-    idx: usize,
+    local_idx: usize,
     pos: Vector3,
     rot: UnitQuaternion,
     mod_delay: u16,
 }
 
 impl Transducer for LegacyTransducer {
-    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+    fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
-            idx,
+            local_idx,
             pos,
             rot,
             mod_delay: 0,
@@ -49,8 +49,8 @@ impl Transducer for LegacyTransducer {
         &self.rot
     }
 
-    fn idx(&self) -> usize {
-        self.idx
+    fn local_idx(&self) -> usize {
+        self.local_idx
     }
 
     fn frequency(&self) -> float {

@@ -9,6 +9,10 @@ license = "MIT"
 name = "debug"
 path = "src/debug.rs"
 
+[[bin]]
+name = "group"
+path = "src/group.rs"
+
 # [[bin]]
 # name = "async"
 # path = "src/async.rs"

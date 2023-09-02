@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -98,7 +98,7 @@ impl AUTD3 {
     /// # Examples
     ///
     /// ```
-    /// use autd3_core::autd3_device::AUTD3;
+    /// use autd3::autd3_device::AUTD3;
     ///
     /// let (x, y) = AUTD3::grid_id(0);
     /// assert_eq!(x, 0);
@@ -124,7 +124,7 @@ impl AUTD3 {
 }
 
 impl<T: Transducer> IntoDevice<T> for AUTD3 {
-    fn into_device(self, dev_idx: usize, tr_start_idx: usize) -> Device<T> {
+    fn into_device(self, dev_idx: usize) -> Device<T> {
         let rot_mat: Matrix4 = From::from(self.rotation);
         let trans_mat = rot_mat.append_translation(&self.position);
         Device::new(
@@ -141,7 +141,7 @@ impl<T: Transducer> IntoDevice<T> for AUTD3 {
                     )
                 })
                 .map(|p| trans_mat * p)
-                .zip(tr_start_idx..)
+                .zip(0..)
                 .map(|(p, i)| T::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
                 .collect(),
         )

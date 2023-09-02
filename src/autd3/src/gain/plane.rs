@@ -4,22 +4,22 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    gain::{Gain, GainFilter},
-    geometry::{Geometry, Transducer, Vector3},
-    Drive,
-};
+use std::collections::HashMap;
 
 use autd3_derive::Gain;
+use autd3_driver::{
+    defined::{float, Drive},
+    error::AUTDInternalError,
+    gain::{Gain, GainFilter},
+    geometry::{Device, Transducer, Vector3},
+};
 
 /// Gain to produce plane wave
 #[derive(Gain, Clone, Copy)]
@@ -61,13 +61,12 @@ impl Plane {
 impl<T: Transducer> Gain<T> for Plane {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        let sound_speed = geometry.sound_speed;
-        Ok(Self::transform(geometry, filter, |tr| {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(devices, filter, |dev, tr| {
             let dist = self.dir.dot(tr.position());
-            let phase = dist * tr.wavenumber(sound_speed);
+            let phase = dist * tr.wavenumber(dev.sound_speed);
             Drive {
                 phase,
                 amp: self.amp,
@@ -78,38 +77,38 @@ impl<T: Transducer> Gain<T> for Plane {
 
 #[cfg(test)]
 mod tests {
-    use autd3_core::autd3_device::AUTD3;
-    use autd3_core::geometry::LegacyTransducer;
+
+    use autd3_driver::geometry::{IntoDevice, LegacyTransducer};
 
     use super::*;
 
-    use crate::tests::{random_vector3, GeometryBuilder};
+    use crate::{autd3_device::AUTD3, tests::random_vector3};
 
     #[test]
     fn test_plane() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
-            .unwrap();
+        let device: Device<LegacyTransducer> =
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
-        let p = Plane::new(d).calc(&geometry, GainFilter::All).unwrap();
-        assert_eq!(p.len(), geometry.num_transducers());
-        p.iter().for_each(|d| assert_eq!(d.amp, 1.0));
-        p.iter().zip(geometry.iter()).for_each(|(p, tr)| {
-            let expected_phase = d.dot(tr.position()) * tr.wavenumber(geometry.sound_speed);
+        let p = Plane::new(d).calc(&[&device], GainFilter::All).unwrap();
+        assert_eq!(p.len(), 1);
+        assert_eq!(p[&0].len(), device.num_transducers());
+        p[&0].iter().for_each(|d| assert_eq!(d.amp, 1.0));
+        p[&0].iter().zip(device.iter()).for_each(|(p, tr)| {
+            let expected_phase = d.dot(tr.position()) * tr.wavenumber(device.sound_speed);
             assert_approx_eq::assert_approx_eq!(p.phase, expected_phase);
         });
 
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let p = Plane::new(d)
             .with_amp(0.5)
-            .calc(&geometry, GainFilter::All)
+            .calc(&[&device], GainFilter::All)
             .unwrap();
-        assert_eq!(p.len(), geometry.num_transducers());
-        p.iter().for_each(|p| assert_eq!(p.amp, 0.5));
-        p.iter().zip(geometry.iter()).for_each(|(p, tr)| {
-            let expected_phase = d.dot(tr.position()) * tr.wavenumber(geometry.sound_speed);
+        assert_eq!(p.len(), 1);
+        assert_eq!(p[&0].len(), device.num_transducers());
+        p[&0].iter().for_each(|p| assert_eq!(p.amp, 0.5));
+        p[&0].iter().zip(device.iter()).for_each(|(p, tr)| {
+            let expected_phase = d.dot(tr.position()) * tr.wavenumber(device.sound_speed);
             assert_approx_eq::assert_approx_eq!(p.phase, expected_phase);
         });
     }

@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn test_bessel() {
         let device: Device<LegacyTransducer> =
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0, 0);
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
@@ -128,7 +128,8 @@ mod tests {
         let b = Bessel::new(f, d, theta)
             .calc(&[&device], GainFilter::All)
             .unwrap();
-        assert_eq!(b.len(), device.num_transducers());
+        assert_eq!(b.len(), 1);
+        assert_eq!(b[&0].len(), device.num_transducers());
         b[&0].iter().for_each(|d| assert_eq!(d.amp, 1.0));
         b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {
@@ -155,7 +156,8 @@ mod tests {
             .with_amp(0.5)
             .calc(&[&device], GainFilter::All)
             .unwrap();
-        assert_eq!(b.len(), device.num_transducers());
+        assert_eq!(b.len(), 1);
+        assert_eq!(b[&0].len(), device.num_transducers());
         b[&0].iter().for_each(|b| assert_eq!(b.amp, 0.5));
         b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {

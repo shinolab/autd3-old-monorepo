@@ -23,7 +23,7 @@ use bitvec::prelude::*;
 
 pub enum GainFilter<'a> {
     All,
-    Filter(&'a BitVec<usize, Lsb0>),
+    Filter(&'a HashMap<usize, BitVec<usize, Lsb0>>),
 }
 
 pub trait GainAsAny {
@@ -53,18 +53,25 @@ pub trait Gain<T: Transducer>: GainAsAny {
             GainFilter::Filter(filter) => devices
                 .iter()
                 .map(|dev| {
-                    (
-                        dev.idx(),
-                        dev.iter()
-                            .map(|tr| {
-                                if filter[tr.idx()] {
-                                    f(dev, tr)
-                                } else {
-                                    Drive { phase: 0., amp: 0. }
-                                }
-                            })
-                            .collect(),
-                    )
+                    if let Some(filter) = filter.get(&dev.idx()) {
+                        (
+                            dev.idx(),
+                            dev.iter()
+                                .map(|tr| {
+                                    if filter[tr.local_idx()] {
+                                        f(dev, tr)
+                                    } else {
+                                        Drive { phase: 0., amp: 0. }
+                                    }
+                                })
+                                .collect(),
+                        )
+                    } else {
+                        (
+                            dev.idx(),
+                            dev.iter().map(|_| Drive { phase: 0., amp: 0. }).collect(),
+                        )
+                    }
                 })
                 .collect(),
         }

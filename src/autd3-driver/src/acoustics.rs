@@ -4,16 +4,17 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{float, PI};
-
-use crate::geometry::{Transducer, Vector3};
+use crate::{
+    defined::{float, PI},
+    geometry::{Transducer, Vector3},
+};
 
 pub type Complex = nalgebra::Complex<float>;
 
