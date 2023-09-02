@@ -4,22 +4,22 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    gain::{Gain, GainFilter},
-    geometry::{Geometry, Transducer},
-    Drive,
-};
+use std::collections::HashMap;
 
 use autd3_derive::Gain;
+use autd3_driver::{
+    defined::{float, Drive},
+    error::AUTDInternalError,
+    gain::{Gain, GainFilter},
+    geometry::{Device, Transducer},
+};
 
 /// Gain with uniform amplitude and phase
 #[derive(Gain, Default, Clone, Copy)]
@@ -53,10 +53,10 @@ impl Uniform {
 impl<T: Transducer> Gain<T> for Uniform {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, filter, |_| Drive {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(devices, filter, |_, _| Drive {
             phase: self.phase,
             amp: self.amp,
         }))
@@ -65,32 +65,31 @@ impl<T: Transducer> Gain<T> for Uniform {
 
 #[cfg(test)]
 mod tests {
-    use autd3_core::autd3_device::AUTD3;
-    use autd3_core::geometry::{LegacyTransducer, Vector3};
 
     use super::*;
+    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
 
-    use crate::tests::GeometryBuilder;
+    use crate::autd3_device::AUTD3;
 
     #[test]
     fn test_uniform() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
-            .unwrap();
+        let device: Device<LegacyTransducer> =
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
         let gain = Uniform::new(0.5);
 
-        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
+        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
             assert_eq!(drive.amp, 0.5);
-        }
+        });
 
         let gain = gain.with_phase(0.2);
 
-        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
+        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.2);
             assert_eq!(drive.amp, 0.5);
-        }
+        });
     }
 }

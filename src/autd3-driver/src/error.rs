@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use thiserror::Error;
 
 use crate::fpga::*;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq, Eq)]
 pub enum AUTDInternalError {
     #[error(
         "{} transducer{} connected, but you try to use {}", a, if *a == 1 {" is"} else {"s are"}, b)]
@@ -56,6 +56,11 @@ pub enum AUTDInternalError {
     PhaseHalfNotSupported,
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
+
+    #[error("Unknown group key")]
+    UnknownGroupKey,
+    #[error("Unspecified group key")]
+    UnspecifiedGroupKey,
 
     #[error("{0}")]
     ModulationError(String),

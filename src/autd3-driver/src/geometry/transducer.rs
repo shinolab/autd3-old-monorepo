@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
 
 pub trait Transducer: Send + Sync {
     /// Create transducer
-    fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
+    fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
     /// Translate transducer
     fn translate(&mut self, pos: Vector3) {
         self.affine(pos, UnitQuaternion::identity());
@@ -40,8 +40,8 @@ pub trait Transducer: Send + Sync {
     fn position(&self) -> &Vector3;
     /// Get the rotation of the transducer
     fn rotation(&self) -> &UnitQuaternion;
-    /// Get the index of the transducer
-    fn idx(&self) -> usize;
+    /// Get the local index of the transducer
+    fn local_idx(&self) -> usize;
     /// Get the x-direction of the transducer
     fn x_direction(&self) -> Vector3 {
         get_direction(Vector3::x(), self.rotation())

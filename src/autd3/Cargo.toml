@@ -29,7 +29,7 @@ assert_approx_eq = "1.1.0"
 rand = "0.8.5"
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
-# [[bench]]
-# name = "gain"
-# path = "benches/gain/primitive.rs"
-# harness = false
+[[bench]]
+name = "gain"
+path = "benches/gain/primitive.rs"
+harness = false

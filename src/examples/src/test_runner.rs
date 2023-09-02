@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ macro_rules! run {
         )> = vec![
             ("Single focus test", &focus),
             ("Bessel beam test", &bessel),
-            // ("Plane wave test", &plane),
+            ("Plane wave test", &plane),
             ("Wav modulation test", &audio_file),
             // ("FocusSTM test", &focus_stm),
             // ("GainSTM test", &gain_stm),
@@ -40,8 +40,7 @@ macro_rules! run {
             // ("Multiple foci test", &holo),
             ("Custom Gain & Modulation test", &custom),
             // ("Flag test", &flag),
-            // ("TransducerTest test", &transtest),
-            // ("Grouped Gain Test", &group),
+            ("TransducerTest test", &transtest),
         ];
 
         loop {

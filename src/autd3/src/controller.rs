@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -45,10 +45,7 @@ impl<T: Transducer> ControllerBuilder<T> {
 
     /// Add device
     pub fn add_device<D: IntoDevice<T>>(mut self, dev: D) -> Self {
-        self.devices.push(dev.into_device(
-            self.devices.len(),
-            self.devices.iter().map(|dev| dev.num_transducers()).sum(),
-        ));
+        self.devices.push(dev.into_device(self.devices.len()));
         self
     }
 
