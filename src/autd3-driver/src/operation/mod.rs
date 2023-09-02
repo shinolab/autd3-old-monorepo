@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -59,7 +59,7 @@ pub enum TypeTag {
 }
 
 pub trait Operation<T: Transducer> {
-    fn init(&mut self, device: &Device<T>);
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError>;
     fn required_size(&self, device: &Device<T>) -> usize;
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError>;
     fn commit(&mut self, device: &Device<T>);
@@ -67,8 +67,8 @@ pub trait Operation<T: Transducer> {
 }
 
 impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
-    fn init(&mut self, device: &Device<T>) {
-        self.as_mut().init(device)
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        self.as_mut().init(devices)
     }
 
     fn required_size(&self, device: &Device<T>) -> usize {
@@ -117,11 +117,10 @@ impl OperationHandler {
         op1: &mut O1,
         op2: &mut O2,
         device_iter: I,
-    ) {
-        device_iter.into_iter().for_each(|dev| {
-            op1.init(dev);
-            op2.init(dev);
-        });
+    ) -> Result<(), AUTDInternalError> {
+        let devices = device_iter.into_iter().collect::<Vec<_>>();
+        op1.init(&devices)?;
+        op2.init(&devices)
     }
 
     pub fn pack<

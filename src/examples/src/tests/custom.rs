@@ -4,12 +4,14 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use autd3::{
     derive::{Gain, Modulation},
@@ -35,10 +37,10 @@ impl MyUniform {
 impl<T: Transducer> Gain<T> for MyUniform {
     fn calc(
         &self,
-        device: &Device<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(device, filter, |_| Drive {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(devices, filter, |_dev, _tr| Drive {
             phase: 0.0,
             amp: 1.0,
         }))

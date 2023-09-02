@@ -4,12 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use crate::{
     defined::Drive,
@@ -30,26 +32,39 @@ pub trait GainAsAny {
 
 /// Gain controls amplitude and phase of each transducer.
 pub trait Gain<T: Transducer>: GainAsAny {
-    fn calc(&self, device: &Device<T>, filter: GainFilter)
-        -> Result<Vec<Drive>, AUTDInternalError>;
-    fn transform<F: Fn(&T) -> Drive + Sync + Send>(
-        device: &Device<T>,
+    fn calc(
+        &self,
+        devices: &[&Device<T>],
+        filter: GainFilter,
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>;
+    fn transform<F: Fn(&Device<T>, &T) -> Drive + Sync + Send>(
+        devices: &[&Device<T>],
         filter: GainFilter,
         f: F,
-    ) -> Vec<Drive>
+    ) -> HashMap<usize, Vec<Drive>>
     where
         Self: Sized,
     {
         match filter {
-            GainFilter::All => device.iter().map(f).collect(),
-            GainFilter::Filter(filter) => device
+            GainFilter::All => devices
                 .iter()
-                .map(|tr| {
-                    if filter[tr.idx()] {
-                        f(tr)
-                    } else {
-                        Drive { phase: 0., amp: 0. }
-                    }
+                .map(|dev| (dev.idx(), dev.iter().map(|tr| f(dev, tr)).collect()))
+                .collect(),
+            GainFilter::Filter(filter) => devices
+                .iter()
+                .map(|dev| {
+                    (
+                        dev.idx(),
+                        dev.iter()
+                            .map(|tr| {
+                                if filter[tr.idx()] {
+                                    f(dev, tr)
+                                } else {
+                                    Drive { phase: 0., amp: 0. }
+                                }
+                            })
+                            .collect(),
+                    )
                 })
                 .collect(),
         }
@@ -65,9 +80,9 @@ impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
 impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
     fn calc(
         &self,
-        device: &Device<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        self.as_ref().calc(device, filter)
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        self.as_ref().calc(devices, filter)
     }
 }

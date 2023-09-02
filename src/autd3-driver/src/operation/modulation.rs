@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -135,9 +135,14 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn init(&mut self, device: &Device<T>) {
-        self.remains.insert(device.idx(), self.buf.len());
-        self.sent.insert(device.idx(), 0);
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        self.remains = devices
+            .iter()
+            .map(|device| (device.idx(), self.buf.len()))
+            .collect();
+        self.sent = devices.iter().map(|device| (device.idx(), 0)).collect();
+
+        Ok(())
     }
 
     fn remains(&self, device: &Device<T>) -> usize {

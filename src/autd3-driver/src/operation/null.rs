@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,9 @@ impl<T: Transducer> Operation<T> for NullOp {
         0
     }
 
-    fn init(&mut self, _: &Device<T>) {}
+    fn init(&mut self, _: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        Ok(())
+    }
 
     fn remains(&self, _: &Device<T>) -> usize {
         0
