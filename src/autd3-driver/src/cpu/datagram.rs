@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -78,6 +78,10 @@ impl TxDatagram {
     pub fn body_mut(&mut self, i: usize) -> &mut [u8] {
         &mut self.data[self.data_pointer[i] + std::mem::size_of::<Header>()
             ..self.data_pointer[i] + EC_OUTPUT_FRAME_SIZE]
+    }
+
+    pub fn bodies(&self) -> impl Iterator<Item = &[u8]> {
+        (0..self.device_map.len()).map(|i| self.body(i))
     }
 
     pub fn copy_from(&mut self, src: &TxDatagram) {

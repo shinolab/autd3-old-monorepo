@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,11 @@
 
 use std::{marker::PhantomData, time::Duration};
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
 };
 
 /// Link to bundle two links

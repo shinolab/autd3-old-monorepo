@@ -4,16 +4,16 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-// pub mod bundle;
-pub mod debug;
-// pub mod log;
+mod bundle;
+mod debug;
+mod log;
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
@@ -21,9 +21,9 @@ use autd3_driver::{
     geometry::{Geometry, Transducer},
     link::Link,
 };
-// pub use bundle::Bundle;
+pub use bundle::Bundle;
 pub use debug::Debug;
-// pub use log::Log;
+pub use log::Log;
 
 /// Link to do nothing
 pub struct NullLink {}
