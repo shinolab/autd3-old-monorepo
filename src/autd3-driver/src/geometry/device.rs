@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -103,4 +103,18 @@ impl<T: Transducer> DerefMut for Device<T> {
 
 pub trait IntoDevice<T: Transducer> {
     fn into_device(self, dev_idx: usize) -> Device<T>;
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+
+    pub fn create_device<T: Transducer>(idx: usize, n: usize) -> Device<T> {
+        Device::new(
+            idx,
+            (0..n)
+                .map(|i| T::new(i, Vector3::zeros(), UnitQuaternion::identity()))
+                .collect(),
+        )
+    }
 }

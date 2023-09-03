@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,10 +12,9 @@
  */
 
 mod clear;
-// mod flag;
 mod gain;
 mod info;
-// mod mod_delay;
+mod mod_delay;
 mod modulation;
 mod null;
 mod silencer;
@@ -25,10 +24,9 @@ mod stop;
 // mod sync;
 
 pub use clear::*;
-// pub use flag::*;
 pub use gain::*;
 pub use info::*;
-// pub use mod_delay::*;
+pub use mod_delay::*;
 pub use modulation::*;
 pub use null::*;
 pub use silencer::*;
@@ -51,6 +49,7 @@ pub enum TypeTag {
     Sync = 0x02,
     FirmwareInfo = 0x03,
     Modulation = 0x10,
+    ModDelay = 0x11,
     Silencer = 0x20,
     Gain = 0x30,
     FocusSTM = 0x40,
