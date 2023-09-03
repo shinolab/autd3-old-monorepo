@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
         assert_eq!(self.remains[&device.idx()], 1);
 
         let d = &self.drives[&device.idx()];
-        assert!(tx.len() > 2 + d.len() * std::mem::size_of::<LegacyDrive>());
+        assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<LegacyDrive>());
 
         tx[0] = TypeTag::Gain as u8;
         tx[1] = GainControlFlags::LEGACY.bits();
