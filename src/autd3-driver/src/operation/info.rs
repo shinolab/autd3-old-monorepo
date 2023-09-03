@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
+#[derive(Debug)]
 #[repr(u8)]
 pub enum FirmwareInfoType {
     CPUVersionMajor = 0x01,
@@ -26,6 +27,19 @@ pub enum FirmwareInfoType {
     FPGAVersionMajor = 0x03,
     FPGAVersionMinor = 0x04,
     FPGAFunctions = 0x05,
+}
+
+impl From<u8> for FirmwareInfoType {
+    fn from(value: u8) -> Self {
+        match value {
+            0x01 => Self::CPUVersionMajor,
+            0x02 => Self::CPUVersionMinor,
+            0x03 => Self::FPGAVersionMajor,
+            0x04 => Self::FPGAVersionMinor,
+            0x05 => Self::FPGAFunctions,
+            _ => unreachable!(),
+        }
+    }
 }
 
 #[derive(Default)]
