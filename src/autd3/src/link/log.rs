@@ -18,7 +18,7 @@ use std::{
 };
 
 use autd3_driver::{
-    cpu::{Header, RxDatagram, TxDatagram},
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
@@ -138,7 +138,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             .zip(tx.bodies())
             .enumerate()
             .for_each(|(i, (h, b))| {
-                match TypeTag::from(b[std::mem::size_of::<Header>()]) {
+                let mut print = |tag| match tag {
                     TypeTag::NONE | TypeTag::Clear | TypeTag::FirmwareInfo => (),
                     TypeTag::Sync => {
                         self.synchronized[i] = true;
@@ -148,20 +148,10 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
                             warn!(logger: self.logger, "Device ({i}) is not synchronized");
                         }
                     }
-                }
+                };
+                print(TypeTag::from(b[0]));
                 if h.slot_2_offset != 0 {
-                    match TypeTag::from(b[std::mem::size_of::<Header>() + h.slot_2_offset as usize])
-                    {
-                        TypeTag::NONE | TypeTag::Clear | TypeTag::FirmwareInfo => (),
-                        TypeTag::Sync => {
-                            self.synchronized[i] = true;
-                        }
-                        _ => {
-                            if !self.synchronized[i] {
-                                warn!(logger: self.logger, "Device {i} is not synchronized");
-                            }
-                        }
-                    }
+                    print(TypeTag::from(b[h.slot_2_offset as usize]));
                 }
             });
 
