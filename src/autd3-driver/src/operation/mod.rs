@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,6 +56,24 @@ pub enum TypeTag {
     FocusSTM = 0x40,
     GainSTM = 0x50,
     Filter = 0x60,
+}
+
+impl From<u8> for TypeTag {
+    fn from(value: u8) -> Self {
+        match value {
+            0x00 => Self::NONE,
+            0x01 => Self::Clear,
+            0x02 => Self::Sync,
+            0x03 => Self::FirmwareInfo,
+            0x10 => Self::Modulation,
+            0x20 => Self::Silencer,
+            0x30 => Self::Gain,
+            0x40 => Self::FocusSTM,
+            0x50 => Self::GainSTM,
+            0x60 => Self::Filter,
+            _ => unimplemented!(),
+        }
+    }
 }
 
 pub trait Operation<T: Transducer> {

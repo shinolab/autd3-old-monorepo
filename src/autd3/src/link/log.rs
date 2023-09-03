@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,13 +17,13 @@ use std::{
     time::Duration,
 };
 
-use crate::core::{
-    error::AUTDInternalError, link::Link, CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR,
-    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
-    MSG_RD_FPGA_VERSION_MINOR,
+use autd3_driver::{
+    cpu::{Header, RxDatagram, TxDatagram},
+    error::AUTDInternalError,
+    geometry::{Geometry, Transducer},
+    link::Link,
+    operation::TypeTag,
 };
-
-use autd3_core::geometry::{Geometry, Transducer};
 use spdlog::prelude::*;
 
 pub use spdlog::Level;
@@ -32,7 +32,7 @@ pub use spdlog::Level;
 pub struct LogImpl<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
-    synchronized: bool,
+    synchronized: Vec<bool>,
     _trans: PhantomData<T>,
 }
 
@@ -63,12 +63,12 @@ impl<T: Transducer, L: Link<T>> DerefMut for LogImpl<T, L> {
 
 impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
     fn new(link: L) -> Self {
-        let logger = crate::core::link::get_logger();
+        let logger = autd3_driver::logger::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
         Self {
             link,
             logger,
-            synchronized: false,
+            synchronized: Default::default(),
             _trans: PhantomData,
         }
     }
@@ -102,6 +102,8 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return res;
         }
 
+        self.synchronized = vec![false; geometry.num_devices()];
+
         Ok(())
     }
 
@@ -113,7 +115,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return Ok(());
         }
 
-        self.synchronized = false;
+        self.synchronized.fill(false);
 
         let res = self.link.close();
         if res.is_err() {
@@ -132,24 +134,37 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return Ok(false);
         }
 
-        match tx.header().msg_id {
-            MSG_CLEAR
-            | MSG_RD_CPU_VERSION
-            | MSG_RD_CPU_VERSION_MINOR
-            | MSG_RD_FPGA_VERSION
-            | MSG_RD_FPGA_VERSION_MINOR
-            | MSG_RD_FPGA_FUNCTION => {}
-            _ => {
-                if !tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_EN_N)
-                    && tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC)
-                {
-                    self.synchronized = true;
+        tx.headers()
+            .zip(tx.bodies())
+            .enumerate()
+            .for_each(|(i, (h, b))| {
+                match TypeTag::from(b[std::mem::size_of::<Header>()]) {
+                    TypeTag::NONE | TypeTag::Clear | TypeTag::FirmwareInfo => (),
+                    TypeTag::Sync => {
+                        self.synchronized[i] = true;
+                    }
+                    _ => {
+                        if !self.synchronized[i] {
+                            warn!(logger: self.logger, "Device ({i}) is not synchronized");
+                        }
+                    }
                 }
-                if !self.synchronized {
-                    warn!(logger: self.logger, "Devices are not not synchronized");
+                if h.slot_2_offset != 0 {
+                    match TypeTag::from(b[std::mem::size_of::<Header>() + h.slot_2_offset as usize])
+                    {
+                        TypeTag::NONE | TypeTag::Clear | TypeTag::FirmwareInfo => (),
+                        TypeTag::Sync => {
+                            self.synchronized[i] = true;
+                        }
+                        _ => {
+                            if !self.synchronized[i] {
+                                warn!(logger: self.logger, "Device {i} is not synchronized");
+                            }
+                        }
+                    }
                 }
-            }
-        }
+            });
+
         if !self.link.send(tx)? {
             error!(logger: self.logger, "Failed to send data");
             return Ok(false);
@@ -184,7 +199,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
         if timeout.is_zero() {
             return self.receive(rx);
         }
-        if !self.wait_msg_processed(tx.header().msg_id, rx, timeout)? {
+        if !self.wait_msg_processed(tx, rx, timeout)? {
             error!(logger: self.logger, "Failed to confirm that the data was processed");
             return Ok(false);
         }
