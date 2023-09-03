@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -124,7 +124,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let timeout = s.timeout().unwrap_or(self.link.timeout());
 
         let (mut op1, mut op2) = s.operation()?;
-        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter());
+        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter())?;
         loop {
             OperationHandler::pack(&mut op1, &mut op2, self.geometry.iter(), &mut self.tx_buf)?;
 
@@ -181,7 +181,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let mut op = autd3_driver::operation::FirmInfoOp::default();
         let mut null_op = autd3_driver::operation::NullOp::default();
 
-        OperationHandler::init(&mut op, &mut null_op, self.geometry.iter());
+        OperationHandler::init(&mut op, &mut null_op, self.geometry.iter())?;
 
         OperationHandler::pack(
             &mut op,
