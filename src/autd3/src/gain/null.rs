@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,29 +46,28 @@ impl<T: Transducer> Gain<T> for Null {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use autd3_core::autd3_device::AUTD3;
-//     use autd3_core::geometry::{LegacyTransducer, Vector3};
+#[cfg(test)]
+mod tests {
 
-//     use super::*;
+    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
 
-//     use crate::tests::GeometryBuilder;
+    use super::*;
 
-//     #[test]
-//     fn test_null() {
-//         let geometry = GeometryBuilder::<LegacyTransducer>::new()
-//             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-//             .build()
-//             .unwrap();
+    use crate::autd3_device::AUTD3;
 
-//         let null_gain = Null::new();
+    #[test]
+    fn test_null() {
+        let device: Device<LegacyTransducer> =
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
-//         let drives = null_gain.calc(&geometry, GainFilter::All).unwrap();
+        let null_gain = Null::new();
 
-//         for drive in drives {
-//             assert_eq!(drive.phase, 0.0);
-//             assert_eq!(drive.amp, 0.0);
-//         }
-//     }
-// }
+        let drives = null_gain.calc(&[&device], GainFilter::All).unwrap();
+        assert_eq!(drives.len(), 1);
+        assert_eq!(drives[&0].len(), device.num_transducers());
+        drives[&0].iter().for_each(|d| {
+            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.phase, 0.0);
+        });
+    }
+}
