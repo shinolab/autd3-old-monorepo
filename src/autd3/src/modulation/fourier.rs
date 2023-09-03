@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/08/2023
+ * Last Modified: 03/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,10 @@
 use std::ops::{Deref, DerefMut};
 
 use super::sine::Sine;
-use autd3_core::{
+use autd3_driver::{
+    defined::float,
     error::AUTDInternalError,
-    float,
+    fpga::FPGA_SUB_CLK_FREQ,
     modulation::{Modulation, ModulationProperty},
 };
 
@@ -112,7 +113,7 @@ impl std::ops::Add<Sine> for Sine {
 
 impl ModulationProperty for Fourier {
     fn sampling_frequency(&self) -> float {
-        autd3_core::FPGA_SUB_CLK_FREQ as float / self.freq_div as float
+        FPGA_SUB_CLK_FREQ as float / self.freq_div as float
     }
 
     fn sampling_frequency_division(&self) -> u32 {
@@ -120,16 +121,13 @@ impl ModulationProperty for Fourier {
     }
 }
 
-impl<T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for Fourier {
-    type H = autd3_core::Modulation;
-    type B = autd3_core::NullBody;
+impl<T: autd3_driver::geometry::Transducer> autd3_driver::datagram::Datagram<T> for Fourier {
+    type O1 = autd3_driver::operation::ModulationOp;
+    type O2 = autd3_driver::operation::NullOp;
 
-    fn operation(
-        &self,
-        _geometry: &autd3_core::geometry::Geometry<T>,
-    ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+    fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
         let freq_div = self.freq_div;
-        Ok((Self::H::new(self.calc()?, freq_div), Self::B::default()))
+        Ok((Self::O1::new(self.calc()?, freq_div), Self::O2::default()))
     }
 }
 
@@ -161,7 +159,7 @@ impl Modulation for Fourier {
 mod tests {
     use super::*;
 
-    use autd3_core::PI;
+    use autd3_driver::defined::PI;
 
     #[test]
     fn test_fourier() {
