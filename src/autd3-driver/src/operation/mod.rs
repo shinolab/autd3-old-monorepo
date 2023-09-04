@@ -12,6 +12,7 @@
  */
 
 mod clear;
+mod filter;
 mod gain;
 mod info;
 mod mod_delay;
@@ -20,8 +21,6 @@ mod null;
 mod silencer;
 mod stm;
 mod stop;
-// mod stm_gain;
-mod filter;
 mod sync;
 
 pub use clear::*;
@@ -34,7 +33,6 @@ pub use null::*;
 pub use silencer::*;
 pub use stm::*;
 pub use stop::*;
-// pub use stm_gain::*;
 pub use sync::*;
 
 use crate::{
@@ -67,6 +65,7 @@ impl From<u8> for TypeTag {
             0x02 => Self::Sync,
             0x03 => Self::FirmwareInfo,
             0x10 => Self::Modulation,
+            0x11 => Self::ModDelay,
             0x20 => Self::Silencer,
             0x30 => Self::Gain,
             0x40 => Self::FocusSTM,

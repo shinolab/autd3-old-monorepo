@@ -4,14 +4,14 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use super::error::TimerError;
+use crate::error::AUTDInternalError;
 use libc::{
     c_int, c_void, clockid_t, itimerspec, sigaction, sigevent, siginfo_t, timespec, CLOCK_REALTIME,
 };
@@ -54,14 +54,14 @@ impl NativeTimerWrapper {
         cb: Option<Waitortimercallback>,
         period: std::time::Duration,
         lp_param: *mut P,
-    ) -> Result<bool, TimerError> {
+    ) -> Result<bool, AUTDInternalError> {
         unsafe {
             let mut sa: sigaction = mem::zeroed();
             sa.sa_flags = libc::SA_SIGINFO;
             sa.sa_sigaction = cb.unwrap() as usize;
             libc::sigemptyset(&mut sa.sa_mask);
             if sigaction(SIGRTMIN, &sa, ptr::null_mut()) < 0 {
-                return Err(TimerError::CreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed());
             }
 
             let mut sev: sigevent = mem::zeroed();
@@ -76,7 +76,7 @@ impl NativeTimerWrapper {
 
             let mut timer = 0;
             if timer_create(CLOCK_REALTIME, &mut sev, &mut timer) < 0 {
-                return Err(TimerError::CreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed());
             }
 
             let new_value = itimerspec {
@@ -91,7 +91,7 @@ impl NativeTimerWrapper {
             };
 
             if timer_settime(timer, 0, &new_value, ptr::null_mut()) < 0 {
-                return Err(TimerError::CreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed());
             }
 
             self.timer_handle = Some(TimerHandle { timer });
@@ -99,11 +99,11 @@ impl NativeTimerWrapper {
         }
     }
 
-    pub fn close(&mut self) -> Result<(), TimerError> {
+    pub fn close(&mut self) -> Result<(), AUTDInternalError> {
         if let Some(handle) = self.timer_handle.take() {
             unsafe {
                 if timer_delete(handle.timer) < 0 {
-                    return Err(TimerError::DeleteFailed());
+                    return Err(AUTDInternalError::TimerDeleteFailed());
                 }
             }
         }

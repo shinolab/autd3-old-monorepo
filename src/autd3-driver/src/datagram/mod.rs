@@ -20,6 +20,7 @@ mod silencer;
 mod stm;
 mod stop;
 mod synchronize;
+mod update_flag;
 
 pub use clear::Clear;
 pub use filter::{AmpFilter, PhaseFilter};
@@ -30,6 +31,7 @@ pub use silencer::Silencer;
 pub use stm::{FocusSTM, GainSTM};
 pub use stop::Stop;
 pub use synchronize::Synchronize;
+pub use update_flag::UpdateFlags;
 
 use std::{marker::PhantomData, time::Duration};
 

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -13,7 +13,9 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use super::{error::TimerError, NativeTimerWrapper};
+use crate::error::AUTDInternalError;
+
+use super::NativeTimerWrapper;
 #[cfg(target_os = "macos")]
 use libc::c_void;
 #[cfg(target_os = "linux")]
@@ -30,7 +32,7 @@ pub struct Timer<F: TimerCallback> {
 }
 
 impl<F: TimerCallback> Timer<F> {
-    pub fn start(cb: F, period: std::time::Duration) -> Result<Box<Self>, TimerError> {
+    pub fn start(cb: F, period: std::time::Duration) -> Result<Box<Self>, AUTDInternalError> {
         let mut timer = Box::new(Self {
             lock: AtomicBool::new(false),
             native_timer: NativeTimerWrapper::new(),
@@ -43,7 +45,7 @@ impl<F: TimerCallback> Timer<F> {
         Ok(timer)
     }
 
-    pub fn close(mut self) -> Result<F, TimerError> {
+    pub fn close(mut self) -> Result<F, AUTDInternalError> {
         self.native_timer.close()?;
         Ok(self.cb)
     }

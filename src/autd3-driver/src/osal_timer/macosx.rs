@@ -4,14 +4,14 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use super::error::TimerError;
+use crate::error::AUTDInternalError;
 use libc::{c_char, c_long, c_ulong, c_void, uintptr_t};
 use std::ffi::CString;
 
@@ -73,7 +73,7 @@ impl NativeTimerWrapper {
         cb: Option<Waitortimercallback>,
         period: std::time::Duration,
         lp_param: *mut P,
-    ) -> Result<bool, TimerError> {
+    ) -> Result<bool, AUTDInternalError> {
         unsafe {
             let timer_queue_str = CString::new("timerQueue").unwrap();
             let queue = dispatch_queue_create(timer_queue_str.as_ptr(), 0);
@@ -97,7 +97,7 @@ impl NativeTimerWrapper {
         }
     }
 
-    pub fn close(&mut self) -> Result<(), TimerError> {
+    pub fn close(&mut self) -> Result<(), AUTDInternalError> {
         if let Some(handle) = self.timer_handle.take() {
             unsafe {
                 dispatch_release(handle.timer);
