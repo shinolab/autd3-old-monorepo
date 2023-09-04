@@ -21,9 +21,11 @@ mod silencer;
 mod stop;
 // mod stm_focus;
 // mod stm_gain;
+mod filter;
 mod sync;
 
 pub use clear::*;
+pub use filter::*;
 pub use gain::*;
 pub use info::*;
 pub use mod_delay::*;

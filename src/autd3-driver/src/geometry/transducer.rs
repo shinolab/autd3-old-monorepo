@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -60,6 +60,14 @@ pub trait Transducer: Send + Sync {
     fn mod_delay(&self) -> u16;
     /// Set the modulation delay of the transducer
     fn set_mod_delay(&mut self, value: u16);
+    /// Get the amp filter
+    fn amp_filter(&self) -> float;
+    /// Set the amp filter
+    fn set_amp_filter(&mut self, value: float);
+    /// Get the amp filter
+    fn phase_filter(&self) -> float;
+    /// Set the amp filter
+    fn set_phase_filter(&mut self, value: float);
     /// Get the wavelength of the transducer
     fn wavelength(&self, sound_speed: float) -> float {
         sound_speed / self.frequency()
