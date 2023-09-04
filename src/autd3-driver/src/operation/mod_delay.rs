@@ -74,7 +74,7 @@ mod tests {
     const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn mod_delay() {
+    fn mod_delay_op() {
         let mut devices = (0..NUM_DEVICE)
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
             .collect::<Vec<_>>();
@@ -92,6 +92,14 @@ mod tests {
         let mut op = ModDelayOp::default();
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
+            )
+        });
+
         devices
             .iter()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));

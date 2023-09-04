@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,46 +60,48 @@ impl<T: Transducer> Operation<T> for ConfigSilencerOp {
     }
 }
 
-// #[cfg(test)]
-// mod test {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::geometry::{tests::create_device, LegacyTransducer};
 
-//     use super::*;
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
-//     const NUM_TRANS_IN_UNIT: usize = 249;
+    #[test]
+    fn silencer_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
 
-//     #[test]
-//     fn clear() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+        let mut tx = vec![0x00u8; 4 * NUM_DEVICE];
 
-//         let mut op = ConfigSilencer::new(4);
-//         op.init();
-//         assert!(!op.is_finished());
+        let mut op = ConfigSilencerOp::new(0x1234);
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(op.is_finished());
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_EN_N));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-//         assert!(tx
-//             .header()
-//             .cpu_flag
-//             .contains(CPUControlFlags::CONFIG_SILENCER));
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 4));
 
-//         assert_eq!(tx.header().silencer().step, 4);
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-//         op.init();
-//         assert!(!op.is_finished());
-//     }
-// }
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 4..]).is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 4], TypeTag::Silencer as u8);
+            assert_eq!(tx[dev.idx() * 4 + 1], 0);
+            assert_eq!(tx[dev.idx() * 4 + 2], 0x34);
+            assert_eq!(tx[dev.idx() * 4 + 3], 0x12);
+        });
+    }
+}

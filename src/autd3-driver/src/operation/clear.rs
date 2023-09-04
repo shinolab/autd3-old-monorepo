@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,11 +28,11 @@ impl<T: Transducer> Operation<T> for ClearOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
         tx[0] = TypeTag::Clear as u8;
-        Ok(1)
+        Ok(2)
     }
 
     fn required_size(&self, _: &Device<T>) -> usize {
-        1
+        2
     }
 
     fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
@@ -49,39 +49,45 @@ impl<T: Transducer> Operation<T> for ClearOp {
     }
 }
 
-// #[cfg(test)]
-// mod test {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::geometry::{tests::create_device, LegacyTransducer};
 
-//     use super::*;
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
-//     const NUM_TRANS_IN_UNIT: usize = 249;
+    #[test]
+    fn clear_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
 
-//     #[test]
-//     fn clear() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+        let mut tx = vec![0x00u8; 2 * NUM_DEVICE];
 
-//         let mut op = Clear::default();
-//         op.init();
-//         assert!(!op.is_finished());
+        let mut op = ClearOp::default();
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(op.is_finished());
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-//         assert_eq!(tx.header().msg_id, MSG_CLEAR);
-//         assert_eq!(tx.num_bodies, 0);
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 2));
 
-//         op.init();
-//         assert!(!op.is_finished());
-//     }
-// }
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::Clear as u8);
+        });
+    }
+}
