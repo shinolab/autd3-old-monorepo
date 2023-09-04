@@ -128,9 +128,16 @@ impl<T: Transducer> Operation<T> for ModulationOp {
 
     fn required_size(&self, device: &Device<T>) -> usize {
         if self.sent[&device.idx()] == 0 {
-            7
+            std::mem::size_of::<TypeTag>()
+                + std::mem::size_of::<ModulationControlFlags>()
+                + std::mem::size_of::<u16>() // size
+                + std::mem::size_of::<u32>() // freq_div
+                + 1
         } else {
-            5
+            std::mem::size_of::<TypeTag>()
+                + std::mem::size_of::<ModulationControlFlags>()
+                + std::mem::size_of::<u16>() // size
+                + 1
         }
     }
 
