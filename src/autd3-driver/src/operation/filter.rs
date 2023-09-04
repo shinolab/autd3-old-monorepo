@@ -53,7 +53,7 @@ impl<T: Transducer> Operation<T> for PhaseFilterOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut FilterPhase,
+                tx[2..].as_mut_ptr() as *mut FilterPhase,
                 device.num_transducers(),
             );
             dst.iter_mut()
@@ -98,7 +98,7 @@ impl<T: Transducer> Operation<T> for AmpFilterOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut FilterDuty,
+                tx[2..].as_mut_ptr() as *mut FilterDuty,
                 device.num_transducers(),
             );
             dst.iter_mut()

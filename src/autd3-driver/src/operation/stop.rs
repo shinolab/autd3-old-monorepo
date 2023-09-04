@@ -39,7 +39,7 @@ impl<T: Transducer> Operation<T> for StopOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                tx[2..].as_mut_ptr() as *mut AdvancedDriveDuty,
                 device.num_transducers(),
             );
             dst.iter_mut()
