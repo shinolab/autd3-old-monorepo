@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -125,72 +125,72 @@ impl AdvancedTransducer {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use assert_approx_eq::assert_approx_eq;
-//     use autd3_driver::PI;
+#[cfg(test)]
+mod tests {
+    use crate::defined::PI;
+    use assert_approx_eq::assert_approx_eq;
 
-//     use super::*;
+    use super::*;
 
-//     macro_rules! assert_vec3_approx_eq {
-//         ($a:expr, $b:expr) => {
-//             assert_approx_eq!($a.x, $b.x, 1e-3);
-//             assert_approx_eq!($a.y, $b.y, 1e-3);
-//             assert_approx_eq!($a.z, $b.z, 1e-3);
-//         };
-//     }
+    macro_rules! assert_vec3_approx_eq {
+        ($a:expr, $b:expr) => {
+            assert_approx_eq!($a.x, $b.x, 1e-3);
+            assert_approx_eq!($a.y, $b.y, 1e-3);
+            assert_approx_eq!($a.z, $b.z, 1e-3);
+        };
+    }
 
-//     #[test]
-//     fn affine() {
-//         let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+    #[test]
+    fn affine() {
+        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
-//         let t = Vector3::new(40., 50., 60.);
-//         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
-//             * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
-//             * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
-//         tr.affine(t, rot);
+        let t = Vector3::new(40., 50., 60.);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
+        tr.affine(t, rot);
 
-//         let expect_x = Vector3::new(0., 1., 0.);
-//         let expect_y = Vector3::new(-1., 0., 0.);
-//         let expect_z = Vector3::new(0., 0., 1.);
-//         assert_vec3_approx_eq!(expect_x, tr.x_direction());
-//         assert_vec3_approx_eq!(expect_y, tr.y_direction());
-//         assert_vec3_approx_eq!(expect_z, tr.z_direction());
+        let expect_x = Vector3::new(0., 1., 0.);
+        let expect_y = Vector3::new(-1., 0., 0.);
+        let expect_z = Vector3::new(0., 0., 1.);
+        assert_vec3_approx_eq!(expect_x, tr.x_direction());
+        assert_vec3_approx_eq!(expect_y, tr.y_direction());
+        assert_vec3_approx_eq!(expect_z, tr.z_direction());
 
-//         let expect_pos = Vector3::zeros() + t;
-//         assert_vec3_approx_eq!(expect_pos, tr.position());
-//     }
+        let expect_pos = Vector3::zeros() + t;
+        assert_vec3_approx_eq!(expect_pos, tr.position());
+    }
 
-//     #[test]
-//     fn cycle() {
-//         let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+    #[test]
+    fn cycle() {
+        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
-//         let cycle = 2000;
-//         let res = tr.set_cycle(cycle);
-//         assert!(res.is_ok());
-//         assert_eq!(cycle, tr.cycle());
+        let cycle = 2000;
+        let res = tr.set_cycle(cycle);
+        assert!(res.is_ok());
+        assert_eq!(cycle, tr.cycle());
 
-//         let cycle = MAX_CYCLE;
-//         let res = tr.set_cycle(cycle);
-//         assert!(res.is_ok());
-//         assert_eq!(cycle, tr.cycle());
+        let cycle = MAX_CYCLE;
+        let res = tr.set_cycle(cycle);
+        assert!(res.is_ok());
+        assert_eq!(cycle, tr.cycle());
 
-//         let cycle = MAX_CYCLE + 1;
-//         let res = tr.set_cycle(cycle);
-//         assert!(res.is_err());
-//     }
+        let cycle = MAX_CYCLE + 1;
+        let res = tr.set_cycle(cycle);
+        assert!(res.is_err());
+    }
 
-//     #[test]
-//     fn freq() {
-//         let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+    #[test]
+    fn freq() {
+        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
-//         let freq = 70e3;
-//         let res = tr.set_frequency(freq);
-//         assert!(res.is_ok());
-//         assert_approx_eq!(freq, tr.frequency(), 100.);
+        let freq = 70e3;
+        let res = tr.set_frequency(freq);
+        assert!(res.is_ok());
+        assert_approx_eq!(freq, tr.frequency(), 100.);
 
-//         let freq = 20e3;
-//         let res = tr.set_frequency(freq);
-//         assert!(res.is_err());
-//     }
-// }
+        let freq = 20e3;
+        let res = tr.set_frequency(freq);
+        assert!(res.is_err());
+    }
+}

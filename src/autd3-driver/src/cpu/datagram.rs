@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -155,27 +155,14 @@ impl DerefMut for RxDatagram {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use std::mem::size_of;
+#[cfg(test)]
+mod tests {
+    use std::mem::size_of;
 
-//     use super::*;
+    use super::*;
 
-//     #[test]
-//     fn rx_datagram() {
-//         assert_eq!(size_of::<RxMessage>(), 2);
-
-//         let mut rx = RxDatagram::new(10);
-
-//         assert!(!rx.is_msg_processed(1));
-
-//         rx[0].msg_id = 1;
-//         assert!(!rx.is_msg_processed(1));
-
-//         rx.iter_mut().for_each(|msg| {
-//             msg.msg_id = 1;
-//         });
-//         assert!(rx.is_msg_processed(1));
-//         assert!(!rx.is_msg_processed(2));
-//     }
-// }
+    #[test]
+    fn rx_datagram() {
+        assert_eq!(size_of::<RxMessage>(), 2);
+    }
+}

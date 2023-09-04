@@ -324,7 +324,7 @@ pub mod tests {
     use crate::{
         datagram::GainAsAny,
         defined::PI,
-        geometry::{tests::create_device, LegacyTransducer},
+        geometry::{device::tests::create_device, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;

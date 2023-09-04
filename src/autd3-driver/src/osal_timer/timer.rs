@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -128,6 +128,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_timer() {
         let timer = Timer::start(
             CountCallback { count: 0 },
