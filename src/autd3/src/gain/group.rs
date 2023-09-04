@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,9 +16,9 @@ use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 use bitvec::prelude::*;
 
 use autd3_driver::{
+    datagram::{Gain, GainAsAny, GainFilter},
     defined::Drive,
     error::AUTDInternalError,
-    gain::{Gain, GainAsAny, GainFilter},
     geometry::{Device, Transducer},
 };
 

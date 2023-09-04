@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use autd3_derive::Modulation;
 use autd3_driver::{
+    datagram::{Modulation, ModulationProperty},
     defined::float,
     error::AUTDInternalError,
-    modulation::{Modulation, ModulationProperty},
 };
 use hound::SampleFormat;
 

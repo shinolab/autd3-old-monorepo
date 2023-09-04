@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,10 +12,16 @@
  */
 
 mod clear;
+mod gain;
+mod mod_delay;
+mod modulation;
 mod silencer;
 mod stop;
 
 pub use clear::Clear;
+pub use gain::{Gain, GainAsAny, GainFilter};
+pub use mod_delay::ModDelay;
+pub use modulation::{Modulation, ModulationProperty};
 pub use silencer::Silencer;
 pub use stop::Stop;
 

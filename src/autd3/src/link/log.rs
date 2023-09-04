@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@ use autd3_driver::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
-    operation::TypeTag,
 };
 use spdlog::prelude::*;
 
@@ -32,7 +31,6 @@ pub use spdlog::Level;
 pub struct LogImpl<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
-    synchronized: Vec<bool>,
     _trans: PhantomData<T>,
 }
 
@@ -68,7 +66,6 @@ impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
         Self {
             link,
             logger,
-            synchronized: Default::default(),
             _trans: PhantomData,
         }
     }
@@ -102,8 +99,6 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return res;
         }
 
-        self.synchronized = vec![false; geometry.num_devices()];
-
         Ok(())
     }
 
@@ -114,8 +109,6 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             warn!(logger: self.logger, "Log link is already closed.");
             return Ok(());
         }
-
-        self.synchronized.fill(false);
 
         let res = self.link.close();
         if res.is_err() {
@@ -133,27 +126,6 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             warn!(logger: self.logger, "Link is not opened");
             return Ok(false);
         }
-
-        tx.headers()
-            .zip(tx.bodies())
-            .enumerate()
-            .for_each(|(i, (h, b))| {
-                let mut print = |tag| match tag {
-                    TypeTag::NONE | TypeTag::Clear | TypeTag::FirmwareInfo => (),
-                    TypeTag::Sync => {
-                        self.synchronized[i] = true;
-                    }
-                    _ => {
-                        if !self.synchronized[i] {
-                            warn!(logger: self.logger, "Device ({i}) is not synchronized");
-                        }
-                    }
-                };
-                print(TypeTag::from(b[0]));
-                if h.slot_2_offset != 0 {
-                    print(TypeTag::from(b[h.slot_2_offset as usize]));
-                }
-            });
 
         if !self.link.send(tx)? {
             error!(logger: self.logger, "Failed to send data");

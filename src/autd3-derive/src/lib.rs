@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
     let type_params_datagram = generics.type_params();
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl <#(#linetimes_prop,)* #(#type_params_prop,)*> autd3_driver::modulation::ModulationProperty for #name #ty_generics #where_clause {
+        impl <#(#linetimes_prop,)* #(#type_params_prop,)*> autd3_driver::datagram::ModulationProperty for #name #ty_generics #where_clause {
             fn sampling_frequency_division(&self) -> u32 {
                 self.freq_div
             }
@@ -105,7 +105,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
         .filter(|ty| ty.ident != "T")
         .collect::<Vec<_>>();
     let gen = quote! {
-        impl <#(#linetimes_for_any,)* #(#type_params_for_any,)*> autd3_driver::gain::GainAsAny for #name #ty_generics #where_clause {
+        impl <#(#linetimes_for_any,)* #(#type_params_for_any,)*> autd3_driver::datagram::GainAsAny for #name #ty_generics #where_clause {
             fn as_any(&self) -> &dyn std::any::Any {
                 self
             }

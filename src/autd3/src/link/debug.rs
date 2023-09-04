@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -148,6 +148,9 @@ impl<T: Transducer> Link<T> for Debug {
                     TypeTag::Modulation => {
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: Modulation");
                     }
+                    TypeTag::ModDelay => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: ModulationDelay");
+                    } 
                     TypeTag::Silencer => {
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: Silencer");
                     }
