@@ -4,13 +4,14 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+mod amplitude;
 mod clear;
 mod filter;
 mod gain;
@@ -22,6 +23,7 @@ mod stop;
 mod synchronize;
 mod update_flag;
 
+pub use amplitude::Amplitudes;
 pub use clear::Clear;
 pub use filter::{AmpFilter, PhaseFilter};
 pub use gain::{Gain, GainAsAny, GainFilter};

@@ -4,39 +4,41 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{float, FPGA_CLK_FREQ, MAX_CYCLE};
-
-use crate::error::AUTDInternalError;
+use crate::{
+    defined::float,
+    error::AUTDInternalError,
+    fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+};
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
 pub struct AdvancedPhaseTransducer {
-    idx: usize,
+    local_idx: usize,
     pos: Vector3,
     rot: UnitQuaternion,
     cycle: u16,
     mod_delay: u16,
+    amp_filter: float,
+    phase_filter: float,
 }
 
 impl Transducer for AdvancedPhaseTransducer {
-    type Gain = autd3_driver::operation::GainAdvancedPhase;
-    type Sync = autd3_driver::SyncAdvanced;
-    type GainSTM = autd3_driver::operation::GainSTMAdvanced;
-
-    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+    fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
-            idx,
+            local_idx,
             pos,
             rot,
             cycle: 4096,
             mod_delay: 0,
+            amp_filter: 0.,
+            phase_filter: 0.,
         }
     }
 
@@ -57,8 +59,24 @@ impl Transducer for AdvancedPhaseTransducer {
         &self.rot
     }
 
-    fn idx(&self) -> usize {
-        self.idx
+    fn local_idx(&self) -> usize {
+        self.local_idx
+    }
+
+    fn amp_filter(&self) -> float {
+        self.amp_filter
+    }
+
+    fn set_amp_filter(&mut self, value: float) {
+        self.amp_filter = value;
+    }
+
+    fn phase_filter(&self) -> float {
+        self.phase_filter
+    }
+
+    fn set_phase_filter(&mut self, value: float) {
+        self.phase_filter = value;
     }
 
     fn mod_delay(&self) -> u16 {
@@ -108,8 +126,9 @@ impl AdvancedPhaseTransducer {
 
 #[cfg(test)]
 mod tests {
+    use crate::defined::PI;
+
     use assert_approx_eq::assert_approx_eq;
-    use autd3_driver::PI;
 
     use super::*;
 
