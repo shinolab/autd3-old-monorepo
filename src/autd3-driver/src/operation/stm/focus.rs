@@ -17,11 +17,53 @@ use crate::{
     defined::METER,
     error::AUTDInternalError,
     fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Matrix3, Transducer, Vector3},
+    geometry::{Device, Transducer, Vector3},
     operation::{Operation, TypeTag},
 };
 
-use super::STMControlFlags;
+use std::fmt;
+
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct FocusSTMControlFlags : u8 {
+        const NONE            = 0;
+        const STM_BEGIN       = 1 << 0;
+        const STM_END         = 1 << 1;
+        const USE_START_IDX   = 1 << 2;
+        const USE_FINISH_IDX  = 1 << 3;
+    }
+}
+
+impl fmt::Display for FocusSTMControlFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut flags = Vec::new();
+        if self.contains(FocusSTMControlFlags::STM_BEGIN) {
+            flags.push("STM_BEGIN")
+        }
+        if self.contains(FocusSTMControlFlags::STM_END) {
+            flags.push("STM_END")
+        }
+        if self.contains(FocusSTMControlFlags::USE_START_IDX) {
+            flags.push("USE_START_IDX")
+        }
+        if self.contains(FocusSTMControlFlags::USE_FINISH_IDX) {
+            flags.push("USE_FINISH_IDX")
+        }
+        if self.is_empty() {
+            flags.push("NONE")
+        }
+        write!(
+            f,
+            "{}",
+            flags
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(" | ")
+        )
+    }
+}
 
 /// Control point for FocusSTM
 #[derive(Clone, Debug, Copy)]
@@ -89,27 +131,29 @@ impl From<&(Vector3, u8)> for ControlPoint {
     }
 }
 
-#[derive(Default, Clone, Copy)]
-pub struct FocusSTMProps {
-    pub freq_div: u32,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
-}
-
 pub struct FocusSTMOp {
     remains: HashMap<usize, usize>,
     sent: HashMap<usize, usize>,
     points: Vec<ControlPoint>,
-    props: FocusSTMProps,
+    freq_div: u32,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
 }
 
 impl FocusSTMOp {
-    pub fn new(points: Vec<ControlPoint>, props: FocusSTMProps) -> Self {
+    pub fn new(
+        points: Vec<ControlPoint>,
+        freq_div: u32,
+        start_idx: Option<u16>,
+        finish_idx: Option<u16>,
+    ) -> Self {
         Self {
             points,
-            props,
             remains: Default::default(),
             sent: Default::default(),
+            freq_div,
+            start_idx,
+            finish_idx,
         }
     }
 }
@@ -122,7 +166,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
 
         let sent = self.sent[&device.idx()];
         let mut offset = std::mem::size_of::<TypeTag>()
-            + std::mem::size_of::<STMControlFlags>()
+            + std::mem::size_of::<FocusSTMControlFlags>()
             + std::mem::size_of::<u16>(); // size
         if sent == 0 {
             offset += std::mem::size_of::<u32>() // freq_div
@@ -135,10 +179,10 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         let send_num = send_bytes / std::mem::size_of::<STMFocus>();
         assert!(send_num > 0);
 
-        let mut f = STMControlFlags::NONE;
-        f.set(STMControlFlags::STM_BEGIN, sent == 0);
+        let mut f = FocusSTMControlFlags::NONE;
+        f.set(FocusSTMControlFlags::STM_BEGIN, sent == 0);
         f.set(
-            STMControlFlags::STM_END,
+            FocusSTMControlFlags::STM_END,
             sent + send_num == self.points.len(),
         );
 
@@ -146,10 +190,10 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         tx[3] = (send_num >> 8) as u8;
 
         if sent == 0 {
-            tx[4] = (self.props.freq_div & 0xFF) as u8;
-            tx[5] = ((self.props.freq_div >> 8) & 0xFF) as u8;
-            tx[6] = ((self.props.freq_div >> 16) & 0xFF) as u8;
-            tx[7] = ((self.props.freq_div >> 24) & 0xFF) as u8;
+            tx[4] = (self.freq_div & 0xFF) as u8;
+            tx[5] = ((self.freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((self.freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((self.freq_div >> 24) & 0xFF) as u8;
 
             let sound_speed = (device.sound_speed / METER * 1024.0).round() as u32;
             tx[8] = (sound_speed & 0xFF) as u8;
@@ -157,29 +201,24 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             tx[10] = ((sound_speed >> 16) & 0xFF) as u8;
             tx[11] = ((sound_speed >> 24) & 0xFF) as u8;
 
-            let start_idx = self.props.start_idx.unwrap_or(0);
+            let start_idx = self.start_idx.unwrap_or(0);
             tx[12] = (start_idx & 0xFF) as u8;
             tx[13] = (start_idx >> 8) as u8;
             f.set(
-                STMControlFlags::USE_START_IDX,
-                self.props.start_idx.is_some(),
+                FocusSTMControlFlags::USE_START_IDX,
+                self.start_idx.is_some(),
             );
 
-            let finish_idx = self.props.finish_idx.unwrap_or(0);
+            let finish_idx = self.finish_idx.unwrap_or(0);
             tx[14] = (finish_idx & 0xFF) as u8;
             tx[15] = (finish_idx >> 8) as u8;
             f.set(
-                STMControlFlags::USE_FINISH_IDX,
-                self.props.finish_idx.is_some(),
+                FocusSTMControlFlags::USE_FINISH_IDX,
+                self.finish_idx.is_some(),
             );
         }
         tx[1] = f.bits();
 
-        let tr = &device[0];
-        let origin = tr.position();
-        let trans_inv =
-            Matrix3::from_columns(&[tr.x_direction(), tr.y_direction(), tr.z_direction()])
-                .transpose();
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
                 (&mut tx[offset..]).as_mut_ptr() as *mut STMFocus,
@@ -188,7 +227,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             dst.iter_mut()
                 .zip(self.points.iter().skip(sent).take(send_num))
                 .for_each(|(d, p)| {
-                    let lp = trans_inv * (p.point() - origin);
+                    let lp = device.to_local(p.point());
                     d.set(lp.x, lp.y, lp.z, p.shift());
                 })
         }
@@ -196,7 +235,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         self.sent.insert(device.idx(), sent + send_num);
         if sent == 0 {
             Ok(std::mem::size_of::<TypeTag>()
-            + std::mem::size_of::<STMControlFlags>()
+            + std::mem::size_of::<FocusSTMControlFlags>()
             + std::mem::size_of::<u16>() // size
             + std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u32>() // sound_speed
@@ -205,7 +244,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             + std::mem::size_of::<STMFocus>() * send_num)
         } else {
             Ok(std::mem::size_of::<TypeTag>()
-            + std::mem::size_of::<STMControlFlags>()
+            + std::mem::size_of::<FocusSTMControlFlags>()
             + std::mem::size_of::<u16>() // size
             + std::mem::size_of::<STMFocus>() * send_num)
         }
@@ -214,7 +253,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
     fn required_size(&self, device: &Device<T>) -> usize {
         if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
-                + std::mem::size_of::<STMControlFlags>()
+                + std::mem::size_of::<FocusSTMControlFlags>()
                 + std::mem::size_of::<u16>() // size
                 + std::mem::size_of::<u32>() // freq_div
                 + std::mem::size_of::<u32>() // sound_speed
@@ -223,7 +262,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
                 + std::mem::size_of::<STMFocus>()
         } else {
             std::mem::size_of::<TypeTag>()
-                + std::mem::size_of::<STMControlFlags>()
+                + std::mem::size_of::<FocusSTMControlFlags>()
                 + std::mem::size_of::<u16>() // size
                 + std::mem::size_of::<STMFocus>()
         }
@@ -235,10 +274,8 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
                 self.points.len(),
             ));
         }
-        if self.props.freq_div < SAMPLING_FREQ_DIV_MIN {
-            return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(
-                self.props.freq_div,
-            ));
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+            return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
         }
 
         self.remains = devices
@@ -299,14 +336,7 @@ mod tests {
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -332,11 +362,11 @@ mod tests {
 
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(flag.contains(STMControlFlags::STM_BEGIN));
-            assert!(flag.contains(STMControlFlags::STM_END));
-            assert!(!flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(!flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(flag.contains(FocusSTMControlFlags::STM_BEGIN));
+            assert!(flag.contains(FocusSTMControlFlags::STM_END));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
@@ -425,14 +455,7 @@ mod tests {
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -467,11 +490,11 @@ mod tests {
 
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(flag.contains(STMControlFlags::STM_BEGIN));
-            assert!(!flag.contains(STMControlFlags::STM_END));
-            assert!(!flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(!flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(flag.contains(FocusSTMControlFlags::STM_BEGIN));
+            assert!(!flag.contains(FocusSTMControlFlags::STM_END));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
@@ -563,11 +586,11 @@ mod tests {
 
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(!flag.contains(STMControlFlags::STM_BEGIN));
-            assert!(!flag.contains(STMControlFlags::STM_END));
-            assert!(!flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(!flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(!flag.contains(FocusSTMControlFlags::STM_BEGIN));
+            assert!(!flag.contains(FocusSTMControlFlags::STM_END));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
@@ -623,11 +646,11 @@ mod tests {
 
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(!flag.contains(STMControlFlags::STM_BEGIN));
-            assert!(flag.contains(STMControlFlags::STM_END));
-            assert!(!flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(!flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(!flag.contains(FocusSTMControlFlags::STM_BEGIN));
+            assert!(flag.contains(FocusSTMControlFlags::STM_END));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
@@ -686,11 +709,9 @@ mod tests {
 
         let mut op = FocusSTMOp::new(
             points.clone(),
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: Some(start_idx),
-                finish_idx: Some(finish_idx),
-            },
+            SAMPLING_FREQ_DIV_MIN,
+            Some(start_idx),
+            Some(finish_idx),
         );
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
@@ -704,9 +725,9 @@ mod tests {
         });
 
         devices.iter().for_each(|dev| {
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 12], (start_idx & 0xFF) as u8);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 13], (start_idx >> 8) as u8);
@@ -714,14 +735,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 15], (finish_idx >> 8) as u8);
         });
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: Some(start_idx),
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, Some(start_idx), None);
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -734,9 +748,9 @@ mod tests {
         });
 
         devices.iter().for_each(|dev| {
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(!flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 12], (start_idx & 0xFF) as u8);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 13], (start_idx >> 8) as u8);
@@ -746,11 +760,9 @@ mod tests {
 
         let mut op = FocusSTMOp::new(
             points.clone(),
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: None,
-                finish_idx: Some(finish_idx),
-            },
+            SAMPLING_FREQ_DIV_MIN,
+            None,
+            Some(finish_idx),
         );
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
@@ -764,9 +776,9 @@ mod tests {
         });
 
         devices.iter().for_each(|dev| {
-            let flag = STMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
-            assert!(!flag.contains(STMControlFlags::USE_START_IDX));
-            assert!(flag.contains(STMControlFlags::USE_FINISH_IDX));
+            let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
+            assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
+            assert!(flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
 
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 12], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 13], 0x00);
@@ -793,14 +805,7 @@ mod tests {
                 .with_shift(rng.gen_range(0..0xFF))
             })
             .collect();
-        let mut op = FocusSTMOp::new(
-            points,
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
         let points: Vec<ControlPoint> = (0..FOCUS_STM_BUF_SIZE_MAX + 1)
@@ -814,14 +819,7 @@ mod tests {
             })
             .collect();
 
-        let mut op = FocusSTMOp::new(
-            points,
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
 
         let points: Vec<ControlPoint> = (0..1)
@@ -835,14 +833,7 @@ mod tests {
             })
             .collect();
 
-        let mut op = FocusSTMOp::new(
-            points,
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
     }
 
@@ -865,34 +856,13 @@ mod tests {
             })
             .collect();
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div: u32::MAX,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), u32::MAX, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = FocusSTMOp::new(
-            points.clone(),
-            FocusSTMProps {
-                freq_div: SAMPLING_FREQ_DIV_MIN - 1,
-                start_idx: None,
-                finish_idx: None,
-            },
-        );
+        let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN - 1, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
     }
 }

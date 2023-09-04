@@ -15,7 +15,7 @@ use std::ops::{Deref, DerefMut};
 
 use crate::defined::{float, METER};
 
-use super::{Transducer, UnitQuaternion, Vector3};
+use super::{Matrix3, Transducer, UnitQuaternion, Vector3};
 
 pub struct Device<T: Transducer> {
     idx: usize,
@@ -24,11 +24,18 @@ pub struct Device<T: Transducer> {
     pub reads_fpga_info: bool,
     pub sound_speed: float,
     pub attenuation: float,
+    inv: Matrix3,
 }
 
 impl<T: Transducer> Device<T> {
     #[doc(hidden)]
     pub fn new(idx: usize, transducers: Vec<T>) -> Self {
+        let inv = Matrix3::from_columns(&[
+            transducers[0].x_direction(),
+            transducers[0].y_direction(),
+            transducers[0].z_direction(),
+        ])
+        .transpose();
         Self {
             idx,
             transducers,
@@ -36,6 +43,7 @@ impl<T: Transducer> Device<T> {
             reads_fpga_info: false,
             sound_speed: 340.0 * METER,
             attenuation: 0.0,
+            inv,
         }
     }
 
@@ -55,6 +63,10 @@ impl<T: Transducer> Device<T> {
             .map(|tr| tr.position())
             .sum::<Vector3>()
             / self.transducers.len() as float
+    }
+
+    pub fn to_local(&self, p: &Vector3) -> Vector3 {
+        self.inv * (p - self.transducers[0].position())
     }
 
     /// Affine transform

@@ -202,7 +202,7 @@ mod tests {
 
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 7));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 9));
 
         devices
             .iter()
@@ -289,7 +289,7 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 7));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 9));
 
         devices
             .iter()

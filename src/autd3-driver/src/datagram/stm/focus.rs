@@ -69,13 +69,11 @@ impl<T: Transducer> Datagram<T> for FocusSTM {
     type O2 = crate::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        let props = crate::operation::FocusSTMProps {
-            freq_div: self.sampling_frequency_division(),
-            start_idx: self.props.start_idx,
-            finish_idx: self.props.finish_idx,
-        };
+        let freq_div = self.sampling_frequency_division();
+        let start_idx = self.props.start_idx;
+        let finish_idx = self.props.finish_idx;
         Ok((
-            Self::O1::new(self.control_points, props),
+            Self::O1::new(self.control_points, freq_div, start_idx, finish_idx),
             Self::O2::default(),
         ))
     }
