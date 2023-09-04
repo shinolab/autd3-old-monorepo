@@ -21,7 +21,7 @@ mod silencer;
 mod stop;
 // mod stm_focus;
 // mod stm_gain;
-// mod sync;
+mod sync;
 
 pub use clear::*;
 pub use gain::*;
@@ -33,7 +33,7 @@ pub use silencer::*;
 pub use stop::*;
 // pub use stm_focus::*;
 // pub use stm_gain::*;
-// pub use sync::*;
+pub use sync::*;
 
 use crate::{
     cpu::TxDatagram,

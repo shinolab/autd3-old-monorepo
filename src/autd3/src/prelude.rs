@@ -26,7 +26,7 @@ pub use crate::{
 };
 
 pub use autd3_driver::{
-    datagram::{Clear, DatagramT, ModDelay, ModulationProperty, Silencer, Stop},
+    datagram::{Clear, DatagramT, ModDelay, ModulationProperty, Silencer, Stop, Synchronize},
     // amplitude::Amplitudes,
     defined::{float, METER, MILLIMETER, PI},
     fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},
