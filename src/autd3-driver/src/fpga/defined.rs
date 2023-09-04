@@ -452,7 +452,7 @@ mod tests {
             assert_eq!(d, 1000);
 
             (*(&mut d as *mut _ as *mut FilterPhase)).set(1.5 * PI, cycle);
-            assert_eq!(d, 100 + 500);
+            assert_eq!(d, 1000 + 500);
 
             (*(&mut d as *mut _ as *mut FilterPhase)).set(2.0 * PI, cycle);
             assert_eq!(d, 0);
@@ -464,7 +464,7 @@ mod tests {
             assert_eq!(d, -1000);
 
             (*(&mut d as *mut _ as *mut FilterPhase)).set(-1.5 * PI, cycle);
-            assert_eq!(d, -100 - 500);
+            assert_eq!(d, -1000 - 500);
 
             (*(&mut d as *mut _ as *mut FilterPhase)).set(-2.0 * PI, cycle);
             assert_eq!(d, 0);

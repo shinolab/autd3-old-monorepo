@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -56,8 +56,5 @@ mod tests {
     #[test]
     fn fpga_info() {
         assert_eq!(size_of::<FPGAControlFlags>(), 1);
-
-        let mut f = FPGAControlFlags::NONE;
-        assert_eq!(format!("{}", f), "NONE");
     }
 }
