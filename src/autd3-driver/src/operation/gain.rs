@@ -14,10 +14,10 @@
 use std::{collections::HashMap, fmt};
 
 use crate::{
+    datagram::{Gain, GainFilter},
     defined::Drive,
     error::AUTDInternalError,
     fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
-    gain::{Gain, GainFilter},
     geometry::{AdvancedTransducer, Device, LegacyTransducer, Transducer},
     operation::{Operation, TypeTag},
 };
@@ -199,8 +199,8 @@ mod tests {
 
     use super::*;
     use crate::{
+        datagram::GainAsAny,
         defined::PI,
-        gain::GainAsAny,
         geometry::{tests::create_device, LegacyTransducer},
     };
 

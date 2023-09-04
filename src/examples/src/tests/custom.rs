@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,10 @@ use std::collections::HashMap;
 use autd3::{
     derive::{Gain, Modulation},
     driver::{
+        datagram::{Gain, GainFilter, Modulation},
         defined::{float, Drive},
         error::AUTDInternalError,
-        gain::{Gain, GainFilter},
         geometry::{Device, Transducer},
-        modulation::Modulation,
     },
     prelude::*,
 };

@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,10 @@ use std::ops::{Deref, DerefMut};
 
 use super::sine::Sine;
 use autd3_driver::{
+    datagram::{Modulation, ModulationProperty},
     defined::float,
     error::AUTDInternalError,
     fpga::FPGA_SUB_CLK_FREQ,
-    modulation::{Modulation, ModulationProperty},
 };
 
 use num::integer::lcm;

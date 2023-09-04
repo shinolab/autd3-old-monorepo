@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,9 +12,9 @@
  */
 
 use autd3_driver::{
+    datagram::{Gain, GainFilter},
     defined::Drive,
     error::AUTDInternalError,
-    gain::{Gain, GainFilter},
     geometry::{Device, Transducer},
 };
 use bitvec::prelude::*;
@@ -107,7 +107,9 @@ where
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::gain::GainAsAny for Cache<T, G> {
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::GainAsAny
+    for Cache<T, G>
+{
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

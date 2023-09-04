@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ mod sdr_rs;
 use sdr_rs::fir;
 
 use autd3_derive::Modulation;
-use autd3_driver::{defined::float, error::AUTDInternalError, modulation::Modulation};
+use autd3_driver::{datagram::Modulation, defined::float, error::AUTDInternalError};
 
 /// Modulation to apply FIR filter
 #[derive(Modulation)]
