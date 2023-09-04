@@ -13,7 +13,7 @@
 
 use thiserror::Error;
 
-use crate::fpga::*;
+use crate::{fpga::*, operation::GainSTMMode};
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum AUTDInternalError {
@@ -56,6 +56,9 @@ pub enum AUTDInternalError {
     PhaseHalfNotSupported,
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
+
+    #[error("GainSTMMode ({0}) is not supported")]
+    GainSTMModeNotSupported(GainSTMMode),
 
     #[error("Unknown group key")]
     UnknownGroupKey,
