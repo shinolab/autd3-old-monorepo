@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,10 @@ use std::{collections::HashMap, fmt};
 
 use crate::{
     datagram::{Gain, GainFilter},
-    defined::Drive,
+    defined::{float, Drive},
     error::AUTDInternalError,
     fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
-    geometry::{AdvancedTransducer, Device, LegacyTransducer, Transducer},
+    geometry::{AdvancedPhaseTransducer, AdvancedTransducer, Device, LegacyTransducer, Transducer},
     operation::{Operation, TypeTag},
 };
 
@@ -188,6 +188,129 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
     }
 
     fn commit(&mut self, device: &Device<AdvancedTransducer>) {
+        self.remains
+            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    }
+}
+
+impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
+    for GainOp<AdvancedPhaseTransducer, G>
+{
+    fn pack(
+        &mut self,
+        device: &Device<AdvancedPhaseTransducer>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        tx[0] = TypeTag::Gain as u8;
+
+        tx[1] = GainControlFlags::NONE.bits();
+
+        let d = &self.drives[&device.idx()];
+        assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                d.len(),
+            );
+            dst.iter_mut()
+                .zip(d.iter())
+                .zip(device.iter().map(|tr| tr.cycle()))
+                .for_each(|((d, s), c)| d.set(s, c));
+        }
+
+        Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
+    }
+
+    fn required_size(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<AdvancedDrivePhase>()
+    }
+
+    fn init(
+        &mut self,
+        devices: &[&Device<AdvancedPhaseTransducer>],
+    ) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(devices, GainFilter::All)?;
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device<AdvancedPhaseTransducer>) {
+        self.remains
+            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    }
+}
+
+pub struct AmplitudeOp {
+    amp: float,
+    remains: HashMap<usize, usize>,
+}
+
+impl AmplitudeOp {
+    pub fn new(amp: float) -> Self {
+        Self {
+            amp,
+            remains: Default::default(),
+        }
+    }
+}
+
+impl Operation<AdvancedPhaseTransducer> for AmplitudeOp {
+    fn pack(
+        &mut self,
+        device: &Device<AdvancedPhaseTransducer>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        tx[0] = TypeTag::Gain as u8;
+
+        tx[1] = (GainControlFlags::NONE | GainControlFlags::DUTY).bits();
+
+        assert!(
+            tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
+        );
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                device.num_transducers(),
+            );
+            dst.iter_mut()
+                .zip(device.iter().map(|tr| tr.cycle()))
+                .for_each(|(d, c)| {
+                    d.set(
+                        &Drive {
+                            amp: self.amp,
+                            phase: 0.,
+                        },
+                        c,
+                    )
+                });
+        }
+
+        Ok(2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>())
+    }
+
+    fn required_size(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
+    }
+
+    fn init(
+        &mut self,
+        devices: &[&Device<AdvancedPhaseTransducer>],
+    ) -> Result<(), AUTDInternalError> {
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device<AdvancedPhaseTransducer>) {
         self.remains
             .insert(device.idx(), self.remains[&device.idx()] - 1);
     }
@@ -417,6 +540,145 @@ pub mod tests {
                 .zip(dev.iter())
                 .for_each(|((d, g), tr)| {
                     let duty = AdvancedDriveDuty::to_duty(g, tr.cycle());
+                    assert_eq!(d[0], (duty & 0xFF) as u8);
+                    assert_eq!(d[1], (duty >> 8) as u8);
+                })
+        });
+    }
+
+    #[test]
+    fn gain_advanced_phase_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
+
+        let mut rng = rand::thread_rng();
+        let data = devices
+            .iter()
+            .map(|dev| {
+                (
+                    dev.idx(),
+                    (0..dev.num_transducers())
+                        .map(|_| Drive {
+                            amp: rng.gen_range(0.0..1.0),
+                            phase: rng.gen_range(0.0..2.0 * PI),
+                        })
+                        .collect(),
+                )
+            })
+            .collect();
+        let gain = TestGain { data };
+        let mut op = GainOp::<AdvancedPhaseTransducer, TestGain>::new(gain.clone());
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDrivePhase>()
+            )
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+
+        devices.iter().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::Gain as u8
+            );
+            let flag = GainControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
+            );
+            assert!(!flag.contains(GainControlFlags::LEGACY));
+            assert!(!flag.contains(GainControlFlags::DUTY));
+            tx.chunks(2)
+                .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
+                .skip(1)
+                .zip(gain.data[&dev.idx()].iter())
+                .zip(dev.iter())
+                .for_each(|((d, g), tr)| {
+                    let phase = AdvancedDrivePhase::to_phase(g, tr.cycle());
+                    assert_eq!(d[0], (phase & 0xFF) as u8);
+                    assert_eq!(d[1], (phase >> 8) as u8);
+                })
+        });
+    }
+
+    #[test]
+    fn amplitude_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
+
+        let mut rng = rand::thread_rng();
+        let amp: float = rng.gen_range(0.0..1.0);
+        let mut op = AmplitudeOp::new(amp);
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDriveDuty>()
+            )
+        });
+
+        devices.iter().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::Gain as u8
+            );
+            let flag = GainControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
+            );
+            assert!(!flag.contains(GainControlFlags::LEGACY));
+            assert!(flag.contains(GainControlFlags::DUTY));
+            tx.chunks(2)
+                .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
+                .skip(1)
+                .zip(dev.iter())
+                .for_each(|(d, tr)| {
+                    let duty = AdvancedDriveDuty::to_duty(&Drive { amp, phase: 0. }, tr.cycle());
                     assert_eq!(d[0], (duty & 0xFF) as u8);
                     assert_eq!(d[1], (duty >> 8) as u8);
                 })
