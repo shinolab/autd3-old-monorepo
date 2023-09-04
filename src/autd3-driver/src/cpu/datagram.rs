@@ -92,13 +92,13 @@ impl TxDatagram {
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct RxMessage {
+    pub data: u8,
     pub ack: u8,
-    pub msg_id: u8,
 }
 
 impl RxMessage {
     pub const fn new() -> Self {
-        Self { ack: 0, msg_id: 0 }
+        Self { data: 0, ack: 0 }
     }
 }
 

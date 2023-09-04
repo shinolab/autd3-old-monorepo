@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -191,7 +191,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         )?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let cpu_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        let cpu_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
             &mut op,
@@ -201,7 +201,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         )?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
             &mut op,
@@ -211,7 +211,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         )?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let fpga_versions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        let fpga_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
             &mut op,
@@ -221,7 +221,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         )?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
             &mut op,
@@ -231,7 +231,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         )?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
-        let fpga_functions = self.rx_buf.iter().map(|rx| rx.ack).collect::<Vec<_>>();
+        let fpga_functions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         Ok((0..self.geometry.num_devices())
             .map(|i| {

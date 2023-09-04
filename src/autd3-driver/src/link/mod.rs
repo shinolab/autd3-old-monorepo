@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -62,11 +62,7 @@ pub trait Link<T: Transducer>: Send {
             if !self.receive(rx)? {
                 continue;
             }
-            if tx
-                .headers()
-                .zip(rx.iter())
-                .all(|(h, r)| h.msg_id == r.msg_id)
-            {
+            if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
                 return Ok(true);
             }
             if start.elapsed() > timeout {
