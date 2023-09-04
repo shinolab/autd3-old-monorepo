@@ -70,18 +70,18 @@ impl TxDatagram {
         }
     }
 
-    pub fn body(&self, i: usize) -> &[u8] {
+    pub fn payload(&self, i: usize) -> &[u8] {
         &self.data[self.data_pointer[i] + std::mem::size_of::<Header>()
             ..self.data_pointer[i] + EC_OUTPUT_FRAME_SIZE]
     }
 
-    pub fn body_mut(&mut self, i: usize) -> &mut [u8] {
+    pub fn payload_mut(&mut self, i: usize) -> &mut [u8] {
         &mut self.data[self.data_pointer[i] + std::mem::size_of::<Header>()
             ..self.data_pointer[i] + EC_OUTPUT_FRAME_SIZE]
     }
 
-    pub fn bodies(&self) -> impl Iterator<Item = &[u8]> {
-        (0..self.device_map.len()).map(|i| self.body(i))
+    pub fn payloads(&self) -> impl Iterator<Item = &[u8]> {
+        (0..self.device_map.len()).map(|i| self.payload(i))
     }
 
     pub fn copy_from(&mut self, src: &TxDatagram) {

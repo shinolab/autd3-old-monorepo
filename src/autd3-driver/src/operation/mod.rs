@@ -168,14 +168,14 @@ impl OperationHandler {
                     hedaer.fpga_flag = f;
                     hedaer.slot_2_offset = 0;
 
-                    let t = tx.body_mut(dev.idx());
+                    let t = tx.payload_mut(dev.idx());
                     assert!(t.len() > op1.required_size(dev));
                     let op1_size = op1.pack(dev, t)?;
                     op1.commit(dev);
 
                     if t.len() - op1_size > op2.required_size(dev) {
                         tx.header_mut(dev.idx()).slot_2_offset = op1_size as u16;
-                        let t = tx.body_mut(dev.idx());
+                        let t = tx.payload_mut(dev.idx());
                         op2.pack(dev, &mut t[op1_size..])?;
                         op2.commit(dev);
                     }
@@ -204,7 +204,7 @@ impl OperationHandler {
         hedaer.fpga_flag = f;
         hedaer.slot_2_offset = 0;
 
-        op.pack(dev, tx.body_mut(dev.idx()))?;
+        op.pack(dev, tx.payload_mut(dev.idx()))?;
         op.commit(dev);
 
         Ok(())
