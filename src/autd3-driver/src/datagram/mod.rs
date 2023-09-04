@@ -27,7 +27,7 @@ pub use gain::{Gain, GainAsAny, GainFilter};
 pub use mod_delay::ModDelay;
 pub use modulation::{Modulation, ModulationProperty};
 pub use silencer::Silencer;
-pub use stm::FocusSTM;
+pub use stm::{FocusSTM, GainSTM};
 pub use stop::Stop;
 pub use synchronize::Synchronize;
 

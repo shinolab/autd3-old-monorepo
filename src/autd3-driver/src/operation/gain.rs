@@ -194,7 +194,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use rand::prelude::*;
 
     use super::*;
