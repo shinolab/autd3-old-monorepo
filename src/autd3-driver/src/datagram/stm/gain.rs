@@ -1,24 +1,19 @@
 /*
  * File: gain.rs
  * Project: stm
- * Created Date: 05/05/2022
+ * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
 use crate::{
-    datagram::*,
-    error::AUTDInternalError,
-    gain::{Gain, GainFilter},
-    geometry::*,
+    datagram::*, defined::float, error::AUTDInternalError, geometry::*, operation::GainSTMMode,
 };
-
-use autd3_driver::{float, GainSTMProps, Mode};
 
 use super::STMProps;
 
@@ -32,7 +27,7 @@ use super::STMProps;
 ///
 pub struct GainSTM<T: Transducer, G: Gain<T>> {
     gains: Vec<G>,
-    mode: Mode,
+    mode: GainSTMMode,
     props: STMProps,
     _phantom: std::marker::PhantomData<T>,
 }
@@ -47,7 +42,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     pub fn new(freq: float) -> Self {
         Self {
             gains: vec![],
-            mode: Mode::PhaseDutyFull,
+            mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::new(freq),
             _phantom: std::marker::PhantomData,
         }
@@ -72,7 +67,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
             gains: vec![],
-            mode: Mode::PhaseDutyFull,
+            mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_frequency_division(freq_div),
             _phantom: std::marker::PhantomData,
         }
@@ -87,7 +82,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
             gains: vec![],
-            mode: Mode::PhaseDutyFull,
+            mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_frequency(freq),
             _phantom: std::marker::PhantomData,
         }
@@ -102,7 +97,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     pub fn with_sampling_period(period: std::time::Duration) -> Self {
         Self {
             gains: vec![],
-            mode: Mode::PhaseDutyFull,
+            mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_period(period),
             _phantom: std::marker::PhantomData,
         }
@@ -159,11 +154,11 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     }
 
     /// Set the mode of GainSTM
-    pub fn with_mode(self, mode: Mode) -> Self {
+    pub fn with_mode(self, mode: GainSTMMode) -> Self {
         Self { mode, ..self }
     }
 
-    pub fn mode(&self) -> Mode {
+    pub fn mode(&self) -> GainSTMMode {
         self.mode
     }
 
@@ -184,7 +179,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     pub fn with_props(props: STMProps) -> Self {
         Self {
             gains: Vec::new(),
-            mode: Mode::PhaseDutyFull,
+            mode: GainSTMMode::PhaseDutyFull,
             props,
             _phantom: std::marker::PhantomData,
         }
@@ -192,7 +187,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
 
     #[doc(hidden)]
     /// This is used only for capi.
-    pub fn with_props_mode(props: STMProps, mode: Mode) -> Self {
+    pub fn with_props_mode(props: STMProps, mode: GainSTMMode) -> Self {
         Self {
             gains: Vec::new(),
             mode,
@@ -227,38 +222,38 @@ impl<T: Transducer + 'static> GainSTM<T, Box<dyn Gain<T>>> {
     }
 }
 
-impl<T: Transducer, G: Gain<T>> Datagram<T> for GainSTM<T, G> {
-    type H = autd3_driver::NullHeader;
-    type B = T::GainSTM;
+impl<T: Transducer, G: Gain<T>> Datagram<T> for GainSTM<T, G>
+where
+    crate::operation::GainSTMOp<T, G>: crate::operation::Operation<T>,
+{
+    type O1 = crate::operation::GainSTMOp<T, G>;
+    type O2 = crate::operation::NullOp;
 
-    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let drives = self
-            .gains
-            .iter()
-            .map(|g| g.calc(geometry, GainFilter::All))
-            .collect::<Result<Vec<_>, _>>()?;
-        let props = GainSTMProps {
-            mode: self.mode,
-            freq_div: self.sampling_frequency_division(),
-            finish_idx: self.props.finish_idx,
-            start_idx: self.props.start_idx,
-        };
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let freq_div = self.sampling_frequency_division();
+        let Self {
+            gains, mode, props, ..
+        } = self;
         Ok((
-            Self::H::default(),
-            <Self::B as autd3_driver::operation::GainSTMOp>::new(drives, props, || {
-                geometry.transducers().map(|tr| tr.cycle()).collect()
-            }),
+            Self::O1::new(gains, mode, freq_div, props.start_idx, props.finish_idx),
+            Self::O2::default(),
         ))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use assert_approx_eq::assert_approx_eq;
-    use autd3_driver::FPGA_SUB_CLK_FREQ;
+    use std::collections::HashMap;
 
-    use crate::gain::GainAsAny;
+    use super::*;
+
+    use crate::{
+        datagram::{Gain, GainAsAny},
+        defined::Drive,
+        fpga::FPGA_SUB_CLK_FREQ,
+    };
+
+    use assert_approx_eq::assert_approx_eq;
 
     struct NullGain {}
 
@@ -271,9 +266,9 @@ mod tests {
     impl<T: Transducer> Gain<T> for NullGain {
         fn calc(
             &self,
-            _: &Geometry<T>,
+            _: &[&Device<T>],
             _: GainFilter,
-        ) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             unimplemented!()
         }
     }
@@ -360,9 +355,9 @@ mod tests {
     impl<T: Transducer> Gain<T> for NullGain2 {
         fn calc(
             &self,
-            _: &Geometry<T>,
+            _: &[&Device<T>],
             _: GainFilter,
-        ) -> Result<Vec<autd3_driver::Drive>, AUTDInternalError> {
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             unimplemented!()
         }
     }

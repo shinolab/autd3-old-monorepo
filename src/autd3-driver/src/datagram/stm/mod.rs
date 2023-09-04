@@ -12,8 +12,10 @@
  */
 
 mod focus;
+mod gain;
 
 pub use focus::FocusSTM;
+pub use gain::GainSTM;
 
 use crate::{defined::float, fpga::FPGA_SUB_CLK_FREQ};
 

@@ -12,8 +12,10 @@
  */
 
 mod focus;
+mod gain;
 
 pub use focus::{ControlPoint, FocusSTMOp, FocusSTMProps};
+pub use gain::{GainSTMMode, GainSTMOp};
 
 use std::fmt;
 
