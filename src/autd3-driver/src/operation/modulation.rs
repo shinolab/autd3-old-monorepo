@@ -113,7 +113,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         unsafe {
             std::ptr::copy_nonoverlapping(
                 self.buf[sent..].as_ptr(),
-                (&mut tx[offset..]).as_mut_ptr() as *mut u8,
+                tx[offset..].as_mut_ptr(),
                 mod_size,
             )
         }

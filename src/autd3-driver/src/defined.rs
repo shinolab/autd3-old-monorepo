@@ -53,7 +53,7 @@ mod tests {
             phase: 0.1,
             amp: 0.2,
         };
-        let dc = d.clone();
+        let dc = d;
         assert_eq!(d.phase, dc.phase);
         assert_eq!(d.amp, dc.amp);
 

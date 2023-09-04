@@ -221,7 +221,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[offset..]).as_mut_ptr() as *mut STMFocus,
+                tx[offset..].as_mut_ptr() as *mut STMFocus,
                 send_num,
             );
             dst.iter_mut()
@@ -498,11 +498,11 @@ mod tests {
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
-                ((FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>() & 0xFF) as u8
+                (((FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>()) & 0xFF) as u8
             );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
-                (((FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>() >> 8) & 0xFF) as u8
+                ((((FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>()) >> 8) & 0xFF) as u8
             );
 
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
@@ -594,11 +594,11 @@ mod tests {
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
-                ((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() & 0xFF) as u8
+                (((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>()) & 0xFF) as u8
             );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
-                (((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() >> 8) & 0xFF) as u8
+                ((((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>()) >> 8) & 0xFF) as u8
             );
 
             tx[FRAME_SIZE * dev.idx() + 4..FRAME_SIZE * (dev.idx() + 1)]
@@ -654,11 +654,11 @@ mod tests {
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
-                ((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() & 0xFF) as u8
+                (((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>()) & 0xFF) as u8
             );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
-                (((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() >> 8) & 0xFF) as u8
+                ((((FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>()) >> 8) & 0xFF) as u8
             );
 
             tx[FRAME_SIZE * dev.idx() + 4..FRAME_SIZE * (dev.idx() + 1)]

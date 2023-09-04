@@ -34,7 +34,7 @@ impl<T: Transducer> Operation<T> for ModDelayOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut u16,
+                tx[2..].as_mut_ptr() as *mut u16,
                 device.num_transducers(),
             );
             dst.iter_mut()

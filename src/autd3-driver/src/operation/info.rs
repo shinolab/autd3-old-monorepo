@@ -105,7 +105,7 @@ mod tests {
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
             .collect::<Vec<_>>();
 
-        let mut tx = vec![0x00u8; 2 * NUM_DEVICE];
+        let mut tx = [0x00u8; 2 * NUM_DEVICE];
 
         let mut op = FirmInfoOp::default();
 

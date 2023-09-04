@@ -134,7 +134,7 @@ impl RxDatagram {
     pub fn copy_from_iter<I: IntoIterator<Item = RxMessage>>(&mut self, src: I) {
         self.data
             .iter_mut()
-            .zip(src.into_iter())
+            .zip(src)
             .for_each(|(dst, src)| {
                 *dst = src;
             });

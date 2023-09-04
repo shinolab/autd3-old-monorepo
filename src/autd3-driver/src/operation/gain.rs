@@ -90,7 +90,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut LegacyDrive,
+                tx[2..].as_mut_ptr() as *mut LegacyDrive,
                 d.len(),
             );
             dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -134,7 +134,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
 
             unsafe {
                 let dst = std::slice::from_raw_parts_mut(
-                    (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                    tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
                     d.len(),
                 );
                 dst.iter_mut()
@@ -152,7 +152,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
 
             unsafe {
                 let dst = std::slice::from_raw_parts_mut(
-                    (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                    tx[2..].as_mut_ptr() as *mut AdvancedDriveDuty,
                     d.len(),
                 );
                 dst.iter_mut()
@@ -210,7 +210,7 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
                 d.len(),
             );
             dst.iter_mut()
@@ -275,7 +275,7 @@ impl Operation<AdvancedPhaseTransducer> for AmplitudeOp {
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[2..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                tx[2..].as_mut_ptr() as *mut AdvancedDriveDuty,
                 device.num_transducers(),
             );
             dst.iter_mut()

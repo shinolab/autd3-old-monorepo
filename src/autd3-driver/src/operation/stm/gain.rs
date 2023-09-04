@@ -232,7 +232,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                 let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
-                        (&mut tx[offset..]).as_mut_ptr() as *mut LegacyDrive,
+                        tx[offset..].as_mut_ptr() as *mut LegacyDrive,
                         d.len(),
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -245,7 +245,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                 let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
-                        (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseFull<0>,
+                        tx[offset..].as_mut_ptr() as *mut LegacyPhaseFull<0>,
                         d.len(),
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -255,7 +255,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                     let d = &self.drives[sent + 1][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseFull<1>,
+                            tx[offset..].as_mut_ptr() as *mut LegacyPhaseFull<1>,
                             d.len(),
                         );
                         dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -271,7 +271,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                 let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
-                        (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseHalf<0>,
+                        tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<0>,
                         d.len(),
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -281,7 +281,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                     let d = &self.drives[sent + 1][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseHalf<1>,
+                            tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<1>,
                             d.len(),
                         );
                         dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -292,7 +292,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                     let d = &self.drives[sent + 2][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseHalf<2>,
+                            tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<2>,
                             d.len(),
                         );
                         dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -303,7 +303,7 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                     let d = &self.drives[sent + 3][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut LegacyPhaseHalf<3>,
+                            tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<3>,
                             d.len(),
                         );
                         dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
@@ -436,7 +436,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
                 if sent % 2 == 0 {
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                            tx[offset..].as_mut_ptr() as *mut AdvancedDrivePhase,
                             d.len(),
                         );
                         dst.iter_mut()
@@ -449,7 +449,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
 
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
-                            (&mut tx[offset..]).as_mut_ptr() as *mut AdvancedDriveDuty,
+                            tx[offset..].as_mut_ptr() as *mut AdvancedDriveDuty,
                             d.len(),
                         );
                         dst.iter_mut()
@@ -468,7 +468,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
 
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
-                        (&mut tx[offset..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                        tx[offset..].as_mut_ptr() as *mut AdvancedDrivePhase,
                         d.len(),
                     );
                     dst.iter_mut()
@@ -622,7 +622,7 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
-                (&mut tx[offset..]).as_mut_ptr() as *mut AdvancedDrivePhase,
+                tx[offset..].as_mut_ptr() as *mut AdvancedDrivePhase,
                 d.len(),
             );
             dst.iter_mut()
@@ -1310,8 +1310,8 @@ mod tests {
 
         let mut rng = rand::thread_rng();
 
-        let start_idx = rng.gen_range(0..2 as u16);
-        let finish_idx = rng.gen_range(0..2 as u16);
+        let start_idx = rng.gen_range(0..2_u16);
+        let finish_idx = rng.gen_range(0..2_u16);
 
         let mut rng = rand::thread_rng();
 
@@ -2028,8 +2028,8 @@ mod tests {
 
         let mut rng = rand::thread_rng();
 
-        let start_idx = rng.gen_range(0..2 as u16);
-        let finish_idx = rng.gen_range(0..2 as u16);
+        let start_idx = rng.gen_range(0..2_u16);
+        let finish_idx = rng.gen_range(0..2_u16);
 
         let mut rng = rand::thread_rng();
 
@@ -2706,8 +2706,8 @@ mod tests {
 
         let mut rng = rand::thread_rng();
 
-        let start_idx = rng.gen_range(0..2 as u16);
-        let finish_idx = rng.gen_range(0..2 as u16);
+        let start_idx = rng.gen_range(0..2_u16);
+        let finish_idx = rng.gen_range(0..2_u16);
 
         let mut rng = rand::thread_rng();
 
