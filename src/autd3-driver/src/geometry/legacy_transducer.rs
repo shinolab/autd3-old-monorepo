@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,8 @@ pub struct LegacyTransducer {
     pos: Vector3,
     rot: UnitQuaternion,
     mod_delay: u16,
+    amp_filter: float,
+    phase_filter: float,
 }
 
 impl Transducer for LegacyTransducer {
@@ -29,6 +31,8 @@ impl Transducer for LegacyTransducer {
             pos,
             rot,
             mod_delay: 0,
+            amp_filter: 0.,
+            phase_filter: 0.,
         }
     }
 
@@ -63,6 +67,22 @@ impl Transducer for LegacyTransducer {
 
     fn set_mod_delay(&mut self, delay: u16) {
         self.mod_delay = delay;
+    }
+
+    fn amp_filter(&self) -> float {
+        self.amp_filter
+    }
+
+    fn set_amp_filter(&mut self, value: float) {
+        self.amp_filter = value;
+    }
+
+    fn phase_filter(&self) -> float {
+        self.phase_filter
+    }
+
+    fn set_phase_filter(&mut self, value: float) {
+        self.phase_filter = value;
     }
 
     fn cycle(&self) -> u16 {
