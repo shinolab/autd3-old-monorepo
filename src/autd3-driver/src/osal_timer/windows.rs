@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 use windows::Win32::{Foundation::HANDLE, Media::*, System::Threading::*};
 
-use super::error::TimerError;
+use crate::error::AUTDInternalError;
 
 pub struct NativeTimerWrapper {
     timer_id: u32,
@@ -35,7 +35,7 @@ impl NativeTimerWrapper {
         cb: LPTIMECALLBACK,
         period: std::time::Duration,
         lp_param: *mut P,
-    ) -> Result<bool, TimerError> {
+    ) -> Result<bool, AUTDInternalError> {
         unsafe {
             self.h_process = GetCurrentProcess();
             self.priority = GetPriorityClass(self.h_process);
@@ -54,14 +54,14 @@ impl NativeTimerWrapper {
 
             if self.timer_id == 0 {
                 timeEndPeriod(1);
-                return Err(TimerError::CreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed());
             }
 
             Ok(true)
         }
     }
 
-    pub fn close(&mut self) -> Result<(), TimerError> {
+    pub fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             if self.timer_id != 0 {
                 timeEndPeriod(1);
@@ -70,7 +70,7 @@ impl NativeTimerWrapper {
                     windows::Win32::System::Threading::PROCESS_CREATION_FLAGS(self.priority),
                 );
                 if timeKillEvent(self.timer_id) != TIMERR_NOERROR {
-                    return Err(TimerError::DeleteFailed());
+                    return Err(AUTDInternalError::TimerDeleteFailed());
                 }
                 self.timer_id = 0;
             }
