@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::{collections::HashMap, fmt};
 use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
-    fpga::MOD_BUF_SIZE_MAX,
+    fpga::{MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
     geometry::{Device, Transducer},
     operation::{Operation, TypeTag},
 };
@@ -82,10 +82,6 @@ impl<T: Transducer> Operation<T> for ModulationOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert!(self.remains[&device.idx()] > 0);
 
-        if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
-            return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
-        }
-
         tx[0] = TypeTag::Modulation as u8;
 
         let sent = self.sent[&device.idx()];
@@ -123,8 +119,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
 
         self.sent.insert(device.idx(), sent + mod_size);
-
-        Ok(mod_size)
+        if sent == 0 {
+            Ok(2 + std::mem::size_of::<u16>() + std::mem::size_of::<u32>() + mod_size)
+        } else {
+            Ok(2 + std::mem::size_of::<u16>() + mod_size)
+        }
     }
 
     fn required_size(&self, device: &Device<T>) -> usize {
@@ -136,6 +135,13 @@ impl<T: Transducer> Operation<T> for ModulationOp {
     }
 
     fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
+            return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
+        }
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+            return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
+        }
+
         self.remains = devices
             .iter()
             .map(|device| (device.idx(), self.buf.len()))
@@ -155,90 +161,333 @@ impl<T: Transducer> Operation<T> for ModulationOp {
     }
 }
 
-// #[cfg(test)]
-// mod test {
-//     use super::*;
-//     use crate::float;
+#[cfg(test)]
+mod tests {
+    use rand::prelude::*;
 
-//     const NUM_TRANS_IN_UNIT: usize = 249;
+    use super::*;
+    use crate::{
+        fpga::SAMPLING_FREQ_DIV_MIN,
+        geometry::{tests::create_device, LegacyTransducer},
+    };
 
-//     #[test]
-//     fn modulation() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
-//         let size = MOD_HEADER_INITIAL_DATA_SIZE + MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1;
-//         let mod_data = (0..size)
-//             .map(|i| (i as float) / (size as float))
-//             .collect::<Vec<_>>();
+    #[test]
+    fn modulation_op() {
+        const MOD_SIZE: usize = 100;
 
-//         let mut op = Modulation::new(mod_data.clone(), 512);
-//         op.init();
-//         assert!(!op.is_finished());
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(!op.is_finished());
-//         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-//         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
-//         assert_eq!(tx.header().size as usize, MOD_HEADER_INITIAL_DATA_SIZE);
-//         assert_eq!(tx.header().mod_initial().freq_div, 4096);
-//         tx.header()
-//             .mod_initial()
-//             .data
-//             .iter()
-//             .zip(mod_data.iter())
-//             .for_each(|(&h, &d)| {
-//                 assert_eq!(h, Modulation::to_duty(d));
-//             });
+        let mut tx = vec![0x00u8; (2 + 2 + 4 + MOD_SIZE) * NUM_DEVICE];
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(!op.is_finished());
-//         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
-//         assert_eq!(tx.header().size as usize, MOD_HEADER_SUBSEQUENT_DATA_SIZE);
-//         (0..MOD_HEADER_SUBSEQUENT_DATA_SIZE).for_each(|i| {
-//             assert_eq!(
-//                 tx.header().mod_subsequent().data[i],
-//                 Modulation::to_duty(mod_data[MOD_HEADER_INITIAL_DATA_SIZE + i])
-//             );
-//         });
+        let mut rng = rand::thread_rng();
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(op.is_finished());
-//         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
-//         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
-//         assert_eq!(tx.header().size as usize, 1);
-//         (0..1).for_each(|i| {
-//             assert_eq!(
-//                 tx.header().mod_subsequent().data[i],
-//                 Modulation::to_duty(
-//                     mod_data[MOD_HEADER_INITIAL_DATA_SIZE + MOD_HEADER_SUBSEQUENT_DATA_SIZE + i]
-//                 )
-//             );
-//         });
+        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
 
-//         op.init();
-//         assert!(!op.is_finished());
+        let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-//         let mut op = Modulation::new(mod_data, 511);
-//         op.init();
-//         assert!(op.pack(&mut tx).is_err());
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-//         let mut op = Modulation::new(vec![0.0; MOD_BUF_SIZE_MAX + 1], 512);
-//         op.init();
-//         assert!(op.pack(&mut tx).is_err());
-//     }
-// }
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 7));
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.pack(dev, &mut tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE)..]),
+                Ok(2 + 2 + 4 + MOD_SIZE)
+            );
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE)],
+                TypeTag::Modulation as u8
+            );
+            let flag = ModulationControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 1],
+            );
+            assert!(flag.contains(ModulationControlFlags::MOD_BEGIN));
+            assert!(flag.contains(ModulationControlFlags::MOD_END));
+
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 2],
+                (MOD_SIZE & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 3],
+                ((MOD_SIZE >> 8) & 0xFF) as u8
+            );
+
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 4],
+                (freq_div & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 5],
+                ((freq_div >> 8) & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 6],
+                ((freq_div >> 16) & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 7],
+                ((freq_div >> 24) & 0xFF) as u8
+            );
+
+            tx.iter()
+                .skip((2 + 2 + 4 + MOD_SIZE) * dev.idx())
+                .skip(8)
+                .zip(buf.iter())
+                .for_each(|(&d, m)| {
+                    assert_eq!(d, ModulationOp::to_duty(m));
+                })
+        });
+    }
+
+    #[test]
+    fn modulation_op_div() {
+        const FRAME_SIZE: usize = 30;
+        const MOD_SIZE: usize = FRAME_SIZE - 4 + FRAME_SIZE * 2;
+
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut tx = vec![0x00u8; (2 + 2 + FRAME_SIZE) * NUM_DEVICE];
+
+        let mut rng = rand::thread_rng();
+
+        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        // First frame
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 7));
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.pack(
+                    dev,
+                    &mut tx
+                        [dev.idx() * (2 + 2 + FRAME_SIZE)..(dev.idx() + 1) * (2 + 2 + FRAME_SIZE)]
+                ),
+                Ok(2 + 2 + FRAME_SIZE)
+            );
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE - (FRAME_SIZE - 4)));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
+                TypeTag::Modulation as u8
+            );
+            let flag = ModulationControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
+            );
+            assert!(flag.contains(ModulationControlFlags::MOD_BEGIN));
+            assert!(!flag.contains(ModulationControlFlags::MOD_END));
+
+            let mod_size = FRAME_SIZE - 4;
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 2],
+                (mod_size & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 3],
+                ((mod_size >> 8) & 0xFF) as u8
+            );
+
+            tx.iter()
+                .skip((2 + 2 + FRAME_SIZE) * dev.idx())
+                .skip(8)
+                .zip(buf.iter().take(mod_size))
+                .for_each(|(&d, m)| {
+                    assert_eq!(d, ModulationOp::to_duty(m));
+                })
+        });
+
+        // Second frame
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 5));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.pack(
+                    dev,
+                    &mut tx
+                        [dev.idx() * (2 + 2 + FRAME_SIZE)..(dev.idx() + 1) * (2 + 2 + FRAME_SIZE)]
+                ),
+                Ok(2 + 2 + FRAME_SIZE)
+            );
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE - (FRAME_SIZE - 4) - FRAME_SIZE));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
+                TypeTag::Modulation as u8
+            );
+            let flag = ModulationControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
+            );
+            assert!(!flag.contains(ModulationControlFlags::MOD_BEGIN));
+            assert!(!flag.contains(ModulationControlFlags::MOD_END));
+
+            let mod_size = FRAME_SIZE;
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 2],
+                (mod_size & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 3],
+                ((mod_size >> 8) & 0xFF) as u8
+            );
+
+            tx.iter()
+                .skip((2 + 2 + FRAME_SIZE) * dev.idx())
+                .skip(4)
+                .zip(buf.iter().skip(FRAME_SIZE - 4).take(mod_size))
+                .for_each(|(&d, m)| {
+                    assert_eq!(d, ModulationOp::to_duty(m));
+                })
+        });
+
+        // Final frame
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 5));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.pack(
+                    dev,
+                    &mut tx
+                        [dev.idx() * (2 + 2 + FRAME_SIZE)..(dev.idx() + 1) * (2 + 2 + FRAME_SIZE)]
+                ),
+                Ok(2 + 2 + FRAME_SIZE)
+            );
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
+                TypeTag::Modulation as u8
+            );
+            let flag = ModulationControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
+            );
+            assert!(!flag.contains(ModulationControlFlags::MOD_BEGIN));
+            assert!(flag.contains(ModulationControlFlags::MOD_END));
+
+            let mod_size = FRAME_SIZE;
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 2],
+                (mod_size & 0xFF) as u8
+            );
+            assert_eq!(
+                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 3],
+                ((mod_size >> 8) & 0xFF) as u8
+            );
+
+            tx.iter()
+                .skip((2 + 2 + FRAME_SIZE) * dev.idx())
+                .skip(4)
+                .zip(buf.iter().skip(FRAME_SIZE - 4 + FRAME_SIZE).take(mod_size))
+                .for_each(|(&d, m)| {
+                    assert_eq!(d, ModulationOp::to_duty(m));
+                })
+        });
+    }
+
+    #[test]
+    fn modulation_op_buffer_out_of_range() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut rng = rand::thread_rng();
+
+        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
+        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+
+        let mut op = ModulationOp::new(buf.clone(), freq_div);
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        let mut rng = rand::thread_rng();
+
+        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX + 1).map(|_| rng.gen()).collect();
+        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+
+        let mut op = ModulationOp::new(buf.clone(), freq_div);
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut rng = rand::thread_rng();
+
+        let buf: Vec<float> = (0..1).map(|_| rng.gen()).collect();
+        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+
+        let mut op = ModulationOp::new(buf.clone(), freq_div);
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+    }
+
+    #[test]
+    fn modulation_op_freq_div_out_of_range() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut rng = rand::thread_rng();
+
+        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
+
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        let mut op = ModulationOp::new(buf.clone(), u32::MAX);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+    }
+}

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,90 +42,30 @@ impl<T: Transducer> Operation<T> for NullOp {
     }
 }
 
-// #[cfg(test)]
-// mod test {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::geometry::{tests::create_device, LegacyTransducer};
 
-//     use super::*;
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
-//     const NUM_TRANS_IN_UNIT: usize = 249;
+    #[test]
+    fn null_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
 
-//     #[test]
-//     fn null_header() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+        let mut op = NullOp::default();
 
-//         tx.header_mut().cpu_flag.set(CPUControlFlags::MOD, true);
-//         tx.header_mut()
-//             .cpu_flag
-//             .set(CPUControlFlags::CONFIG_SILENCER, true);
-//         tx.header_mut()
-//             .cpu_flag
-//             .set(CPUControlFlags::CONFIG_SYNC, true);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-//         let mut op = NullHeader::default();
-//         op.init();
-//         assert!(!op.is_finished());
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 0));
 
-//         op.pack(&mut tx).unwrap();
-//         assert!(op.is_finished());
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-//         assert!(!tx
-//             .header()
-//             .cpu_flag
-//             .contains(CPUControlFlags::CONFIG_SILENCER));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-
-//         assert_eq!(tx.header().size, 0);
-//         assert_eq!(tx.num_bodies, 10);
-
-//         op.init();
-//         assert!(!op.is_finished());
-//     }
-
-//     #[test]
-//     fn null_body() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
-
-//         tx.header_mut()
-//             .cpu_flag
-//             .set(CPUControlFlags::WRITE_BODY, true);
-//         tx.header_mut()
-//             .cpu_flag
-//             .set(CPUControlFlags::MOD_DELAY, true);
-//         tx.num_bodies = 10;
-
-//         let mut op = NullBody::default();
-//         op.init();
-//         assert!(!op.is_finished());
-
-//         op.pack(&mut tx).unwrap();
-//         assert!(op.is_finished());
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
-//         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_DELAY));
-//         assert_eq!(tx.num_bodies, 0);
-
-//         op.init();
-//         assert!(!op.is_finished());
-//     }
-// }
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+    }
+}

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum FirmwareInfoType {
     CPUVersionMajor = 0x01,
@@ -90,76 +90,98 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
     }
 }
 
-// #[cfg(test)]
-// mod test {
+#[cfg(test)]
+mod tests {
 
-//     use super::*;
+    use super::*;
+    use crate::geometry::{tests::create_device, LegacyTransducer};
 
-//     const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
-//     #[test]
-//     fn cpu_version() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+    #[test]
+    fn info_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
 
-//         CPUVersionMajor {}.pack(&mut tx);
-//         assert_eq!(tx.header().msg_id, MSG_RD_CPU_VERSION);
-//         assert_eq!(tx.header().cpu_flag.bits(), 0x02);
+        let mut tx = vec![0x00u8; 2 * NUM_DEVICE];
 
-//         CPUVersionMinor {}.pack(&mut tx);
-//         assert_eq!(tx.header().msg_id, MSG_RD_CPU_VERSION_MINOR);
-//     }
+        let mut op = FirmInfoOp::default();
 
-//     #[test]
-//     fn fpga_version() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-//         FPGAVersionMajor {}.pack(&mut tx);
-//         assert_eq!(tx.header().msg_id, MSG_RD_FPGA_VERSION);
-//         assert_eq!(tx.header().cpu_flag.bits(), 0x04);
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.required_size(dev), 2));
 
-//         FPGAVersionMinor {}.pack(&mut tx);
-//         assert_eq!(tx.header().msg_id, MSG_RD_FPGA_VERSION_MINOR);
-//     }
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 5));
 
-//     #[test]
-//     fn fpga_functions() {
-//         let mut tx = TxDatagram::new(&[
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//             NUM_TRANS_IN_UNIT,
-//         ]);
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 4));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::CPUVersionMajor);
+        });
 
-//         FPGAFunctions {}.pack(&mut tx);
-//         assert_eq!(tx.header().msg_id, MSG_RD_FPGA_FUNCTION);
-//         assert_eq!(tx.header().cpu_flag.bits(), 0x05);
-//     }
-// }
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 3));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::CPUVersionMinor);
+        });
+
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 2));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::FPGAVersionMajor);
+        });
+
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::FPGAVersionMinor);
+        });
+
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::FPGAFunctions);
+        });
+    }
+}

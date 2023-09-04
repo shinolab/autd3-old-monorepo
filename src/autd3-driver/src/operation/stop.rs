@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,9 @@ impl<T: Transducer> Operation<T> for StopOp {
         tx[0] = TypeTag::Gain as u8;
         tx[1] = GainControlFlags::DUTY.bits();
 
-        assert!(tx.len() > 2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>());
+        assert!(
+            tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
+        );
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
@@ -63,5 +65,73 @@ impl<T: Transducer> Operation<T> for StopOp {
 
     fn commit(&mut self, device: &Device<T>) {
         self.remains.insert(device.idx(), 0);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::geometry::{tests::create_device, LegacyTransducer};
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
+
+    #[test]
+    fn stop_op() {
+        let devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
+            .collect::<Vec<_>>();
+
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
+
+        let mut op = StopOp::default();
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDriveDuty>()
+            )
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+
+        devices.iter().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::Gain as u8
+            );
+            let flag = GainControlFlags::from_bits_truncate(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
+            );
+            assert!(!flag.contains(GainControlFlags::LEGACY));
+            assert!(flag.contains(GainControlFlags::DUTY));
+            tx.iter()
+                .skip((2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * dev.idx())
+                .skip(2)
+                .take(NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())
+                .for_each(|&d| {
+                    assert_eq!(d, 0);
+                })
+        });
     }
 }
