@@ -1,23 +1,21 @@
 /*
  * File: mod.rs
  * Project: stm
- * Created Date: 05/05/2022
+ * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
 mod focus;
-mod gain;
 
-pub use autd3_driver::Mode as GainSTMMode;
-use autd3_driver::{float, FPGA_SUB_CLK_FREQ};
-pub use focus::{ControlPoint, FocusSTM};
-pub use gain::GainSTM;
+pub use focus::FocusSTM;
+
+use crate::{defined::float, fpga::FPGA_SUB_CLK_FREQ};
 
 #[doc(hidden)]
 /// This is used only for internal.
