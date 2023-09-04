@@ -717,7 +717,7 @@ mod tests {
         datagram::GainAsAny,
         defined::PI,
         fpga::{GAIN_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
-        geometry::{tests::create_device, LegacyTransducer},
+        geometry::{device::tests::create_device, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;

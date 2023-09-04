@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,7 +71,7 @@ mod tests {
     use super::*;
     use crate::{
         fpga::MAX_CYCLE,
-        geometry::{tests::create_device, AdvancedTransducer},
+        geometry::{device::tests::create_device, AdvancedTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
