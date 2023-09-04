@@ -41,21 +41,18 @@ pub struct STMFocus {
 }
 
 impl STMFocus {
-    pub fn new(x: float, y: float, z: float, duty_shift: u8) -> Self {
+    pub fn set(&mut self, x: float, y: float, z: float, duty_shift: u8) {
         let x = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let y = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let z = (z / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
-        let d0 = (x & 0xFFFF) as u16;
-        let d1 =
+        self.buf[0] = (x & 0xFFFF) as u16;
+        self.buf[1] =
             ((y << 2) & 0xFFFC) as u16 | ((x >> 30) & 0x0002) as u16 | ((x >> 16) & 0x0001) as u16;
-        let d2 =
+        self.buf[2] =
             ((z << 4) & 0xFFF0) as u16 | ((y >> 28) & 0x0008) as u16 | ((y >> 14) & 0x0007) as u16;
-        let d3 = (((duty_shift as u16) << 6) & 0x3FC0)
+        self.buf[3] = (((duty_shift as u16) << 6) & 0x3FC0)
             | ((z >> 26) & 0x0020) as u16
             | ((z >> 12) & 0x001F) as u16;
-        Self {
-            buf: [d0, d1, d2, d3],
-        }
     }
 }
 

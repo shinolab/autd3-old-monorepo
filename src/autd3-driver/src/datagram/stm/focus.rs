@@ -1,19 +1,20 @@
 /*
  * File: focus.rs
  * Project: stm
- * Created Date: 05/05/2022
+ * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
  * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::Datagram, error::AUTDInternalError, geometry::*};
-
-use autd3_driver::float;
+use crate::{
+    datagram::Datagram, defined::float, error::AUTDInternalError, geometry::*,
+    operation::ControlPoint,
+};
 
 use super::STMProps;
 
@@ -64,42 +65,19 @@ impl FocusSTM {
 }
 
 impl<T: Transducer> Datagram<T> for FocusSTM {
-    type H = autd3_driver::NullHeader;
-    type B = autd3_driver::FocusSTM;
+    type O1 = crate::operation::FocusSTMOp;
+    type O2 = crate::operation::NullOp;
 
-    fn operation(&self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let points = geometry
-            .device_map()
-            .iter()
-            .scan(0, |state, tr_num| {
-                let r = Some(*state);
-                *state += tr_num;
-                r
-            })
-            .map(|origin_idx| {
-                let tr = &geometry[origin_idx];
-                let origin = tr.position();
-                let trans_inv =
-                    Matrix3::from_columns(&[tr.x_direction(), tr.y_direction(), tr.z_direction()])
-                        .transpose();
-                self.control_points
-                    .iter()
-                    .map(|p| {
-                        let lp = trans_inv * (p.point() - origin);
-                        autd3_driver::STMFocus::new(lp.x, lp.y, lp.z, p.shift())
-                    })
-                    .collect()
-            })
-            .collect();
-        let tr_num_min = geometry.device_map().iter().min().unwrap();
-
-        let props = autd3_driver::FocusSTMProps {
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let props = crate::operation::FocusSTMProps {
             freq_div: self.sampling_frequency_division(),
-            sound_speed: geometry.sound_speed,
             start_idx: self.props.start_idx,
             finish_idx: self.props.finish_idx,
         };
-        Ok((Self::H::default(), Self::B::new(points, *tr_num_min, props)))
+        Ok((
+            Self::O1::new(self.control_points, props),
+            Self::O2::default(),
+        ))
     }
 }
 
@@ -220,8 +198,8 @@ impl FocusSTM {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::fpga::FPGA_SUB_CLK_FREQ;
     use assert_approx_eq::assert_approx_eq;
-    use autd3_driver::FPGA_SUB_CLK_FREQ;
 
     #[test]
     fn freq() {
