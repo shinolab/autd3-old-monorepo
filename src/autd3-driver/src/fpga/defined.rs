@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -165,7 +165,7 @@ impl FPGAInfo {
 
 impl From<&RxMessage> for FPGAInfo {
     fn from(msg: &RxMessage) -> Self {
-        Self { info: msg.ack }
+        Self { info: msg.data }
     }
 }
 
@@ -536,10 +536,7 @@ mod tests {
         assert!(!info.is_thermal_assert());
         assert_eq!(info.info(), 0x02);
 
-        let rx = RxMessage {
-            msg_id: 0,
-            ack: 0x01,
-        };
+        let rx = RxMessage { ack: 0, data: 0x01 };
         let info = FPGAInfo::from(&rx);
         assert!(info.is_thermal_assert());
         assert_eq!(info.info(), 0x01);
