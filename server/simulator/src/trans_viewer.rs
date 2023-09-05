@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::{f32::consts::PI, io::Cursor, sync::Arc};
 
-use autd3_core::autd3_device::AUTD3;
+use autd3::autd3_device::AUTD3;
 use bytemuck::{Pod, Zeroable};
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{ffi::CString, path::PathBuf, time::Instant};
 
 use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
-use autd3_core::{CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ};
+use autd3::driver::fpga::{FPGAControlFlags, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
 use imgui::{
@@ -551,7 +551,7 @@ impl ImGuiRenderer {
                             cpus.iter().for_each(|cpu| {
                                 sources
                                     .drives_mut()
-                                    .skip(body_pointer[cpu.id()])
+                                    .skip(body_pointer[cpu.idx()])
                                     .zip(cpu.fpga().cycles())
                                     .for_each(|(s, c)| {
                                         s.set_wave_number(
@@ -791,56 +791,13 @@ impl ImGuiRenderer {
                     }
 
                     ui.separator();
-                    ui.text(format!("MSG ID: {}", cpus[0].msg_id()));
-                    ui.text("CPU control flags");
-                    let cpu_flags = cpus[0].cpu_flags();
-                    if cpu_flags.contains(CPUControlFlags::MOD) {
-                        let mut mod_ = cpu_flags.contains(CPUControlFlags::MOD);
-                        let mut mod_begin = cpu_flags.contains(CPUControlFlags::MOD_BEGIN);
-                        let mut mod_end = cpu_flags.contains(CPUControlFlags::MOD_END);
-                        ui.checkbox("MOD", &mut mod_);
-                        ui.checkbox("MOD BEGIN", &mut mod_begin);
-                        ui.checkbox("MOD END", &mut mod_end);
-                    } else {
-                        let mut config_en_n = !cpu_flags.contains(CPUControlFlags::CONFIG_EN_N);
-                        let mut config_silencer =
-                            cpu_flags.contains(CPUControlFlags::CONFIG_SILENCER);
-                        let mut config_sync = cpu_flags.contains(CPUControlFlags::CONFIG_SYNC);
-                        ui.checkbox("CONFIG EN", &mut config_en_n);
-                        ui.checkbox("CONFIG SILENCER", &mut config_silencer);
-                        ui.checkbox("CONFIG SYNC", &mut config_sync);
-                    }
-                    let mut write_body = cpu_flags.contains(CPUControlFlags::WRITE_BODY);
-                    let mut stm_begin = cpu_flags.contains(CPUControlFlags::STM_BEGIN);
-                    let mut stm_end = cpu_flags.contains(CPUControlFlags::STM_END);
-                    let mut is_duty = cpu_flags.contains(CPUControlFlags::IS_DUTY);
-                    let mut mod_delay = cpu_flags.contains(CPUControlFlags::MOD_DELAY);
-                    ui.checkbox("WRITE BODY", &mut write_body);
-                    ui.checkbox("STM BEGIN", &mut stm_begin);
-                    ui.checkbox("STM END", &mut stm_end);
-                    ui.checkbox("IS DUTY", &mut is_duty);
-                    ui.checkbox("MOD DELAY", &mut mod_delay);
-
-                    ui.separator();
                     ui.text("FPGA control flags");
                     let fpga_flags = cpus[0].fpga_flags();
-                    let mut is_legacy_mode = fpga_flags.contains(FPGAControlFlags::LEGACY_MODE);
-                    let mut use_stm_start_idx =
-                        fpga_flags.contains(FPGAControlFlags::USE_START_IDX);
-                    let mut use_stm_finish_idx =
-                        fpga_flags.contains(FPGAControlFlags::USE_FINISH_IDX);
                     let mut force_fan = fpga_flags.contains(FPGAControlFlags::FORCE_FAN);
-                    let mut stm_mode = fpga_flags.contains(FPGAControlFlags::STM_MODE);
-                    let mut stm_gain_mode = fpga_flags.contains(FPGAControlFlags::STM_GAIN_MODE);
                     let mut reads_fpga_info =
                         fpga_flags.contains(FPGAControlFlags::READS_FPGA_INFO);
 
-                    ui.checkbox("LEGACY MODE", &mut is_legacy_mode);
-                    ui.checkbox("USE STM START IDX", &mut use_stm_start_idx);
-                    ui.checkbox("USE STM FINISH IDX", &mut use_stm_finish_idx);
                     ui.checkbox("FORCE FAN", &mut force_fan);
-                    ui.checkbox("STM MODE", &mut stm_mode);
-                    ui.checkbox("STM GAIN MODE", &mut stm_gain_mode);
                     ui.checkbox("READS FPGA INFO", &mut reads_fpga_info);
 
                     tab.end();

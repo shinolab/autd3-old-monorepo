@@ -1,6 +1,6 @@
 [package]
 name = "simulator"
-version = "14.2.2"
+version = "15.0.0"
 edition = "2021"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 
@@ -10,9 +10,9 @@ repository = "https://github.com/shinolab/autd3"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = { path = "../../src/autd3-core", version = "14.2.2" }
-autd3-firmware-emulator = { path = "../../src/autd3-firmware-emulator", version = "14.2.2" }
-autd3-protobuf = { path = "../../src/autd3-protobuf", version = "14.2.2" }
+autd3 = { path = "../../src/autd3", version = "15.0.0" }
+autd3-firmware-emulator = { path = "../../src/autd3-firmware-emulator", version = "15.0.0" }
+autd3-protobuf = { path = "../../src/autd3-protobuf", version = "15.0.0" }
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
@@ -37,6 +37,6 @@ anyhow = "1.0.72"
 
 [features]
 default = []
-use_meter = ["autd3-core/use_meter"]
+use_meter = ["autd3/use_meter"]
 left_handed = []
 enable_debug = []

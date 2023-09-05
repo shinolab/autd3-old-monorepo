@@ -78,6 +78,31 @@ impl<T: autd3::driver::geometry::Transducer> ToMessage for autd3::geometry::Geom
     }
 }
 
+impl<T: autd3::driver::geometry::Transducer> ToMessage for &[autd3::driver::geometry::Device<T>] {
+    type Message = Geometry;
+
+    fn to_msg(&self) -> Self::Message {
+        Self::Message {
+            devices: self
+                .iter()
+                .map(|dev| geometry::Device {
+                    idx: dev.idx() as _,
+                    transducers: dev
+                        .iter()
+                        .map(|t| geometry::Transducer {
+                            idx: t.local_idx() as _,
+                            pos: Some(t.position().to_msg()),
+                            rot: Some(t.rotation().to_msg()),
+                        })
+                        .collect(),
+                    sound_speed: dev.sound_speed as _,
+                    attenuation: dev.attenuation as _,
+                })
+                .collect(),
+        }
+    }
+}
+
 impl ToMessage for autd3::driver::cpu::TxDatagram {
     type Message = TxRawData;
 
