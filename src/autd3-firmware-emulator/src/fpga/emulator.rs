@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -162,6 +162,22 @@ impl FPGAEmulator {
             .iter()
             .take(self.num_transducers)
             .copied()
+            .collect()
+    }
+
+    pub fn duty_filters(&self) -> Vec<i16> {
+        self.controller_bram[ADDR_FILTER_DUTY_BASE..]
+            .iter()
+            .take(self.num_transducers)
+            .map(|&v| v as i16)
+            .collect()
+    }
+
+    pub fn phase_filters(&self) -> Vec<i16> {
+        self.controller_bram[ADDR_FILTER_PHASE_BASE..]
+            .iter()
+            .take(self.num_transducers)
+            .map(|&v| v as i16)
             .collect()
     }
 

@@ -16,7 +16,7 @@ use std::{collections::HashMap, fmt};
 use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
-    fpga::{MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
     geometry::{Device, Transducer},
     operation::{Operation, TypeTag},
 };
@@ -71,7 +71,7 @@ impl ModulationOp {
     pub fn new(buf: Vec<float>, freq_div: u32) -> Self {
         Self {
             buf: buf.iter().map(Self::to_duty).collect(),
-            freq_div,
+            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
             remains: HashMap::new(),
             sent: HashMap::new(),
         }

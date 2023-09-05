@@ -121,11 +121,11 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            cpu.send(tx);
+            cpu.send(tx); 
         });
 
         tx.headers()
-            .zip(tx.bodies())
+            .zip(tx.payloads())
             .enumerate()
             .for_each(|(i, (h, b))| {
                 debug!(logger: self.logger,"\tDevice[{i}]:");
@@ -186,36 +186,31 @@ impl<T: Transducer> Link<T> for Debug {
                 } else {
                     debug!(logger: self.logger,"\tFocus STM mode");
                 }
-                // if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
-                //     debug!(logger: self.logger,"\t\tSTM BEGIN");
-                // }
-                // if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
-                //     let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
-                //     debug!(logger: self.logger,
-                //         "\t\tSTM END: cycle = {}, sampling_frequency = {} ({}/{}))",
-                //         fpga.stm_cycle(),
-                //         FPGA_SUB_CLK_FREQ / freq_div_stm,
-                //         FPGA_SUB_CLK_FREQ,
-                //         freq_div_stm
-                //     );
-                //     if self.logger.should_log(Level::Trace) {
-                //         let cycles = fpga.cycles();
-                //         ( 0..fpga.stm_cycle()).for_each(|j| {
-                //             trace!(logger: self.logger,"\tSTM[{}]:", j);
-                //             trace!(logger: self.logger,
-                //                 "{}",
-                //                 fpga.duties_and_phases(j).iter()
-                //                     .zip(cycles.iter())
-                //                     .enumerate()
-                //                     .map(|(i, (d, c))| {
-                //                         format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
-                //                     })
-                //                     .collect::<Vec<_>>()
-                //                     .join("")
-                //             );
-                //         });
-                //     }
-                // }
+                let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
+                    debug!(logger: self.logger,
+                        "\t\tSTM: cycle = {}, sampling_frequency = {} ({}/{})",
+                        fpga.stm_cycle(),
+                        FPGA_SUB_CLK_FREQ / freq_div_stm,
+                        FPGA_SUB_CLK_FREQ,
+                        freq_div_stm
+                    );
+                    if self.logger.should_log(Level::Trace) {
+                        let cycles = fpga.cycles();
+                        ( 0..fpga.stm_cycle()).for_each(|j| {
+                            trace!(logger: self.logger,"\tSTM[{}]:", j);
+                            trace!(logger: self.logger,
+                                "{}",
+                                fpga.duties_and_phases(j).iter()
+                                    .zip(cycles.iter())
+                                    .enumerate()
+                                    .map(|(i, (d, c))| {
+                                        format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join("")
+                            );
+                        });
+                    }
             } else if fpga.is_legacy_mode() {
                 debug!(logger: self.logger,"\tNormal Legacy mode");
             } else {

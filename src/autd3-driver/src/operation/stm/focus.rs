@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     defined::METER,
     error::AUTDInternalError,
-    fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, FPGA_SUB_CLK_FREQ_DIV, SAMPLING_FREQ_DIV_MIN},
     geometry::{Device, Transducer, Vector3},
     operation::{Operation, TypeTag},
 };
@@ -151,7 +151,7 @@ impl FocusSTMOp {
             points,
             remains: Default::default(),
             sent: Default::default(),
-            freq_div,
+            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
             start_idx,
             finish_idx,
         }
