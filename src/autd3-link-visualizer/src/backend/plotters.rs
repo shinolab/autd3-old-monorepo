@@ -4,21 +4,21 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{ffi::OsString, io::Write};
+use std::ffi::OsString;
 
 use plotters::{coord::Shift, prelude::*};
 use scarlet::colormap::{ColorMap, ListedColorMap};
 
-use crate::{colormap, error::MonitorError, Backend, Config};
+use crate::{colormap, error::VisualizerError, Backend, Config};
 
-use autd3_core::{autd3_device::AUTD3, float};
+use autd3::{autd3_device::AUTD3, driver::defined::float, geometry::Geometry};
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
@@ -67,9 +67,9 @@ impl PlottersBackend {
         root: DrawingArea<B, Shift>,
         modulation: Vec<float>,
         config: &PlotConfig,
-    ) -> Result<(), crate::error::MonitorError>
+    ) -> Result<(), crate::error::VisualizerError>
     where
-        MonitorError:
+        VisualizerError:
             From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
     {
         root.fill(&WHITE)?;
@@ -103,13 +103,13 @@ impl PlottersBackend {
     fn plot_1d_impl<B: plotters::backend::DrawingBackend>(
         root: &DrawingArea<B, Shift>,
         observe_points: &[float],
-        acoustic_pressures: &[autd3_core::acoustics::Complex],
+        acoustic_pressures: &[autd3::driver::acoustics::Complex],
         x_label: &str,
         yrange: (float, float),
         config: &PlotConfig,
-    ) -> Result<(), crate::error::MonitorError>
+    ) -> Result<(), crate::error::VisualizerError>
     where
-        MonitorError:
+        VisualizerError:
             From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
     {
         root.fill(&WHITE)?;
@@ -157,15 +157,15 @@ impl PlottersBackend {
         root: &DrawingArea<B, Shift>,
         observe_points_x: &[float],
         observe_points_y: &[float],
-        acoustic_pressures: &[autd3_core::acoustics::Complex],
+        acoustic_pressures: &[autd3::driver::acoustics::Complex],
         x_label: &str,
         y_label: &str,
         zrange: (float, float),
         resolution: float,
         config: &PlotConfig,
-    ) -> Result<(), crate::error::MonitorError>
+    ) -> Result<(), crate::error::VisualizerError>
     where
-        MonitorError:
+        VisualizerError:
             From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
     {
         root.fill(&WHITE)?;
@@ -300,14 +300,17 @@ impl PlottersBackend {
         Ok(())
     }
 
-    fn plot_phase_impl<T: autd3_core::geometry::Transducer, B: plotters::backend::DrawingBackend>(
+    fn plot_phase_impl<
+        T: autd3::driver::geometry::Transducer,
+        B: plotters::backend::DrawingBackend,
+    >(
         root: DrawingArea<B, Shift>,
         config: &PlotConfig,
-        geometry: &autd3_core::geometry::Geometry<T>,
+        geometry: &Geometry<T>,
         phases: Vec<float>,
-    ) -> Result<(), crate::error::MonitorError>
+    ) -> Result<(), crate::error::VisualizerError>
     where
-        MonitorError:
+        VisualizerError:
             From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
     {
         root.fill(&WHITE)?;
@@ -323,8 +326,8 @@ impl PlottersBackend {
 
         {
             let p = geometry
-                .transducers()
-                .map(|t| (t.position().x, t.position().y))
+                .iter()
+                .flat_map(|dev| dev.iter().map(|t| (t.position().x, t.position().y)))
                 .collect::<Vec<_>>();
 
             let min_x =
@@ -382,7 +385,7 @@ impl PlottersBackend {
                 .draw()?;
 
             scatter_ctx.draw_series(p.iter().zip(phases.iter()).map(|(&(x, y), &p)| {
-                let v = (p / (2.0 * autd3_core::PI)) % 1.;
+                let v = (p / (2.0 * autd3::driver::defined::PI)) % 1.;
                 let c = cmap[((v * color_map_size as float) as usize).clamp(0, cmap.len() - 1)];
                 Circle::new(
                     (x, y),
@@ -450,17 +453,17 @@ impl Backend for PlottersBackend {
         Self {}
     }
 
-    fn initialize(&mut self) -> Result<(), crate::error::MonitorError> {
+    fn initialize(&mut self) -> Result<(), crate::error::VisualizerError> {
         Ok(())
     }
 
     fn plot_1d(
         observe_points: Vec<float>,
-        acoustic_pressures: Vec<autd3_core::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3::driver::acoustics::Complex>,
         _resolution: float,
         x_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), crate::error::MonitorError> {
+    ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
         if !path.parent().map_or(true, |p| p.exists()) {
             std::fs::create_dir_all(path.parent().unwrap())?;
@@ -496,12 +499,12 @@ impl Backend for PlottersBackend {
     fn plot_2d(
         observe_x: Vec<float>,
         observe_y: Vec<float>,
-        acoustic_pressures: Vec<autd3_core::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3::driver::acoustics::Complex>,
         resolution: float,
         x_label: &str,
         y_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), crate::error::MonitorError> {
+    ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
         if !path.parent().map_or(true, |p| p.exists()) {
             std::fs::create_dir_all(path.parent().unwrap())?;
@@ -543,7 +546,7 @@ impl Backend for PlottersBackend {
     fn plot_modulation(
         modulation: Vec<float>,
         config: Self::PlotConfig,
-    ) -> Result<(), crate::error::MonitorError> {
+    ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
         if !path.parent().map_or(true, |p| p.exists()) {
             std::fs::create_dir_all(path.parent().unwrap())?;
@@ -564,11 +567,11 @@ impl Backend for PlottersBackend {
         }
     }
 
-    fn plot_phase<T: autd3_core::geometry::Transducer>(
+    fn plot_phase<T: autd3::driver::geometry::Transducer>(
         config: Self::PlotConfig,
-        geometry: &autd3_core::geometry::Geometry<T>,
+        geometry: &autd3::geometry::Geometry<T>,
         phases: Vec<float>,
-    ) -> Result<(), crate::error::MonitorError> {
+    ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
         if !path.parent().map_or(true, |p| p.exists()) {
             std::fs::create_dir_all(path.parent().unwrap())?;
@@ -589,107 +592,5 @@ impl Backend for PlottersBackend {
                 phases,
             )
         }
-    }
-
-    fn animate_1d(
-        observe_points: Vec<float>,
-        acoustic_pressures: Vec<Vec<autd3_core::acoustics::Complex>>,
-        _resolution: float,
-        x_label: &str,
-        config: Self::PlotConfig,
-    ) -> Result<(), crate::error::MonitorError> {
-        let path = std::path::Path::new(&config.fname);
-        if !path.parent().map_or(true, |p| p.exists()) {
-            std::fs::create_dir_all(path.parent().unwrap())?;
-        }
-
-        if !path.extension().map_or(false, |e| e == "gif") {
-            return Err(crate::error::MonitorError::NotSupported);
-        }
-
-        let yrange = acoustic_pressures
-            .iter()
-            .fold((float::MAX, float::MIN), |acc, x| {
-                x.iter()
-                    .fold(acc, |acc, &x| (acc.0.min(x.norm()), acc.1.max(x.norm())))
-            });
-
-        let root =
-            BitMapBackend::gif(&config.fname, config.figsize, config.interval)?.into_drawing_area();
-
-        for (i, ap) in acoustic_pressures.iter().enumerate() {
-            if config.print_progress() {
-                let percent = 100.0 * (i + 1) as float / acoustic_pressures.len() as float;
-                print!("\r");
-                print!(
-                    "Plotted: [{:30}] {}/{} ({}%)",
-                    "=".repeat((percent / (100.0 / 30.0)) as usize),
-                    i + 1,
-                    acoustic_pressures.len(),
-                    percent as usize
-                );
-                std::io::stdout().flush().unwrap();
-            }
-            Self::plot_1d_impl(&root, &observe_points, ap, x_label, yrange, &config)?;
-        }
-
-        if config.print_progress() {
-            println!();
-        }
-
-        Ok(())
-    }
-
-    fn animate_2d(
-        observe_x: Vec<float>,
-        observe_y: Vec<float>,
-        acoustic_pressures: Vec<Vec<autd3_core::acoustics::Complex>>,
-        resolution: float,
-        x_label: &str,
-        y_label: &str,
-        config: Self::PlotConfig,
-    ) -> Result<(), crate::error::MonitorError> {
-        let path = std::path::Path::new(&config.fname);
-        if !path.parent().map_or(true, |p| p.exists()) {
-            std::fs::create_dir_all(path.parent().unwrap())?;
-        }
-
-        if !path.extension().map_or(false, |e| e == "gif") {
-            return Err(crate::error::MonitorError::NotSupported);
-        }
-
-        let zrange = acoustic_pressures
-            .iter()
-            .fold((float::MAX, float::MIN), |acc, x| {
-                x.iter()
-                    .fold(acc, |acc, &x| (acc.0.min(x.norm()), acc.1.max(x.norm())))
-            });
-
-        let root =
-            BitMapBackend::gif(&config.fname, config.figsize, config.interval)?.into_drawing_area();
-
-        for (i, ap) in acoustic_pressures.iter().enumerate() {
-            if config.print_progress() {
-                let percent = 100.0 * (i + 1) as float / acoustic_pressures.len() as float;
-                print!("\r");
-                print!(
-                    "Plotted: [{:30}] {}/{} ({}%)",
-                    "=".repeat((percent / (100.0 / 30.0)) as usize),
-                    i + 1,
-                    acoustic_pressures.len(),
-                    percent as usize
-                );
-                std::io::stdout().flush().unwrap();
-            }
-            Self::plot_2d_impl(
-                &root, &observe_x, &observe_y, ap, x_label, y_label, zrange, resolution, &config,
-            )?;
-        }
-
-        if config.print_progress() {
-            println!();
-        }
-
-        Ok(())
     }
 }

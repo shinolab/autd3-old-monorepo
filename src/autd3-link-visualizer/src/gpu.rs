@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::sync::Arc;
 
-use autd3_core::{
+use autd3::driver::{
     acoustics::Complex,
     float,
     geometry::{Geometry, Transducer, Vector3},
@@ -130,7 +130,7 @@ impl FieldCompute {
         }
     }
 
-    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3_core::acoustics::Directivity>(
+    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3::driver::acoustics::Directivity>(
         &self,
         observe_points: Vec<Vector3>,
         geometry: &Geometry<T>,

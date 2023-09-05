@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,9 @@ use std::ffi::OsString;
 
 use pyo3::prelude::*;
 
-use crate::{error::MonitorError, Backend, Config};
+use crate::{error::VisualizerError, Backend, Config};
 
-use autd3_core::{
+use autd3::driver::{
     acoustics::Complex,
     float,
     geometry::{Geometry, Transducer},
@@ -129,7 +129,7 @@ impl Backend for PythonBackend {
         Self {}
     }
 
-    fn initialize(&mut self) -> Result<(), MonitorError> {
+    fn initialize(&mut self) -> Result<(), VisualizerError> {
         Self::initialize_python()?;
         Ok(())
     }
@@ -140,7 +140,7 @@ impl Backend for PythonBackend {
         resolution: float,
         x_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let acoustic_pressures = acoustic_pressures
             .iter()
             .map(|&x| x.norm())
@@ -201,7 +201,7 @@ def plot(observe, acoustic_pressures, resolution, x_label, config):
         x_label: &str,
         y_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let acoustic_pressures = acoustic_pressures
             .iter()
             .map(|&x| x.norm())
@@ -274,7 +274,7 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
     fn plot_modulation(
         modulation: Vec<float>,
         config: Self::PlotConfig,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         Python::with_gil(|py| -> PyResult<()> {
             let fun = PyModule::from_code(
                 py,
@@ -312,7 +312,7 @@ def plot(modulation, config):
         config: Self::PlotConfig,
         geometry: &Geometry<T>,
         phases: Vec<float>,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let trans_x = geometry
             .transducers()
             .map(|t| t.position().x)
@@ -377,7 +377,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
                 trans_y,
                 phases,
                 config,
-                autd3_core::autd3_device::AUTD3::TRANS_SPACING,
+                autd3::driver::autd3_device::AUTD3::TRANS_SPACING,
             ))?;
             Ok(())
         })?;
@@ -391,7 +391,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
         resolution: float,
         x_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let acoustic_pressures = acoustic_pressures
             .iter()
             .flat_map(|x| x.iter().map(|&x| x.norm()))
@@ -472,7 +472,7 @@ def plot(observe, acoustic_pressures, resolution, x_label, config):
         x_label: &str,
         y_label: &str,
         config: Self::PlotConfig,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let acoustic_pressures = acoustic_pressures
             .iter()
             .flat_map(|x| x.iter().map(|&x| x.norm()))

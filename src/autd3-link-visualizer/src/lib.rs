@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,38 +23,33 @@ pub use backend::*;
 #[cfg(feature = "plotters")]
 pub mod colormap;
 
-use std::{
-    cell::{Cell, RefCell},
-    io::Write,
-    marker::PhantomData,
-    time::Duration,
-};
+use std::{marker::PhantomData, time::Duration};
 
-use autd3_core::{
-    acoustics::{propagate, Complex, Directivity, Sphere},
-    error::AUTDInternalError,
-    float,
-    geometry::{Geometry, Transducer, Vector3},
-    link::Link,
-    CPUControlFlags, RxDatagram, TxDatagram, PI,
+use autd3::{
+    driver::{
+        acoustics::{propagate, Complex, Directivity, Sphere},
+        cpu::{RxDatagram, TxDatagram},
+        defined::{float, PI},
+        error::AUTDInternalError,
+        geometry::{Device, Transducer, Vector3},
+        link::Link,
+    },
+    geometry::Geometry,
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 #[cfg(feature = "plotters")]
 pub use scarlet::colormap::ListedColorMap;
 
-use error::MonitorError;
+use error::VisualizerError;
 
 /// Link to monitoring the status of AUTD and acoustic field
-pub struct Monitor<D: Directivity, B: Backend> {
+pub struct Visualizer<D: Directivity, B: Backend> {
     backend: B,
     is_open: bool,
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
     _d: PhantomData<D>,
-    animate: Cell<bool>,
-    animate_is_stm: Cell<bool>,
-    animate_drives: RefCell<Vec<Vec<(u16, u16)>>>,
     #[cfg(feature = "gpu")]
     gpu_compute: Option<gpu::FieldCompute>,
 }
@@ -154,7 +149,7 @@ impl PlotRange {
     }
 }
 
-impl<B: Backend> Monitor<Sphere, B> {
+impl<B: Backend> Visualizer<Sphere, B> {
     pub fn new() -> Self {
         Self {
             backend: B::new(),
@@ -162,9 +157,6 @@ impl<B: Backend> Monitor<Sphere, B> {
             timeout: Duration::ZERO,
             cpus: Vec::new(),
             _d: PhantomData,
-            animate: Cell::new(false),
-            animate_is_stm: Cell::new(false),
-            animate_drives: RefCell::new(Vec::new()),
             #[cfg(feature = "gpu")]
             gpu_compute: None,
         }
@@ -172,7 +164,7 @@ impl<B: Backend> Monitor<Sphere, B> {
 }
 
 #[cfg(feature = "plotters")]
-impl Monitor<Sphere, PlottersBackend> {
+impl Visualizer<Sphere, PlottersBackend> {
     /// Constructor with Plotters backend
     pub fn plotters() -> Self {
         Self::new()
@@ -180,32 +172,29 @@ impl Monitor<Sphere, PlottersBackend> {
 }
 
 #[cfg(feature = "python")]
-impl Monitor<Sphere, PythonBackend> {
+impl Visualizer<Sphere, PythonBackend> {
     /// Constructor with Python backend
     pub fn python() -> Self {
         Self::new()
     }
 }
 
-impl Monitor<Sphere, NullBackend> {
+impl Visualizer<Sphere, NullBackend> {
     /// Constructor with Null backend
     pub fn null() -> Self {
         Self::new()
     }
 }
 
-impl<D: Directivity, B: Backend> Monitor<D, B> {
+impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// Set directivity
-    pub fn with_directivity<U: Directivity>(self) -> Monitor<U, B> {
-        Monitor {
+    pub fn with_directivity<U: Directivity>(self) -> Visualizer<U, B> {
+        Visualizer {
             backend: self.backend,
             is_open: self.is_open,
             timeout: self.timeout,
             cpus: self.cpus,
             _d: PhantomData,
-            animate: self.animate,
-            animate_is_stm: self.animate_is_stm,
-            animate_drives: self.animate_drives,
             #[cfg(feature = "gpu")]
             gpu_compute: self.gpu_compute,
         }
@@ -213,9 +202,9 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
 }
 
 #[cfg(feature = "gpu")]
-impl<D: Directivity, B: Backend> Monitor<D, B> {
+impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// Enable GPU acceleration
-    pub fn with_gpu(self, gpu_idx: i32) -> Monitor<D, B> {
+    pub fn with_gpu(self, gpu_idx: i32) -> Visualizer<D, B> {
         Self {
             gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
             ..self
@@ -224,27 +213,27 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
 }
 
 #[cfg(all(feature = "plotters", not(feature = "python")))]
-impl Default for Monitor<Sphere, PlottersBackend> {
+impl Default for Visualizer<Sphere, PlottersBackend> {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[cfg(all(not(feature = "plotters"), feature = "python"))]
-impl Default for Monitor<Sphere, PythonBackend> {
+impl Default for Visualizer<Sphere, PythonBackend> {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[cfg(all(not(feature = "plotters"), not(feature = "python")))]
-impl Default for Monitor<Sphere, NullBackend> {
+impl Default for Visualizer<Sphere, NullBackend> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<D: Directivity, B: Backend> Monitor<D, B> {
+impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// Get phases of transducers
     ///
     /// # Arguments
@@ -375,7 +364,6 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
                 );
             }
         }
-        let sound_speed = geometry.sound_speed;
         observe_points
             .into_iter()
             .map(|target| {
@@ -383,8 +371,9 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
                     .iter()
                     .enumerate()
                     .fold(Complex::new(0., 0.), |acc, (i, cpu)| {
+                        let sound_speed = geometry[i].sound_speed;
                         let drives = cpu.fpga().duties_and_phases(idx);
-                        acc + geometry.transducers_of(i).zip(drives.iter()).fold(
+                        acc + geometry[i].iter().zip(drives.iter()).fold(
                             Complex::new(0., 0.),
                             |acc, (t, d)| {
                                 let amp = (PI * d.0 as float / t.cycle() as float).sin();
@@ -416,7 +405,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         range: PlotRange,
         config: B::PlotConfig,
         geometry: &Geometry<T>,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         self.plot_field_of(range, config, geometry, 0)
     }
 
@@ -435,7 +424,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         config: B::PlotConfig,
         geometry: &Geometry<T>,
         idx: usize,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
         let acoustic_pressures = self.calc_field_of(observe_points, geometry, idx);
         if range.is_1d() {
@@ -469,7 +458,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
                 config,
             )
         } else {
-            Err(MonitorError::InvalidPlotRange)
+            Err(VisualizerError::InvalidPlotRange)
         }
     }
 
@@ -484,7 +473,7 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         &self,
         config: B::PlotConfig,
         geometry: &Geometry<T>,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         self.plot_phase_of(config, geometry, 0)
     }
 
@@ -501,169 +490,35 @@ impl<D: Directivity, B: Backend> Monitor<D, B> {
         config: B::PlotConfig,
         geometry: &Geometry<T>,
         idx: usize,
-    ) -> Result<(), MonitorError> {
+    ) -> Result<(), VisualizerError> {
         let phases = self.phases_of(idx);
         B::plot_phase(config, geometry, phases)
     }
 
     /// Plot modulation data
-    pub fn plot_modulation(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
+    pub fn plot_modulation(&self, config: B::PlotConfig) -> Result<(), VisualizerError> {
         B::plot_modulation(self.modulation(), config)?;
         Ok(())
     }
 
     /// Plot raw modulation data
-    pub fn plot_modulation_raw(&self, config: B::PlotConfig) -> Result<(), MonitorError> {
+    pub fn plot_modulation_raw(&self, config: B::PlotConfig) -> Result<(), VisualizerError> {
         B::plot_modulation(self.modulation_raw(), config)?;
         Ok(())
     }
-
-    /// Begin acoustic field animation
-    ///
-    /// From this call, the monitor will record the drive data until `end_animation` is called.
-    pub fn begin_animation(&self) {
-        self.animate.set(true);
-        self.animate_drives.borrow_mut().clear();
-    }
-
-    fn calc_field_from_drive<T: Transducer>(
-        &self,
-        range: PlotRange,
-        drives: &[(u16, u16)],
-        geometry: &Geometry<T>,
-    ) -> Vec<Complex> {
-        let observe_points = range.observe_points();
-
-        #[cfg(feature = "gpu")]
-        {
-            if let Some(gpu) = &self.gpu_compute {
-                let sound_speed = geometry.sound_speed;
-                let source_drive = drives
-                    .iter()
-                    .zip(geometry.iter())
-                    .map(|(d, t)| {
-                        let c = t.cycle();
-                        let w = t.wavenumber(sound_speed);
-                        let amp = (std::f32::consts::PI * d.0 as f32 / c as f32).sin();
-                        let phase = 2. * std::f32::consts::PI * d.1 as f32 / c as f32;
-                        [amp, phase, 0., w as f32]
-                    })
-                    .collect::<Vec<_>>();
-                return gpu.calc_field_of::<T, D>(
-                    observe_points.into_iter().collect(),
-                    geometry,
-                    source_drive,
-                );
-            }
-        }
-        let sound_speed = geometry.sound_speed;
-        observe_points
-            .into_iter()
-            .map(|target| {
-                drives
-                    .iter()
-                    .zip(geometry.iter())
-                    .fold(Complex::new(0., 0.), |acc, (d, t)| {
-                        let amp = (PI * d.0 as float / t.cycle() as float).sin();
-                        let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                        acc + propagate::<D>(
-                            t.position(),
-                            &t.z_direction(),
-                            0.0,
-                            t.wavenumber(sound_speed),
-                            &target,
-                        ) * Complex::from_polar(amp, phase)
-                    })
-            })
-            .collect()
-    }
-
-    /// End acoustic field animation and plot the result
-    pub fn end_animation<T: Transducer>(
-        &self,
-        range: PlotRange,
-        config: B::PlotConfig,
-        geometry: &Geometry<T>,
-    ) -> Result<(), MonitorError> {
-        self.animate.set(false);
-
-        let size = self.animate_drives.borrow().len() as float;
-        let acoustic_pressures = self
-            .animate_drives
-            .borrow()
-            .iter()
-            .enumerate()
-            .map(|(i, d)| {
-                if config.print_progress() {
-                    let percent = 100.0 * (i + 1) as float / size;
-                    print!("\r");
-                    print!(
-                        "Calculated: [{:30}] {}/{} ({}%)",
-                        "=".repeat((percent / (100.0 / 30.0)) as usize),
-                        i + 1,
-                        size as usize,
-                        percent as usize
-                    );
-                    std::io::stdout().flush().unwrap();
-                }
-                self.calc_field_from_drive(range.clone(), d, geometry)
-            })
-            .collect::<Vec<_>>();
-        if config.print_progress() {
-            println!();
-        }
-        let res = if range.is_1d() {
-            let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
-                (_, 1, 1) => (range.observe_x(), "x [mm]"),
-                (1, _, 1) => (range.observe_y(), "y [mm]"),
-                (1, 1, _) => (range.observe_z(), "z [mm]"),
-                _ => unreachable!(),
-            };
-            B::animate_1d(observe, acoustic_pressures, range.resolution, label, config)
-        } else if range.is_2d() {
-            let (observe_x, x_label) = match (range.nx(), range.ny(), range.nz()) {
-                (_, _, 1) => (range.observe_x(), "x [mm]"),
-                (1, _, _) => (range.observe_y(), "y [mm]"),
-                (_, 1, _) => (range.observe_z(), "z [mm]"),
-                _ => unreachable!(),
-            };
-            let (observe_y, y_label) = match (range.nx(), range.ny(), range.nz()) {
-                (_, _, 1) => (range.observe_y(), "y [mm]"),
-                (1, _, _) => (range.observe_z(), "z [mm]"),
-                (_, 1, _) => (range.observe_x(), "x [mm]"),
-                _ => unreachable!(),
-            };
-            B::animate_2d(
-                observe_x,
-                observe_y,
-                acoustic_pressures,
-                range.resolution,
-                x_label,
-                y_label,
-                config,
-            )
-        } else {
-            Err(MonitorError::InvalidPlotRange)
-        };
-
-        self.animate_drives.borrow_mut().clear();
-
-        res
-    }
 }
 
-impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Monitor<D, B> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Visualizer<D, B> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         if self.is_open {
             return Ok(());
         }
 
-        self.cpus = geometry
-            .device_map()
+        self.cpus = devices
             .iter()
             .enumerate()
-            .map(|(i, &dev)| {
-                let mut cpu = CPUEmulator::new(i, dev);
+            .map(|(i, dev)| {
+                let mut cpu = CPUEmulator::new(i, dev.num_transducers());
                 cpu.init();
                 cpu
             })
@@ -694,32 +549,6 @@ impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Monitor<D, B> {
             cpu.send(tx);
         });
 
-        if self.animate.get() {
-            if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
-                self.animate_is_stm.set(true);
-            }
-            if self.animate_is_stm.get() {
-                if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
-                    self.animate_is_stm.set(false);
-                    self.animate_drives.borrow_mut().extend(
-                        (0..self.cpus[0].fpga().stm_cycle()).map(|idx| {
-                            self.cpus
-                                .iter()
-                                .flat_map(|cpu| cpu.fpga().duties_and_phases(idx))
-                                .collect()
-                        }),
-                    );
-                }
-            } else {
-                self.animate_drives.borrow_mut().push(
-                    self.cpus
-                        .iter()
-                        .flat_map(|cpu| cpu.fpga().duties_and_phases(0))
-                        .collect(),
-                );
-            }
-        }
-
         Ok(true)
     }
 
@@ -729,8 +558,8 @@ impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Monitor<D, B> {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx[cpu.id()].ack = cpu.ack();
-            rx[cpu.id()].msg_id = cpu.msg_id();
+            rx[cpu.idx()].ack = cpu.ack();
+            rx[cpu.idx()].data = cpu.rx_data();
         });
 
         Ok(true)
