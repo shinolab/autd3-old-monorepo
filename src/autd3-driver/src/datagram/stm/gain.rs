@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,6 +30,20 @@ pub struct GainSTM<T: Transducer, G: Gain<T>> {
     mode: GainSTMMode,
     props: STMProps,
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T: Transducer, G: Gain<T>> Clone for GainSTM<T, G>
+where
+    G: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            gains: self.gains.clone(),
+            mode: self.mode,
+            props: self.props.clone(),
+            _phantom: std::marker::PhantomData,
+        }
+    }
 }
 
 impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
