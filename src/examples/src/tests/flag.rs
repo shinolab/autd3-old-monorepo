@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,13 +22,17 @@ use std::{
 use autd3::prelude::*;
 
 pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.reads_fpga_info(true);
+    autd.geometry_mut()
+        .iter_mut()
+        .for_each(|dev| dev.reads_fpga_info = true);
 
     println!("press any key to force fan...");
     let mut _s = String::new();
     io::stdin().read_line(&mut _s).unwrap();
 
-    autd.force_fan(true);
+    autd.geometry_mut()
+        .iter_mut()
+        .for_each(|dev| dev.force_fan = true);
     autd.send(UpdateFlags::default())?;
 
     let fin = Arc::new(AtomicBool::new(false));
@@ -59,8 +63,10 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::R
         .unwrap()
     })?;
 
-    autd.reads_fpga_info(false);
-    autd.force_fan(false);
+    autd.geometry_mut().iter_mut().for_each(|dev| {
+        dev.reads_fpga_info = false;
+        dev.force_fan = false;
+    });
     autd.send(UpdateFlags::default())?;
 
     Ok(true)

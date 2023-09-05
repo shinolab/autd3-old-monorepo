@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
-    datagram::{Clear, Datagram},
+    datagram::{Clear, Datagram, Synchronize},
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{Device, Geometry, IntoDevice, LegacyTransducer, Transducer},
@@ -23,7 +23,7 @@ use autd3_driver::{
     operation::OperationHandler,
 };
 
-use crate::{error::AUTDError, link::NullLink};
+use crate::{error::AUTDError, link::NullLink, software_stm::SoftwareSTM};
 
 /// Builder for `Controller`
 pub struct ControllerBuilder<T: Transducer> {
@@ -85,7 +85,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         };
         cnt.send(Clear::new())?;
         cnt.send(Clear::new())?;
-        // cnt.send(Synchronize::new())?;
+        cnt.send(Synchronize::new())?;
         Ok(cnt)
     }
 
@@ -258,24 +258,24 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(self.rx_buf.iter().map(FPGAInfo::from).collect())
     }
 
-    // /// Start software Spatio-Temporal Modulation
-    // ///
-    // /// # Arguments
-    // ///
-    // /// * `callback` - Callback function called specified interval
-    // /// * `finish_handler` - If this function returns true, STM will be finished
-    // ///
-    // pub fn software_stm<
-    //     S: Datagram<T>,
-    //     Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
-    //     Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
-    // >(
-    //     &mut self,
-    //     callback: Fs,
-    //     finish_handler: Ff,
-    // ) -> SoftwareSTM<T, L, S, Fs, Ff> {
-    //     SoftwareSTM::new(self, callback, finish_handler)
-    // }
+    /// Start software Spatio-Temporal Modulation
+    ///
+    /// # Arguments
+    ///
+    /// * `callback` - Callback function called specified interval
+    /// * `finish_handler` - If this function returns true, STM will be finished
+    ///
+    pub fn software_stm<
+        S: Datagram<T>,
+        Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+        Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
+    >(
+        &mut self,
+        callback: Fs,
+        finish_handler: Ff,
+    ) -> SoftwareSTM<T, L, S, Fs, Ff> {
+        SoftwareSTM::new(self, callback, finish_handler)
+    }
 }
 
 // #[cfg(test)]
