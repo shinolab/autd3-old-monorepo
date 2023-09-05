@@ -63,11 +63,11 @@ impl CPUEmulator {
         self.num_transducers
     }
 
-    pub fn msg_id(&self) -> u8 {
+    pub fn ack(&self) -> u8 {
         self.ack
     }
 
-    pub fn ack(&self) -> u8 {
+    pub fn rx_data(&self) -> u8 {
         self.rx_data
     }
 

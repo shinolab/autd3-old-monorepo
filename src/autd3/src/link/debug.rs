@@ -261,8 +261,8 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx[cpu.idx()].data = cpu.ack();
-            rx[cpu.idx()].ack = cpu.msg_id();
+            rx[cpu.idx()].data = cpu.rx_data();
+            rx[cpu.idx()].ack = cpu.ack();
         });
 
         Ok(true)

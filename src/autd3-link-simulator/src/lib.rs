@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,11 +20,11 @@ use std::{
     time::Duration,
 };
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
 };
 
 enum Either {
@@ -82,10 +82,7 @@ impl Simulator {
         Self { timeout, ..self }
     }
 
-    fn open_impl<T: Transducer>(
-        &mut self,
-        geometry: &Geometry<T>,
-    ) -> Result<(), AUTDProtoBufError> {
+    fn open_impl<T: Transducer>(&mut self, devices: &[Device<T>]) -> Result<(), AUTDProtoBufError> {
         let mut client = self
             .runtime
             .block_on(simulator_client::SimulatorClient::connect(format!(
@@ -98,7 +95,7 @@ impl Simulator {
 
         if self
             .runtime
-            .block_on(client.config_geomety(geometry.to_msg()))
+            .block_on(client.config_geomety(devices.to_msg()))
             .is_err()
         {
             return Err(AUTDProtoBufError::SendError(
@@ -133,13 +130,13 @@ impl Simulator {
         runtime: &Runtime,
     ) -> Result<RxDatagram, AUTDProtoBufError> {
         let res = runtime.block_on(client.read_data(ReadRequest {}))?;
-        Ok(autd3_core::RxDatagram::from_msg(&res.into_inner()))
+        Ok(RxDatagram::from_msg(&res.into_inner()))
     }
 }
 
 impl<T: Transducer> Link<T> for Simulator {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        self.open_impl(geometry)?;
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
+        self.open_impl(devices)?;
         Ok(())
     }
 

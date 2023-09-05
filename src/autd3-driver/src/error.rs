@@ -72,6 +72,9 @@ pub enum AUTDInternalError {
     #[error("{0}")]
     LinkError(String),
 
+    #[error("Link is closed")]
+    LinkClosed,
+
     #[error("failed to create timer")]
     TimerCreationFailed(),
     #[error("failed to delete timer")]
