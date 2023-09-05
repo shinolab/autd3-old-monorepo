@@ -13,10 +13,10 @@ path = "src/debug.rs"
 name = "group"
 path = "src/group.rs"
 
-# [[bin]]
-# name = "async"
-# path = "src/async.rs"
-# required-features = ["async"]
+[[bin]]
+name = "async"
+path = "src/async.rs"
+required-features = ["async"]
 
 # [[bin]]
 # name = "soem"
@@ -48,9 +48,9 @@ path = "src/group.rs"
 # path = "src/monitor.rs"
 # required-features = ["monitor"]
 
-# [[bin]]
-# name = "freq_config"
-# path = "src/freq_config.rs"
+[[bin]]
+name = "freq_config"
+path = "src/freq_config.rs"
 
 # [[bin]]
 # name = "geometry_viewer"
@@ -76,11 +76,11 @@ autd3-backend-cuda = { path = "../autd3-backend-cuda", optional = true }
 autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
 # autd3-protobuf = { path = "../autd3-protobuf", optional = true }
 colored = "2.0.0"
-# tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional = true }
+tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional = true }
 
 [features]
 default = []
-# async = ["tokio"]
+async = ["tokio"]
 # simulator = ["autd3-link-simulator"]
 # soem = ["autd3-link-soem/local"]
 # remote_soem = ["autd3-link-soem/remote"]
@@ -90,6 +90,7 @@ default = []
 # geometry_viewer = ["autd3-geometry-viewer"]
 # lightweight = ["autd3-protobuf", "tokio"]
 # all = ["soem", "remote_soem", "twincat", "remote_twincat", "monitor", "simulator", "geometry_viewer", "async", "lightweight"]
+all = ["async"]
 
 cuda = ["autd3-backend-cuda"]
 single_float = ["autd3/single_float"]
