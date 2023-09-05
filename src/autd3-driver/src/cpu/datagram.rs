@@ -29,8 +29,16 @@ impl TxDatagram {
         }
     }
 
+    pub fn num_devices(&self) -> usize {
+        self.num_devices
+    }
+
     pub fn all_data(&self) -> &[u8] {
         &self.data
+    }
+
+    pub fn all_data_mut(&mut self) -> &mut [u8] {
+        &mut self.data
     }
 
     pub fn data(&self, i: usize) -> &[u8] {
