@@ -17,7 +17,7 @@ use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
     fpga::{FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV},
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
     logger::get_logger,
     operation::{FirmwareInfoType, TypeTag},
@@ -76,7 +76,7 @@ impl Default for Debug {
 }
 
 impl<T: Transducer> Link<T> for Debug {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         debug!(logger: self.logger,"Open Debug link");
 
         if self.is_open {
@@ -84,7 +84,7 @@ impl<T: Transducer> Link<T> for Debug {
             return Ok(());
         }
 
-        self.cpus = geometry
+        self.cpus = devices
             .iter()
             .enumerate()
             .map(|(i, dev)| {
@@ -174,7 +174,7 @@ impl<T: Transducer> Link<T> for Debug {
             });
 
         self.cpus.iter().for_each(|cpu| {
-            debug!(logger: self.logger,"Status: {}", cpu.id());
+            debug!(logger: self.logger,"Status: {}", cpu.idx());
             let fpga = cpu.fpga();
             if fpga.is_stm_mode() {
                 if fpga.is_stm_gain_mode() {
@@ -261,8 +261,8 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx[cpu.id()].data = cpu.ack();
-            rx[cpu.id()].ack = cpu.msg_id();
+            rx[cpu.idx()].data = cpu.ack();
+            rx[cpu.idx()].ack = cpu.msg_id();
         });
 
         Ok(true)

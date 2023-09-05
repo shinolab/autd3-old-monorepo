@@ -15,6 +15,7 @@ pub mod autd3_device;
 pub mod controller;
 pub mod error;
 pub mod gain;
+pub mod geometry;
 pub mod link;
 pub mod modulation;
 pub mod prelude;
