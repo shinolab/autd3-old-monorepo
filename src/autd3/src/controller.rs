@@ -500,14 +500,11 @@ mod tests {
                 .iter()
                 .all(|&(d, p)| d == 0x0000 && p == 0x0000)
         }));
-        assert!(autd
-            .link()
-            .emulators()
+        assert!(autd.link().emulators().iter().all(|cpu| cpu
+            .fpga()
+            .cycles()
             .iter()
-            .all(|cpu| cpu.fpga().cycles().iter().all(|&c| {
-                dbg!(cpu.idx());
-                c == 0x1000
-            })));
+            .all(|&c| { c == 0x1000 })));
         assert!(autd
             .link()
             .emulators()

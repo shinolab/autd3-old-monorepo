@@ -151,7 +151,7 @@ impl FocusSTMOp {
             points,
             remains: Default::default(),
             sent: Default::default(),
-            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
+            freq_div,
             start_idx,
             finish_idx,
         }
@@ -190,10 +190,11 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         tx[3] = (send_num >> 8) as u8;
 
         if sent == 0 {
-            tx[4] = (self.freq_div & 0xFF) as u8;
-            tx[5] = ((self.freq_div >> 8) & 0xFF) as u8;
-            tx[6] = ((self.freq_div >> 16) & 0xFF) as u8;
-            tx[7] = ((self.freq_div >> 24) & 0xFF) as u8;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            tx[4] = (freq_div & 0xFF) as u8;
+            tx[5] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
             let sound_speed = (device.sound_speed / METER * 1024.0).round() as u32;
             tx[8] = (sound_speed & 0xFF) as u8;
@@ -274,7 +275,9 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
                 self.points.len(),
             ));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN
+            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
+        {
             return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
         }
 
@@ -334,9 +337,11 @@ mod tests {
                 .with_shift(rng.gen_range(0..0xFF))
             })
             .collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -453,9 +458,10 @@ mod tests {
                 .with_shift(rng.gen_range(0..0xFF))
             })
             .collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -859,10 +865,23 @@ mod tests {
         let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, None, None);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = FocusSTMOp::new(points.clone(), u32::MAX, None, None);
+        let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN - 1, None, None);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut op = FocusSTMOp::new(
+            points.clone(),
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32,
+            None,
+            None,
+        );
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN - 1, None, None);
+        let mut op = FocusSTMOp::new(
+            points.clone(),
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1,
+            None,
+            None,
+        );
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
     }
 }

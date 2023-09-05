@@ -71,7 +71,7 @@ impl ModulationOp {
     pub fn new(buf: Vec<float>, freq_div: u32) -> Self {
         Self {
             buf: buf.iter().map(Self::to_duty).collect(),
-            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
+            freq_div,
             remains: HashMap::new(),
             sent: HashMap::new(),
         }
@@ -104,10 +104,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         tx[3] = (mod_size >> 8) as u8;
 
         if sent == 0 {
-            tx[4] = (self.freq_div & 0xFF) as u8;
-            tx[5] = ((self.freq_div >> 8) & 0xFF) as u8;
-            tx[6] = ((self.freq_div >> 16) & 0xFF) as u8;
-            tx[7] = ((self.freq_div >> 24) & 0xFF) as u8;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            tx[4] = (freq_div & 0xFF) as u8;
+            tx[5] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((freq_div >> 24) & 0xFF) as u8;
         }
 
         unsafe {
@@ -145,7 +146,9 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN
+            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
+        {
             return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
         }
 
@@ -194,9 +197,11 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -453,7 +458,8 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
@@ -462,7 +468,8 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX + 1).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
@@ -471,7 +478,8 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..1).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
@@ -491,10 +499,13 @@ mod tests {
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = ModulationOp::new(buf.clone(), u32::MAX);
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
+        let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1);
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
     }
 }
