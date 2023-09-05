@@ -21,7 +21,7 @@ use crate::fpga::emulator::FPGAEmulator;
 use super::params::*;
 
 pub struct CPUEmulator {
-    id: usize,
+    idx: usize,
     ack: u8,
     rx_data: u8,
     read_fpga_info: bool,
@@ -38,7 +38,7 @@ pub struct CPUEmulator {
 impl CPUEmulator {
     pub fn new(id: usize, num_transducers: usize) -> Self {
         let mut s = Self {
-            id,
+            idx: id,
             ack: 0x00,
             rx_data: 0x00,
             read_fpga_info: false,
@@ -55,8 +55,8 @@ impl CPUEmulator {
         s
     }
 
-    pub fn id(&self) -> usize {
-        self.id
+    pub fn idx(&self) -> usize {
+        self.idx
     }
 
     pub fn num_transducers(&self) -> usize {
@@ -88,7 +88,7 @@ impl CPUEmulator {
     }
 
     pub fn send(&mut self, tx: &TxDatagram) {
-        self.ecat_recv(tx.data());
+        self.ecat_recv(tx.data(self.idx));
     }
 
     pub fn init(&mut self) {
@@ -338,6 +338,17 @@ impl CPUEmulator {
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
+            if (flag & FOCUS_STM_FLAG_USE_START_IDX) == FOCUS_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & FOCUS_STM_FLAG_USE_FINISH_IDX) == FOCUS_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
+
             unsafe { data.as_ptr().add(16) as *const u16 }
         } else {
             unsafe { data.as_ptr().add(4) as *const u16 }
@@ -413,16 +424,6 @@ impl CPUEmulator {
         if (flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END {
             self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
             self.fpga_flags_internal &= !CTL_REG_STM_GAIN_MODE;
-            if (flag & FOCUS_STM_FLAG_USE_START_IDX) == FOCUS_STM_FLAG_USE_START_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
-            }
-            if (flag & FOCUS_STM_FLAG_USE_FINISH_IDX) == FOCUS_STM_FLAG_USE_FINISH_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
-            }
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
@@ -462,6 +463,17 @@ impl CPUEmulator {
 
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+
+            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
 
             unsafe { data.as_ptr().add(10) as *const u16 }
         } else {
@@ -555,16 +567,6 @@ impl CPUEmulator {
             self.fpga_flags_internal |= CTL_REG_LEGACY_MODE;
             self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
             self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
-            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
-            }
-            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
-            }
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
@@ -595,6 +597,17 @@ impl CPUEmulator {
 
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+
+            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
 
             unsafe { data.as_ptr().add(10) as *const u16 }
         } else {
@@ -654,16 +667,6 @@ impl CPUEmulator {
             self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
             self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
             self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
-            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
-            }
-            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
-            }
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
