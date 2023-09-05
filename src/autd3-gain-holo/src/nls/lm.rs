@@ -4,24 +4,23 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{constraint::Constraint, impl_holo, Complex, HoloError, LinAlgBackend, Trans};
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    gain::{Gain, GainFilter},
-    geometry::{Geometry, Transducer, Vector3},
-    Drive, PI,
-};
 use autd3_derive::Gain;
+use autd3_driver::{
+    datagram::{Gain, GainFilter},
+    defined::{float, Drive, PI},
+    error::AUTDInternalError,
+    geometry::{Device, Transducer, Vector3},
+};
 
 /// Gain to produce multiple foci with Levenberg-Marquardt algorithm
 ///
@@ -167,12 +166,12 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
     #[allow(clippy::uninit_vec)]
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
             .backend
-            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+            .generate_propagation_matrix(devices, &self.foci, &filter)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
@@ -301,32 +300,48 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
 
         let x = self.backend.to_host_v(x)?;
 
+        let mut idx = 0;
         match filter {
-            GainFilter::All => Ok(geometry
-                .transducers()
-                .map(|tr| {
-                    let phase = x[tr.idx()].rem_euclid(2.0 * PI);
-                    let amp = self.constraint.convert(1.0, 1.0);
-                    Drive { amp, phase }
+            GainFilter::All => Ok(devices
+                .iter()
+                .map(|dev| {
+                    (
+                        dev.idx(),
+                        dev.iter()
+                            .map(|_| {
+                                let phase = x[idx].rem_euclid(2.0 * PI);
+                                let amp = self.constraint.convert(1.0, 1.0);
+                                idx += 1;
+                                Drive { amp, phase }
+                            })
+                            .collect(),
+                    )
                 })
                 .collect()),
-            GainFilter::Filter(filter) => {
-                let mut result = Vec::with_capacity(geometry.num_transducers());
-                unsafe {
-                    result.set_len(geometry.num_transducers());
-                }
-                let mut idx = 0;
-                geometry.transducers().for_each(|tr| {
-                    if !filter[idx] {
-                        return;
+            GainFilter::Filter(filter) => Ok(devices
+                .iter()
+                .map(|dev| {
+                    if let Some(filter) = filter.get(&dev.idx()) {
+                        (
+                            dev.idx(),
+                            dev.iter()
+                                .filter(|tr| filter[tr.local_idx()])
+                                .map(|_| {
+                                    let phase = x[idx].rem_euclid(2.0 * PI);
+                                    let amp = self.constraint.convert(1.0, 1.0);
+                                    idx += 1;
+                                    Drive { amp, phase }
+                                })
+                                .collect(),
+                        )
+                    } else {
+                        (
+                            dev.idx(),
+                            dev.iter().map(|_| Drive { phase: 0., amp: 0. }).collect(),
+                        )
                     }
-                    let phase = x[idx].rem_euclid(2.0 * PI);
-                    let amp = self.constraint.convert(1.0, 1.0);
-                    result[tr.idx()] = Drive { amp, phase };
-                    idx += 1;
-                });
-                Ok(result)
-            }
+                })
+                .collect()),
         }
     }
 }

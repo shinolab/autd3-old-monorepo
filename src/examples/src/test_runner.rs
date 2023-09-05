@@ -37,7 +37,7 @@ macro_rules! run {
             ("FocusSTM test", &focus_stm),
             ("GainSTM test", &gain_stm),
             ("SoftwareSTM test", &software_stm),
-            // ("Multiple foci test", &holo),
+            ("Multiple foci test", &holo),
             ("Custom Gain & Modulation test", &custom),
             ("Flag test", &flag),
             ("TransducerTest test", &transtest),
