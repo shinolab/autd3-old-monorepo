@@ -762,6 +762,7 @@ impl CPUEmulator {
                     }
                 }
             }
+            TAG_UPDATE_FLAGS => (),
             TAG_MODULATION => self.write_mod(data),
             TAG_MODULATION_DELAY => self.write_mod_delay(&data[2..]),
             TAG_SILENCER => self.config_silencer(data),
@@ -777,9 +778,6 @@ impl CPUEmulator {
 
     fn ecat_recv(&mut self, data: &[u8]) {
         let header = unsafe { &*(data.as_ptr() as *const Header) };
-        if self.read_fpga_info {
-            self.rx_data = self.read_fpga_info() as _;
-        }
 
         if self.ack == header.msg_id {
             return;

@@ -61,6 +61,7 @@ pub const TAG_NONE: u8 = 0x00;
 pub const TAG_CLEAR: u8 = 0x01;
 pub const TAG_SYNC: u8 = 0x02;
 pub const TAG_FIRM_INFO: u8 = 0x03;
+pub const TAG_UPDATE_FLAGS: u8 = 0x04;
 pub const TAG_MODULATION: u8 = 0x10;
 pub const TAG_MODULATION_DELAY: u8 = 0x11;
 pub const TAG_SILENCER: u8 = 0x20;
