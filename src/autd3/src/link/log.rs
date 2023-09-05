@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use std::{
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
 };
 use spdlog::prelude::*;
@@ -85,7 +85,7 @@ impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
 }
 
 impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
         if self.is_open() {
@@ -93,7 +93,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return Ok(());
         }
 
-        let res = self.link.open(geometry);
+        let res = self.link.open(devices);
         if res.is_err() {
             error!(logger: self.logger, "Failed to open link");
             return res;

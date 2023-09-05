@@ -16,13 +16,13 @@ use std::time::Duration;
 use crate::{
     cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
 };
 
 /// Link is a interface to the AUTD device
 pub trait Link<T: Transducer>: Send {
     /// Open link
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError>;
     /// Close link
     fn close(&mut self) -> Result<(), AUTDInternalError>;
     /// Send data to devices
@@ -73,8 +73,8 @@ pub trait Link<T: Transducer>: Send {
 }
 
 impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        self.as_mut().open(geometry)
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
+        self.as_mut().open(devices)
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {

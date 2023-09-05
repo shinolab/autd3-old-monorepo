@@ -133,7 +133,6 @@ pub mod tests {
 
     use super::*;
 
-    #[macro_export]
     macro_rules! assert_approx_eq_vec3 {
         ($a:expr, $b:expr) => {
             assert_approx_eq::assert_approx_eq!($a.x, $b.x, 1e-3);

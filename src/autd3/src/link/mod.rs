@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ mod log;
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
 };
 pub use bundle::Bundle;
@@ -29,7 +29,7 @@ pub use log::Log;
 pub struct NullLink {}
 
 impl<T: Transducer> Link<T> for NullLink {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         Ok(())
     }
 
