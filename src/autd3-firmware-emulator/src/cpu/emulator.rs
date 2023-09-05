@@ -269,9 +269,9 @@ impl CPUEmulator {
 
     fn write_filter(&mut self, data: &[u8]) {
         let flag = data[1];
-        if (flag & FILTER_ADD_DUTY) == FILTER_ADD_DUTY {
+        if flag == FILTER_ADD_DUTY {
             self.write_duty_filter(&data[2..]);
-        } else if (flag & FILTER_ADD_PHASE) == FILTER_ADD_PHASE {
+        } else if flag == FILTER_ADD_PHASE {
             self.write_phase_filter(&data[2..]);
         } else {
             unimplemented!("unknown filter type: {flag}")

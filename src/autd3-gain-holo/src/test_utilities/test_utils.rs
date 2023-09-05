@@ -1841,7 +1841,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
                     g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
-                        &transducers[j].1,
+                        transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,
                         &foci[i],
@@ -1900,7 +1900,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
                     g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
-                        &transducers[j].1,
+                        transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,
                         &foci[i],

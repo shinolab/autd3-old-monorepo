@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,10 +21,12 @@ use bitvec::prelude::*;
 
 use std::{cell::UnsafeCell, collections::HashMap};
 
+type CacheMap = HashMap<BitVec<usize, Lsb0>, HashMap<usize, Vec<Drive>>>;
+
 /// Gain to cache the result of calculation
 pub struct Cache<T: Transducer, G: Gain<T>> {
     gain: G,
-    cache: UnsafeCell<HashMap<BitVec<usize, Lsb0>, HashMap<usize, Vec<Drive>>>>,
+    cache: UnsafeCell<CacheMap>,
     _phantom: std::marker::PhantomData<T>,
 }
 
