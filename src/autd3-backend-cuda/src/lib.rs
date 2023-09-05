@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ mod cusolver;
 
 use std::{ffi::CStr, fmt::Display, rc::Rc};
 
-use autd3_core::{float, gain::GainFilter};
+use autd3_driver::{datagram::GainFilter, defined::float, geometry::Device};
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
 use cuda_sys::cublas::{
     cublasOperation_t_CUBLAS_OP_C, cublasOperation_t_CUBLAS_OP_N, cublasOperation_t_CUBLAS_OP_T,
@@ -62,7 +62,7 @@ extern "C" {
         positions: *const float,
         foci: *const float,
         wavenums: *const float,
-        attens: float,
+        attens: *const float,
         row: u32,
         col: u32,
         dst: *mut CuComplex,
@@ -356,12 +356,16 @@ impl LinAlgBackend for CUDABackend {
         Ok(Rc::new(Self { handle, handle_s }))
     }
 
-    fn generate_propagation_matrix<T: autd3_core::geometry::Transducer>(
+    fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
         &self,
-        geometry: &autd3_core::geometry::Geometry<T>,
-        foci: &[autd3_core::geometry::Vector3],
+        devices: &[&Device<T>],
+        foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
+        let cols = devices
+            .iter()
+            .map(|dev| dev.num_transducers())
+            .sum::<usize>();
         let rows = foci.len();
 
         let foci = foci
@@ -369,30 +373,38 @@ impl LinAlgBackend for CUDABackend {
             .flat_map(|f| f.iter().copied())
             .collect::<Vec<_>>();
 
-        let mut positions = Vec::with_capacity(geometry.num_transducers() * 3);
-        let mut wavenums = Vec::with_capacity(geometry.num_transducers() * 3);
+        let mut positions = Vec::with_capacity(cols * 3);
+        let mut wavenums = Vec::with_capacity(cols);
+        let mut attens = Vec::with_capacity(cols);
 
         match filter {
             GainFilter::All => {
-                geometry.transducers().for_each(|tr| {
-                    let p = tr.position();
-                    positions.push(p.x);
-                    positions.push(p.y);
-                    positions.push(p.z);
-                    wavenums.push(tr.wavenumber(geometry.sound_speed));
-                });
-            }
-            GainFilter::Filter(filter) => {
-                geometry
-                    .transducers()
-                    .filter(|tr| filter[tr.idx()])
-                    .for_each(|tr| {
+                devices.iter().for_each(|dev| {
+                    dev.iter().for_each(|tr| {
                         let p = tr.position();
                         positions.push(p.x);
                         positions.push(p.y);
                         positions.push(p.z);
-                        wavenums.push(tr.wavenumber(geometry.sound_speed));
-                    });
+                        wavenums.push(tr.wavenumber(dev.sound_speed));
+                        attens.push(dev.attenuation);
+                    })
+                });
+            }
+            GainFilter::Filter(filter) => {
+                devices.iter().for_each(|dev| {
+                    if let Some(filter) = filter.get(&dev.idx()) {
+                        dev.iter().for_each(|tr| {
+                            if filter[tr.local_idx()] {
+                                let p = tr.position();
+                                positions.push(p.x);
+                                positions.push(p.y);
+                                positions.push(p.z);
+                                wavenums.push(tr.wavenumber(dev.sound_speed));
+                                attens.push(dev.attenuation);
+                            }
+                        })
+                    }
+                });
             }
         }
 
@@ -405,12 +417,14 @@ impl LinAlgBackend for CUDABackend {
             cpy_host_to_device!(float, foci.as_ptr(), p_foci, foci.len());
             let p_wavenums = alloc_uninitialized!(float, wavenums.len());
             cpy_host_to_device!(float, wavenums.as_ptr(), p_wavenums, wavenums.len());
+            let p_attens = alloc_uninitialized!(float, attens.len());
+            cpy_host_to_device!(float, attens.as_ptr(), p_attens, attens.len());
             let ptr = alloc_uninitialized!(CuComplex, rows, cols);
             cu_call!(cu_generate_propagation_matrix(
                 p_positions,
                 p_foci,
                 p_wavenums,
-                geometry.attenuation,
+                p_attens,
                 rows as _,
                 cols as _,
                 ptr

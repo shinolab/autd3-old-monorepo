@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,8 +17,22 @@ use autd3_gain_holo::*;
 use colored::*;
 use std::io::{self, Write};
 
-pub fn holo<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.send(SilencerConfig::default())?;
+#[cfg(feature = "cuda")]
+use autd3_backend_cuda::CUDABackend as Backend;
+#[cfg(not(feature = "cuda"))]
+use NalgebraBackend as Backend;
+
+pub fn holo<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+where
+    autd3::driver::operation::GainOp<T, SDP<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, EVP<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, GS<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, GSPAT<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, Naive<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, LM<Backend>>: autd3::driver::operation::Operation<T>,
+    autd3::driver::operation::GainOp<T, Greedy>: autd3::driver::operation::Operation<T>,
+{
+    autd.send(Silencer::default())?;
 
     let m = Sine::new(150);
 
@@ -39,10 +53,7 @@ pub fn holo<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::R
     let mut s = String::new();
     io::stdin().read_line(&mut s)?;
 
-    #[cfg(feature = "cuda")]
-    let backend = autd3_backend_cuda::CUDABackend::new()?;
-    #[cfg(not(feature = "cuda"))]
-    let backend = NalgebraBackend::new()?;
+    let backend = Backend::new()?;
 
     match s.trim().parse::<usize>() {
         Ok(0) => {
