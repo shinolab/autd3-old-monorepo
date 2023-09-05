@@ -69,6 +69,8 @@ pub enum AUTDInternalError {
     ModulationError(String),
     #[error("{0}")]
     GainError(String),
+    #[error("{0}")]
+    LinkError(String),
 
     #[error("failed to create timer")]
     TimerCreationFailed(),

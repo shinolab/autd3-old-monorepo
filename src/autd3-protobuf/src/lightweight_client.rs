@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,13 @@
 
 use std::net::SocketAddr;
 
-use autd3_core::{clear::Clear, geometry::Transducer, synchronize::Synchronize};
+use autd3::{
+    driver::{
+        datagram::{Clear, Synchronize},
+        geometry::{Device, IntoDevice, LegacyTransducer},
+    },
+    geometry::Geometry,
+};
 
 use crate::traits::*;
 
@@ -23,12 +29,7 @@ pub struct LightweightClient {
 }
 
 pub struct LightweightClientBuilder {
-    transducers: Vec<(
-        usize,
-        autd3_core::geometry::Vector3,
-        autd3_core::geometry::UnitQuaternion,
-    )>,
-    device_map: Vec<usize>,
+    devices: Vec<Device<LegacyTransducer>>,
 }
 
 impl Default for LightweightClientBuilder {
@@ -39,18 +40,12 @@ impl Default for LightweightClientBuilder {
 
 impl LightweightClientBuilder {
     const fn new() -> Self {
-        Self {
-            transducers: vec![],
-            device_map: vec![],
-        }
+        Self { devices: vec![] }
     }
 
     /// Add device
-    pub fn add_device<D: autd3_core::geometry::Device>(mut self, dev: D) -> Self {
-        let id = self.transducers.len();
-        let mut t = dev.get_transducers(id);
-        self.device_map.push(t.len());
-        self.transducers.append(&mut t);
+    pub fn add_device<D: IntoDevice<LegacyTransducer>>(mut self, dev: D) -> Self {
+        self.devices.push(dev.into_device(self.devices.len()));
         self
     }
 
@@ -59,21 +54,7 @@ impl LightweightClientBuilder {
         self,
         addr: SocketAddr,
     ) -> Result<LightweightClient, crate::error::AUTDProtoBufError> {
-        LightweightClient::open_impl(
-            autd3_core::geometry::Geometry::<autd3_core::geometry::LegacyTransducer>::new(
-                self.transducers
-                    .iter()
-                    .map(|&(id, pos, rot)| {
-                        autd3_core::geometry::LegacyTransducer::new(id, pos, rot)
-                    })
-                    .collect(),
-                self.device_map.clone(),
-                340. * autd3_core::METER,
-                0.,
-            )?,
-            addr,
-        )
-        .await
+        LightweightClient::open_impl(Geometry::<LegacyTransducer>::new(self.devices), addr).await
     }
 }
 
@@ -84,7 +65,7 @@ impl LightweightClient {
     }
 
     async fn open_impl(
-        geometry: autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
+        geometry: Geometry<LegacyTransducer>,
         addr: SocketAddr,
     ) -> Result<Self, crate::error::AUTDProtoBufError> {
         let mut client =
@@ -111,7 +92,7 @@ impl LightweightClient {
     ///
     pub async fn firmware_infos(
         &mut self,
-    ) -> Result<Vec<autd3_core::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
+    ) -> Result<Vec<autd3::driver::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
     {
         let res = self
             .client
@@ -161,7 +142,7 @@ impl LightweightClient {
     ///
     pub async fn fpga_info(
         &mut self,
-    ) -> Result<Vec<autd3_core::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
+    ) -> Result<Vec<autd3::driver::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
         let res = self
             .client
             .fpga_info(crate::pb::FpgaInfoRequest {})

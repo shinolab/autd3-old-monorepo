@@ -14,7 +14,7 @@ members = [
     "autd3-modulation-audio-file",
     "autd3-firmware-emulator",
     "autd3-geometry-viewer",
-    # "autd3-protobuf",
+    "autd3-protobuf",
     "examples",
 ]
 

@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,10 @@ impl Silencer {
 
     pub const fn disable() -> Self {
         Self { step: 0xFFFF }
+    }
+
+    pub const fn step(&self) -> u16 {
+        self.step
     }
 }
 
