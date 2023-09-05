@@ -26,7 +26,7 @@ pub const FOCUS_STM_FIXED_NUM_UNIT: float = 0.025e-3 * METER;
 
 pub const MAX_CYCLE: u16 = 8191;
 
-pub const SAMPLING_FREQ_DIV_MIN: u32 = 4096;
+pub const SAMPLING_FREQ_DIV_MIN: u32 = 4096 / FPGA_SUB_CLK_FREQ_DIV as u32;
 
 pub const MOD_BUF_SIZE_MAX: usize = 65536;
 

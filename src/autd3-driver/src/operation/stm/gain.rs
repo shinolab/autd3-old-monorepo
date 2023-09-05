@@ -175,7 +175,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
             remains: Default::default(),
             sent: Default::default(),
             mode,
-            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
+            freq_div,
             start_idx,
             finish_idx,
             phantom: Default::default(),
@@ -208,10 +208,11 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
         f.set(GainSTMControlFlags::STM_END, sent + 1 == self.gains.len());
 
         if sent == 0 {
-            tx[2] = (self.freq_div & 0xFF) as u8;
-            tx[3] = ((self.freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((self.freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((self.freq_div >> 24) & 0xFF) as u8;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            tx[2] = (freq_div & 0xFF) as u8;
+            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
 
             let start_idx = self.start_idx.unwrap_or(0);
             tx[6] = (start_idx & 0xFF) as u8;
@@ -350,7 +351,9 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainSTMOp<Legacy
                 self.gains.len(),
             ));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN
+            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
+        {
             return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
         }
 
@@ -410,10 +413,11 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
         );
 
         if sent == 0 {
-            tx[2] = (self.freq_div & 0xFF) as u8;
-            tx[3] = ((self.freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((self.freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((self.freq_div >> 24) & 0xFF) as u8;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            tx[2] = (freq_div & 0xFF) as u8;
+            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
 
             let start_idx = self.start_idx.unwrap_or(0);
             tx[6] = (start_idx & 0xFF) as u8;
@@ -517,7 +521,9 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
         if self.gains.len() < 2 || self.gains.len() > GAIN_STM_BUF_SIZE_MAX {
             return Err(AUTDInternalError::GainSTMSizeOutOfRange(self.gains.len()));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN
+            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
+        {
             return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
         }
 
@@ -598,10 +604,11 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
         );
 
         if sent == 0 {
-            tx[2] = (self.freq_div & 0xFF) as u8;
-            tx[3] = ((self.freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((self.freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((self.freq_div >> 24) & 0xFF) as u8;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            tx[2] = (freq_div & 0xFF) as u8;
+            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
 
             let start_idx = self.start_idx.unwrap_or(0);
             tx[6] = (start_idx & 0xFF) as u8;
@@ -672,7 +679,9 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
         if self.gains.len() < 2 || self.gains.len() > GAIN_STM_BUF_SIZE_MAX {
             return Err(AUTDInternalError::GainSTMSizeOutOfRange(self.gains.len()));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN
+            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
+        {
             return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
         }
 
@@ -782,10 +791,11 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op =
             GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -964,9 +974,10 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -1146,9 +1157,10 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseHalf, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -1545,7 +1557,16 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            u32::MAX,
+            SAMPLING_FREQ_DIV_MIN - 1,
+            None,
+            None,
+        );
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut op = GainSTMOp::<_, _>::new(
+            gains.clone(),
+            GainSTMMode::PhaseDutyFull,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32,
             None,
             None,
         );
@@ -1554,7 +1575,7 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            SAMPLING_FREQ_DIV_MIN - 1,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1,
             None,
             None,
         );
@@ -1598,10 +1619,11 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op =
             GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -1826,9 +1848,10 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -1857,7 +1880,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(!flag.contains(GainSTMControlFlags::DUTY));
+            assert!(flag.contains(GainSTMControlFlags::DUTY));
             assert!(flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
@@ -1916,7 +1939,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(!flag.contains(GainSTMControlFlags::DUTY));
+            assert!(flag.contains(GainSTMControlFlags::DUTY));
             assert!(!flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
@@ -1956,7 +1979,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(!flag.contains(GainSTMControlFlags::DUTY));
+            assert!(flag.contains(GainSTMControlFlags::DUTY));
             assert!(!flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
@@ -2010,7 +2033,8 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseHalf, freq_div, None, None);
 
@@ -2263,7 +2287,16 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            u32::MAX,
+            SAMPLING_FREQ_DIV_MIN - 1,
+            None,
+            None,
+        );
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut op = GainSTMOp::<_, _>::new(
+            gains.clone(),
+            GainSTMMode::PhaseDutyFull,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32,
             None,
             None,
         );
@@ -2272,7 +2305,7 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            SAMPLING_FREQ_DIV_MIN - 1,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1,
             None,
             None,
         );
@@ -2316,10 +2349,11 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op =
             GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -2504,9 +2538,10 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
-
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseFull, freq_div, None, None);
+        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
 
@@ -2688,7 +2723,8 @@ mod tests {
             })
             .collect();
 
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX);
+        let freq_div: u32 =
+            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
 
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseHalf, freq_div, None, None);
 
@@ -2941,7 +2977,16 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            u32::MAX,
+            SAMPLING_FREQ_DIV_MIN - 1,
+            None,
+            None,
+        );
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+
+        let mut op = GainSTMOp::<_, _>::new(
+            gains.clone(),
+            GainSTMMode::PhaseDutyFull,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32,
             None,
             None,
         );
@@ -2950,7 +2995,7 @@ mod tests {
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
-            SAMPLING_FREQ_DIV_MIN - 1,
+            u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1,
             None,
             None,
         );
