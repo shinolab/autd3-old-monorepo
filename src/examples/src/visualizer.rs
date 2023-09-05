@@ -1,13 +1,13 @@
 /*
- * File: soem.rs
+ * File: visualizer.rs
  * Project: src
- * Created Date: 27/04/2022
+ * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -16,12 +16,12 @@ use std::path::Path;
 use anyhow::Result;
 
 use autd3::prelude::*;
-use autd3_link_monitor::*;
+use autd3_link_visualizer::*;
 
 fn main() -> Result<()> {
     let mut autd = Controller::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Monitor::default())?;
+        .open_with(Visualizer::default())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -102,31 +102,6 @@ fn main() -> Result<()> {
         "Acoustic pressure at ({}, {}, {}) = {}",
         center.x, center.y, center.z, p[0]
     );
-
-    // // Plot animation
-    // autd.link().begin_animation();
-    // let point_num = 200;
-    // let radius = 30.0 * MILLIMETER;
-    // let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
-    //     let theta = 2.0 * PI * i as float / point_num as float;
-    //     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-    //     center + p
-    // }));
-    // autd.send(stm)?;
-    // autd.link().end_animation(
-    //     PlotRange {
-    //         x_range: center.x - 40.0..center.x + 40.0,
-    //         y_range: center.y - 40.0..center.y + 40.0,
-    //         z_range: center.z..center.z,
-    //         resolution: 1.,
-    //     },
-    //     PlotConfig {
-    //         fname: Path::new("stm.gif").into(),
-    //         print_progress: true,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
 
     autd.close()?;
 

@@ -43,10 +43,10 @@ name = "simulator"
 path = "src/simulator.rs"
 required-features = ["simulator"]
 
-# [[bin]]
-# name = "monitor"
-# path = "src/monitor.rs"
-# required-features = ["monitor"]
+[[bin]]
+name = "visualizer"
+path = "src/visualizer.rs"
+required-features = ["visualizer"]
 
 [[bin]]
 name = "freq_config"
@@ -72,7 +72,7 @@ autd3-backend-cuda = { path = "../autd3-backend-cuda", optional = true }
 autd3-geometry-viewer = { path = "../autd3-geometry-viewer", optional = true }
 autd3-link-soem = { path = "../autd3-link-soem", optional = true }
 autd3-link-twincat = { path = "../autd3-link-twincat", optional = true }
-# autd3-link-monitor = { path = "../autd3-link-monitor", optional = true }
+autd3-link-visualizer = { path = "../autd3-link-visualizer", optional = true }
 autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
 autd3-protobuf = { path = "../autd3-protobuf", optional = true }
 colored = "2.0.0"
@@ -86,11 +86,10 @@ soem = ["autd3-link-soem/local"]
 remote_soem = ["autd3-link-soem/remote"]
 twincat = ["autd3-link-twincat/local"]
 remote_twincat = ["autd3-link-twincat/remote"]
-# monitor = ["autd3-link-monitor"]
+visualizer = ["autd3-link-visualizer"]
 geometry_viewer = ["autd3-geometry-viewer"]
 lightweight = ["autd3-protobuf", "tokio"]
-# all = [  "monitor"]
-all = ["twincat", "remote_twincat", "soem", "remote_soem", "async", "geometry_viewer", "lightweight", "simulator"]
+all = ["twincat", "remote_twincat", "soem", "remote_soem", "async", "geometry_viewer", "lightweight", "simulator", "visualizer"]
 
 cuda = ["autd3-backend-cuda"]
 single_float = ["autd3/single_float"]
