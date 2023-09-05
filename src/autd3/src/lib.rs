@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ pub mod gain;
 pub mod link;
 pub mod modulation;
 pub mod prelude;
-// pub mod software_stm;
+pub mod software_stm;
 
 pub use autd3_derive as derive;
 pub use autd3_driver as driver;
