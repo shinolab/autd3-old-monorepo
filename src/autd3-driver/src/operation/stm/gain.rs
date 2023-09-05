@@ -18,8 +18,8 @@ use crate::{
     defined::Drive,
     error::AUTDInternalError,
     fpga::{
-        AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive, GAIN_STM_BUF_SIZE_MAX,
-        GAIN_STM_LEGACY_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN,
+        AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive, FPGA_SUB_CLK_FREQ_DIV,
+        GAIN_STM_BUF_SIZE_MAX, GAIN_STM_LEGACY_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN,
     },
     geometry::{AdvancedPhaseTransducer, AdvancedTransducer, Device, LegacyTransducer, Transducer},
     operation::{Operation, TypeTag},
@@ -175,7 +175,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
             remains: Default::default(),
             sent: Default::default(),
             mode,
-            freq_div,
+            freq_div: freq_div * FPGA_SUB_CLK_FREQ_DIV as u32,
             start_idx,
             finish_idx,
             phantom: Default::default(),
@@ -463,6 +463,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer>
             }
             GainSTMMode::PhaseFull => {
                 f.set(GainSTMControlFlags::IGNORE_DUTY, true);
+                f.set(GainSTMControlFlags::DUTY, true);
 
                 let d = &self.drives[sent][&device.idx()];
 

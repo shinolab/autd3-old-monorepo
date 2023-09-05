@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,11 +23,11 @@ pub const BRAM_SELECT_MOD: u16 = 0x1;
 pub const BRAM_SELECT_NORMAL: u16 = 0x2;
 pub const BRAM_SELECT_STM: u16 = 0x3;
 
-pub const BRAM_SELECT_CONTROLLER_MAIN: u16 = 0b000;
-pub const BRAM_SELECT_CONTROLLER_CYCLE: u16 = 0b001;
-pub const BRAM_SELECT_CONTROLLER_DELAY: u16 = 0b010;
-pub const BRAM_SELECT_CONTROLLER_FILTER_DUTY: u16 = 0b011;
-pub const BRAM_SELECT_CONTROLLER_FILTER_PHASE: u16 = 0b100;
+// pub const BRAM_SELECT_CONTROLLER_MAIN: u16 = 0b000;
+// pub const BRAM_SELECT_CONTROLLER_CYCLE: u16 = 0b001;
+// pub const BRAM_SELECT_CONTROLLER_DELAY: u16 = 0b010;
+// pub const BRAM_SELECT_CONTROLLER_FILTER_DUTY: u16 = 0b011;
+// pub const BRAM_SELECT_CONTROLLER_FILTER_PHASE: u16 = 0b100;
 
 pub const ADDR_CTL_REG: usize = 0x0000;
 pub const ADDR_FPGA_INFO: usize = 0x0001;
@@ -51,12 +51,12 @@ pub const ADDR_MOD_DELAY_BASE: usize = 0x0200;
 pub const ADDR_FILTER_DUTY_BASE: usize = 0x0300;
 pub const ADDR_FILTER_PHASE_BASE: usize = 0x0400;
 
-pub const CTL_REG_LEGACY_MODE_BIT: u16 = 0;
-pub const CTL_FLAG_USE_STM_FINISH_IDX_BIT: u16 = 2;
-pub const CTL_FLAG_USE_STM_START_IDX_BIT: u16 = 3;
-pub const CTL_REG_FORCE_FAN_BIT: u16 = 4;
-pub const CTL_REG_STM_GAIN_MODE_BIT: u16 = 6;
+pub const CTL_REG_FORCE_FAN_BIT: u16 = 0;
+pub const CTL_REG_LEGACY_MODE_BIT: u16 = 8;
 pub const CTL_REG_OP_MODE_BIT: u16 = 9;
+pub const CTL_REG_STM_GAIN_MODE_BIT: u16 = 10;
+pub const CTL_FLAG_USE_STM_FINISH_IDX_BIT: u16 = 11;
+pub const CTL_FLAG_USE_STM_START_IDX_BIT: u16 = 12;
 
 pub const ENABLED_STM_BIT: u8 = 0x01;
 pub const ENABLED_MODULATOR_BIT: u8 = 0x02;
