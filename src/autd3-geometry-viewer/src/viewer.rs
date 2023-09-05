@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,10 +16,7 @@ use crate::{
     settings::Settings, Quaternion, Vector3, GL_SCALE,
 };
 
-use autd3_core::{
-    autd3_device::AUTD3,
-    geometry::{Geometry, Transducer},
-};
+use autd3_driver::geometry::{Device, Transducer};
 
 use vulkano::{
     command_buffer::{
@@ -87,9 +84,9 @@ impl GeometryViewer {
     /// ## Platform-specific
     ///
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
-    pub fn run<T: Transducer>(&mut self, geometry: &Geometry<T>) -> i32 {
+    pub fn run<T: Transducer>(&mut self, devices: &[Device<T>]) -> i32 {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
-        self.run_with_event_loop(geometry, &mut event_loop)
+        self.run_with_event_loop(devices, &mut event_loop)
     }
 
     /// Create event loop
@@ -114,7 +111,7 @@ impl GeometryViewer {
     #[allow(clippy::let_and_return)]
     pub fn run_with_event_loop<T: Transducer>(
         &mut self,
-        geometry: &Geometry<T>,
+        devices: &[Device<T>],
         event_loop: &mut EventLoop<()>,
     ) -> i32 {
         let mut render = Renderer::new(
@@ -129,12 +126,12 @@ impl GeometryViewer {
         let model = Model::new();
         let mut device_viewer = DeviceViewer::new(&render, &model);
 
-        let num_dev = geometry.num_devices();
+        let num_dev = devices.len();
 
-        let geo: Vec<_> = geometry
+        let geo: Vec<_> = devices
             .iter()
-            .step_by(AUTD3::NUM_TRANS_IN_UNIT)
-            .map(|tr| {
+            .map(|dev| {
+                let tr = &dev[0];
                 let pos = tr.position();
                 let rot = tr.rotation();
                 (
