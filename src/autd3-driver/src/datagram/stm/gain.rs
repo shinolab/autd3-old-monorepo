@@ -40,7 +40,7 @@ where
         Self {
             gains: self.gains.clone(),
             mode: self.mode,
-            props: self.props.clone(),
+            props: self.props,
             _phantom: std::marker::PhantomData,
         }
     }

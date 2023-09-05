@@ -146,7 +146,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -158,7 +158,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -170,7 +170,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));

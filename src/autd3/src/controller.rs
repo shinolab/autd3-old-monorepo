@@ -902,8 +902,8 @@ mod tests {
                     .iter()
                     .zip(g[&cpu.idx()].iter())
                     .for_each(|(&(d, p), g)| {
-                        assert_eq!(d, ((LegacyDrive::to_duty(&g) as u16) << 3) + 0x08);
-                        assert_eq!(p, (LegacyDrive::to_phase(&g) as u16) << 4);
+                        assert_eq!(d, ((LegacyDrive::to_duty(g) as u16) << 3) + 0x08);
+                        assert_eq!(p, (LegacyDrive::to_phase(g) as u16) << 4);
                     });
             })
         });
@@ -931,7 +931,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, (LegacyDrive::to_phase(&g) as u16) << 4);
+                        assert_eq!(p, (LegacyDrive::to_phase(g) as u16) << 4);
                     })
             });
         });
@@ -951,7 +951,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), c)| {
                         assert_eq!(d, c >> 1);
-                        let phase = (LegacyDrive::to_phase(&g) as u16) >> 4;
+                        let phase = (LegacyDrive::to_phase(g) as u16) >> 4;
                         let phase = ((phase << 4) + phase) << 4;
                         assert_eq!(p, phase);
                     })

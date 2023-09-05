@@ -102,17 +102,13 @@ impl<T: Transducer> Gain<T> for Greedy {
             GainFilter::Filter(filter) => devices
                 .iter()
                 .filter_map(|dev| {
-                    if let Some(filter) = filter.get(&dev.idx()) {
-                        Some(dev.iter().filter_map(|tr| {
+                    filter.get(&dev.idx()).map(|filter| dev.iter().filter_map(|tr| {
                             if filter[tr.local_idx()] {
                                 Some((dev.idx(), tr.local_idx()))
                             } else {
                                 None
                             }
                         }))
-                    } else {
-                        None
-                    }
                 })
                 .flatten()
                 .collect(),

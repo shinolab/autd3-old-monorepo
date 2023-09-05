@@ -14,7 +14,7 @@
 #[macro_export]
 macro_rules! run {
     ($autd: expr) => {{
-        use crate::tests::*;
+        use $crate::tests::*;
 
         use autd3::prelude::*;
         use colored::*;
