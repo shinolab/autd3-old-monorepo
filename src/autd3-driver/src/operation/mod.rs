@@ -22,6 +22,7 @@ mod silencer;
 mod stm;
 mod stop;
 mod sync;
+mod update_flag;
 
 pub use clear::*;
 pub use filter::*;
@@ -34,6 +35,7 @@ pub use silencer::*;
 pub use stm::*;
 pub use stop::*;
 pub use sync::*;
+pub use update_flag::*;
 
 use crate::{
     cpu::TxDatagram,
@@ -48,6 +50,7 @@ pub enum TypeTag {
     Clear = 0x01,
     Sync = 0x02,
     FirmwareInfo = 0x03,
+    UpdateFlags = 0x04,
     Modulation = 0x10,
     ModDelay = 0x11,
     Silencer = 0x20,
@@ -64,6 +67,7 @@ impl From<u8> for TypeTag {
             0x01 => Self::Clear,
             0x02 => Self::Sync,
             0x03 => Self::FirmwareInfo,
+            0x04 => Self::UpdateFlags,
             0x10 => Self::Modulation,
             0x11 => Self::ModDelay,
             0x20 => Self::Silencer,

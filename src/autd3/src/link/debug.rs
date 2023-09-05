@@ -145,6 +145,9 @@ impl<T: Transducer> Link<T> for Debug {
                         let info_type = FirmwareInfoType::from(b[1]);
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: FirmwareInfo ({info_type:?})");
                     }
+                    TypeTag::UpdateFlags => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: UpdateFlags");
+                    }
                     TypeTag::Modulation => {
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: Modulation");
                     }
