@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use autd3_core::link::Link;
+use autd3_driver::link::Link;
 use autd3_link_twincat::TwinCAT;
 use autd3_protobuf::*;
 
@@ -27,7 +27,7 @@ struct LightweightTwinCATServer {
 impl Drop for LightweightTwinCATServer {
     fn drop(&mut self) {
         spdlog::info!("Shutting down server...");
-        let _ = Link::<autd3_core::geometry::LegacyTransducer>::close(
+        let _ = Link::<autd3_driver::geometry::LegacyTransducer>::close(
             &mut *self.twincat.write().unwrap(),
         );
         spdlog::info!("Shutting down server...done");
