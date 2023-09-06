@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -121,7 +121,7 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            cpu.send(tx); 
+            cpu.send(tx);
         });
 
         tx.headers()
@@ -153,7 +153,7 @@ impl<T: Transducer> Link<T> for Debug {
                     }
                     TypeTag::ModDelay => {
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: ModulationDelay");
-                    } 
+                    }
                     TypeTag::Silencer => {
                         debug!(logger: self.logger,"\t\tSlot {slot} Op: Silencer");
                     }
@@ -307,11 +307,7 @@ impl<T: Transducer> Link<T> for Debug {
             if !<Self as Link<T>>::receive(self, rx)? {
                 continue;
             }
-            if tx
-                .headers()
-                .zip(rx.iter())
-                .all(|(h, r)| h.msg_id == r.ack)
-            {
+            if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
                 return Ok(true);
             }
             if start.elapsed() > timeout {
