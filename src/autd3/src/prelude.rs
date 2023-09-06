@@ -14,7 +14,9 @@
 pub use spdlog::{Level, LevelFilter};
 
 pub use crate::gain::IntoCache as IntoGainCache;
+pub use crate::gain::IntoTransform as IntoGainTransform;
 pub use crate::modulation::IntoCache as IntoModulationCache;
+pub use crate::modulation::IntoTransform as IntoModulationTransform;
 
 pub use crate::{
     autd3_device::AUTD3,
@@ -22,7 +24,7 @@ pub use crate::{
     error::AUTDError,
     gain::{Bessel, Focus, Group, Null, Plane, TransducerTest, Uniform},
     link::{IntoLog, NullLink},
-    modulation::{IntoRadiationPressure, IntoTransform, Sine, SineLegacy, Square, Static},
+    modulation::{IntoRadiationPressure, Sine, SineLegacy, Square, Static},
 };
 
 pub use autd3_driver::{
