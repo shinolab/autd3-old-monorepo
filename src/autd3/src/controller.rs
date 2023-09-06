@@ -874,9 +874,6 @@ mod tests {
             .open_with(Debug::new().with_log_level(LevelFilter::Off))
             .unwrap();
 
-        autd.send(Clear::new()).unwrap();
-        autd.send(Synchronize::new()).unwrap();
-
         let center = autd.geometry().center();
         let size = 30;
 
@@ -899,6 +896,10 @@ mod tests {
         autd.link().emulators().iter().for_each(|cpu| {
             assert!(cpu.fpga().stm_start_idx().is_none());
             assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().is_legacy_mode());
         });
 
         (0..size).for_each(|k| {
@@ -925,6 +926,10 @@ mod tests {
             assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
         });
 
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().is_legacy_mode());
+        });
+
         let stm = stm.with_mode(GainSTMMode::PhaseFull);
         autd.send(stm.clone()).unwrap();
 
@@ -947,6 +952,10 @@ mod tests {
 
         let stm = stm.with_mode(GainSTMMode::PhaseHalf);
         autd.send(stm.clone()).unwrap();
+
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().is_legacy_mode());
+        });
 
         (0..size).for_each(|k| {
             let g = gains[k]

@@ -38,8 +38,8 @@ bitflags::bitflags! {
         const STM_END         = 1 << 3;
         const USE_START_IDX   = 1 << 4;
         const USE_FINISH_IDX  = 1 << 5;
-        const IGNORE_DUTY     = 1 << 6;
-        const PHASE_COMPRESS  = 1 << 7;
+        const _RESERVED_0     = 1 << 6;
+        const _RESERVED_1     = 1 << 7;
     }
 }
 
@@ -79,12 +79,24 @@ impl fmt::Display for GainSTMControlFlags {
     }
 }
 
+#[repr(u16)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GainSTMMode {
     #[default]
-    PhaseDutyFull,
-    PhaseFull,
-    PhaseHalf,
+    PhaseDutyFull = 0,
+    PhaseFull = 1,
+    PhaseHalf = 2,
+}
+
+impl From<u16> for GainSTMMode {
+    fn from(v: u16) -> Self {
+        match v {
+            0 => GainSTMMode::PhaseDutyFull,
+            1 => GainSTMMode::PhaseFull,
+            2 => GainSTMMode::PhaseHalf,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl Display for GainSTMMode {
@@ -202,7 +214,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         let mut offset =
             std::mem::size_of::<TypeTag>() + std::mem::size_of::<GainSTMControlFlags>();
         if sent == 0 {
-            offset += std::mem::size_of::<u32>() // freq_div
+            offset += std::mem::size_of::<GainSTMMode>()
+            + std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>(); // finish idx
         }
@@ -210,26 +223,30 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
 
         let mut f = GainSTMControlFlags::LEGACY;
         f.set(GainSTMControlFlags::STM_BEGIN, sent == 0);
-        f.set(GainSTMControlFlags::STM_END, sent + 1 == drives.len());
 
         if sent == 0 {
+            let mode = mode as u16;
+            tx[2] = (mode & 0xFF) as u8;
+            tx[3] = (mode >> 8) as u8;
+
             let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
-            tx[2] = (freq_div & 0xFF) as u8;
-            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
+            tx[4] = (freq_div & 0xFF) as u8;
+            tx[5] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
             f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
             let start_idx = start_idx.unwrap_or(0);
-            tx[6] = (start_idx & 0xFF) as u8;
-            tx[7] = (start_idx >> 8) as u8;
+            tx[8] = (start_idx & 0xFF) as u8;
+            tx[9] = (start_idx >> 8) as u8;
 
             f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
             let finish_idx = finish_idx.unwrap_or(0);
-            tx[8] = (finish_idx & 0xFF) as u8;
-            tx[9] = (finish_idx >> 8) as u8;
+            tx[10] = (finish_idx & 0xFF) as u8;
+            tx[11] = (finish_idx >> 8) as u8;
         }
 
+        let mut send = 0;
         match mode {
             GainSTMMode::PhaseDutyFull => {
                 let d = &drives[sent][&device.idx()];
@@ -240,11 +257,9 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
                 }
-                sent_map.insert(device.idx(), sent + 1);
+                send += 1;
             }
             GainSTMMode::PhaseFull => {
-                f.set(GainSTMControlFlags::IGNORE_DUTY, true);
-
                 let d = &drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
@@ -253,7 +268,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
                 }
-                let mut send = 1;
+                send += 1;
                 if drives.len() > sent + 1 {
                     let d = &drives[sent + 1][&device.idx()];
                     unsafe {
@@ -265,12 +280,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                     }
                     send += 1;
                 }
-                sent_map.insert(device.idx(), sent + send);
             }
             GainSTMMode::PhaseHalf => {
-                f.set(GainSTMControlFlags::IGNORE_DUTY, true);
-                f.set(GainSTMControlFlags::PHASE_COMPRESS, true);
-
                 let d = &drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
@@ -279,7 +290,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                     );
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
                 }
-                let mut send = 1;
+                send += 1;
                 if drives.len() > sent + 1 {
                     let d = &drives[sent + 1][&device.idx()];
                     unsafe {
@@ -313,15 +324,19 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                     }
                     send += 1;
                 }
-                sent_map.insert(device.idx(), sent + send);
             }
         }
-        tx[1] = f.bits();
+        f.set(GainSTMControlFlags::STM_END, sent + send == drives.len());
+
+        sent_map.insert(device.idx(), sent + send);
+
+        tx[1] = f.bits() | ((send as u8 - 1) & 0x03) << 6;
 
         if sent == 0 {
             Ok(std::mem::size_of::<TypeTag>()
             + std::mem::size_of::<GainSTMControlFlags>()
-            + std::mem::size_of::<u32>() // freq_div
+            + std::mem::size_of::<GainSTMMode>()
+            +  std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>() // finish idx
             +device.num_transducers() * std::mem::size_of::<LegacyDrive>())
@@ -352,7 +367,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         let mut offset =
             std::mem::size_of::<TypeTag>() + std::mem::size_of::<GainSTMControlFlags>();
         if sent == 0 {
-            offset += std::mem::size_of::<u32>() // freq_div
+            offset += std::mem::size_of::<GainSTMMode>()
+            + std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>(); // finish idx
         }
@@ -363,21 +379,25 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         f.set(GainSTMControlFlags::STM_END, remains[&device.idx()] == 1);
 
         if sent == 0 {
+            let mode = mode as u16;
+            tx[2] = (mode & 0xFF) as u8;
+            tx[3] = (mode >> 8) as u8;
+
             let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
-            tx[2] = (freq_div & 0xFF) as u8;
-            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
+            tx[4] = (freq_div & 0xFF) as u8;
+            tx[5] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
             f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
             let start_idx = start_idx.unwrap_or(0);
-            tx[6] = (start_idx & 0xFF) as u8;
-            tx[7] = (start_idx >> 8) as u8;
+            tx[8] = (start_idx & 0xFF) as u8;
+            tx[9] = (start_idx >> 8) as u8;
 
             f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
             let finish_idx = finish_idx.unwrap_or(0);
-            tx[8] = (finish_idx & 0xFF) as u8;
-            tx[9] = (finish_idx >> 8) as u8;
+            tx[10] = (finish_idx & 0xFF) as u8;
+            tx[11] = (finish_idx >> 8) as u8;
         }
 
         match mode {
@@ -413,9 +433,6 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
                 sent_map.insert(device.idx(), sent + 1);
             }
             GainSTMMode::PhaseFull => {
-                f.set(GainSTMControlFlags::IGNORE_DUTY, true);
-                f.set(GainSTMControlFlags::DUTY, true);
-
                 let d = &drives[sent][&device.idx()];
 
                 unsafe {
@@ -438,6 +455,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         if sent == 0 {
             Ok(std::mem::size_of::<TypeTag>()
             + std::mem::size_of::<GainSTMControlFlags>()
+            + std::mem::size_of::<GainSTMMode>()
             + std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>() // finish idx
@@ -469,7 +487,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         let mut offset =
             std::mem::size_of::<TypeTag>() + std::mem::size_of::<GainSTMControlFlags>();
         if sent == 0 {
-            offset += std::mem::size_of::<u32>() // freq_div
+            offset += std::mem::size_of::<GainSTMMode>()
+            +  std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>(); // finish idx
         }
@@ -480,24 +499,26 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         f.set(GainSTMControlFlags::STM_END, remains[&device.idx()] == 1);
 
         if sent == 0 {
+            let mode = GainSTMMode::PhaseFull as u16;
+            tx[2] = (mode & 0xFF) as u8;
+            tx[3] = (mode >> 8) as u8;
+
             let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
-            tx[2] = (freq_div & 0xFF) as u8;
-            tx[3] = ((freq_div >> 8) & 0xFF) as u8;
-            tx[4] = ((freq_div >> 16) & 0xFF) as u8;
-            tx[5] = ((freq_div >> 24) & 0xFF) as u8;
+            tx[4] = (freq_div & 0xFF) as u8;
+            tx[5] = ((freq_div >> 8) & 0xFF) as u8;
+            tx[6] = ((freq_div >> 16) & 0xFF) as u8;
+            tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
             f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
             let start_idx = start_idx.unwrap_or(0);
-            tx[6] = (start_idx & 0xFF) as u8;
-            tx[7] = (start_idx >> 8) as u8;
+            tx[8] = (start_idx & 0xFF) as u8;
+            tx[9] = (start_idx >> 8) as u8;
 
             f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
             let finish_idx = finish_idx.unwrap_or(0);
-            tx[8] = (finish_idx & 0xFF) as u8;
-            tx[9] = (finish_idx >> 8) as u8;
+            tx[10] = (finish_idx & 0xFF) as u8;
+            tx[11] = (finish_idx >> 8) as u8;
         }
-
-        f.set(GainSTMControlFlags::IGNORE_DUTY, true);
 
         let d = &drives[sent][&device.idx()];
 
@@ -519,6 +540,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         if sent == 0 {
             Ok(std::mem::size_of::<TypeTag>()
             + std::mem::size_of::<GainSTMControlFlags>()
+            + std::mem::size_of::<GainSTMMode>()
             + std::mem::size_of::<u32>() // freq_div
             + std::mem::size_of::<u16>() // start idx
             + std::mem::size_of::<u16>() // finish idx
@@ -675,12 +697,13 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
         device: &Device<T>,
     ) {
         remains.insert(device.idx(), gains.len() - sent[&device.idx()]);
-    }  
- 
-pub    fn required_size_impl(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize {
+    }
+
+    pub fn required_size_impl(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize {
         if sent[&device.idx()] == 0 {
-            std::mem::size_of::<TypeTag>()  
-                + std::mem::size_of::<GainSTMControlFlags>() 
+            std::mem::size_of::<TypeTag>()
+                + std::mem::size_of::<GainSTMControlFlags>()
+                + std::mem::size_of::<GainSTMMode>()
                 + std::mem::size_of::<u32>() // freq_div
                 + std::mem::size_of::<u16>() // start idx
                 + std::mem::size_of::<u16>() // finish idx
@@ -889,7 +912,7 @@ mod tests {
     #[test]
     fn gain_stm_legacy_phase_duty_full_op() {
         const GAIN_STM_SIZE: usize = 3;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -934,7 +957,7 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices
             .iter()
@@ -943,7 +966,7 @@ mod tests {
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -961,29 +984,38 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 0);
+
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseDutyFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseDutyFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .for_each(|(d, g)| {
@@ -1018,8 +1050,8 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 0);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1056,8 +1088,8 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 0);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1072,7 +1104,7 @@ mod tests {
     #[test]
     fn gain_stm_legacy_phase_full_op() {
         const GAIN_STM_SIZE: usize = 5;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -1120,12 +1152,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -1143,29 +1175,38 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 1);
+
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(gain_data[1][&dev.idx()].iter())
@@ -1201,8 +1242,8 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 1);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1240,8 +1281,8 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 0);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1254,8 +1295,8 @@ mod tests {
 
     #[test]
     fn gain_stm_legacy_phase_half_op() {
-        const GAIN_STM_SIZE: usize = 9;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const GAIN_STM_SIZE: usize = 11;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -1303,12 +1344,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -1326,29 +1367,38 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 3);
+
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseHalf as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseHalf as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(gain_data[1][&dev.idx()].iter())
@@ -1388,8 +1438,8 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 3);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1431,8 +1481,8 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 1] >> 6, 2);
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<LegacyDrive>())
@@ -1445,7 +1495,7 @@ mod tests {
 
     #[test]
     fn gain_stm_legacy_op_idx() {
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -1506,10 +1556,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -1534,10 +1584,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -1562,10 +1612,10 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
     }
 
@@ -1717,7 +1767,7 @@ mod tests {
     #[test]
     fn gain_stm_advanced_phase_duty_full_op() {
         const GAIN_STM_SIZE: usize = 2;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -1766,12 +1816,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -1789,29 +1839,36 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseDutyFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseDutyFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(dev.iter())
@@ -1848,8 +1905,6 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDriveDuty>())
@@ -1888,8 +1943,6 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -1928,8 +1981,6 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(!flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDriveDuty>())
@@ -1946,7 +1997,7 @@ mod tests {
     #[test]
     fn gain_stm_advanced_phase_full_op() {
         const GAIN_STM_SIZE: usize = 3;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -1994,12 +2045,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -2012,34 +2063,41 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(flag.contains(GainSTMControlFlags::DUTY));
+            assert!(!flag.contains(GainSTMControlFlags::DUTY));
             assert!(flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(dev.iter())
@@ -2071,13 +2129,11 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(flag.contains(GainSTMControlFlags::DUTY));
+            assert!(!flag.contains(GainSTMControlFlags::DUTY));
             assert!(!flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2111,13 +2167,11 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::GainSTM as u8);
             let flag = GainSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(GainSTMControlFlags::LEGACY));
-            assert!(flag.contains(GainSTMControlFlags::DUTY));
+            assert!(!flag.contains(GainSTMControlFlags::DUTY));
             assert!(!flag.contains(GainSTMControlFlags::STM_BEGIN));
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2175,7 +2229,7 @@ mod tests {
 
     #[test]
     fn gain_stm_advanced_op_idx() {
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -2236,10 +2290,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -2264,10 +2318,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -2292,10 +2346,10 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
     }
 
@@ -2447,7 +2501,7 @@ mod tests {
     #[test]
     fn gain_stm_advanced_phase_phase_duty_full_op() {
         const GAIN_STM_SIZE: usize = 3;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -2496,12 +2550,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -2519,29 +2573,36 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(dev.iter())
@@ -2578,8 +2639,6 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2618,8 +2677,6 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2636,7 +2693,7 @@ mod tests {
     #[test]
     fn gain_stm_advanced_phase_phase_full_op() {
         const GAIN_STM_SIZE: usize = 3;
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -2684,12 +2741,12 @@ mod tests {
         // First frame
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 10 + NUM_TRANS_IN_UNIT * 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 12 + NUM_TRANS_IN_UNIT * 2));
 
         devices.iter().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
-                Ok(10 + NUM_TRANS_IN_UNIT * 2)
+                Ok(12 + NUM_TRANS_IN_UNIT * 2)
             );
             op.commit(dev);
         });
@@ -2707,29 +2764,36 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 2], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 2],
+                ((GainSTMMode::PhaseFull as u16) & 0xFF) as u8
+            );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
+                ((GainSTMMode::PhaseFull as u16) >> 8) as u8
+            );
+
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
+            assert_eq!(
+                tx[dev.idx() * FRAME_SIZE + 5],
                 ((freq_div >> 8) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 4],
+                tx[dev.idx() * FRAME_SIZE + 6],
                 ((freq_div >> 16) & 0xFF) as u8
             );
             assert_eq!(
-                tx[dev.idx() * FRAME_SIZE + 5],
+                tx[dev.idx() * FRAME_SIZE + 7],
                 ((freq_div >> 24) & 0xFF) as u8
             );
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
 
-            tx[FRAME_SIZE * dev.idx() + 10..]
+            tx[FRAME_SIZE * dev.idx() + 12..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
                 .zip(gain_data[0][&dev.idx()].iter())
                 .zip(dev.iter())
@@ -2766,8 +2830,6 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2806,8 +2868,6 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::STM_END));
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
-            assert!(flag.contains(GainSTMControlFlags::IGNORE_DUTY));
-            assert!(!flag.contains(GainSTMControlFlags::PHASE_COMPRESS));
 
             tx[FRAME_SIZE * dev.idx() + 2..]
                 .chunks(std::mem::size_of::<AdvancedDrivePhase>())
@@ -2865,7 +2925,7 @@ mod tests {
 
     #[test]
     fn gain_stm_advanced_phase_op_idx() {
-        const FRAME_SIZE: usize = 10 + NUM_TRANS_IN_UNIT * 2;
+        const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
         let devices = (0..NUM_DEVICE)
             .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
@@ -2926,10 +2986,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -2954,10 +3014,10 @@ mod tests {
             assert!(flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], (start_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], (start_idx >> 8) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (start_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (start_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
         });
 
         let mut op = GainSTMOp::<_, _>::new(
@@ -2982,10 +3042,10 @@ mod tests {
             assert!(!flag.contains(GainSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(GainSTMControlFlags::USE_FINISH_IDX));
 
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 6], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 7], 0x00);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], (finish_idx & 0xFF) as u8);
-            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], (finish_idx >> 8) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 8], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 9], 0x00);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 10], (finish_idx & 0xFF) as u8);
+            assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
     }
 

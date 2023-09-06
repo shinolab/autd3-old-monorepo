@@ -94,8 +94,10 @@ pub const GAIN_STM_FLAG_BEGIN: u8 = 1 << 2;
 pub const GAIN_STM_FLAG_END: u8 = 1 << 3;
 pub const GAIN_STM_FLAG_USE_START_IDX: u8 = 1 << 4;
 pub const GAIN_STM_FLAG_USE_FINISH_IDX: u8 = 1 << 5;
-pub const GAIN_STM_FLAG_IGNORE_DUTY: u8 = 1 << 6;
-pub const GAIN_STM_FLAG_PHASE_COMPRESS: u8 = 1 << 7;
+
+pub const GAIN_STM_MODE_DUTY_PHASE_FULL: u16 = 0;
+pub const GAIN_STM_MODE_PHASE_FULL: u16 = 1;
+pub const GAIN_STM_MODE_PHASE_HALF: u16 = 2;
 
 pub const FILTER_ADD_PHASE: u8 = 0x00;
 pub const FILTER_ADD_DUTY: u8 = 0x01;
