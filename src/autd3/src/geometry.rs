@@ -4,7 +4,7 @@
  * Created Date: 05/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,21 +39,6 @@ impl<T: Transducer> Geometry<T> {
     /// Get center position of all devices
     pub fn center(&self) -> Vector3 {
         self.devices.iter().map(|d| d.center()).sum::<Vector3>() / self.devices.len() as float
-    }
-
-    /// Translate all devices
-    pub fn translate(&mut self, t: Vector3) {
-        self.affine(t, UnitQuaternion::identity());
-    }
-
-    /// Rorate all devices
-    pub fn rotate(&mut self, r: UnitQuaternion) {
-        self.affine(Vector3::zeros(), r);
-    }
-
-    /// Affine transform all devices
-    pub fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
-        self.devices.iter_mut().for_each(|dev| dev.affine(t, r));
     }
 
     /// Set speed of sound of all devices from temperature
