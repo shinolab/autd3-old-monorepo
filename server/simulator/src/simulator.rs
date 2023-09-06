@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
     net::ToSocketAddrs,
     path::{Path, PathBuf},
     sync::{Arc, RwLock},
-};
+}; 
 
 use crate::{
     common::transform::{to_gl_pos, to_gl_rot},
@@ -448,6 +448,8 @@ impl Simulator {
                                 cpus.iter().for_each(|cpu| {
                                     let cycles = cpu.fpga().cycles();
                                     let drives = cpu.fpga().duties_and_phases(imgui.stm_idx());
+                                    let duty_filter = cpu.fpga().duty_filters();
+                                    let phase_filter = cpu.fpga().phase_filters();
                                     let m = if self.settings.mod_enable {
                                         cpu.fpga().modulation_at(imgui.mod_idx()) as f32 / 255.
                                     } else {
@@ -459,11 +461,15 @@ impl Simulator {
                                         .take(cpu.num_transducers())
                                         .enumerate()
                                         .for_each(|(i, d)| {
-                                            d.amp = (PI * drives[i].0 as f32 * m
+                                            d.amp = (PI
+                                                * (drives[i].0 as f32 + duty_filter[i] as f32)
+                                                * m
                                                 / cycles[i] as f32)
                                                 .sin();
-                                            d.phase =
-                                                2. * PI * drives[i].1 as f32 / cycles[i] as f32;
+                                            d.phase = 2.
+                                                * PI
+                                                * (drives[i].1 as f32 + phase_filter[i] as f32)
+                                                / cycles[i] as f32;
                                             d.set_wave_number(
                                                 FPGA_CLK_FREQ as f32 / cycles[i] as f32,
                                                 self.settings.sound_speed,
