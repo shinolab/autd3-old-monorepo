@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ pub use gain::{Gain, GainAsAny, GainFilter};
 pub use mod_delay::ModDelay;
 pub use modulation::{Modulation, ModulationProperty};
 pub use silencer::Silencer;
-pub use stm::{FocusSTM, GainSTM};
+pub use stm::{FocusSTM, GainSTM, STMProps};
 pub use stop::Stop;
 pub use synchronize::Synchronize;
 pub use update_flag::UpdateFlags;

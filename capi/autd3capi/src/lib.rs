@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::*, ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, LinkPtr,
-    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, LinkPtr, TransMode, AUTD3_ERR,
+    AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -115,16 +115,6 @@ pub unsafe extern "C" fn AUTDFreeController(cnt: ControllerPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDSetReadsFPGAInfo(cnt: ControllerPtr, value: bool) {
-    cast_mut!(cnt.0, Cnt).reads_fpga_info(value)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDSetForceFan(cnt: ControllerPtr, value: bool) {
-    cast_mut!(cnt.0, Cnt).force_fan(value)
-}
-
-#[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGetFPGAInfo(
     cnt: ControllerPtr,
@@ -159,13 +149,10 @@ pub unsafe extern "C" fn AUTDGetFirmwareInfo(
     p_info_list: FirmwareInfoListPtr,
     idx: u32,
     info: *mut c_char,
-    props: *mut bool,
 ) {
     let firm_info = &cast_mut!(p_info_list.0, Vec<FirmwareInfo>)[idx as usize];
     let info_str = std::ffi::CString::new(firm_info.to_string()).unwrap();
     libc::strcpy(info, info_str.as_ptr());
-    props.add(0).write(firm_info.is_valid());
-    props.add(1).write(firm_info.is_supported());
 }
 
 #[no_mangle]
@@ -181,20 +168,20 @@ pub unsafe extern "C" fn AUTDGetLatestFirmware(latest: *mut c_char) {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSynchronize() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(Synchronize::new())
+pub unsafe extern "C" fn AUTDSynchronize() -> DatagramPtr {
+    DatagramPtr::new(Synchronize::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDClear() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(Clear::new())
+pub unsafe extern "C" fn AUTDClear() -> DatagramPtr {
+    DatagramPtr::new(Clear::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDUpdateFlags() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(UpdateFlags::new())
+pub unsafe extern "C" fn AUTDUpdateFlags() -> DatagramPtr {
+    DatagramPtr::new(UpdateFlags::new())
 }
 
 #[no_mangle]
@@ -205,20 +192,20 @@ pub unsafe extern "C" fn AUTDStop() -> DatagramSpecialPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModDelayConfig() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(ModDelay::new())
+pub unsafe extern "C" fn AUTDModDelayConfig() -> DatagramPtr {
+    DatagramPtr::new(ModDelay::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDCreateSilencer(step: u16) -> DatagramHeaderPtr {
-    DatagramHeaderPtr::new(SilencerConfig::new(step))
+pub unsafe extern "C" fn AUTDCreateSilencer(step: u16) -> DatagramPtr {
+    DatagramPtr::new(Silencer::new(step))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(Amplitudes::uniform(amp))
+pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> DatagramPtr {
+    DatagramPtr::new(Amplitudes::uniform(amp))
 }
 
 #[no_mangle]
@@ -226,8 +213,8 @@ pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> DatagramBodyPtr {
 pub unsafe extern "C" fn AUTDSend(
     cnt: ControllerPtr,
     mode: TransMode,
-    header: DatagramHeaderPtr,
-    body: DatagramBodyPtr,
+    d1: DatagramPtr,
+    d2: DatagramPtr,
     timeout_ns: i64,
     err: *mut c_char,
 ) -> i32 {
@@ -237,23 +224,23 @@ pub unsafe extern "C" fn AUTDSend(
         Some(Duration::from_nanos(timeout_ns as _))
     };
     let mode = mode.into();
-    let res = if !header.0.is_null() && !body.0.is_null() {
-        let header = Box::from_raw(header.0 as *mut Box<dyn DynamicDatagram>);
-        let body = Box::from_raw(body.0 as *mut Box<dyn DynamicDatagram>);
+    let res = if !d1.0.is_null() && !d2.0.is_null() {
+        let header = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
+        let body = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
             cast_mut!(cnt.0, Cnt).send((mode, header, body, timeout)),
             err,
             AUTD3_ERR
         )
-    } else if !header.0.is_null() {
-        let header = Box::from_raw(header.0 as *mut Box<dyn DynamicDatagram>);
+    } else if !d1.0.is_null() {
+        let header = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
             cast_mut!(cnt.0, Cnt).send((mode, header, timeout)),
             err,
             AUTD3_ERR
         )
-    } else if !body.0.is_null() {
-        let body = Box::from_raw(body.0 as *mut Box<dyn DynamicDatagram>);
+    } else if !d2.0.is_null() {
+        let body = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
             cast_mut!(cnt.0, Cnt).send((mode, body, timeout)),
             err,
@@ -298,7 +285,7 @@ pub unsafe extern "C" fn AUTDSendSpecial(
 
 #[cfg(test)]
 mod tests {
-    use autd3capi_def::{DatagramHeaderPtr, Level};
+    use autd3capi_def::{DatagramPtr, Level};
 
     use super::*;
 
@@ -327,15 +314,15 @@ mod tests {
     #[test]
     fn drive_test() {
         assert_eq!(
-            std::mem::size_of::<autd3_core::Drive>(),
+            std::mem::size_of::<autd3::driver::defined::Drive>(),
             std::mem::size_of::<Drive>()
         );
         assert_eq!(
-            memoffset::offset_of!(autd3_core::Drive, phase),
+            memoffset::offset_of!(autd3::driver::defined::Drive, phase),
             memoffset::offset_of!(Drive, phase)
         );
         assert_eq!(
-            memoffset::offset_of!(autd3_core::Drive, amp),
+            memoffset::offset_of!(autd3::driver::defined::Drive, amp),
             memoffset::offset_of!(Drive, amp)
         );
     }
@@ -347,99 +334,135 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
 
-            AUTDSetReadsFPGAInfo(cnt, true);
-            AUTDSetForceFan(cnt, true);
-
             let firm_p = AUTDGetFirmwareInfoListPointer(cnt, err.as_mut_ptr());
-            if firm_p.0 == NULL {
-                eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-            }
+            assert_ne!(firm_p.0, NULL);
             (0..2).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
-                let mut props = [false, false];
-                AUTDGetFirmwareInfo(firm_p, i as _, info.as_mut_ptr(), props.as_mut_ptr());
+                AUTDGetFirmwareInfo(firm_p, i as _, info.as_mut_ptr());
                 dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
-                assert!(props[0]);
-                assert!(props[1]);
             });
             AUTDFreeFirmwareInfoListPointer(firm_p);
 
             let mut fpga_info = vec![0xFFu8; 2];
-            if !AUTDGetFPGAInfo(cnt, fpga_info.as_mut_ptr() as _, err.as_mut_ptr()) {
-                eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-            }
+            assert!(AUTDGetFPGAInfo(
+                cnt,
+                fpga_info.as_mut_ptr() as _,
+                err.as_mut_ptr()
+            ));
             assert_eq!(fpga_info[0], 0x00);
             assert_eq!(fpga_info[1], 0x00);
 
-            {
-                let s = AUTDSynchronize();
-
-                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let s = AUTDClear();
-                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let s = AUTDUpdateFlags();
-                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let s = AUTDStop();
-                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == AUTD3_ERR {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let s = AUTDModDelayConfig();
-                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == AUTD3_ERR {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
-                let s = AUTDCreateSilencer(10);
-                if AUTDSend(
+            let s = AUTDSynchronize();
+            assert_eq!(
+                AUTDSend(
                     cnt,
                     TransMode::Legacy,
                     s,
-                    DatagramBodyPtr(std::ptr::null()),
+                    DatagramPtr(std::ptr::null()),
                     -1,
-                    err.as_mut_ptr(),
-                ) == AUTD3_ERR
-                {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
+                    err.as_mut_ptr()
+                ),
+                AUTD3_TRUE
+            );
 
-            {
-                let s = AUTDCreateAmplitudes(1.);
-                if AUTDSend(
+            let s = AUTDClear();
+            assert_eq!(
+                AUTDSend(
                     cnt,
                     TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
+                    s,
+                    DatagramPtr(std::ptr::null()),
+                    -1,
+                    err.as_mut_ptr()
+                ),
+                AUTD3_TRUE
+            );
+
+            let s = AUTDUpdateFlags();
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    s,
+                    DatagramPtr(std::ptr::null()),
+                    -1,
+                    err.as_mut_ptr()
+                ),
+                AUTD3_TRUE
+            );
+
+            let s = AUTDStop();
+            assert_eq!(
+                AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()),
+                AUTD3_TRUE
+            );
+
+            let s = AUTDModDelayConfig();
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    s,
+                    DatagramPtr(std::ptr::null()),
+                    -1,
+                    err.as_mut_ptr()
+                ),
+                AUTD3_TRUE
+            );
+
+            let s = AUTDCreateSilencer(10);
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    s,
+                    DatagramPtr(std::ptr::null()),
+                    -1,
+                    err.as_mut_ptr(),
+                ),
+                AUTD3_TRUE
+            );
+
+            let s = AUTDCreateAmplitudes(1.);
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    DatagramPtr(std::ptr::null()),
                     s,
                     -1,
                     err.as_mut_ptr(),
-                ) == AUTD3_ERR
-                {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
+                ),
+                AUTD3_ERR
+            );
 
-            if !AUTDClose(cnt, err.as_mut_ptr()) {
-                eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-            }
+            let s = AUTDCreateAmplitudes(1.);
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::Advanced,
+                    DatagramPtr(std::ptr::null()),
+                    s,
+                    -1,
+                    err.as_mut_ptr(),
+                ),
+                AUTD3_ERR
+            );
+
+            let s = AUTDCreateAmplitudes(1.);
+            assert_eq!(
+                AUTDSend(
+                    cnt,
+                    TransMode::AdvancedPhase,
+                    DatagramPtr(std::ptr::null()),
+                    s,
+                    -1,
+                    err.as_mut_ptr(),
+                ),
+                AUTD3_TRUE
+            );
+
+            assert!(AUTDClose(cnt, err.as_mut_ptr()));
 
             AUTDFreeController(cnt);
         }

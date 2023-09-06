@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -214,6 +214,12 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     /// This is used only for capi.
     pub fn gains(&self) -> &[G] {
         &self.gains
+    }
+
+    #[doc(hidden)]
+    /// This is used only for capi.
+    pub fn take_gains(&mut self) -> Vec<G> {
+        std::mem::take(&mut self.gains)
     }
 }
 

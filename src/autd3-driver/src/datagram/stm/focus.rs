@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -61,6 +61,12 @@ impl FocusSTM {
             control_points: Vec::new(),
             props,
         }
+    }
+
+    #[doc(hidden)]
+    /// This is used only for capi.
+    pub fn take_control_points(&mut self) -> Vec<ControlPoint> {
+        std::mem::take(&mut self.control_points)
     }
 }
 
