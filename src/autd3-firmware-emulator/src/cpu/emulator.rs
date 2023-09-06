@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -739,29 +739,38 @@ impl CPUEmulator {
             TAG_NONE => {}
             TAG_CLEAR => self.clear(),
             TAG_SYNC => self.synchronize(&data[2..]),
-            TAG_FIRM_INFO => {
-                self.read_fpga_info = false;
-                match data[1] {
-                    TYPE_CPU_VERSION_MAJOR => {
-                        self.rx_data = (self.get_cpu_version() & 0xFF) as _;
-                    }
-                    TYPE_CPU_VERSION_MINOR => {
-                        self.rx_data = (self.get_cpu_version_minor() & 0xFF) as _;
-                    }
-                    TYPE_FPGA_VERSION_MAJOR => {
-                        self.rx_data = (self.get_fpga_version() & 0xFF) as _;
-                    }
-                    TYPE_FPGA_VERSION_MINOR => {
-                        self.rx_data = (self.get_fpga_version_minor() & 0xFF) as _;
-                    }
-                    TYPE_FPGA_FUNCTIONS => {
-                        self.rx_data = ((self.get_fpga_version() >> 8) & 0xFF) as _;
-                    }
-                    _ => {
-                        unimplemented!("Unsupported firmware info type")
-                    }
+            TAG_FIRM_INFO => match data[1] {
+                INFO_TYPE_CPU_VERSION_MAJOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_cpu_version() & 0xFF) as _;
                 }
-            }
+                INFO_TYPE_CPU_VERSION_MINOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_cpu_version_minor() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_VERSION_MAJOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_fpga_version() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_VERSION_MINOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_fpga_version_minor() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_FUNCTIONS => {
+                    self.read_fpga_info = false;
+                    self.rx_data = ((self.get_fpga_version() >> 8) & 0xFF) as _;
+                }
+                INFO_TYPE_CLEAR => {
+                    self.rx_data = if self.read_fpga_info {
+                        self.read_fpga_info() as _
+                    } else {
+                        0
+                    };
+                }
+                _ => {
+                    unimplemented!("Unsupported firmware info type")
+                }
+            },
             TAG_UPDATE_FLAGS => (),
             TAG_MODULATION => self.write_mod(data),
             TAG_MODULATION_DELAY => self.write_mod_delay(&data[2..]),
