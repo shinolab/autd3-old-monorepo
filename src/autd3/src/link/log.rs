@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,24 +28,24 @@ use spdlog::prelude::*;
 pub use spdlog::Level;
 
 /// Link to logging
-pub struct LogImpl<T: Transducer, L: Link<T>> {
+pub struct Log<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
     _trans: PhantomData<T>,
 }
 
-pub trait Log<T: Transducer, L: Link<T>> {
+pub trait IntoLog<T: Transducer, L: Link<T>> {
     /// enable logger
-    fn with_log(self) -> LogImpl<T, L>;
+    fn with_log(self) -> Log<T, L>;
 }
 
-impl<T: Transducer, L: Link<T>> Log<T, L> for L {
-    fn with_log(self) -> LogImpl<T, L> {
-        LogImpl::new(self)
+impl<T: Transducer, L: Link<T>> IntoLog<T, L> for L {
+    fn with_log(self) -> Log<T, L> {
+        Log::new(self)
     }
 }
 
-impl<T: Transducer, L: Link<T>> Deref for LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> Deref for Log<T, L> {
     type Target = L;
 
     fn deref(&self) -> &Self::Target {
@@ -53,13 +53,13 @@ impl<T: Transducer, L: Link<T>> Deref for LogImpl<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> DerefMut for LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> DerefMut for Log<T, L> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.link
     }
 }
 
-impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> Log<T, L> {
     fn new(link: L) -> Self {
         let logger = autd3_driver::logger::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
@@ -84,7 +84,7 @@ impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
     fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
