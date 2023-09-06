@@ -101,8 +101,8 @@ impl DynamicDatagram for UpdateFlags {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::default()),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::UpdateFlagsOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -123,8 +123,8 @@ impl DynamicDatagram for Synchronize {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::default()),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::SyncOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -146,7 +146,7 @@ impl DynamicDatagram for Stop {
     > {
         Ok((
             Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(10)),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::StopOp>::default(),
         ))
     }
 
@@ -168,7 +168,7 @@ impl DynamicDatagram for Silencer {
     > {
         Ok((
             Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(self.step())),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -189,8 +189,8 @@ impl DynamicDatagram for Clear {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::default()),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::ClearOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -211,8 +211,8 @@ impl DynamicDatagram for ModDelay {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::default()),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::ModDelayOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -240,7 +240,7 @@ impl DynamicDatagram for FocusSTM {
                 self.start_idx(),
                 self.finish_idx(),
             )),
-            Box::new(<Self as Datagram<DynamicTransducer>>::O2::default()),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -270,7 +270,7 @@ impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
                 self.start_idx(),
                 self.finish_idx(),
             )),
-            Box::new(crate::driver::operation::NullOp::default()),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
@@ -300,7 +300,7 @@ impl DynamicDatagram for Amplitudes {
                 Box::new(<Self as Datagram<AdvancedPhaseTransducer>>::O1::new(
                     self.amp(),
                 )),
-                Box::new(<Self as Datagram<AdvancedPhaseTransducer>>::O2::default()),
+                Box::<crate::driver::operation::NullOp>::default(),
             )),
         }
     }
@@ -320,11 +320,12 @@ impl DynamicDatagram for Box<G> {
         ),
         autd3::driver::error::AUTDInternalError,
     > {
-        let mut tmp: Box<G> = Box::new(Null::default());
+        let mut tmp: Box<G> = Box::<Null>::default();
         std::mem::swap(&mut tmp, self);
-        let op1 = DynamicGainOp::new(tmp, mode);
-        let op2 = crate::driver::operation::NullOp::default();
-        Ok((Box::new(op1), Box::new(op2)))
+        Ok((
+            Box::new(DynamicGainOp::new(tmp, mode)),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -347,7 +348,7 @@ impl DynamicDatagram for Box<M> {
         let buf = self.calc()?;
         Ok((
             Box::new(crate::driver::operation::ModulationOp::new(buf, freq_div)),
-            Box::new(crate::driver::operation::NullOp::default()),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 

@@ -250,7 +250,7 @@ impl LinAlgBackend for ArrayFireBackend {
 
     fn copy_to_v(&self, src: &Self::VectorX, dst: &mut Self::VectorX) -> Result<(), HoloError> {
         let seqs = [Seq::new(0u32, src.elements() as u32 - 1, 1)];
-        arrayfire::assign_seq(dst, &seqs, &src);
+        arrayfire::assign_seq(dst, &seqs, src);
         Ok(())
     }
 
@@ -259,7 +259,7 @@ impl LinAlgBackend for ArrayFireBackend {
             Seq::new(0u32, src.dims()[0] as u32 - 1, 1),
             Seq::new(0u32, src.dims()[1] as u32 - 1, 1),
         ];
-        arrayfire::assign_seq(dst, &seqs, &src);
+        arrayfire::assign_seq(dst, &seqs, src);
         Ok(())
     }
 
@@ -295,7 +295,7 @@ impl LinAlgBackend for ArrayFireBackend {
         col: usize,
         v: &mut Self::VectorXc,
     ) -> Result<(), HoloError> {
-        *v = arrayfire::col(&a, col as _);
+        *v = arrayfire::col(a, col as _);
         Ok(())
     }
 
@@ -323,7 +323,7 @@ impl LinAlgBackend for ArrayFireBackend {
             return Ok(());
         }
         let seqs_a = [Seq::new(start as u32, end as u32 - 1, 1)];
-        let sub_a = index(&a, &seqs_a);
+        let sub_a = index(a, &seqs_a);
         let seqs_b = [
             Seq::new(start as u32, end as u32 - 1, 1),
             Seq::new(col as u32, col as u32, 1),
@@ -344,7 +344,7 @@ impl LinAlgBackend for ArrayFireBackend {
             return Ok(());
         }
         let seqs_a = [Seq::new(start as u32, end as u32 - 1, 1)];
-        let sub_a = index(&a, &seqs_a);
+        let sub_a = index(a, &seqs_a);
         let seqs_b = [
             Seq::new(row as u32, row as u32, 1),
             Seq::new(start as u32, end as u32 - 1, 1),
@@ -408,12 +408,12 @@ impl LinAlgBackend for ArrayFireBackend {
     }
 
     fn conj_assign_v(&self, b: &mut Self::VectorXc) -> Result<(), HoloError> {
-        *b = arrayfire::conjg(&b);
+        *b = arrayfire::conjg(b);
         Ok(())
     }
 
     fn sqrt_assign_v(&self, v: &mut Self::VectorX) -> Result<(), HoloError> {
-        *v = arrayfire::sqrt(&v);
+        *v = arrayfire::sqrt(v);
         Ok(())
     }
 

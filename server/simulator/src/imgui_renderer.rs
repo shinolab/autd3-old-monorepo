@@ -334,7 +334,7 @@ impl ImGuiRenderer {
                     ui.separator();
 
                     ui.text("Color settings");
-                    let items = vec!["Viridis", "Magma", "Inferno", "Plasma"];
+                    let items = ["Viridis", "Magma", "Inferno", "Plasma"];
                     let selected_idx = match settings.color_map_type {
                         ColorMapType::Viridis => 0,
                         ColorMapType::Magma => 1,

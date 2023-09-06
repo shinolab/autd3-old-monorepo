@@ -153,7 +153,7 @@ fn main() -> anyhow::Result<()> {
                     fs::remove_file(&settings_path).unwrap();
                 }
 
-                std::fs::create_dir_all(&settings_path.parent().unwrap())?;
+                std::fs::create_dir_all(settings_path.parent().unwrap())?;
 
                 let mut file = OpenOptions::new()
                     .create_new(true)

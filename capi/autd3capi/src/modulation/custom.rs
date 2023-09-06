@@ -47,7 +47,7 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let buf = vec![1., 1.];
+            let buf = [1., 1.];
             let m = AUTDModulationCustom(5000, buf.as_ptr(), buf.len() as _);
             let m = AUTDModulationIntoDatagram(m);
 

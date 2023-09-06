@@ -61,7 +61,7 @@ mod tests {
             let g0 = AUTDGainNull();
             let g1 = AUTDGainNull();
 
-            let gains = vec![g0, g1];
+            let gains = [g0, g1];
 
             let stm = AUTDGainSTM(
                 props,

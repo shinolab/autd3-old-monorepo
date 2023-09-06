@@ -39,9 +39,9 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
         "{}/**/*.rs",
         crate_path.as_ref().join("src").display()
     ))?
-    .fold(Ok(G::new()), |acc: Result<_>, path| {
+    .try_fold(G::new(), |acc, path| -> Result<_> {
         let path = path?;
-        Ok(acc?
+        Ok(acc
             .register_func(parse_func(&path, use_single)?)
             .register_const(parse_const(&path, use_single)?)
             .register_enum(parse_enum(&path, use_single)?)
