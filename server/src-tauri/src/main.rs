@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -160,8 +160,8 @@ async fn run_twincat_server(
         twincat_options.base.to_string(),
         "-m".to_string(),
         match twincat_options.mode {
-            autd3_core::sync_mode::SyncMode::DC => "DC".to_string(),
-            autd3_core::sync_mode::SyncMode::FreeRun => "FreeRun".to_string(),
+            autd3_driver::sync_mode::SyncMode::DC => "DC".to_string(),
+            autd3_driver::sync_mode::SyncMode::FreeRun => "FreeRun".to_string(),
         },
     ];
     if twincat_options.keep {
