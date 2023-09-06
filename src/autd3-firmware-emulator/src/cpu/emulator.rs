@@ -595,9 +595,9 @@ impl CPUEmulator {
             self.gain_stm_mode = (data[3] as u16) << 8 | data[2] as u16;
 
             let freq_div = ((data[7] as u32) << 24)
-                | ((data[5] as u32) << 16)
-                | ((data[4] as u32) << 8)
-                | data[3] as u32;
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
             self.bram_cpy(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_FREQ_DIV_0,
