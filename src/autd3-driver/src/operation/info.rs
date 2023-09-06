@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ pub enum FirmwareInfoType {
     FPGAVersionMajor = 0x03,
     FPGAVersionMinor = 0x04,
     FPGAFunctions = 0x05,
+    Clear = 0x06,
 }
 
 impl From<u8> for FirmwareInfoType {
@@ -37,6 +38,7 @@ impl From<u8> for FirmwareInfoType {
             0x03 => Self::FPGAVersionMajor,
             0x04 => Self::FPGAVersionMinor,
             0x05 => Self::FPGAFunctions,
+            0x06 => Self::Clear,
             _ => unreachable!(),
         }
     }
@@ -51,20 +53,23 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         tx[0] = TypeTag::FirmwareInfo as u8;
         match self.remains[&device.idx()] {
-            5 => {
+            6 => {
                 tx[1] = FirmwareInfoType::CPUVersionMajor as u8;
             }
-            4 => {
+            5 => {
                 tx[1] = FirmwareInfoType::CPUVersionMinor as u8;
             }
-            3 => {
+            4 => {
                 tx[1] = FirmwareInfoType::FPGAVersionMajor as u8;
             }
-            2 => {
+            3 => {
                 tx[1] = FirmwareInfoType::FPGAVersionMinor as u8;
             }
-            1 => {
+            2 => {
                 tx[1] = FirmwareInfoType::FPGAFunctions as u8;
+            }
+            1 => {
+                tx[1] = FirmwareInfoType::Clear as u8;
             }
             _ => unreachable!(),
         }
@@ -77,7 +82,7 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
     }
 
     fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 5)).collect();
+        self.remains = devices.iter().map(|device| (device.idx(), 6)).collect();
         Ok(())
     }
 
@@ -117,7 +122,7 @@ mod tests {
 
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 5));
+            .for_each(|dev| assert_eq!(op.remains(dev), 6));
 
         devices.iter().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
@@ -125,7 +130,7 @@ mod tests {
         });
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 4));
+            .for_each(|dev| assert_eq!(op.remains(dev), 5));
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
@@ -138,7 +143,7 @@ mod tests {
         });
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 3));
+            .for_each(|dev| assert_eq!(op.remains(dev), 4));
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
@@ -151,7 +156,7 @@ mod tests {
         });
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 2));
+            .for_each(|dev| assert_eq!(op.remains(dev), 3));
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
@@ -164,7 +169,7 @@ mod tests {
         });
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 1));
+            .for_each(|dev| assert_eq!(op.remains(dev), 2));
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
@@ -177,11 +182,24 @@ mod tests {
         });
         devices
             .iter()
-            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
         devices.iter().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::FPGAFunctions);
+        });
+
+        devices.iter().for_each(|dev| {
+            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            op.commit(dev);
+        });
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+        devices.iter().for_each(|dev| {
+            assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
+            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
+            assert_eq!(flag, FirmwareInfoType::Clear);
         });
     }
 }

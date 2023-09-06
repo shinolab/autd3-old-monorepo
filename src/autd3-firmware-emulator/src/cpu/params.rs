@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -70,11 +70,12 @@ pub const TAG_FOCUS_STM: u8 = 0x40;
 pub const TAG_GAIN_STM: u8 = 0x50;
 pub const TAG_FILTER: u8 = 0x60;
 
-pub const TYPE_CPU_VERSION_MAJOR: u8 = 0x01;
-pub const TYPE_CPU_VERSION_MINOR: u8 = 0x02;
-pub const TYPE_FPGA_VERSION_MAJOR: u8 = 0x03;
-pub const TYPE_FPGA_VERSION_MINOR: u8 = 0x04;
-pub const TYPE_FPGA_FUNCTIONS: u8 = 0x05;
+pub const INFO_TYPE_CPU_VERSION_MAJOR: u8 = 0x01;
+pub const INFO_TYPE_CPU_VERSION_MINOR: u8 = 0x02;
+pub const INFO_TYPE_FPGA_VERSION_MAJOR: u8 = 0x03;
+pub const INFO_TYPE_FPGA_VERSION_MINOR: u8 = 0x04;
+pub const INFO_TYPE_FPGA_FUNCTIONS: u8 = 0x05;
+pub const INFO_TYPE_CLEAR: u8 = 0x06;
 
 pub const MODULATION_FLAG_BEGIN: u8 = 1 << 0;
 pub const MODULATION_FLAG_END: u8 = 1 << 1;
