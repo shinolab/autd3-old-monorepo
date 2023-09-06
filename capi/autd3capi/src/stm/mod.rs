@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 pub mod focus;
 pub mod gain;
 
-use autd3_core::stm::STMProps;
+use autd3::driver::datagram::STMProps;
 use autd3capi_def::{common::*, STMPropsPtr};
 
 #[no_mangle]

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -72,64 +72,42 @@ impl<T: Transducer, G: Gain<T>> GainOp<T, G> {
             phantom: std::marker::PhantomData,
         }
     }
-}
 
-impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTransducer, G> {
-    fn pack(
-        &mut self,
-        device: &Device<LegacyTransducer>,
+    pub fn pack_legacy(
+        drives: &HashMap<usize, Vec<Drive>>,
+        remains: &HashMap<usize, usize>,
+        device: &Device<T>,
         tx: &mut [u8],
     ) -> Result<usize, AUTDInternalError> {
-        assert_eq!(self.remains[&device.idx()], 1);
+        assert_eq!(remains[&device.idx()], 1);
 
-        let d = &self.drives[&device.idx()];
+        let d = &drives[&device.idx()];
         assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<LegacyDrive>());
 
         tx[0] = TypeTag::Gain as u8;
         tx[1] = GainControlFlags::LEGACY.bits();
 
         unsafe {
-            let dst = std::slice::from_raw_parts_mut(
-                tx[2..].as_mut_ptr() as *mut LegacyDrive,
-                d.len(),
-            );
+            let dst =
+                std::slice::from_raw_parts_mut(tx[2..].as_mut_ptr() as *mut LegacyDrive, d.len());
             dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
         }
 
         Ok(2 + d.len() * std::mem::size_of::<LegacyDrive>())
     }
 
-    fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
-        2 + device.num_transducers() * std::mem::size_of::<LegacyDrive>()
-    }
-
-    fn init(&mut self, devices: &[&Device<LegacyTransducer>]) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(devices, GainFilter::All)?;
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
-        Ok(())
-    }
-
-    fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
-        self.remains[&device.idx()]
-    }
-
-    fn commit(&mut self, device: &Device<LegacyTransducer>) {
-        self.remains.insert(device.idx(), 0);
-    }
-}
-
-impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<AdvancedTransducer, G> {
-    fn pack(
-        &mut self,
-        device: &Device<AdvancedTransducer>,
+    pub fn pack_advanced(
+        drives: &HashMap<usize, Vec<Drive>>,
+        remains: &HashMap<usize, usize>,
+        device: &Device<T>,
         tx: &mut [u8],
     ) -> Result<usize, AUTDInternalError> {
         tx[0] = TypeTag::Gain as u8;
 
-        if self.remains[&device.idx()] == 2 {
+        if remains[&device.idx()] == 2 {
             tx[1] = GainControlFlags::NONE.bits();
 
-            let d = &self.drives[&device.idx()];
+            let d = &drives[&device.idx()];
             assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
 
             unsafe {
@@ -144,10 +122,10 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
             }
 
             Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
-        } else if self.remains[&device.idx()] == 1 {
+        } else if remains[&device.idx()] == 1 {
             tx[1] = GainControlFlags::DUTY.bits();
 
-            let d = &self.drives[&device.idx()];
+            let d = &drives[&device.idx()];
             assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>());
 
             unsafe {
@@ -167,14 +145,80 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
         }
     }
 
-    fn required_size(&self, device: &Device<AdvancedTransducer>) -> usize {
-        if self.remains(device) == 2 {
-            2 + device.num_transducers() * std::mem::size_of::<AdvancedDrivePhase>()
-        } else if self.remains(device) == 1 {
-            2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
-        } else {
-            unreachable!()
+    pub fn pack_advanced_phase(
+        drives: &HashMap<usize, Vec<Drive>>,
+        remains: &HashMap<usize, usize>,
+        device: &Device<T>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        assert_eq!(remains[&device.idx()], 1);
+
+        tx[0] = TypeTag::Gain as u8;
+
+        tx[1] = GainControlFlags::NONE.bits();
+
+        let d = &drives[&device.idx()];
+        assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
+                d.len(),
+            );
+            dst.iter_mut()
+                .zip(d.iter())
+                .zip(device.iter().map(|tr| tr.cycle()))
+                .for_each(|((d, s), c)| d.set(s, c));
         }
+
+        Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
+    }
+
+    pub fn required_size_impl(device: &Device<T>) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
+    }
+}
+
+impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTransducer, G> {
+    fn pack(
+        &mut self,
+        device: &Device<LegacyTransducer>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        Self::pack_legacy(&self.drives, &self.remains, device, tx)
+    }
+
+    fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
+        Self::required_size_impl(device)
+    }
+
+    fn init(&mut self, devices: &[&Device<LegacyTransducer>]) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(devices, GainFilter::All)?;
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device<LegacyTransducer>) {
+        self.remains
+            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    }
+}
+
+impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<AdvancedTransducer, G> {
+    fn pack(
+        &mut self,
+        device: &Device<AdvancedTransducer>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        Self::pack_advanced(&self.drives, &self.remains, device, tx)
+    }
+
+    fn required_size(&self, device: &Device<AdvancedTransducer>) -> usize {
+        Self::required_size_impl(device)
     }
 
     fn init(&mut self, devices: &[&Device<AdvancedTransducer>]) -> Result<(), AUTDInternalError> {
@@ -201,29 +245,11 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
         device: &Device<AdvancedPhaseTransducer>,
         tx: &mut [u8],
     ) -> Result<usize, AUTDInternalError> {
-        tx[0] = TypeTag::Gain as u8;
-
-        tx[1] = GainControlFlags::NONE.bits();
-
-        let d = &self.drives[&device.idx()];
-        assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
-
-        unsafe {
-            let dst = std::slice::from_raw_parts_mut(
-                tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
-                d.len(),
-            );
-            dst.iter_mut()
-                .zip(d.iter())
-                .zip(device.iter().map(|tr| tr.cycle()))
-                .for_each(|((d, s), c)| d.set(s, c));
-        }
-
-        Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
+        Self::pack_advanced_phase(&self.drives, &self.remains, device, tx)
     }
 
     fn required_size(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
-        2 + device.num_transducers() * std::mem::size_of::<AdvancedDrivePhase>()
+        Self::required_size_impl(device)
     }
 
     fn init(
@@ -259,12 +285,8 @@ impl AmplitudeOp {
     }
 }
 
-impl Operation<AdvancedPhaseTransducer> for AmplitudeOp {
-    fn pack(
-        &mut self,
-        device: &Device<AdvancedPhaseTransducer>,
-        tx: &mut [u8],
-    ) -> Result<usize, AUTDInternalError> {
+impl<T: Transducer> Operation<T> for AmplitudeOp {
+    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         tx[0] = TypeTag::Gain as u8;
 
         tx[1] = (GainControlFlags::NONE | GainControlFlags::DUTY).bits();
@@ -294,23 +316,20 @@ impl Operation<AdvancedPhaseTransducer> for AmplitudeOp {
         Ok(2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>())
     }
 
-    fn required_size(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+    fn required_size(&self, device: &Device<T>) -> usize {
         2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
     }
 
-    fn init(
-        &mut self,
-        devices: &[&Device<AdvancedPhaseTransducer>],
-    ) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
         self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
-    fn remains(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
+    fn remains(&self, device: &Device<T>) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<AdvancedPhaseTransducer>) {
+    fn commit(&mut self, device: &Device<T>) {
         self.remains
             .insert(device.idx(), self.remains[&device.idx()] - 1);
     }

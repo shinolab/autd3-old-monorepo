@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,36 +13,32 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3_core::stm::STMProps;
-use autd3capi_def::{common::*, DatagramBodyPtr, GainPtr, GainSTMMode, STMPropsPtr};
+use autd3::driver::datagram::STMProps;
+use autd3capi_def::{common::*, DatagramPtr, GainPtr, GainSTMMode, STMPropsPtr};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainSTMWithMode(
+pub unsafe extern "C" fn AUTDGainSTM(
     props: STMPropsPtr,
+    gains: *const GainPtr,
+    size: u32,
     mode: GainSTMMode,
-) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(
+) -> DatagramPtr {
+    DatagramPtr::new(
         GainSTM::<DynamicTransducer, Box<dyn Gain<DynamicTransducer>>>::with_props_mode(
             *Box::from_raw(props.0 as *mut STMProps),
             mode.into(),
+        )
+        .add_gains_from_iter(
+            (0..size as usize).map(|i| *Box::from_raw(gains.add(i).read().0 as *mut Box<G>)),
         ),
     )
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainSTM(props: STMPropsPtr) -> DatagramBodyPtr {
-    AUTDGainSTMWithMode(props, GainSTMMode::PhaseDutyFull)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainSTMAddGain(
-    stm: DatagramBodyPtr,
-    gain: GainPtr,
-) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(
+pub unsafe extern "C" fn AUTDGainSTMAddGain(stm: DatagramPtr, gain: GainPtr) -> DatagramPtr {
+    DatagramPtr::new(
         Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer, _>>)
             .add_gain(*Box::from_raw(gain.0 as *mut Box<G>)),
     )
@@ -50,10 +46,10 @@ pub unsafe extern "C" fn AUTDGainSTMAddGain(
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
-    use crate::{gain::null::AUTDGainNull, stm::*, tests::*, *};
+    use crate::{gain::null::AUTDGainNull, stm::*, tests::*, TransMode, *};
+    use autd3capi_def::GainSTMMode;
 
     #[test]
     fn test_gain_stm() {
@@ -65,17 +61,22 @@ mod tests {
             let g0 = AUTDGainNull();
             let g1 = AUTDGainNull();
 
-            let stm = AUTDGainSTM(props);
-            let stm = AUTDGainSTMAddGain(stm, g0);
-            let stm = AUTDGainSTMAddGain(stm, g1);
+            let gains = vec![g0, g1];
+
+            let stm = AUTDGainSTM(
+                props,
+                gains.as_ptr(),
+                gains.len() as u32,
+                GainSTMMode::PhaseDutyFull,
+            );
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
                 AUTDSend(
                     cnt,
                     TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
                     stm,
+                    DatagramPtr(std::ptr::null()),
                     -1,
                     err.as_mut_ptr(),
                 ),
