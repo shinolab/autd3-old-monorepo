@@ -159,11 +159,15 @@ impl<
                             [(dev.idx(), filter)].into();
                         filters.insert(key.clone(), filter);
                     }
-                    filters.get_mut(&key).unwrap().entry(dev.idx()).or_insert_with(|| {
-                        let mut filter = BitVec::<usize, Lsb0>::new();
-                        filter.resize(dev.num_transducers(), false);
-                        filter
-                    });
+                    filters
+                        .get_mut(&key)
+                        .unwrap()
+                        .entry(dev.idx())
+                        .or_insert_with(|| {
+                            let mut filter = BitVec::<usize, Lsb0>::new();
+                            filter.resize(dev.num_transducers(), false);
+                            filter
+                        });
                     filters
                         .get_mut(&key)
                         .unwrap()
