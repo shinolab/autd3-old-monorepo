@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ pub struct FPGAEmulator {
 impl FPGAEmulator {
     pub(crate) fn new(num_transducers: usize) -> Self {
         Self {
-            controller_bram: vec![0x0000; 1024],
+            controller_bram: vec![0x0000; 1280],
             modulator_bram: vec![0x0000; 32768],
             normal_op_bram: vec![0x0000; 512],
             stm_op_bram: vec![0x0000; 524288],
