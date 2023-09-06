@@ -15,6 +15,7 @@ use autd3capi_def::{common::*, GainPtr};
 
 #[no_mangle]
 #[must_use]
+#[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDGainGroup(
     map_ptr: *const *const i32,
     map_len: u32,
@@ -85,9 +86,9 @@ mod tests {
             let num_transducer = AUTDDeviceNumTransducers(dev1);
             let map1 = vec![1; num_transducer as _];
 
-            let map = vec![map0.as_ptr(), map1.as_ptr()];
-            let keys = vec![0, 1];
-            let values = vec![AUTDGainNull(), AUTDGainNull()];
+            let map = [map0.as_ptr(), map1.as_ptr()];
+            let keys = [0, 1];
+            let values = [AUTDGainNull(), AUTDGainNull()];
 
             let g = AUTDGainGroup(
                 map.as_ptr(),

@@ -263,7 +263,7 @@ impl SliceViewer {
                 usage: MemoryUsage::Upload,
                 ..Default::default()
             },
-            indices.into_iter(),
+            indices,
         )
         .unwrap()
     }

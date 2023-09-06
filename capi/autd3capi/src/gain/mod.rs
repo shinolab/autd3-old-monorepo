@@ -95,8 +95,8 @@ mod tests {
                 vec![Drive { amp: 0., phase: 0. }; num_trans as _]
             };
 
-            let devices = vec![dev0, dev1];
-            let drives = vec![drives0.as_mut_ptr(), drives1.as_mut_ptr()];
+            let devices = [dev0, dev1];
+            let drives = [drives0.as_mut_ptr(), drives1.as_mut_ptr()];
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
                 AUTDGainCalc(g, devices.as_ptr(), drives.as_ptr(), 2, err.as_mut_ptr()),

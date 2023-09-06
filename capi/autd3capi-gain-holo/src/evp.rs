@@ -65,7 +65,7 @@ mod tests {
             let backend = AUTDNalgebraBackend();
 
             let size = 2;
-            let points = vec![10., 20., 30., 40., 50., 60.];
+            let points = [10., 20., 30., 40., 50., 60.];
             let amps = vec![1.; size];
 
             let holo = AUTDGainHoloEVP(backend, points.as_ptr(), amps.as_ptr(), size as _);

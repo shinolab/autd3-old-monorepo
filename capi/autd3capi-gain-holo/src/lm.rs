@@ -95,7 +95,7 @@ mod tests {
             let backend = AUTDNalgebraBackend();
 
             let size = 2;
-            let points = vec![10., 20., 30., 40., 50., 60.];
+            let points = [10., 20., 30., 40., 50., 60.];
             let amps = vec![1.; size];
 
             let holo = AUTDGainHoloLM(backend, points.as_ptr(), amps.as_ptr(), size as _);
@@ -112,7 +112,7 @@ mod tests {
             let holo = AUTDGainHoloLMWithEps2(holo, 1e-3);
             let holo = AUTDGainHoloLMWithTau(holo, 1e-3);
             let holo = AUTDGainHoloLMWithKMax(holo, 5);
-            let initial = vec![0.; 1];
+            let initial = [0.; 1];
             let holo = AUTDGainHoloLMWithInitial(holo, initial.as_ptr(), initial.len() as _);
 
             let holo = AUTDGainIntoDatagram(holo);

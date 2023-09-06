@@ -349,7 +349,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
 
     #[allow(clippy::too_many_arguments)]
     pub fn pack_advanced(
-        drives: &Vec<HashMap<usize, Vec<Drive>>>,
+        drives: &[HashMap<usize, Vec<Drive>>],
         remains: &HashMap<usize, usize>,
         sent_map: &mut HashMap<usize, usize>,
         mode: GainSTMMode,
@@ -469,7 +469,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
 
     #[allow(clippy::too_many_arguments)]
     pub fn pack_advanced_phase(
-        drives: &Vec<HashMap<usize, Vec<Drive>>>,
+        drives: &[HashMap<usize, Vec<Drive>>],
         remains: &HashMap<usize, usize>,
         sent_map: &mut HashMap<usize, usize>,
         _mode: GainSTMMode,
