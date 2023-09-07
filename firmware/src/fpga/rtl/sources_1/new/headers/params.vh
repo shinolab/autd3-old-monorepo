@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/09/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -59,13 +59,13 @@ localparam bit [13:0] ADDR_DELAY_BASE = 14'h200;
 localparam bit [13:0] ADDR_FILTER_DUTY_BASE = 14'h300;
 localparam bit [13:0] ADDR_FILTER_PHASE_BASE = 14'h400;
 
-localparam int CTL_FLAG_LEGACY_MODE_BIT = 0;
-localparam int CTL_FLAG_USE_STM_FINISH_IDX_BIT = 2;
-localparam int CTL_FLAG_USE_STM_START_IDX_BIT = 3;
-localparam int CTL_FLAG_FORCE_FAN_BIT = 4;
-localparam int CTL_FLAG_STM_GAIN_MODE_BIT = 6;
-localparam int CTL_FLAG_SYNC_BIT = 8;
+localparam int CTL_FLAG_FORCE_FAN_BIT = 0;
+localparam int CTL_FLAG_LEGACY_MODE_BIT = 8;
 localparam int CTL_FLAG_OP_MODE_BIT = 9;
+localparam int CTL_FLAG_STM_GAIN_MODE_BIT = 10;
+localparam int CTL_FLAG_USE_STM_FINISH_IDX_BIT = 11;
+localparam int CTL_FLAG_USE_STM_START_IDX_BIT = 12;
+localparam int CTL_FLAG_SYNC_BIT = 15;
 
 localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
 localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;
