@@ -548,9 +548,14 @@ static void clear(void) {
   _mod_cycle = 2;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
   bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_4k, sizeof(uint32_t) >> 1);
+  change_mod_segment(0);
   bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
+
+  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_DELAY_BASE, 0x0000, TRANS_NUM);
+  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_DUTY_BASE, 0x0000, TRANS_NUM);
+  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_PHASE_BASE, 0x0000, TRANS_NUM);
 }
 
 inline static uint16_t get_cpu_version(void) { return CPU_VERSION_MAJOR; }
