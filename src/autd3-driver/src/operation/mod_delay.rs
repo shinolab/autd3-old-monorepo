@@ -4,113 +4,134 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use super::Operation;
-use crate::{CPUControlFlags, DriverError, TxDatagram};
+use std::collections::HashMap;
+
+use crate::{
+    error::AUTDInternalError,
+    geometry::{Device, Transducer},
+    operation::{Operation, TypeTag},
+};
 
 #[derive(Default)]
-pub struct ModDelay {
-    sent: bool,
-    delays: Vec<u16>,
+pub struct ModDelayOp {
+    remains: HashMap<usize, usize>,
 }
 
-impl ModDelay {
-    pub const fn new(delays: Vec<u16>) -> Self {
-        Self {
-            sent: false,
-            delays,
+impl<T: Transducer> Operation<T> for ModDelayOp {
+    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
+
+        assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
+
+        tx[0] = TypeTag::ModDelay as u8;
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut u16,
+                device.num_transducers(),
+            );
+            dst.iter_mut()
+                .zip(device.iter())
+                .for_each(|(d, s)| *d = s.mod_delay());
         }
+
+        Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
     }
-}
 
-impl Operation for ModDelay {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
-        if self.is_finished() {
-            return Ok(());
-        }
+    fn required_size(&self, device: &Device<T>) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
+    }
 
-        tx.header_mut()
-            .cpu_flag
-            .set(CPUControlFlags::WRITE_BODY, true);
-        tx.header_mut()
-            .cpu_flag
-            .set(CPUControlFlags::MOD_DELAY, true);
-        tx.num_bodies = tx.num_devices();
-
-        if self.delays.len() != tx.num_transducers() {
-            return Err(DriverError::NumberOfTransducerMismatch {
-                a: tx.num_transducers(),
-                b: self.delays.len(),
-            });
-        }
-
-        tx.body_raw_mut().clone_from_slice(&self.delays);
-
-        self.sent = true;
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
-    fn init(&mut self) {
-        self.sent = false;
+    fn remains(&self, device: &Device<T>) -> usize {
+        self.remains[&device.idx()]
     }
 
-    fn is_finished(&self) -> bool {
-        self.sent
+    fn commit(&mut self, device: &Device<T>) {
+        self.remains.insert(device.idx(), 0);
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use rand::prelude::*;
 
     use super::*;
+    use crate::geometry::{device::tests::create_device, LegacyTransducer};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn mod_delay() {
-        let mut tx = TxDatagram::new(&[
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-        ]);
-
-        let mut rng = rand::thread_rng();
-
-        let delays = (0..NUM_TRANS_IN_UNIT * 10)
-            .map(|_| rng.gen_range(0x0000..0xFFFFu16))
+    fn mod_delay_op() {
+        let mut devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
             .collect::<Vec<_>>();
 
-        let mut op = ModDelay::new(delays.clone());
-        op.init();
-        assert!(!op.is_finished());
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
-        op.pack(&mut tx).unwrap();
-        assert!(op.is_finished());
-        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
-        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_DELAY));
-        tx.body_raw_mut()
+        let mut rng = rand::thread_rng();
+        devices.iter_mut().for_each(|dev| {
+            dev.iter_mut().for_each(|tr| {
+                tr.set_mod_delay(rng.gen_range(0x0000..0xFFFFu16));
+            })
+        });
+
+        let mut op = ModDelayOp::default();
+
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
+            )
+        });
+
+        devices
             .iter()
-            .zip(delays.iter())
-            .for_each(|(d, delay)| {
-                assert_eq!(d, delay);
-            });
-        assert_eq!(tx.num_bodies, 10);
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        op.init();
-        assert!(!op.is_finished());
+        devices.iter().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::ModDelay as u8
+            );
+            tx.chunks(2)
+                .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
+                .skip(1)
+                .zip(dev.iter())
+                .for_each(|(d, tr)| {
+                    let delay = tr.mod_delay();
+                    assert_eq!(d[0], (delay & 0xFF) as u8);
+                    assert_eq!(d[1], (delay >> 8) as u8);
+                })
+        });
     }
 }

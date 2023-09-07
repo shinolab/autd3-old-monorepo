@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use autd3_core::{link::Link, timer_strategy::TimerStrategy, TxDatagram};
+use autd3_driver::{cpu::TxDatagram, link::Link, timer_strategy::TimerStrategy};
 use autd3_link_soem::{SyncMode, SOEM};
 use autd3_protobuf::*;
 
@@ -98,7 +98,7 @@ impl ecat_server::Ecat for SOEMServer {
     ) -> Result<Response<SendResponse>, Status> {
         let tx = TxDatagram::from_msg(&request.into_inner());
         Ok(Response::new(SendResponse {
-            success: Link::<autd3_core::geometry::LegacyTransducer>::send(
+            success: Link::<autd3_driver::geometry::LegacyTransducer>::send(
                 &mut *self.soem.write().unwrap(),
                 &tx,
             )
@@ -107,8 +107,8 @@ impl ecat_server::Ecat for SOEMServer {
     }
 
     async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
-        let mut rx = autd3_core::RxDatagram::new(self.num_dev);
-        Link::<autd3_core::geometry::LegacyTransducer>::receive(
+        let mut rx = autd3_driver::cpu::RxDatagram::new(self.num_dev);
+        Link::<autd3_driver::geometry::LegacyTransducer>::receive(
             &mut *self.soem.write().unwrap(),
             &mut rx,
         )
@@ -125,8 +125,9 @@ impl ecat_server::Ecat for SOEMServer {
 impl Drop for SOEMServer {
     fn drop(&mut self) {
         spdlog::info!("Shutting down server...");
-        let _ =
-            Link::<autd3_core::geometry::LegacyTransducer>::close(&mut *self.soem.write().unwrap());
+        let _ = Link::<autd3_driver::geometry::LegacyTransducer>::close(
+            &mut *self.soem.write().unwrap(),
+        );
         spdlog::info!("Shutting down server...done");
         spdlog::default_logger().flush();
     }
@@ -211,7 +212,7 @@ fn main_() -> anyhow::Result<()> {
                 spdlog::info!("Starting SOEM server...");
 
                 let mut soem = f();
-                let num_dev = soem.open_impl(&[])? as usize;
+                let num_dev = soem.open_impl(None)? as usize;
 
                 spdlog::info!("{} AUTDs found", num_dev);
 

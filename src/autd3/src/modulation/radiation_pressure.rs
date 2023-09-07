@@ -4,38 +4,38 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_derive::Modulation;
+use autd3_driver::{datagram::Modulation, defined::float, error::AUTDInternalError};
 
 /// Modulation for modulating radiation pressure
 #[derive(Modulation)]
-pub struct RadiationPressureImpl<M: Modulation> {
+pub struct RadiationPressure<M: Modulation> {
     m: M,
     freq_div: u32,
 }
 
-pub trait RadiationPressure<M: Modulation> {
+pub trait IntoRadiationPressure<M: Modulation> {
     /// Apply modulation to radiation pressure instead of amplitude
-    fn with_radiation_pressure(self) -> RadiationPressureImpl<M>;
+    fn with_radiation_pressure(self) -> RadiationPressure<M>;
 }
 
-impl<M: Modulation> RadiationPressure<M> for M {
-    fn with_radiation_pressure(self) -> RadiationPressureImpl<M> {
-        RadiationPressureImpl {
+impl<M: Modulation> IntoRadiationPressure<M> for M {
+    fn with_radiation_pressure(self) -> RadiationPressure<M> {
+        RadiationPressure {
             freq_div: self.sampling_frequency_division(),
             m: self,
         }
     }
 }
 
-impl<M: Modulation> Modulation for RadiationPressureImpl<M> {
+impl<M: Modulation> Modulation for RadiationPressure<M> {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         Ok(self.m.calc()?.iter().map(|v| v.sqrt()).collect())
     }

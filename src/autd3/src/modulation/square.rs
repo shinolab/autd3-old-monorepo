@@ -4,19 +4,19 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    modulation::{Modulation, ModulationProperty},
-};
 use autd3_derive::Modulation;
+use autd3_driver::{
+    datagram::{Modulation, ModulationProperty},
+    defined::float,
+    error::AUTDInternalError,
+};
 
 use num::integer::gcd;
 

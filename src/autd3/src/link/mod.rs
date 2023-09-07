@@ -4,32 +4,32 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-pub mod bundle;
-pub mod debug;
-pub mod log;
+mod bundle;
+mod debug;
+mod log;
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
 };
 pub use bundle::Bundle;
 pub use debug::Debug;
-pub use log::Log;
+pub use log::{IntoLog, Log};
 
 /// Link to do nothing
 pub struct NullLink {}
 
 impl<T: Transducer> Link<T> for NullLink {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         Ok(())
     }
 

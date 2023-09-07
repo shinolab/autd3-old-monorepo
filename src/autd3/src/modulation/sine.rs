@@ -4,20 +4,19 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    modulation::{Modulation, ModulationProperty},
-    PI,
-};
 use autd3_derive::Modulation;
+use autd3_driver::{
+    datagram::{Modulation, ModulationProperty},
+    defined::{float, PI},
+    error::AUTDInternalError,
+};
 
 use num::integer::gcd;
 
@@ -220,7 +219,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -232,7 +231,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -244,7 +243,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -256,7 +255,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.phase, PI / 4.0);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));

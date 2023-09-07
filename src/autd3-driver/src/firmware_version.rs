@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/08/2023
+ * Last Modified: 02/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,12 +13,14 @@
 
 use std::fmt;
 
-use crate::{VERSION_NUM_MAJOR, VERSION_NUM_MINOR};
+pub const LATEST_VERSION_NUM_MAJOR: u8 = 0x8A;
+pub const LATEST_VERSION_NUM_MINOR: u8 = 0x00;
 
 const ENABLED_STM_BIT: u8 = 1 << 0;
 const ENABLED_MODULATOR_BIT: u8 = 1 << 1;
 const ENABLED_SILENCER_BIT: u8 = 1 << 2;
 const ENABLED_MOD_DELAY_BIT: u8 = 1 << 3;
+const ENABLED_FILTER_BIT: u8 = 1 << 4;
 const ENABLED_EMULATOR_BIT: u8 = 1 << 7;
 
 pub struct FirmwareInfo {
@@ -31,6 +33,7 @@ pub struct FirmwareInfo {
 }
 
 impl FirmwareInfo {
+    #[doc(hidden)]
     pub const fn new(
         idx: usize,
         cpu_version_number_major: u8,
@@ -76,6 +79,10 @@ impl FirmwareInfo {
         (self.fpga_function_bits & ENABLED_MOD_DELAY_BIT) == ENABLED_MOD_DELAY_BIT
     }
 
+    pub const fn filter_enabled(&self) -> bool {
+        (self.fpga_function_bits & ENABLED_FILTER_BIT) == ENABLED_FILTER_BIT
+    }
+
     pub const fn is_emulator(&self) -> bool {
         (self.fpga_function_bits & ENABLED_EMULATOR_BIT) == ENABLED_EMULATOR_BIT
     }
@@ -90,24 +97,17 @@ impl FirmwareInfo {
                 version_number_major - 0x80,
                 version_number_minor
             ),
+            0x8A..=0x8A => format!(
+                "v3.{}.{}",
+                version_number_major - 0x8A,
+                version_number_minor
+            ),
             _ => format!("unknown ({version_number_major})"),
         }
     }
 
-    pub const fn is_valid(&self) -> bool {
-        self.cpu_version_number_major == self.fpga_version_number_major
-            && self.cpu_version_number_minor == self.fpga_version_number_minor
-    }
-
-    pub const fn is_supported(&self) -> bool {
-        self.cpu_version_number_major == VERSION_NUM_MAJOR
-            && self.fpga_version_number_major == VERSION_NUM_MAJOR
-            && self.cpu_version_number_minor == VERSION_NUM_MINOR
-            && self.fpga_version_number_minor == VERSION_NUM_MINOR
-    }
-
     pub fn latest_version() -> String {
-        Self::firmware_version_map(VERSION_NUM_MAJOR, VERSION_NUM_MINOR)
+        Self::firmware_version_map(LATEST_VERSION_NUM_MAJOR, LATEST_VERSION_NUM_MINOR)
     }
 
     pub const fn cpu_version_number_major(&self) -> u8 {
@@ -135,14 +135,10 @@ impl fmt::Display for FirmwareInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            r"{}: CPU = {}, FPGA = {} (STM = {}, Modulator = {}, Silencer = {}, ModDelay = {}){}",
+            r"{}: CPU = {}, FPGA = {} {}",
             self.idx,
             self.cpu_version(),
             self.fpga_version(),
-            self.stm_enabled(),
-            self.modulator_enabled(),
-            self.silencer_enabled(),
-            self.modulation_delay_enabled(),
             if self.is_emulator() {
                 " [Emulator]"
             } else {
@@ -291,7 +287,11 @@ mod tests {
         assert_eq!("v2.9.0", info.fpga_version());
 
         let info = FirmwareInfo::new(0, 138, 0, 138, 0, 0);
-        assert_eq!("unknown (138)", info.cpu_version());
-        assert_eq!("unknown (138)", info.fpga_version());
+        assert_eq!("v3.0.0", info.cpu_version());
+        assert_eq!("v3.0.0", info.fpga_version());
+
+        let info = FirmwareInfo::new(0, 139, 0, 139, 0, 0);
+        assert_eq!("unknown (139)", info.cpu_version());
+        assert_eq!("unknown (139)", info.fpga_version());
     }
 }

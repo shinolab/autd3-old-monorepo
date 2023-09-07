@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,12 +39,12 @@ pub enum GainSTMMode {
     PhaseHalf = 2,
 }
 
-impl From<GainSTMMode> for common::autd3::prelude::Mode {
+impl From<GainSTMMode> for common::autd3::prelude::GainSTMMode {
     fn from(mode: GainSTMMode) -> Self {
         match mode {
-            GainSTMMode::PhaseDutyFull => common::autd3::prelude::Mode::PhaseDutyFull,
-            GainSTMMode::PhaseFull => common::autd3::prelude::Mode::PhaseFull,
-            GainSTMMode::PhaseHalf => common::autd3::prelude::Mode::PhaseHalf,
+            GainSTMMode::PhaseDutyFull => common::autd3::prelude::GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseFull => common::autd3::prelude::GainSTMMode::PhaseFull,
+            GainSTMMode::PhaseHalf => common::autd3::prelude::GainSTMMode::PhaseHalf,
         }
     }
 }
@@ -56,12 +56,12 @@ pub enum TransMode {
     AdvancedPhase = 2,
 }
 
-impl From<TransMode> for common::dynamic_transducer::TransMode {
+impl From<TransMode> for common::TransMode {
     fn from(value: TransMode) -> Self {
         match value {
-            TransMode::Legacy => common::dynamic_transducer::TransMode::Legacy,
-            TransMode::Advanced => common::dynamic_transducer::TransMode::Advanced,
-            TransMode::AdvancedPhase => common::dynamic_transducer::TransMode::AdvancedPhase,
+            TransMode::Legacy => common::TransMode::Legacy,
+            TransMode::Advanced => common::TransMode::Advanced,
+            TransMode::AdvancedPhase => common::TransMode::AdvancedPhase,
         }
     }
 }
@@ -130,6 +130,10 @@ pub struct GeometryPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
+pub struct DevicePtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
 pub struct LinkPtr(pub ConstPtr);
 
 impl LinkPtr {
@@ -148,20 +152,9 @@ macro_rules! take_link {
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct DatagramBodyPtr(pub ConstPtr);
+pub struct DatagramPtr(pub ConstPtr);
 
-impl DatagramBodyPtr {
-    pub fn new<T: DynamicDatagram>(d: T) -> Self {
-        let d: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(d));
-        Self(Box::into_raw(d) as _)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C)]
-pub struct DatagramHeaderPtr(pub ConstPtr);
-
-impl DatagramHeaderPtr {
+impl DatagramPtr {
     pub fn new<T: DynamicDatagram>(d: T) -> Self {
         let d: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(d));
         Self(Box::into_raw(d) as _)

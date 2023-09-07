@@ -4,26 +4,25 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
 };
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    gain::{Gain, GainFilter},
-    geometry::{Geometry, Transducer, Vector3},
-    Drive,
-};
 use autd3_derive::Gain;
+use autd3_driver::{
+    datagram::{Gain, GainFilter},
+    defined::{float, Drive},
+    error::AUTDInternalError,
+    geometry::{Device, Transducer, Vector3},
+};
 
 /// Gain to produce multiple foci with GS-PAT algorithm
 ///
@@ -63,12 +62,12 @@ impl<B: LinAlgBackend + 'static> GSPAT<B> {
 impl<B: LinAlgBackend, T: Transducer> Gain<T> for GSPAT<B> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
             .backend
-            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+            .generate_propagation_matrix(devices, &self.foci, &filter)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
@@ -130,7 +129,7 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for GSPAT<B> {
         )?;
 
         generate_result(
-            geometry,
+            devices,
             self.backend.to_host_cv(q)?,
             &self.constraint,
             filter,

@@ -4,37 +4,37 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_derive::Modulation;
+use autd3_driver::{datagram::Modulation, defined::float, error::AUTDInternalError};
 
 use std::ops::{Deref, DerefMut};
 
 /// Modulation to cache the result of calculation
 #[derive(Modulation)]
-pub struct CacheImpl {
+pub struct Cache {
     cache: Vec<float>,
     freq_div: u32,
 }
 
-pub trait Cache<M: Modulation> {
+pub trait IntoCache<M: Modulation> {
     /// Cache the result of calculation
-    fn with_cache(self) -> Result<CacheImpl, AUTDInternalError>;
+    fn with_cache(self) -> Result<Cache, AUTDInternalError>;
 }
 
-impl<M: Modulation> Cache<M> for M {
-    fn with_cache(self) -> Result<CacheImpl, AUTDInternalError> {
-        CacheImpl::new(self)
+impl<M: Modulation> IntoCache<M> for M {
+    fn with_cache(self) -> Result<Cache, AUTDInternalError> {
+        Cache::new(self)
     }
 }
 
-impl Clone for CacheImpl {
+impl Clone for Cache {
     fn clone(&self) -> Self {
         Self {
             cache: self.cache.clone(),
@@ -43,7 +43,7 @@ impl Clone for CacheImpl {
     }
 }
 
-impl CacheImpl {
+impl Cache {
     /// constructor
     pub fn new<M: Modulation>(modulation: M) -> Result<Self, AUTDInternalError> {
         let freq_div = modulation.sampling_frequency_division();
@@ -64,13 +64,13 @@ impl CacheImpl {
     }
 }
 
-impl Modulation for CacheImpl {
+impl Modulation for Cache {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         Ok(self.cache.clone())
     }
 }
 
-impl Deref for CacheImpl {
+impl Deref for Cache {
     type Target = [float];
 
     fn deref(&self) -> &Self::Target {
@@ -78,7 +78,7 @@ impl Deref for CacheImpl {
     }
 }
 
-impl DerefMut for CacheImpl {
+impl DerefMut for Cache {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.cache
     }
@@ -86,7 +86,7 @@ impl DerefMut for CacheImpl {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::Static;
+    use crate::modulation::Static;
 
     use super::*;
 

@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 use crate::CallbackPtr;
 use autd3capi_def::{
     common::{
-        autd3::link::{log::LogImpl, Log},
+        autd3::link::{IntoLog, Log},
         *,
     },
     take_link, Level, LinkPtr,
@@ -36,7 +36,7 @@ pub unsafe extern "C" fn AUTDLinkLog(link: LinkPtr) -> LinkPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkLogWithLogLevel(log: LinkPtr, level: Level) -> LinkPtr {
-    LinkPtr::new(take_link!(log, LogImpl<DynamicTransducer, Box<L>>).with_log_level(level.into()))
+    LinkPtr::new(take_link!(log, Log<DynamicTransducer, Box<L>>).with_log_level(level.into()))
 }
 
 #[no_mangle]
@@ -66,7 +66,7 @@ pub unsafe extern "C" fn AUTDLinkLogWithLogFunc(
     };
 
     LinkPtr::new(
-        take_link!(log, LogImpl<DynamicTransducer, Box<L>>)
+        take_link!(log, Log<DynamicTransducer, Box<L>>)
             .with_logger(get_logger_with_custom_func(out_func, flush_func)),
     )
 }

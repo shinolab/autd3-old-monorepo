@@ -334,15 +334,14 @@ namespace TwinCATAUTDServer
             task1.ConsumeXml(doc.OuterXml);
 
             var task1Out = sysManager.LookupTreeItem("TIRT^Task 1^Outputs");
-            // make global header
-            for (var i = 0; i < HeadSize; i++)
-            {
-                var name = $"header[{i}]";
-                task1Out.CreateChild(name, -1, null, "WORD");
-            }
             // make gain body
             for (var id = 0; id < autds.Count; id++)
             {
+                for (var i = 0; i < HeadSize; i++)
+                {
+                    var name = $"header[{id}][{i}]";
+                    task1Out.CreateChild(name, -1, null, "WORD");
+                }
                 for (var i = 0; i < BodySize; i++)
                 {
                     var name = $"gbody[{id}][{i}]";
@@ -360,14 +359,20 @@ namespace TwinCATAUTDServer
             {
                 for (var i = 0; i < HeadSize; i++)
                 {
-                    var source = $"TIRT^Task 1^Outputs^header[{i}]";
-                    var destination = $"TIID^EtherCAT Master^Box {id + 1} (AUTD)^RxPdo1^data[{i}]";
+                    var source = $"TIRT^Task 1^Outputs^header[{id}][{i}]";
+                    var destination = $"TIID^EtherCAT Master^Box {id + 1} (AUTD)^RxPdo0^data[{i}]";
                     sysManager.LinkVariables(source, destination);
                 }
-                for (var i = 0; i < BodySize; i++)
+                for (var i = 0; i < BodySize - HeadSize; i++)
                 {
                     var source = $"TIRT^Task 1^Outputs^gbody[{id}][{i}]";
-                    var destination = $"TIID^EtherCAT Master^Box {id + 1} (AUTD)^RxPdo0^data[{i}]";
+                    var destination = $"TIID^EtherCAT Master^Box {id + 1} (AUTD)^RxPdo0^data[{HeadSize + i}]";
+                    sysManager.LinkVariables(source, destination);
+                }
+                for (var i = 0; i < HeadSize; i++)
+                {
+                    var source = $"TIRT^Task 1^Outputs^gbody[{id}][{BodySize - HeadSize + i}]";
+                    var destination = $"TIID^EtherCAT Master^Box {id + 1} (AUTD)^RxPdo1^data[{i}]";
                     sysManager.LinkVariables(source, destination);
                 }
                 {

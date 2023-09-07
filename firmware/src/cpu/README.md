@@ -1,6 +1,6 @@
 # AUTD3-CPU
 
-Version: 2.9.0
+Version: 3.0.0
 
 # CAUTION
 

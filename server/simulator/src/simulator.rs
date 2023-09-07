@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
     net::ToSocketAddrs,
     path::{Path, PathBuf},
     sync::{Arc, RwLock},
-};
+}; 
 
 use crate::{
     common::transform::{to_gl_pos, to_gl_rot},
@@ -32,7 +32,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3_core::{geometry::Transducer, TxDatagram, FPGA_CLK_FREQ};
+use autd3::driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
@@ -60,7 +60,7 @@ enum Signal {
 }
 
 struct SimulatorServer {
-    rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
+    rx_buf: Arc<RwLock<autd3::driver::cpu::RxDatagram>>,
     sender: Sender<Signal>,
 }
 
@@ -90,7 +90,7 @@ impl simulator_server::Simulator for SimulatorServer {
     async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
         let rx = self.rx_buf.read().unwrap();
         Ok(Response::new(RxMessage {
-            data: rx.iter().flat_map(|c| [c.ack, c.msg_id]).collect(),
+            data: rx.iter().flat_map(|c| [c.data, c.ack]).collect(),
         }))
     }
 
@@ -189,7 +189,7 @@ impl Simulator {
         let (tx_shutdown, rx_shutdown) = oneshot::channel::<()>();
         let port = self.port.unwrap_or(self.settings.port);
 
-        let rx_buf = Arc::new(RwLock::new(autd3_core::RxDatagram::new(0)));
+        let rx_buf = Arc::new(RwLock::new(autd3::driver::cpu::RxDatagram::new(0)));
 
         let server_th = std::thread::spawn({
             let rx_buf = rx_buf.clone();
@@ -225,7 +225,7 @@ impl Simulator {
     fn run_simulator(
         &mut self,
         server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
-        rx_buf: Arc<RwLock<autd3_core::RxDatagram>>,
+        rx_buf: Arc<RwLock<autd3::driver::cpu::RxDatagram>>,
         receiver: Receiver<Signal>,
         shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> i32 {
@@ -260,9 +260,9 @@ impl Simulator {
             cpus.iter_mut().for_each(CPUEmulator::update);
             if cpus.iter().any(CPUEmulator::should_update) {
                 rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                    autd3_core::RxMessage {
+                    autd3::driver::cpu::RxMessage {
                         ack: c.ack(),
-                        msg_id: c.msg_id(),
+                        data: c.rx_data(),
                     }
                 }));
             }
@@ -272,9 +272,9 @@ impl Simulator {
                     sources.clear();
                     cpus.clear();
 
-                    let geometry = autd3_core::geometry::Geometry::<_>::from_msg(&geometry);
-                    (0..geometry.num_devices()).for_each(|dev| {
-                        geometry.transducers_of(dev).for_each(|tr| {
+                    let geometry = autd3::geometry::Geometry::<_>::from_msg(&geometry);
+                    geometry.iter().for_each(|dev| {
+                        dev.iter().for_each(|tr| {
                             let p = tr.position();
                             let r = tr.rotation();
                             sources.add(
@@ -286,29 +286,31 @@ impl Simulator {
                         });
                     });
 
-                    cpus = (0..geometry.num_devices())
-                        .map(|i| CPUEmulator::new(i, geometry.device_map()[i]))
+                    cpus = geometry
+                        .iter()
+                        .map(|dev| CPUEmulator::new(dev.idx(), dev.num_transducers()))
                         .collect();
 
                     cpus.iter_mut().for_each(|cpu| {
-                        let origin = geometry.transducers_of(cpu.id()).next().unwrap().position();
-                        let local_position = geometry
-                            .transducers_of(cpu.id())
+                        let origin = geometry[cpu.idx()][0].position();
+                        let local_position = geometry[cpu.idx()]
+                            .iter()
                             .map(|tr| tr.position() - origin)
                             .collect();
                         cpu.fpga_mut().configure_local_trans_pos(local_position);
                     });
 
                     body_pointer = [0usize]
-                        .iter()
-                        .chain(geometry.device_map().iter())
+                        .into_iter()
+                        .chain(geometry.iter().map(|dev| dev.num_transducers()))
                         .scan(0, |state, tr_num| {
                             *state += tr_num;
                             Some(*state)
                         })
                         .collect::<Vec<_>>();
 
-                    *rx_buf.write().unwrap() = autd3_core::RxDatagram::new(geometry.num_devices());
+                    *rx_buf.write().unwrap() =
+                        autd3::driver::cpu::RxDatagram::new(geometry.num_devices());
 
                     field_compute_pipeline.init(&render, &sources);
                     trans_viewer.init(&render, &sources);
@@ -323,9 +325,9 @@ impl Simulator {
                         cpu.send(&tx);
                     });
                     rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                        autd3_core::RxMessage {
+                        autd3::driver::cpu::RxMessage {
                             ack: c.ack(),
-                            msg_id: c.msg_id(),
+                            data: c.rx_data(),
                         }
                     }));
 
@@ -446,6 +448,8 @@ impl Simulator {
                                 cpus.iter().for_each(|cpu| {
                                     let cycles = cpu.fpga().cycles();
                                     let drives = cpu.fpga().duties_and_phases(imgui.stm_idx());
+                                    let duty_filter = cpu.fpga().duty_filters();
+                                    let phase_filter = cpu.fpga().phase_filters();
                                     let m = if self.settings.mod_enable {
                                         cpu.fpga().modulation_at(imgui.mod_idx()) as f32 / 255.
                                     } else {
@@ -453,15 +457,19 @@ impl Simulator {
                                     };
                                     sources
                                         .drives_mut()
-                                        .skip(body_pointer[cpu.id()])
+                                        .skip(body_pointer[cpu.idx()])
                                         .take(cpu.num_transducers())
                                         .enumerate()
                                         .for_each(|(i, d)| {
-                                            d.amp = (PI * drives[i].0 as f32 * m
+                                            d.amp = (PI
+                                                * (drives[i].0 as f32 + duty_filter[i] as f32)
+                                                * m
                                                 / cycles[i] as f32)
                                                 .sin();
-                                            d.phase =
-                                                2. * PI * drives[i].1 as f32 / cycles[i] as f32;
+                                            d.phase = 2.
+                                                * PI
+                                                * (drives[i].1 as f32 + phase_filter[i] as f32)
+                                                / cycles[i] as f32;
                                             d.set_wave_number(
                                                 FPGA_CLK_FREQ as f32 / cycles[i] as f32,
                                                 self.settings.sound_speed,

@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,10 +13,10 @@
 
 use std::rc::Rc;
 
-use autd3_core::{
-    float,
-    gain::GainFilter,
-    geometry::{Geometry, Transducer, Vector3},
+use autd3_driver::{
+    datagram::GainFilter,
+    defined::float,
+    geometry::{Device, Transducer, Vector3},
 };
 use nalgebra::{Dyn, VecStorage, U1};
 
@@ -46,7 +46,7 @@ pub trait LinAlgBackend {
 
     fn generate_propagation_matrix<T: Transducer>(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         foci: &[Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError>;

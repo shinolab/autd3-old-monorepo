@@ -4,19 +4,20 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
+use std::collections::HashMap;
+
+use autd3_driver::{
+    datagram::{Gain, GainFilter},
+    defined::{float, Drive},
     error::AUTDInternalError,
-    float,
-    gain::{Gain, GainFilter},
-    geometry::{Geometry, Transducer, UnitQuaternion, Vector3},
-    Drive,
+    geometry::{Device, Transducer, UnitQuaternion, Vector3},
 };
 
 use autd3_derive::Gain;
@@ -78,9 +79,9 @@ impl Bessel {
 impl<T: Transducer> Gain<T> for Bessel {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);
         let theta_v = v.norm().asin();
@@ -89,13 +90,11 @@ impl<T: Transducer> Gain<T> for Bessel {
         } else {
             UnitQuaternion::identity()
         };
-
-        let sound_speed = geometry.sound_speed;
-        Ok(Self::transform(geometry, filter, |tr| {
+        Ok(Self::transform(devices, filter, |dev, tr| {
             let r = tr.position() - self.pos;
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-            let phase = dist * tr.wavenumber(sound_speed);
+            let phase = dist * tr.wavenumber(dev.sound_speed);
             Drive {
                 phase,
                 amp: self.amp,
@@ -108,29 +107,31 @@ impl<T: Transducer> Gain<T> for Bessel {
 mod tests {
     use rand::Rng;
 
-    use autd3_core::{autd3_device::AUTD3, geometry::LegacyTransducer, PI};
+    use autd3_driver::{
+        defined::PI,
+        geometry::{IntoDevice, LegacyTransducer},
+    };
 
     use super::*;
 
-    use crate::tests::{random_vector3, GeometryBuilder};
+    use crate::{autd3_device::AUTD3, tests::random_vector3};
 
     #[test]
     fn test_bessel() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
-            .unwrap();
+        let device: Device<LegacyTransducer> =
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let mut rng = rand::thread_rng();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
-            .calc(&geometry, GainFilter::All)
+            .calc(&[&device], GainFilter::All)
             .unwrap();
-        assert_eq!(b.len(), geometry.num_transducers());
-        b.iter().for_each(|d| assert_eq!(d.amp, 1.0));
-        b.iter().zip(geometry.iter()).for_each(|(b, tr)| {
+        assert_eq!(b.len(), 1);
+        assert_eq!(b[&0].len(), device.num_transducers());
+        b[&0].iter().for_each(|d| assert_eq!(d.amp, 1.0));
+        b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d;
                 let v = Vector3::new(dir.y, -dir.x, 0.);
@@ -143,7 +144,7 @@ mod tests {
                 let r = tr.position() - f;
                 let r = rot * r;
                 let dist = theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - theta.cos() * r.z;
-                dist * tr.wavenumber(geometry.sound_speed)
+                dist * tr.wavenumber(device.sound_speed)
             };
             assert_approx_eq::assert_approx_eq!(b.phase, expected_phase);
         });
@@ -153,11 +154,12 @@ mod tests {
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
             .with_amp(0.5)
-            .calc(&geometry, GainFilter::All)
+            .calc(&[&device], GainFilter::All)
             .unwrap();
-        assert_eq!(b.len(), geometry.num_transducers());
-        b.iter().for_each(|b| assert_eq!(b.amp, 0.5));
-        b.iter().zip(geometry.iter()).for_each(|(b, tr)| {
+        assert_eq!(b.len(), 1);
+        assert_eq!(b[&0].len(), device.num_transducers());
+        b[&0].iter().for_each(|b| assert_eq!(b.amp, 0.5));
+        b[&0].iter().zip(device.iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d;
                 let v = Vector3::new(dir.y, -dir.x, 0.);
@@ -170,7 +172,7 @@ mod tests {
                 let r = tr.position() - f;
                 let r = rot * r;
                 let dist = theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - theta.cos() * r.z;
-                dist * tr.wavenumber(geometry.sound_speed)
+                dist * tr.wavenumber(device.sound_speed)
             };
             assert_approx_eq::assert_approx_eq!(b.phase, expected_phase);
         });

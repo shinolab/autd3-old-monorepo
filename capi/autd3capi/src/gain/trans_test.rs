@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,11 +23,12 @@ pub unsafe extern "C" fn AUTDGainTransducerTest() -> GainPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainTransducerTestSet(
     trans_test: GainPtr,
-    id: u32,
+    dev_idx: u32,
+    tr_idx: u32,
     phase: float,
     amp: float,
 ) -> GainPtr {
-    GainPtr::new(take_gain!(trans_test, TransducerTest).set(id as _, phase, amp))
+    GainPtr::new(take_gain!(trans_test, TransducerTest).set(dev_idx as _, tr_idx as _, phase, amp))
 }
 
 #[cfg(test)]
@@ -38,7 +39,7 @@ mod tests {
 
     use crate::{gain::*, tests::*, *};
 
-    use autd3capi_def::{DatagramHeaderPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
 
     #[test]
     fn test_trans_test() {
@@ -46,7 +47,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainTransducerTest();
-            let g = AUTDGainTransducerTestSet(g, 0, 1., 1.);
+            let g = AUTDGainTransducerTestSet(g, 0, 0, 1., 1.);
 
             let g = AUTDGainIntoDatagram(g);
 
@@ -55,7 +56,7 @@ mod tests {
                 AUTDSend(
                     cnt,
                     TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
+                    DatagramPtr(std::ptr::null()),
                     g,
                     -1,
                     err.as_mut_ptr(),

@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,10 +16,10 @@ use std::rc::Rc;
 use nalgebra::ComplexField;
 use rand::Rng;
 
-use autd3_core::{
+use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
-    float,
-    gain::GainFilter,
+    datagram::GainFilter,
+    defined::float,
 };
 
 #[cfg(feature = "single_float")]
@@ -1823,18 +1823,27 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_generate_propagation_matrix(&self) -> Result<(), HoloError> {
-        let geometry = generate_geometry::<autd3_core::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
         let reference = {
-            let mut g = MatrixXc::zeros(foci.len(), geometry.num_transducers());
-            let transducers = geometry.transducers().collect::<Vec<_>>();
+            let mut g = MatrixXc::zeros(
+                foci.len(),
+                geometry
+                    .iter()
+                    .map(|dev| dev.num_transducers())
+                    .sum::<usize>(),
+            );
+            let transducers = geometry
+                .iter()
+                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr)))
+                .collect::<Vec<_>>();
             (0..foci.len()).for_each(|i| {
-                (0..geometry.num_transducers()).for_each(|j| {
-                    g[(i, j)] = propagate_tr::<Sphere, autd3_core::geometry::LegacyTransducer>(
-                        &transducers[j],
-                        geometry.attenuation,
-                        geometry.sound_speed,
+                (0..transducers.len()).for_each(|j| {
+                    g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                        transducers[j].1,
+                        geometry[transducers[j].0].attenuation,
+                        geometry[transducers[j].0].sound_speed,
                         &foci[i],
                     )
                 })
@@ -1842,9 +1851,11 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             g
         };
 
-        let g = self
-            .backend
-            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
+        let g = self.backend.generate_propagation_matrix(
+            &geometry.iter().collect::<Vec<_>>(),
+            &foci,
+            &GainFilter::All,
+        )?;
         let g = self.backend.to_host_cm(g)?;
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
             assert_approx_eq::assert_approx_eq!(r.re, g.re);
@@ -1854,28 +1865,44 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_generate_propagation_matrix_with_filter(&self) -> Result<(), HoloError> {
-        use autd3_core::geometry::Transducer;
+        use autd3_driver::geometry::Transducer;
+        use std::collections::HashMap;
 
-        let geometry = generate_geometry::<autd3_core::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
-        let mut filter = bitvec::prelude::BitVec::new();
-        for tr in geometry.iter() {
-            filter.push(tr.idx() >= geometry.num_transducers() / 2);
-        }
+        let filter = geometry
+            .iter()
+            .map(|dev| {
+                let mut filter = bitvec::prelude::BitVec::new();
+                for tr in dev.iter() {
+                    filter.push(tr.local_idx() > dev.num_transducers() / 2);
+                }
+                (dev.idx(), filter)
+            })
+            .collect::<HashMap<_, _>>();
 
         let reference = {
             let transducers = geometry
-                .transducers()
-                .filter(|tr| filter[tr.idx()])
+                .iter()
+                .flat_map(|dev| {
+                    dev.iter().filter_map(|tr| {
+                        if filter[&dev.idx()][tr.local_idx()] {
+                            Some((dev.idx(), tr))
+                        } else {
+                            None
+                        }
+                    })
+                })
                 .collect::<Vec<_>>();
+
             let mut g = MatrixXc::zeros(foci.len(), transducers.len());
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
-                    g[(i, j)] = propagate_tr::<Sphere, autd3_core::geometry::LegacyTransducer>(
-                        &transducers[j],
-                        geometry.attenuation,
-                        geometry.sound_speed,
+                    g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                        transducers[j].1,
+                        geometry[transducers[j].0].attenuation,
+                        geometry[transducers[j].0].sound_speed,
                         &foci[i],
                     )
                 })
@@ -1884,13 +1911,19 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         };
 
         let g = self.backend.generate_propagation_matrix(
-            &geometry,
+            &geometry.iter().collect::<Vec<_>>(),
             &foci,
             &GainFilter::Filter(&filter),
         )?;
         let g = self.backend.to_host_cm(g)?;
         assert_eq!(g.nrows(), foci.len());
-        assert_eq!(g.ncols(), geometry.num_transducers() / 2);
+        assert_eq!(
+            g.ncols(),
+            geometry
+                .iter()
+                .map(|dev| dev.num_transducers() / 2)
+                .sum::<usize>()
+        );
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
             assert_approx_eq::assert_approx_eq!(r.re, g.re);
             assert_approx_eq::assert_approx_eq!(r.im, g.im);
@@ -1899,15 +1932,20 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_gen_back_prop(&self) -> Result<(), HoloError> {
-        let geometry = generate_geometry::<autd3_core::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
-        let m = geometry.num_transducers();
+        let m = geometry
+            .iter()
+            .map(|dev| dev.num_transducers())
+            .sum::<usize>();
         let n = foci.len();
 
-        let g = self
-            .backend
-            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
+        let g = self.backend.generate_propagation_matrix(
+            &geometry.iter().collect::<Vec<_>>(),
+            &foci,
+            &GainFilter::All,
+        )?;
         let amps = self.make_random_cv(n)?;
 
         let mut b = self.backend.alloc_cm(m, n)?;

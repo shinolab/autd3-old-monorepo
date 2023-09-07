@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,52 +12,38 @@
  */
 
 use autd3capi_def::{common::*, GainPtr};
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainGroupByDevice(
-    map_ptr: *const i32,
-    map_len: u64,
-    keys_ptr: *const i32,
-    values_ptr: *const GainPtr,
-    kv_len: u64,
-) -> GainPtr {
-    let mut map = vec![0i32; map_len as usize];
-    std::ptr::copy_nonoverlapping(map_ptr, map.as_mut_ptr(), map_len as usize);
-    let mut keys = vec![0i32; kv_len as usize];
-    std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
-    let mut values = vec![GainPtr(std::ptr::null()); kv_len as usize];
-    std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
-    GainPtr::new(keys.iter().zip(values.iter()).fold(
-        Group::by_device(move |dev| {
-            let key = map[dev];
-            if key < 0 {
-                None
-            } else {
-                Some(key)
-            }
-        }),
-        |acc, (&k, v)| acc.set(k, *Box::from_raw(v.0 as *mut Box<G>)),
-    ))
-}
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainGroupByTransducer(
-    map_ptr: *const i32,
-    map_len: u64,
+#[allow(clippy::uninit_vec)]
+pub unsafe extern "C" fn AUTDGainGroup(
+    map_ptr: *const *const i32,
+    map_len: u32,
     keys_ptr: *const i32,
     values_ptr: *const GainPtr,
-    kv_len: u64,
+    kv_len: u32,
 ) -> GainPtr {
-    let mut map = vec![0i32; map_len as usize];
-    std::ptr::copy_nonoverlapping(map_ptr, map.as_mut_ptr(), map_len as usize);
-    let mut keys = vec![0i32; kv_len as usize];
+    let map = (0..map_len as usize)
+        .map(|i| {
+            let mut v = Vec::with_capacity(AUTD3::NUM_TRANS_IN_UNIT);
+            v.set_len(AUTD3::NUM_TRANS_IN_UNIT);
+            std::ptr::copy_nonoverlapping(
+                map_ptr.add(i).read(),
+                v.as_mut_ptr(),
+                AUTD3::NUM_TRANS_IN_UNIT,
+            );
+            v
+        })
+        .collect::<Vec<_>>();
+    let mut keys = Vec::with_capacity(kv_len as usize);
+    keys.set_len(kv_len as usize);
     std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
-    let mut values = vec![GainPtr(std::ptr::null()); kv_len as usize];
+    let mut values = Vec::with_capacity(kv_len as usize);
+    values.set_len(kv_len as usize);
     std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
     GainPtr::new(keys.iter().zip(values.iter()).fold(
-        Group::by_transducer(move |tr: &DynamicTransducer| {
-            let key = map[tr.idx()];
+        Group::new(move |dev, tr: &DynamicTransducer| {
+            let key = map[dev.idx()][tr.local_idx()];
             if key < 0 {
                 None
             } else {
@@ -76,60 +62,35 @@ mod tests {
 
     use crate::{
         gain::{null::AUTDGainNull, *},
-        geometry::*,
+        geometry::{
+            device::{AUTDDeviceNumTransducers, AUTDGetDevice},
+            AUTDGetGeometry,
+        },
         tests::*,
         *,
     };
 
-    use autd3capi_def::{DatagramHeaderPtr, TransMode, AUTD3_TRUE};
-
-    #[test]
-    fn test_group_by_device() {
-        unsafe {
-            let cnt = create_controller();
-
-            let map = vec![0, 1];
-            let keys = vec![0, 1];
-            let values = vec![AUTDGainNull(), AUTDGainNull()];
-            let g = AUTDGainGroupByDevice(
-                map.as_ptr(),
-                map.len() as _,
-                keys.as_ptr(),
-                values.as_ptr(),
-                values.len() as _,
-            );
-
-            let g = AUTDGainIntoDatagram(g);
-
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDSend(
-                    cnt,
-                    TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
-                    g,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
-
-            AUTDFreeController(cnt);
-        }
-    }
+    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
 
     #[test]
     fn test_group_by_transducer() {
         unsafe {
             let cnt = create_controller();
             let geo = AUTDGetGeometry(cnt);
-            let num_transducers = AUTDNumTransducers(geo);
 
-            let map = vec![0; num_transducers as _];
-            let keys = vec![0];
-            let values = vec![AUTDGainNull()];
+            let dev0 = AUTDGetDevice(geo, 0);
+            let dev1 = AUTDGetDevice(geo, 1);
 
-            let g = AUTDGainGroupByTransducer(
+            let num_transducer = AUTDDeviceNumTransducers(dev0);
+            let map0 = vec![0; num_transducer as _];
+            let num_transducer = AUTDDeviceNumTransducers(dev1);
+            let map1 = vec![1; num_transducer as _];
+
+            let map = [map0.as_ptr(), map1.as_ptr()];
+            let keys = [0, 1];
+            let values = [AUTDGainNull(), AUTDGainNull()];
+
+            let g = AUTDGainGroup(
                 map.as_ptr(),
                 map.len() as _,
                 keys.as_ptr(),
@@ -144,7 +105,7 @@ mod tests {
                 AUTDSend(
                     cnt,
                     TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
+                    DatagramPtr(std::ptr::null()),
                     g,
                     -1,
                     err.as_mut_ptr(),

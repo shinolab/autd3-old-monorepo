@@ -1,6 +1,6 @@
 [package]
 name = "autd3-backend-arrayfire"
-version = "14.2.2"
+version = "15.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -12,8 +12,8 @@ keywords = ["autd"]
 
 [dependencies]
 arrayfire = "3.8.0"
-autd3-core = { path = "../autd3-core", version = "14.2.1" }
-autd3-gain-holo = { path = "../autd3-gain-holo", version = "14.2.1" }
+autd3-driver = { path = "../autd3-driver", version = "15.0.0" }
+autd3-gain-holo = { path = "../autd3-gain-holo", version = "15.0.0" }
 nalgebra = { version = "0.32.1", default-features = false, features = ["std"] }
 rand = "0.8.5"
 rayon = { version = "1.7.0", optional = true }
@@ -27,9 +27,9 @@ criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [features]
 default = []
-single_float = ["autd3-core/single_float", "autd3-gain-holo/single_float"]
-use_meter = ["autd3-core/use_meter"]
-parallel = ["rayon", "autd3-core/parallel"]
+single_float = ["autd3-driver/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3-driver/use_meter"]
+parallel = ["rayon"]
 test-utilities = ["autd3-gain-holo/test-utilities"]
 
 [[bench]]
