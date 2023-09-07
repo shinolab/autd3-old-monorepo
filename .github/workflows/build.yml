@@ -29,6 +29,7 @@ jobs:
           src/*.toml
           src/**/*.toml
           src/**/*.proto
+          .github/workflows/build.yml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
@@ -45,24 +46,24 @@ jobs:
       run: |
         cd src
         cargo build
-        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire -- --skip test_timer
+        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire
     - name: Build src on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src
         cargo build
-        cargo test --features test-utilities -- --skip test_timer
+        cargo test --features test-utilities
 
     - name: Build examples on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client" 
+        cargo build --bins --features "remote_soem twincat remote_twincat simulator" 
     - name: Build examples on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client"
+        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator"
 
   build-capi:
     name: build-capi-${{ matrix.os }}
@@ -81,6 +82,7 @@ jobs:
           capi/**/*.rs
           src/*.toml
           src/**/*.toml
+          .github/workflows/build.yml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
@@ -97,7 +99,7 @@ jobs:
       run: |
         cd capi
         cargo build
-        cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-simulator --exclude autd3capi-geometry-viewer --exclude autd3capi-backend-cuda
+        cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-geometry-viewer --exclude autd3capi-backend-cuda
     - name: Build capi on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
@@ -121,6 +123,7 @@ jobs:
           src/*.toml
           src/**/*.toml
           src/**/*.proto
+          .github/workflows/build.yml
     - name: install arm32 target
       run : |
         sudo apt-get update
@@ -147,7 +150,7 @@ jobs:
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=armv7-unknown-linux-gnueabihf
+        cargo build --bins --features "soem remote_soem remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
       if: steps.changed-files.outputs.modified_files
 
   build-linux-arm32-capi:
@@ -165,6 +168,7 @@ jobs:
           capi/**/*.rs
           src/*.toml
           src/**/*.toml
+          .github/workflows/build.yml
     - name: install arm32 target
       run : |
         sudo apt-get update
@@ -204,6 +208,7 @@ jobs:
           src/*.toml
           src/**/*.toml
           src/**/*.proto
+          .github/workflows/build.yml
     - name: install aarch64 target
       run : |
         sudo apt-get update
@@ -230,7 +235,7 @@ jobs:
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --bins --features "soem remote_soem remote_twincat simulator_client" --target=aarch64-unknown-linux-gnu
+        cargo build --bins --features "soem remote_soem remote_twincat simulator" --target=aarch64-unknown-linux-gnu
       if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-capi:
@@ -248,6 +253,7 @@ jobs:
           capi/**/*.rs
           src/*.toml
           src/**/*.toml
+          .github/workflows/build.yml
     - name: install aarch64 target
       run : |
         sudo apt-get update
@@ -284,6 +290,7 @@ jobs:
           src/*.toml
           src/**/*.toml
           src/**/*.proto
+          .github/workflows/build.yml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
@@ -313,6 +320,7 @@ jobs:
           capi/**/*.rs
           src/*.toml
           src/**/*.toml
+          .github/workflows/build.yml
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
