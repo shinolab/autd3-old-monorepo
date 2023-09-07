@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 07/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -730,9 +730,29 @@ impl CPUEmulator {
             &freq_div_4k as *const _ as _,
             std::mem::size_of::<u32>() >> 1,
         );
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0x0000);
         self.bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
         self.bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, self.num_transducers << 1);
+
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_MOD_DELAY_BASE,
+            0x0000,
+            self.num_transducers,
+        );
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_PHASE_BASE,
+            0x0000,
+            self.num_transducers,
+        );
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_DUTY_BASE,
+            0x0000,
+            self.num_transducers,
+        );
     }
 
     fn handle_payload(&mut self, tag: u8, data: &[u8]) {
