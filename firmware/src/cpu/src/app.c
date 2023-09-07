@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 07/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -147,7 +147,7 @@ void write_mod(const volatile uint8_t* p_data) {
 }
 
 void config_silencer(const volatile uint8_t* p_data) {
-  uint16_t step = *((const uint16_t*)&p_data[2]);
+  uint16_t step = *((const uint16_t*)&p_data[0]);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
 }
 
@@ -157,20 +157,20 @@ static void write_mod_delay(const volatile uint8_t* p_data) {
 }
 
 inline static void write_duty_filter(const volatile uint8_t* p_data) {
-  const uint16_t* fitler = (const uint16_t*)p_data;
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_DUTY_BASE, fitler, TRANS_NUM);
+  const uint16_t* filter = (const uint16_t*)p_data;
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_DUTY_BASE, filter, TRANS_NUM);
 }
 
 inline static void write_phase_filter(const volatile uint8_t* p_data) {
-  const uint16_t* fitler = (const uint16_t*)p_data;
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_PHASE_BASE, fitler, TRANS_NUM);
+  const uint16_t* filter = (const uint16_t*)p_data;
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_PHASE_BASE, filter, TRANS_NUM);
 }
 
 static void write_filter(const volatile uint8_t* p_data) {
   uint8_t flag = p_data[1];
   if (flag == FILTER_ADD_DUTY) {
     write_duty_filter(p_data + 2);
-  } else if (flag == FILTER_ADD_DUTY) {
+  } else if (flag == FILTER_ADD_PHASE) {
     write_phase_filter(p_data + 2);
   }
 }
@@ -409,7 +409,7 @@ static void write_gain_stm_legacy(const volatile uint8_t* p_data) {
         _stm_cycle += 1;
       }
 
-      if (send > 1) {
+      if (send > 3) {
         src = src_base;
         addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         dst = &base[addr];
@@ -625,6 +625,9 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
     case TAG_MODULATION_DELAY:
       write_mod_delay(p_data + 2);
       break;
+    case TAG_SILENCER:
+      config_silencer(p_data + 2);
+      break;
     case TAG_GAIN:
       write_gain(p_data);
       break;
@@ -650,10 +653,12 @@ void recv_ethercat(void) {
   _read_fpga_info = (header->fpga_ctl_flag & READS_FPGA_INFO) == READS_FPGA_INFO;
   if (_read_fpga_info) _rx_data = read_fpga_info();
 
-  handle_payload(_sRx.data[sizeof(Header)], &p_data[sizeof(Header)]);
+  _fpga_flags = header->fpga_ctl_flag;
+
+  handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
 
   if (header->slot_2_offset != 0) {
-    handle_payload(_sRx.data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+    handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
   }
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
