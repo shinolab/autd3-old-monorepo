@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 07/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
-    datagram::{Clear, Datagram, Synchronize},
+    datagram::{Clear, Datagram, Synchronize, UpdateFlags},
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{
@@ -101,7 +101,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             tx_buf,
             rx_buf: RxDatagram::new(num_devices),
         };
-        cnt.send(Clear::new())?;
+        cnt.send(UpdateFlags::new())?;
         cnt.send(Clear::new())?;
         cnt.send(Synchronize::new())?;
         Ok(cnt)
