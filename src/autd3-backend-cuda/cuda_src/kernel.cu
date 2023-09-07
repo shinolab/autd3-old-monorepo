@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -225,7 +225,7 @@ __global__ void col_sum_kernel(const autd3_float_t *din, uint32_t m, uint32_t n,
 }
 
 __global__ void generate_propagation_matrix_kernel(const autd3_float_t *positions, const autd3_float_t *foci, const autd3_float_t *wavenums,
-                                                   const autd3_float_t attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+                                                   const autd3_float_t *attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
   unsigned int xi = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int yi = blockIdx.y * blockDim.y + threadIdx.y;
   if (xi >= col || yi >= row) return;
@@ -234,7 +234,7 @@ __global__ void generate_propagation_matrix_kernel(const autd3_float_t *position
   autd3_float_t yd = foci[3 * yi + 1] - positions[3 * xi + 1];
   autd3_float_t zd = foci[3 * yi + 2] - positions[3 * xi + 2];
   autd3_float_t dist = sqrt(xd * xd + yd * yd + zd * zd);
-  autd3_float_t r = exp(-dist * attens) / dist;
+  autd3_float_t r = exp(-dist * attens[xi]) / dist;
   autd3_float_t phase = -wavenums[xi] * dist;
   dst[yi + xi * row] = makeAUTDComplex(r * cos(phase), r * sin(phase));
 }
@@ -360,7 +360,7 @@ void cu_reduce_col(const autd3_float_t *mat, const uint32_t m, const uint32_t n,
 }
 
 void cu_generate_propagation_matrix(const autd3_float_t *positions, const autd3_float_t *foci, const autd3_float_t *wavenums,
-                                    const autd3_float_t attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
+                                    const autd3_float_t *attens, const uint32_t row, const uint32_t col, autd3_complex_t *dst) {
   dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
   dim3 grid((col - 1) / BLOCK_SIZE + 1, (row - 1) / BLOCK_SIZE + 1, 1);
   generate_propagation_matrix_kernel<<<grid, block>>>(positions, foci, wavenums, attens, row, col, dst);

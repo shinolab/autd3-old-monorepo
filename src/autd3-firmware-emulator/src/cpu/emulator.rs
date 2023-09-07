@@ -4,17 +4,16 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 07/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    Body, CPUControlFlags, FPGAControlFlags, GlobalHeader, TxDatagram, MSG_CLEAR, MSG_END,
-    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
-    MSG_RD_FPGA_VERSION_MINOR,
+use autd3_driver::{
+    cpu::{Header, TxDatagram},
+    fpga::FPGAControlFlags,
 };
 
 use crate::fpga::emulator::FPGAEmulator;
@@ -22,64 +21,60 @@ use crate::fpga::emulator::FPGAEmulator;
 use super::params::*;
 
 pub struct CPUEmulator {
-    id: usize,
-    msg_id: u8,
+    idx: usize,
     ack: u8,
+    rx_data: u8,
     read_fpga_info: bool,
     mod_cycle: u32,
     stm_cycle: u32,
-    fpga: FPGAEmulator,
     gain_stm_mode: u16,
+    fpga: FPGAEmulator,
     cycles: Vec<u16>,
     synchronized: bool,
     num_transducers: usize,
     fpga_flags: FPGAControlFlags,
-    cpu_flags: CPUControlFlags,
+    fpga_flags_internal: u16,
 }
 
 impl CPUEmulator {
     pub fn new(id: usize, num_transducers: usize) -> Self {
         let mut s = Self {
-            id,
-            msg_id: 0x00,
-            ack: 0x0000,
+            idx: id,
+            ack: 0x00,
+            rx_data: 0x00,
             read_fpga_info: false,
             mod_cycle: 0,
             stm_cycle: 0,
+            gain_stm_mode: 0,
             fpga: FPGAEmulator::new(num_transducers),
-            gain_stm_mode: GAIN_STM_MODE_PHASE_DUTY_FULL,
             cycles: vec![0x0000; num_transducers],
             synchronized: false,
             num_transducers,
             fpga_flags: FPGAControlFlags::empty(),
-            cpu_flags: CPUControlFlags::empty(),
+            fpga_flags_internal: 0x0000,
         };
         s.init();
         s
     }
 
-    pub fn id(&self) -> usize {
-        self.id
+    pub fn idx(&self) -> usize {
+        self.idx
     }
 
     pub fn num_transducers(&self) -> usize {
         self.num_transducers
     }
 
-    pub fn msg_id(&self) -> u8 {
-        self.msg_id
-    }
-
     pub fn ack(&self) -> u8 {
         self.ack
     }
 
-    pub fn fpga_flags(&self) -> FPGAControlFlags {
-        self.fpga_flags
+    pub fn rx_data(&self) -> u8 {
+        self.rx_data
     }
 
-    pub fn cpu_flags(&self) -> CPUControlFlags {
-        self.cpu_flags
+    pub fn fpga_flags(&self) -> FPGAControlFlags {
+        self.fpga_flags
     }
 
     pub fn fpga(&self) -> &FPGAEmulator {
@@ -95,14 +90,7 @@ impl CPUEmulator {
     }
 
     pub fn send(&mut self, tx: &TxDatagram) {
-        self.ecat_recv(
-            tx.header(),
-            if tx.num_bodies > self.id {
-                Some(tx.body(self.id))
-            } else {
-                None
-            },
-        )
+        self.ecat_recv(tx.data(self.idx));
     }
 
     pub fn init(&mut self) {
@@ -112,17 +100,8 @@ impl CPUEmulator {
     }
 
     pub fn update(&mut self) {
-        match self.msg_id {
-            MSG_RD_CPU_VERSION
-            | MSG_RD_CPU_VERSION_MINOR
-            | MSG_RD_FPGA_VERSION
-            | MSG_RD_FPGA_VERSION_MINOR
-            | MSG_RD_FPGA_FUNCTION => {}
-            _ => {
-                if self.should_update() {
-                    self.ack = self.read_fpga_info() as _;
-                }
-            }
+        if self.should_update() {
+            self.rx_data = self.read_fpga_info() as _;
         }
     }
 
@@ -164,8 +143,10 @@ impl CPUEmulator {
         })
     }
 
-    fn synchronize(&mut self, body: &Body<[u16]>) {
-        let cycles = body.data();
+    fn synchronize(&mut self, data: &[u8]) {
+        let cycles = unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
+        };
 
         self.bram_cpy(
             BRAM_SELECT_CONTROLLER,
@@ -174,29 +155,33 @@ impl CPUEmulator {
             cycles.len(),
         );
 
-        self.cycles.copy_from_slice(body.data());
+        self.cycles.copy_from_slice(cycles);
 
         self.synchronized = true;
 
         // Do nothing to sync
     }
 
-    fn write_mod(&mut self, header: &GlobalHeader) {
-        let write = header.size;
+    fn write_mod(&mut self, data: &[u8]) {
+        let flag = data[1];
 
-        let data = if header.cpu_flag.contains(CPUControlFlags::MOD_BEGIN) {
+        let write = ((data[3] as u16) << 8) | data[2] as u16;
+        let data = if (flag & MODULATION_FLAG_BEGIN) == MODULATION_FLAG_BEGIN {
             self.mod_cycle = 0;
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
-            let freq_div = header.mod_initial().freq_div;
+            let freq_div = ((data[7] as u32) << 24)
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
             self.bram_cpy(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_MOD_FREQ_DIV_0,
                 &freq_div as *const _ as _,
                 std::mem::size_of::<u32>() >> 1,
             );
-            header.mod_initial().data[..].as_ptr() as *const u16
+            data[8..].as_ptr() as *const u16
         } else {
-            header.mod_subsequent().data[..].as_ptr() as *const u16
+            data[4..].as_ptr() as *const u16
         };
 
         let segment_capacity =
@@ -234,7 +219,7 @@ impl CPUEmulator {
             self.mod_cycle += write as u32 - segment_capacity;
         }
 
-        if header.cpu_flag.contains(CPUControlFlags::MOD_END) {
+        if (flag & MODULATION_FLAG_END) == MODULATION_FLAG_END {
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_MOD_CYCLE,
@@ -243,47 +228,101 @@ impl CPUEmulator {
         }
     }
 
-    fn config_silencer(&mut self, header: &GlobalHeader) {
-        let step = header.silencer().step;
+    fn config_silencer(&mut self, data: &[u8]) {
+        let step = ((data[3] as u16) << 8) | data[2] as u16;
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
     }
 
-    fn set_mod_delay(&mut self, body: &Body<[u16]>) {
+    fn write_mod_delay(&mut self, data: &[u8]) {
+        let delays = unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
+        };
         self.bram_cpy(
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_MOD_DELAY_BASE,
-            body.data().as_ptr(),
-            body.data().len(),
+            delays.as_ptr(),
+            delays.len(),
         );
     }
 
-    fn write_normal_op(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-        if header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE) {
-            (0..self.num_transducers)
-                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as _, body.data()[i]));
-        } else if header.cpu_flag.contains(CPUControlFlags::IS_DUTY) {
-            (0..self.num_transducers).for_each(|i| {
-                self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16 + 1, body.data()[i])
-            });
+    fn write_duty_filter(&mut self, data: &[u8]) {
+        let filter = unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
+        };
+        self.bram_cpy(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_DUTY_BASE,
+            filter.as_ptr(),
+            filter.len(),
+        );
+    }
+
+    fn write_phase_filter(&mut self, data: &[u8]) {
+        let filter = unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
+        };
+        self.bram_cpy(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_PHASE_BASE,
+            filter.as_ptr(),
+            filter.len(),
+        );
+    }
+
+    fn write_filter(&mut self, data: &[u8]) {
+        let flag = data[1];
+        if flag == FILTER_ADD_DUTY {
+            self.write_duty_filter(&data[2..]);
+        } else if flag == FILTER_ADD_PHASE {
+            self.write_phase_filter(&data[2..]);
         } else {
-            (0..self.num_transducers)
-                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16, body.data()[i]));
+            unimplemented!("unknown filter type: {flag}")
         }
     }
 
-    fn write_focus_stm(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-        let size: u32;
+    fn write_gain(&mut self, data: &[u8]) {
+        self.fpga_flags_internal &= !CTL_FLAG_OP_MODE;
 
-        let mut src = if header.cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
+        let flag = data[1];
+
+        let data = unsafe {
+            std::slice::from_raw_parts(data[2..].as_ptr() as *const u16, (data.len() - 2) >> 1)
+        };
+
+        if (flag & GAIN_FLAG_LEGACY) == GAIN_FLAG_LEGACY {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as _, data[i]));
+
+            self.fpga_flags_internal |= CTL_REG_LEGACY_MODE;
+        } else if (flag & GAIN_FLAG_DUTY) == GAIN_FLAG_DUTY {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16 + 1, data[i]));
+            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
+        } else {
+            (0..self.num_transducers)
+                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16, data[i]));
+            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
+        }
+    }
+
+    fn write_focus_stm(&mut self, data: &[u8]) {
+        let flag = data[1];
+
+        let size = (data[3] as u32) << 8 | data[2] as u32;
+
+        let mut src = if (flag & FOCUS_STM_FLAG_BEGIN) == FOCUS_STM_FLAG_BEGIN {
             self.stm_cycle = 0;
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-            size = body.focus_stm_initial().data()[0] as _;
-            let freq_div = ((body.focus_stm_initial().data()[2] as u32) << 16)
-                | body.focus_stm_initial().data()[1] as u32;
-            let sound_speed = ((body.focus_stm_initial().data()[4] as u32) << 16)
-                | body.focus_stm_initial().data()[3] as u32;
-            let start_idx = body.focus_stm_initial().data()[5];
-            let finish_idx = body.focus_stm_initial().data()[6];
+            let freq_div = ((data[7] as u32) << 24)
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
+            let sound_speed = ((data[11] as u32) << 24)
+                | ((data[10] as u32) << 16)
+                | ((data[9] as u32) << 8)
+                | data[8] as u32;
+            let start_idx = ((data[13] as u16) << 8) | data[12] as u16;
+            let finish_idx = ((data[15] as u16) << 8) | data[14] as u16;
 
             self.bram_cpy(
                 BRAM_SELECT_CONTROLLER,
@@ -301,10 +340,20 @@ impl CPUEmulator {
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
-            unsafe { body.focus_stm_initial().data().as_ptr().add(7) }
+            if (flag & FOCUS_STM_FLAG_USE_START_IDX) == FOCUS_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & FOCUS_STM_FLAG_USE_FINISH_IDX) == FOCUS_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
+
+            unsafe { data.as_ptr().add(16) as *const u16 }
         } else {
-            size = body.focus_stm_subsequent().data()[0] as _;
-            unsafe { body.focus_stm_subsequent().data().as_ptr().add(1) }
+            unsafe { data.as_ptr().add(4) as *const u16 }
         };
 
         let segment_capacity = (self.stm_cycle & !POINT_STM_BUF_SEGMENT_SIZE_MASK)
@@ -374,72 +423,89 @@ impl CPUEmulator {
             self.stm_cycle += size - segment_capacity;
         }
 
-        if header.cpu_flag.contains(CPUControlFlags::STM_END) {
+        if (flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END {
+            self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
+            self.fpga_flags_internal &= !CTL_REG_STM_GAIN_MODE;
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
                 (self.stm_cycle.max(1) - 1) as _,
             );
-            self.bram_write(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_CTL_REG,
-                header.fpga_flag.bits() as u16 | CTL_FLAG_OP_MODE,
-            );
         }
     }
 
-    fn write_gain_stm(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-        if header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE) {
-            self.write_gain_stm_legacy(header, body)
+    fn write_gain_stm(&mut self, data: &[u8]) {
+        let flag = data[1];
+        if (flag & GAIN_STM_FLAG_LEGACY) == GAIN_STM_FLAG_LEGACY {
+            self.write_gain_stm_legacy(data);
         } else {
-            self.write_gain_stm_advanced(header, body)
+            self.write_gain_stm_advanced(data);
         }
     }
 
-    fn write_gain_stm_legacy(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-        if header.cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
+    fn write_gain_stm_legacy(&mut self, data: &[u8]) {
+        let flag = data[1];
+
+        let send = (flag >> 6) + 1;
+        let src_base = if (flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN {
             self.stm_cycle = 0;
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-            let freq_div = ((body.gain_stm_initial().data()[1] as u32) << 16)
-                | body.gain_stm_initial().data()[0] as u32;
+
+            self.gain_stm_mode = (data[3] as u16) << 8 | data[2] as u16;
+
+            let freq_div = ((data[7] as u32) << 24)
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
             self.bram_cpy(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_FREQ_DIV_0,
                 &freq_div as *const _ as _,
                 std::mem::size_of::<u32>() >> 1,
             );
-            self.gain_stm_mode = body.gain_stm_initial().data()[2];
 
-            let start_idx = body.gain_stm_initial().data()[4];
-            let finish_idx = body.gain_stm_initial().data()[5];
+            let start_idx = ((data[9] as u16) << 8) | data[8] as u16;
+            let finish_idx = ((data[11] as u16) << 8) | data[10] as u16;
 
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
-            return;
-        }
+            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
 
-        let mut src = body.gain_stm_subsequent().data().as_ptr();
+            unsafe { data.as_ptr().add(12) as *const u16 }
+        } else {
+            unsafe { data.as_ptr().add(2) as *const u16 }
+        };
+
+        let mut src = src_base;
         let mut dst = ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
 
-        match self.gain_stm_mode {
-            GAIN_STM_MODE_PHASE_DUTY_FULL => {
-                self.stm_cycle += 1;
-                (0..self.num_transducers).for_each(|_| unsafe {
-                    self.bram_write(BRAM_SELECT_STM, dst, src.read());
-                    dst += 1;
-                    src = src.add(1);
-                });
-            }
-            GAIN_STM_MODE_PHASE_FULL => {
-                (0..self.num_transducers).for_each(|_| unsafe {
-                    self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (src.read() & 0x00FF));
-                    dst += 1;
-                    src = src.add(1);
-                });
-                self.stm_cycle += 1;
+        if self.gain_stm_mode == GAIN_STM_MODE_DUTY_PHASE_FULL {
+            self.stm_cycle += 1;
+            (0..self.num_transducers).for_each(|_| unsafe {
+                self.bram_write(BRAM_SELECT_STM, dst, src.read());
+                dst += 1;
+                src = src.add(1);
+            });
+        } else if self.gain_stm_mode == GAIN_STM_MODE_PHASE_FULL {
+            (0..self.num_transducers).for_each(|_| unsafe {
+                self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (src.read() & 0x00FF));
+                dst += 1;
+                src = src.add(1);
+            });
+            self.stm_cycle += 1;
 
-                let mut src = body.gain_stm_subsequent().data().as_ptr();
+            if send > 1 {
+                let mut src = src_base;
                 let mut dst =
                     ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
@@ -449,16 +515,17 @@ impl CPUEmulator {
                 });
                 self.stm_cycle += 1;
             }
-            GAIN_STM_MODE_PHASE_HALF => {
-                (0..self.num_transducers).for_each(|_| unsafe {
-                    let phase = src.read() & 0x000F;
-                    self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
-                    dst += 1;
-                    src = src.add(1);
-                });
-                self.stm_cycle += 1;
+        } else if self.gain_stm_mode == GAIN_STM_MODE_PHASE_HALF {
+            (0..self.num_transducers).for_each(|_| unsafe {
+                let phase = src.read() & 0x000F;
+                self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
+                dst += 1;
+                src = src.add(1);
+            });
+            self.stm_cycle += 1;
 
-                let mut src = body.gain_stm_subsequent().data().as_ptr();
+            if send > 1 {
+                let mut src = src_base;
                 let mut dst =
                     ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
@@ -468,8 +535,10 @@ impl CPUEmulator {
                     src = src.add(1);
                 });
                 self.stm_cycle += 1;
+            }
 
-                let mut src = body.gain_stm_subsequent().data().as_ptr();
+            if send > 2 {
+                let mut src = src_base;
                 let mut dst =
                     ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
@@ -479,8 +548,10 @@ impl CPUEmulator {
                     src = src.add(1);
                 });
                 self.stm_cycle += 1;
+            }
 
-                let mut src = body.gain_stm_subsequent().data().as_ptr();
+            if send > 3 {
+                let mut src = src_base;
                 let mut dst =
                     ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
@@ -490,9 +561,6 @@ impl CPUEmulator {
                     src = src.add(1);
                 });
                 self.stm_cycle += 1;
-            }
-            _ => {
-                unreachable!("Invalid STM mode")
             }
         }
 
@@ -505,77 +573,86 @@ impl CPUEmulator {
             );
         }
 
-        if header.cpu_flag.contains(CPUControlFlags::STM_END) {
+        if (flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END {
+            self.fpga_flags_internal |= CTL_REG_LEGACY_MODE;
+            self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
+            self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
                 (self.stm_cycle.max(1) - 1) as _,
             );
-
-            self.bram_write(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_CTL_REG,
-                header.fpga_flag.bits() as u16 | CTL_FLAG_OP_MODE,
-            );
         }
     }
 
-    fn write_gain_stm_advanced(&mut self, header: &GlobalHeader, body: &Body<[u16]>) {
-        if header.cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
+    fn write_gain_stm_advanced(&mut self, data: &[u8]) {
+        let flag = data[1];
+
+        let src_base = if (flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN {
             self.stm_cycle = 0;
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-            let freq_div = ((body.gain_stm_initial().data()[1] as u32) << 16)
-                | body.gain_stm_initial().data()[0] as u32;
+
+            self.gain_stm_mode = (data[3] as u16) << 8 | data[2] as u16;
+
+            let freq_div = ((data[7] as u32) << 24)
+                | ((data[6] as u32) << 16)
+                | ((data[5] as u32) << 8)
+                | data[4] as u32;
             self.bram_cpy(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_FREQ_DIV_0,
                 &freq_div as *const _ as _,
                 std::mem::size_of::<u32>() >> 1,
             );
-            self.gain_stm_mode = body.gain_stm_initial().data()[2];
 
-            let start_idx = body.gain_stm_initial().data()[4];
-            let finish_idx = body.gain_stm_initial().data()[5];
+            let start_idx = ((data[9] as u16) << 8) | data[8] as u16;
+            let finish_idx = ((data[11] as u16) << 8) | data[10] as u16;
 
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
             self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
-            return;
-        }
+            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
+            }
+            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
+                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
+            } else {
+                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
+            }
 
-        let mut src = body.gain_stm_subsequent().data().as_ptr();
+            unsafe { data.as_ptr().add(12) as *const u16 }
+        } else {
+            unsafe { data.as_ptr().add(2) as *const u16 }
+        };
+
+        let mut src = src_base;
         let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9) as u16;
 
-        match self.gain_stm_mode {
-            GAIN_STM_MODE_PHASE_DUTY_FULL => {
-                if header.cpu_flag.contains(CPUControlFlags::IS_DUTY) {
-                    dst += 1;
-                    self.stm_cycle += 1;
-                }
-                (0..self.num_transducers).for_each(|_| unsafe {
-                    self.bram_write(BRAM_SELECT_STM, dst, src.read());
-                    dst += 2;
-                    src = src.add(1);
-                });
+        if self.gain_stm_mode == GAIN_STM_MODE_PHASE_HALF {
+            unimplemented!("Phase half mode is not supported in advanced mode")
+        }
+
+        if self.gain_stm_mode == GAIN_STM_MODE_PHASE_FULL {
+            (0..self.num_transducers).for_each(|i| unsafe {
+                self.bram_write(BRAM_SELECT_STM, dst, src.read());
+                dst += 1;
+                self.bram_write(BRAM_SELECT_STM, dst, self.cycles[i] >> 1);
+                dst += 1;
+                src = src.add(1);
+            });
+            self.stm_cycle += 1;
+        } else {
+            if (flag & GAIN_STM_FLAG_DUTY) == GAIN_STM_FLAG_DUTY {
+                dst += 1;
+                self.stm_cycle += 1;
             }
-            GAIN_STM_MODE_PHASE_FULL => {
-                if !header.cpu_flag.contains(CPUControlFlags::IS_DUTY) {
-                    (0..self.num_transducers).for_each(|i| unsafe {
-                        self.bram_write(BRAM_SELECT_STM, dst, src.read());
-                        dst += 1;
-                        self.bram_write(BRAM_SELECT_STM, dst, self.cycles[i] >> 1);
-                        dst += 1;
-                        src = src.add(1);
-                    });
-                    self.stm_cycle += 1;
-                }
-            }
-            GAIN_STM_MODE_PHASE_HALF => {
-                unimplemented!("Phase half mode is not supported in advanced mode")
-            }
-            _ => {
-                unreachable!("Invalid STM mode")
-            }
+            (0..self.num_transducers).for_each(|_| unsafe {
+                self.bram_write(BRAM_SELECT_STM, dst, src.read());
+                dst += 2;
+                src = src.add(1);
+            });
         }
 
         if self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK == 0 {
@@ -587,17 +664,14 @@ impl CPUEmulator {
             );
         }
 
-        if header.cpu_flag.contains(CPUControlFlags::STM_END) {
+        if (flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END {
+            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
+            self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
+            self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_CYCLE,
                 (self.stm_cycle.max(1) - 1) as _,
-            );
-
-            self.bram_write(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_CTL_REG,
-                header.fpga_flag.bits() as u16 | CTL_FLAG_OP_MODE,
             );
         }
     }
@@ -625,7 +699,13 @@ impl CPUEmulator {
     fn clear(&mut self) {
         let freq_div_4k = 40960;
 
-        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, 0x0000);
+        self.fpga_flags_internal = 0x0000;
+        self.fpga_flags = FPGAControlFlags::empty();
+        self.bram_write(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_CTL_REG,
+            self.fpga_flags_internal | self.fpga_flags.bits() as u16,
+        );
 
         self.bram_cpy(
             BRAM_SELECT_CONTROLLER,
@@ -650,85 +730,114 @@ impl CPUEmulator {
             &freq_div_4k as *const _ as _,
             std::mem::size_of::<u32>() >> 1,
         );
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0x0000);
         self.bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
         self.bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, self.num_transducers << 1);
+
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_MOD_DELAY_BASE,
+            0x0000,
+            self.num_transducers,
+        );
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_PHASE_BASE,
+            0x0000,
+            self.num_transducers,
+        );
+        self.bram_set(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_FILTER_DUTY_BASE,
+            0x0000,
+            self.num_transducers,
+        );
     }
 
-    fn ecat_recv(&mut self, header: &GlobalHeader, body: Option<&Body<[u16]>>) {
-        if self.msg_id == header.msg_id {
+    fn handle_payload(&mut self, tag: u8, data: &[u8]) {
+        match tag {
+            TAG_NONE => {}
+            TAG_CLEAR => self.clear(),
+            TAG_SYNC => self.synchronize(&data[2..]),
+            TAG_FIRM_INFO => match data[1] {
+                INFO_TYPE_CPU_VERSION_MAJOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_cpu_version() & 0xFF) as _;
+                }
+                INFO_TYPE_CPU_VERSION_MINOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_cpu_version_minor() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_VERSION_MAJOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_fpga_version() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_VERSION_MINOR => {
+                    self.read_fpga_info = false;
+                    self.rx_data = (self.get_fpga_version_minor() & 0xFF) as _;
+                }
+                INFO_TYPE_FPGA_FUNCTIONS => {
+                    self.read_fpga_info = false;
+                    self.rx_data = ((self.get_fpga_version() >> 8) & 0xFF) as _;
+                }
+                INFO_TYPE_CLEAR => {
+                    self.rx_data = if self.read_fpga_info {
+                        self.read_fpga_info() as _
+                    } else {
+                        0
+                    };
+                }
+                _ => {
+                    unimplemented!("Unsupported firmware info type")
+                }
+            },
+            TAG_UPDATE_FLAGS => (),
+            TAG_MODULATION => self.write_mod(data),
+            TAG_MODULATION_DELAY => self.write_mod_delay(&data[2..]),
+            TAG_SILENCER => self.config_silencer(data),
+            TAG_GAIN => self.write_gain(data),
+            TAG_FOCUS_STM => self.write_focus_stm(data),
+            TAG_GAIN_STM => self.write_gain_stm(data),
+            TAG_FILTER => self.write_filter(data),
+            _ => {
+                unimplemented!("Unsupported tag")
+            }
+        }
+    }
+
+    fn ecat_recv(&mut self, data: &[u8]) {
+        let header = unsafe { &*(data.as_ptr() as *const Header) };
+
+        if self.ack == header.msg_id {
             return;
         }
 
+        if header.fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO) {
+            self.read_fpga_info = true;
+            self.rx_data = self.read_fpga_info() as _;
+        }
+
         self.fpga_flags = header.fpga_flag;
-        self.cpu_flags = header.cpu_flag;
 
-        self.msg_id = header.msg_id;
-        self.read_fpga_info = header.fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO);
-        if self.read_fpga_info {
-            self.ack = self.read_fpga_info() as _;
+        self.handle_payload(
+            data[std::mem::size_of::<Header>()],
+            &data[std::mem::size_of::<Header>()..],
+        );
+
+        if header.slot_2_offset != 0 {
+            self.handle_payload(
+                data[std::mem::size_of::<Header>() + header.slot_2_offset as usize],
+                &data[std::mem::size_of::<Header>() + header.slot_2_offset as usize..],
+            )
         }
 
-        match self.msg_id {
-            MSG_CLEAR => {
-                self.clear();
-            }
-            MSG_RD_CPU_VERSION => {
-                self.ack = (self.get_cpu_version() & 0xFF) as _;
-            }
-            MSG_RD_CPU_VERSION_MINOR => {
-                self.ack = (self.get_cpu_version_minor() & 0xFF) as _;
-            }
-            MSG_RD_FPGA_VERSION => {
-                self.ack = (self.get_fpga_version() & 0xFF) as _;
-            }
-            MSG_RD_FPGA_VERSION_MINOR => {
-                self.ack = (self.get_fpga_version_minor() & 0xFF) as _;
-            }
-            MSG_RD_FPGA_FUNCTION => {
-                self.ack = ((self.get_fpga_version() >> 8) & 0xFF) as _;
-            }
-            _ => {
-                if self.msg_id > MSG_END {
-                    return;
-                }
+        self.bram_write(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_CTL_REG,
+            self.fpga_flags_internal | self.fpga_flags.bits() as u16,
+        );
 
-                let ctl_reg = header.fpga_flag;
-                self.bram_write(
-                    BRAM_SELECT_CONTROLLER,
-                    BRAM_ADDR_CTL_REG,
-                    ctl_reg.bits() as _,
-                );
-
-                if header.cpu_flag.contains(CPUControlFlags::MOD) {
-                    self.write_mod(header);
-                } else if header.cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER) {
-                    self.config_silencer(header);
-                } else if header.cpu_flag.contains(CPUControlFlags::CONFIG_SYNC) {
-                    self.synchronize(body.expect("body is required"));
-                    return;
-                }
-
-                if !header.cpu_flag.contains(CPUControlFlags::WRITE_BODY) {
-                    return;
-                }
-
-                if header.cpu_flag.contains(CPUControlFlags::MOD_DELAY) {
-                    self.set_mod_delay(body.expect("body is required"));
-                    return;
-                }
-
-                if !ctl_reg.contains(FPGAControlFlags::STM_MODE) {
-                    self.write_normal_op(header, body.expect("body is required"));
-                    return;
-                }
-
-                if !ctl_reg.contains(FPGAControlFlags::STM_GAIN_MODE) {
-                    self.write_focus_stm(header, body.expect("body is required"));
-                } else {
-                    self.write_gain_stm(header, body.expect("body is required"));
-                }
-            }
-        }
+        self.ack = header.msg_id;
     }
 }

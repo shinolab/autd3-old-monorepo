@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::sync::{
     Arc,
 };
 
-use autd3_core::{
+use autd3_driver::{
     datagram::Datagram,
     geometry::Transducer,
     link::Link,
@@ -180,9 +180,7 @@ impl<
                 ) {
                     Ok(handle) => handle,
                     Err(e) => {
-                        return Err(AUTDError::Internal(
-                            autd3_core::error::AUTDInternalError::TimerError(e),
-                        ));
+                        return Err(AUTDError::Internal(e));
                     }
                 };
                 s.spawn(|| -> Result<bool, AUTDError> {
@@ -190,11 +188,7 @@ impl<
                         if callback_finish(i.load(Ordering::Acquire), now.elapsed()) {
                             match handle.close() {
                                 Ok(_) => return Ok(true),
-                                Err(e) => {
-                                    return Err(AUTDError::Internal(
-                                        autd3_core::error::AUTDInternalError::TimerError(e),
-                                    ))
-                                }
+                                Err(e) => return Err(AUTDError::Internal(e)),
                             }
                         }
                     }

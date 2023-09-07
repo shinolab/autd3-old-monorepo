@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{core::float, custom::CustomModulation},
+    common::{driver::defined::float, CustomModulation},
     ModulationPtr,
 };
 
@@ -40,14 +40,14 @@ mod tests {
 
     use crate::{modulation::*, tests::*, *};
 
-    use autd3capi_def::{DatagramBodyPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
 
     #[test]
     fn test_custom_modulation() {
         unsafe {
             let cnt = create_controller();
 
-            let buf = vec![1., 1.];
+            let buf = [1., 1.];
             let m = AUTDModulationCustom(5000, buf.as_ptr(), buf.len() as _);
             let m = AUTDModulationIntoDatagram(m);
 
@@ -57,7 +57,7 @@ mod tests {
                     cnt,
                     TransMode::Legacy,
                     m,
-                    DatagramBodyPtr(std::ptr::null()),
+                    DatagramPtr(std::ptr::null()),
                     -1,
                     err.as_mut_ptr(),
                 ),

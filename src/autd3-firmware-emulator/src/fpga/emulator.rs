@@ -4,14 +4,14 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::geometry::Vector3;
+use autd3_driver::geometry::Vector3;
 
 use super::params::*;
 
@@ -29,7 +29,7 @@ pub struct FPGAEmulator {
 impl FPGAEmulator {
     pub(crate) fn new(num_transducers: usize) -> Self {
         Self {
-            controller_bram: vec![0x0000; 1024],
+            controller_bram: vec![0x0000; 1280],
             modulator_bram: vec![0x0000; 32768],
             normal_op_bram: vec![0x0000; 512],
             stm_op_bram: vec![0x0000; 524288],
@@ -162,6 +162,22 @@ impl FPGAEmulator {
             .iter()
             .take(self.num_transducers)
             .copied()
+            .collect()
+    }
+
+    pub fn duty_filters(&self) -> Vec<i16> {
+        self.controller_bram[ADDR_FILTER_DUTY_BASE..]
+            .iter()
+            .take(self.num_transducers)
+            .map(|&v| v as i16)
+            .collect()
+    }
+
+    pub fn phase_filters(&self) -> Vec<i16> {
+        self.controller_bram[ADDR_FILTER_PHASE_BASE..]
+            .iter()
+            .take(self.num_transducers)
+            .map(|&v| v as i16)
             .collect()
     }
 

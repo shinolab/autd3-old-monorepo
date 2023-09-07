@@ -7,9 +7,9 @@ Please install following softwares.
 * Vivado Lab edition or ML edition (https://www.xilinx.com/products/design-tools/vivado.html)
     * If you only want to update the firmware, we strongly recommend you to use Lab edition
         * Lab edition requires only about 6GB of disk space, while ML edition requires more than 60GB
-    * Tested with Vivado 2022.2
+    * Tested with Vivado 2023.1
 * J-Link Software (https://www.segger.com/downloads/jlink/)
-    * Tested with J-Link Software v7.58b (x64)
+    * Tested with J-Link Software v7.82a (x64)
 
 Also, the following cables are required
 
@@ -18,4 +18,4 @@ Also, the following cables are required
 
 # Update
 
-Make sure that AUTD is connected via appropriate cables and power on. Then, run `autd_firmware_writer.ps1` from powershell.
+Make sure that AUTD3 device is connected via appropriate cables and power on. Then, run `autd_firmware_writer.ps1` from powershell.

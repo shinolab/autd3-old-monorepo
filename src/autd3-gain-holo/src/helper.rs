@@ -4,18 +4,20 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
+use std::collections::HashMap;
+
+use autd3_driver::{
+    datagram::GainFilter,
+    defined::{Drive, PI},
     error::AUTDInternalError,
-    gain::GainFilter,
-    geometry::{Geometry, Transducer},
-    Drive, PI,
+    geometry::{Device, Transducer},
 };
 use nalgebra::ComplexField;
 
@@ -114,37 +116,53 @@ macro_rules! impl_holo {
 
 #[allow(clippy::uninit_vec)]
 pub fn generate_result<T: Transducer>(
-    geometry: &Geometry<T>,
+    devices: &[&Device<T>],
     q: VectorXc,
     constraint: &Constraint,
     filter: GainFilter,
-) -> Result<Vec<Drive>, AUTDInternalError> {
+) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
     let max_coefficient = q.camax().abs();
+    let mut idx = 0;
     match filter {
-        GainFilter::All => Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let phase = q[tr.idx()].argument() + PI;
-                let amp = constraint.convert(q[tr.idx()].abs(), max_coefficient);
-                Drive { amp, phase }
+        GainFilter::All => Ok(devices
+            .iter()
+            .map(|dev| {
+                (
+                    dev.idx(),
+                    dev.iter()
+                        .map(|_| {
+                            let phase = q[idx].argument() + PI;
+                            let amp = constraint.convert(q[idx].abs(), max_coefficient);
+                            idx += 1;
+                            Drive { amp, phase }
+                        })
+                        .collect(),
+                )
             })
             .collect()),
-        GainFilter::Filter(filter) => {
-            let mut result = Vec::with_capacity(geometry.num_transducers());
-            unsafe {
-                result.set_len(geometry.num_transducers());
-            }
-            let mut idx = 0;
-            geometry.transducers().for_each(|tr| {
-                if !filter[idx] {
-                    return;
+        GainFilter::Filter(filter) => Ok(devices
+            .iter()
+            .map(|dev| {
+                if let Some(filter) = filter.get(&dev.idx()) {
+                    (
+                        dev.idx(),
+                        dev.iter()
+                            .filter(|tr| filter[tr.local_idx()])
+                            .map(|_| {
+                                let phase = q[idx].argument() + PI;
+                                let amp = constraint.convert(q[idx].abs(), max_coefficient);
+                                idx += 1;
+                                Drive { amp, phase }
+                            })
+                            .collect(),
+                    )
+                } else {
+                    (
+                        dev.idx(),
+                        dev.iter().map(|_| Drive { phase: 0., amp: 0. }).collect(),
+                    )
                 }
-                let phase = q[idx].argument() + PI;
-                let amp = constraint.convert(q[idx].abs(), max_coefficient);
-                result[tr.idx()] = Drive { amp, phase };
-                idx += 1;
-            });
-            Ok(result)
-        }
+            })
+            .collect()),
     }
 }

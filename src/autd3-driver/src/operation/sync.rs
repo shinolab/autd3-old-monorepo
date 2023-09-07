@@ -4,212 +4,135 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use super::Operation;
-use crate::{CPUControlFlags, DriverError, TxDatagram};
+use std::collections::HashMap;
 
-pub trait SyncOp: Operation {
-    fn new<F: Fn() -> Vec<u16>>(cycles_fn: F) -> Self;
-}
+use crate::{
+    error::AUTDInternalError,
+    fpga::LegacyDrive,
+    geometry::{Device, Transducer},
+    operation::{Operation, TypeTag},
+};
 
 #[derive(Default)]
-pub struct SyncLegacy {
-    sent: bool,
+pub struct SyncOp {
+    remains: HashMap<usize, usize>,
 }
 
-impl SyncOp for SyncLegacy {
-    fn new<F: Fn() -> Vec<u16>>(_: F) -> Self {
-        Self { sent: false }
-    }
-}
+impl<T: Transducer> Operation<T> for SyncOp {
+    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
 
-impl Operation for SyncLegacy {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
-        if self.is_finished() {
-            return Ok(());
+        assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<LegacyDrive>());
+
+        tx[0] = TypeTag::Sync as u8;
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut u16,
+                device.num_transducers(),
+            );
+            dst.iter_mut()
+                .zip(device.iter())
+                .for_each(|(d, tr)| *d = tr.cycle());
         }
 
-        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
-        tx.header_mut()
-            .cpu_flag
-            .remove(CPUControlFlags::CONFIG_SILENCER);
-        tx.header_mut()
-            .cpu_flag
-            .set(CPUControlFlags::CONFIG_SYNC, true);
-        tx.num_bodies = tx.num_devices();
+        Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
+    }
 
-        tx.body_raw_mut().fill(4096);
+    fn required_size(&self, device: &Device<T>) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
+    }
 
-        self.sent = true;
+    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
-    fn init(&mut self) {
-        self.sent = false;
+    fn remains(&self, device: &Device<T>) -> usize {
+        self.remains[&device.idx()]
     }
 
-    fn is_finished(&self) -> bool {
-        self.sent
-    }
-}
-
-pub struct SyncAdvanced {
-    sent: bool,
-    cycles: Vec<u16>,
-}
-
-impl SyncOp for SyncAdvanced {
-    fn new<F: Fn() -> Vec<u16>>(cycles_fn: F) -> Self {
-        Self {
-            sent: false,
-            cycles: cycles_fn(),
-        }
-    }
-}
-
-impl Operation for SyncAdvanced {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
-        if self.is_finished() {
-            return Ok(());
-        }
-
-        tx.num_bodies = tx.num_devices();
-
-        if self.cycles.len() != tx.num_transducers() {
-            return Err(DriverError::NumberOfTransducerMismatch {
-                a: tx.num_transducers(),
-                b: self.cycles.len(),
-            });
-        }
-
-        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
-        tx.header_mut()
-            .cpu_flag
-            .remove(CPUControlFlags::CONFIG_SILENCER);
-        tx.header_mut()
-            .cpu_flag
-            .set(CPUControlFlags::CONFIG_SYNC, true);
-
-        tx.body_raw_mut().clone_from_slice(&self.cycles);
-
-        self.sent = true;
-
-        Ok(())
-    }
-
-    fn init(&mut self) {
-        self.sent = false;
-    }
-
-    fn is_finished(&self) -> bool {
-        self.sent
+    fn commit(&mut self, device: &Device<T>) {
+        self.remains.insert(device.idx(), 0);
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use rand::prelude::*;
 
     use super::*;
+    use crate::{
+        fpga::MAX_CYCLE,
+        geometry::{device::tests::create_device, AdvancedTransducer},
+    };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
+    const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn sync_legacy() {
-        let mut tx = TxDatagram::new(&[
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-        ]);
-
-        let cycles = vec![4096u16; NUM_TRANS_IN_UNIT * 10];
-
-        let mut op = SyncLegacy::default();
-        op.init();
-        assert!(!op.is_finished());
-
-        op.pack(&mut tx).unwrap();
-        assert!(op.is_finished());
-        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-        assert!(!tx
-            .header()
-            .cpu_flag
-            .contains(CPUControlFlags::CONFIG_SILENCER));
-
-        assert!(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-        tx.body_raw_mut()
-            .iter()
-            .zip(cycles.iter())
-            .for_each(|(d, cycle)| {
-                assert_eq!(d, cycle);
-            });
-        assert_eq!(tx.num_bodies, 10);
-
-        op.init();
-        assert!(!op.is_finished());
-    }
-
-    #[test]
-    fn sync_advanced() {
-        let mut tx = TxDatagram::new(&[
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-            NUM_TRANS_IN_UNIT,
-        ]);
-
-        let mut rng = rand::thread_rng();
-
-        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
-            .map(|_| rng.gen_range(0..0xFFFFu16))
+    fn sync_op() {
+        let mut devices = (0..NUM_DEVICE)
+            .map(|i| create_device::<AdvancedTransducer>(i, NUM_TRANS_IN_UNIT))
             .collect::<Vec<_>>();
 
-        let mut op = SyncAdvanced::new(|| cycles.clone());
-        op.init();
-        assert!(!op.is_finished());
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
-        op.pack(&mut tx).unwrap();
-        assert!(op.is_finished());
-        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD));
-        assert!(!tx
-            .header()
-            .cpu_flag
-            .contains(CPUControlFlags::CONFIG_SILENCER));
+        let mut rng = rand::thread_rng();
+        devices.iter_mut().for_each(|dev| {
+            dev.iter_mut()
+                .for_each(|tr| tr.set_cycle(rng.gen_range(2..MAX_CYCLE)).unwrap())
+        });
+        let mut op = SyncOp::default();
 
-        assert!(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
-        tx.body_raw_mut()
+        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
+            )
+        });
+
+        devices
             .iter()
-            .zip(cycles.iter())
-            .for_each(|(d, cycle)| {
-                assert_eq!(d, cycle);
-            });
-        assert_eq!(tx.num_bodies, 10);
+            .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        op.init();
-        assert!(!op.is_finished());
+        devices.iter().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
 
-        let mut op = SyncAdvanced::new(|| vec![1]);
-        op.init();
+        devices
+            .iter()
+            .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        assert!(op.pack(&mut tx).is_err());
+        devices.iter().for_each(|dev| {
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::Sync as u8
+            );
+            tx.chunks(2)
+                .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
+                .skip(1)
+                .zip(dev.iter())
+                .for_each(|(d, tr)| {
+                    assert_eq!(d[0], (tr.cycle() & 0xFF) as u8);
+                    assert_eq!(d[1], (tr.cycle() >> 8) as u8);
+                })
+        });
     }
 }

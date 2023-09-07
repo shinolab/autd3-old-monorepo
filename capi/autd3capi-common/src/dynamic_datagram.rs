@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,16 +16,12 @@
 use std::time::Duration;
 
 use autd3::{
-    core::{
-        datagram::{Datagram, NullBody, NullHeader},
-        error::AUTDInternalError,
-        gain::{Gain, GainFilter},
-        Drive, GainOp, GainSTMOp, GainSTMProps, Operation, SyncOp,
-    },
+    driver::{datagram::Datagram, error::AUTDInternalError, operation::Operation},
     prelude::*,
 };
 
 use crate::{
+    dynamic_op::{DynamicGainOp, DynamicGainSTMOp},
     dynamic_transducer::{DynamicTransducer, TransMode},
     G, M,
 };
@@ -33,10 +29,15 @@ use crate::{
 pub trait DynamicDatagram {
     #[allow(clippy::type_complexity)]
     fn operation(
-        &self,
+        &mut self,
         mode: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError>;
+    ) -> Result<
+        (
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
+        ),
+        AUTDInternalError,
+    >;
 
     fn timeout(&self) -> Option<Duration>;
 }
@@ -48,15 +49,12 @@ impl Datagram<DynamicTransducer>
         Option<std::time::Duration>,
     )
 {
-    type H = Box<dyn Operation>;
-    type B = Box<dyn Operation>;
+    type O1 = Box<dyn Operation<DynamicTransducer>>;
+    type O2 = Box<dyn Operation<DynamicTransducer>>;
 
-    fn operation(
-        &self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let mode = self.0;
-        self.1.operation(mode, geometry)
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let (mode, mut op, _) = self;
+        op.operation(mode)
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -76,17 +74,14 @@ impl Datagram<DynamicTransducer>
         Option<std::time::Duration>,
     )
 {
-    type H = Box<dyn Operation>;
-    type B = Box<dyn Operation>;
+    type O1 = Box<dyn Operation<DynamicTransducer>>;
+    type O2 = Box<dyn Operation<DynamicTransducer>>;
 
-    fn operation(
-        &self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let mode = self.0;
-        let (h, _) = self.1.operation(mode, geometry)?;
-        let (_, b) = self.2.operation(mode, geometry)?;
-        Ok((h, b))
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let (mode, mut op1, mut op2, _) = self;
+        let (op1, _) = op1.operation(mode)?;
+        let (op2, _) = op2.operation(mode)?;
+        Ok((op1, op2))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -94,50 +89,21 @@ impl Datagram<DynamicTransducer>
     }
 }
 
-impl DynamicDatagram for NullHeader {
-    fn operation(
-        &self,
-        _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
-    }
-}
-
-impl DynamicDatagram for NullBody {
-    fn operation(
-        &self,
-        _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
-    }
-}
-
 impl DynamicDatagram for UpdateFlags {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        Ok((
+            Box::<crate::driver::operation::UpdateFlagsOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -147,36 +113,19 @@ impl DynamicDatagram for UpdateFlags {
 
 impl DynamicDatagram for Synchronize {
     fn operation(
-        &self,
-        mode: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
+        &mut self,
+        _: TransMode,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        match mode {
-            TransMode::Legacy => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::SyncLegacy::new(|| {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
-            )),
-            TransMode::Advanced => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::SyncAdvanced::new(|| {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
-            )),
-            TransMode::AdvancedPhase => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::SyncAdvanced::new(|| {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
-            )),
-        }
+        Ok((
+            Box::<crate::driver::operation::SyncOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -186,18 +135,19 @@ impl DynamicDatagram for Synchronize {
 
 impl DynamicDatagram for Stop {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        Ok((
+            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(10)),
+            Box::<crate::driver::operation::StopOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -205,20 +155,21 @@ impl DynamicDatagram for Stop {
     }
 }
 
-impl DynamicDatagram for SilencerConfig {
+impl DynamicDatagram for Silencer {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        Ok((
+            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(self.step())),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -228,18 +179,19 @@ impl DynamicDatagram for SilencerConfig {
 
 impl DynamicDatagram for Clear {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        Ok((
+            Box::<crate::driver::operation::ClearOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -249,18 +201,19 @@ impl DynamicDatagram for Clear {
 
 impl DynamicDatagram for ModDelay {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        Ok((
+            Box::<crate::driver::operation::ModDelayOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -270,18 +223,25 @@ impl DynamicDatagram for ModDelay {
 
 impl DynamicDatagram for FocusSTM {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
-        Ok((Box::new(h), Box::new(b)))
+        let freq_div = self.sampling_frequency_division();
+        Ok((
+            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(
+                self.take_control_points(),
+                freq_div,
+                self.start_idx(),
+                self.finish_idx(),
+            )),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -289,49 +249,29 @@ impl DynamicDatagram for FocusSTM {
     }
 }
 
-impl<G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, G> {
+impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
     fn operation(
-        &self,
+        &mut self,
         mode: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
-        AUTDInternalError,
+        autd3::driver::error::AUTDInternalError,
     > {
-        let props = GainSTMProps {
-            mode: self.mode(),
-            freq_div: self.sampling_frequency_division(),
-            finish_idx: self.finish_idx(),
-            start_idx: self.start_idx(),
-        };
-        let drives = self
-            .gains()
-            .iter()
-            .map(|gain| gain.calc(geometry, GainFilter::All))
-            .collect::<Result<Vec<_>, _>>()?;
-        match mode {
-            TransMode::Legacy => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainSTMLegacy::new(drives, props, || {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
+        let freq_div = self.sampling_frequency_division();
+        Ok((
+            Box::new(DynamicGainSTMOp::new(
+                mode,
+                self.take_gains(),
+                self.mode(),
+                freq_div,
+                self.start_idx(),
+                self.finish_idx(),
             )),
-            TransMode::Advanced => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainSTMAdvanced::new(drives, props, || {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
-            )),
-            TransMode::AdvancedPhase => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainSTMAdvanced::new(drives, props, || {
-                    geometry.transducers().map(|tr| tr.cycle()).collect()
-                })),
-            )),
-        }
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -341,71 +281,51 @@ impl<G: Gain<DynamicTransducer>> DynamicDatagram for GainSTM<DynamicTransducer, 
 
 impl DynamicDatagram for Amplitudes {
     fn operation(
-        &self,
-        _: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
+        &mut self,
+        mode: TransMode,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
-        AUTDInternalError,
+        autd3::driver::error::AUTDInternalError,
     > {
-        Ok((
-            Box::<autd3::core::NullHeader>::default(),
-            Box::new(autd3::core::GainAdvancedDuty::new(
-                vec![
-                    Drive {
-                        phase: 0.0,
-                        amp: self.amp(),
-                    };
-                    geometry.num_transducers()
-                ],
-                || geometry.transducers().map(|tr| tr.cycle()).collect(),
+        match mode {
+            TransMode::Legacy | TransMode::Advanced => {
+                Err(autd3::driver::error::AUTDInternalError::NotSupported(
+                    "Amplitudes can not be used in Legacy or Advanced mode".to_string(),
+                ))
+            }
+            TransMode::AdvancedPhase => Ok((
+                Box::new(<Self as Datagram<AdvancedPhaseTransducer>>::O1::new(
+                    self.amp(),
+                )),
+                Box::<crate::driver::operation::NullOp>::default(),
             )),
-        ))
+        }
     }
-
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<AdvancedPhaseTransducer>>::timeout(self)
+        None
     }
 }
 
 impl DynamicDatagram for Box<G> {
     fn operation(
-        &self,
+        &mut self,
         mode: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
-        autd3::core::error::AUTDInternalError,
+        autd3::driver::error::AUTDInternalError,
     > {
-        match mode {
-            TransMode::Legacy => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainLegacy::new(
-                    self.calc(geometry, GainFilter::All)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-            TransMode::Advanced => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainAdvanced::new(
-                    self.calc(geometry, GainFilter::All)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-            TransMode::AdvancedPhase => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainAdvancedPhase::new(
-                    self.calc(geometry, GainFilter::All)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-        }
+        let mut tmp: Box<G> = Box::<Null>::default();
+        std::mem::swap(&mut tmp, self);
+        Ok((
+            Box::new(DynamicGainOp::new(tmp, mode)),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
     }
 
     fn timeout(&self) -> Option<Duration> {
@@ -415,20 +335,20 @@ impl DynamicDatagram for Box<G> {
 
 impl DynamicDatagram for Box<M> {
     fn operation(
-        &self,
+        &mut self,
         _: TransMode,
-        _: &Geometry<DynamicTransducer>,
     ) -> Result<
         (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
         ),
-        autd3::core::error::AUTDInternalError,
+        AUTDInternalError,
     > {
         let freq_div = self.sampling_frequency_division();
+        let buf = self.calc()?;
         Ok((
-            Box::new(autd3::core::Modulation::new(self.calc()?, freq_div)),
-            Box::<autd3::core::NullBody>::default(),
+            Box::new(crate::driver::operation::ModulationOp::new(buf, freq_div)),
+            Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 

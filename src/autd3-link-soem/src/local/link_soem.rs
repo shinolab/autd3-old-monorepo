@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,15 +25,15 @@ use std::{
 use crossbeam_channel::{bounded, Receiver, Sender};
 use time::ext::NumericalDuration;
 
-use autd3_core::{
-    autd3_device::AUTD3,
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::{get_logger, Link},
+    geometry::{Device, Transducer},
+    link::Link,
+    logger::get_logger,
     osal_timer::{Timer, TimerCallback},
     spdlog::prelude::*,
     timer_strategy::TimerStrategy,
-    RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC,
 };
 
 use crate::local::{
@@ -105,7 +105,7 @@ impl SOEM {
             is_open: Arc::new(AtomicBool::new(false)),
             ec_sync0_cycle: std::time::Duration::from_nanos(EC_CYCLE_TIME_BASE_NANO_SEC as u64 * 2),
             ec_send_cycle: std::time::Duration::from_nanos(EC_CYCLE_TIME_BASE_NANO_SEC as u64 * 2),
-            io_map: Arc::new(Mutex::new(IOMap::new(&[0]))),
+            io_map: Arc::new(Mutex::new(IOMap::new(0))),
         }
     }
 
@@ -200,7 +200,7 @@ impl Default for SOEM {
 }
 
 impl SOEM {
-    pub fn open_impl(&mut self, device_map: &[usize]) -> Result<i32, AUTDInternalError> {
+    pub fn open_impl(&mut self, num_devices: Option<usize>) -> Result<i32, AUTDInternalError> {
         let ifname = if self.ifname.is_empty() {
             lookup_autd()?
         } else {
@@ -255,12 +255,8 @@ impl SOEM {
 
             ec_configdc();
 
-            let dev_map = if device_map.is_empty() {
-                vec![AUTD3::NUM_TRANS_IN_UNIT; wc as _]
-            } else {
-                device_map.to_vec()
-            };
-            self.io_map = Arc::new(Mutex::new(IOMap::new(&dev_map)));
+            let num_devices = num_devices.unwrap_or(wc as _);
+            self.io_map = Arc::new(Mutex::new(IOMap::new(num_devices)));
             ec_config_map(self.io_map.lock().unwrap().data() as *mut c_void);
 
             ec_statecheck(0, ec_state_EC_STATE_SAFE_OP as u16, EC_TIMEOUTSTATE as i32);
@@ -450,19 +446,17 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
 }
 
 impl<T: Transducer> Link<T> for SOEM {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         if <Self as Link<T>>::is_open(self) {
             return Ok(());
         }
 
-        let found_dev = self.open_impl(geometry.device_map())?;
+        let found_dev = self.open_impl(Some(devices.len()))?;
         if found_dev <= 0 {
-            return Err(SOEMError::SlaveNotFound(0, geometry.num_devices() as _).into());
+            return Err(SOEMError::SlaveNotFound(0, devices.len() as _).into());
         }
-        if found_dev as usize != geometry.num_devices() {
-            return Err(
-                SOEMError::SlaveNotFound(found_dev as u16, geometry.num_devices() as _).into(),
-            );
+        if found_dev as usize != devices.len() {
+            return Err(SOEMError::SlaveNotFound(found_dev as u16, devices.len() as _).into());
         }
 
         Ok(())

@@ -1,17 +1,17 @@
 [package]
 name = "autd3capi-common"
-version = "14.2.2"
+version = "15.0.0"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
 autd3 = { path = "../../src/autd3" }
-autd3-core = { path = "../../src/autd3-core" }
+autd3-driver = { path = "../../src/autd3-driver" }
 autd3-gain-holo = { path = "../../src/autd3-gain-holo" }
 autd3-derive = { path = "../../src/autd3-derive" }
 libc = "0.2.144"
 
 [features]
-single_float = ["autd3/single_float", "autd3-core/single_float", "autd3-gain-holo/single_float"]
-use_meter = ["autd3/use_meter", "autd3-core/use_meter", "autd3-gain-holo/use_meter"]
-parallel = ["autd3/parallel", "autd3-core/parallel", "autd3-gain-holo/parallel"]
+single_float = ["autd3/single_float", "autd3-driver/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3/use_meter", "autd3-driver/use_meter", "autd3-gain-holo/use_meter"]
+parallel = ["autd3-gain-holo/parallel"]

@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,11 @@
 
 use std::{net::SocketAddr, time::Duration};
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
-    RxDatagram, TxDatagram,
 };
 use tokio::runtime::{Builder, Runtime};
 
@@ -71,7 +71,7 @@ impl RemoteSOEM {
 }
 
 impl<T: Transducer> Link<T> for RemoteSOEM {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         self.is_open = true;
         Ok(())
     }

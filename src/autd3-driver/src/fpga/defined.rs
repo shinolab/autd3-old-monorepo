@@ -4,14 +4,17 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{float, RxMessage, METER, PI};
+use crate::{
+    cpu::RxMessage,
+    defined::{float, Drive, METER, PI},
+};
 
 /// FPGA main clock frequency
 pub const FPGA_CLK_FREQ: usize = 163840000;
@@ -21,12 +24,36 @@ pub const FPGA_SUB_CLK_FREQ: usize = FPGA_CLK_FREQ / FPGA_SUB_CLK_FREQ_DIV;
 
 pub const FOCUS_STM_FIXED_NUM_UNIT: float = 0.025e-3 * METER;
 
-#[derive(Clone, Copy, Debug)]
-pub struct Drive {
-    /// Phase of ultrasound (from 0 to 2π)
-    pub phase: float,
-    /// Normalized amplitude of ultrasound (from 0 to 1)
-    pub amp: float,
+pub const MAX_CYCLE: u16 = 8191;
+
+pub const SAMPLING_FREQ_DIV_MIN: u32 = 4096 / FPGA_SUB_CLK_FREQ_DIV as u32;
+
+pub const MOD_BUF_SIZE_MAX: usize = 65536;
+
+pub const FOCUS_STM_BUF_SIZE_MAX: usize = 65536;
+pub const GAIN_STM_BUF_SIZE_MAX: usize = 1024;
+pub const GAIN_STM_LEGACY_BUF_SIZE_MAX: usize = 2048;
+
+#[derive(Clone)]
+#[repr(C)]
+pub struct STMFocus {
+    pub(crate) buf: [u16; 4],
+}
+
+impl STMFocus {
+    pub fn set(&mut self, x: float, y: float, z: float, duty_shift: u8) {
+        let x = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
+        let y = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
+        let z = (z / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
+        self.buf[0] = (x & 0xFFFF) as u16;
+        self.buf[1] =
+            ((y << 2) & 0xFFFC) as u16 | ((x >> 30) & 0x0002) as u16 | ((x >> 16) & 0x0001) as u16;
+        self.buf[2] =
+            ((z << 4) & 0xFFF0) as u16 | ((y >> 28) & 0x0008) as u16 | ((y >> 14) & 0x0007) as u16;
+        self.buf[3] = (((duty_shift as u16) << 6) & 0x3FC0)
+            | ((z >> 26) & 0x0020) as u16
+            | ((z >> 12) & 0x001F) as u16;
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -83,8 +110,39 @@ impl AdvancedDriveDuty {
     }
 }
 
+#[derive(Debug)]
+#[repr(C)]
+pub struct FilterPhase {
+    pub phase: i16,
+}
+
+impl FilterPhase {
+    pub fn to_phase(d: float, cycle: u16) -> i16 {
+        (((d / (2.0 * PI) * cycle as float).round() as i32) % (cycle as i32)) as _
+    }
+
+    pub fn set(&mut self, d: float, cycle: u16) {
+        self.phase = Self::to_phase(d, cycle);
+    }
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct FilterDuty {
+    pub duty: i16,
+}
+
+impl FilterDuty {
+    pub fn to_duty(d: float, cycle: u16) -> i16 {
+        (cycle as float * d.clamp(-1., 1.).asin() / PI).round() as _
+    }
+
+    pub fn set(&mut self, d: float, cycle: u16) {
+        self.duty = Self::to_duty(d, cycle);
+    }
+}
+
 /// FPGA information
-#[derive(Default)]
 #[repr(C)]
 pub struct FPGAInfo {
     info: u8,
@@ -107,7 +165,7 @@ impl FPGAInfo {
 
 impl From<&RxMessage> for FPGAInfo {
     fn from(msg: &RxMessage) -> Self {
-        Self { info: msg.ack }
+        Self { info: msg.data }
     }
 }
 
@@ -116,11 +174,20 @@ mod tests {
     use std::mem::size_of;
 
     use super::*;
-    use crate::PI;
+    use crate::defined::PI;
 
     #[test]
     fn legacy_drive() {
         assert_eq!(size_of::<LegacyDrive>(), 2);
+
+        let d = LegacyDrive {
+            phase: 0x01,
+            duty: 0x02,
+        };
+        let dc = d;
+        assert_eq!(d.phase, dc.phase);
+        assert_eq!(d.duty, dc.duty);
+        dbg!(d);
 
         let mut d = [0x00u8; 2];
 
@@ -170,6 +237,11 @@ mod tests {
     #[test]
     fn phase() {
         assert_eq!(size_of::<AdvancedDrivePhase>(), 2);
+
+        let d = AdvancedDrivePhase { phase: 0x0001 };
+        let dc = d;
+        assert_eq!(d.phase, dc.phase);
+        dbg!(d);
 
         let mut d = 0x0000u16;
 
@@ -254,6 +326,11 @@ mod tests {
     fn duty() {
         assert_eq!(size_of::<AdvancedDriveDuty>(), 2);
 
+        let d = AdvancedDriveDuty { duty: 0x0001 };
+        let dc = d;
+        assert_eq!(d.duty, dc.duty);
+        dbg!(d);
+
         let mut d = 0x0000u16;
 
         let cycle = 4096;
@@ -334,16 +411,134 @@ mod tests {
     }
 
     #[test]
+    fn phase_filter() {
+        assert_eq!(size_of::<FilterPhase>(), 2);
+
+        let mut d = 0x0000i16;
+
+        let cycle = 4096;
+        unsafe {
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(0.0, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(PI, cycle);
+            assert_eq!(d, 2048);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(1.5 * PI, cycle);
+            assert_eq!(d, 2048 + 1024);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(2.0 * PI, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(3.0 * PI, cycle);
+            assert_eq!(d, 2048);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-PI, cycle);
+            assert_eq!(d, -2048);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-1.5 * PI, cycle);
+            assert_eq!(d, -2048 - 1024);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-2.0 * PI, cycle);
+            assert_eq!(d, 0);
+        }
+
+        let cycle = 2000;
+        unsafe {
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(0.0, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(PI, cycle);
+            assert_eq!(d, 1000);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(1.5 * PI, cycle);
+            assert_eq!(d, 1000 + 500);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(2.0 * PI, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(3.0 * PI, cycle);
+            assert_eq!(d, 1000);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-PI, cycle);
+            assert_eq!(d, -1000);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-1.5 * PI, cycle);
+            assert_eq!(d, -1000 - 500);
+
+            (*(&mut d as *mut _ as *mut FilterPhase)).set(-2.0 * PI, cycle);
+            assert_eq!(d, 0);
+        }
+    }
+
+    #[test]
+    fn duty_filter() {
+        assert_eq!(size_of::<FilterDuty>(), 2);
+
+        let mut d = 0x0000i16;
+
+        let cycle = 4096;
+        unsafe {
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(0.0, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(0.5, cycle);
+            assert_eq!(d, 683);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(1.0, cycle);
+            assert_eq!(d, 2048);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(1.5, cycle);
+            assert_eq!(d, 2048);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(-0.5, cycle);
+            assert_eq!(d, -683);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(-1.0, cycle);
+            assert_eq!(d, -2048);
+        }
+
+        let cycle = 2000;
+        unsafe {
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(0.0, cycle);
+            assert_eq!(d, 0);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(0.5, cycle);
+            assert_eq!(d, 333);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(1.0, cycle);
+            assert_eq!(d, 1000);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(1.5, cycle);
+            assert_eq!(d, 1000);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(-0.5, cycle);
+            assert_eq!(d, -333);
+
+            (*(&mut d as *mut _ as *mut FilterDuty)).set(-1.0, cycle);
+            assert_eq!(d, -1000);
+        }
+    }
+
+    #[test]
     fn fpga_info() {
         assert_eq!(size_of::<FPGAInfo>(), 1);
 
-        let info = FPGAInfo { info: 0x00 };
+        let info = FPGAInfo::new(0x00);
         assert!(!info.is_thermal_assert());
+        assert_eq!(info.info(), 0x00);
 
-        let info = FPGAInfo { info: 0x01 };
+        let info = FPGAInfo::new(0x01);
         assert!(info.is_thermal_assert());
+        assert_eq!(info.info(), 0x01);
 
-        let info = FPGAInfo { info: 0x02 };
+        let info = FPGAInfo::new(0x02);
         assert!(!info.is_thermal_assert());
+        assert_eq!(info.info(), 0x02);
+
+        let rx = RxMessage { ack: 0, data: 0x01 };
+        let info = FPGAInfo::from(&rx);
+        assert!(info.is_thermal_assert());
+        assert_eq!(info.info(), 0x01);
     }
 }

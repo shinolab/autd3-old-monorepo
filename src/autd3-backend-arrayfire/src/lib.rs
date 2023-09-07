@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,10 +18,11 @@ use std::rc::Rc;
 
 use arrayfire::*;
 
-use autd3_core::{
+use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
-    float,
-    gain::GainFilter,
+    datagram::GainFilter,
+    defined::float,
+    geometry::Device,
 };
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, Trans, VectorX, VectorXc};
 
@@ -80,39 +81,46 @@ impl LinAlgBackend for ArrayFireBackend {
         Ok(Rc::new(Self {}))
     }
 
-    fn generate_propagation_matrix<T: autd3_core::geometry::Transducer>(
+    fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
         &self,
-        geometry: &autd3_core::geometry::Geometry<T>,
-        foci: &[autd3_core::geometry::Vector3],
+        devices: &[&Device<T>],
+        foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
         let g = match filter {
-            GainFilter::All => geometry
-                .transducers()
-                .flat_map(|trans| {
-                    foci.iter().map(move |fp| {
-                        propagate_tr::<Sphere, T>(
-                            trans,
-                            geometry.attenuation,
-                            geometry.sound_speed,
-                            fp,
-                        )
+            GainFilter::All => devices
+                .iter()
+                .flat_map(|dev| {
+                    dev.iter().flat_map(move |tr| {
+                        foci.iter().map(move |fp| {
+                            propagate_tr::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
+                        })
                     })
                 })
                 .collect::<Vec<_>>(),
-            GainFilter::Filter(filter) => geometry
-                .transducers()
-                .filter(|tr| filter[tr.idx()])
-                .flat_map(|trans| {
-                    foci.iter().map(move |fp| {
-                        propagate_tr::<Sphere, T>(
-                            trans,
-                            geometry.attenuation,
-                            geometry.sound_speed,
-                            fp,
-                        )
+            GainFilter::Filter(filter) => devices
+                .iter()
+                .flat_map(|dev| {
+                    dev.iter().filter_map(move |tr| {
+                        if let Some(filter) = filter.get(&dev.idx()) {
+                            if filter[tr.local_idx()] {
+                                Some(foci.iter().map(move |fp| {
+                                    propagate_tr::<Sphere, T>(
+                                        tr,
+                                        dev.attenuation,
+                                        dev.sound_speed,
+                                        fp,
+                                    )
+                                }))
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
                     })
                 })
+                .flatten()
                 .collect::<Vec<_>>(),
         };
         unsafe {
@@ -242,7 +250,7 @@ impl LinAlgBackend for ArrayFireBackend {
 
     fn copy_to_v(&self, src: &Self::VectorX, dst: &mut Self::VectorX) -> Result<(), HoloError> {
         let seqs = [Seq::new(0u32, src.elements() as u32 - 1, 1)];
-        arrayfire::assign_seq(dst, &seqs, &src);
+        arrayfire::assign_seq(dst, &seqs, src);
         Ok(())
     }
 
@@ -251,7 +259,7 @@ impl LinAlgBackend for ArrayFireBackend {
             Seq::new(0u32, src.dims()[0] as u32 - 1, 1),
             Seq::new(0u32, src.dims()[1] as u32 - 1, 1),
         ];
-        arrayfire::assign_seq(dst, &seqs, &src);
+        arrayfire::assign_seq(dst, &seqs, src);
         Ok(())
     }
 
@@ -287,7 +295,7 @@ impl LinAlgBackend for ArrayFireBackend {
         col: usize,
         v: &mut Self::VectorXc,
     ) -> Result<(), HoloError> {
-        *v = arrayfire::col(&a, col as _);
+        *v = arrayfire::col(a, col as _);
         Ok(())
     }
 
@@ -315,7 +323,7 @@ impl LinAlgBackend for ArrayFireBackend {
             return Ok(());
         }
         let seqs_a = [Seq::new(start as u32, end as u32 - 1, 1)];
-        let sub_a = index(&a, &seqs_a);
+        let sub_a = index(a, &seqs_a);
         let seqs_b = [
             Seq::new(start as u32, end as u32 - 1, 1),
             Seq::new(col as u32, col as u32, 1),
@@ -336,7 +344,7 @@ impl LinAlgBackend for ArrayFireBackend {
             return Ok(());
         }
         let seqs_a = [Seq::new(start as u32, end as u32 - 1, 1)];
-        let sub_a = index(&a, &seqs_a);
+        let sub_a = index(a, &seqs_a);
         let seqs_b = [
             Seq::new(row as u32, row as u32, 1),
             Seq::new(start as u32, end as u32 - 1, 1),
@@ -400,12 +408,12 @@ impl LinAlgBackend for ArrayFireBackend {
     }
 
     fn conj_assign_v(&self, b: &mut Self::VectorXc) -> Result<(), HoloError> {
-        *b = arrayfire::conjg(&b);
+        *b = arrayfire::conjg(b);
         Ok(())
     }
 
     fn sqrt_assign_v(&self, v: &mut Self::VectorX) -> Result<(), HoloError> {
-        *v = arrayfire::sqrt(&v);
+        *v = arrayfire::sqrt(v);
         Ok(())
     }
 

@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/06/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,8 +40,8 @@ impl From<autd3::prelude::AUTDError> for AUTDProtoBufError {
     }
 }
 
-impl From<autd3_core::error::AUTDInternalError> for AUTDProtoBufError {
-    fn from(e: autd3_core::error::AUTDInternalError) -> Self {
+impl From<autd3::driver::error::AUTDInternalError> for AUTDProtoBufError {
+    fn from(e: autd3::driver::error::AUTDInternalError) -> Self {
         AUTDProtoBufError::AUTDError(e.into())
     }
 }
@@ -79,9 +79,9 @@ impl From<tonic::transport::Error> for AUTDProtoBufError {
     }
 }
 
-impl From<AUTDProtoBufError> for autd3_core::error::AUTDInternalError {
+impl From<AUTDProtoBufError> for autd3::driver::error::AUTDInternalError {
     fn from(e: AUTDProtoBufError) -> Self {
-        autd3_core::error::AUTDInternalError::LinkError(e.to_string())
+        autd3::driver::error::AUTDInternalError::LinkError(e.to_string())
     }
 }
 

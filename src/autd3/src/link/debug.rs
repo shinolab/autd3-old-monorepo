@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,14 @@
 
 use std::time::Duration;
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::{get_logger, Link},
-    CPUControlFlags, RxDatagram, TxDatagram, FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV, MSG_CLEAR,
-    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
-    MSG_RD_FPGA_VERSION_MINOR,
+    fpga::{FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV},
+    geometry::{Device, Transducer},
+    link::Link,
+    logger::get_logger,
+    operation::{FirmwareInfoType, TypeTag},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -75,7 +76,7 @@ impl Default for Debug {
 }
 
 impl<T: Transducer> Link<T> for Debug {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         debug!(logger: self.logger,"Open Debug link");
 
         if self.is_open {
@@ -83,12 +84,11 @@ impl<T: Transducer> Link<T> for Debug {
             return Ok(());
         }
 
-        self.cpus = geometry
-            .device_map()
+        self.cpus = devices
             .iter()
             .enumerate()
-            .map(|(i, &dev)| {
-                let mut cpu = CPUEmulator::new(i, dev);
+            .map(|(i, dev)| {
+                let mut cpu = CPUEmulator::new(i, dev.num_transducers());
                 cpu.init();
                 cpu
             })
@@ -124,33 +124,60 @@ impl<T: Transducer> Link<T> for Debug {
             cpu.send(tx);
         });
 
-        match tx.header().msg_id {
-            MSG_CLEAR => {
-                debug!(logger: self.logger,"\tOP: CLEAR");
-            }
-            MSG_RD_CPU_VERSION => {
-                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION");
-            }
-            MSG_RD_CPU_VERSION_MINOR => {
-                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION_MINOR");
-            }
-            MSG_RD_FPGA_VERSION => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION");
-            }
-            MSG_RD_FPGA_VERSION_MINOR => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION_MINOR");
-            }
-            MSG_RD_FPGA_FUNCTION => {
-                debug!(logger: self.logger,"\tOP: RD_FPGA_FUNCTION");
-            }
-            _ => {}
-        }
-
-        debug!(logger: self.logger,"\tCPU Flag: {}", tx.header().cpu_flag);
-        debug!(logger: self.logger,"\tFPGA Flag: {}", tx.header().fpga_flag);
+        tx.headers()
+            .zip(tx.payloads())
+            .enumerate()
+            .for_each(|(i, (h, b))| {
+                debug!(logger: self.logger,"\tDevice[{i}]:");
+                let fpga_flag = h.fpga_flag;
+                debug!(logger: self.logger,"\t\tFlag: {fpga_flag}");
+                let print = |slot, tag| match tag {
+                    TypeTag::NONE => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: None");
+                    }
+                    TypeTag::Clear => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Clear");
+                    }
+                    TypeTag::Sync => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Sync");
+                    }
+                    TypeTag::FirmwareInfo => {
+                        let info_type = FirmwareInfoType::from(b[1]);
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: FirmwareInfo ({info_type:?})");
+                    }
+                    TypeTag::UpdateFlags => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: UpdateFlags");
+                    }
+                    TypeTag::Modulation => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Modulation");
+                    }
+                    TypeTag::ModDelay => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: ModulationDelay");
+                    }
+                    TypeTag::Silencer => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Silencer");
+                    }
+                    TypeTag::Gain => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Gain");
+                    }
+                    TypeTag::FocusSTM => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: FocusSTM");
+                    }
+                    TypeTag::GainSTM => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: GainSTM");
+                    }
+                    TypeTag::Filter => {
+                        debug!(logger: self.logger,"\t\tSlot {slot} Op: Filter");
+                    }
+                };
+                print(1, TypeTag::from(b[0]));
+                if h.slot_2_offset != 0 {
+                    print(2, TypeTag::from(b[h.slot_2_offset as usize]));
+                }
+            });
 
         self.cpus.iter().for_each(|cpu| {
-            debug!(logger: self.logger,"Status: {}", cpu.id());
+            debug!(logger: self.logger,"Status: {}", cpu.idx());
             let fpga = cpu.fpga();
             if fpga.is_stm_mode() {
                 if fpga.is_stm_gain_mode() {
@@ -160,15 +187,11 @@ impl<T: Transducer> Link<T> for Debug {
                         debug!(logger: self.logger,"\tGain STM mode");
                     }
                 } else {
-                    debug!(logger: self.logger,"\tFocus STM mode"); 
+                    debug!(logger: self.logger,"\tFocus STM mode");
                 }
-                if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
-                    debug!(logger: self.logger,"\t\tSTM BEGIN");
-                }
-                if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
-                    let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
+                let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
                     debug!(logger: self.logger,
-                        "\t\tSTM END: cycle = {}, sampling_frequency = {} ({}/{}))",
+                        "\t\tSTM: cycle = {}, sampling_frequency = {} ({}/{})",
                         fpga.stm_cycle(),
                         FPGA_SUB_CLK_FREQ / freq_div_stm,
                         FPGA_SUB_CLK_FREQ,
@@ -191,7 +214,6 @@ impl<T: Transducer> Link<T> for Debug {
                             );
                         });
                     }
-                }
             } else if fpga.is_legacy_mode() {
                 debug!(logger: self.logger,"\tNormal Legacy mode");
             } else {
@@ -214,7 +236,7 @@ impl<T: Transducer> Link<T> for Debug {
                 debug!(logger: self.logger,"\t\t modulation = {:?}", m);
                 if !fpga.is_stm_mode() && self.logger.should_log(Level::Trace) {
                     trace!(logger: self.logger,
-                        "{}", 
+                        "{}",
                         fpga.duties_and_phases(0).iter()
                             .zip(fpga.cycles().iter())
                             .enumerate()
@@ -242,8 +264,8 @@ impl<T: Transducer> Link<T> for Debug {
         }
 
         self.cpus.iter_mut().for_each(|cpu| {
-            rx[cpu.id()].ack = cpu.ack();
-            rx[cpu.id()].msg_id = cpu.msg_id();
+            rx[cpu.idx()].data = cpu.rx_data();
+            rx[cpu.idx()].ack = cpu.ack();
         });
 
         Ok(true)
@@ -263,26 +285,29 @@ impl<T: Transducer> Link<T> for Debug {
         rx: &mut RxDatagram,
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
-        debug!(logger: self.logger, "Timeout: {:?}", timeout);
+        debug!(logger: self.logger, "Send receive data with timeout ({timeout:?})");
         if !<Self as Link<T>>::send(self, tx)? {
             return Ok(false);
         }
         if timeout.is_zero() {
             return <Self as Link<T>>::receive(self, rx);
         }
-        <Self as Link<T>>::wait_msg_processed(self, tx.header().msg_id, rx, timeout)
+        <Self as Link<T>>::wait_msg_processed(self, tx, rx, timeout)
     }
 
     fn wait_msg_processed(
         &mut self,
-        msg_id: u8,
+        tx: &TxDatagram,
         rx: &mut RxDatagram,
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
         loop {
             std::thread::sleep(std::time::Duration::from_millis(1));
-            if <Self as Link<T>>::receive(self, rx)? && rx.is_msg_processed(msg_id) {
+            if !<Self as Link<T>>::receive(self, rx)? {
+                continue;
+            }
+            if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
                 return Ok(true);
             }
             if start.elapsed() > timeout {

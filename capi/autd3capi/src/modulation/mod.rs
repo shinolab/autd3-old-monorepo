@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::ffi::c_char;
 
 use autd3capi_def::{
-    common::{autd3::core::*, *},
+    common::{autd3::driver::defined::*, *},
     *,
 };
 
@@ -34,8 +34,8 @@ pub unsafe extern "C" fn AUTDModulationSamplingFrequencyDivision(m: ModulationPt
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> DatagramHeaderPtr {
-    DatagramHeaderPtr::new(*Box::from_raw(m.0 as *mut Box<M>))
+pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> DatagramPtr {
+    DatagramPtr::new(*Box::from_raw(m.0 as *mut Box<M>))
 }
 
 #[no_mangle]

@@ -2,7 +2,6 @@
 
 members = [
     "autd3",
-    "autd3-core",
     "autd3-driver",
     "autd3-derive",
     "autd3-gain-holo",
@@ -11,7 +10,7 @@ members = [
     "autd3-link-simulator",
     "autd3-link-soem",
     "autd3-link-twincat",
-    "autd3-link-monitor",
+    "autd3-link-visualizer",
     "autd3-modulation-audio-file",
     "autd3-firmware-emulator",
     "autd3-geometry-viewer",
@@ -19,6 +18,17 @@ members = [
     "examples",
 ]
 
-default-members = ["autd3", "autd3-core", "autd3-driver", "autd3-derive", "autd3-gain-holo", "autd3-link-soem", "autd3-link-twincat", "autd3-modulation-audio-file", "autd3-firmware-emulator"]
+default-members = [
+    "autd3",
+    "autd3-driver",
+    "autd3-derive",
+    "autd3-gain-holo",
+    "autd3-firmware-emulator",
+    "autd3-modulation-audio-file",
+    "autd3-link-simulator",
+    "autd3-link-soem",
+    "autd3-link-twincat",
+    "examples",
+]
 
 resolver = "2"

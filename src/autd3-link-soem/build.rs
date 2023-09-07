@@ -118,6 +118,5 @@ fn main() {
     }
 }
 
-
 #[cfg(not(feature = "local"))]
 fn main() {}

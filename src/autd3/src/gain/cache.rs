@@ -4,44 +4,44 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/08/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
+use autd3_driver::{
+    datagram::{Gain, GainFilter},
+    defined::Drive,
     error::AUTDInternalError,
-    gain::{Gain, GainAsAny, GainFilter},
-    geometry::*,
-    Drive,
+    geometry::{Device, Transducer},
 };
+use bitvec::prelude::*;
 
-use std::{
-    cell::UnsafeCell,
-    ops::{Deref, DerefMut},
-};
+use std::{cell::UnsafeCell, collections::HashMap};
+
+type CacheMap = HashMap<BitVec<usize, Lsb0>, HashMap<usize, Vec<Drive>>>;
 
 /// Gain to cache the result of calculation
-pub struct CacheImpl<T: Transducer, G: Gain<T>> {
+pub struct Cache<T: Transducer, G: Gain<T>> {
     gain: G,
-    cache: UnsafeCell<Vec<Drive>>,
+    cache: UnsafeCell<CacheMap>,
     _phantom: std::marker::PhantomData<T>,
 }
 
-pub trait Cache<T: Transducer, G: Gain<T>> {
+pub trait IntoCache<T: Transducer, G: Gain<T>> {
     /// Cache the result of calculation
-    fn with_cache(self) -> CacheImpl<T, G>;
+    fn with_cache(self) -> Cache<T, G>;
 }
 
-impl<T: Transducer, G: Gain<T>> Cache<T, G> for G {
-    fn with_cache(self) -> CacheImpl<T, G> {
-        CacheImpl::new(self)
+impl<T: Transducer, G: Gain<T>> IntoCache<T, G> for G {
+    fn with_cache(self) -> Cache<T, G> {
+        Cache::new(self)
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Clone for CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T> + Clone> Clone for Cache<T, G> {
     fn clone(&self) -> Self {
         Self {
             gain: self.gain.clone(),
@@ -51,121 +51,115 @@ impl<T: Transducer, G: Gain<T> + Clone> Clone for CacheImpl<T, G> {
     }
 }
 
-impl<T: Transducer, G: Gain<T>> CacheImpl<T, G> {
+impl<T: Transducer, G: Gain<T>> Cache<T, G> {
     /// constructor
     fn new(gain: G) -> Self {
         Self {
             gain,
-            cache: UnsafeCell::new(vec![]),
+            cache: UnsafeCell::new(Default::default()),
             _phantom: std::marker::PhantomData,
         }
     }
 
-    pub fn init(&self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.drives().is_empty() {
-            unsafe {
+    fn init(&self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
+        unsafe {
+            if self.cache.get().as_ref().unwrap().get(&key).is_none() {
                 self.cache
                     .get()
                     .as_mut()
                     .unwrap()
-                    .extend(self.gain.calc(geometry, GainFilter::All)?)
-            };
+                    .insert(key, self.gain.calc(devices, GainFilter::All)?);
+            }
         }
         Ok(())
     }
 
     /// get cached drives
-    pub fn drives(&self) -> &[Drive] {
-        unsafe { self.cache.get().as_ref().unwrap() }
+    pub fn drives(
+        &self,
+        devices: &[&Device<T>],
+    ) -> Result<&HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        self.init(devices)?;
+        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
+        unsafe { Ok(self.cache.get().as_ref().unwrap().get(&key).unwrap()) }
     }
 
     /// get cached drives mutably
-    pub fn drives_mut(&mut self) -> &mut [Drive] {
-        self.cache.get_mut()
+    pub fn drives_mut(
+        &mut self,
+        devices: &[&Device<T>],
+    ) -> Result<&mut HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        self.init(devices)?;
+        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
+        Ok(self.cache.get_mut().get_mut(&key).unwrap())
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_core::datagram::Datagram<T>
-    for CacheImpl<T, G>
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::Datagram<T>
+    for Cache<T, G>
+where
+    autd3_driver::operation::GainOp<T, Self>: autd3_driver::operation::Operation<T>,
 {
-    type H = autd3_core::NullHeader;
-    type B = T::Gain;
+    type O1 = autd3_driver::operation::GainOp<T, Self>;
+    type O2 = autd3_driver::operation::NullOp;
 
-    fn operation(
-        &self,
-        geometry: &Geometry<T>,
-    ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
-        Ok((
-            Self::H::default(),
-            <Self::B as autd3_core::GainOp>::new(self.calc(geometry, GainFilter::All)?, || {
-                geometry.transducers().map(|tr| tr.cycle()).collect()
-            }),
-        ))
+    fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
+        Ok((Self::O1::new(self), Self::O2::default()))
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> GainAsAny for CacheImpl<T, G> {
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::GainAsAny
+    for Cache<T, G>
+{
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for CacheImpl<T, G> {
+impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for Cache<T, G> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        devices: &[&Device<T>],
         _filter: GainFilter,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        self.init(geometry)?;
-        Ok(unsafe { self.cache.get().as_ref().unwrap().clone() })
-    }
-}
-
-impl<T: Transducer, G: Gain<T>> Deref for CacheImpl<T, G> {
-    type Target = [Drive];
-
-    fn deref(&self) -> &Self::Target {
-        self.drives()
-    }
-}
-
-impl<T: Transducer, G: Gain<T>> DerefMut for CacheImpl<T, G> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.drives_mut()
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        self.init(devices)?;
+        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
+        Ok(unsafe { self.cache.get().as_ref().unwrap()[&key].clone() })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use autd3_core::autd3_device::AUTD3;
-    use autd3_core::geometry::LegacyTransducer;
+    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
 
     use super::*;
 
-    use crate::prelude::Plane;
-    use crate::tests::GeometryBuilder;
+    use crate::{autd3_device::AUTD3, prelude::Plane};
 
     #[test]
     fn test_cache() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
-            .unwrap();
+        let device: Device<LegacyTransducer> =
+            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
 
         let mut gain = Plane::new(Vector3::zeros()).with_cache();
 
-        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
+        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
             assert_eq!(drive.amp, 1.0);
-        }
+        });
 
-        for drive in gain.iter_mut() {
+        let d = gain.drives_mut(&[&device]).unwrap();
+        d.get_mut(&0).unwrap().iter_mut().for_each(|drive| {
             drive.phase = 1.0;
-        }
+            drive.amp = 0.5;
+        });
 
-        for drive in gain.calc(&geometry, GainFilter::All).unwrap() {
+        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 1.0);
-            assert_eq!(drive.amp, 1.0);
-        }
+            assert_eq!(drive.amp, 0.5);
+        });
     }
 }

@@ -145,7 +145,7 @@ impl FieldComputePipeline {
 
             let image = ImmutableImage::from_iter(
                 renderer.memory_allocator(),
-                texels.into_iter(),
+                texels,
                 dimensions,
                 MipmapsCount::One,
                 Format::R8G8B8A8_UNORM,

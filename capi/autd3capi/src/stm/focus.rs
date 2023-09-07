@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3_core::stm::STMProps;
-use autd3capi_def::{common::*, DatagramBodyPtr, STMPropsPtr};
+use autd3::driver::datagram::STMProps;
+use autd3capi_def::{common::*, DatagramPtr, STMPropsPtr};
 
 #[no_mangle]
 #[must_use]
@@ -23,8 +23,8 @@ pub unsafe extern "C" fn AUTDFocusSTM(
     points: *const float,
     shift: *const u8,
     size: u64,
-) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(
+) -> DatagramPtr {
+    DatagramPtr::new(
         FocusSTM::with_props(*Box::from_raw(props.0 as *mut STMProps)).add_foci_from_iter(
             (0..size as usize).map(|i| {
                 let p = Vector3::new(
@@ -44,7 +44,7 @@ mod tests {
 
     use super::*;
 
-    use crate::{stm::*, tests::*, *};
+    use crate::{stm::*, tests::*, TransMode, *};
 
     #[test]
     fn test_focus_stm() {
@@ -64,8 +64,8 @@ mod tests {
                 AUTDSend(
                     cnt,
                     TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
                     stm,
+                    DatagramPtr(std::ptr::null()),
                     -1,
                     err.as_mut_ptr(),
                 ),

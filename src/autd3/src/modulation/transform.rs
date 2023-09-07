@@ -4,37 +4,37 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/08/2023
+ * Last Modified: 04/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
 use autd3_derive::Modulation;
+use autd3_driver::{datagram::Modulation, defined::float, error::AUTDInternalError};
 
 /// Modulation to transform modulation data
 #[derive(Modulation)]
-pub struct TransformImpl<M: Modulation, F: Fn(usize, &float) -> float> {
+pub struct Transform<M: Modulation, F: Fn(usize, &float) -> float> {
     m: M,
     freq_div: u32,
     f: F,
 }
 
-pub trait Transform<M: Modulation> {
+pub trait IntoTransform<M: Modulation> {
     /// transform modulation data
     ///
     /// # Arguments
     ///
     /// * `f` - transform function. The first argument is index of the element, and the second argument is the value of the element of the original modulation data.
     ///
-    fn with_transform<F: Fn(usize, &float) -> float>(self, f: F) -> TransformImpl<M, F>;
+    fn with_transform<F: Fn(usize, &float) -> float>(self, f: F) -> Transform<M, F>;
 }
 
-impl<M: Modulation> Transform<M> for M {
-    fn with_transform<F: Fn(usize, &float) -> float>(self, f: F) -> TransformImpl<M, F> {
-        TransformImpl {
+impl<M: Modulation> IntoTransform<M> for M {
+    fn with_transform<F: Fn(usize, &float) -> float>(self, f: F) -> Transform<M, F> {
+        Transform {
             freq_div: self.sampling_frequency_division(),
             f,
             m: self,
@@ -42,7 +42,7 @@ impl<M: Modulation> Transform<M> for M {
     }
 }
 
-impl<M: Modulation, F: Fn(usize, &float) -> float> Modulation for TransformImpl<M, F> {
+impl<M: Modulation, F: Fn(usize, &float) -> float> Modulation for Transform<M, F> {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let m = self.m.calc()?;
         Ok(m.iter().enumerate().map(|(i, x)| (self.f)(i, x)).collect())
@@ -51,7 +51,7 @@ impl<M: Modulation, F: Fn(usize, &float) -> float> Modulation for TransformImpl<
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::Sine;
+    use crate::modulation::Sine;
 
     use super::*;
 
