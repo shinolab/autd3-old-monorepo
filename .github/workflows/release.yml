@@ -534,7 +534,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -545,18 +545,22 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux1-x86_64"
+        cp -f setup.cfg.linux-x86_64 setup.cfg
+        python -m build -w
     - name: Build whl
       if: matrix.os == 'windows-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=win-amd64"
+        cp -f setup.cfg.linux-x86_64 setup.cfg
+        python -m build -w
     - name: Build whl
       if: matrix.os == 'macos-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-10-13-x86_64"
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-11-0-arm64"
+        cp -f setup.cfg.mac-x86_64 setup.cfg
+        python -m build -w
+        cp -f setup.cfg.mac-aarch64 setup.cfg
+        python -m build -w
     - name: Publish
       run: |
         cd python

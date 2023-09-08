@@ -3,7 +3,7 @@
 # Created Date: 28/05/2023
 # Author: Shun Suzuki
 # -----
-# Last Modified: 24/07/2023
+# Last Modified: 09/09/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,5 +21,8 @@ foreach($dll in Get-ChildItem -Path capi/target/release | Where {$_.extension -l
     Copy-Item -Path $dll -Destination python/pyautd3/bin
 }
 cd python
-python -m build -w -C="--build-option=--plat-name" -C="--build-option=win-amd64"
+
+Copy-Item -Path setup.cfg.win-amd64 -Destination setup.cfg -Force
+python -m build -w
+
 popd
