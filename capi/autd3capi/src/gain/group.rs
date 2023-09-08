@@ -4,12 +4,14 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::collections::HashMap;
 
 use autd3capi_def::{common::*, GainPtr};
 
@@ -17,13 +19,14 @@ use autd3capi_def::{common::*, GainPtr};
 #[must_use]
 #[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDGainGroup(
+    device_indices_ptr: *const u32,
     map_ptr: *const *const i32,
-    map_len: u32,
+    num_devices: u32,
     keys_ptr: *const i32,
     values_ptr: *const GainPtr,
     kv_len: u32,
 ) -> GainPtr {
-    let map = (0..map_len as usize)
+    let map = (0..num_devices as usize)
         .map(|i| {
             let mut v = Vec::with_capacity(AUTD3::NUM_TRANS_IN_UNIT);
             v.set_len(AUTD3::NUM_TRANS_IN_UNIT);
@@ -32,9 +35,9 @@ pub unsafe extern "C" fn AUTDGainGroup(
                 v.as_mut_ptr(),
                 AUTD3::NUM_TRANS_IN_UNIT,
             );
-            v
+            (device_indices_ptr.add(i).read() as usize, v)
         })
-        .collect::<Vec<_>>();
+        .collect::<HashMap<usize, Vec<_>>>();
     let mut keys = Vec::with_capacity(kv_len as usize);
     keys.set_len(kv_len as usize);
     std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
@@ -43,7 +46,7 @@ pub unsafe extern "C" fn AUTDGainGroup(
     std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
     GainPtr::new(keys.iter().zip(values.iter()).fold(
         Group::new(move |dev, tr: &DynamicTransducer| {
-            let key = map[dev.idx()][tr.local_idx()];
+            let key = map[&dev.idx()][tr.local_idx()];
             if key < 0 {
                 None
             } else {
@@ -86,11 +89,13 @@ mod tests {
             let num_transducer = AUTDDeviceNumTransducers(dev1);
             let map1 = vec![1; num_transducer as _];
 
+            let device_indices = [0, 1];
             let map = [map0.as_ptr(), map1.as_ptr()];
             let keys = [0, 1];
             let values = [AUTDGainNull(), AUTDGainNull()];
 
             let g = AUTDGainGroup(
+                device_indices.as_ptr(),
                 map.as_ptr(),
                 map.len() as _,
                 keys.as_ptr(),

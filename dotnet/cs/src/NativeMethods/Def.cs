@@ -83,19 +83,19 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct DevicePtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct LinkPtr
     {
         public IntPtr _0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct DatagramBodyPtr
-    {
-        public IntPtr _0;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DatagramHeaderPtr
+    public struct DatagramPtr
     {
         public IntPtr _0;
     }

@@ -23,58 +23,55 @@ using float_t = System.Double;
 
 using System;
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.Modulation
 {
-    namespace Modulation
+    /// <summary>
+    /// Modulation constructed from wav file
+    /// <remarks>The wav data is re-sampled to the sampling frequency of Modulation.</remarks>
+    /// </summary>
+    public sealed class Wav : Internal.Modulation
     {
+        private readonly string _filename;
+        private uint? _freqDiv;
+
         /// <summary>
-        /// Modulation constructed from wav file
-        /// <remarks>The wav data is resampled to the sampling frequency of Modulation.</remarks>
+        /// Constructor
         /// </summary>
-        public sealed class Wav : ModulationBase
+        /// <param name="filename">Path to wav file</param>
+        public Wav(string filename)
         {
-            private readonly string _filename;
-            private uint? _freqDiv;
+            _filename = filename;
+        }
 
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            /// <param name="filename">Path to wav file</param>
-            public Wav(string filename)
-            {
-                _filename = filename;
-            }
+        /// <summary>
+        /// Set sampling frequency division
+        /// </summary>
+        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see> / div.</param>
+        /// <returns></returns>
+        public Wav WithSamplingFrequencyDivision(uint div)
+        {
+            _freqDiv = div;
+            return this;
+        }
 
-            /// <summary>
-            /// Set sampling frequency division
-            /// </summary>
-            /// <param name="div">The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
-            /// <returns></returns>
-            public Wav WithSamplingFrequencyDivision(uint div)
-            {
-                _freqDiv = div;
-                return this;
-            }
+        /// <summary>
+        /// Set sampling frequency
+        /// </summary>
+        /// <returns></returns>
+        public Wav WithSamplingFrequency(float_t freq)
+        {
+            return WithSamplingFrequencyDivision((uint)((float_t)AUTD3.FPGASubClkFreq / freq));
+        }
 
-            /// <summary>
-            /// Set sampling frequency
-            /// </summary>
-            /// <returns></returns>
-            public Wav WithSamplingFrequency(float_t freq)
-            {
-                return WithSamplingFrequencyDivision((uint)((float_t)NativeMethods.Def.FpgaSubClkFreq / freq));
-            }
-
-            public override ModulationPtr ModulationPtr()
-            {
-                var err = new byte[256];
-                var ptr = NativeMethods.ModulationAudioFile.AUTDModulationWav(_filename, err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
-                if (_freqDiv != null)
-                    ptr = NativeMethods.ModulationAudioFile.AUTDModulationWavWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
-                return ptr;
-            }
+        public override ModulationPtr ModulationPtr()
+        {
+            var err = new byte[256];
+            var ptr = NativeMethods.ModulationAudioFile.AUTDModulationWav(_filename, err);
+            if (ptr._0 == IntPtr.Zero)
+                throw new AUTDException(err);
+            if (_freqDiv != null)
+                ptr = NativeMethods.ModulationAudioFile.AUTDModulationWavWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
+            return ptr;
         }
     }
 }

@@ -4,64 +4,56 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 using System.Runtime.InteropServices;
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.Extra
 {
-    namespace Extra
+    /// <summary>
+    /// Graphical viewer for Geometry
+    /// </summary>
+    [ComVisible(false)]
+    public class GeometryViewer
     {
+        private GeometryViewerPtr _handle = NativeMethods.GeometryViewer.AUTDGeometryViewer();
+
         /// <summary>
-        /// Graphical viewer for Geometry
+        /// Set window size
         /// </summary>
-        [ComVisible(false)]
-        public class GeometryViewer
+        /// <param name="width">Width of window</param>
+        /// <param name="height">Height of window</param>
+        /// <returns></returns>
+        public GeometryViewer WindowSize(uint width, uint height)
         {
-            private GeometryViewerPtr _handle;
-
-            public GeometryViewer()
-            {
-                _handle = NativeMethods.GeometryViewer.AUTDGeometryViewer();
-            }
-
-            /// <summary>
-            /// Set window size
-            /// </summary>
-            /// <param name="width">Width of window</param>
-            /// <param name="height">Height of window</param>
-            /// <returns></returns>
-            public GeometryViewer WindowSize(uint width, uint height)
-            {
-                _handle = NativeMethods.GeometryViewer.AUTDGeometryViewerSize(_handle, width, height);
-                return this;
-            }
-
-            /// <summary>
-            /// Set vsync
-            /// </summary>
-            /// <param name="vsync">vsync</param>
-            /// <returns></returns>
-            public GeometryViewer Vsync(bool vsync)
-            {
-                _handle = NativeMethods.GeometryViewer.AUTDGeometryViewerVsync(_handle, vsync);
-                return this;
-            }
-
-            /// <summary>
-            /// Run viewer
-            /// </summary>
-            /// <param name="geometry"></param>
-            /// <returns>0 if success, otherwise error code</returns>
-            public int Run(Geometry geometry)
-            =>
-                NativeMethods.GeometryViewer.AUTDGeometryViewerRun(_handle, geometry.Ptr);
-
+            _handle = NativeMethods.GeometryViewer.AUTDGeometryViewerSize(_handle, width, height);
+            return this;
         }
+
+        /// <summary>
+        /// Set vsync
+        /// </summary>
+        /// <param name="vsync">vsync</param>
+        /// <returns></returns>
+        public GeometryViewer Vsync(bool vsync)
+        {
+            _handle = NativeMethods.GeometryViewer.AUTDGeometryViewerVsync(_handle, vsync);
+            return this;
+        }
+
+        /// <summary>
+        /// Run viewer
+        /// </summary>
+        /// <param name="geometry"></param>
+        /// <returns>0 if success, otherwise error code</returns>
+        public int Run(Geometry geometry)
+        =>
+            NativeMethods.GeometryViewer.AUTDGeometryViewerRun(_handle, geometry.Ptr);
+
     }
 }

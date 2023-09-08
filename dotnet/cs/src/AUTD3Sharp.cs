@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -97,7 +97,7 @@ namespace AUTD3Sharp
         /// <summary>
         /// FPGA main clock frequency
         /// </summary>
-        public const uint FpgaClkFreq = Def.FpgaClkFreq;
+        public const uint FPGAClkFreq = Def.FpgaClkFreq;
 
         /// <summary>
         /// Device height including substrate
@@ -112,7 +112,7 @@ namespace AUTD3Sharp
         /// <summary>
         /// FPGA sub clock frequency
         /// </summary>
-        public const uint FpgaSubClkFreq = Def.FpgaSubClkFreq;
+        public const uint FPGASubClkFreq = Def.FpgaSubClkFreq;
 
         #endregion
 
@@ -142,228 +142,6 @@ namespace AUTD3Sharp
             Pos = pos;
             Rot = null;
             Quat = quat;
-        }
-    }
-
-    public sealed class Transducer
-    {
-        private readonly GeometryPtr _ptr;
-
-        internal Transducer(int trId, GeometryPtr ptr)
-        {
-            Idx = trId;
-            _ptr = ptr;
-        }
-
-        /// <summary>
-        /// Index of the transducer
-        /// </summary>
-        public int Idx { get; }
-
-        /// <summary>
-        /// Position of the transducer
-        /// </summary>
-        public Vector3 Position
-        {
-            get
-            {
-                var pos = new float_t[3];
-                Base.AUTDTransPosition(_ptr, (uint)Idx, pos);
-                return new Vector3(pos[0], pos[1], pos[2]);
-            }
-        }
-
-        /// <summary>
-        /// Rotation of the transducer
-        /// </summary>
-        public Quaternion Rotation
-        {
-            get
-            {
-                var rot = new float_t[4];
-                Base.AUTDTransRotation(_ptr, (uint)Idx, rot);
-                return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
-            }
-        }
-
-        /// <summary>
-        /// X-direction of the transducer
-        /// </summary>
-        public Vector3 XDirection
-        {
-            get
-            {
-                var dir = new float_t[3];
-                Base.AUTDTransXDirection(_ptr, (uint)Idx, dir);
-                return new Vector3(dir[0], dir[1], dir[2]);
-            }
-        }
-
-        /// <summary>
-        /// Y-direction of the transducer
-        /// </summary>
-        public Vector3 YDirection
-        {
-            get
-            {
-                var dir = new float_t[3];
-                Base.AUTDTransYDirection(_ptr, (uint)Idx, dir);
-                return new Vector3(dir[0], dir[1], dir[2]);
-            }
-        }
-
-        /// <summary>
-        /// Z-direction of the transducer
-        /// </summary>
-        public Vector3 ZDirection
-        {
-            get
-            {
-                var dir = new float_t[3];
-                Base.AUTDTransZDirection(_ptr, (uint)Idx, dir);
-                return new Vector3(dir[0], dir[1], dir[2]);
-            }
-        }
-
-        /// <summary>
-        /// Frequency of the transducer
-        /// </summary>
-        public float_t Frequency
-        {
-            get => Base.AUTDGetTransFrequency(_ptr, (uint)Idx);
-            set
-            {
-                var err = new byte[256];
-                if (!Base.AUTDSetTransFrequency(_ptr, (uint)Idx, value, err))
-                    throw new AUTDException(err);
-            }
-        }
-
-        /// <summary>
-        /// Cycle of the transducer
-        /// </summary>
-        public ushort Cycle
-        {
-            get => Base.AUTDGetTransCycle(_ptr, (uint)Idx);
-            set
-            {
-                var err = new byte[256];
-                if (!Base.AUTDSetTransCycle(_ptr, (uint)Idx, value, err))
-                    throw new AUTDException(err);
-            }
-        }
-
-        /// <summary>
-        /// Modulation delay of the transducer
-        /// </summary>
-        public ushort ModDelay
-        {
-            get => Base.AUTDGetTransModDelay(_ptr, (uint)Idx);
-            set => Base.AUTDSetTransModDelay(_ptr, (uint)Idx, value);
-        }
-
-        /// <summary>
-        /// Wavelength of the transducer
-        /// </summary>
-        /// <param name="soundSpeed">Speed of sound</param>
-        /// <returns></returns>
-        public float_t Wavelength(float_t soundSpeed) => Base.AUTDGetWavelength(_ptr, (uint)Idx, soundSpeed);
-
-        /// <summary>
-        /// Wavenumber of the transducer
-        /// </summary>
-        /// <param name="soundSpeed">Speed of sound</param>
-        /// <returns></returns>
-        public float_t Wavenumber(float_t soundSpeed) => 2 * AUTD3.Pi / Wavelength(soundSpeed);
-    }
-
-    public sealed class Geometry : IEnumerable<Transducer>
-    {
-        internal GeometryPtr Ptr;
-        internal readonly TransMode Mode;
-        private List<Transducer> _transducers;
-
-        internal Geometry(GeometryPtr ptr, TransMode mode)
-        {
-            Ptr = ptr;
-            Mode = mode;
-            _transducers = new List<Transducer>();
-        }
-
-        /// <summary>
-        /// Number of transducers
-        /// </summary>
-        public int NumTransducers => (int)Base.AUTDNumTransducers(Ptr);
-
-        /// <summary>
-        /// Number of devices
-        /// </summary>
-        public int NumDevices => (int)Base.AUTDNumDevices(Ptr);
-
-        /// <summary>
-        /// Speed of sound
-        /// </summary>
-        public float_t SoundSpeed
-        {
-            get => Base.AUTDGetSoundSpeed(Ptr);
-            set => Base.AUTDSetSoundSpeed(Ptr, value);
-        }
-
-        /// <summary>
-        /// Attenuation coefficient
-        /// </summary>
-        public float_t Attenuation
-        {
-            get => Base.AUTDGetAttenuation(Ptr);
-            set => Base.AUTDSetAttenuation(Ptr, value);
-        }
-
-        /// <summary>
-        /// Get center position of all transducers
-        /// </summary>
-        public Vector3 Center
-        {
-            get
-            {
-                var center = new float_t[3];
-                Base.AUTDGeometryCenter(Ptr, center);
-                return new Vector3(center[0], center[1], center[2]);
-            }
-        }
-
-        public Transducer this[int index] => _transducers[index];
-
-        /// <summary>
-        /// Set the sound speed from temperature
-        /// </summary>
-        /// <param name="temp">Temperature in celsius</param>
-        /// <param name="k">Ratio of specific heat</param>
-        /// <param name="r">Gas constant</param>
-        /// <param name="m">Molar mass</param>
-        public void SetSoundSpeedFromTemp(float_t temp, float_t k = (float_t)1.4, float_t r = (float_t)8.31446261815324, float_t m = (float_t)28.9647e-3)
-        {
-            Base.AUTDSetSoundSpeedFromTemp(Ptr, temp, k, r, m);
-        }
-
-        /// <summary>
-        /// Get center position of transducers in the specified device
-        /// </summary>
-        /// <param name="devIdx"></param>
-        /// <returns></returns>
-        public Vector3 CenterOf(int devIdx)
-        {
-            var center = new float_t[3];
-            Base.AUTDGeometryCenterOf(Ptr, (uint)devIdx, center);
-            return new Vector3(center[0], center[1], center[2]);
-        }
-
-        public IEnumerator<Transducer> GetEnumerator() => _transducers.GetEnumerator();
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-        internal void Configure()
-        {
-            _transducers = Enumerable.Range(0, NumTransducers).Select(i => new Transducer(i, Ptr)).ToList();
         }
     }
 
@@ -401,7 +179,7 @@ namespace AUTD3Sharp
         {
 
             private ControllerBuilderPtr _ptr;
-            private TransMode _mode;
+            private readonly TransMode _mode;
 
             /// <summary>
             /// Add device
@@ -418,36 +196,6 @@ namespace AUTD3Sharp
             }
 
             /// <summary>
-            /// Set legacy mode
-            /// </summary>
-            /// <returns></returns>
-            public ControllerBuilder LegacyMode()
-            {
-                _mode = TransMode.Legacy;
-                return this;
-            }
-
-            /// <summary>
-            /// Set advanced mode
-            /// </summary>
-            /// <returns></returns>
-            public ControllerBuilder AdvancedMode()
-            {
-                _mode = TransMode.Advanced;
-                return this;
-            }
-
-            /// <summary>
-            /// Set advanced phase mode
-            /// </summary>
-            /// <returns></returns>
-            public ControllerBuilder AdvancedPhaseMode()
-            {
-                _mode = TransMode.AdvancedPhase;
-                return this;
-            }
-
-            /// <summary>
             /// Open controller
             /// </summary>
             /// <param name="link">link</param>
@@ -457,18 +205,38 @@ namespace AUTD3Sharp
                 return Controller.OpenImpl(_ptr, _mode, link.Ptr);
             }
 
-            internal ControllerBuilder()
+            internal ControllerBuilder(TransMode mode)
             {
                 _ptr = Base.AUTDCreateControllerBuilder();
-                _mode = TransMode.Legacy;
+                _mode = mode;
             }
         }
 
         /// <summary>
-        /// Create Controller builder
+        /// Create Controller builder (Legacy mode)
         /// </summary>
         /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder Builder() { return new ControllerBuilder(); }
+        public static ControllerBuilder Builder() { return new ControllerBuilder(TransMode.Legacy); }
+
+        /// <summary>
+        /// Create Controller builder (Legacy mode)
+        /// </summary>
+        /// <returns>ControllerBuilder</returns>
+        public static ControllerBuilder LegacyBuilder() { return new ControllerBuilder(TransMode.Legacy); }
+
+        /// <summary>
+        /// Create Controller builder (Advanced mode)
+        /// </summary>
+        /// <returns>ControllerBuilder</returns>
+        public static ControllerBuilder AdvancedBuilder() { return new ControllerBuilder(TransMode.Advanced); }
+
+
+
+        /// <summary>
+        /// Create Controller builder (AdvancedPhase mode)
+        /// </summary>
+        /// <returns>ControllerBuilder</returns>
+        public static ControllerBuilder AdvancedPhaseBuilder() { return new ControllerBuilder(TransMode.AdvancedPhase); }
 
         internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkPtr link)
         {
@@ -479,11 +247,7 @@ namespace AUTD3Sharp
 
             var geometry = new Geometry(Base.AUTDGetGeometry(ptr), mode);
 
-            var cnt = new Controller(geometry, ptr, mode);
-
-            cnt.Geometry.Configure();
-
-            return cnt;
+            return new Controller(geometry, ptr, mode);
         }
 
         private Controller(Geometry geometry, ControllerPtr ptr, TransMode mode)
@@ -507,9 +271,8 @@ namespace AUTD3Sharp
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
                 var info = new byte[256];
-                var props = new bool[2];
-                Base.AUTDGetFirmwareInfo(handle, i, info, props);
-                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), props[0], props[1]);
+                Base.AUTDGetFirmwareInfo(handle, i, info);
+                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info));
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);
@@ -549,24 +312,6 @@ namespace AUTD3Sharp
         public Geometry Geometry { get; }
 
         /// <summary>
-        /// set force fan flag
-        /// </summary>
-        /// <param name="value"></param>
-        public void ForceFan(bool value)
-        {
-            Base.AUTDSetForceFan(Ptr, value);
-        }
-
-        /// <summary>
-        /// set reads FPGA info flag
-        /// </summary>
-        /// <param name="value"></param>
-        public void ReadsFPGAInfo(bool value)
-        {
-            Base.AUTDSetReadsFPGAInfo(Ptr, value);
-        }
-
-        /// <summary>
         /// List of FPGA information
         /// </summary>
         public FPGAInfo[] FPGAInfo
@@ -585,12 +330,12 @@ namespace AUTD3Sharp
         /// <summary>
         /// Send data to the devices
         /// </summary>
-        /// <param name="special">Special data (Clear, Synchronize, Stop, ModDelay, or UpdateFlag)</param>
+        /// <param name="special">Special data (Stop)</param>
         /// <param name="timeout"></param>
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(ISpecialData special, TimeSpan? timeout = null)
+        public bool Send(ISpecialDatagram special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
@@ -605,58 +350,32 @@ namespace AUTD3Sharp
         /// <summary>
         /// Send data to the devices
         /// </summary>
-        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="data">Data</param>
         /// <param name="timeout"></param>
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(IHeader header, TimeSpan? timeout = null)
+        public bool Send(IDatagram data, TimeSpan? timeout = null)
         {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, header.Ptr(), new DatagramBodyPtr(), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
-            {
-                throw new AUTDException(err);
-            }
-            return res == Def.Autd3True;
+            return Send(data, new NullDatagram(), timeout);
         }
 
         /// <summary>
         /// Send data to the devices
         /// </summary>
-        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
+        /// <param name="data1">First data</param>
+        /// <param name="data2">Second data</param>
         /// <param name="timeout"></param>
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(IBody body, TimeSpan? timeout = null)
+        public bool Send(IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
         {
-            if (body == null) throw new ArgumentNullException(nameof(body));
+            if (data1 == null) throw new ArgumentNullException(nameof(data1));
+            if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, new DatagramHeaderPtr(), body.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
-            {
-                throw new AUTDException(err);
-            }
-            return res == Def.Autd3True;
-        }
-
-        /// <summary>
-        /// Send data to the devices
-        /// </summary>
-        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
-        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
-        /// <param name="timeout"></param>
-        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="AUTDException"></exception>
-        public bool Send(IHeader header, IBody body, TimeSpan? timeout = null)
-        {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, header.Ptr(), body.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
+            var devices = Geometry.Select(d => d).ToArray();
+            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(devices), data2.Ptr(devices), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
                 throw new AUTDException(err);
@@ -668,77 +387,46 @@ namespace AUTD3Sharp
         /// <summary>
         /// Send data to the devices
         /// </summary>
-        /// <param name="body">Body data (Gain, STM, or Amplitudes)</param>
-        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
+        /// <param name="data">Tuple of data</param>
         /// <param name="timeout"></param>
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(IBody body, IHeader header, TimeSpan? timeout = null)
+        public bool Send((IDatagram, IDatagram) data, TimeSpan? timeout = null)
         {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, header.Ptr(), body.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
-            {
-                throw new AUTDException(err);
-            }
-            return res == Def.Autd3True;
-        }
-
-        /// <summary>
-        /// Send data to the devices
-        /// </summary>
-        /// <param name="data">Tuple of header data (SilencerConfig or Modulation) and body data (Gain, STM, or Amplitudes)</param>
-        /// <param name="header">Header data (SilencerConfig or Modulation)</param>
-        /// <param name="timeout"></param>
-        /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="AUTDException"></exception>
-        public bool Send((IHeader, IBody) data, TimeSpan? timeout = null)
-        {
-            var (header, body) = data;
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, header.Ptr(), body.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
-            {
-                throw new AUTDException(err);
-            }
-            return res == Def.Autd3True;
+            var (data1, data2) = data;
+            return Send(data1, data2, timeout);
         }
     }
 
     /// <summary>
     /// SpecialData to update flags (Force fan flag and reads FPGA info flag)
     /// </summary>
-    public sealed class UpdateFlags : ISpecialData
+    public sealed class UpdateFlags : IDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDUpdateFlags();
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDUpdateFlags();
     }
 
     /// <summary>
     /// SpecialData for clear all data in devices
     /// </summary>
-    public sealed class Clear : ISpecialData
+    public sealed class Clear : IDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDClear();
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDClear();
     }
 
     /// <summary>
     /// SpecialData to synchronize devices
     /// </summary>
-    public sealed class Synchronize : ISpecialData
+    public sealed class Synchronize : IDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDSynchronize();
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDSynchronize();
     }
 
     /// <summary>
     /// SpecialData to stop output
     /// </summary>
-    public sealed class Stop : ISpecialData
+    public sealed class Stop : ISpecialDatagram
     {
         public DatagramSpecialPtr Ptr() => Base.AUTDStop();
     }
@@ -746,15 +434,15 @@ namespace AUTD3Sharp
     /// <summary>
     /// SpecialData to set modulation delay
     /// </summary>
-    public sealed class ModDelayConfig : ISpecialData
+    public sealed class ModDelayConfig : IDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDModDelayConfig();
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDModDelayConfig();
     }
 
     /// <summary>
     /// Header to configure silencer
     /// </summary>
-    public sealed class SilencerConfig : IHeader
+    public sealed class SilencerConfig : IDatagram
     {
         private readonly ushort _step;
 
@@ -767,13 +455,13 @@ namespace AUTD3Sharp
             _step = step;
         }
 
-        public DatagramHeaderPtr Ptr() => Base.AUTDCreateSilencer(_step);
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDCreateSilencer(_step);
 
         /// <summary>
         /// Disable silencer
         /// </summary>
         /// <returns></returns>
-        public static SilencerConfig None()
+        public static SilencerConfig Disable()
         {
             return new SilencerConfig(0xFFFF);
         }
@@ -782,7 +470,7 @@ namespace AUTD3Sharp
     /// <summary>
     /// Amplitudes settings for advanced phase mode
     /// </summary>
-    public sealed class Amplitudes : IBody
+    public sealed class Amplitudes : IDatagram
     {
         private readonly float_t _amp;
 
@@ -791,6 +479,6 @@ namespace AUTD3Sharp
             _amp = amp;
         }
 
-        public DatagramBodyPtr Ptr(Geometry geometry) => Base.AUTDCreateAmplitudes(_amp);
+        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDCreateAmplitudes(_amp);
     }
 }
