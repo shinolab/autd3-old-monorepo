@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -183,7 +183,7 @@ impl CSharpGenerator {
             },
             2 => match arg.ty {
                 Type::Custom(ref s) => match arg.inout {
-                    InOut::In => format!("{}[]?", s),
+                    InOut::In => format!("{}[][]?", s),
                     InOut::Out => format!("out {}[]", s),
                     InOut::InOut => unimplemented!(),
                 },

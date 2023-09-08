@@ -17,6 +17,10 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWav(string path, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m, uint div);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationRawPCM(string path, uint sampleRate, byte[] err);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationRawPCMWithSamplingFrequencyDivision(ModulationPtr m, uint div);
         }
     }
 

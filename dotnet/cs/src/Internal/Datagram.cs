@@ -4,35 +4,36 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.Internal
 {
-    namespace Internal
+    [ComVisible(false)]
+    public interface ISpecialDatagram
     {
-        [ComVisible(false)]
-        public interface ISpecialData
-        {
-            public DatagramSpecialPtr Ptr();
-        }
+        public DatagramSpecialPtr Ptr();
+    }
 
-        [ComVisible(false)]
-        public interface IHeader
-        {
-            public DatagramHeaderPtr Ptr();
-        }
+    [ComVisible(false)]
+    public interface IDatagram
+    {
+        public DatagramPtr Ptr(IEnumerable<Device> devices);
+    }
 
-        [ComVisible(false)]
-        public interface IBody
+    public class NullDatagram : IDatagram
+    {
+        public DatagramPtr Ptr(IEnumerable<Device> devices)
         {
-            public DatagramBodyPtr Ptr(Geometry geometry);
+            return new DatagramPtr { _0 = IntPtr.Zero };
         }
     }
 }

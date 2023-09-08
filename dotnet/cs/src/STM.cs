@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using AUTD3Sharp.Gain;
 using AUTD3Sharp.Internal;
 
 #if UNITY_2020_2_OR_NEWER
@@ -44,26 +43,26 @@ namespace AUTD3Sharp
 
     namespace STM
     {
-        public abstract class STM : IBody
+        public abstract class STM : IDatagram
         {
             private readonly float_t? _freq;
-            private readonly float_t? _samplFreq;
-            private readonly uint? _samplFreqDiv;
+            private readonly float_t? _samplingFreq;
+            private readonly uint? _samplingFreqDiv;
             protected int StartIdxV;
             protected int FinishIdxV;
 
-            protected STM(float_t? freq, float_t? samplFreq, uint? sampleFreqDiv)
+            protected STM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv)
             {
                 _freq = freq;
-                _samplFreq = samplFreq;
-                _samplFreqDiv = sampleFreqDiv;
+                _samplingFreq = samplingFreq;
+                _samplingFreqDiv = sampleFreqDiv;
                 StartIdxV = -1;
                 FinishIdxV = -1;
             }
 
-            public DatagramBodyPtr Ptr(Geometry geometry) => STMPtr(geometry);
+            public DatagramPtr Ptr(IEnumerable<Device> devices) => STMPtr(devices);
 
-            public abstract DatagramBodyPtr STMPtr(Geometry geometry);
+            public abstract DatagramPtr STMPtr(IEnumerable<Device> devices);
 
             public ushort? StartIdx => StartIdxV == -1 ? null : (ushort?)StartIdxV;
 
@@ -74,18 +73,18 @@ namespace AUTD3Sharp
                 var ptr = new STMPropsPtr();
                 if (_freq != null)
                     ptr = Base.AUTDSTMProps(_freq.Value);
-                if (_samplFreq != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreq(_samplFreq.Value);
-                if (_samplFreqDiv != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreqDiv(_samplFreqDiv.Value);
+                if (_samplingFreq != null)
+                    ptr = Base.AUTDSTMPropsWithSamplingFreq(_samplingFreq.Value);
+                if (_samplingFreqDiv != null)
+                    ptr = Base.AUTDSTMPropsWithSamplingFreqDiv(_samplingFreqDiv.Value);
                 ptr = Base.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
                 ptr = Base.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
                 return ptr;
             }
 
             protected float_t FreqFromSize(int size) => Base.AUTDSTMPropsFrequency(Props(), (ulong)size);
-            protected float_t SamplFreqFromSize(int size) => Base.AUTDSTMPropsSamplingFrequency(Props(), (ulong)size);
-            protected uint SamplFreqDivFromSize(int size) => Base.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
+            protected float_t SamplingFreqFromSize(int size) => Base.AUTDSTMPropsSamplingFrequency(Props(), (ulong)size);
+            protected uint SamplingFreqDivFromSize(int size) => Base.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
         }
 
         /// <summary>
@@ -96,14 +95,14 @@ namespace AUTD3Sharp
         /// <para>FocusSTM has following restrictions:</para>
         /// <list>
         /// <item>The maximum number of sampling points is 65536.</item>
-        /// <item>The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
         /// </list></remarks>
         public sealed class FocusSTM : STM
         {
             private readonly List<float_t> _points;
             private readonly List<byte> _shifts;
 
-            private FocusSTM(float_t? freq, float_t? samplFreq, uint? sampleFreqDiv) : base(freq, samplFreq, sampleFreqDiv)
+            private FocusSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv) : base(freq, samplingFreq, sampleFreqDiv)
             {
                 _points = new List<float_t>();
                 _shifts = new List<byte>();
@@ -169,10 +168,10 @@ namespace AUTD3Sharp
             }
 
             public float_t Frequency => FreqFromSize(_shifts.Count);
-            public float_t SamplingFrequency => SamplFreqFromSize(_shifts.Count);
-            public uint SamplingFrequencyDivision => SamplFreqDivFromSize(_shifts.Count);
+            public float_t SamplingFrequency => SamplingFreqFromSize(_shifts.Count);
+            public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_shifts.Count);
 
-            public override DatagramBodyPtr STMPtr(Geometry geometry)
+            public override DatagramPtr STMPtr(IEnumerable<Device> devices)
             {
                 return Base.AUTDFocusSTM(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
             }
@@ -186,16 +185,16 @@ namespace AUTD3Sharp
         /// <para>FocusSTM has following restrictions:</para>
         /// <list>
         /// <item>The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).</item>
-        /// <item>The sampling frequency is <see cref="AUTD3.FpgaSubClkFreq">AUTD3.FpgaSubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
         /// </list></remarks>
         public sealed class GainSTM : STM
         {
-            private readonly List<IGain> _gains;
-            private GainSTMMode? _mode;
+            private readonly List<Internal.Gain> _gains;
+            private GainSTMMode _mode;
 
-            private GainSTM(float_t? freq, float_t? samplFreq, uint? sampleFreqDiv) : base(freq, samplFreq, sampleFreqDiv)
+            private GainSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv) : base(freq, samplingFreq, sampleFreqDiv)
             {
-                _gains = new List<IGain>();
+                _gains = new List<Internal.Gain>();
                 _mode = GainSTMMode.PhaseDutyFull;
             }
 
@@ -218,7 +217,7 @@ namespace AUTD3Sharp
             /// </summary>
             /// <param name="gain">Gain</param>
             /// <returns></returns>
-            public GainSTM AddGain(IGain gain)
+            public GainSTM AddGain(Internal.Gain gain)
             {
                 _gains.Add(gain);
                 return this;
@@ -228,7 +227,7 @@ namespace AUTD3Sharp
             /// Add Gains
             /// </summary>
             /// <param name="iter">Enumerable of Gains</param>
-            public GainSTM AddGainsFromIter(IEnumerable<IGain> iter)
+            public GainSTM AddGainsFromIter(IEnumerable<Internal.Gain> iter)
             {
                 return iter.Aggregate(this, (stm, gain) => stm.AddGain(gain));
             }
@@ -252,12 +251,13 @@ namespace AUTD3Sharp
             }
 
             public float_t Frequency => FreqFromSize(_gains.Count);
-            public float_t SamplingFrequency => SamplFreqFromSize(_gains.Count);
-            public uint SamplingFrequencyDivision => SamplFreqDivFromSize(_gains.Count);
+            public float_t SamplingFrequency => SamplingFreqFromSize(_gains.Count);
+            public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_gains.Count);
 
-            public override DatagramBodyPtr STMPtr(Geometry geometry)
+            public override DatagramPtr STMPtr(IEnumerable<Device> devices)
             {
-                return _gains.Aggregate(_mode.HasValue ? Base.AUTDGainSTMWithMode(Props(), _mode.Value) : Base.AUTDGainSTM(Props()), (current, gain) => Base.AUTDGainSTMAddGain(current, gain.GainPtr(geometry)));
+                var gains = _gains.Select(g => g.GainPtr(devices)).ToArray();
+                return Base.AUTDGainSTM(Props(), gains, (uint)gains.Length, _mode);
             }
         }
     }
