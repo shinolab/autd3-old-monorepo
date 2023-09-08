@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/06/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ using namespace std::ranges::views;
 #endif
 
 inline void focus_stm(autd3::Controller& autd) {
-  auto silencer = autd3::SilencerConfig::none();
+  auto silencer = autd3::Silencer::disable();
   autd.send(silencer);
 
   autd3::modulation::Static m;
@@ -38,7 +38,7 @@ inline void focus_stm(autd3::Controller& autd) {
   autd3::FocusSTM stm(1);
   for (size_t i = 0; i < points_num; i++) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    stm = stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+    stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
   }
 #endif
 
