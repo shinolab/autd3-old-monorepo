@@ -209,72 +209,88 @@ class Plane final : public internal::Gain {
   std::optional<double> _amp;
 };
 
-// template <typename K, class F>
-// class GroupByTransducer : public internal::Gain {
-//  public:
-//   GroupByTransducer(const F& f) : _f(f) {}
-//
-//   AUTD3_IMPL_WITH_CACHE_GAIN
-//
-//   /**
-//    * @brief Set gain
-//    *
-//    * @tparam K Key
-//    * @tparam G Gain
-//    * @param key Key
-//    * @param gain Gain
-//    */
-//   template <class G>
-//   void set(const K key, G&& gain) & {
-//     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-//     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-//   }
-//
-//   /**
-//    * @brief Set gain
-//    *
-//    * @tparam K Key
-//    * @tparam G Gain
-//    * @param key Key
-//    * @param gain Gain
-//    */
-//   template <class G>
-//   GroupByTransducer set(const K key, G&& gain) && {
-//     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-//     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-//     return std::move(*this);
-//   }
-//
-//   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-//     std::unordered_map<K, int32_t> keymap;
-//     std::vector<int32_t> map;
-//     map.reserve(geometry.num_transducers());
-//     int32_t k = 0;
-//     for (auto& tr : geometry) {
-//       auto key = _f(tr);
-//       if (key.has_value()) {
-//         if (keymap.find(key.value()) == keymap.end()) {
-//           keymap[key.value()] = k++;
-//         }
-//         map.emplace_back(keymap[key.value()]);
-//       } else {
-//         map.emplace_back(-1);
-//       }
-//     }
-//     std::vector<int32_t> keys;
-//     std::vector<internal::native_methods::GainPtr> values;
-//     for (auto& kv : _map) {
-//       keys.emplace_back(keymap[kv.first]);
-//       values.emplace_back(kv.second->gain_ptr(geometry));
-//     }
-//     return internal::native_methods::AUTDGainGroupByTransducer(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
-//                                                                static_cast<uint64_t>(keys.size()));
-//   }
-//
-//  private:
-//   const F& _f;
-//   std::unordered_map<K, std::shared_ptr<Gain>> _map;
-// };
+template <typename K, class F>
+class Group : public internal::Gain {
+ public:
+  Group(const F& f) : _f(f) {}
+
+  AUTD3_IMPL_WITH_CACHE_GAIN(Group)
+
+  /**
+   * @brief Set gain
+   *
+   * @tparam K Key
+   * @tparam G Gain
+   * @param key Key
+   * @param gain Gain
+   */
+  template <class G>
+  void set(const K key, G&& gain) & {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+  }
+
+  /**
+   * @brief Set gain
+   *
+   * @tparam K Key
+   * @tparam G Gain
+   * @param key Key
+   * @param gain Gain
+   */
+  template <class G>
+  Group set(const K key, G&& gain) && {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+    return std::move(*this);
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>& devices) const override {
+    std::unordered_map<K, int32_t> keymap;
+
+    std::vector<uint32_t> device_indices;
+    device_indices.reserve(devices.size());
+    std::transform(devices.begin(), devices.end(), std::back_inserter(device_indices),
+                   [](const internal::Device* dev) { return static_cast<uint32_t>(dev->idx()); });
+
+    std::vector<std::vector<int32_t>> map;
+    map.reserve(devices.size());
+    int32_t k = 0;
+    for (const auto* dev : devices) {
+      std::vector<int32_t> m;
+      m.reserve(dev->num_transducers());
+      std::for_each(dev->cbegin(), dev->cend(), [this, dev, &m, &keymap, &k](const auto& tr) {
+        auto key = _f(*dev, tr);
+        if (key.has_value()) {
+          if (keymap.find(key.value()) == keymap.end()) {
+            keymap[key.value()] = k++;
+          }
+          m.emplace_back(keymap[key.value()]);
+        } else {
+          m.emplace_back(-1);
+        }
+      });
+      map.emplace_back(std::move(m));
+    }
+    std::vector<int32_t> keys;
+    std::vector<internal::native_methods::GainPtr> values;
+    for (auto& kv : _map) {
+      keys.emplace_back(keymap[kv.first]);
+      values.emplace_back(kv.second->gain_ptr(devices));
+    }
+
+    std::vector<const int32_t*> map_ptrs;
+    map_ptrs.reserve(map.size());
+    std::transform(map.begin(), map.end(), std::back_inserter(map_ptrs), [](const std::vector<int32_t>& m) { return m.data(); });
+
+    return internal::native_methods::AUTDGainGroup(device_indices.data(), map_ptrs.data(), static_cast<uint64_t>(map_ptrs.size()), keys.data(),
+                                                   values.data(), static_cast<uint64_t>(keys.size()));
+  }
+
+ private:
+  const F& _f;
+  std::unordered_map<K, std::shared_ptr<Gain>> _map;
+};
 
 class Gain : public internal::Gain {
  public:
