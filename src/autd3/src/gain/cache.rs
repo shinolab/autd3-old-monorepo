@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,16 +17,13 @@ use autd3_driver::{
     error::AUTDInternalError,
     geometry::{Device, Transducer},
 };
-use bitvec::prelude::*;
 
 use std::{cell::UnsafeCell, collections::HashMap};
-
-type CacheMap = HashMap<BitVec<usize, Lsb0>, HashMap<usize, Vec<Drive>>>;
 
 /// Gain to cache the result of calculation
 pub struct Cache<T: Transducer, G: Gain<T>> {
     gain: G,
-    cache: UnsafeCell<CacheMap>,
+    cache: UnsafeCell<HashMap<usize, Vec<Drive>>>,
     _phantom: std::marker::PhantomData<T>,
 }
 
@@ -61,38 +58,32 @@ impl<T: Transducer, G: Gain<T>> Cache<T, G> {
         }
     }
 
-    fn init(&self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
+    pub fn init(&self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
         unsafe {
-            if self.cache.get().as_ref().unwrap().get(&key).is_none() {
-                self.cache
-                    .get()
-                    .as_mut()
-                    .unwrap()
-                    .insert(key, self.gain.calc(devices, GainFilter::All)?);
+            if self.cache.get().as_ref().unwrap().len() != devices.len()
+                || devices
+                    .iter()
+                    .any(|dev| !self.cache.get().as_ref().unwrap().contains_key(&dev.idx()))
+            {
+                self.gain
+                    .calc(devices, GainFilter::All)?
+                    .iter()
+                    .for_each(|(k, v)| {
+                        self.cache.get().as_mut().unwrap().insert(*k, v.clone());
+                    });
             }
         }
         Ok(())
     }
 
     /// get cached drives
-    pub fn drives(
-        &self,
-        devices: &[&Device<T>],
-    ) -> Result<&HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        self.init(devices)?;
-        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
-        unsafe { Ok(self.cache.get().as_ref().unwrap().get(&key).unwrap()) }
+    pub fn drives(&self) -> &HashMap<usize, Vec<Drive>> {
+        unsafe { self.cache.get().as_ref().unwrap() }
     }
 
     /// get cached drives mutably
-    pub fn drives_mut(
-        &mut self,
-        devices: &[&Device<T>],
-    ) -> Result<&mut HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        self.init(devices)?;
-        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
-        Ok(self.cache.get_mut().get_mut(&key).unwrap())
+    pub fn drives_mut(&mut self) -> &mut HashMap<usize, Vec<Drive>> {
+        self.cache.get_mut()
     }
 }
 
@@ -124,8 +115,7 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for Cache<T, G> {
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         self.init(devices)?;
-        let key = BitVec::from_iter(devices.iter().map(|dev| dev.idx()));
-        Ok(unsafe { self.cache.get().as_ref().unwrap()[&key].clone() })
+        Ok(unsafe { self.cache.get().as_ref().unwrap().clone() })
     }
 }
 
@@ -150,7 +140,7 @@ mod tests {
             assert_eq!(drive.amp, 1.0);
         });
 
-        let d = gain.drives_mut(&[&device]).unwrap();
+        let d = gain.drives_mut();
         d.get_mut(&0).unwrap().iter_mut().for_each(|drive| {
             drive.phase = 1.0;
             drive.amp = 0.5;

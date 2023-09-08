@@ -13,8 +13,10 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <numeric>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include "autd3/internal/def.hpp"
@@ -24,34 +26,59 @@
 
 namespace autd3::gain {
 
-///**
-// * @brief Gain to cache the result of calculation
-// */
-// class Cache : public internal::Gain {
-// public:
-//  template <class G>
-//  Cache(G&& g) {
-//    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-//    _drives.resize(geometry.num_transducers());
-//    if (char err[256]{};
-//        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), _drives.data(), err) == internal::native_methods::AUTD3_ERR)
-//      throw internal::AUTDException(err);
-//  }
-//
-//  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-//    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
-//  }
-//
-//  [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
-//  std::vector<internal::native_methods::Drive>& drives() { return _drives; }
-//
-// private:
-//  std::vector<internal::native_methods::Drive> _drives;
-//};
+/**
+ * @brief Gain to cache the result of calculation
+ */
+template <class G>
+class Cache : public internal::Gain {
+ public:
+  Cache(G g) : _g(std::move(g)) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
 
-//#define AUTD3_IMPL_WITH_CACHE_GAIN \
-//  Cache with_cache(const internal::Geometry& geometry) { return Cache(std::move(*this), geometry); }
-#define AUTD3_IMPL_WITH_CACHE_GAIN
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>& devices) const override {
+    std::vector<uint32_t> device_indices;
+    device_indices.reserve(devices.size());
+    std::transform(devices.begin(), devices.end(), std::back_inserter(device_indices),
+                   [](const internal::Device* dev) { return static_cast<uint32_t>(dev->idx()); });
+
+    if (_cache.size() != devices.size() ||
+        std::any_of(device_indices.begin(), device_indices.end(), [this](uint32_t idx) { return _cache.find(idx) == _cache.end(); })) {
+      std::vector<internal::native_methods::DevicePtr> device_ptrs;
+      device_ptrs.reserve(devices.size());
+      std::transform(devices.begin(), devices.end(), std::back_inserter(device_ptrs), [](const internal::Device* dev) { return dev->ptr(); });
+      std::vector<std::vector<internal::native_methods::Drive>> drives;
+      drives.reserve(devices.size());
+      std::transform(devices.begin(), devices.end(), std::back_inserter(drives), [](const internal::Device* dev) {
+        std::vector<internal::native_methods::Drive> d;
+        d.resize(dev->num_transducers());
+        return std::move(d);
+      });
+
+      std::vector<internal::native_methods::Drive*> drives_ptrs;
+      drives_ptrs.reserve(drives.size());
+      std::transform(drives.begin(), drives.end(), std::back_inserter(drives_ptrs),
+                     [](std::vector<internal::native_methods::Drive>& d) { return d.data(); });
+
+      if (char err[256]{};
+          internal::native_methods::AUTDGainCalc(_g.gain_ptr(devices), device_ptrs.data(), drives_ptrs.data(),
+                                                 static_cast<uint32_t>(device_ptrs.size()), err) == internal::native_methods::AUTD3_ERR)
+        throw internal::AUTDException(err);
+      for (size_t i = 0; i < devices.size(); i++) _cache.emplace(devices[i]->idx(), std::move(drives[i]));
+    }
+
+    return std::accumulate(devices.begin(), devices.end(), internal::native_methods::AUTDGainCustom(),
+                           [this](internal::native_methods::GainPtr acc, const internal::Device* dev) {
+                             return internal::native_methods::AUTDGainCustomSet(acc, static_cast<uint32_t>(dev->idx()), _cache[dev->idx()].data(),
+                                                                                static_cast<uint32_t>(_cache[dev->idx()].size()));
+                           });
+  }
+
+ private:
+  G _g;
+  mutable std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> _cache;
+};
+
+#define AUTD3_IMPL_WITH_CACHE_GAIN(T) \
+  [[nodiscard]] Cache<T> with_cache()&& { return Cache(std::move(*this)); }
 
 /**
  * @brief Gain to output nothing
@@ -60,7 +87,7 @@ class Null final : public internal::Gain {
  public:
   Null() = default;
 
-  AUTD3_IMPL_WITH_CACHE_GAIN
+  AUTD3_IMPL_WITH_CACHE_GAIN(Null)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>&) const override {
     return internal::native_methods::AUTDGainNull();
@@ -74,7 +101,7 @@ class Focus final : public internal::Gain {
  public:
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
 
-  AUTD3_IMPL_WITH_CACHE_GAIN
+  AUTD3_IMPL_WITH_CACHE_GAIN(Focus)
 
   /**
    * @brief set amplitude
@@ -111,7 +138,7 @@ class Bessel final : public internal::Gain {
  public:
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
 
-  AUTD3_IMPL_WITH_CACHE_GAIN
+  AUTD3_IMPL_WITH_CACHE_GAIN(Bessel)
 
   /**
    * @brief set amplitude
@@ -150,7 +177,7 @@ class Plane final : public internal::Gain {
  public:
   explicit Plane(internal::Vector3 d) : _d(std::move(d)) {}
 
-  AUTD3_IMPL_WITH_CACHE_GAIN
+  AUTD3_IMPL_WITH_CACHE_GAIN(Plane)
 
   /**
    * @brief set amplitude
