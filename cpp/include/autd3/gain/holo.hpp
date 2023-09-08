@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <memory>
 #include <variant>
 #include <vector>
 
@@ -218,7 +219,7 @@ class NalgebraBackend final : public Backend {
   }
 };
 
-#define HOLO_ADD_FOCUS(HOLO_T)                                    \
+#define AUTD3_HOLO_ADD_FOCUS(HOLO_T)                              \
   void add_focus(Vector3 focus, double amp)& {                    \
     _foci.emplace_back(std::move(focus));                         \
     _amps.emplace_back(amp);                                      \
@@ -229,7 +230,7 @@ class NalgebraBackend final : public Backend {
     return std::move(*this);                                      \
   }
 
-#define HOLO_PARAM(HOLO_T, PARAM_T, PARAM_NAME)                           \
+#define AUTD3_HOLO_PARAM(HOLO_T, PARAM_T, PARAM_NAME)                     \
   void with_##PARAM_NAME(const PARAM_T value)& { _##PARAM_NAME = value; } \
   [[nodiscard]] HOLO_T&& with_##PARAM_NAME(const PARAM_T value)&& {       \
     _##PARAM_NAME = value;                                                \
@@ -249,12 +250,12 @@ class SDP final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(SDP)
+  AUTD3_HOLO_ADD_FOCUS(SDP)
 
-  HOLO_PARAM(SDP, double, alpha)
-  HOLO_PARAM(SDP, uint32_t, repeat)
-  HOLO_PARAM(SDP, double, lambda)
-  HOLO_PARAM(SDP, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(SDP, double, alpha)
+  AUTD3_HOLO_PARAM(SDP, uint32_t, repeat)
+  AUTD3_HOLO_PARAM(SDP, double, lambda)
+  AUTD3_HOLO_PARAM(SDP, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = _backend->sdp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
@@ -288,10 +289,10 @@ class EVP final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(EVP)
+  AUTD3_HOLO_ADD_FOCUS(EVP)
 
-  HOLO_PARAM(EVP, double, gamma)
-  HOLO_PARAM(EVP, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(EVP, double, gamma)
+  AUTD3_HOLO_PARAM(EVP, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = _backend->evp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
@@ -320,10 +321,10 @@ class GS final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(GS)
+  AUTD3_HOLO_ADD_FOCUS(GS)
 
-  HOLO_PARAM(GS, uint32_t, repeat)
-  HOLO_PARAM(GS, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(GS, uint32_t, repeat)
+  AUTD3_HOLO_PARAM(GS, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = _backend->gs(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
@@ -353,10 +354,10 @@ class GSPAT final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(GSPAT)
+  AUTD3_HOLO_ADD_FOCUS(GSPAT)
 
-  HOLO_PARAM(GSPAT, uint32_t, repeat)
-  HOLO_PARAM(GSPAT, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(GSPAT, uint32_t, repeat)
+  AUTD3_HOLO_PARAM(GSPAT, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = _backend->gspat(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
@@ -383,9 +384,9 @@ class Naive final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(Naive)
+  AUTD3_HOLO_ADD_FOCUS(Naive)
 
-  HOLO_PARAM(Naive, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(Naive, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = _backend->naive(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
@@ -417,14 +418,14 @@ class LM final : public internal::Gain {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
   }
 
-  HOLO_ADD_FOCUS(LM)
+  AUTD3_HOLO_ADD_FOCUS(LM)
 
-  HOLO_PARAM(LM, double, eps1)
-  HOLO_PARAM(LM, double, eps2)
-  HOLO_PARAM(LM, double, tau)
-  HOLO_PARAM(LM, double, k_max)
+  AUTD3_HOLO_PARAM(LM, double, eps1)
+  AUTD3_HOLO_PARAM(LM, double, eps2)
+  AUTD3_HOLO_PARAM(LM, double, tau)
+  AUTD3_HOLO_PARAM(LM, double, k_max)
 
-  HOLO_PARAM(LM, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(LM, AmplitudeConstraint, constraint)
 
   void with_initial(std::vector<double> value) & { _initial = std::move(value); }
 
@@ -466,11 +467,11 @@ class Greedy final : public internal::Gain {
  public:
   Greedy() = default;
 
-  HOLO_ADD_FOCUS(Greedy)
+  AUTD3_HOLO_ADD_FOCUS(Greedy)
 
-  HOLO_PARAM(Greedy, uint32_t, phase_div)
+  AUTD3_HOLO_PARAM(Greedy, uint32_t, phase_div)
 
-  HOLO_PARAM(Greedy, AmplitudeConstraint, constraint)
+  AUTD3_HOLO_PARAM(Greedy, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
     auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());

@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"

@@ -121,8 +121,9 @@ GainPtr AUTDGainCustomSet(GainPtr custom,
 [[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
 
 [[nodiscard]]
-GainPtr AUTDGainGroup(const int32_t *const *map_ptr,
-                      uint32_t map_len,
+GainPtr AUTDGainGroup(const uint32_t *device_indices_ptr,
+                      const int32_t *const *map_ptr,
+                      uint32_t num_devices,
                       const int32_t *keys_ptr,
                       const GainPtr *values_ptr,
                       uint32_t kv_len);
