@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 
 #include "autd3.hpp"
