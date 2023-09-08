@@ -3,14 +3,15 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/07/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3.hpp"
 #include "autd3/link/simulator.hpp"
+
+#include "autd3.hpp"
 #include "runner.hpp"
 #include "util.hpp"
 
@@ -22,9 +23,6 @@ int main() try {
                   .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero()))
                   // .advanced_mode()
                   .open_with(autd3::link::Simulator(8080).with_timeout(std::chrono::milliseconds(200)));
-
-  // std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) { tr.set_frequency(70e3); });
-  // autd.send(autd3::Synchronize());
 
   return run(autd);
 } catch (std::exception& e) {

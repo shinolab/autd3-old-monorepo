@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/08/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,51 +13,45 @@
 
 #include <algorithm>
 #include <iterator>
-#include <memory>
+#include <numeric>
+#include <optional>
 #include <vector>
 
 #include "autd3/internal/def.hpp"
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/gain.hpp"
-#include "autd3/internal/geometry.hpp"
+#include "autd3/internal/geometry/device.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::gain {
 
-/**
- * @brief Gain to cache the result of calculation
- */
-class Cache : public internal::Gain {
- public:
-  template <class G>
-  Cache(G&& g, const internal::Geometry& geometry) {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _drives.resize(geometry.num_transducers());
-    if (char err[256]{};
-        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), _drives.data(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
-  }
+///**
+// * @brief Gain to cache the result of calculation
+// */
+// class Cache : public internal::Gain {
+// public:
+//  template <class G>
+//  Cache(G&& g) {
+//    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+//    _drives.resize(geometry.num_transducers());
+//    if (char err[256]{};
+//        internal::native_methods::AUTDGainCalc(g.gain_ptr(geometry), geometry.ptr(), _drives.data(), err) == internal::native_methods::AUTD3_ERR)
+//      throw internal::AUTDException(err);
+//  }
+//
+//  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+//    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
+//  }
+//
+//  [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
+//  std::vector<internal::native_methods::Drive>& drives() { return _drives; }
+//
+// private:
+//  std::vector<internal::native_methods::Drive> _drives;
+//};
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    return internal::native_methods::AUTDGainCustom(_drives.data(), static_cast<uint64_t>(_drives.size()));
-  }
-
-  [[nodiscard]] const std::vector<internal::native_methods::Drive>& drives() const { return _drives; }
-  std::vector<internal::native_methods::Drive>& drives() { return _drives; }
-
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator begin() const noexcept { return _drives.begin(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::const_iterator end() const noexcept { return _drives.end(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator begin() noexcept { return _drives.begin(); }
-  [[nodiscard]] std::vector<internal::native_methods::Drive>::iterator end() noexcept { return _drives.end(); }
-  [[nodiscard]] const internal::native_methods::Drive& operator[](const size_t i) const { return _drives[i]; }
-  [[nodiscard]] internal::native_methods::Drive& operator[](const size_t i) { return _drives[i]; }
-
- private:
-  std::vector<internal::native_methods::Drive> _drives;
-};
-
-#define AUTD3_IMPL_WITH_CACHE_GAIN \
-  Cache with_cache(const internal::Geometry& geometry) { return Cache(std::move(*this), geometry); }
+//#define AUTD3_IMPL_WITH_CACHE_GAIN \
+//  Cache with_cache(const internal::Geometry& geometry) { return Cache(std::move(*this), geometry); }
+#define AUTD3_IMPL_WITH_CACHE_GAIN
 
 /**
  * @brief Gain to output nothing
@@ -68,7 +62,7 @@ class Null final : public internal::Gain {
 
   AUTD3_IMPL_WITH_CACHE_GAIN
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>&) const override {
     return internal::native_methods::AUTDGainNull();
   }
 };
@@ -87,12 +81,19 @@ class Focus final : public internal::Gain {
    *
    * @param amp normalized amplitude (from 0 to 1)
    */
-  Focus with_amp(const double amp) {
+  void with_amp(const double amp) & { _amp = amp; }
+
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   */
+  [[nodiscard]] Focus&& with_amp(const double amp) && {
     _amp = amp;
-    return *this;
+    return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>&) const override {
     auto ptr = internal::native_methods::AUTDGainFocus(_p.x(), _p.y(), _p.z());
     if (_amp.has_value()) ptr = AUTDGainFocusWithAmp(ptr, _amp.value());
     return ptr;
@@ -117,12 +118,19 @@ class Bessel final : public internal::Gain {
    *
    * @param amp normalized amplitude (from 0 to 1)
    */
-  Bessel with_amp(const double amp) {
+  void with_amp(const double amp) & { _amp = amp; }
+
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   */
+  [[nodiscard]] Bessel&& with_amp(const double amp) && {
     _amp = amp;
-    return *this;
+    return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>&) const override {
     auto ptr = internal::native_methods::AUTDGainBessel(_p.x(), _p.y(), _p.z(), _d.x(), _d.y(), _d.z(), _theta);
     if (_amp.has_value()) ptr = AUTDGainBesselWithAmp(ptr, _amp.value());
     return ptr;
@@ -150,12 +158,20 @@ class Plane final : public internal::Gain {
    * @param amp normalized amplitude (from 0 to 1)
    * @return Plane
    */
-  Plane with_amp(const double amp) {
+  void with_amp(const double amp) & { _amp = amp; }
+
+  /**
+   * @brief set amplitude
+   *
+   * @param amp normalized amplitude (from 0 to 1)
+   * @return Plane
+   */
+  [[nodiscard]] Plane&& with_amp(const double amp) && {
     _amp = amp;
-    return *this;
+    return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>&) const override {
     auto ptr = internal::native_methods::AUTDGainPlane(_d.x(), _d.y(), _d.z());
     if (_amp.has_value()) ptr = AUTDGainPlaneWithAmp(ptr, _amp.value());
     return ptr;
@@ -166,170 +182,101 @@ class Plane final : public internal::Gain {
   std::optional<double> _amp;
 };
 
-template <typename K, class F>
-class GroupByDevice : public internal::Gain {
- public:
-  GroupByDevice(const F& f) : _f(f) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN
-
-  /**
-   * @brief Set gain
-   *
-   * @tparam K Key
-   * @tparam G Gain
-   * @param key Key
-   * @param gain Gain
-   */
-  template <class G>
-  void set(const K key, G&& gain) & {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-  }
-
-  /**
-   * @brief Set gain
-   *
-   * @tparam K Key
-   * @tparam G Gain
-   * @param key Key
-   * @param gain Gain
-   */
-  template <class G>
-  GroupByDevice set(const K key, G&& gain) && {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-    return std::move(*this);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    std::unordered_map<K, int32_t> keymap;
-    std::vector<int32_t> map;
-    map.reserve(geometry.num_devices());
-    int32_t k = 0;
-    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
-      auto key = _f(dev);
-      if (key.has_value()) {
-        if (keymap.find(key.value()) == keymap.end()) {
-          keymap[key.value()] = k++;
-        }
-        map.emplace_back(keymap[key.value()]);
-      } else {
-        map.emplace_back(-1);
-      }
-    }
-    std::vector<int32_t> keys;
-    std::vector<internal::native_methods::GainPtr> values;
-    for (auto& kv : _map) {
-      keys.emplace_back(keymap[kv.first]);
-      values.emplace_back(kv.second->gain_ptr(geometry));
-    }
-    return internal::native_methods::AUTDGainGroupByDevice(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
-                                                           static_cast<uint64_t>(keys.size()));
-  }
-
- private:
-  const F& _f;
-  std::unordered_map<K, std::shared_ptr<Gain>> _map;
-};
-
-template <typename K, class F>
-class GroupByTransducer : public internal::Gain {
- public:
-  GroupByTransducer(const F& f) : _f(f) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN
-
-  /**
-   * @brief Set gain
-   *
-   * @tparam K Key
-   * @tparam G Gain
-   * @param key Key
-   * @param gain Gain
-   */
-  template <class G>
-  void set(const K key, G&& gain) & {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-  }
-
-  /**
-   * @brief Set gain
-   *
-   * @tparam K Key
-   * @tparam G Gain
-   * @param key Key
-   * @param gain Gain
-   */
-  template <class G>
-  GroupByTransducer set(const K key, G&& gain) && {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
-    return std::move(*this);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    std::unordered_map<K, int32_t> keymap;
-    std::vector<int32_t> map;
-    map.reserve(geometry.num_transducers());
-    int32_t k = 0;
-    for (auto& tr : geometry) {
-      auto key = _f(tr);
-      if (key.has_value()) {
-        if (keymap.find(key.value()) == keymap.end()) {
-          keymap[key.value()] = k++;
-        }
-        map.emplace_back(keymap[key.value()]);
-      } else {
-        map.emplace_back(-1);
-      }
-    }
-    std::vector<int32_t> keys;
-    std::vector<internal::native_methods::GainPtr> values;
-    for (auto& kv : _map) {
-      keys.emplace_back(keymap[kv.first]);
-      values.emplace_back(kv.second->gain_ptr(geometry));
-    }
-    return internal::native_methods::AUTDGainGroupByTransducer(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
-                                                               static_cast<uint64_t>(keys.size()));
-  }
-
- private:
-  const F& _f;
-  std::unordered_map<K, std::shared_ptr<Gain>> _map;
-};
-
-class Group {
- public:
-  template <class F>
-  static GroupByDevice<typename std::invoke_result_t<F, size_t>::value_type, F> by_device(const F& f) {
-    return GroupByDevice<typename std::invoke_result_t<F, size_t>::value_type, F>(f);
-  }
-
-  template <class F>
-  static GroupByTransducer<typename std::invoke_result_t<F, const internal::Transducer&>::value_type, F> by_transducer(const F& f) {
-    return GroupByTransducer<typename std::invoke_result_t<F, const internal::Transducer&>::value_type, F>(f);
-  }
-};
+// template <typename K, class F>
+// class GroupByTransducer : public internal::Gain {
+//  public:
+//   GroupByTransducer(const F& f) : _f(f) {}
+//
+//   AUTD3_IMPL_WITH_CACHE_GAIN
+//
+//   /**
+//    * @brief Set gain
+//    *
+//    * @tparam K Key
+//    * @tparam G Gain
+//    * @param key Key
+//    * @param gain Gain
+//    */
+//   template <class G>
+//   void set(const K key, G&& gain) & {
+//     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+//     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+//   }
+//
+//   /**
+//    * @brief Set gain
+//    *
+//    * @tparam K Key
+//    * @tparam G Gain
+//    * @param key Key
+//    * @param gain Gain
+//    */
+//   template <class G>
+//   GroupByTransducer set(const K key, G&& gain) && {
+//     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+//     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
+//     return std::move(*this);
+//   }
+//
+//   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+//     std::unordered_map<K, int32_t> keymap;
+//     std::vector<int32_t> map;
+//     map.reserve(geometry.num_transducers());
+//     int32_t k = 0;
+//     for (auto& tr : geometry) {
+//       auto key = _f(tr);
+//       if (key.has_value()) {
+//         if (keymap.find(key.value()) == keymap.end()) {
+//           keymap[key.value()] = k++;
+//         }
+//         map.emplace_back(keymap[key.value()]);
+//       } else {
+//         map.emplace_back(-1);
+//       }
+//     }
+//     std::vector<int32_t> keys;
+//     std::vector<internal::native_methods::GainPtr> values;
+//     for (auto& kv : _map) {
+//       keys.emplace_back(keymap[kv.first]);
+//       values.emplace_back(kv.second->gain_ptr(geometry));
+//     }
+//     return internal::native_methods::AUTDGainGroupByTransducer(map.data(), static_cast<uint64_t>(map.size()), keys.data(), values.data(),
+//                                                                static_cast<uint64_t>(keys.size()));
+//   }
+//
+//  private:
+//   const F& _f;
+//   std::unordered_map<K, std::shared_ptr<Gain>> _map;
+// };
 
 class Gain : public internal::Gain {
  public:
   Gain() = default;
 
-  [[nodiscard]] virtual std::vector<internal::native_methods::Drive> calc(const internal::Geometry& geometry) const = 0;
+  [[nodiscard]] virtual std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> calc(
+      const std::vector<const internal::Device*>& devices) const = 0;
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    const auto drives = calc(geometry);
-    return internal::native_methods::AUTDGainCustom(drives.data(), static_cast<uint64_t>(drives.size()));
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const internal::Device*>& devices) const override {
+    const auto drives = calc(devices);
+    return std::accumulate(drives.begin(), drives.end(), internal::native_methods::AUTDGainCustom(),
+                           [](internal::native_methods::GainPtr acc, const std::pair<size_t, std::vector<internal::native_methods::Drive>>& kv) {
+                             return AUTDGainCustomSet(acc, static_cast<uint32_t>(kv.first), kv.second.data(),
+                                                      static_cast<uint32_t>(kv.second.size()));
+                           });
   }
 
   template <class Fn>
-  static std::vector<internal::native_methods::Drive> transform(const internal::Geometry& geometry, Fn func) {
-    std::vector<internal::native_methods::Drive> drives;
-    drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), func);
-    return drives;
+  [[nodiscard]] static std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> transform(
+      const std::vector<const internal::Device*>& devices, Fn func) {
+    std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> drives_map;
+    std::for_each(devices.begin(), devices.end(), [&drives_map, &func](const internal::Device* dev) {
+      std::vector<internal::native_methods::Drive> drives;
+      drives.reserve(dev->num_transducers());
+      std::transform(dev->cbegin(), dev->cend(), std::back_inserter(drives),
+                     [&dev, &drives_map, &func](const internal::Transducer& tr) { return func(*dev, tr); });
+      drives_map[dev->idx()] = std::move(drives);
+    });
+    return drives_map;
   }
 };
 

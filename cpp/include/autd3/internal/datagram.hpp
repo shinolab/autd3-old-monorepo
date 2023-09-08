@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,87 +13,123 @@
 
 #include <type_traits>
 
-#include "autd3/internal/geometry.hpp"
+#include "autd3/internal/geometry/device.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
 
-class SpecialData {
+class SpecialDatagram {
  public:
-  SpecialData() = default;
-  SpecialData(const SpecialData& obj) = default;
-  SpecialData& operator=(const SpecialData& obj) = default;
-  SpecialData(SpecialData&& obj) = default;
-  SpecialData& operator=(SpecialData&& obj) = default;
-  virtual ~SpecialData() = default;
+  SpecialDatagram() = default;
+  SpecialDatagram(const SpecialDatagram& obj) = default;
+  SpecialDatagram& operator=(const SpecialDatagram& obj) = default;
+  SpecialDatagram(SpecialDatagram&& obj) = default;
+  SpecialDatagram& operator=(SpecialDatagram&& obj) = default;
+  virtual ~SpecialDatagram() = default;
 
   [[nodiscard]] virtual native_methods::DatagramSpecialPtr ptr() const = 0;
 };
 
 template <typename S>
-using is_special = std::is_base_of<SpecialData, std::remove_reference_t<S>>;
+using is_special = std::is_base_of<SpecialDatagram, std::remove_reference_t<S>>;
 
 template <typename S>
 constexpr bool is_special_v = is_special<S>::value;
 
-class Header {
+class Datagram {
  public:
-  Header() = default;
-  Header(const Header& v) noexcept = default;
-  Header& operator=(const Header& obj) = default;
-  Header(Header&& obj) = default;
-  Header& operator=(Header&& obj) = default;
-  virtual ~Header() = default;
+  Datagram() = default;
+  Datagram(const Datagram& v) noexcept = default;
+  Datagram& operator=(const Datagram& obj) = default;
+  Datagram(Datagram&& obj) = default;
+  Datagram& operator=(Datagram&& obj) = default;
+  virtual ~Datagram() = default;
 
-  [[nodiscard]] virtual native_methods::DatagramHeaderPtr ptr() const = 0;
+  [[nodiscard]] virtual native_methods::DatagramPtr ptr(const std::vector<const Device*>& devices) const = 0;
 };
 
-class NullHeader final : public Header {
- public:
-  NullHeader() = default;
-  ~NullHeader() override = default;
-  NullHeader(const NullHeader& v) noexcept = default;
-  NullHeader& operator=(const NullHeader& obj) = default;
-  NullHeader(NullHeader&& obj) = default;
-  NullHeader& operator=(NullHeader&& obj) = default;
+template <typename D>
+using is_datagram = std::is_base_of<Datagram, std::remove_reference_t<D>>;
 
-  [[nodiscard]] native_methods::DatagramHeaderPtr ptr() const override { return native_methods::DatagramHeaderPtr{nullptr}; }
+template <typename D>
+constexpr bool is_datagram_v = is_datagram<D>::value;
+
+class NullDatagram final : public Datagram {
+ public:
+  NullDatagram() = default;
+  ~NullDatagram() override = default;
+  NullDatagram(const NullDatagram& v) noexcept = default;
+  NullDatagram& operator=(const NullDatagram& obj) = default;
+  NullDatagram(NullDatagram&& obj) = default;
+  NullDatagram& operator=(NullDatagram&& obj) = default;
+
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::DatagramPtr{nullptr}; }
 };
 
-template <typename H>
-using is_header = std::is_base_of<Header, std::remove_reference_t<H>>;
-
-template <typename H>
-constexpr bool is_header_v = is_header<H>::value;
-
-class Body {
+/**
+ * @brief Datagram to configure silencer
+ */
+class Silencer final : public Datagram {
  public:
-  Body() = default;
-  virtual ~Body() = default;
-  Body(const Body& v) noexcept = default;
-  Body& operator=(const Body& obj) = default;
-  Body(Body&& obj) = default;
-  Body& operator=(Body&& obj) = default;
+  Silencer() noexcept : Silencer(10) {}
+  /**
+   * @brief Constructor
+   *
+   * @param step Update step of silencer. The smaller `step` is, the quieter the output is.
+   */
+  explicit Silencer(const uint16_t step) noexcept : Datagram(), _step(step) {}
 
-  [[nodiscard]] virtual native_methods::DatagramBodyPtr ptr(const Geometry&) const = 0;
+  /**
+   * @brief Disable silencer
+   */
+  static Silencer disable() noexcept { return Silencer(0xFFFF); }
+
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+    return native_methods::AUTDCreateSilencer(_step);
+  }
+
+ private:
+  uint16_t _step;
 };
 
-class NullBody final : public Body {
+/**
+ * @brief Datagram to set modulation delay
+ */
+class ModDelayConfig final : public Datagram {
  public:
-  NullBody() = default;
-  ~NullBody() override = default;
-  NullBody(const NullBody& v) noexcept = default;
-  NullBody& operator=(const NullBody& obj) = default;
-  NullBody(NullBody&& obj) = default;
-  NullBody& operator=(NullBody&& obj) = default;
+  ModDelayConfig() = default;
 
-  [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry&) const override { return native_methods::DatagramBodyPtr{nullptr}; }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDModDelayConfig(); }
 };
 
-template <typename B>
-using is_body = std::is_base_of<Body, std::remove_reference_t<B>>;
+/**
+ * @brief Datagram for clear all data in devices
+ */
+class Clear final : public Datagram {
+ public:
+  Clear() = default;
 
-template <typename B>
-constexpr bool is_body_v = is_body<B>::value;
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDClear(); }
+};
+
+/**
+ * @brief Datagram to update flags (Force fan flag and reads FPGA info flag)
+ */
+class UpdateFlags final : public Datagram {
+ public:
+  UpdateFlags() = default;
+
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDUpdateFlags(); }
+};
+
+/**
+ * @brief Datagram to synchronize devices
+ */
+class Synchronize final : public Datagram {
+ public:
+  Synchronize() = default;
+
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDSynchronize(); }
+};
 
 }  // namespace autd3::internal

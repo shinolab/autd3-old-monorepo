@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/08/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@
 #include "autd3/gain/holo.hpp"
 
 inline void holo_test(autd3::Controller& autd) {
-  autd3::SilencerConfig silencer;
+  autd3::Silencer silencer;
   autd.send(silencer);
 
   autd3::modulation::Sine m(150);  // 150Hz AM
@@ -47,7 +47,7 @@ inline void holo_test(autd3::Controller& autd) {
   std::stringstream s(in);
   if (const auto empty = in == "\n"; !(s >> idx) || idx >= 7 || empty) idx = 3;
 
-  auto backend = std::make_shared<autd3::gain::holo::DefaultBackend>();
+  auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
   switch (idx) {
     case 0:
       autd.send(m, autd3::gain::holo::SDP(backend)

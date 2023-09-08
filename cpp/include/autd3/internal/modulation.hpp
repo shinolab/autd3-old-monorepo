@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/08/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,9 +16,9 @@
 
 namespace autd3::internal {
 
-class Modulation : public Header {
+class Modulation : public Datagram {
  public:
-  explicit Modulation() : Header() {}
+  explicit Modulation() : Datagram() {}
   Modulation(const Modulation& obj) = default;
   Modulation& operator=(const Modulation& obj) = default;
   Modulation(Modulation&& obj) = default;
@@ -34,9 +34,11 @@ class Modulation : public Header {
   /**
    * @brief Get sampling frequency
    */
-  [[nodiscard]] double sampling_frequency() const { return AUTDModulationSamplingFrequency(modulation_ptr()); }
+  [[nodiscard]] double sampling_frequency() const { return native_methods::FPGA_SUB_CLK_FREQ / static_cast<double>(sampling_frequency_division()); }
 
-  [[nodiscard]] native_methods::DatagramHeaderPtr ptr() const override { return AUTDModulationIntoDatagram(modulation_ptr()); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+    return AUTDModulationIntoDatagram(modulation_ptr());
+  }
 
   [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 };

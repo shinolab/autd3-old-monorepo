@@ -14,6 +14,12 @@ extern "C" {
 ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m,
                                                              uint32_t div);
 
+[[nodiscard]] ModulationPtr AUTDModulationRawPCM(const char *path, uint32_t sample_rate, char *err);
+
+[[nodiscard]]
+ModulationPtr AUTDModulationRawPCMWithSamplingFrequencyDivision(ModulationPtr m,
+                                                                uint32_t div);
+
 } // extern "C"
 
 } // namespace autd3::internal::native_methods
