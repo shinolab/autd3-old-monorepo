@@ -1,6 +1,6 @@
 [metadata]
 name = pyautd3
-version = 14.2.2
+version = 15.0.0
 description = AUTD3 library wrapper for python
 long_description = file: README.md
 long_description_content_type = text/markdown
@@ -12,6 +12,7 @@ author_email = suzuki@hapis.k.u-tokyo.ac.jp
 url = https://github.com/shinolab/autd3
 classifiers =
     Programming Language :: Python :: 3
+    Operating System :: MacOS :: MacOS X
     License :: OSI Approved :: MIT License
 
 [options]
@@ -29,3 +30,6 @@ python_requires = >=3.9
 include_package_data = True
 install_requires =
     numpy
+
+[bdist_wheel]
+plat_name = macosx-10-13-x86_64

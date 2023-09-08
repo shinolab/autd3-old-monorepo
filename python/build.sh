@@ -8,16 +8,17 @@ cd ..
 
 cd capi
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  if ! [ -x "$(command -v nvcc)" ]; then    
+  if ! [ -x "$(command -v nvcc)" ]; then
     cargo build --release --all --exclude autd3capi-backend-cuda
-  else 
+  else
     cargo build --release --all
   fi
   cd ..
   mkdir -p python/pyautd3/bin
   cp ./capi/target/release/*.so python/pyautd3/bin
   cd python
-  python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux1-x86_64"
+  cp -f setup.cfg.linux-x86_64 setup.cfg
+  python -m build -w
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   cargo build --release --all --exclude autd3capi-backend-cuda --target=x86_64-apple-darwin
   cargo build --release --all --exclude autd3capi-backend-cuda --target=aarch64-apple-darwin
@@ -28,7 +29,9 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     lipo -create $x64_file ./capi/target/aarch64-apple-darwin/release/$file_basename -output python/pyautd3/bin/$file_basename
   done
   cd python
-  python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-10-13-x86_64"
-  python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-11-0-arm64"
+  cp -f setup.cfg.mac-x86_64 setup.cfg
+  python -m build -w
+  cp -f setup.cfg.mac-aarch64 setup.cfg
+  python -m build -w
 fi
 popd
