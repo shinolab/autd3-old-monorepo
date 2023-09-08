@@ -17,9 +17,9 @@
 #endif
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -224,28 +224,28 @@ namespace AUTD3Sharp.Gain
     public sealed class Cache : Internal.Gain
     {
         private readonly Internal.Gain _g;
-        private readonly Dictionary<BitArray, Dictionary<int, Drive[]>> _cache;
+        private readonly Dictionary<int, Drive[]> _cache;
 
         public Cache(Internal.Gain g)
         {
             _g = g;
-            _cache = new Dictionary<BitArray, Dictionary<int, Drive[]>>();
+            _cache = new Dictionary<int, Drive[]>();
         }
 
         public override GainPtr GainPtr(IEnumerable<Device> devicesIter)
         {
             var devices = devicesIter.ToArray();
             var deviceIndices = devices.Select(d => d.Idx).ToArray();
-            var key = new BitArray(deviceIndices);
-            if (!_cache.ContainsKey(key))
+            if (_cache.Count != devices.Length || deviceIndices.Any(i => !_cache.ContainsKey(i)))
             {
                 var devicePtrs = devices.Select(d => d.Ptr).ToArray();
                 var drives = devices.Select(d => new Drive[d.NumTransducers]).ToArray();
                 var err = new byte[256];
-                Base.AUTDGainCalc(_g.GainPtr(devices), devicePtrs, drives, (uint)devices.Length, err);
-                _cache[key] = drives.Select((d, i) => (deviceIndices[i], d)).ToDictionary(x => x.Item1, x => x.d);
+                if (Base.AUTDGainCalc(_g.GainPtr(devices), devicePtrs, drives, (uint)devices.Length, err) ==
+                    Def.Autd3Err) throw new AUTDException(err);
+                for (var i = 0; i < devices.Length; i++) _cache[deviceIndices[i]] = drives[i];
             }
-            return _cache[key].Aggregate(Base.AUTDGainCustom(), (acc, d) => Base.AUTDGainCustomSet(acc, (uint)d.Key, d.Value, (uint)d.Value.Length));
+            return devices.Aggregate(Base.AUTDGainCustom(), (acc, dev) => Base.AUTDGainCustomSet(acc, (uint)dev.Idx, _cache[dev.Idx], (uint)_cache[dev.Idx].Length));
         }
     }
 
