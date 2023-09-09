@@ -19,6 +19,7 @@ type M = HashMap<usize, Vec<i32>>;
 
 #[no_mangle]
 #[must_use]
+#[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDGainGroupCreateMap(
     device_indices_ptr: *const u32,
     num_devices: u32,
