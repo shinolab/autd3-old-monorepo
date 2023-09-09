@@ -19,18 +19,19 @@ import ctypes
 
 import numpy as np
 
-from pyautd3.autd import Body
-from pyautd3.geometry import Geometry
+from pyautd3.autd import Datagram
+from pyautd3.geometry import Device
 from pyautd3.gain.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import (
+    GainPtr,
     GainSTMMode,
-    DatagramBodyPtr,
+    DatagramPtr,
     STMPropsPtr,
 )
 
 
-class STM(Body, metaclass=ABCMeta):
+class STM(Datagram, metaclass=ABCMeta):
     _freq: Optional[float]
     _sampling_freq: Optional[float]
     _sampling_freq_div: Optional[int]
@@ -86,7 +87,7 @@ class STM(Body, metaclass=ABCMeta):
         return int(Base().stm_props_sampling_frequency_division(self.props(), size))
 
     @abstractmethod
-    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
         pass
 
 
@@ -104,7 +105,7 @@ class FocusSTM(STM):
         self._points = []
         self._duty_shifts = []
 
-    def ptr(self, _: Geometry) -> DatagramBodyPtr:
+    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
         points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
         shifts = np.ctypeslib.as_ctypes(
             np.array(self._duty_shifts).astype(ctypes.c_uint8)
@@ -160,7 +161,7 @@ class FocusSTM(STM):
 
 class GainSTM(STM):
     _gains: List[IGain]
-    _mode: Optional[GainSTMMode]
+    _mode: GainSTMMode
 
     def __init__(
         self,
@@ -170,16 +171,15 @@ class GainSTM(STM):
     ):
         super().__init__(freq, sampling_freq, sampling_freq_div)
         self._gains = []
-        self._mode = None
+        self._mode = GainSTMMode.PhaseDutyFull
 
-    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
-        return functools.reduce(
-            lambda acc, gain: Base().gain_stm_add_gain(acc, gain.gain_ptr(geometry)),
-            self._gains,
-            Base().gain_stm(self.props())
-            if self._mode is None
-            else Base().gain_stm_with_mode(self.props(), self._mode),
-        )
+    def ptr(self, devices: Iterable[Device]) -> DatagramPtr:
+        gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
+        for i, g in enumerate(self._gains):
+            gains[i]["_0"] = g.gain_ptr(devices)._0
+        return Base().gain_stm(self.props(),
+                               gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore
+                               len(self._gains), self._mode)
 
     @staticmethod
     def from_sampling_frequency(sampling_freq: float) -> "GainSTM":

@@ -13,7 +13,6 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from .geometry_viewer import GeometryViewer
-from .simulator import Simulator
 
 
-__all__ = ["GeometryViewer", "Simulator"]
+__all__ = ["GeometryViewer"]

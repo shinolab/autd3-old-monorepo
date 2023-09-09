@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, DEVICE_WIDTH, Level, AUTD3
+from pyautd3 import Controller, Level, AUTD3
 from pyautd3.link import Debug
 
 from samples import runner
@@ -20,14 +20,14 @@ from samples import runner
 
 if __name__ == "__main__":
     autd = (
-        Controller.builder()
+        Controller.advanced_builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .advanced_mode()
+        .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Debug().with_log_level(Level.Off))
     )
 
-    for tr in autd.geometry:
-        tr.frequency = 70e3
+    for dev in autd.geometry:
+        for tr in dev:
+            tr.frequency = 70e3
 
     runner.run(autd)
