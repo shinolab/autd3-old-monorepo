@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 09/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -179,7 +179,11 @@ impl PythonGenerator {
                 Type::VoidPtr => "ctypes.Array[ctypes.c_void_p]",
                 Type::Custom(_) => "ctypes.Array",
             },
-            2 => "Any",
+            2 => match arg.ty {
+                Type::Int32 => "ctypes.Array[ctypes.Array[ctypes.c_int32]]",
+                Type::Custom(_) => "ctypes.Array",
+                _ => "Any",
+            },
             _ => {
                 panic!("triple or more pointer is not supported")
             }

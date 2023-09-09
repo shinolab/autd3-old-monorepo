@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 09/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,31 +13,54 @@
 
 use std::collections::HashMap;
 
-use autd3capi_def::{common::*, GainPtr};
+use autd3capi_def::{common::*, GainPtr, GroupGainMapPtr};
+
+type M = HashMap<usize, Vec<i32>>;
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGainGroupCreateMap(
+    device_indices_ptr: *const u32,
+    num_devices: u32,
+) -> GroupGainMapPtr {
+    GroupGainMapPtr(Box::into_raw(Box::new(
+        (0..num_devices as usize)
+            .map(|i| {
+                let mut v = Vec::with_capacity(AUTD3::NUM_TRANS_IN_UNIT);
+                v.set_len(AUTD3::NUM_TRANS_IN_UNIT);
+                (device_indices_ptr.add(i).read() as _, v)
+            })
+            .collect::<M>(),
+    )) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGainGroupMapSet(
+    map: GroupGainMapPtr,
+    dev_idx: u32,
+    map_data: *const i32,
+) -> GroupGainMapPtr {
+    let dev_idx = dev_idx as usize;
+    let mut map = Box::from_raw(map.0 as *mut M);
+    std::ptr::copy_nonoverlapping(
+        map_data,
+        map.get_mut(&dev_idx).unwrap().as_mut_ptr(),
+        map[&dev_idx].len(),
+    );
+    GroupGainMapPtr(Box::into_raw(map) as _)
+}
 
 #[no_mangle]
 #[must_use]
 #[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDGainGroup(
-    device_indices_ptr: *const u32,
-    map_ptr: *const *const i32,
-    num_devices: u32,
+    map: GroupGainMapPtr,
     keys_ptr: *const i32,
     values_ptr: *const GainPtr,
     kv_len: u32,
 ) -> GainPtr {
-    let map = (0..num_devices as usize)
-        .map(|i| {
-            let mut v = Vec::with_capacity(AUTD3::NUM_TRANS_IN_UNIT);
-            v.set_len(AUTD3::NUM_TRANS_IN_UNIT);
-            std::ptr::copy_nonoverlapping(
-                map_ptr.add(i).read(),
-                v.as_mut_ptr(),
-                AUTD3::NUM_TRANS_IN_UNIT,
-            );
-            (device_indices_ptr.add(i).read() as usize, v)
-        })
-        .collect::<HashMap<usize, Vec<_>>>();
+    let map = Box::from_raw(map.0 as *mut M);
     let mut keys = Vec::with_capacity(kv_len as usize);
     keys.set_len(kv_len as usize);
     std::ptr::copy_nonoverlapping(keys_ptr, keys.as_mut_ptr(), kv_len as usize);
@@ -90,18 +113,13 @@ mod tests {
             let map1 = vec![1; num_transducer as _];
 
             let device_indices = [0, 1];
-            let map = [map0.as_ptr(), map1.as_ptr()];
             let keys = [0, 1];
             let values = [AUTDGainNull(), AUTDGainNull()];
 
-            let g = AUTDGainGroup(
-                device_indices.as_ptr(),
-                map.as_ptr(),
-                map.len() as _,
-                keys.as_ptr(),
-                values.as_ptr(),
-                values.len() as _,
-            );
+            let map = AUTDGainGroupCreateMap(device_indices.as_ptr(), device_indices.len() as _);
+            let map = AUTDGainGroupMapSet(map, 0, map0.as_ptr());
+            let map = AUTDGainGroupMapSet(map, 1, map1.as_ptr());
+            let g = AUTDGainGroup(map, keys.as_ptr(), values.as_ptr(), values.len() as _);
 
             let g = AUTDGainIntoDatagram(g);
 

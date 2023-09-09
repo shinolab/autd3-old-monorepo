@@ -13,15 +13,15 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from typing import Optional, List
+from typing import Iterable, Optional, List
 import ctypes
+
+from pyautd3.geometry import Device
 
 from .backend import Backend
 from .constraint import AmplitudeConstraint
 
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.geometry import Geometry
-
 
 from pyautd3.gain.gain import IGain
 
@@ -50,7 +50,7 @@ class Naive(IGain):
         self._constraint = constraint
         return self
 
-    def gain_ptr(self, _: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Iterable[Device]) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))

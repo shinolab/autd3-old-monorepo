@@ -15,21 +15,22 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from ctypes import c_double, create_string_buffer
-from typing import Iterator
+from typing import Iterator, Iterable
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import DatagramHeaderPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import DatagramPtr, ModulationPtr
 from pyautd3.native_methods.autd3capi_def import AUTD3_ERR
 
 from pyautd3.autd_error import AUTDError
-from pyautd3.autd import Header
+from pyautd3.autd import Datagram
+from pyautd3.geometry import Device, AUTD3
 
 
-class IModulation(Header, metaclass=ABCMeta):
+class IModulation(Datagram, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramHeaderPtr:
+    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
         return Base().modulation_into_datagram(self.modulation_ptr())
 
     @property
@@ -38,7 +39,7 @@ class IModulation(Header, metaclass=ABCMeta):
 
     @property
     def sampling_frequency(self) -> float:
-        return float(Base().modulation_sampling_frequency(self.modulation_ptr()))
+        return AUTD3.fpga_sub_clk_freq() / self.sampling_frequency_division
 
     @abstractmethod
     def modulation_ptr(self) -> ModulationPtr:

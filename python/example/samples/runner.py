@@ -27,17 +27,10 @@ def run(autd: Controller):
         (group.group, "Group Sample"),
     ]
 
-    firm_info_list = autd.firmware_info_list()
-    if not all([firm.is_valid for firm in firm_info_list]):
-        print("\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m")
-    if not all([firm.is_supported for firm in firm_info_list]):
-        print(
-            f"\033[93mWARN: You are using old firmware. Please consider updating to {FirmwareInfo.latest_version()}.\033[0m"
-        )
     print(
         "========================================= Firmware information ==========================================="
     )
-    print("\n".join([str(firm) for firm in firm_info_list]))
+    print("\n".join([str(firm) for firm in autd.firmware_info_list()]))
     print(
         "=========================================================================================================="
     )

@@ -12,14 +12,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, SilencerConfig
+from pyautd3 import Controller, Silencer
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
 import numpy as np
 
 
 def simple(autd: Controller):
-    config = SilencerConfig()
+    config = Silencer()
     autd.send(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
