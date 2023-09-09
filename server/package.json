@@ -1,7 +1,7 @@
 {
   "name": "autd-server",
   "type": "module",
-  "version": "14.2.2",
+  "version": "15.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
