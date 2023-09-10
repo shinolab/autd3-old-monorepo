@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/09/2023
+ * Last Modified: 10/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,12 @@ use autd3_driver::{
     operation::OperationHandler,
 };
 
-use crate::{error::AUTDError, geometry::Geometry, link::NullLink, software_stm::SoftwareSTM};
+use crate::{
+    error::{AUTDError, ReadFirmwareInfoState},
+    geometry::Geometry,
+    link::NullLink,
+    software_stm::SoftwareSTM,
+};
 
 /// Builder for `Controller`
 pub struct ControllerBuilder<T: Transducer> {
@@ -207,8 +212,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.geometry.iter(),
             &mut self.tx_buf,
         )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let cpu_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
@@ -217,8 +228,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.geometry.iter(),
             &mut self.tx_buf,
         )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
@@ -227,8 +244,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.geometry.iter(),
             &mut self.tx_buf,
         )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
@@ -237,8 +260,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.geometry.iter(),
             &mut self.tx_buf,
         )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
@@ -247,8 +276,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.geometry.iter(),
             &mut self.tx_buf,
         )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_functions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
         OperationHandler::pack(
