@@ -19,7 +19,7 @@ use autd3_derive::Gain;
 use autd3_driver::{
     defined::PI,
     derive::prelude::*,
-    geometry::{Device, Vector3},
+    geometry::{Geometry, Vector3},
 };
 
 /// Gain to produce multiple foci with Levenberg-Marquardt algorithm
@@ -166,12 +166,12 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
     #[allow(clippy::uninit_vec)]
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
             .backend
-            .generate_propagation_matrix(devices, &self.foci, &filter)?;
+            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
@@ -302,8 +302,8 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
 
         let mut idx = 0;
         match filter {
-            GainFilter::All => Ok(devices
-                .iter()
+            GainFilter::All => Ok(geometry
+                .devices()
                 .map(|dev| {
                     (
                         dev.idx(),
@@ -318,8 +318,8 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                     )
                 })
                 .collect()),
-            GainFilter::Filter(filter) => Ok(devices
-                .iter()
+            GainFilter::Filter(filter) => Ok(geometry
+                .devices()
                 .map(|dev| {
                     if let Some(filter) = filter.get(&dev.idx()) {
                         (

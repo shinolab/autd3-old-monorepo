@@ -15,7 +15,7 @@ use std::{collections::HashMap, marker::PhantomData};
 
 use autd3_driver::{
     derive::prelude::*,
-    geometry::{Device},
+    geometry::{Device, Geometry},
 };
 
 /// Gain to transform gain data
@@ -80,13 +80,13 @@ impl<
 {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        let mut g = self.gain.calc(devices, filter)?;
+        let mut g = self.gain.calc(geometry, filter)?;
         g.iter_mut().for_each(|(&dev_idx, d)| {
             d.iter_mut().enumerate().for_each(|(i, d)| {
-                *d = (self.f)(devices[dev_idx], &devices[dev_idx][i], d);
+                *d = (self.f)(&geometry[dev_idx], &geometry[dev_idx][i], d);
             });
         });
         Ok(g)

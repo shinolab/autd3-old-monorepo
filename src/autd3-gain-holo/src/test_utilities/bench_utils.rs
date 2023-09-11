@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3::autd3_device::AUTD3;
 use autd3_driver::{
     datagram::{Gain, GainFilter},
     defined::{float, PI},
-    geometry::{Device, IntoDevice, LegacyTransducer, Transducer, Vector3},
+    geometry::{Geometry, IntoDevice, LegacyTransducer, Transducer, Vector3},
 };
 
 use crate::*;
@@ -31,22 +31,24 @@ const ENABLE_EVP_BENCH: bool = true;
 const ENABLE_SDP_BENCH: bool = true;
 const ENABLE_LM_BENCH: bool = true;
 
-pub fn generate_geometry<T: Transducer>(size: usize) -> Vec<Device<T>> {
-    (0..size)
-        .flat_map(|i| {
-            (0..size).map(move |j| {
-                AUTD3::new(
-                    Vector3::new(
-                        i as float * AUTD3::DEVICE_WIDTH,
-                        j as float * AUTD3::DEVICE_HEIGHT,
-                        0.,
-                    ),
-                    Vector3::zeros(),
-                )
-                .into_device(j + i * size)
+pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
+    Geometry::new(
+        (0..size)
+            .flat_map(|i| {
+                (0..size).map(move |j| {
+                    AUTD3::new(
+                        Vector3::new(
+                            i as float * AUTD3::DEVICE_WIDTH,
+                            j as float * AUTD3::DEVICE_HEIGHT,
+                            0.,
+                        ),
+                        Vector3::zeros(),
+                    )
+                    .into_device(j + i * size)
+                })
             })
-        })
-        .collect()
+            .collect(),
+    )
 }
 
 pub fn gen_foci(n: usize) -> impl Iterator<Item = (Vector3, float)> {
@@ -78,7 +80,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         Naive::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -92,7 +94,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         GS::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -106,7 +108,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -120,7 +122,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         EVP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -134,7 +136,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         SDP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -148,7 +150,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         LM::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -162,7 +164,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         Greedy::new()
                             .add_foci_from_iter(gen_foci(N))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -188,7 +190,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         Naive::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -202,7 +204,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         GS::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -216,7 +218,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -230,7 +232,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         EVP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -244,7 +246,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         SDP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -258,7 +260,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         LM::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },
@@ -272,7 +274,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                     b.iter(|| {
                         Greedy::new()
                             .add_foci_from_iter(gen_foci(size))
-                            .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                            .calc(geometry, GainFilter::All)
                             .unwrap();
                     })
                 },

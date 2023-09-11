@@ -146,9 +146,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let timeout = s.timeout().unwrap_or(self.link.timeout());
 
         let (mut op1, mut op2) = s.operation()?;
-        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter())?;
+        OperationHandler::init(&mut op1, &mut op2, &self.geometry)?;
         loop {
-            OperationHandler::pack(&mut op1, &mut op2, self.geometry.iter(), &mut self.tx_buf)?;
+            OperationHandler::pack(&mut op1, &mut op2, &self.geometry, &mut self.tx_buf)?;
 
             if !self
                 .link
@@ -156,7 +156,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             {
                 return Ok(false);
             }
-            if OperationHandler::is_finished(&mut op1, &mut op2, self.geometry.iter()) {
+            if OperationHandler::is_finished(&mut op1, &mut op2, &self.geometry) {
                 break;
             }
             if timeout.is_zero() {
@@ -203,14 +203,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let mut op = autd3_driver::operation::FirmInfoOp::default();
         let mut null_op = autd3_driver::operation::NullOp::default();
 
-        OperationHandler::init(&mut op, &mut null_op, self.geometry.iter())?;
+        OperationHandler::init(&mut op, &mut null_op, &self.geometry)?;
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         if !self
             .link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
@@ -221,12 +216,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         }
         let cpu_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         if !self
             .link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
@@ -237,12 +227,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         }
         let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         if !self
             .link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
@@ -253,12 +238,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         }
         let fpga_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         if !self
             .link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
@@ -269,12 +249,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         }
         let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         if !self
             .link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
@@ -285,12 +260,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         }
         let fpga_functions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
 
@@ -939,9 +909,7 @@ mod tests {
         });
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
@@ -970,9 +938,7 @@ mod tests {
         autd.send(stm.clone()).unwrap();
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
@@ -994,9 +960,7 @@ mod tests {
         });
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
