@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,8 +103,8 @@ impl<
     > TimerCallback for SoftwareSTMCallback<'a, T, L, S, Fs, Fe>
 {
     fn rt_thread(&mut self) {
-        match (self.callback_loop)(self.i.load(Ordering::Acquire), self.now.elapsed()) {
-            Some(s) => match self.controller.send(s) {
+        if let Some(s) = (self.callback_loop)(self.i.load(Ordering::Acquire), self.now.elapsed()) {
+            match self.controller.send(s) {
                 Ok(_) => {}
                 Err(e) => {
                     if (self.callback_err)(e) {
@@ -113,8 +113,7 @@ impl<
                         cvar.notify_one();
                     }
                 }
-            },
-            None => {}
+            }
         }
         self.i.fetch_add(1, Ordering::Release);
     }
@@ -157,16 +156,15 @@ impl<
                         if fin.load(Ordering::Acquire) {
                             break true;
                         }
-                        match callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
-                            Some(s) => match controller.send(s) {
+                        if let Some(s) = callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
+                            match controller.send(s) {
                                 Ok(_) => {}
                                 Err(e) => {
                                     if callback_err(e) {
                                         break false;
                                     }
                                 }
-                            },
-                            None => {}
+                            }
                         }
                         i.fetch_add(1, Ordering::Release);
                         let sleep = next.saturating_sub(now.elapsed());
@@ -191,17 +189,15 @@ impl<
                         if fin.load(Ordering::Acquire) {
                             break true;
                         }
-
-                        match callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
-                            Some(s) => match controller.send(s) {
+                        if let Some(s) = callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
+                            match controller.send(s) {
                                 Ok(_) => {}
                                 Err(e) => {
                                     if callback_err(e) {
                                         break false;
                                     }
                                 }
-                            },
-                            None => {}
+                            }
                         }
                         i.fetch_add(1, Ordering::Release);
                         while now.elapsed() < next {
@@ -252,9 +248,7 @@ impl<
                     }
                     match handle.close() {
                         Ok(_) => Ok(fin.load(Ordering::Relaxed)),
-                        Err(e) => {
-                            return Err(AUTDError::Internal(e));
-                        }
+                        Err(e) => Err(AUTDError::Internal(e)),
                     }
                 })
                 .join()

@@ -33,7 +33,7 @@ impl std::fmt::Display for ReadFirmwareInfoState {
 
 impl std::fmt::Debug for ReadFirmwareInfoState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <Self as std::fmt::Display>::fmt(&self, f)
+        <Self as std::fmt::Display>::fmt(self, f)
     }
 }
 
