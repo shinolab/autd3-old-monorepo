@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 11/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ module pwm_generator #(
     input var [WIDTH-1:0] TIME_CNT,
     input var [WIDTH-1:0] RISE,
     input var [WIDTH-1:0] FALL,
+    input var FULL_WIDTH,
     output var PWM_OUT
 );
 
@@ -31,7 +32,7 @@ module pwm_generator #(
   assign t = TIME_CNT;
   assign R = RISE;
   assign F = FALL;
-  assign PWM_OUT = v;
+  assign PWM_OUT = FULL_WIDTH | v;
 
   always_ff @(posedge CLK) begin
     if (R <= F) begin
