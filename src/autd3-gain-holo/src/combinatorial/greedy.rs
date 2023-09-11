@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -15,13 +15,14 @@ use std::collections::HashMap;
 
 use crate::{constraint::Constraint, impl_holo, Complex};
 use autd3_derive::Gain;
+
 use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
-    datagram::{Gain, GainFilter},
-    defined::{float, Drive, PI},
-    error::AUTDInternalError,
-    geometry::{Device, Transducer, Vector3},
+    defined::PI,
+    derive::prelude::*,
+    geometry::{Device, Vector3},
 };
+
 use nalgebra::ComplexField;
 use rand::seq::SliceRandom;
 

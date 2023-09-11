@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,11 +17,10 @@ use crate::{
     constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
 };
 use autd3_derive::Gain;
+
 use autd3_driver::{
-    datagram::{Gain, GainFilter},
-    defined::{float, Drive},
-    error::AUTDInternalError,
-    geometry::{Device, Transducer, Vector3},
+    derive::prelude::*,
+    geometry::{Device, Vector3},
 };
 
 /// Gain to produce multiple foci with GS algorithm

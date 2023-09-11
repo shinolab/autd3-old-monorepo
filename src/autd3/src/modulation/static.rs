@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3_derive::Modulation;
 
-use autd3_driver::{datagram::Modulation, defined::float, error::AUTDInternalError};
+use autd3_driver::derive::prelude::*;
 
 /// Without modulation
 #[derive(Modulation, Clone, Copy)]
