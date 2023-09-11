@@ -17,7 +17,7 @@ use bitvec::prelude::*;
 
 use autd3_driver::{
     derive::prelude::*,
-    geometry::{Device},
+    geometry::{Device, Geometry},
 };
 
 pub struct Group<
@@ -144,10 +144,10 @@ impl<
 {
     fn get_filters(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
     ) -> HashMap<K, HashMap<usize, BitVec<usize, Lsb0>>> {
         let mut filters = HashMap::new();
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             dev.iter().for_each(|tr| {
                 if let Some(key) = (self.f)(dev, tr) {
                     if !filters.contains_key(&key) {
@@ -189,10 +189,10 @@ impl<
     #[allow(clippy::uninit_vec)]
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        let filters = self.get_filters(devices);
+        let filters = self.get_filters(geometry);
 
         let drives_cache = self
             .gain_map
@@ -204,13 +204,13 @@ impl<
                 } else {
                     return Err(AUTDInternalError::UnknownGroupKey);
                 };
-                let d = g.calc(devices, GainFilter::Filter(filter))?;
+                let d = g.calc(geometry, GainFilter::Filter(filter))?;
                 Ok((k, d))
             })
             .collect::<Result<HashMap<_, HashMap<usize, Vec<Drive>>>, _>>()?;
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .map(|dev| {
                 let mut d: Vec<Drive> = Vec::with_capacity(dev.num_transducers());
                 unsafe {
@@ -250,12 +250,12 @@ mod tests {
 
     #[test]
     fn test_group() {
-        let devices = [
+        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(2),
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(3),
-        ];
+        ]);
 
         let gain = Group::new(
             |dev, tr: &LegacyTransducer| match (dev.idx(), tr.local_idx()) {
@@ -269,9 +269,7 @@ mod tests {
         .set("plane", Plane::new(Vector3::zeros()))
         .set("plane2", Plane::new(Vector3::zeros()).with_amp(0.5));
 
-        let drives = gain
-            .calc(&devices.iter().collect::<Vec<_>>(), GainFilter::All)
-            .unwrap();
+        let drives = gain.calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(drives.len(), 4);
         assert!(drives.values().all(|d| d.len() == AUTD3::NUM_TRANS_IN_UNIT));
 
@@ -311,10 +309,10 @@ mod tests {
 
     #[test]
     fn test_group_unknown_key() {
-        let devices = [
+        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
-        ];
+        ]);
 
         let gain = Group::new(|_dev, tr: &LegacyTransducer| match tr.local_idx() {
             0..=99 => Some("plane"),
@@ -323,17 +321,17 @@ mod tests {
         })
         .set("plane2", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&devices.iter().collect::<Vec<_>>(), GainFilter::All);
+        let drives = gain.calc(&geometry, GainFilter::All);
         assert!(drives.is_err());
         assert_eq!(drives.unwrap_err(), AUTDInternalError::UnknownGroupKey);
     }
 
     #[test]
     fn test_group_unspecified_key() {
-        let devices = [
+        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
-        ];
+        ]);
 
         let gain = Group::new(|_dev, tr: &LegacyTransducer| match tr.local_idx() {
             0..=99 => Some("plane"),
@@ -342,7 +340,7 @@ mod tests {
         })
         .set("plane", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&devices.iter().collect::<Vec<_>>(), GainFilter::All);
+        let drives = gain.calc(&geometry, GainFilter::All);
         assert!(drives.is_err());
         assert_eq!(drives.unwrap_err(), AUTDInternalError::UnspecifiedGroupKey);
     }

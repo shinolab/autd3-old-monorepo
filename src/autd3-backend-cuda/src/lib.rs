@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,11 @@ mod cusolver;
 
 use std::{ffi::CStr, fmt::Display, rc::Rc};
 
-use autd3_driver::{datagram::GainFilter, defined::float, geometry::Device};
+use autd3_driver::{
+    datagram::GainFilter,
+    defined::float,
+    geometry::{Device, Geometry},
+};
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
 use cuda_sys::cublas::{
     cublasOperation_t_CUBLAS_OP_C, cublasOperation_t_CUBLAS_OP_N, cublasOperation_t_CUBLAS_OP_T,
@@ -358,12 +362,12 @@ impl LinAlgBackend for CUDABackend {
 
     fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
-        let cols = devices
-            .iter()
+        let cols = geometry
+            .devices()
             .map(|dev| dev.num_transducers())
             .sum::<usize>();
         let rows = foci.len();
@@ -379,7 +383,7 @@ impl LinAlgBackend for CUDABackend {
 
         match filter {
             GainFilter::All => {
-                devices.iter().for_each(|dev| {
+                geometry.devices().for_each(|dev| {
                     dev.iter().for_each(|tr| {
                         let p = tr.position();
                         positions.push(p.x);
@@ -391,7 +395,7 @@ impl LinAlgBackend for CUDABackend {
                 });
             }
             GainFilter::Filter(filter) => {
-                devices.iter().for_each(|dev| {
+                geometry.devices().for_each(|dev| {
                     if let Some(filter) = filter.get(&dev.idx()) {
                         dev.iter().for_each(|tr| {
                             if filter[tr.local_idx()] {

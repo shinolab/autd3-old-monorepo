@@ -20,7 +20,7 @@ use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
     defined::PI,
     derive::prelude::*,
-    geometry::{Device, Vector3},
+    geometry::{Geometry, Vector3},
 };
 
 use nalgebra::ComplexField;
@@ -74,7 +74,7 @@ impl Greedy {
 impl<T: Transducer> Gain<T> for Greedy {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)
@@ -86,8 +86,8 @@ impl<T: Transducer> Gain<T> for Greedy {
         let mut cache = vec![Complex::new(0., 0.); m];
 
         let amp = self.constraint.convert(1.0, 1.0);
-        let mut res: HashMap<usize, Vec<Drive>> = devices
-            .iter()
+        let mut res: HashMap<usize, Vec<Drive>> = geometry
+            .devices()
             .map(|dev| {
                 (
                     dev.idx(),
@@ -96,12 +96,12 @@ impl<T: Transducer> Gain<T> for Greedy {
             })
             .collect();
         let mut indices: Vec<_> = match filter {
-            GainFilter::All => devices
-                .iter()
+            GainFilter::All => geometry
+                .devices()
                 .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.local_idx())))
                 .collect(),
-            GainFilter::Filter(filter) => devices
-                .iter()
+            GainFilter::Filter(filter) => geometry
+                .devices()
                 .filter_map(|dev| {
                     filter.get(&dev.idx()).map(|filter| {
                         dev.iter().filter_map(|tr| {
@@ -123,9 +123,9 @@ impl<T: Transducer> Gain<T> for Greedy {
         let mut tmp = vec![Complex::new(0., 0.); m];
         indices.iter().for_each(|&(dev_idx, tr_idx)| {
             Self::transfer_foci(
-                &devices[dev_idx][tr_idx],
-                devices[dev_idx].sound_speed,
-                devices[dev_idx].attenuation,
+                &geometry[dev_idx][tr_idx],
+                geometry[dev_idx].sound_speed,
+                geometry[dev_idx].attenuation,
                 &self.foci,
                 &mut tmp,
             );

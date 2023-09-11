@@ -17,7 +17,7 @@ use autd3_derive::Gain;
 
 use autd3_driver::{
     derive::prelude::*,
-    geometry::{Device},
+    geometry::{Geometry},
 };
 
 /// Gain with uniform amplitude and phase
@@ -52,10 +52,10 @@ impl Uniform {
 impl<T: Transducer> Gain<T> for Uniform {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        Ok(Self::transform(devices, filter, |_, _| Drive {
+        Ok(Self::transform(geometry, filter, |_, _| Drive {
             phase: self.phase,
             amp: self.amp,
         }))
@@ -72,12 +72,14 @@ mod tests {
 
     #[test]
     fn test_uniform() {
-        let device: Device<LegacyTransducer> =
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
+        let geometry: Geometry<LegacyTransducer> =
+            Geometry::new(vec![
+                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
+            ]);
 
         let gain = Uniform::new(0.5);
 
-        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
             assert_eq!(drive.amp, 0.5);
@@ -85,7 +87,7 @@ mod tests {
 
         let gain = gain.with_phase(0.2);
 
-        let d = gain.calc(&[&device], GainFilter::All).unwrap();
+        let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.2);
             assert_eq!(drive.amp, 0.5);

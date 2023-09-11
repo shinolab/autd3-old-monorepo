@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 use crate::{
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     operation::{Operation, TypeTag},
 };
 
@@ -81,8 +81,8 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
         2
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 6)).collect();
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 6)).collect();
         Ok(())
     }
 
@@ -99,104 +99,102 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
 mod tests {
 
     use super::*;
-    use crate::geometry::{device::tests::create_device, LegacyTransducer};
+    use crate::geometry::{tests::create_geometry, LegacyTransducer};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn info_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = [0x00u8; 2 * NUM_DEVICE];
 
         let mut op = FirmInfoOp::default();
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 2));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 6));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 5));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::CPUVersionMajor);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 4));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::CPUVersionMinor);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 3));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::FPGAVersionMajor);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 2));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::FPGAVersionMinor);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::FPGAFunctions);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
             op.commit(dev);
         });
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
             let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
             assert_eq!(flag, FirmwareInfoType::Clear);

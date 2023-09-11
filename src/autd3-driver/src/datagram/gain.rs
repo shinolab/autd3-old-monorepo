@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     defined::Drive,
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
 };
 
 use bitvec::prelude::*;
@@ -34,11 +34,11 @@ pub trait GainAsAny {
 pub trait Gain<T: Transducer>: GainAsAny {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>;
     fn transform<F: Fn(&Device<T>, &T) -> Drive + Sync + Send>(
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
         f: F,
     ) -> HashMap<usize, Vec<Drive>>
@@ -46,12 +46,12 @@ pub trait Gain<T: Transducer>: GainAsAny {
         Self: Sized,
     {
         match filter {
-            GainFilter::All => devices
-                .iter()
+            GainFilter::All => geometry
+                .devices()
                 .map(|dev| (dev.idx(), dev.iter().map(|tr| f(dev, tr)).collect()))
                 .collect(),
-            GainFilter::Filter(filter) => devices
-                .iter()
+            GainFilter::Filter(filter) => geometry
+                .devices()
                 .map(|dev| {
                     if let Some(filter) = filter.get(&dev.idx()) {
                         (
@@ -87,9 +87,9 @@ impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
 impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        self.as_ref().calc(devices, filter)
+        self.as_ref().calc(geometry, filter)
     }
 }

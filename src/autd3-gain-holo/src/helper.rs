@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3_driver::{
     datagram::GainFilter,
     defined::{Drive, PI},
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::{Geometry, Transducer},
 };
 use nalgebra::ComplexField;
 
@@ -116,7 +116,7 @@ macro_rules! impl_holo {
 
 #[allow(clippy::uninit_vec)]
 pub fn generate_result<T: Transducer>(
-    devices: &[&Device<T>],
+    geometry: &Geometry<T>,
     q: VectorXc,
     constraint: &Constraint,
     filter: GainFilter,
@@ -124,8 +124,8 @@ pub fn generate_result<T: Transducer>(
     let max_coefficient = q.camax().abs();
     let mut idx = 0;
     match filter {
-        GainFilter::All => Ok(devices
-            .iter()
+        GainFilter::All => Ok(geometry
+            .devices()
             .map(|dev| {
                 (
                     dev.idx(),
@@ -140,8 +140,8 @@ pub fn generate_result<T: Transducer>(
                 )
             })
             .collect()),
-        GainFilter::Filter(filter) => Ok(devices
-            .iter()
+        GainFilter::Filter(filter) => Ok(geometry
+            .devices()
             .map(|dev| {
                 if let Some(filter) = filter.get(&dev.idx()) {
                     (

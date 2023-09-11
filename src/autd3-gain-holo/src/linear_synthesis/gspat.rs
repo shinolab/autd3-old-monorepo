@@ -20,7 +20,7 @@ use autd3_derive::Gain;
 
 use autd3_driver::{
     derive::prelude::*,
-    geometry::{Device, Vector3},
+    geometry::{Geometry, Vector3},
 };
 
 /// Gain to produce multiple foci with GS-PAT algorithm
@@ -61,12 +61,12 @@ impl<B: LinAlgBackend + 'static> GSPAT<B> {
 impl<B: LinAlgBackend, T: Transducer> Gain<T> for GSPAT<B> {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
             .backend
-            .generate_propagation_matrix(devices, &self.foci, &filter)?;
+            .generate_propagation_matrix(geometry, &self.foci, &filter)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
@@ -128,7 +128,7 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for GSPAT<B> {
         )?;
 
         generate_result(
-            devices,
+            geometry,
             self.backend.to_host_cv(q)?,
             &self.constraint,
             filter,

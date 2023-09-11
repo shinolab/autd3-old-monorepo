@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{
     defined::Drive,
     error::AUTDInternalError,
     fpga::AdvancedDriveDuty,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     operation::{GainControlFlags, TypeTag},
 };
 
@@ -54,8 +54,8 @@ impl<T: Transducer> Operation<T> for StopOp {
         2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -72,36 +72,34 @@ impl<T: Transducer> Operation<T> for StopOp {
 mod tests {
 
     use super::*;
-    use crate::geometry::{device::tests::create_device, LegacyTransducer};
+    use crate::geometry::{tests::create_geometry, LegacyTransducer};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn stop_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut op = StopOp::default();
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDriveDuty>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -111,11 +109,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8

@@ -62,6 +62,14 @@ impl<T: Transducer> Geometry<T> {
         self.devices.iter().map(|d| d.center()).sum::<Vector3>() / self.devices.len() as float
     }
 
+    pub fn devices(&self) -> impl Iterator<Item = &Device<T>> {
+        self.devices.iter().filter(|dev| dev.enable)
+    }
+
+    pub fn devices_mut(&mut self) -> impl Iterator<Item = &mut Device<T>> {
+        self.devices.iter_mut().filter(|dev| dev.enable)
+    }
+
     /// Set speed of sound of all devices from temperature
     /// This is equivalent to `set_sound_speed_from_temp_with(temp, 1.4, 8.314463, 28.9647e-3)`
     ///
@@ -120,6 +128,14 @@ pub mod tests {
             idx,
             (0..n)
                 .map(|i| T::new(i, Vector3::zeros(), UnitQuaternion::identity()))
+                .collect(),
+        )
+    }
+
+    pub fn create_geometry<T: Transducer>(n: usize, num_trans_in_unit: usize) -> Geometry<T> {
+        Geometry::new(
+            (0..n)
+                .map(|i| create_device::<T>(i, num_trans_in_unit))
                 .collect(),
         )
     }

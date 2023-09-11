@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ use super::{Matrix3, Transducer, UnitQuaternion, Vector3};
 pub struct Device<T: Transducer> {
     idx: usize,
     transducers: Vec<T>,
+    pub enable: bool,
     pub force_fan: bool,
     pub reads_fpga_info: bool,
     pub sound_speed: float,
@@ -39,6 +40,7 @@ impl<T: Transducer> Device<T> {
         Self {
             idx,
             transducers,
+            enable: true,
             force_fan: false,
             reads_fpga_info: false,
             sound_speed: 340.0 * METER,

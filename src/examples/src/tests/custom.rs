@@ -31,10 +31,10 @@ impl MyUniform {
 impl<T: Transducer> Gain<T> for MyUniform {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        Ok(Self::transform(devices, filter, |_dev, _tr| Drive {
+        Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
             phase: 0.0,
             amp: 1.0,
         }))
