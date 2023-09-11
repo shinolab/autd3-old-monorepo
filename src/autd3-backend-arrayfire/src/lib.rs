@@ -22,7 +22,7 @@ use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
     datagram::GainFilter,
     defined::float,
-    geometry::{Device, Geometry},
+    geometry::Geometry,
 };
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, Trans, VectorX, VectorXc};
 

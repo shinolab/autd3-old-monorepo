@@ -18,11 +18,7 @@ mod cusolver;
 
 use std::{ffi::CStr, fmt::Display, rc::Rc};
 
-use autd3_driver::{
-    datagram::GainFilter,
-    defined::float,
-    geometry::{Device, Geometry},
-};
+use autd3_driver::{datagram::GainFilter, defined::float, geometry::Geometry};
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
 use cuda_sys::cublas::{
     cublasOperation_t_CUBLAS_OP_C, cublasOperation_t_CUBLAS_OP_N, cublasOperation_t_CUBLAS_OP_T,
