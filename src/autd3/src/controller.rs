@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@ use autd3_driver::{
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Device, IntoDevice, LegacyTransducer,
-        Transducer,
+        AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, IntoDevice,
+        LegacyTransducer, Transducer,
     },
     link::Link,
     operation::OperationHandler,
@@ -28,7 +28,6 @@ use autd3_driver::{
 
 use crate::{
     error::{AUTDError, ReadFirmwareInfoState},
-    geometry::Geometry,
     link::NullLink,
     software_stm::SoftwareSTM,
 };

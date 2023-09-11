@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -149,7 +149,7 @@ impl<
             }
         }
         *self.autd.write().unwrap() = match autd3::Controller::open_impl(
-            autd3::geometry::Geometry::from_msg(&req.into_inner()),
+            autd3::driver::geometry::Geometry::from_msg(&req.into_inner()),
             (self.link)(),
         ) {
             Ok(autd) => Some(autd),

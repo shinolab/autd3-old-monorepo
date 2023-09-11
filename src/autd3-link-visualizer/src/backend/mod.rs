@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,9 +19,10 @@ mod python;
 
 use crate::{error::VisualizerError, Config};
 
-use autd3::{
-    driver::{acoustics::Complex, defined::float, geometry::Transducer},
-    geometry::Geometry,
+use autd3::driver::{
+    acoustics::Complex,
+    defined::float,
+    geometry::{Geometry, Transducer},
 };
 
 /// Plotting backend

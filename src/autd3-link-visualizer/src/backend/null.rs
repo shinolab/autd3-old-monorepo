@@ -4,7 +4,7 @@
  * Created Date: 17/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,7 +68,7 @@ impl Backend for NullBackend {
 
     fn plot_phase<T: autd3::driver::geometry::Transducer>(
         _config: Self::PlotConfig,
-        _geometry: &autd3::geometry::Geometry<T>,
+        _geometry: &autd3::driver::geometry::Geometry<T>,
         _phases: Vec<float>,
     ) -> Result<(), crate::error::VisualizerError> {
         Err(crate::error::VisualizerError::NotSupported)

@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ impl ToMessage for autd3::driver::geometry::Quaternion {
     }
 }
 
-impl<T: autd3::driver::geometry::Transducer> ToMessage for autd3::geometry::Geometry<T> {
+impl<T: autd3::driver::geometry::Transducer> ToMessage for autd3::driver::geometry::Geometry<T> {
     type Message = Geometry;
 
     fn to_msg(&self) -> Self::Message {
@@ -773,7 +773,7 @@ impl FromMessage<Greedy> for autd3_gain_holo::Greedy {
     }
 }
 
-impl FromMessage<Geometry> for autd3::geometry::Geometry<LegacyTransducer> {
+impl FromMessage<Geometry> for autd3::driver::geometry::Geometry<LegacyTransducer> {
     fn from_msg(msg: &Geometry) -> Self {
         use autd3::driver::geometry::Transducer;
         let devices = msg
