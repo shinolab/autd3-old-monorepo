@@ -44,9 +44,7 @@ impl<T: Transducer> Default for ControllerBuilder<T> {
 }
 
 impl<T: Transducer> ControllerBuilder<T> {
-    #[doc(hidden)]
-    /// This is used only for capi.
-    pub fn new() -> ControllerBuilder<T> {
+    fn new() -> ControllerBuilder<T> {
         Self { devices: vec![] }
     }
 
@@ -60,6 +58,53 @@ impl<T: Transducer> ControllerBuilder<T> {
     pub fn open_with<L: Link<T>>(self, link: L) -> Result<Controller<T, L>, AUTDError> {
         Controller::open_impl(Geometry::<T>::new(self.devices), link)
     }
+
+    fn convert<T2: Transducer>(self) -> ControllerBuilder<T2> {
+        ControllerBuilder {
+            devices: self
+                .devices
+                .iter()
+                .map(|dev| {
+                    Device::new(
+                        dev.idx(),
+                        dev.iter()
+                            .map(|tr| T2::new(tr.local_idx(), *tr.position(), *tr.rotation()))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        }
+    }
+}
+
+impl ControllerBuilder<LegacyTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        self.convert()
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        self.convert()
+    }
+}
+
+impl ControllerBuilder<AdvancedTransducer> {
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        self.convert()
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        self.convert()
+    }
+}
+
+impl ControllerBuilder<AdvancedPhaseTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        self.convert()
+    }
+
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        self.convert()
+    }
 }
 
 /// Controller for AUTD
@@ -71,24 +116,9 @@ pub struct Controller<T: Transducer, L: Link<T>> {
 }
 
 impl Controller<LegacyTransducer, NullLink> {
-    /// Create Controller builder (legacy mode)
+    /// Create Controller builder
     pub fn builder() -> ControllerBuilder<LegacyTransducer> {
         ControllerBuilder::<LegacyTransducer>::new()
-    }
-
-    /// Create Controller builder (legacy mode)
-    pub fn legacy_builder() -> ControllerBuilder<LegacyTransducer> {
-        ControllerBuilder::<LegacyTransducer>::new()
-    }
-
-    /// Create Controller builder (advanced mode)
-    pub fn advanced_builder() -> ControllerBuilder<AdvancedTransducer> {
-        ControllerBuilder::<AdvancedTransducer>::new()
-    }
-
-    /// Create Controller builder (advanced phase mode)
-    pub fn advanced_phase_builder() -> ControllerBuilder<AdvancedPhaseTransducer> {
-        ControllerBuilder::<AdvancedPhaseTransducer>::new()
     }
 }
 
@@ -477,7 +507,8 @@ mod tests {
 
     #[test]
     fn freq_config() {
-        let mut autd = Controller::advanced_builder()
+        let mut autd = Controller::builder()
+            .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .open_with(Debug::new().with_log_level(LevelFilter::Off))
             .unwrap();
@@ -500,7 +531,8 @@ mod tests {
 
     #[test]
     fn basic_usage_advanced() {
-        let mut autd = Controller::advanced_builder()
+        let mut autd = Controller::builder()
+            .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
@@ -640,7 +672,8 @@ mod tests {
 
     #[test]
     fn basic_usage_advanced_phase() {
-        let mut autd = Controller::advanced_phase_builder()
+        let mut autd = Controller::builder()
+            .advanced_phase()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
