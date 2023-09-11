@@ -1012,180 +1012,168 @@ mod tests {
         autd.close().unwrap();
     }
 
-    // #[test]
-    // fn gain_stm_advanced() {
-    //     let mut autd = Controller::builder()
-    //         .advanced()
-    //         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    //         .open_with(Debug::new().with_log_level(LevelFilter::Off))
-    //         .unwrap();
+    #[test]
+    fn gain_stm_advanced() {
+        let mut autd = Controller::builder()
+            .advanced()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
 
-    //     autd.send(Clear::new()).unwrap();
-    //     autd.send(Synchronize::new()).unwrap();
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
 
-    //     let center = autd.geometry().center();
-    //     let size = 30;
+        let center = autd.geometry().center();
+        let size = 30;
 
-    //     let gains = (0..size)
-    //         .map(|i| {
-    //             let theta = 2. * PI * i as float / size as float;
-    //             Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
-    //         })
-    //         .collect::<Vec<_>>();
+        let gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
 
-    //     let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
 
-    //     autd.send(&stm).unwrap();
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link()
-    //         .emulators()
-    //         .iter()
-    //         .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert!(cpu.fpga().stm_start_idx().is_none());
-    //         assert!(cpu.fpga().stm_finish_idx().is_none());
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, autd3_core::AdvancedDriveDuty::to_duty(&g, c));
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, crate::driver::fpga::AdvancedDriveDuty::to_duty(&g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
-    //         assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseFull);
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_mode(GainSTMMode::PhaseFull);
+        autd.send(stm.clone()).unwrap();
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseHalf);
-    //     assert!(autd.send(&stm).is_err());
+        let stm = stm.with_mode(GainSTMMode::PhaseHalf);
+        assert!(autd.send(stm).is_err());
 
-    //     autd.close().unwrap();
-    // }
+        autd.close().unwrap();
+    }
 
-    // #[test]
-    // fn gain_stm_advanced_phase() {
-    //     let mut autd = Controller::builder()
-    //         .advanced_phase()
-    //         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    //         .open_with(Debug::new().with_log_level(LevelFilter::Off))
-    //         .unwrap();
+    #[test]
+    fn gain_stm_advanced_phase() {
+        let mut autd = Controller::builder()
+            .advanced_phase()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
 
-    //     autd.send(Clear::new()).unwrap();
-    //     autd.send(Synchronize::new()).unwrap();
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
 
-    //     autd.send(Amplitudes::none()).unwrap();
+        autd.send(Amplitudes::none()).unwrap();
 
-    //     let center = autd.geometry().center();
-    //     let size = 30;
+        let center = autd.geometry().center();
+        let size = 30;
 
-    //     let gains = (0..size)
-    //         .map(|i| {
-    //             let theta = 2. * PI * i as float / size as float;
-    //             Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
-    //         })
-    //         .collect::<Vec<_>>();
+        let gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
 
-    //     let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
-    //     autd.send(&stm).unwrap();
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link()
-    //         .emulators()
-    //         .iter()
-    //         .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert!(cpu.fpga().stm_start_idx().is_none());
-    //         assert!(cpu.fpga().stm_finish_idx().is_none());
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
-    //         assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseFull);
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_mode(GainSTMMode::PhaseFull);
+        autd.send(stm.clone()).unwrap();
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseHalf);
-    //     assert!(autd.send(&stm).is_err());
+        let stm = stm.with_mode(GainSTMMode::PhaseHalf);
+        assert!(autd.send(stm).is_err());
 
-    //     autd.close().unwrap();
-    // }
+        autd.close().unwrap();
+    }
 }
