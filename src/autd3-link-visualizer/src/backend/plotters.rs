@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,10 @@ use scarlet::colormap::{ColorMap, ListedColorMap};
 
 use crate::{colormap, error::VisualizerError, Backend, Config};
 
-use autd3::{autd3_device::AUTD3, driver::defined::float, geometry::Geometry};
+use autd3::{
+    autd3_device::AUTD3,
+    driver::{defined::float, geometry::Geometry},
+};
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
@@ -569,7 +572,7 @@ impl Backend for PlottersBackend {
 
     fn plot_phase<T: autd3::driver::geometry::Transducer>(
         config: Self::PlotConfig,
-        geometry: &autd3::geometry::Geometry<T>,
+        geometry: &autd3::driver::geometry::Geometry<T>,
         phases: Vec<float>,
     ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
