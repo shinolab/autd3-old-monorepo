@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,8 +36,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Gain
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Gain to produce single focal point
     /// </summary>
@@ -63,7 +61,7 @@ namespace AUTD3Sharp.Gain
             return this;
         }
 
-        public override GainPtr GainPtr(IEnumerable<Device> devices)
+        public override GainPtr GainPtr(Geometry geometry)
         {
             var ptr = Base.AUTDGainFocus(_point.x, _point.y, _point.z);
             if (_amp != null)
@@ -90,41 +88,37 @@ namespace AUTD3Sharp.Gain
             return this;
         }
 
-        public override GainPtr GainPtr(IEnumerable<Device> devicesIter)
+        public override GainPtr GainPtr(Geometry geometry)
         {
-            var devices = devicesIter.ToArray();
-
             var keymap = new Dictionary<TK, int>();
-            var deviceIndices = new uint[devices.Length];
-            var map = new int[devices.Length][];
+            var deviceIndices = geometry.Select(dev => (uint)dev.Idx).ToArray();
+            var map = Base.AUTDGainGroupCreateMap(deviceIndices, (uint)deviceIndices.Length);
             var k = 0;
-            foreach (var (dev, i) in devices.Select((d, i) => (d, i)))
+            foreach (var dev in geometry)
             {
-                deviceIndices[i] = (uint)dev.Idx;
-                map[i] = new int[dev.NumTransducers];
+                var m = new int[dev.NumTransducers];
                 foreach (var tr in dev)
                 {
                     var key = _f(dev, tr);
                     if (key != null)
                     {
                         if (!keymap.ContainsKey(key)) keymap[key] = k++;
-                        map[i][tr.LocalIdx] = keymap[key];
+                        m[tr.LocalIdx] = keymap[key];
                     }
                     else
-                        map[i][tr.LocalIdx] = -1;
+                        m[tr.LocalIdx] = -1;
                 }
+                map = Base.AUTDGainGroupMapSet(map, (uint)dev.Idx, m);
             }
             var keys = new int[_map.Count];
             var values = new GainPtr[_map.Count];
             foreach (var (kv, i) in _map.Select((v, i) => (v, i)))
             {
                 keys[i] = keymap[kv.Key];
-                values[i] = kv.Value.GainPtr(devices);
+                values[i] = kv.Value.GainPtr(geometry);
             }
             return Base.AUTDGainGroup(
-                deviceIndices,
                     map,
-                    (uint)map.Length,
                     keys,
                     values,
                     (uint)values.Length);
@@ -160,7 +154,7 @@ namespace AUTD3Sharp.Gain
             return this;
         }
 
-        public override GainPtr GainPtr(IEnumerable<Device> devices)
+        public override GainPtr GainPtr(Geometry geometry)
         {
             var ptr = Base.AUTDGainBessel(_point.x, _point.y, _point.z, _dir.x, _dir.y, _dir.z, _thetaZ);
             if (_amp != null)
@@ -194,7 +188,7 @@ namespace AUTD3Sharp.Gain
             return this;
         }
 
-        public override GainPtr GainPtr(IEnumerable<Device> devices)
+        public override GainPtr GainPtr(Geometry geometry)
         {
             var ptr = Base.AUTDGainPlane(_dir.x, _dir.y, _dir.z);
             if (_amp != null)
@@ -205,16 +199,16 @@ namespace AUTD3Sharp.Gain
 
     public abstract class Gain : Internal.Gain
     {
-        public override GainPtr GainPtr(IEnumerable<Device> devices)
+        public override GainPtr GainPtr(Geometry geometry)
         {
-            return Calc(devices).Aggregate(Base.AUTDGainCustom(), (acc, d) => Base.AUTDGainCustomSet(acc, (uint)d.Key, d.Value, (uint)d.Value.Length));
+            return Calc(geometry).Aggregate(Base.AUTDGainCustom(), (acc, d) => Base.AUTDGainCustomSet(acc, (uint)d.Key, d.Value, (uint)d.Value.Length));
         }
 
-        public abstract Dictionary<int, Drive[]> Calc(IEnumerable<Device> devices);
+        public abstract Dictionary<int, Drive[]> Calc(Geometry geometry);
 
-        public static Dictionary<int, Drive[]> Transform(IEnumerable<Device> devices, Func<Device, Transducer, Drive> f)
+        public static Dictionary<int, Drive[]> Transform(Geometry geometry, Func<Device, Transducer, Drive> f)
         {
-            return devices.Select((dev) => (dev.Idx, dev.Select((tr) => f(dev, tr)).ToArray())).ToDictionary(x => x.Idx, x => x.Item2);
+            return geometry.Select((dev) => (dev.Idx, dev.Select((tr) => f(dev, tr)).ToArray())).ToDictionary(x => x.Idx, x => x.Item2);
         }
     }
 
@@ -232,20 +226,18 @@ namespace AUTD3Sharp.Gain
             _cache = new Dictionary<int, Drive[]>();
         }
 
-        public override GainPtr GainPtr(IEnumerable<Device> devicesIter)
+        public override GainPtr GainPtr(Geometry geometry)
         {
-            var devices = devicesIter.ToArray();
-            var deviceIndices = devices.Select(d => d.Idx).ToArray();
-            if (_cache.Count != devices.Length || deviceIndices.Any(i => !_cache.ContainsKey(i)))
+            var deviceIndices = geometry.Select(d => d.Idx).ToArray();
+            if (_cache.Count != geometry.NumDevices|| deviceIndices.Any(i => !_cache.ContainsKey(i)))
             {
-                var devicePtrs = devices.Select(d => d.Ptr).ToArray();
-                var drives = devices.Select(d => new Drive[d.NumTransducers]).ToArray();
+                var drives = geometry.Select(d => new Drive[d.NumTransducers]).ToArray();
                 var err = new byte[256];
-                if (Base.AUTDGainCalc(_g.GainPtr(devices), devicePtrs, drives, (uint)devices.Length, err) ==
+                if (Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, drives, err) ==
                     Def.Autd3Err) throw new AUTDException(err);
-                for (var i = 0; i < devices.Length; i++) _cache[deviceIndices[i]] = drives[i];
+                for (var i = 0; i < geometry.NumDevices; i++) _cache[deviceIndices[i]] = drives[i];
             }
-            return devices.Aggregate(Base.AUTDGainCustom(), (acc, dev) => Base.AUTDGainCustomSet(acc, (uint)dev.Idx, _cache[dev.Idx], (uint)_cache[dev.Idx].Length));
+            return geometry.Aggregate(Base.AUTDGainCustom(), (acc, dev) => Base.AUTDGainCustomSet(acc, (uint)dev.Idx, _cache[dev.Idx], (uint)_cache[dev.Idx].Length));
         }
     }
 
@@ -262,6 +254,6 @@ namespace AUTD3Sharp.Gain
     /// </summary>
     public sealed class Null : Internal.Gain
     {
-        public override GainPtr GainPtr(IEnumerable<Device> devices) => Base.AUTDGainNull();
+        public override GainPtr GainPtr(Geometry geometry) => Base.AUTDGainNull();
     }
 }

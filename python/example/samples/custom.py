@@ -24,7 +24,7 @@ class Focus(Gain):
     def __init__(self, point):
         self.point = np.array(point)
 
-    def calc(self, devices: Iterable[Device]) -> Dict[int, np.ndarray]:
+    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         return Gain.transform(
             devices,
             lambda dev, tr: Drive(

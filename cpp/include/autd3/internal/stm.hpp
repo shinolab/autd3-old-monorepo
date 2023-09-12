@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -110,7 +110,7 @@ class FocusSTM final : public STM {
 
   static FocusSTM with_sampling_frequency_division(const uint32_t div) { return FocusSTM(std::nullopt, std::nullopt, div); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
     return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
   }
 
@@ -291,11 +291,11 @@ class GainSTM final : public STM {
    */
   static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>& devices) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const override {
     const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseDutyFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
-    std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(devices); });
+    std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
     return AUTDGainSTM(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 

@@ -3,7 +3,7 @@
 // Created Date: 04/06/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ class Amplitudes final : public Datagram {
   Amplitudes& operator=(Amplitudes&& obj) = default;
   ~Amplitudes() override = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
     return native_methods::AUTDCreateAmplitudes(_amp);
   }
 

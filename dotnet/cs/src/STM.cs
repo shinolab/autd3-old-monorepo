@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,9 +60,9 @@ namespace AUTD3Sharp
                 FinishIdxV = -1;
             }
 
-            public DatagramPtr Ptr(IEnumerable<Device> devices) => STMPtr(devices);
+            public DatagramPtr Ptr(Geometry geometry) => STMPtr(geometry);
 
-            public abstract DatagramPtr STMPtr(IEnumerable<Device> devices);
+            public abstract DatagramPtr STMPtr(Geometry geometry);
 
             public ushort? StartIdx => StartIdxV == -1 ? null : (ushort?)StartIdxV;
 
@@ -171,7 +171,7 @@ namespace AUTD3Sharp
             public float_t SamplingFrequency => SamplingFreqFromSize(_shifts.Count);
             public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_shifts.Count);
 
-            public override DatagramPtr STMPtr(IEnumerable<Device> devices)
+            public override DatagramPtr STMPtr(Geometry geometry)
             {
                 return Base.AUTDFocusSTM(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
             }
@@ -254,9 +254,9 @@ namespace AUTD3Sharp
             public float_t SamplingFrequency => SamplingFreqFromSize(_gains.Count);
             public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_gains.Count);
 
-            public override DatagramPtr STMPtr(IEnumerable<Device> devices)
+            public override DatagramPtr STMPtr(Geometry geometry)
             {
-                var gains = _gains.Select(g => g.GainPtr(devices)).ToArray();
+                var gains = _gains.Select(g => g.GainPtr(geometry)).ToArray();
                 return Base.AUTDGainSTM(Props(), gains, (uint)gains.Length, _mode);
             }
         }

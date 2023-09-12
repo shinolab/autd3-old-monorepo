@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ class Modulation : public Datagram {
    */
   [[nodiscard]] double sampling_frequency() const { return native_methods::FPGA_SUB_CLK_FREQ / static_cast<double>(sampling_frequency_division()); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
     return AUTDModulationIntoDatagram(modulation_ptr());
   }
 

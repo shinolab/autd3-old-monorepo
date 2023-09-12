@@ -20,7 +20,7 @@ import ctypes
 import numpy as np
 
 from pyautd3.autd import Datagram
-from pyautd3.geometry import Device
+from pyautd3.geometry import Geometry
 from pyautd3.gain.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import (
@@ -87,7 +87,7 @@ class STM(Datagram, metaclass=ABCMeta):
         return int(Base().stm_props_sampling_frequency_division(self.props(), size))
 
     @abstractmethod
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         pass
 
 
@@ -105,7 +105,7 @@ class FocusSTM(STM):
         self._points = []
         self._duty_shifts = []
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
         shifts = np.ctypeslib.as_ctypes(
             np.array(self._duty_shifts).astype(ctypes.c_uint8)
@@ -173,10 +173,10 @@ class GainSTM(STM):
         self._gains = []
         self._mode = GainSTMMode.PhaseDutyFull
 
-    def ptr(self, devices: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, geometry: Geometry) -> DatagramPtr:
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
-            gains[i]["_0"] = g.gain_ptr(devices)._0
+            gains[i]["_0"] = g.gain_ptr(geometry)._0
         return Base().gain_stm(self.props(),
                                gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore
                                len(self._gains), self._mode)

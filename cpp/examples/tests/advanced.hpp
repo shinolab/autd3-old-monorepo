@@ -35,8 +35,8 @@ class MyUniformGain final : public autd3::Gain {
  public:
   MyUniformGain() = default;
 
-  [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::Drive>> calc(const std::vector<const autd3::Device*>& devices) const override {
-    return autd3::Gain::transform(devices, [this](const autd3::Device&, const autd3::Transducer&) { return autd3::Drive{0.0, 1.0}; });
+  [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::Drive>> calc(const autd3::Geometry& geometry) const override {
+    return autd3::Gain::transform(geometry, [this](const autd3::Device&, const autd3::Transducer&) { return autd3::Drive{0.0, 1.0}; });
   }
 };
 

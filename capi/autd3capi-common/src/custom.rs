@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,13 +15,7 @@ use std::collections::HashMap;
 
 use crate::{
     derive::{Gain, Modulation},
-    driver::{
-        datagram::GainFilter,
-        defined::{float, Drive},
-        error::AUTDInternalError,
-        geometry::{Device, Transducer},
-    },
-    Modulation,
+    driver::derive::prelude::*,
 };
 
 #[derive(Gain, Default)]
@@ -46,7 +40,7 @@ impl CustomGain {
 impl<T: Transducer> crate::driver::datagram::Gain<T> for CustomGain {
     fn calc(
         &self,
-        _devices: &[&Device<T>],
+        _geometry: &Geometry<T>,
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(self.drives.clone())

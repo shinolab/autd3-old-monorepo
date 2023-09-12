@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -104,6 +104,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "DatagramSpecialPtr".to_string(),
             "STMPropsPtr".to_string(),
             "BackendPtr".to_string(),
+            "GroupGainMapPtr".to_string(),
         ],
         rename: vec![
             ("float".to_string(), "double".to_string()),

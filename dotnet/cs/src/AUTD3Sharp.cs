@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -374,8 +374,7 @@ namespace AUTD3Sharp
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var devices = Geometry.Select(d => d).ToArray();
-            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(devices), data2.Ptr(devices), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
+            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
                 throw new AUTDException(err);
@@ -404,7 +403,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class UpdateFlags : IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDUpdateFlags();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDUpdateFlags();
     }
 
     /// <summary>
@@ -412,7 +411,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Clear : IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDClear();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDClear();
     }
 
     /// <summary>
@@ -420,7 +419,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Synchronize : IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDSynchronize();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDSynchronize();
     }
 
     /// <summary>
@@ -436,7 +435,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ModDelayConfig : IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDModDelayConfig();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDModDelayConfig();
     }
 
     /// <summary>
@@ -455,7 +454,7 @@ namespace AUTD3Sharp
             _step = step;
         }
 
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDCreateSilencer(_step);
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDCreateSilencer(_step);
 
         /// <summary>
         /// Disable silencer
@@ -479,6 +478,6 @@ namespace AUTD3Sharp
             _amp = amp;
         }
 
-        public DatagramPtr Ptr(IEnumerable<Device> devices) => Base.AUTDCreateAmplitudes(_amp);
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDCreateAmplitudes(_amp);
     }
 }

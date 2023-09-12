@@ -136,6 +136,12 @@ namespace AUTD3Sharp
         public IntPtr _0;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GroupGainMapPtr
+    {
+        public IntPtr _0;
+    }
+
 }
 
 #if UNITY_2020_2_OR_NEWER

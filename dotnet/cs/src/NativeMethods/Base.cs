@@ -26,11 +26,15 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroup(uint[]? deviceIndicesPtr, int[][]? mapPtr, uint numDevices, int[]? keysPtr, GainPtr[]? valuesPtr, uint kvLen);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupGainMapPtr AUTDGainGroupCreateMap(uint[]? deviceIndicesPtr, uint numDevices);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupGainMapPtr AUTDGainGroupMapSet(GroupGainMapPtr map, uint devIdx, int[]? mapData);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainGroup(GroupGainMapPtr map, int[]? keysPtr, GainPtr[]? valuesPtr, uint kvLen);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, DevicePtr[]? devices, Drive[][]? drives, uint numDev, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive[][]? drives, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainNull();
 

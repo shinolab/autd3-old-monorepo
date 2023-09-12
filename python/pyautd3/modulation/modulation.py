@@ -23,14 +23,14 @@ from pyautd3.native_methods.autd3capi_def import AUTD3_ERR
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.autd import Datagram
-from pyautd3.geometry import Device, AUTD3
+from pyautd3.geometry import Geometry, AUTD3
 
 
 class IModulation(Datagram, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().modulation_into_datagram(self.modulation_ptr())
 
     @property
