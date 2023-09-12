@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -272,7 +272,7 @@ impl Simulator {
                     sources.clear();
                     cpus.clear();
 
-                    let geometry = autd3::geometry::Geometry::<_>::from_msg(&geometry);
+                    let geometry = autd3::driver::geometry::Geometry::<_>::from_msg(&geometry);
                     geometry.iter().for_each(|dev| {
                         dev.iter().for_each(|tr| {
                             let p = tr.position();
