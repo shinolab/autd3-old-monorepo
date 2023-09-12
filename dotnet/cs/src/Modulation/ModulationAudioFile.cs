@@ -63,6 +63,15 @@ namespace AUTD3Sharp.Modulation
             return WithSamplingFrequencyDivision((uint)((float_t)AUTD3.FPGASubClkFreq / freq));
         }
 
+        /// <summary>
+        /// Set sampling period
+        /// </summary>
+        /// <returns></returns>
+        public Wav WithSamplingPeriod(TimeSpan period)
+        {
+            return WithSamplingFrequencyDivision((uint)((double)Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000. * 1000.)));
+        }
+
         public override ModulationPtr ModulationPtr()
         {
             var err = new byte[256];

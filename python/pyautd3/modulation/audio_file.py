@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 import ctypes
+from datetime import timedelta
 
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
     NativeMethods as ModulationAudioFile,
@@ -40,6 +41,9 @@ class Wav(IModulation):
     def with_sampling_frequency(self, freq: float) -> "Wav":
         div = int(FPGA_SUB_CLK_FREQ / freq)
         return self.with_sampling_frequency_division(div)
+
+    def with_sampling_period(self, period: timedelta) -> "Wav":
+        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000. * (period.total_seconds() * 1000. * 1000. * 1000.)))
 
     def modulation_ptr(self) -> ModulationPtr:
         err = ctypes.create_string_buffer(256)
