@@ -3,14 +3,14 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 11/09/2023
+# Last Modified: 12/09/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
 # 
 
 Param(
-    [string]$version = "3.0.1",
+    [string]$version = "3.0.2",
     [string]$vivado_dir = "NULL"
 )
 
