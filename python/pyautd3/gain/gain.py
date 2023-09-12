@@ -14,16 +14,16 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from functools import reduce
 import numpy as np
-from typing import Iterable, Dict
-from ctypes import POINTER, create_string_buffer
+from typing import Callable, Dict
+from ctypes import create_string_buffer
 
 from pyautd3.autd import Datagram
-from pyautd3.geometry import Geometry
+from pyautd3.geometry import Geometry, Device, Transducer
 from pyautd3.autd_error import AUTDError
 
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import DatagramPtr, DevicePtr, GainPtr, AUTD3_ERR
+from pyautd3.native_methods.autd3capi_def import DatagramPtr, GainPtr, AUTD3_ERR
 
 
 class IGain(Datagram, metaclass=ABCMeta):
@@ -39,6 +39,9 @@ class IGain(Datagram, metaclass=ABCMeta):
 
     def with_cache(self):
         return Cache(self)
+
+    def with_transform(self, f):
+        return Transform(self, f)
 
 
 class Cache(IGain):
@@ -72,6 +75,39 @@ class Cache(IGain):
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
                                                     self._cache[dev.idx],  # type: ignore
                                                     len(self._cache[dev.idx])),
+            geometry,
+            Base().gain_custom(),
+        )
+
+
+class Transform(IGain):
+    _g: IGain
+    _f: Callable[[Device, Transducer, Drive], Drive]
+
+    def __init__(self, g: IGain, f: Callable[[Device, Transducer, Drive], Drive]):
+        super().__init__()
+        self._g = g
+        self._f = f
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        drives = [np.zeros(dev.num_transducers, dtype=Drive) for dev in geometry]
+        drives_ptrs = np.array([np.ctypeslib.as_ctypes(d) for d in drives])
+        drives_ptrs_ = np.ctypeslib.as_ctypes(drives_ptrs)
+
+        err = create_string_buffer(256)
+        if Base().gain_calc(self._g.gain_ptr(geometry),
+                            geometry.ptr(),
+                            drives_ptrs_, err) == AUTD3_ERR:
+            raise AUTDError(err)
+
+        for dev in geometry:
+            for tr in dev:
+                drives[dev.idx][tr.local_idx] = self._f(dev, tr, drives[dev.idx][tr.local_idx])
+
+        return reduce(
+            lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
+                                                    drives[dev.idx],  # type: ignore
+                                                    len(drives[dev.idx])),
             geometry,
             Base().gain_custom(),
         )

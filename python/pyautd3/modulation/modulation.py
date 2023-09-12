@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from ctypes import c_double, create_string_buffer
-from typing import Iterator, Iterable
+from typing import Callable, Iterator, Iterable
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import DatagramPtr, ModulationPtr
@@ -51,6 +51,9 @@ class IModulation(Datagram, metaclass=ABCMeta):
     def with_radiation_pressure(self):
         return RadiationPressure(self)
 
+    def with_transform(self, f: Callable[[int, float], float]):
+        return Transform(self, f)
+
 
 class Cache(IModulation):
     _freq_div: int
@@ -77,6 +80,30 @@ class Cache(IModulation):
 
     def __iter__(self) -> Iterator[float]:
         return iter(self._buffer)
+
+    def modulation_ptr(self) -> ModulationPtr:
+        bufp = np.ctypeslib.as_ctypes(self._buffer)
+        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))
+
+
+class Transform(IModulation):
+    _freq_div: int
+    _buffer: np.ndarray
+
+    def __init__(self, m: IModulation, f: Callable[[int, float], float]):
+        self._freq_div = m.sampling_frequency_division
+
+        err = create_string_buffer(256)
+        size = Base().modulation_size(m.modulation_ptr(), err)
+        if size == AUTD3_ERR:
+            raise AUTDError(err)
+        self._buffer = np.zeros(int(size), dtype=c_double)
+        bufp = np.ctypeslib.as_ctypes(self._buffer)
+        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
+            raise AUTDError(err)
+
+        for i in range(len(self._buffer)):
+            self._buffer[i] = f(i, self._buffer[i])
 
     def modulation_ptr(self) -> ModulationPtr:
         bufp = np.ctypeslib.as_ctypes(self._buffer)
