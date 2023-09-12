@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ open AUTD3Sharp.Modulation
 module AdvancedTest =
     type UniformGain () =
         inherit Gain()
-        let Calc_ (tr:Transducer) = 
+        let Calc_ (dev: Device) (tr:Transducer) = 
             let mutable drive = new Drive();
             drive.Amp <- 1.0;
             drive
@@ -32,7 +32,7 @@ module AdvancedTest =
             buf
         
     let Test (autd : Controller) = 
-        (SilencerConfig.None()) |> autd.Send |> ignore
+        (Silencer.Disable()) |> autd.Send |> ignore
 
         let m = new Burst(4000);
         let g = new UniformGain();

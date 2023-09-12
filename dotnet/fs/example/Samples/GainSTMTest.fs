@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ open AUTD3Sharp.Utils
 
 module GainSTMTest =
     let Test (autd : Controller) = 
-        (SilencerConfig.None()) |> autd.Send |> ignore;
+        (Silencer.Disable()) |> autd.Send |> ignore;
 
         (new Static()) |> autd.Send |> ignore;
         

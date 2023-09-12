@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,25 +31,8 @@ public class SampleRunner
             (CustomTest.Test, "Custom Test (Custom Focus)")
         };
 
-        if (autd.Geometry.NumDevices == 2)
-            examples.Add((GroupTest.Test, "Grouped gain Test"));
-
-        var firmList = autd.FirmwareInfoList().ToArray();
-        if (!firmList.All(firm => firm.IsValid))
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("WARN: FPGA and CPU firmware version do not match.");
-            Console.ResetColor();
-        }
-        if (!firmList.All(firm => firm.IsSupported))
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"WARN: You are using old firmware. Please consider updating to {FirmwareInfo.LatestVersion}.");
-            Console.ResetColor();
-        }
-
         Console.WriteLine("==================================== Firmware information ======================================");
-        Console.WriteLine(string.Join("\n", firmList));
+        Console.WriteLine(string.Join("\n", autd.FirmwareInfoList()));
         Console.WriteLine("================================================================================================");
 
         while (true)

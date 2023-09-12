@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using AUTD3Sharp.NativeMethods;
+
+#if UNITY_2018_3_OR_NEWER
+using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
+#else
+using Vector3 = AUTD3Sharp.Utils.Vector3d;
+#endif
 
 namespace AUTD3Sharp
 {
@@ -34,6 +41,18 @@ namespace AUTD3Sharp
         /// Number of devices
         /// </summary>
         public int NumDevices => _devices.Count;
+
+
+        /// <summary>
+        /// Get center position of all transducers
+        /// </summary>
+        public Vector3 Center
+        {
+            get
+            {
+                return _devices.Aggregate(Vector3.zero, (current, device) => current + device.Center) / _devices.Count;
+            }
+        }
 
         public Device this[int index] => _devices[index];
         public IEnumerator<Device> GetEnumerator() => _devices.GetEnumerator();
