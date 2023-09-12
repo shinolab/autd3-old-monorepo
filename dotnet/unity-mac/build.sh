@@ -7,6 +7,10 @@ pushd $script_dir
 
 cd ../..
 
+cp -rf ./dotnet/unity/Assets/Models ./dotnet/unity-mac/Assets/
+cp -rf ./dotnet/unity/Assets/Samples ./dotnet/unity-mac/Assets/
+cp -rf ./dotnet/unity/Assets/Scripts ./dotnet/unity-mac/Assets/
+
 sourceDirectory="./dotnet/cs/src"
 destinationDirectory="./dotnet/unity-mac/Assets/Scripts"
 find "$sourceDirectory" -type f -name "*.cs" -print | while IFS= read -r sourceFilePath; do
@@ -21,6 +25,7 @@ done
 rm -rf ./dotnet/unity-mac/Assets/Scripts/Utils
 rm -rf ./dotnet/unity-mac/Assets/Scripts/obj
 rm -rf ./dotnet/unity-mac/Assets/Scripts/Gain/BackendCUDA.cs
+rm -rf ./dotnet/unity-mac/Assets/Scripts/Gain/BackendCUDA.cs.meta
 
 cd capi
 cargo build --release --all --exclude autd3capi-backend-cuda --features "single_float left_handed use_meter" --target=x86_64-apple-darwin
