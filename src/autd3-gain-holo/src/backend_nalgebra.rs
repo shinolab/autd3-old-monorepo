@@ -19,7 +19,7 @@ use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
     datagram::GainFilter,
     defined::float,
-    geometry::{Geometry},
+    geometry::Geometry,
 };
 
 use crate::{error::HoloError, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};

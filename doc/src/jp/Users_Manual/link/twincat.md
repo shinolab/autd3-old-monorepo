@@ -41,6 +41,9 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 TwinCATのLinkを使うには, まず, `AUTD Server`をインストールする必要がある.
 [GitHub Releases](https://github.com/shinolab/autd3/releases)にてインストーラを配布しているので, これをダウンロードし, 指示に従ってインストールする.
 
+> NOTE
+> 必ず, 使用するソフトウェアのバージョンに合わせた`AUTD Server`を使用すること.
+
 `AUTD Server`を実行すると, 以下のような画面になるので, `TwinCAT`タブを開く.
 
 <figure>

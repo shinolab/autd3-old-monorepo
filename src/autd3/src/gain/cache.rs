@@ -11,10 +11,7 @@
  *
  */
 
-use autd3_driver::{
-    derive::prelude::*,
-    geometry::{Geometry},
-};
+use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
 use std::{cell::UnsafeCell, collections::HashMap};
 

@@ -2,12 +2,13 @@
 
 The following is a basic components of AUTD3 SDK.
 
-- `Controller` - Controller class. All operations to AUTD3 are done via this class.
-- `Geometry` - Manage the configuration of devices in the real world.
-- `Link` - Interface to AUTD3 devices.
-- `Gain` - Manage the phase/amplitude of each transducer.
-- `Modulation` - Manage the amplitude modulation (AM) of each transducer.
-- `STM` - Manage the spatio-temporal modulation (STM) on firmware.
+- `Controller` - Controller class. All operations to AUTD3 are done via this class
+- `Geometry` - Container of `Device`
+  - `Device` - Class corresponding to AUTD3 device
+- `Link` - Interface to AUTD3 devices
+- `Gain` - Manage the phase/amplitude of each transducer
+- `Modulation` - Manage the amplitude modulation (AM) of each transducer
+- `STM` - Manage the spatio-temporal modulation (STM) on firmware
 
 The following is the front and back photos of AUTD3.
 

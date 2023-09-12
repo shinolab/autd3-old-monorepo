@@ -27,7 +27,6 @@ You can get the sampling frequency with `sampling_frequency`.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);
@@ -79,7 +78,6 @@ You can get the sampling frequency division $N$ with `sampling_frequency_divisio
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);
@@ -130,7 +128,7 @@ Therefore, there is a possibility that modulation is shifted depending on the di
 
 To compensate for this, each transducer has a function to delay the sampling index to be sampled.
 
-The following example shows how to set the delay of the $0$th transducer to $1$.
+The following example shows how to set the delay of the $0$-th transducer of $0$-th device to $1$.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
@@ -138,26 +136,26 @@ The following example shows how to set the delay of the $0$th transducer to $1$.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.geometry_mut()[0].set_mod_delay(1);
+autd.geometry_mut()[0][0].set_mod_delay(1);
 autd.send(ModDelay::new())?;
 # Ok(())
 # }
 ```
 
 ```cpp
-autd.geometry()[0].set_mod_delay(1);
+autd.geometry()[0][0].set_mod_delay(1);
 autd.send(autd3::ModDelayConfig());
 ```
 
 ```cs
-autd.Geometry[0].ModDelay = 1;
+autd.Geometry[0][0].ModDelay = 1;
 autd.Send(new ModDelayConfig());
 ```
 
 ```python
 from pyautd3 import ModDelayConfig
 
-autd.geometry[0].mod_delay = 1
+autd.geometry[0][0].mod_delay = 1
 autd.send(ModDelayConfig())
 ```
 

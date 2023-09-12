@@ -4,89 +4,19 @@
 
 [[_TOC_]]
 
-## force_fan
-
-AUTD3にはファンがついており, Auto, Off, Onの3つのファンモードが有る.
-Autoモードでは温度監視ICがICの温度を監視し, 一定温度以上になると自動でファンを起動する.
-Offモードではファンは常時オフであり, Onモードでは常時オンになる.
-
-モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 以下の図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
-
-<figure>
-  <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>AUTDファン制御用のジャンパスイッチ</figcaption>
-</figure>
-
-Autoモードの場合は温度が高くなると自動的にファンが起動する.
-`force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.force_fan(true);
-# Ok(())
-# }
-```
-
-```cpp
-autd.force_fan(true);
-```
-
-```cs
-autd.ForceFan(true);
-```
-
-```python
-autd.force_fan(True)
-```
-
-実際にフラグが更新されるのは`send`を呼んで, 何らかのデータを送信したときになる.
-フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
-
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.force_fan(true);
-autd.send(UpdateFlags::new())?;
-# Ok(())
-# }
-```
-
-```cpp
-autd.force_fan(true);
-autd.send(autd3::UpdateFlags());
-```
-
-```cs
-autd.ForceFan(true);
-autd.Send(new UpdateFlags());
-```
-
-```python
-autd.force_fan(True)
-autd.send(UpdateFlags())
-```
 
 ## fpga_info
 
 FPGAの状態を取得する.
-これを使用する前に, `reads_fpga_info`フラグをセットしておく必要がある.
-
+これを使用する前に, `Device`の`reads_fpga_info`フラグをセットしておく必要がある.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.reads_fpga_info(true);
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
+autd.geometry_mut()[0].reads_fpga_info = true;
 autd.send(UpdateFlags::new())?;
 
 let info = autd.fpga_info();
@@ -95,21 +25,21 @@ let info = autd.fpga_info();
 ```
 
 ```cpp
-autd.reads_fpga_info(true);
+autd.geometry()[0].reads_fpga_info(true);
 autd.send(autd3::UpdateFlags());
 
 const auto info = autd.fpga_info();
 ```
 
 ```cs
-autd.ReadsFPGAInfo(true);
+autd.Geometry[0].ReadsFPGAInfo = true;
 autd.Send(new UpdateFlags());
 
 var info = autd.FPGAInfo;
 ```
 
 ```python
-autd.reads_fpga_info(True)
+autd.geometry[0].reads_fpga_info = True
 autd.send(UpdateFlags())
 
 info = autd.fpga_info
@@ -123,34 +53,8 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 デバイスにデータを送信する.
 
-### データタイプ
-
-データにはHeader/Body/Specialの別があり, それぞれ単体で送信するか, HeaderとBodyのみ同時に送信することができる.
-
-#### Header
-
-以下がHeaderデータタイプである.
-
-- `SilencerConfig`
-- `Modulation`
-
-#### Body
-
-以下がBodyデータタイプである.
-
-- `Gain`
-- `FocusSTM`, `GainSTM`
-- `Amplitudes`
-
-#### Special
-
-以下が, Specialデータタイプである.
-
-- `Clear`
-- `Synchronize`
-- `Stop`
-- `ModDelay`
-- `UpdateFlag`
+データは単体か2つのみ同時に送信することができる.
+ただし, `Stop`のみ例外で, 単体でしか送信できない.
 
 ### タイムアウト
 

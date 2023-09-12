@@ -35,7 +35,7 @@ pub mod derive {
             defined::{float, Drive},
             error::AUTDInternalError,
             fpga::{FPGA_SUB_CLK_FREQ, SAMPLING_FREQ_DIV_MIN},
-            geometry::Transducer,
+            geometry::{Geometry, Transducer},
             operation::{GainOp, ModulationOp, NullOp, Operation},
         };
     }

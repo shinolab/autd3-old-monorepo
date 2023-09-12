@@ -15,10 +15,7 @@ use std::collections::HashMap;
 
 use autd3_derive::Gain;
 
-use autd3_driver::{
-    derive::prelude::*,
-    geometry::{Geometry},
-};
+use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
 /// Gain to drive only specified transducers
 #[derive(Gain, Default, Clone)]
