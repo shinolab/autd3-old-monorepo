@@ -12,7 +12,6 @@
     <Compile Include="FocusSTMTest.fs" />
     <Compile Include="GainHoloTest.fs" />
     <Compile Include="BesselBeam.fs" />
-    <Compile Include="Group.fs" />
     <Compile Include="FocusTest.fs" />
     <Compile Include="SampleRunner.fs" />
   </ItemGroup>

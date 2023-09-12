@@ -5,9 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples", "Samples\Samples.csproj", "{9D0528FB-6307-4098-97A8-F3F29161FA20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatorServer", "SimulatorServer\SimulatorServer.csproj", "{EC4EC518-A184-4F42-A1DE-BAD67073C545}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatorClient", "SimulatorClient\SimulatorClient.csproj", "{7CAEFB7B-8EE6-46CE-B2A2-403624349D1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulator", "Simulator\Simulator.csproj", "{7CAEFB7B-8EE6-46CE-B2A2-403624349D1C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SOEM", "SOEM\SOEM.csproj", "{49FF50B0-F32B-43D5-8C48-47713CB90FF8}"
 EndProject

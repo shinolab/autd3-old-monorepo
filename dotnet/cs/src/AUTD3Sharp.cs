@@ -179,7 +179,7 @@ namespace AUTD3Sharp
         {
 
             private ControllerBuilderPtr _ptr;
-            private readonly TransMode _mode;
+            private TransMode _mode;
 
             /// <summary>
             /// Add device
@@ -195,6 +195,39 @@ namespace AUTD3Sharp
                 return this;
             }
 
+
+            /// <summary>
+            /// Create Controller builder (Legacy mode)
+            /// </summary>
+            /// <returns>ControllerBuilder</returns>
+            public ControllerBuilder Legacy()
+            {
+                this._mode = TransMode.Legacy;
+                return this;
+            }
+
+            /// <summary>
+            /// Create Controller builder (Advanced mode)
+            /// </summary>
+            /// <returns>ControllerBuilder</returns>
+            public ControllerBuilder Advanced()
+            {
+                this._mode = TransMode.Advanced;
+                return this;
+            }
+
+
+
+            /// <summary>
+            /// Create Controller builder (AdvancedPhase mode)
+            /// </summary>
+            /// <returns>ControllerBuilder</returns>
+            public ControllerBuilder AdvancedPhase()
+            {
+                this._mode = TransMode.AdvancedPhase;
+                return this;
+            }
+
             /// <summary>
             /// Open controller
             /// </summary>
@@ -205,38 +238,18 @@ namespace AUTD3Sharp
                 return Controller.OpenImpl(_ptr, _mode, link.Ptr);
             }
 
-            internal ControllerBuilder(TransMode mode)
+            internal ControllerBuilder()
             {
                 _ptr = Base.AUTDCreateControllerBuilder();
-                _mode = mode;
+                _mode = TransMode.Legacy;
             }
         }
 
         /// <summary>
-        /// Create Controller builder (Legacy mode)
+        /// Create Controller builder
         /// </summary>
         /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder Builder() { return new ControllerBuilder(TransMode.Legacy); }
-
-        /// <summary>
-        /// Create Controller builder (Legacy mode)
-        /// </summary>
-        /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder LegacyBuilder() { return new ControllerBuilder(TransMode.Legacy); }
-
-        /// <summary>
-        /// Create Controller builder (Advanced mode)
-        /// </summary>
-        /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder AdvancedBuilder() { return new ControllerBuilder(TransMode.Advanced); }
-
-
-
-        /// <summary>
-        /// Create Controller builder (AdvancedPhase mode)
-        /// </summary>
-        /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder AdvancedPhaseBuilder() { return new ControllerBuilder(TransMode.AdvancedPhase); }
+        public static ControllerBuilder Builder() { return new ControllerBuilder(); }
 
         internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkPtr link)
         {
@@ -441,7 +454,7 @@ namespace AUTD3Sharp
     /// <summary>
     /// Header to configure silencer
     /// </summary>
-    public sealed class SilencerConfig : IDatagram
+    public sealed class Silencer : IDatagram
     {
         private readonly ushort _step;
 
@@ -449,7 +462,7 @@ namespace AUTD3Sharp
         /// Constructor
         /// </summary>
         /// <param name="step">Update step of silencer. The smaller step is, the quieter the output is.</param>
-        public SilencerConfig(ushort step = 10)
+        public Silencer(ushort step = 10)
         {
             _step = step;
         }
@@ -460,9 +473,9 @@ namespace AUTD3Sharp
         /// Disable silencer
         /// </summary>
         /// <returns></returns>
-        public static SilencerConfig Disable()
+        public static Silencer Disable()
         {
-            return new SilencerConfig(0xFFFF);
+            return new Silencer(0xFFFF);
         }
     }
 
