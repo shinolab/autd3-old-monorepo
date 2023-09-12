@@ -33,7 +33,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - run: |
-        python3 -m pip install mypy numpy
+        python3 -m pip install -U  mypy numpy
         cd python
         python3 -m mypy pyautd3
       if: steps.changed-files.outputs.modified_files
