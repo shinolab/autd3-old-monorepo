@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -130,6 +130,15 @@ namespace AUTD3Sharp.Modulation
             return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
         }
 
+        /// <summary>
+        /// Set sampling period
+        /// </summary>
+        /// <returns></returns>
+        public Sine WithSamplingPeriod(TimeSpan period)
+        {
+            return WithSamplingFrequencyDivision((uint)((double)Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000. * 1000.)));
+        }
+
         public override ModulationPtr ModulationPtr()
         {
             var ptr = Base.AUTDModulationSine((uint)_freq);
@@ -235,6 +244,15 @@ namespace AUTD3Sharp.Modulation
             return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
         }
 
+        /// <summary>
+        /// Set sampling period
+        /// </summary>
+        /// <returns></returns>
+        public SineLegacy WithSamplingPeriod(TimeSpan period)
+        {
+            return WithSamplingFrequencyDivision((uint)((double)Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000. * 1000.)));
+        }
+
         public override ModulationPtr ModulationPtr()
         {
             var ptr = Base.AUTDModulationSineLegacy(_freq);
@@ -320,6 +338,15 @@ namespace AUTD3Sharp.Modulation
         public Square WithSamplingFrequency(float_t freq)
         {
             return WithSamplingFrequencyDivision((uint)((float_t)Def.FpgaSubClkFreq / freq));
+        }
+
+        /// <summary>
+        /// Set sampling period
+        /// </summary>
+        /// <returns></returns>
+        public Square WithSamplingPeriod(TimeSpan period)
+        {
+            return WithSamplingFrequencyDivision((uint)((double)Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000. * 1000.)));
         }
 
         public override ModulationPtr ModulationPtr()

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/08/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,21 +32,7 @@ class Wav final : public internal::Modulation {
    */
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
 
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  Wav with_sampling_frequency_division(const uint32_t div) {
-    _freq_div = div;
-    return *this;
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  Wav with_sampling_frequency(const double freq) {
-    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
+  AUTD3_IMPL_MOD_PROP(Wav)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     char err[256]{};

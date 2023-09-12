@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <numeric>
 
 #include "autd3/internal/modulation.hpp"
@@ -202,35 +203,7 @@ class Sine final : public internal::Modulation {
     return std::move(*this);
   }
 
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  void with_sampling_frequency_division(const uint32_t div) & { _freq_div = div; }
-
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  [[nodiscard]] Sine&& with_sampling_frequency_division(const uint32_t div) && {
-    _freq_div = div;
-    return std::move(*this);
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  void with_sampling_frequency(const double freq) & {
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  [[nodiscard]] Sine&& with_sampling_frequency(const double freq) && {
-    return std::move(*this).with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
+  AUTD3_IMPL_MOD_PROP(Sine)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSine(_freq);
@@ -331,35 +304,7 @@ class SineLegacy final : public internal::Modulation {
     return std::move(*this);
   }
 
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  void with_sampling_frequency_division(const uint32_t div) & { _freq_div = div; }
-
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  [[nodiscard]] SineLegacy&& with_sampling_frequency_division(const uint32_t div) && {
-    _freq_div = div;
-    return std::move(*this);
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  void with_sampling_frequency(const double freq) & {
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  [[nodiscard]] SineLegacy&& with_sampling_frequency(const double freq) && {
-    return std::move(*this).with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
+  AUTD3_IMPL_MOD_PROP(SineLegacy)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSineLegacy(_freq);
@@ -450,35 +395,7 @@ class Square final : public internal::Modulation {
     return std::move(*this);
   }
 
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  void with_sampling_frequency_division(const uint32_t div) & { _freq_div = div; }
-
-  /**
-   * @brief Set sampling frequency division
-   * @details The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ] / div.
-   */
-  [[nodiscard]] Square&& with_sampling_frequency_division(const uint32_t div) && {
-    _freq_div = div;
-    return std::move(*this);
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  void with_sampling_frequency(const double freq) & {
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
-
-  /**
-   * @brief Set sampling frequency
-   */
-  [[nodiscard]] Square&& with_sampling_frequency(const double freq) && {
-    return std::move(*this).with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
-  }
+  AUTD3_IMPL_MOD_PROP(Square)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSquare(_freq);
