@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use crate::{
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     operation::Operation,
 };
 
@@ -29,7 +29,7 @@ impl<T: Transducer> Operation<T> for NullOp {
         0
     }
 
-    fn init(&mut self, _: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, _: &Geometry<T>) -> Result<(), AUTDInternalError> {
         Ok(())
     }
 
@@ -45,27 +45,25 @@ impl<T: Transducer> Operation<T> for NullOp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geometry::{device::tests::create_device, LegacyTransducer};
+    use crate::geometry::{tests::create_geometry, LegacyTransducer};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn null_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut op = NullOp::default();
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 0));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
     }
 }

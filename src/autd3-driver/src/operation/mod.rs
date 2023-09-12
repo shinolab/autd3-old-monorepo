@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ use crate::{
     cpu::TxDatagram,
     error::AUTDInternalError,
     fpga::FPGAControlFlags,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
 };
 
 #[repr(u8)]
@@ -81,7 +81,7 @@ impl From<u8> for TypeTag {
 }
 
 pub trait Operation<T: Transducer> {
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError>;
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
     fn required_size(&self, device: &Device<T>) -> usize;
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError>;
     fn commit(&mut self, device: &Device<T>);
@@ -89,8 +89,8 @@ pub trait Operation<T: Transducer> {
 }
 
 impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.as_mut().init(devices)
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.as_mut().init(geometry)
     }
 
     fn required_size(&self, device: &Device<T>) -> usize {
@@ -113,52 +113,33 @@ impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
 pub struct OperationHandler {}
 
 impl OperationHandler {
-    pub fn is_finished<
-        'a,
-        T: Transducer + 'a,
-        O1: Operation<T>,
-        O2: Operation<T>,
-        I: IntoIterator<Item = &'a Device<T>>,
-    >(
+    pub fn is_finished<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
         op1: &mut O1,
         op2: &mut O2,
-        device_iter: I,
+        geometry: &Geometry<T>,
     ) -> bool {
-        device_iter
-            .into_iter()
+        geometry
+            .devices()
             .all(|dev| op1.remains(dev) == 0 && op2.remains(dev) == 0)
     }
 
-    pub fn init<
-        'a,
-        T: Transducer + 'a,
-        O1: Operation<T>,
-        O2: Operation<T>,
-        I: IntoIterator<Item = &'a Device<T>>,
-    >(
+    pub fn init<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
         op1: &mut O1,
         op2: &mut O2,
-        device_iter: I,
+        geometry: &Geometry<T>,
     ) -> Result<(), AUTDInternalError> {
-        let devices = device_iter.into_iter().collect::<Vec<_>>();
-        op1.init(&devices)?;
-        op2.init(&devices)
+        op1.init(geometry)?;
+        op2.init(geometry)
     }
 
-    pub fn pack<
-        'a,
-        T: Transducer + 'a,
-        O1: Operation<T>,
-        O2: Operation<T>,
-        I: IntoIterator<Item = &'a Device<T>>,
-    >(
+    pub fn pack<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
         op1: &mut O1,
         op2: &mut O2,
-        device_iter: I,
+        geometry: &Geometry<T>,
         tx: &mut TxDatagram,
     ) -> Result<(), AUTDInternalError> {
-        device_iter
-            .into_iter()
+        geometry
+            .devices()
             .map(|dev| match (op1.remains(dev), op2.remains(dev)) {
                 (0, 0) => Ok(()),
                 (0, _) => Self::pack_dev(op2, dev, tx),

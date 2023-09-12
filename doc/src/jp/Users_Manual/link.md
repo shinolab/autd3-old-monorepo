@@ -6,7 +6,7 @@ LinkはAUTD3デバイスとのインターフェースである.
 - [TwinCAT/RemoteTwinCAT](./link/twincat.md)
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
-- [Monitor](./link/monitor.md)
+- [Visualizer](./link/visualize.md)
 - [Bundle](./link/bundle.md)
 
 ## Linkに共通のオプション
@@ -49,8 +49,7 @@ from datetime import timedelta
 .with_timeout(timedelta(milliseconds=20))
 ```
 
-デフォルトは各Linkに対して適当な値が設定されている.
-
+デフォルトで各Linkに対して適当な値が設定されている.
 
 ### Log
 
@@ -78,5 +77,15 @@ SOEM::new().with_log()
 #include "autd3/link/log.hpp"
 
 // linkは何らかのLink
-autd3::link::Log(link)
+link.with_log()
+```
+
+```cs
+// linkは何らかのLink
+link.WithLog()
+```
+
+```python
+# linkは何らかのLink
+link.with_log()
 ```

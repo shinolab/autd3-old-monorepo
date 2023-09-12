@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{
     defined::METER,
     error::AUTDInternalError,
     fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, FPGA_SUB_CLK_FREQ_DIV, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Transducer, Vector3},
+    geometry::{Device, Geometry, Transducer, Vector3},
     operation::{Operation, TypeTag},
 };
 
@@ -269,7 +269,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         }
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.points.len() < 2 || self.points.len() > FOCUS_STM_BUF_SIZE_MAX {
             return Err(AUTDInternalError::FocusSTMPointSizeOutOfRange(
                 self.points.len(),
@@ -281,11 +281,11 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
         }
 
-        self.remains = devices
-            .iter()
+        self.remains = geometry
+            .devices()
             .map(|device| (device.idx(), self.points.len()))
             .collect();
-        self.sent = devices.iter().map(|device| (device.idx(), 0)).collect();
+        self.sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
 
         Ok(())
     }
@@ -308,7 +308,7 @@ mod tests {
     use crate::{
         defined::MILLIMETER,
         fpga::SAMPLING_FREQ_DIV_MIN,
-        geometry::{device::tests::create_device, LegacyTransducer},
+        geometry::{tests::create_geometry, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -319,9 +319,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -343,17 +341,17 @@ mod tests {
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 16 + 8));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), FOCUS_STM_SIZE));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
                 Ok(FRAME_SIZE)
@@ -361,11 +359,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(flag.contains(FocusSTMControlFlags::STM_BEGIN));
@@ -440,9 +438,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = (FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>()
             + (FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() * 2;
 
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -463,18 +459,18 @@ mod tests {
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         // First frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 16 + 8));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), FOCUS_STM_SIZE));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -487,14 +483,14 @@ mod tests {
             op.commit(dev);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.remains(dev),
                 (FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() * 2
             )
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(flag.contains(FocusSTMControlFlags::STM_BEGIN));
@@ -567,11 +563,11 @@ mod tests {
         });
 
         // Second frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 4 + std::mem::size_of::<STMFocus>()));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -583,14 +579,14 @@ mod tests {
             op.commit(dev);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.remains(dev),
                 (FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>()
             )
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(FocusSTMControlFlags::STM_BEGIN));
@@ -630,11 +626,11 @@ mod tests {
         });
 
         // Final frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 4 + std::mem::size_of::<STMFocus>()));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -646,11 +642,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * FRAME_SIZE], TypeTag::FocusSTM as u8);
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(FocusSTMControlFlags::STM_BEGIN));
@@ -698,9 +694,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -720,9 +714,9 @@ mod tests {
             Some(finish_idx),
         );
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
                 Ok(FRAME_SIZE)
@@ -730,7 +724,7 @@ mod tests {
             op.commit(dev);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(flag.contains(FocusSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
@@ -743,9 +737,9 @@ mod tests {
 
         let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, Some(start_idx), None);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
                 Ok(FRAME_SIZE)
@@ -753,7 +747,7 @@ mod tests {
             op.commit(dev);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(flag.contains(FocusSTMControlFlags::USE_START_IDX));
             assert!(!flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
@@ -771,9 +765,9 @@ mod tests {
             Some(finish_idx),
         );
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * FRAME_SIZE..]),
                 Ok(FRAME_SIZE)
@@ -781,7 +775,7 @@ mod tests {
             op.commit(dev);
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             let flag = FocusSTMControlFlags::from_bits_truncate(tx[dev.idx() * FRAME_SIZE + 1]);
             assert!(!flag.contains(FocusSTMControlFlags::USE_START_IDX));
             assert!(flag.contains(FocusSTMControlFlags::USE_FINISH_IDX));
@@ -795,9 +789,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_buffer_out_of_range() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut rng = rand::thread_rng();
 
@@ -812,7 +804,7 @@ mod tests {
             })
             .collect();
         let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let points: Vec<ControlPoint> = (0..FOCUS_STM_BUF_SIZE_MAX + 1)
             .map(|_| {
@@ -826,7 +818,7 @@ mod tests {
             .collect();
 
         let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
 
         let points: Vec<ControlPoint> = (0..1)
             .map(|_| {
@@ -840,14 +832,12 @@ mod tests {
             .collect();
 
         let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
     }
 
     #[test]
     fn focus_stm_op_freq_div_out_of_range() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut rng = rand::thread_rng();
 
@@ -863,10 +853,10 @@ mod tests {
             .collect();
 
         let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, None, None);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let mut op = FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN - 1, None, None);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
 
         let mut op = FocusSTMOp::new(
             points.clone(),
@@ -874,7 +864,7 @@ mod tests {
             None,
             None,
         );
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let mut op = FocusSTMOp::new(
             points.clone(),
@@ -882,6 +872,6 @@ mod tests {
             None,
             None,
         );
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
     }
 }

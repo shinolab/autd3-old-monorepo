@@ -4,77 +4,6 @@ The followings are introductino of APIs in `Controller` class.
 
 [[_TOC_]]
 
-## force_fan
-
-AUTD3 has a fan to cool the device.
-The fan has three modes, Auto, Off, and On.
-With Auto mode, the fan is automatically turned on when the temperature monitoring IC monitors the temperature of the IC and the temperature exceeds a certain temperature.
-With Off mode, the fan is always off, and with On mode, the fan is always on.
-
-The switching of the fan mode is done by a jumper switch next to the fan.
-If you short the fan side as shown in the following figure, it will be Auto, Off in the middle, and On on the right.
-
-<figure>
-  <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>Jumper switch</figcaption>
-</figure>
-
-In Auto mode, the fan starts automatically when the temperature rises.
-You can also force the fan to start by setting the `force_fan` flag.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.force_fan(true);
-# Ok(())
-# }
-```
-
-```cpp
-autd.force_fan(true);
-```
-
-```cs
-autd.ForceFan(true);
-```
-
-```python
-autd.force_fan(True)
-```
-
-The flag is updated when `send` is called and some data is sent.
-If you only want to update the flag, you can send `UpdateFlags`.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.force_fan(true);
-autd.send(UpdateFlags::new())?;
-# Ok(())
-# }
-```
-
-```cpp
-autd.force_fan(true);
-autd.send(autd3::UpdateFlags());
-```
-
-```cs
-autd.ForceFan(true);
-autd.Send(new UpdateFlags());
-```
-
-```python
-autd.force_fan(True)
-autd.send(UpdateFlags())
-```
-
 ## fpga_info
 
 Get the FPGA status.
@@ -85,8 +14,8 @@ Before using this, you need to set the `reads_fpga_info` flag.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.reads_fpga_info(true);
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
+autd.geometry_mut()[0].reads_fpga_info = true;
 autd.send(UpdateFlags::new())?;
 
 let info = autd.fpga_info();
@@ -95,21 +24,21 @@ let info = autd.fpga_info();
 ```
 
 ```cpp
-autd.reads_fpga_info(true);
+autd.geometry()[0].reads_fpga_info(true);
 autd.send(autd3::UpdateFlags());
 
 const auto info = autd.fpga_info();
 ```
 
 ```cs
-autd.ReadsFPGAInfo(true);
+autd.Geometry[0].ReadsFPGAInfo = true;
 autd.Send(new UpdateFlags());
 
 var info = autd.FPGAInfo;
 ```
 
 ```python
-autd.reads_fpga_info(True)
+autd.geometry[0].reads_fpga_info = True
 autd.send(UpdateFlags())
 
 info = autd.fpga_info

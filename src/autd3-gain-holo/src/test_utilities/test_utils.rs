@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -1851,11 +1851,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             g
         };
 
-        let g = self.backend.generate_propagation_matrix(
-            &geometry.iter().collect::<Vec<_>>(),
-            &foci,
-            &GainFilter::All,
-        )?;
+        let g = self
+            .backend
+            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let g = self.backend.to_host_cm(g)?;
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
             assert_approx_eq::assert_approx_eq!(r.re, g.re);
@@ -1911,7 +1909,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         };
 
         let g = self.backend.generate_propagation_matrix(
-            &geometry.iter().collect::<Vec<_>>(),
+            &geometry,
             &foci,
             &GainFilter::Filter(&filter),
         )?;
@@ -1941,11 +1939,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .sum::<usize>();
         let n = foci.len();
 
-        let g = self.backend.generate_propagation_matrix(
-            &geometry.iter().collect::<Vec<_>>(),
-            &foci,
-            &GainFilter::All,
-        )?;
+        let g = self
+            .backend
+            .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let amps = self.make_random_cv(n)?;
 
         let mut b = self.backend.alloc_cm(m, n)?;

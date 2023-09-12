@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,9 @@ use crate::{
     defined::{float, Drive},
     error::AUTDInternalError,
     fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
-    geometry::{AdvancedPhaseTransducer, AdvancedTransducer, Device, LegacyTransducer, Transducer},
+    geometry::{
+        AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, LegacyTransducer, Transducer,
+    },
     operation::{Operation, TypeTag},
 };
 
@@ -192,9 +194,9 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
         Self::required_size_impl(device)
     }
 
-    fn init(&mut self, devices: &[&Device<LegacyTransducer>]) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(devices, GainFilter::All)?;
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+    fn init(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(geometry, GainFilter::All)?;
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -221,9 +223,9 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
         Self::required_size_impl(device)
     }
 
-    fn init(&mut self, devices: &[&Device<AdvancedTransducer>]) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(devices, GainFilter::All)?;
-        self.remains = devices.iter().map(|device| (device.idx(), 2)).collect();
+    fn init(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<(), AUTDInternalError> {
+        self.drives = self.gain.calc(geometry, GainFilter::All)?;
+        self.remains = geometry.devices().map(|device| (device.idx(), 2)).collect();
         Ok(())
     }
 
@@ -254,10 +256,10 @@ impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
 
     fn init(
         &mut self,
-        devices: &[&Device<AdvancedPhaseTransducer>],
+        geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(devices, GainFilter::All)?;
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+        self.drives = self.gain.calc(geometry, GainFilter::All)?;
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -320,8 +322,8 @@ impl<T: Transducer> Operation<T> for AmplitudeOp {
         2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>()
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -343,7 +345,7 @@ pub mod tests {
     use crate::{
         datagram::GainAsAny,
         defined::PI,
-        geometry::{device::tests::create_device, LegacyTransducer},
+        geometry::{tests::create_geometry, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -363,7 +365,7 @@ pub mod tests {
     impl<T: Transducer> Gain<T> for TestGain {
         fn calc(
             &self,
-            _devices: &[&Device<T>],
+            _geometry: &Geometry<T>,
             _filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Ok(self.data.clone())
@@ -372,16 +374,14 @@ pub mod tests {
 
     #[test]
     fn gain_legacy_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        let data = devices
-            .iter()
+        let data = geometry
+            .devices()
             .map(|dev| {
                 (
                     dev.idx(),
@@ -397,20 +397,20 @@ pub mod tests {
         let gain = TestGain { data };
         let mut op = GainOp::<LegacyTransducer, TestGain>::new(gain.clone());
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<LegacyDrive>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -420,11 +420,11 @@ pub mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
@@ -447,16 +447,14 @@ pub mod tests {
 
     #[test]
     fn gain_advanced_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<AdvancedTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        let data = devices
-            .iter()
+        let data = geometry
+            .devices()
             .map(|dev| {
                 (
                     dev.idx(),
@@ -472,20 +470,20 @@ pub mod tests {
         let gain = TestGain { data };
         let mut op = GainOp::<AdvancedTransducer, TestGain>::new(gain.clone());
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDrivePhase>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 2));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -495,11 +493,11 @@ pub mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
@@ -521,14 +519,14 @@ pub mod tests {
                 })
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDriveDuty>()
             )
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -538,11 +536,11 @@ pub mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
@@ -567,16 +565,14 @@ pub mod tests {
 
     #[test]
     fn gain_advanced_phase_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        let data = devices
-            .iter()
+        let data = geometry
+            .devices()
             .map(|dev| {
                 (
                     dev.idx(),
@@ -592,20 +588,20 @@ pub mod tests {
         let gain = TestGain { data };
         let mut op = GainOp::<AdvancedPhaseTransducer, TestGain>::new(gain.clone());
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDrivePhase>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -615,11 +611,11 @@ pub mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
@@ -644,9 +640,7 @@ pub mod tests {
 
     #[test]
     fn amplitude_op() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<AdvancedPhaseTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
@@ -655,20 +649,20 @@ pub mod tests {
         let amp: float = rng.gen_range(0.0..1.0);
         let mut op = AmplitudeOp::new(amp);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<AdvancedDriveDuty>()
             )
         });
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -678,11 +672,11 @@ pub mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8

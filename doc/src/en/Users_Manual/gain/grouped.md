@@ -1,43 +1,21 @@
-# Grouped
+# Group
 
-`Grouped` is a `Gain` to use different `Gain` for each device.
-
-In `Grouped`, a device ID is associated with an arbitrary `Gain`.
+`Group` is a `Gain` to use different `Gain` for each transducer.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-# let nx = 0.;
-# let ny = 0.;
-# let nz = 0.;
-# let theta = 0.;
-# let mut autd = autd3::Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
-# let g1 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-# let g2 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-let g = autd3::gain::Grouped::new().add(0, g1).add(1, g2);
-# autd.send(g);
+# let gain : autd3::gain::Group<_, LegacyTransducer, _, _> =
+Group::new(|dev, tr: &LegacyTransducer| match tr.local_idx() {
+                0..=100 => Some("null"),
+                101.. => Some("focus"),
+                _ => None,
+            })
+            .set("null", Null::new())
+            .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
 # }
 ```
 
-```cpp
-auto g = autd3::gain::Grouped();
-g.add(0, g1);
-g.add(1, g2);
-```
-
-```cs
-var g = new Grouped().Add(0, g1).Add(1, g2);
-```
-
-```python
-from pyautd3.gain import Grouped
-
-g = Grouped().add(0, g1).add(1, g2)
-```
-
-In the above case, device 0 uses `g0` and device 1 uses `g1`.
+In the above case, transducers whose local indices are less or equal than 100 produce `Null`, and the others produce `Focus`.

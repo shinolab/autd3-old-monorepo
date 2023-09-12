@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     error::AUTDInternalError,
     fpga::{FilterDuty, FilterPhase},
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     operation::{Operation, TypeTag},
 };
 
@@ -68,8 +68,8 @@ impl<T: Transducer> Operation<T> for PhaseFilterOp {
         2 + device.num_transducers() * std::mem::size_of::<FilterPhase>()
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -113,8 +113,8 @@ impl<T: Transducer> Operation<T> for AmpFilterOp {
         2 + device.num_transducers() * std::mem::size_of::<FilterDuty>()
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
-        self.remains = devices.iter().map(|device| (device.idx(), 1)).collect();
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
@@ -134,7 +134,7 @@ mod tests {
     use super::*;
     use crate::{
         defined::PI,
-        geometry::{device::tests::create_device, LegacyTransducer},
+        geometry::{tests::create_geometry, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -142,15 +142,13 @@ mod tests {
 
     #[test]
     fn filter_phase_op() {
-        let mut devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let mut geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        devices.iter_mut().for_each(|dev| {
+        geometry.devices_mut().for_each(|dev| {
             dev.iter_mut().for_each(|tr| {
                 tr.set_phase_filter(rng.gen_range(-2.0 * PI..2.0 * PI));
             })
@@ -158,20 +156,20 @@ mod tests {
 
         let mut op = PhaseFilterOp::default();
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -181,11 +179,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Filter as u8
@@ -210,15 +208,13 @@ mod tests {
 
     #[test]
     fn filter_amp_op() {
-        let mut devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let mut geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        devices.iter_mut().for_each(|dev| {
+        geometry.devices_mut().for_each(|dev| {
             dev.iter_mut().for_each(|tr| {
                 tr.set_amp_filter(rng.gen_range(-1.0..1.0));
             })
@@ -226,20 +222,20 @@ mod tests {
 
         let mut op = AmpFilterOp::default();
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.required_size(dev),
                 2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
             )
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert!(op
                 .pack(
                     dev,
@@ -249,11 +245,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Filter as u8

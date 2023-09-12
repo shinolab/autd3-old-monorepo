@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
     datagram::GainFilter,
     defined::float,
-    geometry::Device,
+    geometry::Geometry,
 };
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, Trans, VectorX, VectorXc};
 
@@ -83,13 +83,13 @@ impl LinAlgBackend for ArrayFireBackend {
 
     fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
         let g = match filter {
-            GainFilter::All => devices
-                .iter()
+            GainFilter::All => geometry
+                .devices()
                 .flat_map(|dev| {
                     dev.iter().flat_map(move |tr| {
                         foci.iter().map(move |fp| {
@@ -98,8 +98,8 @@ impl LinAlgBackend for ArrayFireBackend {
                     })
                 })
                 .collect::<Vec<_>>(),
-            GainFilter::Filter(filter) => devices
-                .iter()
+            GainFilter::Filter(filter) => geometry
+                .devices()
                 .flat_map(|dev| {
                     dev.iter().filter_map(move |tr| {
                         if let Some(filter) = filter.get(&dev.idx()) {
