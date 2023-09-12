@@ -366,6 +366,15 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+
+      - name: Set linker
+        run: |
+          cd capi
+          mkdir .cargo
+          touch .cargo/config
+          echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
+          echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
+
       - name: Build project arm32
         run: |
           cp LICENSE cpp/
@@ -417,6 +426,15 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+
+      - name: Set linker
+        run: |
+          cd capi
+          mkdir .cargo
+          touch .cargo/config
+          echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
+          echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config
+        
       - name: Build project aarch64
         run: |
           cp LICENSE cpp/
