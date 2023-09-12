@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
     fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     operation::{Operation, TypeTag},
 };
 
@@ -142,7 +142,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn init(&mut self, devices: &[&Device<T>]) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
         }
@@ -152,11 +152,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
             return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
         }
 
-        self.remains = devices
-            .iter()
+        self.remains = geometry
+            .devices()
             .map(|device| (device.idx(), self.buf.len()))
             .collect();
-        self.sent = devices.iter().map(|device| (device.idx(), 0)).collect();
+        self.sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
 
         Ok(())
     }
@@ -178,7 +178,7 @@ mod tests {
     use super::*;
     use crate::{
         fpga::SAMPLING_FREQ_DIV_MIN,
-        geometry::{device::tests::create_device, LegacyTransducer},
+        geometry::{tests::create_geometry, LegacyTransducer},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -188,9 +188,7 @@ mod tests {
     fn modulation_op() {
         const MOD_SIZE: usize = 100;
 
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + 4 + MOD_SIZE) * NUM_DEVICE];
 
@@ -203,17 +201,17 @@ mod tests {
         let mut op = ModulationOp::new(buf.clone(), freq_div);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 9));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(dev, &mut tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE)..]),
                 Ok(2 + 2 + 4 + MOD_SIZE)
@@ -221,11 +219,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE)],
                 TypeTag::Modulation as u8
@@ -277,9 +275,7 @@ mod tests {
         const FRAME_SIZE: usize = 30;
         const MOD_SIZE: usize = FRAME_SIZE - 4 + FRAME_SIZE * 2;
 
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + FRAME_SIZE) * NUM_DEVICE];
 
@@ -289,18 +285,18 @@ mod tests {
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         // First frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 9));
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -312,11 +308,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE - (FRAME_SIZE - 4)));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
@@ -347,11 +343,11 @@ mod tests {
         });
 
         // Second frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 5));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -363,11 +359,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), MOD_SIZE - (FRAME_SIZE - 4) - FRAME_SIZE));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
@@ -398,11 +394,11 @@ mod tests {
         });
 
         // Final frame
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.required_size(dev), 5));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 op.pack(
                     dev,
@@ -414,11 +410,11 @@ mod tests {
             op.commit(dev);
         });
 
-        devices
-            .iter()
+        geometry
+            .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
-        devices.iter().for_each(|dev| {
+        geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
@@ -451,9 +447,7 @@ mod tests {
 
     #[test]
     fn modulation_op_buffer_out_of_range() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut rng = rand::thread_rng();
 
@@ -463,7 +457,7 @@ mod tests {
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let mut rng = rand::thread_rng();
 
@@ -473,7 +467,7 @@ mod tests {
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
 
         let mut rng = rand::thread_rng();
 
@@ -483,29 +477,27 @@ mod tests {
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
     }
 
     #[test]
     fn modulation_op_freq_div_out_of_range() {
-        let devices = (0..NUM_DEVICE)
-            .map(|i| create_device::<LegacyTransducer>(i, NUM_TRANS_IN_UNIT))
-            .collect::<Vec<_>>();
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
 
         let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_ok());
+        assert!(op.init(&geometry).is_ok());
 
         let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1);
-        assert!(op.init(&devices.iter().collect::<Vec<_>>()).is_err());
+        assert!(op.init(&geometry).is_err());
     }
 }

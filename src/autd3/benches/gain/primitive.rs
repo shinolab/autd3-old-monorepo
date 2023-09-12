@@ -4,7 +4,7 @@
  * Created Date: 31/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ fn focus(c: &mut Criterion) {
                         black_box(70.),
                         black_box(150.),
                     ))
-                    .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -51,7 +51,7 @@ fn focus(c: &mut Criterion) {
                         black_box(70.),
                         black_box(150.),
                     ))
-                    .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -76,8 +76,7 @@ fn focus_cached(c: &mut Criterion) {
             &geometry,
             |b, geometry| {
                 b.iter(|| {
-                    g.calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
-                        .unwrap();
+                    g.calc(geometry, GainFilter::All).unwrap();
                 })
             },
         );
@@ -93,8 +92,7 @@ fn focus_cached(c: &mut Criterion) {
             &geometry,
             |b, geometry| {
                 b.iter(|| {
-                    g.calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
-                        .unwrap();
+                    g.calc(geometry, GainFilter::All).unwrap();
                 })
             },
         );
@@ -116,7 +114,7 @@ fn bessel(c: &mut Criterion) {
                         Vector3::new(black_box(0.), black_box(0.), black_box(1.)),
                         black_box(0.1),
                     )
-                    .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -131,7 +129,7 @@ fn bessel(c: &mut Criterion) {
                         Vector3::new(black_box(0.), black_box(0.), black_box(1.)),
                         black_box(0.1),
                     )
-                    .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -150,7 +148,7 @@ fn plane(c: &mut Criterion) {
             |b, geometry| {
                 b.iter(|| {
                     Plane::new(Vector3::new(black_box(0.), black_box(0.), black_box(1.)))
-                        .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                        .calc(geometry, GainFilter::All)
                         .unwrap();
                 })
             },
@@ -161,7 +159,7 @@ fn plane(c: &mut Criterion) {
             |b, geometry| {
                 b.iter(|| {
                     Plane::new(Vector3::new(black_box(0.), black_box(0.), black_box(1.)))
-                        .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                        .calc(geometry, GainFilter::All)
                         .unwrap();
                 })
             },
@@ -192,7 +190,7 @@ fn group(c: &mut Criterion) {
                             )
                         },
                     )
-                    .calc(&geometry.iter().collect::<Vec<_>>(), GainFilter::All)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
             })
         },

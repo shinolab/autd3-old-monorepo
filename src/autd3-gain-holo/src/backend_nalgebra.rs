@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
     datagram::GainFilter,
     defined::float,
-    geometry::Device,
+    geometry::Geometry,
 };
 
 use crate::{error::HoloError, Complex, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
@@ -40,18 +40,18 @@ impl LinAlgBackend for NalgebraBackend {
 
     fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
         match filter {
             GainFilter::All => Ok(MatrixXc::from_iterator(
                 foci.len(),
-                devices
-                    .iter()
+                geometry
+                    .devices()
                     .map(|dev| dev.num_transducers())
                     .sum::<usize>(),
-                devices.iter().flat_map(|dev| {
+                geometry.devices().flat_map(|dev| {
                     dev.iter().flat_map(move |tr| {
                         foci.iter().map(move |fp| {
                             propagate_tr::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
@@ -60,8 +60,8 @@ impl LinAlgBackend for NalgebraBackend {
                 }),
             )),
             GainFilter::Filter(filter) => {
-                let iter = devices
-                    .iter()
+                let iter = geometry
+                    .devices()
                     .flat_map(|dev| {
                         dev.iter().filter_map(move |tr| {
                             if let Some(filter) = filter.get(&dev.idx()) {

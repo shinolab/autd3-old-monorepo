@@ -23,14 +23,14 @@ let mut autd = Controller::builder()
 ```
 ```cpp
 auto autd = autd3::Controller::builder()
-               .advanced_mode()
+               .advanced()
 ```
 ```cs
 var autd = Controller.Builder()
-        .AdvancedMode()
+        .Advanced()
 ```
 ```python
-autd = Controller.builder().advanced_mode()
+autd = Controller.builder().advanced()
 ```
 
 
@@ -52,8 +52,10 @@ Note that you must send `Synchronize` after frequency configuration.
 #                  .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #        .open_with(Debug::new())?;
-for tr in autd.geometry_mut().iter_mut() {
-  tr.set_frequency(70e3)?;
+for dev in autd.geometry_mut().iter_mut() {
+    for tr in dev.iter_mut() {
+        tr.set_frequency(70e3)?;
+    }
 }
 
 autd.send(Synchronize::new())?;
@@ -61,22 +63,25 @@ autd.send(Synchronize::new())?;
 # }
 ```
 ```cpp
-for (auto& tr : autd.geometry())
-    tr.set_frequency(70e3);
+for (auto& dev : autd.geometry())
+    for (auto& tr : dev)
+        tr.set_frequency(70e3);
 
 autd.send(autd3::Synchronize());
 ```
 ```cs
-foreach (var tr in autd.Geometry)
-    tr.Frequency = 70e3;
+foreach (var dev in autd.Geometry)
+    foreach (var tr in dev)
+        tr.Frequency = 70e3;
 
 autd.Send(new Synchronize());
 ```
 ```python
 from pyautd3 import Synchronize
 
-for tr in autd.geometry:
-    tr.frequency = 70e3
+for dev in autd.geometry:
+    for tr in dev:
+        tr.frequency = 70e3
 
 autd.send(Synchronize())
 ```
@@ -102,14 +107,14 @@ let mut autd = Controller::builder()
 ```
 ```cpp
 auto autd = autd3::Controller::builder()
-               .advanced_phase_mode()
+               .advanced_phase()
 ```
 ```cs
 var autd = Controller.Builder()
-        .AdvancedPhaseMode()
+        .AdvancedPhase()
 ```
 ```python
-autd = Controller.builder().advanced_phase_mode()
+autd = Controller.builder().advanced_phase()
 ```
 
 In this mode, the amplitude is controlled by sending the `Amplitudes` class in advance.

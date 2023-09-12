@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,16 +25,13 @@ pub mod colormap;
 
 use std::{marker::PhantomData, time::Duration};
 
-use autd3::{
-    driver::{
-        acoustics::{propagate, Complex, Directivity, Sphere},
-        cpu::{RxDatagram, TxDatagram},
-        defined::{float, PI},
-        error::AUTDInternalError,
-        geometry::{Device, Transducer, Vector3},
-        link::Link,
-    },
-    geometry::Geometry,
+use autd3::driver::{
+    acoustics::{propagate, Complex, Directivity, Sphere},
+    cpu::{RxDatagram, TxDatagram},
+    defined::{float, PI},
+    error::AUTDInternalError,
+    geometry::{Device, Geometry, Transducer, Vector3},
+    link::Link,
 };
 use autd3_firmware_emulator::CPUEmulator;
 

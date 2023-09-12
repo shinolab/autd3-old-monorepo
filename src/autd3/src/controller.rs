@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,14 +19,18 @@ use autd3_driver::{
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Device, IntoDevice, LegacyTransducer,
-        Transducer,
+        AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, IntoDevice,
+        LegacyTransducer, Transducer,
     },
     link::Link,
     operation::OperationHandler,
 };
 
-use crate::{error::AUTDError, geometry::Geometry, link::NullLink, software_stm::SoftwareSTM};
+use crate::{
+    error::{AUTDError, ReadFirmwareInfoState},
+    link::NullLink,
+    software_stm::SoftwareSTM,
+};
 
 /// Builder for `Controller`
 pub struct ControllerBuilder<T: Transducer> {
@@ -40,9 +44,7 @@ impl<T: Transducer> Default for ControllerBuilder<T> {
 }
 
 impl<T: Transducer> ControllerBuilder<T> {
-    #[doc(hidden)]
-    /// This is used only for capi.
-    pub fn new() -> ControllerBuilder<T> {
+    fn new() -> ControllerBuilder<T> {
         Self { devices: vec![] }
     }
 
@@ -56,6 +58,53 @@ impl<T: Transducer> ControllerBuilder<T> {
     pub fn open_with<L: Link<T>>(self, link: L) -> Result<Controller<T, L>, AUTDError> {
         Controller::open_impl(Geometry::<T>::new(self.devices), link)
     }
+
+    fn convert<T2: Transducer>(self) -> ControllerBuilder<T2> {
+        ControllerBuilder {
+            devices: self
+                .devices
+                .iter()
+                .map(|dev| {
+                    Device::new(
+                        dev.idx(),
+                        dev.iter()
+                            .map(|tr| T2::new(tr.local_idx(), *tr.position(), *tr.rotation()))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        }
+    }
+}
+
+impl ControllerBuilder<LegacyTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        self.convert()
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        self.convert()
+    }
+}
+
+impl ControllerBuilder<AdvancedTransducer> {
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        self.convert()
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        self.convert()
+    }
+}
+
+impl ControllerBuilder<AdvancedPhaseTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        self.convert()
+    }
+
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        self.convert()
+    }
 }
 
 /// Controller for AUTD
@@ -67,24 +116,9 @@ pub struct Controller<T: Transducer, L: Link<T>> {
 }
 
 impl Controller<LegacyTransducer, NullLink> {
-    /// Create Controller builder (legacy mode)
+    /// Create Controller builder
     pub fn builder() -> ControllerBuilder<LegacyTransducer> {
         ControllerBuilder::<LegacyTransducer>::new()
-    }
-
-    /// Create Controller builder (legacy mode)
-    pub fn legacy_builder() -> ControllerBuilder<LegacyTransducer> {
-        ControllerBuilder::<LegacyTransducer>::new()
-    }
-
-    /// Create Controller builder (advanced mode)
-    pub fn advanced_builder() -> ControllerBuilder<AdvancedTransducer> {
-        ControllerBuilder::<AdvancedTransducer>::new()
-    }
-
-    /// Create Controller builder (advanced phase mode)
-    pub fn advanced_phase_builder() -> ControllerBuilder<AdvancedPhaseTransducer> {
-        ControllerBuilder::<AdvancedPhaseTransducer>::new()
     }
 }
 
@@ -142,9 +176,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let timeout = s.timeout().unwrap_or(self.link.timeout());
 
         let (mut op1, mut op2) = s.operation()?;
-        OperationHandler::init(&mut op1, &mut op2, self.geometry.iter())?;
+        OperationHandler::init(&mut op1, &mut op2, &self.geometry)?;
         loop {
-            OperationHandler::pack(&mut op1, &mut op2, self.geometry.iter(), &mut self.tx_buf)?;
+            OperationHandler::pack(&mut op1, &mut op2, &self.geometry, &mut self.tx_buf)?;
 
             if !self
                 .link
@@ -152,7 +186,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             {
                 return Ok(false);
             }
-            if OperationHandler::is_finished(&mut op1, &mut op2, self.geometry.iter()) {
+            if OperationHandler::is_finished(&mut op1, &mut op2, &self.geometry) {
                 break;
             }
             if timeout.is_zero() {
@@ -199,64 +233,64 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         let mut op = autd3_driver::operation::FirmInfoOp::default();
         let mut null_op = autd3_driver::operation::NullOp::default();
 
-        OperationHandler::init(&mut op, &mut null_op, self.geometry.iter())?;
+        OperationHandler::init(&mut op, &mut null_op, &self.geometry)?;
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let cpu_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
-        self.link
-            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
+        if !self
+            .link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?
+        {
+            return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
+                self.link.check(&self.tx_buf, &mut self.rx_buf),
+            )));
+        }
         let fpga_functions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(
-            &mut op,
-            &mut null_op,
-            self.geometry.iter(),
-            &mut self.tx_buf,
-        )?;
+        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
         self.link
             .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
 
@@ -294,14 +328,16 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     ///
     pub fn software_stm<
         S: Datagram<T>,
-        Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+        Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
         Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
+        Fe: FnMut(AUTDError) -> bool + Send + 'static,
     >(
         &mut self,
         callback: Fs,
-        finish_handler: Ff,
-    ) -> SoftwareSTM<T, L, S, Fs, Ff> {
-        SoftwareSTM::new(self, callback, finish_handler)
+        finish_signal: Ff,
+        callback_err: Fe,
+    ) -> SoftwareSTM<T, L, S, Fs, Ff, Fe> {
+        SoftwareSTM::new(self, callback, finish_signal, callback_err)
     }
 }
 
@@ -471,7 +507,8 @@ mod tests {
 
     #[test]
     fn freq_config() {
-        let mut autd = Controller::advanced_builder()
+        let mut autd = Controller::builder()
+            .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .open_with(Debug::new().with_log_level(LevelFilter::Off))
             .unwrap();
@@ -494,7 +531,8 @@ mod tests {
 
     #[test]
     fn basic_usage_advanced() {
-        let mut autd = Controller::advanced_builder()
+        let mut autd = Controller::builder()
+            .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
@@ -634,7 +672,8 @@ mod tests {
 
     #[test]
     fn basic_usage_advanced_phase() {
-        let mut autd = Controller::advanced_phase_builder()
+        let mut autd = Controller::builder()
+            .advanced_phase()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
@@ -903,9 +942,7 @@ mod tests {
         });
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
@@ -934,9 +971,7 @@ mod tests {
         autd.send(stm.clone()).unwrap();
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
@@ -958,9 +993,7 @@ mod tests {
         });
 
         (0..size).for_each(|k| {
-            let g = gains[k]
-                .calc(&autd.geometry().iter().collect::<Vec<_>>(), GainFilter::All)
-                .unwrap();
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
             autd.link().emulators().iter().for_each(|cpu| {
                 cpu.fpga()
                     .duties_and_phases(k)
@@ -979,180 +1012,168 @@ mod tests {
         autd.close().unwrap();
     }
 
-    // #[test]
-    // fn gain_stm_advanced() {
-    //     let mut autd = Controller::builder()
-    //         .advanced()
-    //         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    //         .open_with(Debug::new().with_log_level(LevelFilter::Off))
-    //         .unwrap();
+    #[test]
+    fn gain_stm_advanced() {
+        let mut autd = Controller::builder()
+            .advanced()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
 
-    //     autd.send(Clear::new()).unwrap();
-    //     autd.send(Synchronize::new()).unwrap();
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
 
-    //     let center = autd.geometry().center();
-    //     let size = 30;
+        let center = autd.geometry().center();
+        let size = 30;
 
-    //     let gains = (0..size)
-    //         .map(|i| {
-    //             let theta = 2. * PI * i as float / size as float;
-    //             Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
-    //         })
-    //         .collect::<Vec<_>>();
+        let gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
 
-    //     let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
 
-    //     autd.send(&stm).unwrap();
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link()
-    //         .emulators()
-    //         .iter()
-    //         .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert!(cpu.fpga().stm_start_idx().is_none());
-    //         assert!(cpu.fpga().stm_finish_idx().is_none());
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, autd3_core::AdvancedDriveDuty::to_duty(&g, c));
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, crate::driver::fpga::AdvancedDriveDuty::to_duty(&g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
-    //         assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseFull);
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_mode(GainSTMMode::PhaseFull);
+        autd.send(stm.clone()).unwrap();
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseHalf);
-    //     assert!(autd.send(&stm).is_err());
+        let stm = stm.with_mode(GainSTMMode::PhaseHalf);
+        assert!(autd.send(stm).is_err());
 
-    //     autd.close().unwrap();
-    // }
+        autd.close().unwrap();
+    }
 
-    // #[test]
-    // fn gain_stm_advanced_phase() {
-    //     let mut autd = Controller::builder()
-    //         .advanced_phase()
-    //         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    //         .open_with(Debug::new().with_log_level(LevelFilter::Off))
-    //         .unwrap();
+    #[test]
+    fn gain_stm_advanced_phase() {
+        let mut autd = Controller::builder()
+            .advanced_phase()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .unwrap();
 
-    //     autd.send(Clear::new()).unwrap();
-    //     autd.send(Synchronize::new()).unwrap();
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
 
-    //     autd.send(Amplitudes::none()).unwrap();
+        autd.send(Amplitudes::none()).unwrap();
 
-    //     let center = autd.geometry().center();
-    //     let size = 30;
+        let center = autd.geometry().center();
+        let size = 30;
 
-    //     let gains = (0..size)
-    //         .map(|i| {
-    //             let theta = 2. * PI * i as float / size as float;
-    //             Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
-    //         })
-    //         .collect::<Vec<_>>();
+        let gains = (0..size)
+            .map(|i| {
+                let theta = 2. * PI * i as float / size as float;
+                Focus::new(center + Vector3::new(30. * theta.cos(), 30. * theta.sin(), 150.))
+            })
+            .collect::<Vec<_>>();
 
-    //     let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
-    //     autd.send(&stm).unwrap();
+        let stm = GainSTM::new(1.).add_gains_from_iter(gains.iter().copied());
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link()
-    //         .emulators()
-    //         .iter()
-    //         .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
+        autd.link()
+            .emulators()
+            .iter()
+            .for_each(|cpu| assert_eq!(cpu.fpga().stm_cycle(), size));
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert!(cpu.fpga().stm_start_idx().is_none());
-    //         assert!(cpu.fpga().stm_finish_idx().is_none());
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert!(cpu.fpga().stm_start_idx().is_none());
+            assert!(cpu.fpga().stm_finish_idx().is_none());
+        });
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_start_idx(Some(1)).with_finish_idx(Some(2));
+        autd.send(stm.clone()).unwrap();
 
-    //     autd.link().emulators().iter().for_each(|cpu| {
-    //         assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
-    //         assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
-    //     });
+        autd.link().emulators().iter().for_each(|cpu| {
+            assert_eq!(cpu.fpga().stm_start_idx(), Some(1));
+            assert_eq!(cpu.fpga().stm_finish_idx(), Some(2));
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseFull);
-    //     autd.send(&stm).unwrap();
+        let stm = stm.with_mode(GainSTMMode::PhaseFull);
+        autd.send(stm.clone()).unwrap();
 
-    //     (0..size).for_each(|k| {
-    //         autd.link()
-    //             .emulators()
-    //             .iter()
-    //             .flat_map(|cpu| cpu.fpga().duties_and_phases(k))
-    //             .zip(gains[k].calc(autd.geometry(), GainFilter::All).unwrap())
-    //             .zip(
-    //                 autd.link()
-    //                     .emulators()
-    //                     .iter()
-    //                     .flat_map(|cpu| cpu.fpga().cycles()),
-    //             )
-    //             .for_each(|(((d, p), g), c)| {
-    //                 assert_eq!(d, c >> 1);
-    //                 assert_eq!(p, autd3_core::AdvancedDrivePhase::to_phase(&g, c));
-    //             });
-    //     });
+        (0..size).for_each(|k| {
+            let g = gains[k].calc(autd.geometry(), GainFilter::All).unwrap();
+            autd.link().emulators().iter().for_each(|cpu| {
+                cpu.fpga()
+                    .duties_and_phases(k)
+                    .iter()
+                    .zip(g[&cpu.idx()].iter())
+                    .zip(cpu.fpga().cycles().iter())
+                    .for_each(|((&(d, p), g), &c)| {
+                        assert_eq!(d, c >> 1);
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                    })
+            });
+        });
 
-    //     let stm = stm.with_mode(Mode::PhaseHalf);
-    //     assert!(autd.send(&stm).is_err());
+        let stm = stm.with_mode(GainSTMMode::PhaseHalf);
+        assert!(autd.send(stm).is_err());
 
-    //     autd.close().unwrap();
-    // }
+        autd.close().unwrap();
+    }
 }

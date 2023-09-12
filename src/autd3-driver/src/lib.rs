@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,3 +27,16 @@ pub mod sync_mode;
 pub mod timer_strategy;
 
 pub use spdlog;
+
+pub mod derive {
+    pub mod prelude {
+        pub use crate::{
+            datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, ModulationProperty},
+            defined::{float, Drive},
+            error::AUTDInternalError,
+            fpga::{FPGA_SUB_CLK_FREQ, SAMPLING_FREQ_DIV_MIN},
+            geometry::{Geometry, Transducer},
+            operation::{GainOp, ModulationOp, NullOp, Operation},
+        };
+    }
+}

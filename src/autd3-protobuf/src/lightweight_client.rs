@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,12 +13,9 @@
 
 use std::net::SocketAddr;
 
-use autd3::{
-    driver::{
-        datagram::{Clear, Synchronize},
-        geometry::{Device, IntoDevice, LegacyTransducer},
-    },
-    geometry::Geometry,
+use autd3::driver::{
+    datagram::{Clear, Synchronize},
+    geometry::{Device, Geometry, IntoDevice, LegacyTransducer},
 };
 
 use crate::traits::*;

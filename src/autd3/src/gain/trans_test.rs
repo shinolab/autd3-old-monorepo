@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,12 +14,8 @@
 use std::collections::HashMap;
 
 use autd3_derive::Gain;
-use autd3_driver::{
-    datagram::{Gain, GainFilter},
-    defined::{float, Drive},
-    error::AUTDInternalError,
-    geometry::{Device, Transducer},
-};
+
+use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
 /// Gain to drive only specified transducers
 #[derive(Gain, Default, Clone)]
@@ -57,10 +53,10 @@ impl TransducerTest {
 impl<T: Transducer> Gain<T> for TransducerTest {
     fn calc(
         &self,
-        devices: &[&Device<T>],
+        geometry: &Geometry<T>,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        Ok(Self::transform(devices, filter, |dev, tr| {
+        Ok(Self::transform(geometry, filter, |dev, tr| {
             if let Some(&(phase, amp)) = self.test_drive.get(&(dev.idx(), tr.local_idx())) {
                 Drive { phase, amp }
             } else {
@@ -85,19 +81,21 @@ mod tests {
 
     #[test]
     fn test_transducer_test() {
-        let device: Device<LegacyTransducer> =
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0);
+        let geometry: Geometry<LegacyTransducer> =
+            Geometry::new(vec![
+                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
+            ]);
 
         let mut transducer_test = TransducerTest::new();
 
         let mut rng = rand::thread_rng();
-        let test_id = rng.gen_range(0..device.num_transducers());
+        let test_id = rng.gen_range(0..geometry.num_transducers());
         let test_phase = rng.gen_range(-1.0..1.0);
         let test_amp = rng.gen_range(-1.0..1.0);
 
         transducer_test = transducer_test.set(0, test_id, test_phase, test_amp);
 
-        let drives = transducer_test.calc(&[&device], GainFilter::All).unwrap();
+        let drives = transducer_test.calc(&geometry, GainFilter::All).unwrap();
 
         drives[&0].iter().enumerate().for_each(|(idx, drive)| {
             if idx == test_id {

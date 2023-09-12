@@ -14,15 +14,14 @@
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
 let stm = GainSTM::new(1.0).add_gains_from_iter((0..point_num).map(|i| {
     let theta = 2.0 * PI * i as float / point_num as float;
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-    let g = Focus::new(center + p);
-    Box::new(g) as _
+    Focus::new(center + p)
 }));
 autd.send(stm)?;
 # Ok(())
@@ -36,7 +35,7 @@ constexpr auto radius = 30.0;
 autd3::GainSTM stm(1);
 for (size_t i = 0; i < points_num; i++) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    stm = stm.add_gain(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0)));
+    stm.add_gain(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0)));
 }
 autd.send(stm);
 ```
@@ -91,8 +90,9 @@ autd.send(stm)
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
 let stm = GainSTM::with_sampling_frequency(1.0);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
 # Ok(())
 # }
@@ -118,8 +118,9 @@ stm = GainSTM.with_sampling_frequency(1.0)
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
 let stm = GainSTM::with_sampling_frequency_division(5120);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
 # Ok(())
 # }
@@ -146,13 +147,14 @@ stm = GainSTM.with_sampling_frequency_division(5120)
 
 このモードの切り替えは`with_mode`で行う.
 
-```rust,should_panic,edition2021
+```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
 let stm = GainSTM::new(1.0).with_mode(GainSTMMode::PhaseFull);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
 # Ok(())
 # }
@@ -175,6 +177,6 @@ stm = GainSTM(1).with_mode(GainSTMMode.PhaseFull)
 デフォルトはすべての情報を送る`PhaseDutyFull`モードである.
 
 
-[^fn_gain_seq]: `FocusSTM`のおよそ60倍のレイテンシ
+[^fn_gain_seq]: `FocusSTM`のおよそ75倍のレイテンシ
 
 [^phase_half]: Legacyモード限定

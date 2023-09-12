@@ -20,7 +20,7 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 ## Silencerの設定
 
-Silencerの設定には`SilencerConfig`を送信する.
+Silencerの設定には`Silencer`を送信する.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -28,30 +28,30 @@ Silencerの設定には`SilencerConfig`を送信する.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let config = SilencerConfig::default();
+let config = Silencer::default();
 autd.send(config)?;
 # Ok(())
 # }
 ```
 
 ```cpp
-autd3::SilencerConfig config;
+autd3::Silencer config;
 autd.send(config);
 ```
 
 ```cs
-var config = new SilencerConfig();
+var config = new Silencer();
 autd.Send(config);
 ```
 
 ```python
-from pyautd3 import SilencerConfig
+from pyautd3 import Silencer
 
-config = SilencerConfig()
+config = Silencer()
 autd.send(config)
 ```
 
-`SilencerConfig`には`step`を設定できる.
+`Silencer`には`step`を設定できる.
 詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
 
 
@@ -62,21 +62,21 @@ autd.send(config)
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let step = 10;
-let config = SilencerConfig::new(step);
+let config = Silencer::new(step);
 # Ok(())
 # }
 ```
 
 ```cpp
-autd3::SilencerConfig config(step);
+autd3::Silencer config(step);
 ```
 
 ```cs
-var config = new SilencerConfig(step);
+var config = new Silencer(step);
 ```
 
 ```python
-config = SilencerConfig(step)
+config = Silencer(step)
 ```
 
 ## Silencerの無効化
@@ -91,21 +91,21 @@ Silencerを無効化する場合は, 以下のようにする.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let config = SilencerConfig::none();
+let config = Silencer::disable();
 # Ok(())
 # }
 ```
 
 ```cpp
-const auto config = autd3::SilencerConfig::none();
+const auto config = autd3::Silencer::disable();
 ```
 
 ```cs
-var config = SilencerConfig.None();
+var config = Silencer.Disable();
 ```
 
 ```python
-config = SilencerConfig.none()
+config = Silencer.disable()
 ```
 
 ## Silencerによる位相の変化
@@ -140,7 +140,7 @@ $$
     \end{cases},
 $$
 として位相$P$を更新する.
-ここで, $\Delta$は1ステップ当たりの更新量 (`SilencerConfig`の`step`) を表す.
+ここで, $\Delta$は1ステップ当たりの更新量 (`Silencer`の`step`) を表す.
 なお, 更新周波数は$\ufreq$となっている.
 
 $\Delta$が小さいほど, 位相変化はなだらかになり騒音が抑制される.

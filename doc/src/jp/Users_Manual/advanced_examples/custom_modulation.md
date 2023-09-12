@@ -7,14 +7,9 @@
 
 ```rust,edition2021
 # extern crate autd3;
-# extern crate autd3_core;
 use autd3::{
-    core::{
-        error::AUTDInternalError,
-        modulation::Modulation,
-    },
-    prelude::*,
-    traits::Modulation,
+    driver::derive::prelude::*,
+    derive::Modulation,
 };
 
 #[derive(Modulation, Clone, Copy)]

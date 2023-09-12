@@ -8,20 +8,20 @@ However, the number of `Gain`s that can be used is
 The following is an example of how to use `GainSTM`.
 This is a sample that rotates the focus on a circle with a radius of $\SI{30}{mm}$ centered on a point $\SI{150}{mm}$ directly above the center of the array.
 
+
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
 let stm = GainSTM::new(1.0).add_gains_from_iter((0..point_num).map(|i| {
     let theta = 2.0 * PI * i as float / point_num as float;
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-    let g = Focus::new(center + p);
-    Box::new(g) as _
+    Focus::new(center + p)
 }));
 autd.send(stm)?;
 # Ok(())
@@ -76,13 +76,14 @@ To solve this problem, `GainSTM` has `PhaseFull` mode that sends only phase and 
 
 This mode can be switched with `with_mode`.
 
-```rust,should_panic,edition2021
+```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
 let stm = GainSTM::new(1.0).with_mode(GainSTMMode::PhaseFull);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
 # Ok(())
 # }
@@ -104,6 +105,6 @@ stm = GainSTM(1).with_mode(GainSTMMode.PhaseFull)
 
 The default is `PhaseDutyFull` mode, which sends all information.
 
-[^fn_gain_seq]: About 60 times of `FocusSTM`
+[^fn_gain_seq]: About 75 times of `FocusSTM`
 
 [^phase_half]: Legacy mode only
