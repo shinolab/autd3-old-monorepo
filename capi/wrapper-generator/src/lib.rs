@@ -54,18 +54,18 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
     gen::<PythonGenerator, _, _>("../../python/pyautd3/native_methods", &crate_path, false)?;
     gen::<CSharpGenerator, _, _>("../../dotnet/cs/src/NativeMethods", &crate_path, false)?;
     gen::<CSharpGenerator, _, _>(
-        "../../dotnet/unity/Assets/autd3/Scripts/NativeMethods",
+        "../../dotnet/unity/Assets/Scripts/NativeMethods",
         &crate_path,
         true,
     )?;
     gen::<CSharpGenerator, _, _>(
-        "../../dotnet/unity-linux/Assets/autd3/Scripts/NativeMethods",
+        "../../dotnet/unity-linux/Assets/Scripts/NativeMethods",
         &crate_path,
         true,
     )?;
     if crate_path.as_ref().file_name().unwrap().to_str().unwrap() != "autd3capi-backend-cuda" {
         gen::<CSharpGenerator, _, _>(
-            "../../dotnet/unity-mac/Assets/autd3/Scripts/NativeMethods",
+            "../../dotnet/unity-mac/Assets/Scripts/NativeMethods",
             &crate_path,
             true,
         )?;

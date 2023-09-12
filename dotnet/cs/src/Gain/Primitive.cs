@@ -21,6 +21,10 @@ using System.Collections.Generic;
 using System.Linq;
 using AUTD3Sharp.NativeMethods;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
@@ -229,7 +233,7 @@ namespace AUTD3Sharp.Gain
         public override GainPtr GainPtr(Geometry geometry)
         {
             var deviceIndices = geometry.Select(d => d.Idx).ToArray();
-            if (_cache.Count != geometry.NumDevices|| deviceIndices.Any(i => !_cache.ContainsKey(i)))
+            if (_cache.Count != geometry.NumDevices || deviceIndices.Any(i => !_cache.ContainsKey(i)))
             {
                 var drives = geometry.Select(d => new Drive[d.NumTransducers]).ToArray();
                 var err = new byte[256];
@@ -257,3 +261,7 @@ namespace AUTD3Sharp.Gain
         public override GainPtr GainPtr(Geometry geometry) => Base.AUTDGainNull();
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable restore
+#endif
