@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 11/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 localparam int NUM_TRANSDUCERS = 249;
 
 localparam bit [7:0] VERSION_NUM = 8'h8A;
-localparam bit [7:0] VERSION_NUM_MINOR = 8'h00;
+localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
 
 localparam string ENABLE_STM = "TRUE";
 localparam string ENABLE_MODULATOR = "TRUE";

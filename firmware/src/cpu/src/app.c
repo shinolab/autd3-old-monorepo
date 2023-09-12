@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/09/2023
+ * Last Modified: 11/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #include "utils.h"
 
 #define CPU_VERSION_MAJOR (0x8A) /* v3.0 */
-#define CPU_VERSION_MINOR (0x00)
+#define CPU_VERSION_MINOR (0x01)
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -37,11 +37,52 @@
 
 #define WDT_CNT_MAX (1000)
 
-extern RX_STR _sRx;
 extern TX_STR _sTx;
 
+#define BUF_SIZE (64)
+static volatile RX_STR _buf[BUF_SIZE];
+volatile uint8_t _write_cursor;
+volatile uint8_t _read_cursor;
+
+static volatile RX_STR _data;
+
+inline static void word_cpy(uint16_t* dst, uint16_t* src, uint32_t cnt) {
+  while (cnt-- > 0) *dst++ = *src++;
+}
+
+bool_t push(const volatile uint16_t* p_data) {
+  uint32_t next;
+  next = _write_cursor + 1;
+
+  if (next >= BUF_SIZE) next = 0;
+
+  if (next == _read_cursor) return false;
+
+  word_cpy((uint16_t*)&_buf[_write_cursor], (uint16_t*)p_data, 249);
+  word_cpy(((uint16_t*)&_buf[_write_cursor]) + 249, (uint16_t*)&p_data[249 + 1], 64);
+
+  _write_cursor = next;
+
+  return true;
+}
+
+bool_t pop(volatile RX_STR* p_data) {
+  uint32_t next;
+
+  if (_read_cursor == _write_cursor) return false;
+
+  memcpy_volatile(p_data, &_buf[_read_cursor], sizeof(RX_STR));
+
+  next = _read_cursor + 1;
+  if (next >= BUF_SIZE) next = 0;
+
+  _read_cursor = next;
+
+  return true;
+}
+
 // fire when ethercat packet arrives
-extern void recv_ethercat(void);
+extern void recv_ethercat(uint16_t* p_data);
 // fire once after power on
 extern void init_app(void);
 // fire periodically with 1ms interval
@@ -566,21 +607,6 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 
 void init_app(void) { clear(); }
 
-void update(void) {
-  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) {  // Synchronization error
-    if (_wdt_cnt < 0) return;
-    if (_wdt_cnt-- == 0) clear();
-  } else {
-    _wdt_cnt = WDT_CNT_MAX;
-  }
-
-  if (_read_fpga_info) {
-    _rx_data = read_fpga_info();
-  }
-
-  _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
-}
-
 void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
   switch (tag) {
     case TAG_NONE:
@@ -648,25 +674,45 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
   }
 }
 
-void recv_ethercat(void) {
-  const volatile uint8_t* p_data = (const volatile uint8_t*)_sRx.data;
-  Header* header = (Header*)p_data;
+void update(void) {
+  volatile uint8_t* p_data;
+  Header* header;
 
-  if (header->msg_id == _ack) return;
-  _ack = header->msg_id;
-
-  _read_fpga_info = (header->fpga_ctl_flag & READS_FPGA_INFO) == READS_FPGA_INFO;
-  if (_read_fpga_info) _rx_data = read_fpga_info();
-
-  _fpga_flags = header->fpga_ctl_flag;
-
-  handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
-
-  if (header->slot_2_offset != 0) {
-    handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) {  // Synchronization error
+    if (_wdt_cnt < 0) return;
+    if (_wdt_cnt-- == 0) clear();
+  } else {
+    _wdt_cnt = WDT_CNT_MAX;
   }
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
+  if (_read_fpga_info) {
+    _rx_data = read_fpga_info();
+  }
+
+  if (pop(&_data)) {
+    p_data = (volatile uint8_t*)&_data;
+    header = (Header*)p_data;
+    _ack = header->msg_id;
+
+    _read_fpga_info = (header->fpga_ctl_flag & READS_FPGA_INFO) == READS_FPGA_INFO;
+    if (_read_fpga_info) _rx_data = read_fpga_info();
+    _fpga_flags = header->fpga_ctl_flag;
+
+    handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
+
+    if (header->slot_2_offset != 0) {
+      handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
+    }
+
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
+  }
 
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
+}
+
+static uint8_t _last_msg_id = 0;
+void recv_ethercat(uint16_t* p_data) {
+  Header* header = (Header*)p_data;
+  if (header->msg_id == _last_msg_id) return;
+  if (push(p_data)) _last_msg_id = header->msg_id;
 }
