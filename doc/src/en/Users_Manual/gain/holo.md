@@ -13,57 +13,57 @@ Several algorithms for generating multiple foci have been proposed, and the foll
 
 You can select the backend for the calculation of the algorithm from the following.
 
-* `NalgebraBackend` (`DefaultBackend`) - uses [Nalgebra](hthttps://nalgebra.org/)
+* `NalgebraBackend` - uses [Nalgebra](hthttps://nalgebra.org/)
 * `CUDABackend` - uses CUDA, which runs on GPUs
+
 
 ```rust,edition2021
 # extern crate autd3;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{NalgebraBackend, GSPAT};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
 
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
 # let x2 = 0.;
 # let y2 = 0.;
 # let z2 = 0.;
-let backend = NalgebraBackend::new();
+let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
       .add_focus(Vector3::new(x1, y1, z1), 1.)
       .add_focus(Vector3::new(x2, y2, z2), 1.);
+# Ok(())
 # }
 ```
 
 ```cpp
 #include "autd3/gain/holo.hpp"
 
-const auto backend = std::make_shared<autd3::gain::holo::DefaultBackend>();
+const auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
 
-autd3::gain::holo::GSPAT g(backend);
-g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
-g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
+auto g = autd3::gain::holo::GSPAT(backend)
+            .add_focus(autd3::Vector3(x1, y1, z1), 1.0)
+            .add_focus(autd3::Vector3(x2, y2, z2), 1.0);
 ```
 
 ```cs
-var backend = new BackendDefault();
+var backend = new NalgebraBackend();
 
-var g = new GSPAT(backend);
-g.AddFocus(new Vector3d(x1, y1, z1), 1.0);
-g.AddFocus(new Vector3d(x2, y2, z2), 1.0);
+var g = new GSPAT(backend)
+            .AddFocus(new Vector3d(x1, y1, z1), 1.0)
+            .AddFocus(new Vector3d(x2, y2, z2), 1.0);
 ```
 
 ```python
-from pyautd3.gain.holo import GSPAT, DefaultBackend
+from pyautd3.gain.holo import GSPAT, NalgebraBackend
 
-backend = DefaultBackend()
+backend = NalgebraBackend()
 
-g = GSPAT(backend)
-g.add_focus([x1, y1, z1], 1.0)
-g.add_focus([x2, y2, z2], 1.0)
+g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 ```
 
 The constructor argument of each algorithm is `backend`.
@@ -86,21 +86,17 @@ This can be controlled by `with_constraint`, and one of the following four must 
 # extern crate autd3;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{NalgebraBackend, GSPAT, Constraint};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 
 # #[allow(unused_variables)]
-# fn main()  {
-# let x1 = 0.;
-# let y1 = 0.;
-# let z1 = 0.;
-# let x2 = 0.;
-# let y2 = 0.;
-# let z2 = 0.;
-let backend = NalgebraBackend::new();
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
       .with_constraint(Constraint::Uniform(1.));
+# Ok(())
 # }
+
 ```
 
 ```cpp
@@ -128,19 +124,20 @@ These are all specified by `with_xxx`.
     # extern crate autd3;
     # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
-    # use autd3_gain_holo::{NalgebraBackend, GSPAT};
+    # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]
-    # fn main()  {
+    # fn main() -> Result<(), Box<dyn std::error::Error>> {
     # let x1 = 0.;
     # let y1 = 0.;
     # let z1 = 0.;
     # let x2 = 0.;
     # let y2 = 0.;
     # let z2 = 0.;
-    # let backend = NalgebraBackend::new();
+    # let backend = NalgebraBackend::new()?;
     let g = GSPAT::new(backend).with_repeat(100)
     #    .add_focus(Vector3::new(x1, y1, z1), 1.)
     #    .add_focus(Vector3::new(x2, y2, z2), 1.);
+    # Ok(())
     # }
     ```
 

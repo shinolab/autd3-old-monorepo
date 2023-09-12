@@ -41,8 +41,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Enable silencer
     // Note that this is enabled by default, so it is not actually necessary
-    // To disable, send SilencerConfig::none()
-    autd.send(SilencerConfig::default())?;
+    // To disable, send Silencer::disable()
+    autd.send(Silencer::default())?;
 
     // A focus at 150mm directly above the center of the device
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);

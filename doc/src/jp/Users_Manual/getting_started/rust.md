@@ -36,15 +36,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }))?;
 
     // ファームウェアバージョンのチェック
-    // ここで, v2.9以外が表示される場合の動作は保証しない
+    // ここで, v3.0.1以外が表示される場合の動作は保証しない
     autd.firmware_infos()?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });
 
     // 静音化処理を有効化
     // なお, デフォルトで有効にされているので, 実際には必要ない
-    // 無効にしたい場合はSilencerConfig::none()を送信する
-    autd.send(SilencerConfig::default())?;
+    // 無効にしたい場合はSilencer::disable()を送信する
+    autd.send(Silencer::default())?;
 
     // デバイスの中心から直上150mmに焦点
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);

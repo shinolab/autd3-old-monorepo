@@ -41,7 +41,6 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);
@@ -95,7 +94,6 @@ fs = m.sampling_frequency
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::core::modulation::ModulationProperty;
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);
@@ -146,7 +144,7 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 
 これを補償するために, 振動子毎にサンプリングするインデックスを遅らせる機能が備わっている.
 
-例えば, 以下のようにすると, $0$番目の振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
+例えば, 以下のようにすると, $0$番目のデバイスの$0$番目のの振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
@@ -154,26 +152,26 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-autd.geometry_mut()[0].set_mod_delay(1);
+autd.geometry_mut()[0][0].set_mod_delay(1);
 autd.send(ModDelay::new())?;
 # Ok(())
 # }
 ```
 
 ```cpp
-autd.geometry()[0].set_mod_delay(1);
+autd.geometry()[0][0].set_mod_delay(1);
 autd.send(autd3::ModDelayConfig());
 ```
 
 ```cs
-autd.Geometry[0].ModDelay = 1;
+autd.Geometry[0][0].ModDelay = 1;
 autd.Send(new ModDelayConfig());
 ```
 
 ```python
 from pyautd3 import ModDelayConfig
 
-autd.geometry[0].mod_delay = 1
+autd.geometry[0][0].mod_delay = 1
 autd.send(ModDelayConfig())
 ```
 
