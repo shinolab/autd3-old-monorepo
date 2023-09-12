@@ -141,6 +141,14 @@ jobs:
         workspaces: './src -> target'
       if: steps.changed-files.outputs.modified_files
 
+    - name: Set linker
+      run: |
+        cd src
+        mkdir .cargo
+        touch .cargo/config
+        echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
+        echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
+
     - name: Build src
       run: |
         cd src
@@ -186,6 +194,14 @@ jobs:
         workspaces: './capi -> target'
       if: steps.changed-files.outputs.modified_files
 
+    - name: Set linker
+      run: |
+        cd capi
+        mkdir .cargo
+        touch .cargo/config
+        echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
+        echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
+
     - name: Build src
       run: |
         cd capi
@@ -225,6 +241,14 @@ jobs:
       with:
         workspaces: './src -> target'
       if: steps.changed-files.outputs.modified_files
+
+    - name: Set linker
+      run: |
+        cd src
+        mkdir .cargo
+        touch .cargo/config
+        echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
+        echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config
 
     - name: Build src
       run: |
@@ -270,6 +294,14 @@ jobs:
       with:
         workspaces: './capi -> target'
       if: steps.changed-files.outputs.modified_files
+
+    - name: Set linker
+      run: |
+        cd capi
+        mkdir .cargo
+        touch .cargo/config
+        echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
+        echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config
 
     - name: Build src
       run: |
