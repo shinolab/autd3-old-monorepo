@@ -1,18 +1,19 @@
 # 15.0.0
 
 - Update firmware to v3.0.1
-- `Geometry` is now hierarchical. `Geometry` is a container of `Device`, and `Device` is a container of `Transducer`.
+- `Geometry` is now hierarchical; `Geometry` is a container of `Device`, and `Device` is a container of `Transducer`.
 - Remove `autd3-gain-holo::Backend`, add `autd3-gain-holo::LinAlgBackend` instead
 - Add `autd3-backend-arrayfire`
 - Add `LightweightTwinCATAUTDServer`
 - Rename `autd3-traits` to `autd3-derive`
 - Rename `autd3-link-monitor` to `autd3-link-visualizer`
+- Rename `gain::Grouped` to `gain::Group`, and improve performance
 - Add C# documentation
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
 - Fix [#135](https://github.com/shinolab/autd3/issues/135): Compile error of 'autd3-backend-cuda v14.2.2'
 - Fix [#137](https://github.com/shinolab/autd3/issues/137): ninja is needed when build cpp examples on Windows
 - Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found
-- Rename `gain::Grouped` to `gain::Group`, and improve performance
+- Fix [#141](https://github.com/shinolab/autd3/issues/141): cannot compile with native arm64 linux machine
 
 # 14.2.2
 
