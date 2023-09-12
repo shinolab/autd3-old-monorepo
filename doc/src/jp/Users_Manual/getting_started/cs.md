@@ -5,7 +5,7 @@
 ```shell
 dotnet new console --name autd3-sample
 cd autd3-sample
-dotnet add package AUTD3Sharp --version 14.2.2
+dotnet add package AUTD3Sharp --version 15.0.0
 ```
 
 次に, `Program.cs`を以下のようにする.
