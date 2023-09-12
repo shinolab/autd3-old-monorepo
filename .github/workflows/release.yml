@@ -713,6 +713,10 @@ jobs:
           cd SOEMAUTDServer
           cargo build --release --target=x86_64-apple-darwin
           cargo build --release --target=aarch64-apple-darwin
+          cd ..
+          cd LightweightTwinCATAUTDServer
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
       - name: build
         if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
         run: |
@@ -721,6 +725,9 @@ jobs:
           cargo build --release
           cd ..
           cd SOEMAUTDServer
+          cargo build --release
+          cd ..
+          cd LightweightTwinCATAUTDServer
           cargo build --release
       - name: Load Release ID File from release job
         uses: actions/download-artifact@v1
