@@ -524,7 +524,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         cd python
-        cp -f setup.cfg.linux-x86_64 setup.cfg
+        cp setup.cfg.linux-x86_64 setup.cfg -Force
         python -m build -w
     - name: Build whl
       if: matrix.os == 'macos-latest'
