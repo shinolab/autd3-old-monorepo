@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/07/2023
+ * Last Modified: 09/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -127,6 +127,7 @@ impl PythonGenerator {
                 Type::Custom(ref s) => format!("ctypes.POINTER({})", s),
             },
             2 => match arg.ty {
+                Type::Int32 => "ctypes.POINTER(ctypes.POINTER(ctypes.c_int32))".to_owned(),
                 Type::Float32 => "ctypes.POINTER(ctypes.POINTER(ctypes.c_float))".to_owned(),
                 Type::Float64 => "ctypes.POINTER(ctypes.POINTER(ctypes.c_double))".to_owned(),
                 Type::Custom(ref s) => format!("ctypes.POINTER(ctypes.POINTER({}))", s),
@@ -178,7 +179,11 @@ impl PythonGenerator {
                 Type::VoidPtr => "ctypes.Array[ctypes.c_void_p]",
                 Type::Custom(_) => "ctypes.Array",
             },
-            2 => "Any",
+            2 => match arg.ty {
+                Type::Int32 => "ctypes.Array[ctypes.Array[ctypes.c_int32]]",
+                Type::Custom(_) => "ctypes.Array",
+                _ => "Any",
+            },
             _ => {
                 panic!("triple or more pointer is not supported")
             }
@@ -192,22 +197,22 @@ impl PythonGenerator {
 
 impl Generator for PythonGenerator {
     fn register_const(mut self, constants: Vec<Const>) -> Self {
-        self.constants = constants;
+        self.constants.extend(constants);
         self
     }
 
     fn register_enum(mut self, enums: Vec<Enum>) -> Self {
-        self.enums = enums;
+        self.enums.extend(enums);
         self
     }
 
     fn register_func(mut self, functions: Vec<Function>) -> Self {
-        self.functions = functions;
+        self.functions.extend(functions);
         self
     }
 
     fn register_struct(mut self, e: Vec<crate::parse::Struct>) -> Self {
-        self.structs = e;
+        self.structs.extend(e);
         self
     }
 

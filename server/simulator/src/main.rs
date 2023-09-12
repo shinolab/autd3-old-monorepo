@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
     path::Path,
 };
 
-use autd3_simulator::{Simulator, ViewerSettings};
+use simulator::{Simulator, ViewerSettings};
 
 use clap::{Args, Parser, Subcommand};
 
@@ -89,7 +89,7 @@ fn main() -> anyhow::Result<()> {
 
     match &cli.command {
         Commands::List => {
-            autd3_simulator::available_gpus()?
+            simulator::available_gpus()?
                 .iter()
                 .for_each(|(idx, name, ty)| {
                     println!("\t{}: {} (type {:?})", idx, name, ty);
@@ -153,7 +153,7 @@ fn main() -> anyhow::Result<()> {
                     fs::remove_file(&settings_path).unwrap();
                 }
 
-                std::fs::create_dir_all(&settings_path.parent().unwrap())?;
+                std::fs::create_dir_all(settings_path.parent().unwrap())?;
 
                 let mut file = OpenOptions::new()
                     .create_new(true)

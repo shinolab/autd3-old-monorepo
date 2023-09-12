@@ -3,13 +3,15 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/08/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <memory>
 
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
@@ -23,9 +25,9 @@
 
 namespace autd3::internal {
 
-class STM : public Body {
+class STM : public Datagram {
  public:
-  explicit STM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+  explicit STM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
       : _freq(freq), _sampling_freq(sampling_freq), _sampling_freq_div(sampling_freq_div) {}
 
   STM(const STM& obj) = default;
@@ -56,21 +58,19 @@ class STM : public Body {
     return ptr;
   }
 
-  [[nodiscard]] double frequency_from_size(const size_t size) const { return AUTDSTMPropsFrequency(props(), static_cast<uint64_t>(size)); }
+  [[nodiscard]] double frequency_from_size(const size_t size) const { return AUTDSTMPropsFrequency(props(), size); }
 
-  [[nodiscard]] double sampling_frequency_from_size(const size_t size) const {
-    return AUTDSTMPropsSamplingFrequency(props(), static_cast<uint64_t>(size));
-  }
+  [[nodiscard]] double sampling_frequency_from_size(const size_t size) const { return AUTDSTMPropsSamplingFrequency(props(), size); }
 
   [[nodiscard]] uint32_t sampling_frequency_division_from_size(const size_t size) const {
-    return AUTDSTMPropsSamplingFrequencyDivision(props(), static_cast<uint64_t>(size));
+    return AUTDSTMPropsSamplingFrequencyDivision(props(), size);
   }
 
   std::optional<double> _freq;
   std::optional<double> _sampling_freq;
   std::optional<uint32_t> _sampling_freq_div;
-  int16_t _start_idx{-1};
-  int16_t _finish_idx{-1};
+  int32_t _start_idx{-1};
+  int32_t _finish_idx{-1};
 };
 
 /**
@@ -110,8 +110,8 @@ class FocusSTM final : public STM {
 
   static FocusSTM with_sampling_frequency_division(const uint32_t div) { return FocusSTM(std::nullopt, std::nullopt, div); }
 
-  [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry&) const override {
-    return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), static_cast<uint64_t>(_shifts.size()));
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
+    return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
   }
 
   /**
@@ -121,7 +121,19 @@ class FocusSTM final : public STM {
    * @param duty_shift Duty shift. see [ControlPoint] for details.
    * @return FocusSTM
    */
-  FocusSTM add_focus(Vector3 point, const uint8_t duty_shift = 0) {
+  void add_focus(Vector3 point, const uint8_t duty_shift = 0) & {
+    _points.emplace_back(std::move(point));
+    _shifts.emplace_back(duty_shift);
+  }
+
+  /**
+   * @brief Add focus point
+   *
+   * @param point Focus point
+   * @param duty_shift Duty shift. see [ControlPoint] for details.
+   * @return FocusSTM
+   */
+  [[nodiscard]] FocusSTM&& add_focus(Vector3 point, const uint8_t duty_shift = 0) && {
     _points.emplace_back(std::move(point));
     _shifts.emplace_back(duty_shift);
     return std::move(*this);
@@ -133,7 +145,18 @@ class FocusSTM final : public STM {
    * @param p control point
    * @return FocusSTM
    */
-  FocusSTM add_focus(ControlPoint p) {
+  void add_focus(ControlPoint p) & {
+    _points.emplace_back(std::move(p.point));
+    _shifts.emplace_back(p.duty_shift);
+  }
+
+  /**
+   * @brief Add ControlPoint
+   *
+   * @param p control point
+   * @return FocusSTM
+   */
+  [[nodiscard]] FocusSTM&& add_focus(ControlPoint p) && {
     _points.emplace_back(std::move(p.point));
     _shifts.emplace_back(p.duty_shift);
     return std::move(*this);
@@ -147,7 +170,21 @@ class FocusSTM final : public STM {
    * @param iter iterator of focus points
    */
   template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>, FocusSTM> {
+  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>>& {
+    for (Vector3 e : iter) {
+      _points.emplace_back(std::move(e));
+      _shifts.emplace_back(0);
+    }
+  }
+
+  /**
+   * @brief Add foci
+   *
+   * @tparam R
+   * @param iter iterator of focus points
+   */
+  template <std::ranges::viewable_range R>
+  [[nodiscard]] auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>, FocusSTM&&>&& {
     for (Vector3 e : iter) {
       _points.emplace_back(std::move(e));
       _shifts.emplace_back(0);
@@ -162,7 +199,21 @@ class FocusSTM final : public STM {
    * @param iter iterator of [ControlPoint]s
    */
   template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>, FocusSTM> {
+  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>>& {
+    for (ControlPoint e : iter) {
+      _points.emplace_back(std::move(e.point));
+      _shifts.emplace_back(e.duty_shift);
+    }
+  }
+
+  /**
+   * @brief Add foci
+   *
+   * @tparam R
+   * @param iter iterator of [ControlPoint]s
+   */
+  template <std::ranges::viewable_range R>
+  [[nodiscard]] auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>, FocusSTM&&>&& {
     for (ControlPoint e : iter) {
       _points.emplace_back(std::move(e.point));
       _shifts.emplace_back(e.duty_shift);
@@ -177,18 +228,25 @@ class FocusSTM final : public STM {
 
   [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_points.size()); }
 
-  FocusSTM with_start_idx(const std::optional<uint16_t> start_idx) {
+  void with_start_idx(const std::optional<uint16_t> start_idx) & {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+  }
+
+  [[nodiscard]] FocusSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
     return std::move(*this);
   }
 
-  FocusSTM with_finish_idx(const std::optional<uint16_t> finish_idx) {
+  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+  }
+  [[nodiscard]] FocusSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
   }
 
  private:
-  explicit FocusSTM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+  explicit FocusSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
       : STM(freq, sampling_freq, sampling_freq_div) {}
 
   std::vector<Vector3> _points;
@@ -233,10 +291,12 @@ class GainSTM final : public STM {
    */
   static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
 
-  [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry& geometry) const override {
-    auto ptr = _mode.has_value() ? AUTDGainSTMWithMode(props(), _mode.value()) : AUTDGainSTM(props());
-    for (const auto& gain : _gains) ptr = AUTDGainSTMAddGain(ptr, gain->gain_ptr(geometry));
-    return ptr;
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const override {
+    const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseDutyFull;
+    std::vector<native_methods::GainPtr> gains;
+    gains.reserve(_gains.size());
+    std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
+    return AUTDGainSTM(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 
   /**
@@ -247,7 +307,20 @@ class GainSTM final : public STM {
    * @return GainSTM
    */
   template <typename G>
-  GainSTM add_gain(G&& gain) {
+  void add_gain(G&& gain) & {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
+  }
+
+  /**
+   * @brief Add Gain to the GainSTM
+   *
+   * @tparam G Gain
+   * @param gain gain
+   * @return GainSTM
+   */
+  template <typename G>
+  [[nodiscard]] GainSTM&& add_gain(G&& gain) && {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
     return std::move(*this);
@@ -262,7 +335,21 @@ class GainSTM final : public STM {
    * @return GainSTM
    */
   template <std::ranges::viewable_range R>
-  auto add_gains_from_iter(R&& iter) -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>, GainSTM> {
+  void add_gains_from_iter(R&& iter)->std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>>& {
+    for (auto e : iter)
+      _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
+  }
+
+  /**
+   * @brief Add Gains to the GainSTM
+   *
+   * @tparam G Gain
+   * @param gain gain
+   * @return GainSTM
+   */
+  template <std::ranges::viewable_range R>
+  auto add_gains_from_iter(R&& iter)
+      -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>, GainSTM&&>&& {
     for (auto e : iter)
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
     return std::move(*this);
@@ -275,23 +362,32 @@ class GainSTM final : public STM {
 
   [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_gains.size()); }
 
-  GainSTM with_mode(const native_methods::GainSTMMode mode) {
+  void with_mode(const native_methods::GainSTMMode mode) & { _mode = mode; }
+  [[nodiscard]] GainSTM&& with_mode(const native_methods::GainSTMMode mode) && {
     _mode = mode;
     return std::move(*this);
   }
 
-  GainSTM with_start_idx(const std::optional<uint16_t> start_idx) {
+  void with_start_idx(const std::optional<uint16_t> start_idx) & {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+  }
+
+  [[nodiscard]] GainSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
     return std::move(*this);
   }
 
-  GainSTM with_finish_idx(const std::optional<uint16_t> finish_idx) {
+  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+  }
+
+  [[nodiscard]] GainSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
   }
 
  private:
-  explicit GainSTM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+  explicit GainSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
       : STM(freq, sampling_freq, sampling_freq_div) {}
 
   std::vector<std::shared_ptr<Gain>> _gains;

@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from typing import Optional
+from typing import Iterable, Optional, List
 import ctypes
 
 from .constraint import AmplitudeConstraint
@@ -22,17 +22,28 @@ from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Geometry
 
-from .holo import Holo
+
+from pyautd3.gain.gain import IGain
 
 
-class Greedy(Holo):
+class Greedy(IGain):
+    _foci: List[float]
+    _amps: List[float]
     _div: Optional[int]
     _constraint: Optional[AmplitudeConstraint]
 
     def __init__(self):
-        super().__init__(None)
+        self._foci = []
+        self._amps = []
         self._div = None
         self._constraint = None
+
+    def add_focus(self, focus: np.ndarray, amp: float) -> "Greedy":
+        self._foci.append(focus[0])
+        self._foci.append(focus[1])
+        self._foci.append(focus[2])
+        self._amps.append(amp)
+        return self
 
     def with_phase_div(self, div: int) -> "Greedy":
         self._div = div

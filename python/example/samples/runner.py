@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Stop, FirmwareInfo
 
-from . import focus, bessel, holo, custom, stm_gain, stm_focus, grouped
+from . import focus, bessel, holo, custom, stm_gain, stm_focus, group
 
 
 def run(autd: Controller):
@@ -24,22 +24,13 @@ def run(autd: Controller):
         (stm_focus.stm_focus, "FocusSTM (Hardware STM) Sample"),
         (stm_gain.stm_gain, "GainSTM (Hardware STM with arbitrary Gain) Sample"),
         (custom.custom, "Custom Focus Sample"),
+        (group.group, "Group Sample"),
     ]
 
-    if autd.geometry.num_devices == 2:
-        samples.append((grouped.grouped, "Grouped Sample"))
-
-    firm_info_list = autd.firmware_info_list()
-    if not all([firm.is_valid for firm in firm_info_list]):
-        print("\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m")
-    if not all([firm.is_supported for firm in firm_info_list]):
-        print(
-            f"\033[93mWARN: You are using old firmware. Please consider updating to {FirmwareInfo.latest_version()}.\033[0m"
-        )
     print(
         "========================================= Firmware information ==========================================="
     )
-    print("\n".join([str(firm) for firm in firm_info_list]))
+    print("\n".join([str(firm) for firm in autd.firmware_info_list()]))
     print(
         "=========================================================================================================="
     )

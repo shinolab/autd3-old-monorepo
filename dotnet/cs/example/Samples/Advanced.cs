@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ public class AdvancedTest
 {
     private class UniformGain : Gain
     {
-        public override Drive[] Calc(Geometry geometry)
+        public override Dictionary<int, Drive[]> Calc(Geometry geometry)
         {
-            return Transform(geometry, _ => new Drive{Phase = 0.0, Amp = 1.0});
+            return Transform(geometry, (_, _) => new Drive { Phase = 0.0, Amp = 1.0 });
         }
     }
 
@@ -46,7 +46,7 @@ public class AdvancedTest
 
     public static void Test(Controller autd)
     {
-        var config = SilencerConfig.None();
+        var config = Silencer.Disable();
         autd.Send(config);
 
         var g = new UniformGain();

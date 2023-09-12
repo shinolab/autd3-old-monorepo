@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/07/2023
+ * Last Modified: 08/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -183,8 +183,13 @@ impl CSharpGenerator {
             },
             2 => match arg.ty {
                 Type::Custom(ref s) => match arg.inout {
-                    InOut::In => unimplemented!(),
+                    InOut::In => format!("{}[][]?", s),
                     InOut::Out => format!("out {}[]", s),
+                    InOut::InOut => unimplemented!(),
+                },
+                Type::Int32 => match arg.inout {
+                    InOut::In => "int[][]?".to_owned(),
+                    InOut::Out => unimplemented!(),
                     InOut::InOut => unimplemented!(),
                 },
                 Type::Float32 => match arg.inout {
@@ -212,22 +217,22 @@ impl CSharpGenerator {
 
 impl Generator for CSharpGenerator {
     fn register_const(mut self, constants: Vec<Const>) -> Self {
-        self.constants = constants;
+        self.constants.extend(constants);
         self
     }
 
     fn register_enum(mut self, enums: Vec<Enum>) -> Self {
-        self.enums = enums;
+        self.enums.extend(enums);
         self
     }
 
     fn register_func(mut self, functions: Vec<Function>) -> Self {
-        self.functions = functions;
+        self.functions.extend(functions);
         self
     }
 
     fn register_struct(mut self, e: Vec<Struct>) -> Self {
-        self.structs = e;
+        self.structs.extend(e);
         self
     }
 

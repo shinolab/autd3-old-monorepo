@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use tonic::{Request, Response, Status};
 
 #[doc(hidden)]
 pub struct LightweightServer<
-    L: autd3_core::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+    L: autd3::driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
     F: Fn() -> L + Send + Sync + 'static,
 > {
     autd: RwLock<Option<autd3::Controller<autd3::prelude::LegacyTransducer, L>>>,
@@ -27,11 +27,11 @@ pub struct LightweightServer<
 }
 
 impl<
-        L: autd3_core::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+        L: autd3::driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
         F: Fn() -> L + Send + Sync + 'static,
     > LightweightServer<L, F>
 {
-    pub fn new(f: F) -> Self {
+    pub const fn new(f: F) -> Self {
         LightweightServer {
             autd: RwLock::new(None),
             link: f,
@@ -80,7 +80,7 @@ impl<
         autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
         msg: &SilencerConfig,
     ) -> Result<bool, AUTDProtoBufError> {
-        Ok(autd.send(autd3::prelude::SilencerConfig::from_msg(msg))?)
+        Ok(autd.send(autd3::prelude::Silencer::from_msg(msg))?)
     }
 
     fn send_gain(
@@ -95,7 +95,6 @@ impl<
             Some(gain::Gain::TransTest(msg)) => {
                 autd.send(autd3::prelude::TransducerTest::from_msg(msg))
             }
-            Some(gain::Gain::Grouped(msg)) => autd.send(autd3::prelude::Grouped::from_msg(msg)),
             Some(gain::Gain::Sdp(msg)) => autd.send(autd3_gain_holo::SDP::from_msg(msg)),
             Some(gain::Gain::Evp(msg)) => autd.send(autd3_gain_holo::EVP::from_msg(msg)),
             Some(gain::Gain::Naive(msg)) => autd.send(autd3_gain_holo::Naive::from_msg(msg)),
@@ -130,7 +129,7 @@ impl<
 
 #[tonic::async_trait]
 impl<
-        L: autd3_core::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+        L: autd3::driver::link::Link<autd3::driver::geometry::LegacyTransducer> + Sync + 'static,
         F: Fn() -> L + Send + Sync + 'static,
     > ecat_light_server::EcatLight for LightweightServer<L, F>
 {
@@ -149,22 +148,18 @@ impl<
                 }
             }
         }
-        *self.autd.write().unwrap() =
-            match Vec::<autd3::prelude::AUTD3>::from_msg(&req.into_inner())
-                .iter()
-                .fold(autd3::prelude::Controller::builder(), |acc, &dev| {
-                    acc.add_device(dev)
-                })
-                .open_with((self.link)())
-            {
-                Ok(autd) => Some(autd),
-                Err(e) => {
-                    return Ok(Response::new(GeometryLightResponse {
-                        success: false,
-                        msg: format!("{}", e),
-                    }))
-                }
-            };
+        *self.autd.write().unwrap() = match autd3::Controller::open_impl(
+            autd3::driver::geometry::Geometry::from_msg(&req.into_inner()),
+            (self.link)(),
+        ) {
+            Ok(autd) => Some(autd),
+            Err(e) => {
+                return Ok(Response::new(GeometryLightResponse {
+                    success: false,
+                    msg: format!("{}", e),
+                }))
+            }
+        };
 
         Ok(Response::new(GeometryLightResponse {
             success: true,
@@ -214,7 +209,10 @@ impl<
         req: Request<ForceFanRequest>,
     ) -> Result<Response<ForceFanResponse>, Status> {
         if let Some(autd) = self.autd.write().unwrap().as_mut() {
-            autd.force_fan(req.into_inner().value);
+            let value = req.into_inner().value;
+            autd.geometry_mut()
+                .iter_mut()
+                .for_each(|dev| dev.force_fan = value);
             return Ok(Response::new(ForceFanResponse {
                 success: false,
                 msg: String::new(),
@@ -232,7 +230,10 @@ impl<
         req: Request<ReadsFpgaInfoRequest>,
     ) -> Result<Response<ReadsFpgaInfoResponse>, Status> {
         if let Some(autd) = self.autd.write().unwrap().as_mut() {
-            autd.reads_fpga_info(req.into_inner().value);
+            let value = req.into_inner().value;
+            autd.geometry_mut()
+                .iter_mut()
+                .for_each(|dev| dev.reads_fpga_info = value);
             return Ok(Response::new(ReadsFpgaInfoResponse {
                 success: false,
                 msg: String::new(),

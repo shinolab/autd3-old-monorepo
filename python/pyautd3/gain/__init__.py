@@ -18,10 +18,9 @@ from .primitive import (
     Plane,
     Gain,
     Null,
-    Grouped,
+    Group,
     TransTest,
     Drive,
-    Cache,
 )
 
 
@@ -31,8 +30,7 @@ __all__ = [
     "Plane",
     "Gain",
     "Null",
-    "Grouped",
+    "Group",
     "TransTest",
     "Drive",
-    "Cache",
 ]

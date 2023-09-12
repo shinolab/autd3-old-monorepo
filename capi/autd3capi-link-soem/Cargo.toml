@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-soem"
-version = "14.2.2"
+version = "15.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,8 +8,8 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-autd3capi-def = { path = "../autd3capi-def", version = "14.2.2" }
-autd3-link-soem = { path = "../../src/autd3-link-soem", features = ["local", "remote"], version = "14.2.2" }
+autd3capi-def = { path = "../autd3capi-def" }
+autd3-link-soem = { path = "../../src/autd3-link-soem", features = ["local", "remote"] }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }

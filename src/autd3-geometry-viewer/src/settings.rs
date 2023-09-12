@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/07/2023
+ * Last Modified: 28/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,11 +62,11 @@ impl Settings {
         }
     }
 
-    pub(crate) fn camera_pos(&self) -> Vector3 {
+    pub(crate) const fn camera_pos(&self) -> Vector3 {
         Vector3::new(self.camera_pos_x, self.camera_pos_y, self.camera_pos_z)
     }
 
-    pub(crate) fn camera_rot(&self) -> Vector3 {
+    pub(crate) const fn camera_rot(&self) -> Vector3 {
         Vector3::new(self.camera_rot_x, self.camera_rot_y, self.camera_rot_z)
     }
 }

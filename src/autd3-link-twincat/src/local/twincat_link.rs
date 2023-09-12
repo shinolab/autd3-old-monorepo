@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,11 +17,11 @@ use std::{ffi::c_void, time::Duration};
 
 use lib::Library;
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
-    RxDatagram, RxMessage, TxDatagram,
 };
 
 #[repr(C)]
@@ -111,7 +111,7 @@ impl TwinCAT {
 }
 
 impl<T: Transducer> Link<T> for TwinCAT {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         unsafe {
             let port = self.port_open()();
             if port == 0 {
@@ -145,8 +145,8 @@ impl<T: Transducer> Link<T> for TwinCAT {
                 &self.send_addr as *const _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE,
-                tx.transmitting_size() as u32,
-                tx.data().as_ptr() as *const c_void,
+                tx.all_data().len() as u32,
+                tx.all_data().as_ptr() as *const c_void,
             );
 
             if n_err > 0 {

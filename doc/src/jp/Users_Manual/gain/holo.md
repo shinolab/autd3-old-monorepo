@@ -14,57 +14,57 @@
 また, 各手法は計算Backendを選べるようになっている.
 SDKには以下の`Backend`が用意されている
 
-* `NalgebraBackend` (`DefaultBackend`) - [Nalgebra](hthttps://nalgebra.org/)を使用
+* `NalgebraBackend` - [Nalgebra](hthttps://nalgebra.org/)を使用
 * `CUDABackend` - CUDAを使用, GPUで実行
+* `ArrayFireBackend` - [ArrayFire](https://arrayfire.com/)を使用
 
 ```rust,edition2021
 # extern crate autd3;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{NalgebraBackend, GSPAT};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
 
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
 # let x2 = 0.;
 # let y2 = 0.;
 # let z2 = 0.;
-let backend = NalgebraBackend::new();
+let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
       .add_focus(Vector3::new(x1, y1, z1), 1.)
       .add_focus(Vector3::new(x2, y2, z2), 1.);
+# Ok(())
 # }
 ```
 
 ```cpp
 #include "autd3/gain/holo.hpp"
 
-const auto backend = std::make_shared<autd3::gain::holo::DefaultBackend>();
+const auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
 
-autd3::gain::holo::GSPAT g(backend);
-g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
-g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
+auto g = autd3::gain::holo::GSPAT(backend)
+            .add_focus(autd3::Vector3(x1, y1, z1), 1.0)
+            .add_focus(autd3::Vector3(x2, y2, z2), 1.0);
 ```
 
 ```cs
-var backend = new BackendDefault();
+var backend = new NalgebraBackend();
 
-var g = new GSPAT(backend);
-g.AddFocus(new Vector3d(x1, y1, z1), 1.0);
-g.AddFocus(new Vector3d(x2, y2, z2), 1.0);
+var g = new GSPAT(backend)
+            .AddFocus(new Vector3d(x1, y1, z1), 1.0)
+            .AddFocus(new Vector3d(x2, y2, z2), 1.0);
 ```
 
 ```python
-from pyautd3.gain.holo import GSPAT, DefaultBackend
+from pyautd3.gain.holo import GSPAT, NalgebraBackend
 
-backend = DefaultBackend()
+backend = NalgebraBackend()
 
-g = GSPAT(backend)
-g.add_focus([x1, y1, z1], 1.0)
-g.add_focus([x2, y2, z2], 1.0)
+g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 ```
 
 各アルゴリズムのコンストラクタの引数は`backend`である.
@@ -84,20 +84,21 @@ g.add_focus([x2, y2, z2], 1.0)
 # extern crate autd3;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{NalgebraBackend, GSPAT, Constraint};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
 # let x2 = 0.;
 # let y2 = 0.;
 # let z2 = 0.;
-let backend = NalgebraBackend::new();
+let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
       .with_constraint(Constraint::Uniform(1.));
+# Ok(())
 # }
 ```
 
@@ -126,19 +127,20 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
     # extern crate autd3;
     # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
-    # use autd3_gain_holo::{NalgebraBackend, GSPAT};
+    # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]
-    # fn main()  {
+    # fn main() -> Result<(), Box<dyn std::error::Error>> {
     # let x1 = 0.;
     # let y1 = 0.;
     # let z1 = 0.;
     # let x2 = 0.;
     # let y2 = 0.;
     # let z2 = 0.;
-    # let backend = NalgebraBackend::new();
+    # let backend = NalgebraBackend::new()?;
     let g = GSPAT::new(backend).with_repeat(100)
     #    .add_focus(Vector3::new(x1, y1, z1), 1.)
     #    .add_focus(Vector3::new(x2, y2, z2), 1.);
+    # Ok(())
     # }
     ```
 

@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -352,6 +352,14 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
 
     check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/SOEMAUTDServer/Cargo.toml"),
+        "ThirdPartyNotice",
+        &license_file_map,
+        &[sdr_rs_dep],
+    )?;
+
+    check(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../server/LightweightTwinCATAUTDServer/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
         &[sdr_rs_dep],

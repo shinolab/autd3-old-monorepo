@@ -4,14 +4,18 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3::core::{error::AUTDInternalError, float, FPGA_CLK_FREQ, MAX_CYCLE};
+use autd3::driver::{
+    defined::float,
+    error::AUTDInternalError,
+    fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+};
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
@@ -25,25 +29,25 @@ pub enum TransMode {
 }
 
 pub struct DynamicTransducer {
-    idx: usize,
+    local_idx: usize,
     pos: Vector3,
     rot: UnitQuaternion,
     cycle: u16,
     mod_delay: u16,
+    amp_filter: float,
+    phase_filter: float,
 }
 
 impl Transducer for DynamicTransducer {
-    type Gain = autd3::core::operation::GainLegacy;
-    type GainSTM = autd3::core::operation::GainSTMLegacy;
-    type Sync = autd3::core::operation::SyncLegacy;
-
-    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+    fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
-            idx,
+            local_idx,
             pos,
             rot,
             cycle: 4096,
             mod_delay: 0,
+            amp_filter: 0.,
+            phase_filter: 0.,
         }
     }
 
@@ -64,8 +68,8 @@ impl Transducer for DynamicTransducer {
         &self.rot
     }
 
-    fn idx(&self) -> usize {
-        self.idx
+    fn local_idx(&self) -> usize {
+        self.local_idx
     }
 
     fn frequency(&self) -> float {
@@ -74,6 +78,22 @@ impl Transducer for DynamicTransducer {
 
     fn mod_delay(&self) -> u16 {
         self.mod_delay
+    }
+
+    fn amp_filter(&self) -> float {
+        self.amp_filter
+    }
+
+    fn set_amp_filter(&mut self, value: float) {
+        self.amp_filter = value;
+    }
+
+    fn phase_filter(&self) -> float {
+        self.phase_filter
+    }
+
+    fn set_phase_filter(&mut self, value: float) {
+        self.phase_filter = value;
     }
 
     fn set_mod_delay(&mut self, delay: u16) {

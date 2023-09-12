@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/07/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,6 @@
 #include "tests/focus.hpp"
 #include "tests/focus_stm.hpp"
 #include "tests/gain_stm.hpp"
-#include "tests/group.hpp"
 #include "tests/holo.hpp"
 #include "tests/mod_audio_file.hpp"
 #include "tests/plane.hpp"
@@ -38,17 +37,9 @@ inline int run(autd3::Controller& autd) {
       std::pair(F{plane_test}, "Plane wave Test"),   std::pair(F{mod_audio_file_test}, "Wav and RawPCM modulation Test"),
       std::pair(F{focus_stm}, "FocusSTM Test"),      std::pair(F{gain_stm}, "GainSTM Test"),
       std::pair(F{holo_test}, "Holo Test"),          std::pair(F{advanced_test}, "Custom Gain & Modulation Test"),
-      std::pair(F{flag_test}, "Flag Test"),
-  };
-  if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
+      std::pair(F{flag_test}, "Flag Test")};
 
   const auto firm_infos = autd.firmware_infos();
-
-  if (!std::all_of(firm_infos.begin(), firm_infos.end(), autd3::FirmwareInfo::is_valid))
-    std::cerr << "\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m" << std::endl;
-  if (!std::all_of(firm_infos.begin(), firm_infos.end(), autd3::FirmwareInfo::is_supported))
-    std::cerr << "\033[93mWARN: You are using old firmware. Please consider updating to " << autd3::FirmwareInfo::latest_version() << ".\033[0m"
-              << std::endl;
 
   std::cout << "================================== AUTD3 firmware information ==================================" << std::endl;
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));

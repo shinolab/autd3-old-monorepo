@@ -9,9 +9,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RemoveTwinCAT", "RemoveTwin
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Samples", "Samples\Samples.fsproj", "{1C804429-18F0-447B-9B14-B25FE6C5A5CC}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SimulatorClient", "SimulatorClient\SimulatorClient.fsproj", "{B78BA7AC-6E65-49F8-B7FD-1AE5CD122BFB}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SimulatorServer", "SimulatorServer\SimulatorServer.fsproj", "{40A1D800-4DFB-455E-A76F-1A904DB95B48}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Simulator", "Simulator\Simulator.fsproj", "{B78BA7AC-6E65-49F8-B7FD-1AE5CD122BFB}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SOEM", "SOEM\SOEM.fsproj", "{488BCB33-87B7-40B6-9444-6D5362118C57}"
 EndProject

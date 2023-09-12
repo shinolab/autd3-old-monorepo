@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 06/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,37 +17,35 @@ use std::{
     time::Duration,
 };
 
-use crate::core::{
-    error::AUTDInternalError, link::Link, CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR,
-    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
-    MSG_RD_FPGA_VERSION_MINOR,
+use autd3_driver::{
+    cpu::{RxDatagram, TxDatagram},
+    error::AUTDInternalError,
+    geometry::{Device, Transducer},
+    link::Link,
 };
-
-use autd3_core::geometry::{Geometry, Transducer};
 use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
 /// Link to logging
-pub struct LogImpl<T: Transducer, L: Link<T>> {
+pub struct Log<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
-    synchronized: bool,
     _trans: PhantomData<T>,
 }
 
-pub trait Log<T: Transducer, L: Link<T>> {
+pub trait IntoLog<T: Transducer, L: Link<T>> {
     /// enable logger
-    fn with_log(self) -> LogImpl<T, L>;
+    fn with_log(self) -> Log<T, L>;
 }
 
-impl<T: Transducer, L: Link<T>> Log<T, L> for L {
-    fn with_log(self) -> LogImpl<T, L> {
-        LogImpl::new(self)
+impl<T: Transducer, L: Link<T>> IntoLog<T, L> for L {
+    fn with_log(self) -> Log<T, L> {
+        Log::new(self)
     }
 }
 
-impl<T: Transducer, L: Link<T>> Deref for LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> Deref for Log<T, L> {
     type Target = L;
 
     fn deref(&self) -> &Self::Target {
@@ -55,20 +53,19 @@ impl<T: Transducer, L: Link<T>> Deref for LogImpl<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> DerefMut for LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> DerefMut for Log<T, L> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.link
     }
 }
 
-impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
+impl<T: Transducer, L: Link<T>> Log<T, L> {
     fn new(link: L) -> Self {
-        let logger = crate::core::link::get_logger();
+        let logger = autd3_driver::logger::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
         Self {
             link,
             logger,
-            synchronized: false,
             _trans: PhantomData,
         }
     }
@@ -87,8 +84,8 @@ impl<T: Transducer, L: Link<T>> LogImpl<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
+    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
         if self.is_open() {
@@ -96,7 +93,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return Ok(());
         }
 
-        let res = self.link.open(geometry);
+        let res = self.link.open(devices);
         if res.is_err() {
             error!(logger: self.logger, "Failed to open link");
             return res;
@@ -112,8 +109,6 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             warn!(logger: self.logger, "Log link is already closed.");
             return Ok(());
         }
-
-        self.synchronized = false;
 
         let res = self.link.close();
         if res.is_err() {
@@ -132,24 +127,6 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
             return Ok(false);
         }
 
-        match tx.header().msg_id {
-            MSG_CLEAR
-            | MSG_RD_CPU_VERSION
-            | MSG_RD_CPU_VERSION_MINOR
-            | MSG_RD_FPGA_VERSION
-            | MSG_RD_FPGA_VERSION_MINOR
-            | MSG_RD_FPGA_FUNCTION => {}
-            _ => {
-                if !tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_EN_N)
-                    && tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC)
-                {
-                    self.synchronized = true;
-                }
-                if !self.synchronized {
-                    warn!(logger: self.logger, "Devices are not not synchronized");
-                }
-            }
-        }
         if !self.link.send(tx)? {
             error!(logger: self.logger, "Failed to send data");
             return Ok(false);
@@ -184,7 +161,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for LogImpl<T, L> {
         if timeout.is_zero() {
             return self.receive(rx);
         }
-        if !self.wait_msg_processed(tx.header().msg_id, rx, timeout)? {
+        if !self.wait_msg_processed(tx, rx, timeout)? {
             error!(logger: self.logger, "Failed to confirm that the data was processed");
             return Ok(false);
         }

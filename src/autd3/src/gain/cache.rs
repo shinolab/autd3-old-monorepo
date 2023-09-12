@@ -4,116 +4,149 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
-use autd3_traits::Gain;
+use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
-use std::ops::{Deref, DerefMut};
+use std::{cell::UnsafeCell, collections::HashMap};
 
 /// Gain to cache the result of calculation
-#[derive(Gain)]
-pub struct CacheImpl {
-    cache: Vec<Drive>,
+pub struct Cache<T: Transducer, G: Gain<T>> {
+    gain: G,
+    cache: UnsafeCell<HashMap<usize, Vec<Drive>>>,
+    _phantom: std::marker::PhantomData<T>,
 }
 
-pub trait Cache<T: Transducer, G: Gain<T>> {
+pub trait IntoCache<T: Transducer, G: Gain<T>> {
     /// Cache the result of calculation
-    fn with_cache(self, geometry: &Geometry<T>) -> Result<CacheImpl, AUTDInternalError>;
+    fn with_cache(self) -> Cache<T, G>;
 }
 
-impl<T: Transducer, G: Gain<T>> Cache<T, G> for G {
-    fn with_cache(self, geometry: &Geometry<T>) -> Result<CacheImpl, AUTDInternalError> {
-        CacheImpl::new(self, geometry)
+impl<T: Transducer, G: Gain<T>> IntoCache<T, G> for G {
+    fn with_cache(self) -> Cache<T, G> {
+        Cache::new(self)
     }
 }
 
-impl Clone for CacheImpl {
+impl<T: Transducer, G: Gain<T> + Clone> Clone for Cache<T, G> {
     fn clone(&self) -> Self {
         Self {
-            cache: self.cache.clone(),
+            gain: self.gain.clone(),
+            cache: unsafe { UnsafeCell::new(self.cache.get().as_ref().unwrap().clone()) },
+            _phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl CacheImpl {
+impl<T: Transducer, G: Gain<T>> Cache<T, G> {
     /// constructor
-    fn new<T: Transducer, G: Gain<T>>(
-        gain: G,
-        geometry: &Geometry<T>,
-    ) -> Result<Self, AUTDInternalError> {
-        Ok(Self {
-            cache: gain.calc(geometry)?,
-        })
+    fn new(gain: G) -> Self {
+        Self {
+            gain,
+            cache: UnsafeCell::new(Default::default()),
+            _phantom: std::marker::PhantomData,
+        }
+    }
+
+    pub fn init(&self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        unsafe {
+            if self.cache.get().as_ref().unwrap().len() != geometry.devices().count()
+                || geometry
+                    .devices()
+                    .any(|dev| !self.cache.get().as_ref().unwrap().contains_key(&dev.idx()))
+            {
+                self.gain
+                    .calc(geometry, GainFilter::All)?
+                    .iter()
+                    .for_each(|(k, v)| {
+                        self.cache.get().as_mut().unwrap().insert(*k, v.clone());
+                    });
+            }
+        }
+        Ok(())
     }
 
     /// get cached drives
-    pub fn drives(&self) -> &[Drive] {
-        &self.cache
+    pub fn drives(&self) -> &HashMap<usize, Vec<Drive>> {
+        unsafe { self.cache.get().as_ref().unwrap() }
     }
 
     /// get cached drives mutably
-    pub fn drives_mut(&mut self) -> &mut [Drive] {
-        &mut self.cache
+    pub fn drives_mut(&mut self) -> &mut HashMap<usize, Vec<Drive>> {
+        self.cache.get_mut()
     }
 }
 
-impl<T: Transducer> Gain<T> for CacheImpl {
-    fn calc(&self, _geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(self.cache.clone())
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::Datagram<T>
+    for Cache<T, G>
+where
+    autd3_driver::operation::GainOp<T, Self>: autd3_driver::operation::Operation<T>,
+{
+    type O1 = autd3_driver::operation::GainOp<T, Self>;
+    type O2 = autd3_driver::operation::NullOp;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
+        Ok((Self::O1::new(self), Self::O2::default()))
     }
 }
 
-impl Deref for CacheImpl {
-    type Target = [Drive];
-
-    fn deref(&self) -> &Self::Target {
-        &self.cache
+impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::GainAsAny
+    for Cache<T, G>
+{
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 
-impl DerefMut for CacheImpl {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.cache
+impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for Cache<T, G> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        _filter: GainFilter,
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        self.init(geometry)?;
+        Ok(unsafe { self.cache.get().as_ref().unwrap().clone() })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use autd3_core::autd3_device::AUTD3;
-    use autd3_core::geometry::LegacyTransducer;
+    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
 
     use super::*;
 
-    use crate::prelude::Plane;
-    use crate::tests::GeometryBuilder;
+    use crate::{autd3_device::AUTD3, prelude::Plane};
 
     #[test]
     fn test_cache() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
-            .unwrap();
+        let geometry: Geometry<LegacyTransducer> =
+            Geometry::new(vec![
+                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
+            ]);
 
-        let mut gain = Plane::new(Vector3::zeros()).with_cache(&geometry).unwrap();
+        let mut gain = Plane::new(Vector3::zeros()).with_cache();
 
-        for drive in gain.calc(&geometry).unwrap() {
+        let d = gain.calc(&geometry, GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
             assert_eq!(drive.amp, 1.0);
-        }
+        });
 
-        for drive in gain.iter_mut() {
+        let d = gain.drives_mut();
+        d.get_mut(&0).unwrap().iter_mut().for_each(|drive| {
             drive.phase = 1.0;
-        }
+            drive.amp = 0.5;
+        });
 
-        for drive in gain.calc(&geometry).unwrap() {
+        let d = gain.calc(&geometry, GainFilter::All).unwrap();
+        d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 1.0);
-            assert_eq!(drive.amp, 1.0);
-        }
+            assert_eq!(drive.amp, 0.5);
+        });
     }
 }

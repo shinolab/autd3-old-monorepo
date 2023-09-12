@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ class Simulator : public internal::Link {
   Simulator with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
     _ptr = AUTDLinkSimulatorTimeout(_ptr, static_cast<uint64_t>(ns));
-    return std::move(*this);
+    return *this;
   }
 };
 

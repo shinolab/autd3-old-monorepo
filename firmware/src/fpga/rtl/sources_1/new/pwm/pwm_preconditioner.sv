@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 11/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,16 +24,19 @@ module pwm_preconditioner #(
     input var [WIDTH-1:0] PHASE,
     output var [WIDTH-1:0] RISE[DEPTH],
     output var [WIDTH-1:0] FALL[DEPTH],
+    output var FULL_WIDTH[DEPTH],
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
 
   bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
+  bit full_width[DEPTH];
 
   bit signed [WIDTH+1:0] cycle_buf[6];
   bit [WIDTH-1:0] duty_buf[4], phase_buf;
   bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
+  bit full_width_buf[DEPTH];
 
   bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
   bit signed [WIDTH+1:0] a_duty_r, b_duty_r, s_duty_r;
@@ -52,6 +55,7 @@ module pwm_preconditioner #(
   for (genvar i = 0; i < DEPTH; i++) begin : gen_rise_fall
     assign RISE[i] = rise[i];
     assign FALL[i] = fall[i];
+    assign FULL_WIDTH[i] = full_width[i];
   end
 
   addsub #(
@@ -139,6 +143,9 @@ module pwm_preconditioner #(
         a_duty_r <= {3'b000, duty_buf[0][WIDTH-1:1]};
         b_duty_r <= duty_buf[0][0];
         cnt <= cnt + 1;
+        if (cnt < DEPTH) begin
+          full_width_buf[cnt] <= duty_buf[0] == CYCLE[cnt];
+        end
 
         // step 2
         a_rise <= s_phase;
@@ -214,6 +221,7 @@ module pwm_preconditioner #(
       if (state == DONE) begin
         rise[i] <= rise_buf[i];
         fall[i] <= fall_buf[i];
+        full_width[i] <= full_width_buf[i];
       end
     end
   end

@@ -12,14 +12,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, SilencerConfig
+from pyautd3 import Controller, Silencer
 from pyautd3.stm import FocusSTM
 from pyautd3.modulation import Static
 import numpy as np
 
 
 def stm_focus(autd: Controller):
-    config = SilencerConfig.none()
+    config = Silencer.disable()
     autd.send(config)
 
     m = Static()

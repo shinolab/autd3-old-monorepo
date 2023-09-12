@@ -12,13 +12,12 @@
     <Compile Include="FocusSTMTest.fs" />
     <Compile Include="GainHoloTest.fs" />
     <Compile Include="BesselBeam.fs" />
-    <Compile Include="Group.fs" />
     <Compile Include="FocusTest.fs" />
     <Compile Include="SampleRunner.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AUTD3Sharp" Version="14.2.2" />
+    <PackageReference Include="AUTD3Sharp" Version="15.0.0" />
   </ItemGroup>
 
 </Project>

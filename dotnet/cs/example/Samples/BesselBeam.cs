@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ internal static class BesselBeamTest
 {
     public static void Test(Controller autd)
     {
-        var config = new SilencerConfig();
+        var config = new Silencer();
         autd.Send(config);
 
         var m = new Sine(150); // AM sin 150 Hz

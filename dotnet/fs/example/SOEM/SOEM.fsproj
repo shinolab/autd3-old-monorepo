@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AUTD3Sharp" Version="14.2.2" />
+    <PackageReference Include="AUTD3Sharp" Version="15.0.0" />
   </ItemGroup>
 
   <ItemGroup>

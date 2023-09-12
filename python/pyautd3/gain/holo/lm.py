@@ -13,20 +13,23 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from typing import Optional, List
+from typing import Iterable, Optional, List
 import ctypes
 
-from .backend import Backend, DefaultBackend
-from .constraint import AmplitudeConstraint
-
-from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
-from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Geometry
 
-from .holo import Holo
+from .backend import Backend
+from .constraint import AmplitudeConstraint
+
+from pyautd3.native_methods.autd3capi_def import GainPtr
+
+from pyautd3.gain.gain import IGain
 
 
-class LM(Holo):
+class LM(IGain):
+    _foci: List[float]
+    _amps: List[float]
+    _backend: Backend
     _eps1: Optional[float]
     _eps2: Optional[float]
     _tau: Optional[float]
@@ -34,14 +37,23 @@ class LM(Holo):
     _initial: List[float]
     _constraint: Optional[AmplitudeConstraint]
 
-    def __init__(self, backend: Backend = DefaultBackend()):
-        super().__init__(backend)
+    def __init__(self, backend: Backend):
+        self._foci = []
+        self._amps = []
+        self._backend = backend
         self._eps1 = None
         self._eps2 = None
         self._tau = None
         self._kmax = None
         self._initial = []
         self._constraint = None
+
+    def add_focus(self, focus: np.ndarray, amp: float) -> "LM":
+        self._foci.append(focus[0])
+        self._foci.append(focus[1])
+        self._foci.append(focus[2])
+        self._amps.append(amp)
+        return self
 
     def with_eps1(self, eps1: float) -> "LM":
         self._eps1 = eps1
@@ -71,22 +83,20 @@ class LM(Holo):
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
-        ptr = GainHolo().gain_holo_lm(self._backend.ptr(), foci_, amps, size)
+        ptr = self._backend.lm(foci_, amps, size)
         if self._eps1 is not None:
-            ptr = GainHolo().gain_holo_lm_with_eps_1(ptr, self._eps1)
+            ptr = self._backend.lm_with_eps1(ptr, self._eps1)
         if self._eps2 is not None:
-            ptr = GainHolo().gain_holo_lm_with_eps_2(ptr, self._eps2)
+            ptr = self._backend.lm_with_eps2(ptr, self._eps2)
         if self._tau is not None:
-            ptr = GainHolo().gain_holo_lm_with_tau(ptr, self._tau)
+            ptr = self._backend.lm_with_tau(ptr, self._tau)
         if self._kmax is not None:
-            ptr = GainHolo().gain_holo_lm_with_k_max(ptr, self._kmax)
+            ptr = self._backend.lm_with_kmax(ptr, self._kmax)
         if len(self._initial) > 0:
             initial_ = np.ctypeslib.as_ctypes(
                 np.array(self._initial).astype(ctypes.c_double)
             )
-            ptr = GainHolo().gain_holo_lm_with_initial(
-                ptr, initial_, len(self._initial)
-            )
+            ptr = self._backend.lm_with_initial(ptr, initial_, len(self._initial))
         if self._constraint is not None:
-            ptr = GainHolo().gain_holo_lm_with_constraint(ptr, self._constraint.ptr())
+            ptr = self._backend.lm_with_constraint(ptr, self._constraint)
         return ptr

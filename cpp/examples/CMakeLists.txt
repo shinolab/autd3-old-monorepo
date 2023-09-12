@@ -63,13 +63,9 @@ add_executable(geometry_viewer geometry_viewer.cpp)
 autd3_target_link_library(geometry_viewer PRIVATE)
 target_link_libraries(geometry_viewer PRIVATE autd3-example)
 
-add_executable(simulator_server simulator_server.cpp)
-autd3_target_link_library(simulator_server PRIVATE)
-target_link_libraries(simulator_server PRIVATE autd3-example)
-
-add_executable(simulator_client simulator_client.cpp)
-autd3_target_link_library(simulator_client PRIVATE)
-target_link_libraries(simulator_client PRIVATE autd3-example)
+add_executable(simulator simulator.cpp)
+autd3_target_link_library(simulator PRIVATE)
+target_link_libraries(simulator PRIVATE autd3-example)
 
 add_executable(debug debug.cpp)
 autd3_target_link_library(debug PRIVATE)

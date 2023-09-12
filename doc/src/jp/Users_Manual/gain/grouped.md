@@ -1,84 +1,23 @@
-# Grouped
+# Group
 
-`Grouped`は複数のデバイスを使用する際に,
-各デバイスで別々の`Gain`を使用するための`Gain`である.
+`Group`は振動子ごとに別々の`Gain`を使用するための`Gain`である.
 
-`Grouped`では, デバイスIDと任意の`Gain`を紐付けて使用する.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-# let nx = 0.;
-# let ny = 0.;
-# let nz = 0.;
-# let theta = 0.;
-# let mut autd = autd3::Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
-# let g1 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-# let g2 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-let g = autd3::gain::Grouped::new().add(0, g1).add(1, g2);
-# autd.send(g);
-# }
-```
-
-```cpp
-auto g = autd3::gain::Grouped();
-g.add(0, g1);
-g.add(1, g2);
-```
-
-```cs
-var g = new Grouped().Add(0, g1).Add(1, g2);
-```
-
-```python
-from pyautd3.gain import Grouped
-
-g = Grouped().add(0, g1).add(1, g2)
-```
-
-上の場合は, デバイス0が`Gain g0`, デバイス1が`Gain g1`を使用する.
-
-または, デバイスをグルーピングすることもできる.
+`Group`では, デバイスと振動子に対してキーを割り当て, その各キーに`Gain`を紐付けて使用する.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-# let nx = 0.;
-# let ny = 0.;
-# let nz = 0.;
-# let theta = 0.;
-# let mut autd = autd3::Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
-# let g1 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-# let g2 = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-let g = autd3::gain::Grouped::new().add_by_group(&[0, 2], g1).add_by_group(&[1, 3], g2);
-# autd.send(g);
+# let gain : autd3::gain::Group<_, LegacyTransducer, _, _> =
+Group::new(|dev, tr: &LegacyTransducer| match tr.local_idx() {
+                0..=100 => Some("null"),
+                101.. => Some("focus"),
+                _ => None,
+            })
+            .set("null", Null::new())
+            .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
 # }
 ```
 
-```cpp
-auto g = autd3::gain::Grouped();
-g.add_by_group({0, 2}, g1);
-g.add_by_group({1, 3}, g2);
-```
-
-```cs
-var g = new Grouped().AddByGroup(new int[]{0, 2}, g1).AddByGroup(new int[]{1, 3}, g2);
-```
-
-```python
-from pyautd3.gain import Grouped
-
-g = Grouped().add_by_group([0, 2], g1).add_by_group([1, 3], g2)
-```
-
-上の場合は, デバイス0と2が`Gain g0`, デバイス1と3が`Gain g1`を使用する.
+上の場合は, ローカルインデックスが$0$から$100$の振動子は`Null`を, それ以外の振動子は`Focus`を出力する.

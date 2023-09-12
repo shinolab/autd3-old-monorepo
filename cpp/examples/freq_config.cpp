@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/07/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,18 +15,15 @@
 
 int main() try {
   // Here we use link::Debug for example, but you can use any other link.
-  auto autd = autd3::Controller::builder()
-                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                  .advanced_mode()
-                  .open_with(autd3::link::Debug());
+  auto autd =
+      autd3::Controller::advanced_builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Debug());
 
-  std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) {
-    tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
-  });
+  for (auto& dev : autd.geometry())
+    for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd.send(autd3::Synchronize());  // You must synchronize after configuring the frequencies.
 
-  autd3::SilencerConfig silencer;
+  autd3::Silencer silencer;
   autd.send(silencer);
 
   autd3::modulation::Sine m(150);

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 08/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 
 #include "autd3.hpp"
@@ -30,24 +31,24 @@ class BurstModulation final : public autd3::Modulation {
   size_t _buf_size;
 };
 
-class UniformGain final : public autd3::Gain {
+class MyUniformGain final : public autd3::Gain {
  public:
-  UniformGain() = default;
+  MyUniformGain() = default;
 
-  std::vector<autd3::Drive> calc(const autd3::Geometry& geometry) const override {
-    return autd3::Gain::transform(geometry, [this](auto&) { return autd3::Drive{0.0, 1.0}; });
+  [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::Drive>> calc(const autd3::Geometry& geometry) const override {
+    return autd3::Gain::transform(geometry, [this](const autd3::Device&, const autd3::Transducer&) { return autd3::Drive{0.0, 1.0}; });
   }
 };
 
 inline void advanced_test(autd3::Controller& autd) {
-  auto config = autd3::SilencerConfig::none();
+  auto config = autd3::Silencer::disable();
   autd.send(config);
 
-  autd.geometry()[0].set_mod_delay(0);
-  autd.geometry()[17].set_mod_delay(1);
+  autd.geometry()[0][0].set_mod_delay(0);
+  autd.geometry()[0][17].set_mod_delay(1);
   autd.send(autd3::ModDelayConfig());
 
-  UniformGain g;
+  MyUniformGain g;
   BurstModulation m;
 
   autd.send(m, g);

@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ mod sdr_rs;
 
 use sdr_rs::fir;
 
-use autd3_core::{error::AUTDInternalError, float, modulation::Modulation};
-use autd3_traits::Modulation;
+use autd3_derive::Modulation;
+use autd3_driver::derive::prelude::*;
 
 /// Modulation to apply FIR filter
 #[derive(Modulation)]
@@ -66,15 +66,6 @@ pub trait FIR<M: Modulation> {
     /// * `f_high` - Higher cutoff frequency
     ///
     fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M>;
-    /// Apply resampler
-    ///
-    /// # Arguments
-    ///
-    /// * `n_taps` - Number of taps
-    /// * `decimate` - Decimate factor
-    /// * `interpolate` - Interpolate factor
-    ///
-    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M>;
 }
 
 impl<M: Modulation> FIR<M> for M {
@@ -121,14 +112,6 @@ impl<M: Modulation> FIR<M> for M {
             m: self,
         }
     }
-
-    fn with_resampler(self, n_taps: usize, decimate: usize, interpolate: usize) -> FIRImpl<M> {
-        FIRImpl {
-            freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::resampler(n_taps, decimate, interpolate),
-            m: self,
-        }
-    }
 }
 
 impl<M: Modulation> Modulation for FIRImpl<M> {
@@ -151,7 +134,7 @@ impl<M: Modulation> Modulation for FIRImpl<M> {
 
 #[cfg(test)]
 mod tests {
-    use autd3_core::PI;
+    use autd3_driver::defined::PI;
 
     use super::*;
 

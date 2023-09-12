@@ -1,10 +1,35 @@
+/*
+ * File: helper.rs
+ * Project: src
+ * Created Date: 03/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 12/09/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+use std::collections::HashMap;
+
+use autd3_driver::{
+    datagram::GainFilter,
+    defined::{Drive, PI},
+    error::AUTDInternalError,
+    geometry::{Geometry, Transducer},
+};
+use nalgebra::ComplexField;
+
+use crate::{Constraint, VectorXc};
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! impl_holo {
     ($backend:tt, $t:ty) => {
         impl<$backend> $t
         where
-            $backend: $crate::Backend,
+            $backend: $crate::LinAlgBackend,
         {
             /// Add focus
             pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
@@ -40,7 +65,7 @@ macro_rules! impl_holo {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &Constraint {
                 &self.constraint
             }
         }
@@ -82,9 +107,62 @@ macro_rules! impl_holo {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &Constraint {
                 &self.constraint
             }
         }
     };
+}
+
+#[allow(clippy::uninit_vec)]
+pub fn generate_result<T: Transducer>(
+    geometry: &Geometry<T>,
+    q: VectorXc,
+    constraint: &Constraint,
+    filter: GainFilter,
+) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+    let max_coefficient = q.camax().abs();
+    let mut idx = 0;
+    match filter {
+        GainFilter::All => Ok(geometry
+            .devices()
+            .map(|dev| {
+                (
+                    dev.idx(),
+                    dev.iter()
+                        .map(|_| {
+                            let phase = q[idx].argument() + PI;
+                            let amp = constraint.convert(q[idx].abs(), max_coefficient);
+                            idx += 1;
+                            Drive { amp, phase }
+                        })
+                        .collect(),
+                )
+            })
+            .collect()),
+        GainFilter::Filter(filter) => Ok(geometry
+            .devices()
+            .map(|dev| {
+                if let Some(filter) = filter.get(&dev.idx()) {
+                    (
+                        dev.idx(),
+                        dev.iter()
+                            .filter(|tr| filter[tr.local_idx()])
+                            .map(|_| {
+                                let phase = q[idx].argument() + PI;
+                                let amp = constraint.convert(q[idx].abs(), max_coefficient);
+                                idx += 1;
+                                Drive { amp, phase }
+                            })
+                            .collect(),
+                    )
+                } else {
+                    (
+                        dev.idx(),
+                        dev.iter().map(|_| Drive { phase: 0., amp: 0. }).collect(),
+                    )
+                }
+            })
+            .collect()),
+    }
 }

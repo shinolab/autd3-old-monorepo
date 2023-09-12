@@ -2,7 +2,7 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for C++17.
 
-version: 14.2.2
+version: 15.0.0
 
 ## Install
 
@@ -12,17 +12,17 @@ version: 14.2.2
     if(WIN32)
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-win-x64.zip
+        URL https://github.com/shinolab/autd3/releases/download/v15.0.0/autd3-v15.0.0-win-x64.zip
     )
     elseif(APPLE)
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-macos-universal.tar.gz
+        URL https://github.com/shinolab/autd3/releases/download/v15.0.0/autd3-v15.0.0-macos-universal.tar.gz
     )
     else()
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-linux-x64.tar.gz
+        URL https://github.com/shinolab/autd3/releases/download/v15.0.0/autd3-v15.0.0-linux-x64.tar.gz
     )
     endif()
     FetchContent_MakeAvailable(autd3)
@@ -38,12 +38,10 @@ version: 14.2.2
 
     ```
     git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp
-    pwsh build.ps1
-    cd examples
+    cd autd3/cpp/examples
     mkdir build
     cd build
-    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake ..
     cmake --build . --config Release
     ```
 
@@ -51,13 +49,10 @@ version: 14.2.2
 
     ```
     git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp
-    chmod +x ./build.sh
-    ./build.sh
-    cd examples
+    cd autd3/cpp/examples
     mkdir build
     cd build
-    cmake .. -DAUTD_LOCAL_TEST=ON
+    cmake ..
     cmake --build . --config Release
     ```
 
