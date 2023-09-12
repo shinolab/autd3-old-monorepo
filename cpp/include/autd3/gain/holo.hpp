@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -229,6 +229,22 @@ class NalgebraBackend final : public Backend {
     _amps.emplace_back(amp);                                      \
     return std::move(*this);                                      \
   }
+#define AUTD3_HOLO_ADD_FOCI(HOLO_T)                                                                                                          \
+  template <std::ranges::viewable_range R>                                                                                                   \
+  auto add_foci_from_iter(R&& iter)->std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, std::pair<Vector3, double>>>& {            \
+    for (auto [focus, amp] : iter) {                                                                                                         \
+      _foci.emplace_back(std::move(focus));                                                                                                  \
+      _amps.emplace_back(amp);                                                                                                               \
+    }                                                                                                                                        \
+  }                                                                                                                                          \
+  template <std::ranges::viewable_range R>                                                                                                   \
+  auto add_foci_from_iter(R&& iter)->std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, std::pair<Vector3, double>>, HOLO_T&&>&& { \
+    for (auto [focus, amp] : iter) {                                                                                                         \
+      _foci.emplace_back(std::move(focus));                                                                                                  \
+      _amps.emplace_back(amp);                                                                                                               \
+    }                                                                                                                                        \
+    return std::move(*this);                                                                                                                 \
+  }
 
 #define AUTD3_HOLO_PARAM(HOLO_T, PARAM_T, PARAM_NAME)                     \
   void with_##PARAM_NAME(const PARAM_T value)& { _##PARAM_NAME = value; } \
@@ -251,6 +267,9 @@ class SDP final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(SDP)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(SDP)
+#endif
 
   AUTD3_HOLO_PARAM(SDP, double, alpha)
   AUTD3_HOLO_PARAM(SDP, uint32_t, repeat)
@@ -290,6 +309,9 @@ class EVP final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(EVP)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(EVP)
+#endif
 
   AUTD3_HOLO_PARAM(EVP, double, gamma)
   AUTD3_HOLO_PARAM(EVP, AmplitudeConstraint, constraint)
@@ -322,6 +344,9 @@ class GS final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(GS)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(GS)
+#endif
 
   AUTD3_HOLO_PARAM(GS, uint32_t, repeat)
   AUTD3_HOLO_PARAM(GS, AmplitudeConstraint, constraint)
@@ -355,6 +380,9 @@ class GSPAT final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(GSPAT)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(GSPAT)
+#endif
 
   AUTD3_HOLO_PARAM(GSPAT, uint32_t, repeat)
   AUTD3_HOLO_PARAM(GSPAT, AmplitudeConstraint, constraint)
@@ -385,6 +413,9 @@ class Naive final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(Naive)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(Naive)
+#endif
 
   AUTD3_HOLO_PARAM(Naive, AmplitudeConstraint, constraint)
 
@@ -419,6 +450,9 @@ class LM final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(LM)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(LM)
+#endif
 
   AUTD3_HOLO_PARAM(LM, double, eps1)
   AUTD3_HOLO_PARAM(LM, double, eps2)
@@ -468,6 +502,9 @@ class Greedy final : public internal::Gain {
   Greedy() = default;
 
   AUTD3_HOLO_ADD_FOCUS(Greedy)
+#if __cplusplus >= 202002L
+  AUTD3_HOLO_ADD_FOCI(Greedy)
+#endif
 
   AUTD3_HOLO_PARAM(Greedy, uint32_t, phase_div)
 

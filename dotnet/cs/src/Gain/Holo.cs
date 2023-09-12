@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -304,6 +304,15 @@ namespace AUTD3Sharp.Gain
             }
 
             /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public SDP<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
+            }
+
+            /// <summary>
             /// Parameter. See the paper for details.
             /// </summary>
             /// <param name="value"></param>
@@ -390,6 +399,15 @@ namespace AUTD3Sharp.Gain
             }
 
             /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public EVP<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
+            }
+
+            /// <summary>
             /// Parameter. See the paper for details.
             /// </summary>
             /// <param name="value"></param>
@@ -449,6 +467,15 @@ namespace AUTD3Sharp.Gain
                 _foci.Add(focus.z);
                 _amps.Add(amp);
                 return this;
+            }
+
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public GS<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
             }
 
             /// <summary>
@@ -514,6 +541,15 @@ namespace AUTD3Sharp.Gain
             }
 
             /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public GSPAT<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
+            }
+
+            /// <summary>
             /// Parameter. See the paper for details.
             /// </summary>
             /// <param name="value"></param>
@@ -573,6 +609,15 @@ namespace AUTD3Sharp.Gain
                 _foci.Add(focus.z);
                 _amps.Add(amp);
                 return this;
+            }
+
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public Naive<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
             }
 
             /// <summary>
@@ -638,6 +683,15 @@ namespace AUTD3Sharp.Gain
                 _foci.Add(focus.z);
                 _amps.Add(amp);
                 return this;
+            }
+
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public LM<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
             }
 
             /// <summary>
@@ -741,6 +795,15 @@ namespace AUTD3Sharp.Gain
                 _foci.Add(focus.z);
                 _amps.Add(amp);
                 return this;
+            }
+
+            /// <summary>
+            /// Add foci
+            /// </summary>
+            /// <param name="iter">Enumerable of foci and amps</param>
+            public Greedy AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
+            {
+                return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
             }
 
             /// <summary>
