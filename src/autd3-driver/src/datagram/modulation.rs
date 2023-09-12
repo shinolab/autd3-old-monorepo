@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ pub trait Modulation: ModulationProperty {
 }
 
 impl ModulationProperty for Box<dyn Modulation> {
-    fn sampling_frequency(&self) -> f64 {
+    fn sampling_frequency(&self) -> float {
         self.as_ref().sampling_frequency()
     }
 
