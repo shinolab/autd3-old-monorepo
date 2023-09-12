@@ -216,9 +216,9 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity/Assets/autd3/Samples dotnet/unity/Assets/autd3/Samples~
-          rm -Force dotnet/unity/Assets/autd3/Samples.meta
-          cd dotnet/unity/Assets/autd3
+          mv dotnet/unity/Assets/Samples dotnet/unity/Assets/Samples~
+          rm -Force dotnet/unity/Assets/Samples.meta
+          cd dotnet/unity/Assets
           npm install
           npm publish
         env:
@@ -334,9 +334,9 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity-linux/Assets/autd3/Samples dotnet/unity-linux/Assets/autd3/Samples~
-          rm -f dotnet/unity-linux/Assets/autd3/Samples.meta
-          cd dotnet/unity-linux/Assets/autd3
+          mv dotnet/unity-linux/Assets/Samples dotnet/unity-linux/Assets/Samples~
+          rm -f dotnet/unity-linux/Assets/Samples.meta
+          cd dotnet/unity-linux/Assets
           npm install
           npm publish
         env:
@@ -513,9 +513,9 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity-mac/Assets/autd3/Samples dotnet/unity-mac/Assets/autd3/Samples~
-          rm -f dotnet/unity-mac/Assets/autd3/Samples.meta
-          cd dotnet/unity-mac/Assets/autd3
+          mv dotnet/unity-mac/Assets/Samples dotnet/unity-mac/Assets/Samples~
+          rm -f dotnet/unity-mac/Assets/Samples.meta
+          cd dotnet/unity-mac/Assets
           npm install
           npm publish
         env:
