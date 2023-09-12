@@ -54,9 +54,31 @@ class Cache : public internal::Modulation {
   uint32_t _freq_div;
 };
 
-#define AUTD3_IMPL_WITH_CACHE_MODULATION                                 \
-  [[nodiscard]] Cache with_cache()&& { return Cache(std::move(*this)); } \
-  [[nodiscard]] Cache with_cache()& { return Cache(*this); }
+/**
+ * @brief Modulation to cache the result of calculation
+ */
+class Transform : public internal::Modulation {
+ public:
+  template <class M, typename F>
+  Transform(M&& m, F& f) : _freq_div(m.sampling_frequency_division()) {
+    static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
+    char err[256]{};
+    const auto size = internal::native_methods::AUTDModulationSize(m.modulation_ptr(), err);
+    if (size == internal::native_methods::AUTD3_ERR) throw internal::AUTDException(err);
+    _buffer.resize(static_cast<size_t>(size));
+    if (internal::native_methods::AUTDModulationCalc(m.modulation_ptr(), _buffer.data(), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
+    for (size_t i = 0; i < _buffer.size(); i++) _buffer[i] = f(i, _buffer[i]);
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), _buffer.size());
+  }
+
+ private:
+  std::vector<double> _buffer;
+  uint32_t _freq_div;
+};
 
 /**
  * @brief Modulation for modulating radiation pressure
@@ -76,6 +98,7 @@ class RadiationPressure : public internal::Modulation {
   }
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), _buffer.size());
@@ -86,10 +109,6 @@ class RadiationPressure : public internal::Modulation {
   uint32_t _freq_div;
 };
 
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                    \
-  [[nodiscard]] RadiationPressure with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
-  [[nodiscard]] RadiationPressure with_radiation_pressure()& { return RadiationPressure(*this); }
-
 /**
  * @brief Without modulation
  */
@@ -99,6 +118,7 @@ class Static final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   /**
    * @brief set amplitude
@@ -145,6 +165,7 @@ class Sine final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   /**
    * @brief Set amplitude
@@ -231,6 +252,7 @@ class Fourier final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   void add_component(Sine component) & { _components.emplace_back(component); }
 
@@ -265,6 +287,7 @@ class SineLegacy final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   /**
    * @brief Set amplitude
@@ -335,6 +358,7 @@ class Square final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   /**
    * @brief set low level amplitude

@@ -43,6 +43,24 @@ class Modulation : public Datagram {
   [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 };
 
+#define AUTD3_IMPL_WITH_CACHE_MODULATION                                 \
+  [[nodiscard]] Cache with_cache()&& { return Cache(std::move(*this)); } \
+  [[nodiscard]] Cache with_cache()& { return Cache(*this); }
+
+#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION       \
+  template <typename F>                            \
+  [[nodiscard]] Transform with_transform(F& f)&& { \
+    return Transform(std::move(*this), f);         \
+  }                                                \
+  template <typename F>                            \
+  [[nodiscard]] Transform with_transform(F& f)& {  \
+    return Transform(*this, f);                    \
+  }
+
+#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                    \
+  [[nodiscard]] RadiationPressure with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
+  [[nodiscard]] RadiationPressure with_radiation_pressure()& { return RadiationPressure(*this); }
+
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
   void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \
   [[nodiscard]] TYPE&& with_sampling_frequency_division(const uint32_t div)&& {                                                       \

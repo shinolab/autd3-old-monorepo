@@ -32,6 +32,10 @@ class Wav final : public internal::Modulation {
    */
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
 
+  AUTD3_IMPL_WITH_CACHE_MODULATION
+  AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+
   AUTD3_IMPL_MOD_PROP(Wav)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {

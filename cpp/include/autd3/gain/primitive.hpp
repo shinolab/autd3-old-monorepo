@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -76,6 +76,53 @@ class Cache : public internal::Gain {
 #define AUTD3_IMPL_WITH_CACHE_GAIN(T) \
   [[nodiscard]] Cache<T> with_cache()&& { return Cache(std::move(*this)); }
 
+template <class G, typename F>
+class Transform : public internal::Gain {
+ public:
+  Transform(G g, F& f) : _g(std::move(g)), _f(f) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+    std::vector<std::vector<internal::native_methods::Drive>> drives;
+    drives.reserve(geometry.num_devices());
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [](const internal::Device& dev) {
+      std::vector<internal::native_methods::Drive> d;
+      d.resize(dev.num_transducers());
+      return std::move(d);
+    });
+
+    std::vector<internal::native_methods::Drive*> drives_ptrs;
+    drives_ptrs.reserve(drives.size());
+    std::transform(drives.begin(), drives.end(), std::back_inserter(drives_ptrs),
+                   [](std::vector<internal::native_methods::Drive>& d) { return d.data(); });
+
+    if (char err[256]{};
+        internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), drives_ptrs.data(), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
+
+    std::for_each(geometry.begin(), geometry.end(), [this, &drives](const internal::Device& dev) {
+      std::for_each(dev.cbegin(), dev.cend(), [this, &drives, &dev](const internal::Transducer& tr) {
+        drives[dev.idx()][tr.local_idx()] = _f(dev, tr, drives[dev.idx()][tr.local_idx()]);
+      })
+    });
+
+    return std::accumulate(geometry.begin(), geometry.end(), internal::native_methods::AUTDGainCustom(),
+                           [this](internal::native_methods::GainPtr acc, const internal::Device& dev) {
+                             return internal::native_methods::AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), drives[dev.idx()].data(),
+                                                                                static_cast<uint32_t>(drives[dev.idx()].size()));
+                           });
+  }
+
+ private:
+  G _g;
+  const F& _f;
+};
+
+#define AUTD3_IMPL_WITH_TRANSFORM_GAIN(T)             \
+  template <typename F>                               \
+  [[nodiscard]] Transform<T> with_transform(F& f)&& { \
+    return Transform(std::move(*this), f);            \
+  }
+
 /**
  * @brief Gain to output nothing
  */
@@ -84,6 +131,7 @@ class Null final : public internal::Gain {
   Null() = default;
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Null)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Null)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return internal::native_methods::AUTDGainNull();
@@ -98,6 +146,7 @@ class Focus final : public internal::Gain {
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Focus)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Focus)
 
   /**
    * @brief set amplitude
@@ -135,7 +184,7 @@ class Bessel final : public internal::Gain {
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Bessel)
-
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Bessel)
   /**
    * @brief set amplitude
    *
@@ -174,6 +223,7 @@ class Plane final : public internal::Gain {
   explicit Plane(internal::Vector3 d) : _d(std::move(d)) {}
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Plane)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Plane)
 
   /**
    * @brief set amplitude
@@ -213,6 +263,7 @@ class Group : public internal::Gain {
   Group(const F& f) : _f(f) {}
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Group)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Group)
 
   /**
    * @brief Set gain

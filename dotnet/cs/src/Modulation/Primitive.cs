@@ -435,6 +435,40 @@ namespace AUTD3Sharp.Modulation
         }
     }
 
+
+    public class Transform : Internal.Modulation
+    {
+        private readonly float_t[] _buffer;
+        private readonly uint _freqDiv;
+
+        public Transform(Internal.Modulation m, Func<int, float_t, float_t> f)
+        {
+            _freqDiv = m.SamplingFrequencyDivision;
+
+            var err = new byte[256];
+            var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
+            if (size == Def.Autd3Err) throw new AUTDException(err);
+            _buffer = new float_t[size];
+            if (Base.AUTDModulationCalc(m.ModulationPtr(), _buffer, err) == Def.Autd3Err)
+                throw new AUTDException(err);
+            _buffer = _buffer.Select((v, i) => f(i, v)).ToArray();
+        }
+
+        public override ModulationPtr ModulationPtr()
+        {
+            return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+        }
+    }
+
+    public static class TransformModulationExtensions
+    {
+        public static Transform WithTransform(this Internal.Modulation s, Func<int, float_t, float_t> f)
+        {
+            return new Transform(s, f);
+        }
+    }
+
+
     /// <summary>
     /// Modulation for modulating radiation pressure
     /// </summary>
