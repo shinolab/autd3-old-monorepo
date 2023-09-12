@@ -72,6 +72,7 @@ namespace AUTD3Sharp.Modulation
     {
         private readonly int _freq;
         private float_t? _amp;
+        private float_t? _phase;
         private float_t? _offset;
         private uint? _freqDiv;
 
@@ -83,6 +84,7 @@ namespace AUTD3Sharp.Modulation
         public Sine(int freq)
         {
             _freq = freq;
+            _phase = null;
             _amp = null;
             _offset = null;
             _freqDiv = null;
@@ -96,6 +98,17 @@ namespace AUTD3Sharp.Modulation
         public Sine WithAmp(float_t amp)
         {
             _amp = amp;
+            return this;
+        }
+
+        /// <summary>
+        /// Set phase
+        /// </summary>
+        /// <param name="phase">Phase of the sine wave</param>
+        /// <returns></returns>
+        public Sine WithPhase(float_t phase)
+        {
+            _phase = phase;
             return this;
         }
 
@@ -135,6 +148,8 @@ namespace AUTD3Sharp.Modulation
             var ptr = Base.AUTDModulationSine((uint)_freq);
             if (_amp != null)
                 ptr = Base.AUTDModulationSineWithAmp(ptr, _amp.Value);
+            if (_phase != null)
+                ptr = Base.AUTDModulationSineWithPhase(ptr, _phase.Value);
             if (_offset != null)
                 ptr = Base.AUTDModulationSineWithOffset(ptr, _offset.Value);
             if (_freqDiv != null)
