@@ -49,79 +49,52 @@ ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder,
 
 void AUTDFreeController(ControllerPtr cnt);
 
-void AUTDSetReadsFPGAInfo(ControllerPtr cnt, bool value);
-
-void AUTDSetForceFan(ControllerPtr cnt, bool value);
-
-[[nodiscard]] GeometryPtr AUTDGetGeometry(ControllerPtr cnt);
-
-[[nodiscard]] double AUTDGetSoundSpeed(GeometryPtr geo);
-
-void AUTDSetSoundSpeed(GeometryPtr geo, double value);
-
-void AUTDSetSoundSpeedFromTemp(GeometryPtr geo, double temp, double k, double r, double m);
-
-[[nodiscard]] double AUTDGetTransFrequency(GeometryPtr geo, uint32_t idx);
-
-[[nodiscard]] bool AUTDSetTransFrequency(GeometryPtr geo, uint32_t idx, double value, char *err);
-
-[[nodiscard]] uint16_t AUTDGetTransCycle(GeometryPtr geo, uint32_t idx);
-
-[[nodiscard]] bool AUTDSetTransCycle(GeometryPtr geo, uint32_t idx, uint16_t value, char *err);
-
-[[nodiscard]] double AUTDGetWavelength(GeometryPtr geo, uint32_t idx, double sound_speed);
-
-[[nodiscard]] double AUTDGetAttenuation(GeometryPtr geo);
-
-void AUTDSetAttenuation(GeometryPtr geo, double value);
-
-[[nodiscard]] uint32_t AUTDNumTransducers(GeometryPtr geo);
-
-[[nodiscard]] uint32_t AUTDNumDevices(GeometryPtr geo);
-
-void AUTDGeometryCenter(GeometryPtr geo, double *center);
-
-void AUTDGeometryCenterOf(GeometryPtr geo, uint32_t dev_idx, double *center);
-
-void AUTDTransPosition(GeometryPtr geo, uint32_t tr_idx, double *pos);
-
-void AUTDTransRotation(GeometryPtr geo, uint32_t tr_idx, double *rot);
-
-void AUTDTransXDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
-
-void AUTDTransYDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
-
-void AUTDTransZDirection(GeometryPtr geo, uint32_t tr_idx, double *dir);
-
-[[nodiscard]] uint16_t AUTDGetTransModDelay(GeometryPtr geo, uint32_t tr_idx);
-
-void AUTDSetTransModDelay(GeometryPtr geo, uint32_t tr_idx, uint16_t delay);
-
 [[nodiscard]] bool AUTDGetFPGAInfo(ControllerPtr cnt, uint8_t *out, char *err);
 
 [[nodiscard]] FirmwareInfoListPtr AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, char *err);
 
-void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info, bool *props);
+void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info);
 
 void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPtr p_info_list);
 
 void AUTDGetLatestFirmware(char *latest);
 
-[[nodiscard]] GainPtr AUTDGainNull();
+[[nodiscard]] DatagramPtr AUTDSynchronize();
 
-[[nodiscard]] GainPtr AUTDGainGrouped();
+[[nodiscard]] DatagramPtr AUTDClear();
 
-[[nodiscard]] GainPtr AUTDGainGroupedAdd(GainPtr grouped_gain, uint32_t device_id, GainPtr gain);
+[[nodiscard]] DatagramPtr AUTDUpdateFlags();
+
+[[nodiscard]] DatagramSpecialPtr AUTDStop();
+
+[[nodiscard]] DatagramPtr AUTDModDelayConfig();
+
+[[nodiscard]] DatagramPtr AUTDCreateSilencer(uint16_t step);
+
+[[nodiscard]] DatagramPtr AUTDCreateAmplitudes(double amp);
 
 [[nodiscard]]
-GainPtr AUTDGainGroupedAddByGroup(GainPtr grouped_gain,
-                                  const uint32_t *device_ids,
-                                  uint64_t device_ids_len,
-                                  GainPtr gain);
+int32_t AUTDSend(ControllerPtr cnt,
+                 TransMode mode,
+                 DatagramPtr d1,
+                 DatagramPtr d2,
+                 int64_t timeout_ns,
+                 char *err);
 
-[[nodiscard]] GainPtr AUTDGainFocus(double x, double y, double z);
+[[nodiscard]]
+int32_t AUTDSendSpecial(ControllerPtr cnt,
+                        TransMode mode,
+                        DatagramSpecialPtr special,
+                        int64_t timeout_ns,
+                        char *err);
 
-[[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
+[[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
+
+[[nodiscard]]
+int32_t AUTDGainCalc(GainPtr gain,
+                     GeometryPtr geometry,
+                     Drive *const *drives,
+                     char *err);
 
 [[nodiscard]]
 GainPtr AUTDGainBessel(double x,
@@ -134,6 +107,35 @@ GainPtr AUTDGainBessel(double x,
 
 [[nodiscard]] GainPtr AUTDGainBesselWithAmp(GainPtr bessel, double amp);
 
+[[nodiscard]] GainPtr AUTDGainCustom();
+
+[[nodiscard]]
+GainPtr AUTDGainCustomSet(GainPtr custom,
+                          uint32_t dev_idx,
+                          const Drive *ptr,
+                          uint32_t len);
+
+[[nodiscard]] GainPtr AUTDGainFocus(double x, double y, double z);
+
+[[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
+
+[[nodiscard]]
+GroupGainMapPtr AUTDGainGroupCreateMap(const uint32_t *device_indices_ptr,
+                                       uint32_t num_devices);
+
+[[nodiscard]]
+GroupGainMapPtr AUTDGainGroupMapSet(GroupGainMapPtr map,
+                                    uint32_t dev_idx,
+                                    const int32_t *map_data);
+
+[[nodiscard]]
+GainPtr AUTDGainGroup(GroupGainMapPtr map,
+                      const int32_t *keys_ptr,
+                      const GainPtr *values_ptr,
+                      uint32_t kv_len);
+
+[[nodiscard]] GainPtr AUTDGainNull();
+
 [[nodiscard]] GainPtr AUTDGainPlane(double nx, double ny, double nz);
 
 [[nodiscard]] GainPtr AUTDGainPlaneWithAmp(GainPtr plane, double amp);
@@ -142,33 +144,158 @@ GainPtr AUTDGainBessel(double x,
 
 [[nodiscard]]
 GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
-                                  uint32_t id,
+                                  uint32_t dev_idx,
+                                  uint32_t tr_idx,
                                   double phase,
                                   double amp);
 
-[[nodiscard]] GainPtr AUTDGainCustom(const Drive *ptr, uint64_t len);
+[[nodiscard]] GainPtr AUTDGainUniform(double amp);
 
-[[nodiscard]] DatagramBodyPtr AUTDGainIntoDatagram(GainPtr gain);
+[[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
 
-[[nodiscard]] int32_t AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive *drives, char *err);
+[[nodiscard]] GeometryPtr AUTDGetGeometry(ControllerPtr cnt);
 
-[[nodiscard]] ModulationPtr AUTDModulationStatic();
+[[nodiscard]] uint32_t AUTDGeometryNumDevices(GeometryPtr geo);
 
-[[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
+[[nodiscard]] DevicePtr AUTDGetDevice(GeometryPtr geo, uint32_t dev_idx);
+
+[[nodiscard]] uint32_t AUTDDeviceNumTransducers(DevicePtr dev);
+
+[[nodiscard]] double AUTDDeviceGetSoundSpeed(DevicePtr dev);
+
+void AUTDDeviceSetSoundSpeed(DevicePtr dev, double value);
+
+void AUTDDeviceSetSoundSpeedFromTemp(DevicePtr dev, double temp, double k, double r, double m);
+
+[[nodiscard]] double AUTDDeviceGetAttenuation(DevicePtr dev);
+
+void AUTDDeviceSetAttenuation(DevicePtr dev, double value);
+
+void AUTDDeviceCenter(DevicePtr dev, double *center);
+
+void AUTDDeviceTranslate(DevicePtr dev, double x, double y, double z);
+
+void AUTDDeviceRotate(DevicePtr dev, double w, double i, double j, double k);
+
+void AUTDDeviceAffine(DevicePtr dev,
+                      double x,
+                      double y,
+                      double z,
+                      double w,
+                      double i,
+                      double j,
+                      double k);
+
+void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
+
+void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
+
+void AUTDTransPosition(DevicePtr dev, uint32_t tr_idx, double *pos);
+
+void AUTDTransRotation(DevicePtr dev, uint32_t tr_idx, double *rot);
+
+void AUTDTransXDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+
+void AUTDTransYDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+
+void AUTDTransZDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+
+[[nodiscard]] double AUTDGetTransFrequency(DevicePtr dev, uint32_t idx);
+
+[[nodiscard]] bool AUTDSetTransFrequency(DevicePtr dev, uint32_t idx, double value, char *err);
+
+[[nodiscard]] uint16_t AUTDGetTransCycle(DevicePtr dev, uint32_t idx);
+
+[[nodiscard]] bool AUTDSetTransCycle(DevicePtr dev, uint32_t idx, uint16_t value, char *err);
+
+[[nodiscard]] double AUTDGetWavelength(DevicePtr dev, uint32_t idx, double sound_speed);
+
+[[nodiscard]] uint16_t AUTDGetTransModDelay(DevicePtr dev, uint32_t tr_idx);
+
+void AUTDSetTransModDelay(DevicePtr dev, uint32_t tr_idx, uint16_t delay);
+
+void AUTDTransTranslate(DevicePtr dev, uint32_t tr_idx, double x, double y, double z);
+
+void AUTDTransRotate(DevicePtr dev, uint32_t tr_idx, double w, double i, double j, double k);
+
+void AUTDTransAffine(DevicePtr dev,
+                     uint32_t tr_idx,
+                     double x,
+                     double y,
+                     double z,
+                     double w,
+                     double i,
+                     double j,
+                     double k);
+
+[[nodiscard]] LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
+
+[[nodiscard]] LinkPtr AUTDLinkDebug();
+
+[[nodiscard]] LinkPtr AUTDLinkDebugWithLogLevel(LinkPtr debug, Level level);
+
+[[nodiscard]] LinkPtr AUTDLinkDebugWithLogFunc(LinkPtr debug, void* out_func, void* flush_func);
+
+[[nodiscard]] LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, uint64_t timeout_ns);
+
+[[nodiscard]] LinkPtr AUTDLinkLog(LinkPtr link);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
+
+[[nodiscard]] LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, void* out_func, void* flush_func);
+
+[[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
+
+[[nodiscard]] DatagramPtr AUTDModulationIntoDatagram(ModulationPtr m);
+
+[[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
+
+[[nodiscard]] int32_t AUTDModulationCalc(ModulationPtr m, double *buffer, char *err);
 
 [[nodiscard]]
-ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m,
-                                                                uint32_t div);
+ModulationPtr AUTDModulationCustom(uint32_t freq_div,
+                                   const double *ptr,
+                                   uint64_t len);
+
+[[nodiscard]]
+ModulationPtr AUTDModulationWithLowPass(ModulationPtr m,
+                                        uint32_t n_taps,
+                                        double cutoff);
+
+[[nodiscard]]
+ModulationPtr AUTDModulationWithHighPass(ModulationPtr m,
+                                         uint32_t n_taps,
+                                         double cutoff);
+
+[[nodiscard]]
+ModulationPtr AUTDModulationWithBandPass(ModulationPtr m,
+                                         uint32_t n_taps,
+                                         double f_low,
+                                         double f_high);
+
+[[nodiscard]]
+ModulationPtr AUTDModulationWithBandStop(ModulationPtr m,
+                                         uint32_t n_taps,
+                                         double f_low,
+                                         double f_high);
+
+[[nodiscard]] ModulationPtr AUTDModulationFourier();
+
+[[nodiscard]]
+ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
+                                                ModulationPtr m);
 
 [[nodiscard]] ModulationPtr AUTDModulationSine(uint32_t freq);
-
-[[nodiscard]] ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
-
-[[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m,
                                                               uint32_t div);
+
+[[nodiscard]] ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
+
+[[nodiscard]] ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
+
+[[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
 
 [[nodiscard]] ModulationPtr AUTDModulationSineLegacy(double freq);
 
@@ -192,26 +319,21 @@ ModulationPtr AUTDModulationSineLegacyWithSamplingFrequencyDivision(ModulationPt
 ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
                                                                 uint32_t div);
 
+[[nodiscard]] ModulationPtr AUTDModulationStatic();
+
+[[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
+
 [[nodiscard]]
-ModulationPtr AUTDModulationCustom(uint32_t freq_div,
-                                   const double *ptr,
-                                   uint64_t len);
-
-[[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
-
-[[nodiscard]] double AUTDModulationSamplingFrequency(ModulationPtr m);
-
-[[nodiscard]] DatagramHeaderPtr AUTDModulationIntoDatagram(ModulationPtr m);
-
-[[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
-
-[[nodiscard]] int32_t AUTDModulationCalc(ModulationPtr m, double *buffer, char *err);
+ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m,
+                                                                uint32_t div);
 
 [[nodiscard]] STMPropsPtr AUTDSTMProps(double freq);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithSamplingFreq(double freq);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithSamplingFreqDiv(uint32_t div);
+
+[[nodiscard]] STMPropsPtr AUTDSTMPropsWithSamplingPeriod(uint64_t period_ns);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithStartIdx(STMPropsPtr props, int32_t idx);
 
@@ -223,64 +345,25 @@ ModulationPtr AUTDModulationCustom(uint32_t freq_div,
 
 [[nodiscard]] uint32_t AUTDSTMPropsSamplingFrequencyDivision(STMPropsPtr props, uint64_t size);
 
+[[nodiscard]] uint64_t AUTDSTMPropsSamplingPeriod(STMPropsPtr props, uint64_t size);
+
 [[nodiscard]] int32_t AUTDSTMPropsStartIdx(STMPropsPtr props);
 
 [[nodiscard]] int32_t AUTDSTMPropsFinishIdx(STMPropsPtr props);
 
 [[nodiscard]]
-DatagramBodyPtr AUTDFocusSTM(STMPropsPtr props,
-                             const double *points,
-                             const uint8_t *shift,
-                             uint64_t size);
-
-[[nodiscard]] DatagramBodyPtr AUTDGainSTMWithMode(STMPropsPtr props, GainSTMMode mode);
-
-[[nodiscard]] DatagramBodyPtr AUTDGainSTM(STMPropsPtr props);
-
-[[nodiscard]] DatagramBodyPtr AUTDGainSTMAddGain(DatagramBodyPtr stm, GainPtr gain);
-
-[[nodiscard]] DatagramSpecialPtr AUTDSynchronize();
-
-[[nodiscard]] DatagramSpecialPtr AUTDClear();
-
-[[nodiscard]] DatagramSpecialPtr AUTDUpdateFlags();
-
-[[nodiscard]] DatagramSpecialPtr AUTDStop();
-
-[[nodiscard]] DatagramSpecialPtr AUTDModDelayConfig();
-
-[[nodiscard]] DatagramHeaderPtr AUTDCreateSilencer(uint16_t step);
-
-[[nodiscard]] DatagramBodyPtr AUTDCreateAmplitudes(double amp);
+DatagramPtr AUTDFocusSTM(STMPropsPtr props,
+                         const double *points,
+                         const uint8_t *shift,
+                         uint64_t size);
 
 [[nodiscard]]
-int32_t AUTDSend(ControllerPtr cnt,
-                 TransMode mode,
-                 DatagramHeaderPtr header,
-                 DatagramBodyPtr body,
-                 int64_t timeout_ns,
-                 char *err);
+DatagramPtr AUTDGainSTM(STMPropsPtr props,
+                        const GainPtr *gains,
+                        uint32_t size,
+                        GainSTMMode mode);
 
-[[nodiscard]]
-int32_t AUTDSendSpecial(ControllerPtr cnt,
-                        TransMode mode,
-                        DatagramSpecialPtr special,
-                        int64_t timeout_ns,
-                        char *err);
-
-[[nodiscard]] LinkPtr AUTDLinkDebug();
-
-[[nodiscard]] LinkPtr AUTDLinkDebugWithLogLevel(LinkPtr debug, Level level);
-
-[[nodiscard]] LinkPtr AUTDLinkDebugWithLogFunc(LinkPtr debug, void* out_func, void* flush_func);
-
-[[nodiscard]] LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, uint64_t timeout_ns);
-
-[[nodiscard]] LinkPtr AUTDLinkLog(LinkPtr link);
-
-[[nodiscard]] LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
-
-[[nodiscard]] LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, void* out_func, void* flush_func);
+[[nodiscard]] DatagramPtr AUTDGainSTMAddGain(DatagramPtr stm, GainPtr gain);
 
 } // extern "C"
 

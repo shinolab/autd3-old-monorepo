@@ -145,179 +145,8 @@ autd = Controller.builder()\
 Devices are assigned indices starting from 0 in the order in which they are connected to the PC.
 
 Also, each device has 249 transducers, and local indices are assigned ([see the concept](./concept.md) for the surface photo of AUTD).
-The global index of the transducer is
-$$
-  \text{global index} = \text{device index} \times 249 + \text{local index},
-$$
-For example, the index of the transducer of the second device is from 249 to 497.
 
 ## Geometry API
-
-### Speed of sound
-
-When calculating the phase of the transducer, there are some cases where the wavelength is required.
-The wavelength $\lambda$ of the sound wave is calculated from the sound speed $v$ and the frequency $f$ as $\lambda = v/f$.
-The `sound_speed` member of `Geometry` represents this sound speed $v$.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-autd.geometry_mut().sound_speed = 340e3;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry().set_sound_speed(340e3);
-```
-
-```cs
-autd.Geometry.SoundSpeed = 340e3;
-```
-
-```python
-autd.geometry.sound_speed = 340e3
-```
-
-The unit of the sound speed is mm/s.
-
-You can also set the sound speed from the temperature.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-autd.geometry_mut().set_sound_speed_from_temp(15.);
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry().set_sound_speed_from_temp(15);
-```
-
-```cs
-autd.Geometry.SetSoundSpeedFromTemp(15);
-```
-
-```python
-autd.geometry.set_sound_speed_from_temp(15)
-```
-
-The unit of the temperature is Celsius.
-
-### Attenuation coefficient
-
-In the SDK, the sound pressure $p(\br)$ at the position $\br$ of the emitted ultrasonic wave from the transducer is modeled as
-$$
-  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|},
-$$
-where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
-`attenuation` member of `Geometry` represents this attenuation coefficient $\alpha$.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-autd.geometry_mut().attenuation = 340e3;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry().set_attenuation(0.0);
-```
-
-```cs
-autd.Geometry.Attenuation = 0.0;
-```
-
-```python
-autd.geometry.attenuation = 0.0
-```
-
-The unit of the attenuation coefficient is Np/mm
-
-The default value is 0.0.
-
-### center/center_of
-
-You can get the center of all devices with `center`.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-let center = autd.geometry().center();
-# Ok(())
-# }
-```
-
-```cpp
-const autd3::Vector3 center = autd.geometry().center();
-```
-
-```cs
-var center = autd.Geometry.Center;
-```
-
-```python
-center = autd.geometry.center
-```
-
-You can get the center of a device by `center_of` method.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-let center = autd.geometry().center_of(0);
-# Ok(())
-# }
-```
-
-```cpp
-const autd3::Vector3 center = autd.geometry().center_of(0);
-```
-
-```cs
-var center = autd.Geometry.CenterOf(0);
-```
-
-```python
-center = autd.geometry.center_of(0)
-```
 
 ### num_devices/num_transducers
 
@@ -354,6 +183,209 @@ num_dev = autd.geometry.num_devices
 num_tr = autd.geometry.num_transducers
 ```
 
+### center
+
+You can get the center of all devices with `center`.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+let center = autd.geometry().center();
+# Ok(())
+# }
+```
+
+```cpp
+const autd3::Vector3 center = autd.geometry().center();
+```
+
+```cs
+var center = autd.Geometry.Center;
+```
+
+```python
+center = autd.geometry.center
+```
+
+### Device access
+
+`Geometry` is a container of `Device`.
+
+To access `Device`, use indexer.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+let dev = &autd.geometry()[0];
+# Ok(())
+# }
+```
+
+```cpp
+const auto dev = autd.geometry()[0];
+```
+
+```cs
+var dev = autd.Geometry[0];
+```
+
+```python
+dev = autd.geometry[0]
+```
+
+Or, you can use an iterator.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+for dev in autd.geometry().iter() {
+  // do something
+}
+# Ok(())
+# }
+```
+
+```cpp
+for (const auto dev : autd.geometry())
+```
+
+```cs
+foreach (var dev in autd.Geometry)
+```
+
+```python
+for dev in autd.geometry:
+```
+
+## Device API
+
+### Speed of sound
+
+When calculating the phase of the transducer, there are some cases where the wavelength is required.
+The wavelength $\lambda$ of the sound wave is calculated from the sound speed $v$ and the frequency $f$ as $\lambda = v/f$.
+The `sound_speed` member of `Geometry` represents this sound speed $v$.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+autd.geometry_mut()[0].sound_speed = 340e3;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].set_sound_speed(340e3);
+```
+
+```cs
+autd.Geometry[0].SoundSpeed = 340e3;
+```
+
+```python
+autd.geometry[0].sound_speed = 340e3
+```
+
+The unit of the sound speed is mm/s.
+
+You can also set the sound speed from the temperature.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+autd.geometry_mut()[0].set_sound_speed_from_temp(15.);
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].set_sound_speed_from_temp(15);
+```
+
+```cs
+autd.Geometry[0].SetSoundSpeedFromTemp(15);
+```
+
+```python
+autd.geometry[0].set_sound_speed_from_temp(15)
+```
+
+The unit of the temperature is Celsius.
+
+### Attenuation coefficient
+
+In the SDK, the sound pressure $p(\br)$ at the position $\br$ of the emitted ultrasonic wave from the transducer is modeled as
+$$
+  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|},
+$$
+where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
+`attenuation` member of `Geometry` represents this attenuation coefficient $\alpha$.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+autd.geometry_mut()[0].attenuation = 0.;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].set_attenuation(0.0);
+```
+
+```cs
+autd.Geometry[0].Attenuation = 0.0;
+```
+
+```python
+autd.geometry[0].attenuation = 0.0
+```
+
+The unit of the attenuation coefficient is Np/mm
+
+The default value is 0.0.
+
 ### Affine transformation
 
 To modify the position of the device added to `Geometry`, use the following functions.
@@ -373,37 +405,16 @@ To modify the position of the device added to `Geometry`, use the following func
 #    .open_with(Debug::new())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
-autd.geometry_mut().translate(t);
-autd.geometry_mut().rotate(r);
-autd.geometry_mut().affine(t, r);
-# Ok(())
-# }
-```
-
-You can move and rotate only a specific device by using the following functions.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# use autd3::link::Debug;
-# 
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
-let t = Vector3::new(1., 0., 0.);
-let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
-autd.geometry_mut().translate_of(0, t);
-autd.geometry_mut().rotate_of(0, r);
-autd.geometry_mut().affine_of(0, t, r);
+autd.geometry_mut()[0].translate(t);
+autd.geometry_mut()[0].rotate(r);
+autd.geometry_mut()[0].affine(t, r);
 # Ok(())
 # }
 ```
 
 ### Transducer access
 
-`Geometry` is a container of `Transducer`, and `Transducer` contains information of each transducer.
+`Device` is a container of `Transducer`, and `Transducer` contains information of each transducer.
 
 To access `Transducer`, use the following methods.
 
@@ -417,21 +428,21 @@ To access `Transducer`, use the following methods.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-let tr = &autd.geometry()[0];
+let tr = &autd.geometry()[0][0];
 # Ok(())
 # }
 ```
 
 ```cpp
-const auto tr = autd.geometry()[0];
+const auto tr = autd.geometry()[0][0];
 ```
 
 ```cs
-var tr = autd.Geometry[0];
+var tr = autd.Geometry[0][0];
 ```
 
 ```python
-tr = autd.geometry[0]
+tr = autd.geometry[0][0]
 ```
 
 Or, you can use an iterator.
@@ -446,7 +457,7 @@ Or, you can use an iterator.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-for tr in autd.geometry().iter() {
+for tr in autd.geometry()[0].iter() {
   // do something
 }
 # Ok(())
@@ -454,22 +465,22 @@ for tr in autd.geometry().iter() {
 ```
 
 ```cpp
-for (const auto tr : autd.geometry())
+for (const auto tr : autd.geometry()[0])
 ```
 
 ```cs
-foreach (var tr in autd.Geometry)
+foreach (var tr in autd.Geometry[0])
 ```
 
 ```python
-for tr in autd.geometry:
+for tr in autd.geometry[0]:
 ```
 
 ## Transducer API
 
-### idx
+### local_idx
 
-Get the global index of the transducer.
+Get the local index of the transducer.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -481,22 +492,22 @@ Get the global index of the transducer.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let tr = &autd.geometry()[0];
-let idx = tr.idx();
+# let tr = &autd.geometry()[0][0];
+let idx = tr.local_idx();
 # Ok(())
 # }
 ```
 
 ```cpp
-const auto idx = tr.idx();
+const auto idx = tr.local_idx();
 ```
 
 ```cs
-var idx = tr.Idx;
+var idx = tr.LocalIdx;
 ```
 
 ```python
-idx = tr.idx
+idx = tr.local_idx
 ```
 
 ### position/rotation
@@ -514,7 +525,7 @@ The rotation is represented by a quaternion.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let tr = &autd.geometry()[0];
+# let tr = &autd.geometry()[0][0];
 let position = tr.position();
 let rotation = tr.rotation();
 # Ok(())
@@ -550,7 +561,7 @@ Get the direction of the transducer.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let tr = &autd.geometry()[0];
+# let tr = &autd.geometry()[0][0];
 let x_dir = tr.x_direction();
 let y_dir = tr.y_direction();
 let z_dir = tr.z_direction();
@@ -592,7 +603,7 @@ See [Modulation](./modulation.md) for more details.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let mut tr = &mut autd.geometry_mut()[0];
+# let mut tr = &mut autd.geometry_mut()[0][0];
 let delay = tr.mod_delay();
 tr.set_mod_delay(0);
 # Ok(())
@@ -631,7 +642,7 @@ Note: The cycle setting is not available in Legacy mode.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let mut tr = &mut autd.geometry_mut()[0];
+# let mut tr = &mut autd.geometry_mut()[0][0];
 let cycle = tr.cycle();
 tr.set_cycle(4096)?;
 # Ok(())
@@ -675,7 +686,7 @@ Note: The frequency setting is not available in Legacy mode.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let mut tr = &mut autd.geometry_mut()[0];
+# let mut tr = &mut autd.geometry_mut()[0][0];
 let freq = tr.frequency();
 tr.set_frequency(40e3)?;
 # Ok(())
@@ -718,8 +729,8 @@ You need to pass the speed of sound as an argument to `wavelength` and `wavenumb
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-# let sound_speed = autd.geometry().sound_speed;
-# let mut tr = &mut autd.geometry_mut()[0];
+# let sound_speed = autd.geometry()[0].sound_speed;
+# let mut tr = &mut autd.geometry_mut()[0][0];
 let wavelen = tr.wavelength(sound_speed);
 let wavenum = tr.wavenumber(sound_speed);
 # Ok(())

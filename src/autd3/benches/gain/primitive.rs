@@ -4,7 +4,7 @@
  * Created Date: 31/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,10 @@ mod helper;
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
-use autd3::{core::gain::Gain, prelude::*};
+use autd3::{
+    driver::datagram::{Gain, GainFilter},
+    prelude::*,
+};
 
 use crate::helper::generate_geometry;
 
@@ -33,7 +36,7 @@ fn focus(c: &mut Criterion) {
                         black_box(70.),
                         black_box(150.),
                     ))
-                    .calc(geometry)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -48,7 +51,7 @@ fn focus(c: &mut Criterion) {
                         black_box(70.),
                         black_box(150.),
                     ))
-                    .calc(geometry)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -67,14 +70,13 @@ fn focus_cached(c: &mut Criterion) {
             black_box(70.),
             black_box(150.),
         ))
-        .with_cache(&geometry)
-        .unwrap();
+        .with_cache();
         group.bench_with_input(
             BenchmarkId::new("Legacy", size * size),
             &geometry,
             |b, geometry| {
                 b.iter(|| {
-                    g.calc(geometry).unwrap();
+                    g.calc(geometry, GainFilter::All).unwrap();
                 })
             },
         );
@@ -84,14 +86,13 @@ fn focus_cached(c: &mut Criterion) {
             black_box(70.),
             black_box(150.),
         ))
-        .with_cache(&geometry)
-        .unwrap();
+        .with_cache();
         group.bench_with_input(
             BenchmarkId::new("Advanced", size * size),
             &geometry,
             |b, geometry| {
                 b.iter(|| {
-                    g.calc(geometry).unwrap();
+                    g.calc(geometry, GainFilter::All).unwrap();
                 })
             },
         );
@@ -113,7 +114,7 @@ fn bessel(c: &mut Criterion) {
                         Vector3::new(black_box(0.), black_box(0.), black_box(1.)),
                         black_box(0.1),
                     )
-                    .calc(geometry)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -128,7 +129,7 @@ fn bessel(c: &mut Criterion) {
                         Vector3::new(black_box(0.), black_box(0.), black_box(1.)),
                         black_box(0.1),
                     )
-                    .calc(geometry)
+                    .calc(geometry, GainFilter::All)
                     .unwrap();
                 })
             },
@@ -147,7 +148,7 @@ fn plane(c: &mut Criterion) {
             |b, geometry| {
                 b.iter(|| {
                     Plane::new(Vector3::new(black_box(0.), black_box(0.), black_box(1.)))
-                        .calc(geometry)
+                        .calc(geometry, GainFilter::All)
                         .unwrap();
                 })
             },
@@ -158,7 +159,7 @@ fn plane(c: &mut Criterion) {
             |b, geometry| {
                 b.iter(|| {
                     Plane::new(Vector3::new(black_box(0.), black_box(0.), black_box(1.)))
-                        .calc(geometry)
+                        .calc(geometry, GainFilter::All)
                         .unwrap();
                 })
             },
@@ -167,5 +168,35 @@ fn plane(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, focus, focus_cached, bessel, plane);
+fn group(c: &mut Criterion) {
+    let mut group = c.benchmark_group("group");
+
+    group.bench_with_input(
+        "group",
+        &generate_geometry::<LegacyTransducer>(3),
+        |b, geometry| {
+            b.iter(|| {
+                (0..geometry.len())
+                    .fold(
+                        Group::new(|dev, _tr: &LegacyTransducer| Some(dev.idx())),
+                        |acc, i| {
+                            acc.set(
+                                i,
+                                Focus::new(Vector3::new(
+                                    black_box(90.),
+                                    black_box(70.),
+                                    black_box(150.),
+                                )),
+                            )
+                        },
+                    )
+                    .calc(geometry, GainFilter::All)
+                    .unwrap();
+            })
+        },
+    );
+    group.finish();
+}
+
+criterion_group!(benches, focus, focus_cached, bessel, plane, group);
 criterion_main!(benches);

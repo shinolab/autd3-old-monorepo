@@ -14,13 +14,13 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 
-from pyautd3 import Controller, SilencerConfig
+from pyautd3 import Controller, Silencer
 from pyautd3.gain import Bessel
 from pyautd3.modulation import Sine
 
 
 def bessel(autd: Controller):
-    config = SilencerConfig()
+    config = Silencer()
     autd.send(config)
 
     f = Bessel(autd.geometry.center, np.array([0.0, 0.0, 1.0]), 13.0 / 180 * np.pi)

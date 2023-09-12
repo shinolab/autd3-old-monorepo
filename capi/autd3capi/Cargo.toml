@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi"
-version = "14.2.2"
+version = "15.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -8,16 +8,17 @@ license = "MIT"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3capi-def = { path = "../autd3capi-def", version = "14.2.2" }
-autd3-core = { path = "../../src/autd3-core", version = "14.2.2" }
+autd3capi-def = { path = "../autd3capi-def" }
+autd3-driver = { path = "../../src/autd3-driver" }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }
 
 [features]
-single_float = ["autd3capi-def/single_float", "autd3-core/single_float"]
-use_meter = ["autd3capi-def/use_meter", "autd3-core/use_meter"]
-parallel = ["autd3capi-def/parallel", "autd3-core/parallel"]
+single_float = ["autd3capi-def/single_float", "autd3-driver/single_float"]
+use_meter = ["autd3capi-def/use_meter", "autd3-driver/use_meter"]
+parallel = ["autd3capi-def/parallel"]
 
 [dev-dependencies]
+assert_approx_eq = "1.1.0"
 memoffset = "0.9.0"

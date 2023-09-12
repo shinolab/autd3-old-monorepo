@@ -11,7 +11,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, SilencerConfig
+from pyautd3 import Controller, Silencer
 from pyautd3.gain import Focus
 from pyautd3.stm import GainSTM
 from pyautd3.modulation import Static
@@ -19,7 +19,7 @@ import numpy as np
 
 
 def stm_gain(autd: Controller):
-    config = SilencerConfig.none()
+    config = Silencer.disable()
     autd.send(config)
 
     m = Static()

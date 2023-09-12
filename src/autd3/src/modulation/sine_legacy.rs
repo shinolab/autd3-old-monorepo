@@ -4,20 +4,15 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    modulation::{Modulation, ModulationProperty},
-    PI,
-};
-use autd3_traits::Modulation;
+use autd3_derive::Modulation;
+use autd3_driver::{defined::PI, derive::prelude::*};
 
 /// Sine wave modulation
 #[derive(Modulation, Clone, Copy)]
@@ -82,10 +77,9 @@ impl SineLegacy {
 impl Modulation for SineLegacy {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_frequency();
-        let freq = self.freq.clamp(
-            autd3_core::FPGA_SUB_CLK_FREQ as float / u32::MAX as float,
-            sf / 2.0,
-        );
+        let freq = self
+            .freq
+            .clamp(FPGA_SUB_CLK_FREQ as float / u32::MAX as float, sf / 2.0);
         let n = (1.0 / freq * sf).round() as usize;
         Ok((0..n)
             .map(|i| self.amp / 2.0 * (2.0 * PI * i as float / n as float).sin() + self.offset)
@@ -147,7 +141,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -159,7 +153,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
@@ -171,7 +165,7 @@ mod tests {
         assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();
-        assert!(vec.len() > 0);
+        assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));

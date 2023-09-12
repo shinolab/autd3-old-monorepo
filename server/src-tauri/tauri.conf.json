@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "AUTD Server",
-    "version": "14.2.2"
+    "version": "15.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -44,6 +44,11 @@
           },
           {
             "name": "SOEMAUTDServer",
+            "sidecar": true,
+            "args": true
+          },
+          {
+            "name": "LightweightTwinCATAUTDServer",
             "sidecar": true,
             "args": true
           }
@@ -104,7 +109,8 @@
       },
       "externalBin": [
         "simulator",
-        "SOEMAUTDServer"
+        "SOEMAUTDServer",
+        "LightweightTwinCATAUTDServer"
       ],
       "windows": {
         "certificateThumbprint": null,
@@ -126,7 +132,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "AUTD Server",
+        "title": "AUTD Server v15.0.0",
         "width": 800
       }
     ]

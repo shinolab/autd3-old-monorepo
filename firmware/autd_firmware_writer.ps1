@@ -3,13 +3,14 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 05/07/2023
+# Last Modified: 12/09/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
 # 
 
 Param(
+    [string]$version = "3.0.2",
     [string]$vivado_dir = "NULL"
 )
 
@@ -149,8 +150,18 @@ Start-Transcript "autd_firmware_writer.log" | Out-Null
 Write-Host "AUTD3 Firmware Writer"
 ColorEcho "Green" "INFO" "Make sure that you connected configuration cabels and AUTD's power is on."
 
+if (-not (Test-Path "tmp")) {
+    New-Item -ItemType directory -Path "tmp" | Out-Null
+}
+if (-not (Test-Path "tmp/v$version")) {
+  ColorEcho "Green" "INFO" "Downloading firmware files..."
+  Invoke-WebRequest "https://github.com/shinolab/autd3/releases/download/firmware%2Fv$version/firmware-v$version.zip" -OutFile "tmp.zip" | Out-Null
+  Expand-Archive -Path "tmp.zip" -DestinationPath "tmp/v$version" -Force
+  Remove-Item -Path "tmp.zip"
+}
+
 ColorEcho "Green" "INFO" "Found firmwares are..."
-$firmwares = Get-ChildItem bin
+$firmwares = Get-ChildItem "tmp/v$version"
 $fpga_firmware = ""
 $cpu_firmware = ""
 foreach ($firmware in $firmwares) {
@@ -166,7 +177,7 @@ foreach ($firmware in $firmwares) {
 }
 
 ColorEcho "Green" "INFO" "Select which firmware to be updated."
-Write-Host "[0]: Both"
+Write-Host "[0]: Both (Default)"
 Write-Host "[1]: FPGA"
 Write-Host "[2]: CPU"
 do {

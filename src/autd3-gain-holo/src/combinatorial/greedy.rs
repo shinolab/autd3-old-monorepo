@@ -4,30 +4,32 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/08/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
+use std::collections::HashMap;
+
 use crate::{constraint::Constraint, impl_holo, Complex};
-use autd3_core::{
+use autd3_derive::Gain;
+
+use autd3_driver::{
     acoustics::{propagate_tr, Sphere},
-    error::AUTDInternalError,
-    float,
-    gain::Gain,
-    geometry::{Geometry, Transducer, Vector3},
-    Drive, PI,
+    defined::PI,
+    derive::prelude::*,
+    geometry::{Geometry, Vector3},
 };
-use autd3_traits::Gain;
+
 use nalgebra::ComplexField;
 use rand::seq::SliceRandom;
 
 /// Gain to produce multiple foci with greedy algorithm
 ///
 /// Reference
-/// * Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
+/// * Suzuki, Shun, et al. "Radiation pressure field reconstruction for ultrasound midair haptics by Greedy algorithm with brute-force search." IEEE Transactions on Haptics 14.4 (2021): 914-921.
 #[derive(Gain)]
 pub struct Greedy {
     foci: Vec<Vector3>,
@@ -70,7 +72,11 @@ impl Greedy {
 }
 
 impl<T: Transducer> Gain<T> for Greedy {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)
             .map(|i| Complex::new(0., 2.0 * PI * i as float / self.phase_div as float).exp())
             .collect::<Vec<_>>();
@@ -80,17 +86,46 @@ impl<T: Transducer> Gain<T> for Greedy {
         let mut cache = vec![Complex::new(0., 0.); m];
 
         let amp = self.constraint.convert(1.0, 1.0);
-        let mut res = vec![Drive { amp, phase: 0.0 }; geometry.num_transducers()];
-        let mut tr_idx: Vec<_> = (0..geometry.num_transducers()).collect();
+        let mut res: HashMap<usize, Vec<Drive>> = geometry
+            .devices()
+            .map(|dev| {
+                (
+                    dev.idx(),
+                    vec![Drive { amp, phase: 0.0 }; dev.num_transducers()],
+                )
+            })
+            .collect();
+        let mut indices: Vec<_> = match filter {
+            GainFilter::All => geometry
+                .devices()
+                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.local_idx())))
+                .collect(),
+            GainFilter::Filter(filter) => geometry
+                .devices()
+                .filter_map(|dev| {
+                    filter.get(&dev.idx()).map(|filter| {
+                        dev.iter().filter_map(|tr| {
+                            if filter[tr.local_idx()] {
+                                Some((dev.idx(), tr.local_idx()))
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                })
+                .flatten()
+                .collect(),
+        };
+
         let mut rng = rand::thread_rng();
-        tr_idx.shuffle(&mut rng);
+        indices.shuffle(&mut rng);
 
         let mut tmp = vec![Complex::new(0., 0.); m];
-        tr_idx.iter().for_each(|&i| {
+        indices.iter().for_each(|&(dev_idx, tr_idx)| {
             Self::transfer_foci(
-                &geometry[i],
-                geometry.sound_speed,
-                geometry.attenuation,
+                &geometry[dev_idx][tr_idx],
+                geometry[dev_idx].sound_speed,
+                geometry[dev_idx].attenuation,
                 &self.foci,
                 &mut tmp,
             );
@@ -111,7 +146,7 @@ impl<T: Transducer> Gain<T> for Greedy {
             cache.iter_mut().zip(tmp.iter()).for_each(|(c, a)| {
                 *c += a * phase;
             });
-            res[i].phase = phase.argument() + PI;
+            res.get_mut(&dev_idx).unwrap()[tr_idx].phase = phase.argument() + PI;
         });
         Ok(res)
     }

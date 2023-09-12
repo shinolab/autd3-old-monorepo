@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,11 +18,11 @@ use std::{
 
 use itertools::Itertools;
 
-use autd3_core::{
+use autd3_driver::{
+    cpu::{RxDatagram, RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Device, Transducer},
     link::Link,
-    RxDatagram, RxMessage, TxDatagram,
 };
 
 use crate::{error::AdsError, remote::native_methods::*};
@@ -78,7 +78,7 @@ impl RemoteTwinCAT {
 }
 
 impl<T: Transducer> Link<T> for RemoteTwinCAT {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         let octets = self
             .server_ams_net_id
             .split('.')
@@ -168,8 +168,8 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
                 &addr as _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE,
-                tx.transmitting_size() as _,
-                tx.data().as_ptr() as _,
+                tx.all_data().len() as _,
+                tx.all_data().as_ptr() as _,
             )
         };
 

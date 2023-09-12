@@ -54,6 +54,14 @@ struct ControllerPtr {
   void* _0;
 };
 
+struct ConstraintPtr {
+  void* _0;
+};
+
+struct DevicePtr {
+  void* _0;
+};
+
 struct GeometryPtr {
   void* _0;
 };
@@ -70,11 +78,7 @@ struct LinkPtr {
   void* _0;
 };
 
-struct DatagramBodyPtr {
-  void* _0;
-};
-
-struct DatagramHeaderPtr {
+struct DatagramPtr {
   void* _0;
 };
 
@@ -87,6 +91,10 @@ struct STMPropsPtr {
 };
 
 struct BackendPtr {
+  void* _0;
+};
+
+struct GroupGainMapPtr {
   void* _0;
 };
 

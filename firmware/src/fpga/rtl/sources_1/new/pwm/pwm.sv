@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 11/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,6 +29,7 @@ module pwm #(
 
   bit [WIDTH-1:0] R[DEPTH];
   bit [WIDTH-1:0] F[DEPTH];
+  bit FULL_WIDTH[DEPTH];
 
   bit [WIDTH-1:0] cycle_m1[DEPTH];
   bit [WIDTH-1:0] cycle_m2[DEPTH];
@@ -66,11 +67,13 @@ module pwm #(
       .PHASE(PHASE),
       .RISE(R),
       .FALL(F),
+      .FULL_WIDTH(FULL_WIDTH),
       .DOUT_VALID(DOUT_VALID)
   );
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
     bit [WIDTH-1:0] R_buf, F_buf;
+    bit FULL_WIDTH_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)
     ) pwm_buffer (
@@ -79,8 +82,10 @@ module pwm #(
         .TIME_CNT(TIME_CNT[i]),
         .RISE_IN(R[i]),
         .FALL_IN(F[i]),
+        .FULL_WIDTH_IN(FULL_WIDTH[i]),
         .RISE_OUT(R_buf),
-        .FALL_OUT(F_buf)
+        .FALL_OUT(F_buf),
+        .FULL_WIDTH_OUT(FULL_WIDTH_buf)
     );
     pwm_generator #(
         .WIDTH(WIDTH)
@@ -89,6 +94,7 @@ module pwm #(
         .TIME_CNT(TIME_CNT[i]),
         .RISE(R_buf),
         .FALL(F_buf),
+        .FULL_WIDTH(FULL_WIDTH_buf),
         .PWM_OUT(PWM_OUT[i])
     );
   end

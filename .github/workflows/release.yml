@@ -12,7 +12,7 @@ env:
 jobs:
   license-check:
     runs-on: ubuntu-latest
-    name: Check license
+    name: check-license
     steps:
     - uses: actions/checkout@v3
     - name: Sync node version and setup cache
@@ -31,6 +31,7 @@ jobs:
         cargo run
 
   build:
+    name: publish-src
     needs: [license-check]
     runs-on: ubuntu-latest
     steps:
@@ -61,11 +62,7 @@ jobs:
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
-        cd autd3-core
-        cargo publish --no-verify --dry-run
-        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-        cd ..
-        cd autd3-traits
+        cd autd3-derive
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
@@ -85,6 +82,10 @@ jobs:
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd .. && sleep 60
+        cd autd3-backend-arrayfire
+        cargo publish --no-verify --dry-run
+        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
         cd autd3-protobuf
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
@@ -101,7 +102,7 @@ jobs:
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
-        cd autd3-link-monitor
+        cd autd3-link-visualizer
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
@@ -112,14 +113,10 @@ jobs:
         cd autd3-geometry-viewer
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-        cd ..
-        cd autd3-simulator
-        cargo publish --no-verify --dry-run
-        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
     needs: [license-check]
-    name: Create Github Release
+    name: create-github-release
     runs-on: ubuntu-latest
     steps:
     - name: Create Release
@@ -146,7 +143,7 @@ jobs:
 
   publish_win:
     needs: [release]
-    name: Upload Release Asset Windows
+    name: upload-release-asset-windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -211,54 +208,17 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity/Assets/autd3/Samples dotnet/unity/Assets/autd3/Samples~
-          rm -Force dotnet/unity/Assets/autd3/Samples.meta
-          cd dotnet/unity/Assets/autd3
+          mv dotnet/unity/Assets/Samples dotnet/unity/Assets/Samples~
+          rm -Force dotnet/unity/Assets/Samples.meta
+          cd dotnet/unity/Assets
           npm install
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  publish_firmware:
-    needs: [release]
-    name: Upload Release Asset Windows
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Get the version
-        id: get_version
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: string
-          script: |
-            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-firmware';
-      - name: Build project x64
-        run: |
-          Compress-Archive -Path firmware/bin, firmware/scripts, firmware/autd_firmware_writer.ps1, firmware/README.md -DestinationPath assets_x64.zip
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v1
-        with:
-          name: release_url
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: ./release_url/release_url.txt
-      - name: Upload Release Asset Win x64
-        id: upload-release-asset-win64
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ steps.get_release_info.outputs.content }}
-          asset_path: ./assets_x64.zip
-          asset_name: ${{ steps.get_version.outputs.result }}.zip
-          asset_content_type: application/zip
-
   publish_linux:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -329,9 +289,9 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity-linux/Assets/autd3/Samples dotnet/unity-linux/Assets/autd3/Samples~
-          rm -f dotnet/unity-linux/Assets/autd3/Samples.meta
-          cd dotnet/unity-linux/Assets/autd3
+          mv dotnet/unity-linux/Assets/Samples dotnet/unity-linux/Assets/Samples~
+          rm -f dotnet/unity-linux/Assets/Samples.meta
+          cd dotnet/unity-linux/Assets
           npm install
           npm publish
         env:
@@ -339,7 +299,7 @@ jobs:
   
   publish_linux-arm32:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux-arm32
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -361,6 +321,15 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+
+      - name: Set linker
+        run: |
+          cd capi
+          mkdir .cargo
+          touch .cargo/config
+          echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
+          echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
+
       - name: Build project arm32
         run: |
           cp LICENSE cpp/
@@ -390,7 +359,7 @@ jobs:
   
   publish_linux-aarch64:
     needs: [release]
-    name: Upload Release Asset Linux
+    name: upload-release-asset-linux-aarch64
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -412,6 +381,15 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+
+      - name: Set linker
+        run: |
+          cd capi
+          mkdir .cargo
+          touch .cargo/config
+          echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
+          echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config
+        
       - name: Build project aarch64
         run: |
           cp LICENSE cpp/
@@ -441,7 +419,7 @@ jobs:
   
   publish_mac:
     needs: [release]
-    name: Upload Release Asset macOS
+    name: upload-release-asset-macos
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -508,15 +486,16 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv dotnet/unity-mac/Assets/autd3/Samples dotnet/unity-mac/Assets/autd3/Samples~
-          rm -f dotnet/unity-mac/Assets/autd3/Samples.meta
-          cd dotnet/unity-mac/Assets/autd3
+          mv dotnet/unity-mac/Assets/Samples dotnet/unity-mac/Assets/Samples~
+          rm -f dotnet/unity-mac/Assets/Samples.meta
+          cd dotnet/unity-mac/Assets
           npm install
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish_pypi:
+    name: publish-python-${{ matrix.os }}
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -528,36 +507,40 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install twine wheel build
+        pip install -U  twine wheel build
         cd python
         python download_bin.py
     - name: Build whl
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux1-x86_64"
+        cp -f setup.cfg.linux-x86_64 setup.cfg
+        python -m build -w
     - name: Build whl
       if: matrix.os == 'windows-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=win-amd64"
+        cp -f setup.cfg.linux-x86_64 setup.cfg
+        python -m build -w
     - name: Build whl
       if: matrix.os == 'macos-latest'
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-10-13-x86_64"
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=macosx-11-0-arm64"
+        cp -f setup.cfg.mac-x86_64 setup.cfg
+        python -m build -w
+        cp -f setup.cfg.mac-aarch64 setup.cfg
+        python -m build -w
     - name: Publish
       run: |
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-arm32:
+    name: publish-python-linux-arm32
     needs: [build, publish_linux-arm32]
     runs-on: ubuntu-latest
     strategy:
@@ -567,24 +550,25 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install twine wheel build
+        pip install -U  twine wheel build
         cd python
         python download_bin.py --arch armv7
     - name: Build whl
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=linux_armv7l"
+        cp -f setup.cfg.linux-armv7 setup.cfg
+        python -m build -w
     - name: Publish
       run: |
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_pypi-linux-aarch64:
+    name: publish-python-linux-aarch64
     needs: [build, publish_linux-aarch64]
     runs-on: ubuntu-latest
     strategy:
@@ -594,24 +578,25 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install twine wheel build
+        pip install -U  twine wheel build
         cd python
         python download_bin.py --arch aarch64
     - name: Build whl
       run: |
         cd python
-        python -m build -w -C="--build-option=--plat-name" -C="--build-option=manylinux2014_aarch64"
+        cp -f setup.cfg.linux-aarch64 setup.cfg
+        python -m build -w
     - name: Publish
       run: |
         cd python
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
-
   publish_nuget:
+    name: publish-nuget
     needs: [build, publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
@@ -650,6 +635,7 @@ jobs:
       working-directory: ./dotnet/cs/src
 
   publish-server:
+    name: publish-server-${{ matrix.os }}
     needs: [release]
     permissions:
       contents: write
@@ -669,19 +655,6 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           rustup target add aarch64-apple-darwin
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/src-tauri -> target'
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/simulator -> target'
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/SOEMAUTDServer -> target'
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
@@ -729,6 +702,26 @@ jobs:
         run: |
           cd server 
           npm install
+      - name: build
+        if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
+        run: |
+          cd server
+          cd simulator
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+          cd ..
+          cd SOEMAUTDServer
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+      - name: build
+        if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
+        run: |
+          cd server
+          cd simulator
+          cargo build --release
+          cd ..
+          cd SOEMAUTDServer
+          cargo build --release
       - name: Load Release ID File from release job
         uses: actions/download-artifact@v1
         with:

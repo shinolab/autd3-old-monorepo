@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,16 +24,7 @@ module SampleRunner =
                 (GainSTMTest.Test, "GainSTM Test");
                 (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)");
                 (CustomTest.Test, "Custom Test (Custom Focus)")];
-        let examples = 
-            if autd.Geometry.NumDevices = 2 then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
 
-        let firmwareList = autd.FirmwareInfoList()
-        let inline print_warn msg = 
-                System.Console.ForegroundColor <- System.ConsoleColor.Yellow
-                printfn "%s" msg
-                System.Console.ResetColor()
-        if firmwareList |> Seq.exists (fun firm -> not firm.IsValid) then print_warn "WARN: FPGA and CPU firmware version do not match."
-        if firmwareList |> Seq.exists (fun firm -> not firm.IsSupported) then print_warn (sprintf "WARN: You are using old firmware. Please consider updating to %s." FirmwareInfo.LatestVersion)
         printfn "==================================== Firmware information ======================================"
         autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")
         printfn "================================================================================================"

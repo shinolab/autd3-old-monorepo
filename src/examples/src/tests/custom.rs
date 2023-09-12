@@ -4,39 +4,37 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use std::collections::HashMap;
+
 use autd3::{
-    core::{
-        error::AUTDInternalError,
-        float,
-        gain::Gain,
-        geometry::{Geometry, Transducer},
-        modulation::Modulation,
-        Drive,
-    },
+    derive::{Gain, Modulation},
+    driver::derive::prelude::*,
     prelude::*,
-    traits::{Gain, Modulation},
 };
 
-/// Gain to produce single focal point
 #[derive(Gain, Clone, Copy)]
-pub struct Uniform {}
+pub struct MyUniform {}
 
-impl Uniform {
+impl MyUniform {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl<T: Transducer> Gain<T> for Uniform {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(Self::transform(geometry, |_| Drive {
+impl<T: Transducer> Gain<T> for MyUniform {
+    fn calc(
+        &self,
+        geometry: &Geometry<T>,
+        filter: GainFilter,
+    ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
             phase: 0.0,
             amp: 1.0,
         }))
@@ -62,13 +60,16 @@ impl Modulation for Burst {
     }
 }
 
-pub fn custom<T: Transducer, L: Link<T>>(
-    autd: &mut Controller<T, L>,
-) -> anyhow::Result<bool, AUTDError> {
-    autd.send(SilencerConfig::none())?;
+pub fn custom<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+where
+    autd3::driver::operation::GainOp<T, MyUniform>: autd3::driver::operation::Operation<T>,
+{
+    autd.send(Silencer::disable())?;
 
-    let g = Uniform::new();
+    let g = MyUniform::new();
     let m = Burst::new();
 
-    autd.send((m, g))
+    autd.send((m, g))?;
+
+    Ok(true)
 }

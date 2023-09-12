@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/07/2023
+ * Last Modified: 21/08/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,8 +36,7 @@ fn main() {
         .flag("-gencode=arch=compute_80,code=sm_80")
         .flag("-gencode=arch=compute_86,code=sm_86")
         .flag("-gencode=arch=compute_87,code=sm_87")
-        .flag("-gencode=arch=compute_90,code=sm_90")
-        .flag("-gencode=arch=compute_90,code=compute_90")
+        .flag("-gencode=arch=compute_86,code=compute_86")
         .file("cuda_src/kernel.cu")
         .compile("autd3_cuda_kernel");
 

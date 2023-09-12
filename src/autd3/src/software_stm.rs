@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/07/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,10 @@
 
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
-    Arc,
+    Arc, Condvar, Mutex,
 };
 
-use autd3_core::{
+use autd3_driver::{
     datagram::Datagram,
     geometry::Transducer,
     link::Link,
@@ -32,12 +32,14 @@ pub struct SoftwareSTM<
     T: Transducer,
     L: Link<T>,
     S: Datagram<T>,
-    Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+    Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
     Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
+    Fe: FnMut(AUTDError) -> bool + Send + 'static,
 > {
     controller: &'a mut Controller<T, L>,
     callback_loop: Fs,
-    callback_finish: Ff,
+    finish_signal: Ff,
+    callback_err: Fe,
     timer_strategy: TimerStrategy,
 }
 
@@ -46,19 +48,22 @@ impl<
         T: Transducer,
         L: Link<T>,
         S: Datagram<T>,
-        Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+        Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
         Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
-    > SoftwareSTM<'a, T, L, S, Fs, Ff>
+        Fe: FnMut(AUTDError) -> bool + Send + 'static,
+    > SoftwareSTM<'a, T, L, S, Fs, Ff, Fe>
 {
     pub(crate) fn new(
         controller: &'a mut Controller<T, L>,
         callback_loop: Fs,
-        callback_finish: Ff,
+        finish_signal: Ff,
+        callback_err: Fe,
     ) -> Self {
         Self {
             controller,
             callback_loop,
-            callback_finish,
+            finish_signal,
+            callback_err,
             timer_strategy: TimerStrategy::Sleep,
         }
     }
@@ -77,11 +82,14 @@ struct SoftwareSTMCallback<
     T: Transducer,
     L: Link<T>,
     S: Datagram<T>,
-    Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+    Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
+    Fe: FnMut(AUTDError) -> bool + Send + 'static,
 > {
     controller: &'a mut Controller<T, L>,
     callback_loop: Fs,
+    callback_err: Fe,
     i: Arc<AtomicUsize>,
+    wait: Arc<(Mutex<bool>, Condvar)>,
     now: Arc<std::time::Instant>,
 }
 
@@ -90,12 +98,23 @@ impl<
         T: Transducer,
         L: Link<T>,
         S: Datagram<T>,
-        Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
-    > TimerCallback for SoftwareSTMCallback<'a, T, L, S, Fs>
+        Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
+        Fe: FnMut(AUTDError) -> bool + Send + 'static,
+    > TimerCallback for SoftwareSTMCallback<'a, T, L, S, Fs, Fe>
 {
     fn rt_thread(&mut self) {
-        let s = (self.callback_loop)(self.i.load(Ordering::Acquire), self.now.elapsed());
-        let _ = self.controller.send(s);
+        if let Some(s) = (self.callback_loop)(self.i.load(Ordering::Acquire), self.now.elapsed()) {
+            match self.controller.send(s) {
+                Ok(_) => {}
+                Err(e) => {
+                    if (self.callback_err)(e) {
+                        let (lock, cvar) = &*self.wait;
+                        *lock.lock().unwrap() = true;
+                        cvar.notify_one();
+                    }
+                }
+            }
+        }
         self.i.fetch_add(1, Ordering::Release);
     }
 }
@@ -105,16 +124,18 @@ impl<
         T: Transducer,
         L: Link<T>,
         S: Datagram<T>,
-        Fs: FnMut(usize, std::time::Duration) -> S + Send + 'static,
+        Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
         Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
-    > SoftwareSTM<'a, T, L, S, Fs, Ff>
+        Fe: FnMut(AUTDError) -> bool + Send + 'static,
+    > SoftwareSTM<'a, T, L, S, Fs, Ff, Fe>
 {
     /// Start STM with specified interval
     pub fn start(self, interval: std::time::Duration) -> Result<bool, AUTDError> {
         let Self {
             controller,
             mut callback_loop,
-            mut callback_finish,
+            mut finish_signal,
+            mut callback_err,
             timer_strategy,
         } = self;
 
@@ -125,78 +146,109 @@ impl<
         match timer_strategy {
             TimerStrategy::Sleep => std::thread::scope(|s| {
                 s.spawn(|| loop {
-                    if callback_finish(i.load(Ordering::Acquire), now.elapsed()) {
+                    if finish_signal(i.load(Ordering::Acquire), now.elapsed()) {
                         fin.store(true, Ordering::Release);
                         break;
                     }
                 });
                 s.spawn(|| -> Result<bool, AUTDError> {
-                    while !fin.load(Ordering::Acquire) {
-                        let s = callback_loop(i.load(Ordering::Acquire), now.elapsed());
-                        controller.send(s)?;
+                    Ok(loop {
+                        if fin.load(Ordering::Acquire) {
+                            break true;
+                        }
+                        if let Some(s) = callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
+                            match controller.send(s) {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    if callback_err(e) {
+                                        break false;
+                                    }
+                                }
+                            }
+                        }
                         i.fetch_add(1, Ordering::Release);
                         let sleep = next.saturating_sub(now.elapsed());
                         if !sleep.is_zero() {
                             std::thread::sleep(sleep);
                         }
                         next += interval;
-                    }
-                    Ok(true)
+                    })
                 })
                 .join()
                 .unwrap()
             }),
             TimerStrategy::BusyWait => std::thread::scope(|s| {
                 s.spawn(|| loop {
-                    if callback_finish(i.load(Ordering::Acquire), now.elapsed()) {
+                    if finish_signal(i.load(Ordering::Acquire), now.elapsed()) {
                         fin.store(true, Ordering::Release);
                         break;
                     }
                 });
                 s.spawn(|| -> Result<bool, AUTDError> {
-                    while !fin.load(Ordering::Acquire) {
-                        let s = callback_loop(i.load(Ordering::Acquire), now.elapsed());
-                        controller.send(s)?;
+                    Ok(loop {
+                        if fin.load(Ordering::Acquire) {
+                            break true;
+                        }
+                        if let Some(s) = callback_loop(i.load(Ordering::Acquire), now.elapsed()) {
+                            match controller.send(s) {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    if callback_err(e) {
+                                        break false;
+                                    }
+                                }
+                            }
+                        }
                         i.fetch_add(1, Ordering::Release);
                         while now.elapsed() < next {
                             std::hint::spin_loop();
                         }
                         next += interval;
-                    }
-                    Ok(true)
+                    })
                 })
                 .join()
                 .unwrap()
             }),
             TimerStrategy::NativeTimer => std::thread::scope(|s| -> Result<bool, AUTDError> {
+                let wait = Arc::new((std::sync::Mutex::new(false), std::sync::Condvar::new()));
                 let handle = match Timer::start(
                     SoftwareSTMCallback {
                         controller,
                         callback_loop,
+                        callback_err,
                         i: i.clone(),
+                        wait: wait.clone(),
                         now: now.clone(),
                     },
                     interval,
                 ) {
                     Ok(handle) => handle,
                     Err(e) => {
-                        return Err(AUTDError::Internal(
-                            autd3_core::error::AUTDInternalError::TimerError(e),
-                        ));
+                        return Err(AUTDError::Internal(e));
                     }
                 };
-                s.spawn(|| -> Result<bool, AUTDError> {
+                let wait2 = wait.clone();
+                let fin2 = fin.clone();
+                s.spawn(move || {
+                    let (lock, cvar) = &*wait2;
                     loop {
-                        if callback_finish(i.load(Ordering::Acquire), now.elapsed()) {
-                            match handle.close() {
-                                Ok(_) => return Ok(true),
-                                Err(e) => {
-                                    return Err(AUTDError::Internal(
-                                        autd3_core::error::AUTDInternalError::TimerError(e),
-                                    ))
-                                }
-                            }
+                        if finish_signal(i.load(Ordering::Acquire), now.elapsed()) {
+                            fin2.store(true, Ordering::Relaxed);
+                            *lock.lock().unwrap() = true;
+                            cvar.notify_one();
+                            break;
                         }
+                    }
+                });
+                s.spawn(move || -> Result<bool, AUTDError> {
+                    let (lock, cvar) = &*wait;
+                    let mut exit = lock.lock().unwrap();
+                    while !*exit {
+                        exit = cvar.wait(exit).unwrap();
+                    }
+                    match handle.close() {
+                        Ok(_) => Ok(fin.load(Ordering::Relaxed)),
+                        Err(e) => Err(AUTDError::Internal(e)),
                     }
                 })
                 .join()

@@ -1,6 +1,6 @@
 # Plane
 
-`Plane`は平面波を出力する
+`Plane`は平面波を出力する.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -23,7 +23,7 @@ const auto g = autd3::gain::Plane(autd3::Vector3(nx, ny, nz));
 ```
 
 ```cs
-var g = new Bessel(new Vector3d(nx, ny, nz));
+var g = new Plane(new Vector3d(nx, ny, nz));
 ```
 
 ```python
@@ -56,7 +56,7 @@ const auto g = autd3::gain::Plane(autd3::Vector3(nx, ny, nz)).with_amp(1);
 ```
 
 ```cs
-var g = new Bessel(new Vector3d(nx, ny, nz)).WithAmp(1);
+var g = new Plane(new Vector3d(nx, ny, nz)).WithAmp(1);
 ```
 
 ```python

@@ -16,10 +16,9 @@ from .primitive import (
     Static,
     Modulation,
     Sine,
+    Fourier,
     SineLegacy,
     Square,
-    RadiationPressure,
-    Cache,
 )
 from .audio_file import Wav
 
@@ -28,9 +27,8 @@ __all__ = [
     "Static",
     "Modulation",
     "Sine",
+    "Fourier",
     "SineLegacy",
     "Square",
-    "Cache",
-    "RadiationPressure",
     "Wav",
 ]

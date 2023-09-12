@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,16 +18,16 @@ open AUTD3Sharp.Utils
 
 module FocusSTMTest =
     let Test (autd : Controller) = 
-        (SilencerConfig.None()) |> autd.Send |> ignore;
+        (Silencer.Disable()) |> autd.Send |> ignore;
 
         (new Static()) |> autd.Send |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
-        let stm = new FocusSTM(1.);
-        [0..199]
+        let stm = 
+            [0..199]
             |> List.map (fun i -> (2.0 * AUTD3.Pi * (float)i / 200.0))
             |> List.map (fun theta -> (center + 30.0 * Vector3d(cos(theta), sin(theta), 0.0)))
-            |> List.iter stm.AddFocus
+            |> List.fold (fun (acc: FocusSTM) v -> acc.AddFocus v) (new FocusSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
         (stm)|> autd.Send |> ignore

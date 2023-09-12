@@ -1,182 +1,82 @@
 /*
- * File: datagram.rs
+ * File: rx_message.rs
  * Project: cpu
- * Created Date: 02/05/2022
+ * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/07/2023
+ * Last Modified: 05/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
 use std::ops::{Deref, DerefMut};
 
-use crate::{
-    cpu::{Body, GlobalHeader, LegacyPhaseFull, LegacyPhaseHalf},
-    fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
-};
+use crate::cpu::{Header, EC_OUTPUT_FRAME_SIZE};
 
 #[derive(Clone)]
 pub struct TxDatagram {
     data: Vec<u8>,
-    body_pointer: Vec<usize>,
-    device_map: Vec<usize>,
-    pub num_bodies: usize,
+    num_devices: usize,
 }
 
 impl TxDatagram {
-    pub fn new(device_map: &[usize]) -> Self {
-        let device_map = device_map.to_vec();
-        let num_bodies = device_map.len();
-        let head = &[0usize];
-        let body_pointer = head
-            .iter()
-            .chain(device_map.iter())
-            .scan(0, |state, tr_num| {
-                *state += std::mem::size_of::<u16>() * tr_num;
-                Some(*state)
-            })
-            .collect::<Vec<_>>();
+    pub fn new(num_devices: usize) -> Self {
         Self {
-            data: vec![0x00; std::mem::size_of::<GlobalHeader>() + body_pointer.last().unwrap()],
-            body_pointer,
-            device_map,
-            num_bodies,
+            data: vec![0x00; (EC_OUTPUT_FRAME_SIZE) * num_devices],
+            num_devices,
         }
     }
 
     pub fn num_devices(&self) -> usize {
-        self.body_pointer.len() - 1
+        self.num_devices
     }
 
-    pub fn num_transducers(&self) -> usize {
-        self.body_pointer[self.num_bodies] / std::mem::size_of::<u16>()
-    }
-
-    pub fn transmitting_size(&self) -> usize {
-        std::mem::size_of::<GlobalHeader>() + self.body_pointer[self.num_bodies]
-    }
-
-    pub fn body_size(&self) -> usize {
-        self.body_pointer[self.num_bodies]
-    }
-
-    pub fn data(&self) -> &[u8] {
+    pub fn all_data(&self) -> &[u8] {
         &self.data
     }
 
-    pub fn header(&self) -> &GlobalHeader {
-        unsafe { &*(self.data.as_ptr() as *const GlobalHeader) }
+    pub fn all_data_mut(&mut self) -> &mut [u8] {
+        &mut self.data
     }
 
-    pub fn header_mut(&mut self) -> &mut GlobalHeader {
-        unsafe { &mut *(self.data.as_mut_ptr() as *mut GlobalHeader) }
+    pub fn data(&self, i: usize) -> &[u8] {
+        &self.data[i * EC_OUTPUT_FRAME_SIZE..(i + 1) * EC_OUTPUT_FRAME_SIZE]
     }
 
-    pub fn body_raw_mut(&mut self) -> &mut [u16] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+    pub fn headers(&self) -> impl Iterator<Item = &Header> {
+        (0..self.num_devices).map(|i| self.header(i))
+    }
+
+    pub fn header(&self, i: usize) -> &Header {
         unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>()) as *mut u16,
-                len,
-            )
+            (self.data[i * EC_OUTPUT_FRAME_SIZE..].as_ptr() as *const Header)
+                .as_ref()
+                .unwrap()
         }
     }
 
-    pub fn legacy_drives_mut(&mut self) -> &mut [LegacyDrive] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+    pub fn header_mut(&mut self, i: usize) -> &mut Header {
         unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>()) as *mut LegacyDrive,
-                len,
-            )
+            (self.data[i * EC_OUTPUT_FRAME_SIZE..].as_mut_ptr() as *mut Header)
+                .as_mut()
+                .unwrap()
         }
     }
 
-    pub fn legacy_phase_full_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseFull<N>] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
-        unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut LegacyPhaseFull<N>,
-                len,
-            )
-        }
+    pub fn payload(&self, i: usize) -> &[u8] {
+        &self.data[i * EC_OUTPUT_FRAME_SIZE + std::mem::size_of::<Header>()
+            ..(i + 1) * EC_OUTPUT_FRAME_SIZE]
     }
 
-    pub fn legacy_phase_half_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseHalf<N>] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
-        unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut LegacyPhaseHalf<N>,
-                len,
-            )
-        }
+    pub fn payload_mut(&mut self, i: usize) -> &mut [u8] {
+        &mut self.data[i * EC_OUTPUT_FRAME_SIZE + std::mem::size_of::<Header>()
+            ..(i + 1) * EC_OUTPUT_FRAME_SIZE]
     }
 
-    pub fn duties_mut(&mut self) -> &mut [AdvancedDriveDuty] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
-        unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut AdvancedDriveDuty,
-                len,
-            )
-        }
-    }
-
-    pub fn phases_mut(&mut self) -> &mut [AdvancedDrivePhase] {
-        let len =
-            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
-        unsafe {
-            &mut *std::ptr::slice_from_raw_parts_mut(
-                self.data
-                    .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut AdvancedDrivePhase,
-                len,
-            )
-        }
-    }
-
-    pub fn body(&self, idx: usize) -> &Body<[u16]> {
-        unsafe {
-            let ptr = self
-                .data
-                .as_ptr()
-                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
-            let len = self.device_map[idx];
-            &*(std::ptr::slice_from_raw_parts(ptr as *const u16, len) as *const Body<[u16]>)
-        }
-    }
-
-    pub fn body_mut(&mut self, idx: usize) -> &mut Body<[u16]> {
-        unsafe {
-            let ptr = self
-                .data
-                .as_mut_ptr()
-                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
-            let len = self.device_map[idx];
-            &mut *(std::ptr::slice_from_raw_parts_mut(ptr as *mut u16, len) as *mut Body<[u16]>)
-        }
+    pub fn payloads(&self) -> impl Iterator<Item = &[u8]> {
+        (0..self.num_devices).map(|i| self.payload(i))
     }
 
     pub fn copy_from(&mut self, src: &TxDatagram) {
@@ -187,13 +87,13 @@ impl TxDatagram {
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct RxMessage {
+    pub data: u8,
     pub ack: u8,
-    pub msg_id: u8,
 }
 
 impl RxMessage {
-    pub fn new() -> Self {
-        Self { ack: 0, msg_id: 0 }
+    pub const fn new() -> Self {
+        Self { data: 0, ack: 0 }
     }
 }
 
@@ -214,10 +114,6 @@ impl RxDatagram {
         }
     }
 
-    pub fn is_msg_processed(&self, msg_id: u8) -> bool {
-        self.data.iter().all(|msg| msg.msg_id == msg_id)
-    }
-
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -231,12 +127,9 @@ impl RxDatagram {
     }
 
     pub fn copy_from_iter<I: IntoIterator<Item = RxMessage>>(&mut self, src: I) {
-        self.data
-            .iter_mut()
-            .zip(src.into_iter())
-            .for_each(|(dst, src)| {
-                *dst = src;
-            });
+        self.data.iter_mut().zip(src).for_each(|(dst, src)| {
+            *dst = src;
+        });
     }
 }
 
@@ -261,48 +154,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tx_datagram() {
-        let device_map = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        let mut tx = TxDatagram::new(&device_map);
-
-        assert_eq!(tx.num_devices(), 10);
-        assert_eq!(tx.num_transducers(), 55);
-        assert_eq!(tx.transmitting_size(), 128 + size_of::<u16>() * 55);
-
-        tx.num_bodies = 5;
-        assert_eq!(tx.num_devices(), 10);
-        assert_eq!(tx.num_transducers(), 15);
-        assert_eq!(tx.transmitting_size(), 128 + size_of::<u16>() * 15);
-
-        assert_eq!(tx.data().as_ptr(), tx.header() as *const _ as *const u8);
-        unsafe {
-            assert_eq!(
-                tx.data().as_ptr().add(128),
-                tx.body_raw_mut().as_ptr() as *const u8
-            );
-            let mut cursor = tx.data().as_ptr().add(128);
-            device_map.iter().enumerate().for_each(|(i, dev)| {
-                assert_eq!(cursor, tx.body(i) as *const _ as *const u8);
-                cursor = cursor.add(size_of::<u16>() * dev);
-            });
-        }
-    }
-
-    #[test]
     fn rx_datagram() {
         assert_eq!(size_of::<RxMessage>(), 2);
-
-        let mut rx = RxDatagram::new(10);
-
-        assert!(!rx.is_msg_processed(1));
-
-        rx[0].msg_id = 1;
-        assert!(!rx.is_msg_processed(1));
-
-        rx.iter_mut().for_each(|msg| {
-            msg.msg_id = 1;
-        });
-        assert!(rx.is_msg_processed(1));
-        assert!(!rx.is_msg_processed(2));
     }
 }

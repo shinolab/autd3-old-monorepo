@@ -38,6 +38,8 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * Before using, write the latest firmware in `firmware`. 
     * For more information, please see [README](./firmware/README.md).
 
+* **From v15.0.0, the software is completely incompatible with v2.x firmware.**
+
 ## Example
 
 * See [examples](./src/examples)

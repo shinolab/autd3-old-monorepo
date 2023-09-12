@@ -6,16 +6,11 @@ Here, we will define a `FocalPoint` that generates a single focus just like `Foc
 
 ```rust,edition2021
 # extern crate autd3;
-# extern crate autd3_core;
+use std::collections::HashMap;
 use autd3::{
-    core::{
-        error::AUTDInternalError,
-        gain::Gain,
-        geometry::{Geometry, Transducer},
-        Drive,
-    },
+    driver::derive::prelude::*,
+    derive::Gain,
     prelude::*,
-    traits::Gain,
 };
 
 #[derive(Gain, Clone, Copy)]
@@ -30,10 +25,9 @@ impl FocalPoint {
 }
 
 impl<T: Transducer> Gain<T> for FocalPoint {
-    fn calc(&self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let sound_speed = geometry.sound_speed; 
-        Ok(Self::transform(geometry, |tr| Drive {
-            phase: (tr.position() - self.position).norm() * tr.wavelength(sound_speed),
+    fn calc(&self, geometry: &Geometry<T>, filter: GainFilter) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |dev, tr: &T| Drive {
+            phase: (tr.position() - self.position).norm() * tr.wavelength(dev.sound_speed),
             amp: 1.0,
         }))
     }

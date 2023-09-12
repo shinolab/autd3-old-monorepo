@@ -11,19 +11,17 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-import warnings
 
 import functools
 import numpy as np
-from typing import Optional, List, Callable, Iterator
+from typing import Optional, List, Callable, Tuple, TypeVar, Generic, Dict
 from abc import ABCMeta, abstractmethod
-from ctypes import POINTER, create_string_buffer
+from ctypes import POINTER, c_int32, c_uint32
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import GainPtr, AUTD3_ERR
-from pyautd3.geometry import Geometry, Transducer
+from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.geometry import Transducer, Geometry, Device
 from .gain import IGain
 
 
@@ -103,105 +101,94 @@ class Null(IGain):
         return Base().gain_null()
 
 
-class Grouped(IGain):
-    _gains: List[IGain]
-    _indices: List[np.ndarray]
+K = TypeVar("K")
 
-    def __init__(self):
+
+class Group(IGain, Generic[K]):
+    _map: Dict[K, IGain]
+    _f: Callable[[Device, Transducer], Optional[K]]
+
+    def __init__(self, f: Callable[[Device, Transducer], Optional[K]]):
         super().__init__()
-        self._gains = []
-        self._indices = []
+        self._map = {}
+        self._f = f
 
-    def add_gain(self, device_idx: int, gain: IGain) -> "Grouped":
-        warnings.warn("`add_gain` is deprecated, use `add` instead", UserWarning)
-        self._gains.append(gain)
-        self._indices.append(np.array([device_idx], dtype=np.uint32))
-        return self
-
-    def add(self, device_idx: int, gain: IGain) -> "Grouped":
-        self._gains.append(gain)
-        self._indices.append(np.array([device_idx], dtype=np.uint32))
-        return self
-
-    def add_by_group(self, device_ids: List[int], gain: IGain) -> "Grouped":
-        self._gains.append(gain)
-        self._indices.append(np.array(device_ids, dtype=np.uint32))
+    def set(self, key: K, gain: IGain) -> "Group":
+        self._map[key] = gain
         return self
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        return functools.reduce(
-            lambda acc, v: Base().gain_grouped_add_by_group(
-                acc,
-                np.ctypeslib.as_ctypes(v[0]),
-                len(v[0]),
-                v[1].gain_ptr(geometry),
-            ),
-            zip(self._indices, self._gains),
-            Base().gain_grouped(),
+
+        keymap: Dict[K, int] = {}
+
+        device_indices = np.array([dev.idx for dev in geometry])
+
+        map = Base().gain_group_create_map(np.ctypeslib.as_ctypes(device_indices.astype(c_uint32)), len(device_indices))
+        k: int = 0
+        for dev in geometry:
+            m = np.zeros(dev.num_transducers, dtype=np.int32)
+            for tr in dev:
+                key = self._f(dev, tr)
+                if key is not None:
+                    if key not in keymap:
+                        keymap[key] = k
+                        k += 1
+                    m[tr.local_idx] = keymap[key]
+                else:
+                    m[tr.local_idx] = -1
+            map = Base().gain_group_map_set(map, dev.idx, np.ctypeslib.as_ctypes(m.astype(c_int32)))
+
+        keys: np.ndarray = np.ndarray(len(self._map), dtype=np.int32)
+        values: np.ndarray = np.ndarray(len(self._map), dtype=GainPtr)
+        for i, (key, value) in enumerate(self._map.items()):
+            keys[i] = keymap[key]
+            values[i]["_0"] = value.gain_ptr(geometry)._0
+        return Base().gain_group(
+            map,
+            np.ctypeslib.as_ctypes(keys.astype(c_int32)),
+            values.ctypes.data_as(POINTER(GainPtr)),  # type: ignore
+            len(keys),
         )
 
 
 class TransTest(IGain):
-    _indices: List[int]
-    _amps: List[float]
-    _phases: List[float]
+    _data: List[Tuple[int, int, float, float]]
 
     def __init__(self):
         super().__init__()
-        self._indices = []
-        self._amps = []
-        self._phases = []
+        self._data = []
 
-    def set(self, tr_idx: int, amp: float, phase: float):
-        self._indices.append(tr_idx)
-        self._amps.append(amp)
-        self._phases.append(phase)
+    def set(self, dev_idx: int, tr_idx: int, amp: float, phase: float):
+        self._data.append((dev_idx, tr_idx, phase, amp))
 
     def gain_ptr(self, _: Geometry) -> GainPtr:
         return functools.reduce(
-            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2]),
-            zip(self._indices, self._phases, self._amps),
+            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2], v[3]),
+            self._data,
             Base().gain_transducer_test(),
         )
 
 
 class Gain(IGain, metaclass=ABCMeta):
     @abstractmethod
-    def calc(self, geometry: Geometry) -> np.ndarray:
+    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         pass
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
         drives = self.calc(geometry)
-        size = len(drives)
-        return Base().gain_custom(drives.ctypes.data_as(POINTER(Drive)), size)  # type: ignore
+        return functools.reduce(
+            lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
+                                                    drives[dev.idx].ctypes.data_as(POINTER(GainPtr)),  # type: ignore
+                                                    len(drives[dev.idx])),
+            geometry,
+            Base().gain_custom(),
+        )
 
     @staticmethod
-    def transform(geometry: Geometry, f: Callable[[Transducer], Drive]) -> np.ndarray:
-        return np.fromiter(map(lambda tr: np.void(f(tr)), geometry), dtype=Drive)  # type: ignore
-
-
-class Cache(IGain):
-    _drives: np.ndarray
-
-    def __init__(self, g: IGain, geometry: Geometry):
-        super().__init__()
-        self._drives = np.zeros(geometry.num_transducers, dtype=Drive)
-        dp = np.ctypeslib.as_ctypes(self._drives)
-        err = create_string_buffer(256)
-        if Base().gain_calc(g.gain_ptr(geometry), geometry.ptr(), dp, err) == AUTD3_ERR:
-            raise AUTDError(err)
-
-    def gain_ptr(self, _: Geometry) -> GainPtr:
-        size = len(self._drives)
-        dp = np.ctypeslib.as_ctypes(self._drives)
-        return Base().gain_custom(dp, size)
-
-    @property
-    def drives(self) -> np.ndarray:
-        return self._drives
-
-    def __getitem__(self, key: int) -> Drive:
-        return self._drives[key]
-
-    def __iter__(self) -> Iterator[Drive]:
-        return iter(self._drives)
+    def transform(geometry: Geometry, f: Callable[[Device, Transducer], Drive]) -> Dict[int, np.ndarray]:
+        return dict(
+            map(
+                lambda dev: (dev.idx, np.fromiter(map(lambda tr: np.void(f(dev, tr)), dev), dtype=Drive)),  # type: ignore
+                geometry,
+            )
+        )

@@ -17,7 +17,7 @@ As a rough outline,
 
 ## Silencer Config
 
-To configure the silencer, send `SilencerConfig` to the controller.
+To configure the silencer, send `Silencer` to the controller.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -25,30 +25,30 @@ To configure the silencer, send `SilencerConfig` to the controller.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let config = SilencerConfig::default();
+let config = Silencer::default();
 autd.send(config)?;
 # Ok(())
 # }
 ```
 
 ```cpp
-autd3::SilencerConfig config;
+autd3::Silencer config;
 autd.send(config);
 ```
 
 ```cs
-var config = new SilencerConfig();
+var config = new Silencer();
 autd.Send(config);
 ```
 
 ```python
-from pyautd3 import SilencerConfig
+from pyautd3 import Silencer
 
-config = SilencerConfig()
+config = Silencer()
 autd.send(config)
 ```
 
-You can set `step` to `SilencerConfig`.
+You can set `step` to `Silencer`.
 Refer to the followwing for details.
 Roughly, the smaller the `step`, the quieter it becomes.
 
@@ -59,21 +59,21 @@ Roughly, the smaller the `step`, the quieter it becomes.
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let step = 10;
-let config = SilencerConfig::new(step);
+let config = Silencer::new(step);
 # Ok(())
 # }
 ```
 
 ```cpp
-autd3::SilencerConfig config(step);
+autd3::Silencer config(step);
 ```
 
 ```cs
-var config = new SilencerConfig(step);
+var config = new Silencer(step);
 ```
 
 ```python
-config = SilencerConfig(step)
+config = Silencer(step)
 ```
 
 ## Disabling Silencer
@@ -87,21 +87,21 @@ To disable the silencer, do the following.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let config = SilencerConfig::none();
+let config = Silencer::disable();
 # Ok(())
 # }
 ```
 
 ```cpp
-const auto config = autd3::SilencerConfig::none();
+const auto config = autd3::Silencer::disable();
 ```
 
 ```cs
-var config = SilencerConfig.None();
+var config = Silencer.Disable();
 ```
 
 ```python
-config = SilencerConfig.none()
+config = Silencer.disable()
 ```
 
 ## Phase change by Silencer
@@ -136,7 +136,7 @@ $$
         P - \mathrm{sign}(P_r - P) \min (|P_r - P|, \Delta) & \text{(otherwise)}\\
     \end{cases}.
 $$
-Where $\Delta$ is the update amount per step (`step` of `SilencerConfig`).
+Where $\Delta$ is the update amount per step (`step` of `Silencer`).
 And the update frequency is $\ufreq$.
 
 Small $\Delta$ makes the phase change smoother and reduces noise.

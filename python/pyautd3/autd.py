@@ -15,9 +15,8 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
-from ctypes import c_bool
 import numpy as np
-from typing import List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
@@ -27,47 +26,37 @@ from .native_methods.autd3capi_def import (
     AUTD3_ERR,
     AUTD3_TRUE,
     AUTD3_FALSE,
-    DatagramBodyPtr,
-    DatagramHeaderPtr,
+    DatagramPtr,
     DatagramSpecialPtr,
     ControllerPtr,
     LinkPtr,
 )
 from .link.link import Link
-from .geometry import Geometry, AUTD3
+from .geometry import Device, Geometry, AUTD3
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 
-class SpecialData(metaclass=ABCMeta):
+class SpecialDatagram(metaclass=ABCMeta):
     def __init__(self):
         pass
 
     @abstractmethod
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
         pass
 
 
-class Body(metaclass=ABCMeta):
+class Datagram(metaclass=ABCMeta):
     def __init__(self):
         pass
 
     @abstractmethod
-    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+    def ptr(self, geometry: Geometry) -> DatagramPtr:
         pass
 
 
-class Header(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def ptr(self) -> DatagramHeaderPtr:
-        pass
-
-
-class SilencerConfig(Header):
+class Silencer(Datagram):
     _step: int
 
     def __init__(self, step: int = 10):
@@ -75,10 +64,10 @@ class SilencerConfig(Header):
         self._step = step
 
     @staticmethod
-    def none() -> "SilencerConfig":
-        return SilencerConfig(0xFFFF)
+    def disable() -> "Silencer":
+        return Silencer(0xFFFF)
 
-    def ptr(self) -> DatagramHeaderPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().create_silencer(self._step)
 
 
@@ -94,25 +83,13 @@ class FPGAInfo:
 
 class FirmwareInfo:
     _info: str
-    _is_valid: bool
-    _is_supported: bool
 
-    def __init__(self, info: str, is_valid: bool, is_supported: bool):
+    def __init__(self, info: str):
         self._info = info
-        self._is_valid = is_valid
-        self._is_supported = is_supported
 
     @property
     def info(self) -> str:
         return self._info
-
-    @property
-    def is_valid(self) -> bool:
-        return self._is_valid
-
-    @property
-    def is_supported(self) -> bool:
-        return self._is_supported
 
     @staticmethod
     def latest_version() -> str:
@@ -129,9 +106,9 @@ class Controller:
         _ptr: ControllerBuilderPtr
         _mode: TransMode
 
-        def __init__(self):
+        def __init__(self, mode: TransMode):
             self._ptr = Base().create_controller_builder()
-            self._mode = TransMode.Legacy
+            self._mode = mode
 
         def add_device(self, device: AUTD3) -> "Controller.Builder":
             if device._rot is not None:
@@ -157,18 +134,6 @@ class Controller:
                 )
             return self
 
-        def legacy_mode(self) -> "Controller.Builder":
-            self._mode = TransMode.Legacy
-            return self
-
-        def advanced_mode(self) -> "Controller.Builder":
-            self._mode = TransMode.Advanced
-            return self
-
-        def advanced_phase_mode(self) -> "Controller.Builder":
-            self._mode = TransMode.AdvancedPhase
-            return self
-
         def open_with(self, link: Link) -> "Controller":
             return Controller._open_impl(self._ptr, self._mode, link.ptr())
 
@@ -183,7 +148,19 @@ class Controller:
 
     @staticmethod
     def builder() -> "Controller.Builder":
-        return Controller.Builder()
+        return Controller.Builder(TransMode.Legacy)
+
+    @staticmethod
+    def legacy_builder() -> "Controller.Builder":
+        return Controller.Builder(TransMode.Legacy)
+
+    @staticmethod
+    def advanced_builder() -> "Controller.Builder":
+        return Controller.Builder(TransMode.Advanced)
+
+    @staticmethod
+    def advanced_phase_builder() -> "Controller.Builder":
+        return Controller.Builder(TransMode.AdvancedPhase)
 
     def __del__(self):
         self.dispose()
@@ -206,9 +183,7 @@ class Controller:
         if ptr._0 is None:
             raise AUTDError(err)
         geometry = Geometry(Base().get_geometry(ptr), mode)
-        cnt = Controller(geometry, ptr, mode)
-        cnt.geometry._configure()
-        return cnt
+        return Controller(geometry, ptr, mode)
 
     def firmware_info_list(self) -> List[FirmwareInfo]:
         err = ctypes.create_string_buffer(256)
@@ -218,11 +193,9 @@ class Controller:
 
         def get_firmware_info(i: int) -> FirmwareInfo:
             sb = ctypes.create_string_buffer(256)
-            props = np.zeros([2]).astype(c_bool)
-            propsp = np.ctypeslib.as_ctypes(props)
-            Base().get_firmware_info(handle, i, sb, propsp)
+            Base().get_firmware_info(handle, i, sb)
             info = sb.value.decode("utf-8")
-            return FirmwareInfo(info, props[0], props[1])
+            return FirmwareInfo(info)
 
         res = list(map(get_firmware_info, range(self.geometry.num_devices)))
 
@@ -235,12 +208,6 @@ class Controller:
         if not Base().close(self._ptr, err):
             raise AUTDError(err)
 
-    def force_fan(self, value: bool):
-        return Base().set_force_fan(self._ptr, value)
-
-    def reads_fpga_info(self, value: bool):
-        Base().set_reads_fpga_info(self._ptr, value)
-
     @property
     def fpga_info(self) -> List[FPGAInfo]:
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
@@ -252,7 +219,7 @@ class Controller:
 
     def send(
         self,
-        d: Union[SpecialData, Header, Body, Tuple[Header, Body]],
+        d: Union[DatagramSpecialPtr, Datagram, Tuple[Datagram, Datagram]],
         timeout: Optional[timedelta] = None,
     ) -> bool:
         timeout_ = (
@@ -260,29 +227,20 @@ class Controller:
         )
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
-        if isinstance(d, SpecialData):
-            res = Base().send_special(self._ptr, self._mode, d.ptr(), timeout_, err)
-        if isinstance(d, Header):
+        if isinstance(d, DatagramSpecialPtr):
+            res = Base().send_special(self._ptr, self._mode, d.ptr(self.geometry), timeout_, err)
+        if isinstance(d, Datagram):
             res = Base().send(
-                self._ptr, self._mode, d.ptr(), DatagramBodyPtr(None), timeout_, err
-            )
-        if isinstance(d, Body):
-            res = Base().send(
-                self._ptr,
-                self._mode,
-                DatagramHeaderPtr(None),
-                d.ptr(self.geometry),
-                timeout_,
-                err,
+                self._ptr, self._mode, d.ptr(self.geometry), DatagramPtr(None), timeout_, err
             )
         if isinstance(d, tuple) and len(d) == 2:
-            (h, b) = d
-            if isinstance(h, Header) and isinstance(b, Body):
+            (d1, d2) = d
+            if isinstance(d1, Datagram) and isinstance(d2, Datagram):
                 res = Base().send(
                     self._ptr,
                     self._mode,
-                    h.ptr(),
-                    b.ptr(self.geometry),
+                    d1.ptr(self.geometry),
+                    d2.ptr(self.geometry),
                     timeout_,
                     err,
                 )
@@ -293,52 +251,52 @@ class Controller:
         return res == AUTD3_TRUE
 
 
-class Amplitudes(Body):
+class Amplitudes(Datagram):
     _amp: float
 
     def __init__(self, amp: float):
         super().__init__()
         self._amp = amp
 
-    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().create_amplitudes(self._amp)
 
 
-class Clear(SpecialData):
+class Clear(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().clear()
 
 
-class Stop(SpecialData):
+class Stop(SpecialDatagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
         return Base().stop()
 
 
-class UpdateFlags(SpecialData):
+class UpdateFlags(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().update_flags()
 
 
-class Synchronize(SpecialData):
+class Synchronize(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().synchronize()
 
 
-class ModDelayConfig(SpecialData):
+class ModDelayConfig(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().mod_delay_config()
