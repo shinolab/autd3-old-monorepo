@@ -26,6 +26,7 @@ jobs:
       id: changed-files
       with:
         files: |
+          .github/workflows/build-python.yml
           python/pyautd3/*.py
           python/pyautd3/**/*.py
     - name: Set up Python ${{ matrix.python-version }}
