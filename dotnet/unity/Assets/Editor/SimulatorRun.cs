@@ -4,12 +4,14 @@
  * Created Date: 05/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
+
+#if UNITY_EDITOR
 
 using UnityEditor;
 using UnityEngine;
@@ -39,4 +41,6 @@ public class SimualtorWindow : EditorWindow
 
 #if UNITY_2020_2_OR_NEWER
 #nullable restore
+#endif
+
 #endif
