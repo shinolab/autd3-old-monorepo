@@ -26,11 +26,11 @@ class Gain : public Datagram {
   Gain& operator=(Gain&& obj) = default;
   ~Gain() override = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>& devices) const override {
-    return AUTDGainIntoDatagram(gain_ptr(devices));
+  [[nodiscard]] native_methods::DatagramPtr ptr(const internal::Geometry& geometry) const override {
+    return AUTDGainIntoDatagram(gain_ptr(geometry));
   }
 
-  [[nodiscard]] virtual native_methods::GainPtr gain_ptr(const std::vector<const Device*>& devices) const = 0;
+  [[nodiscard]] virtual native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const = 0;
 };
 
 }  // namespace autd3::internal

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -300,10 +300,7 @@ class Controller {
   bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
-    std::vector<const Device*> devices;
-    devices.reserve(_geometry.num_devices());
-    std::transform(_geometry.begin(), _geometry.end(), std::back_inserter(devices), [](const Device& d) { return &d; });
-    const auto res = AUTDSend(_ptr, _mode, d1->ptr(devices), d2->ptr(devices), timeout_ns, err);
+    const auto res = AUTDSend(_ptr, _mode, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
   }

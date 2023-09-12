@@ -43,7 +43,7 @@ class SpecialDatagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def ptr(self, _: Iterable[Device]) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
         pass
 
 
@@ -52,7 +52,7 @@ class Datagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def ptr(self, devices: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, geometry: Geometry) -> DatagramPtr:
         pass
 
 
@@ -67,7 +67,7 @@ class Silencer(Datagram):
     def disable() -> "Silencer":
         return Silencer(0xFFFF)
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().create_silencer(self._step)
 
 
@@ -227,12 +227,11 @@ class Controller:
         )
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
-        devices = list(map(lambda d: d, self.geometry))
         if isinstance(d, DatagramSpecialPtr):
-            res = Base().send_special(self._ptr, self._mode, d.ptr(devices), timeout_, err)
+            res = Base().send_special(self._ptr, self._mode, d.ptr(self.geometry), timeout_, err)
         if isinstance(d, Datagram):
             res = Base().send(
-                self._ptr, self._mode, d.ptr(devices), DatagramPtr(None), timeout_, err
+                self._ptr, self._mode, d.ptr(self.geometry), DatagramPtr(None), timeout_, err
             )
         if isinstance(d, tuple) and len(d) == 2:
             (d1, d2) = d
@@ -240,8 +239,8 @@ class Controller:
                 res = Base().send(
                     self._ptr,
                     self._mode,
-                    d1.ptr(devices),
-                    d2.ptr(devices),
+                    d1.ptr(self.geometry),
+                    d2.ptr(self.geometry),
                     timeout_,
                     err,
                 )
@@ -259,7 +258,7 @@ class Amplitudes(Datagram):
         super().__init__()
         self._amp = amp
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().create_amplitudes(self._amp)
 
 
@@ -267,7 +266,7 @@ class Clear(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().clear()
 
 
@@ -275,7 +274,7 @@ class Stop(SpecialDatagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramSpecialPtr:
+    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
         return Base().stop()
 
 
@@ -283,7 +282,7 @@ class UpdateFlags(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().update_flags()
 
 
@@ -291,7 +290,7 @@ class Synchronize(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().synchronize()
 
 
@@ -299,5 +298,5 @@ class ModDelayConfig(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Iterable[Device]) -> DatagramPtr:
+    def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().mod_delay_config()

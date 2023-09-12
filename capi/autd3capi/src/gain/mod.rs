@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::ffi::c_char;
 use crate::Drive;
 use autd3capi_def::{
     common::{autd3::driver::datagram::GainFilter, *},
-    DatagramPtr, DevicePtr, GainPtr, AUTD3_ERR, AUTD3_TRUE,
+    DatagramPtr, GainPtr, GeometryPtr, AUTD3_ERR, AUTD3_TRUE,
 };
 
 pub mod bessel;
@@ -38,21 +38,17 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainCalc(
     gain: GainPtr,
-    devices: *const DevicePtr,
+    geometry: GeometryPtr,
     drives: *const *mut Drive,
-    num_dev: u32,
     err: *mut c_char,
 ) -> i32 {
-    let devices = (0..num_dev as usize)
-        .map(|i| cast!(devices.add(i).read().0, Dev))
-        .collect::<Vec<_>>();
+    let geo = cast!(geometry.0, Geo);
     let res = try_or_return!(
-        Box::from_raw(gain.0 as *mut Box<G>).calc(&devices, GainFilter::All),
+        Box::from_raw(gain.0 as *mut Box<G>).calc(geo, GainFilter::All),
         err,
         AUTD3_ERR
     );
-    (0..num_dev as usize).for_each(|i| {
-        let dev = &devices[i];
+    geo.devices().enumerate().for_each(|(i, dev)| {
         let res = &res[&dev.idx()];
         std::ptr::copy_nonoverlapping(res.as_ptr(), drives.add(i).read() as _, res.len());
     });
@@ -95,11 +91,10 @@ mod tests {
                 vec![Drive { amp: 0., phase: 0. }; num_trans as _]
             };
 
-            let devices = [dev0, dev1];
             let drives = [drives0.as_mut_ptr(), drives1.as_mut_ptr()];
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDGainCalc(g, devices.as_ptr(), drives.as_ptr(), 2, err.as_mut_ptr()),
+                AUTDGainCalc(g, geo, drives.as_ptr(), err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 

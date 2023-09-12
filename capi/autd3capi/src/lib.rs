@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,9 +41,10 @@ unsafe impl Send for CallbackPtr {}
 
 #[no_mangle]
 #[must_use]
+#[allow(clippy::box_default)]
 pub unsafe extern "C" fn AUTDCreateControllerBuilder() -> ControllerBuilderPtr {
     ControllerBuilderPtr(
-        Box::into_raw(Box::new(ControllerBuilder::<DynamicTransducer>::new())) as _,
+        Box::into_raw(Box::new(ControllerBuilder::<DynamicTransducer>::default())) as _,
     )
 }
 

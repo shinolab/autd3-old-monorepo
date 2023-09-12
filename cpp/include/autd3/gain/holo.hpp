@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -257,7 +257,7 @@ class SDP final : public internal::Gain {
   AUTD3_HOLO_PARAM(SDP, double, lambda)
   AUTD3_HOLO_PARAM(SDP, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->sdp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_alpha.has_value()) ptr = _backend->sdp_with_alpha(ptr, _alpha.value());
     if (_repeat.has_value()) ptr = _backend->sdp_with_repeat(ptr, _repeat.value());
@@ -294,7 +294,7 @@ class EVP final : public internal::Gain {
   AUTD3_HOLO_PARAM(EVP, double, gamma)
   AUTD3_HOLO_PARAM(EVP, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->evp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_gamma.has_value()) ptr = _backend->evp_with_gamma(ptr, _gamma.value());
     if (_constraint.has_value()) ptr = _backend->evp_with_constraint(ptr, _constraint.value());
@@ -326,7 +326,7 @@ class GS final : public internal::Gain {
   AUTD3_HOLO_PARAM(GS, uint32_t, repeat)
   AUTD3_HOLO_PARAM(GS, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->gs(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_repeat.has_value()) ptr = _backend->gs_with_repeat(ptr, _repeat.value());
     if (_constraint.has_value()) ptr = _backend->gs_with_constraint(ptr, _constraint.value());
@@ -359,7 +359,7 @@ class GSPAT final : public internal::Gain {
   AUTD3_HOLO_PARAM(GSPAT, uint32_t, repeat)
   AUTD3_HOLO_PARAM(GSPAT, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->gspat(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_repeat.has_value()) ptr = _backend->gspat_with_repeat(ptr, _repeat.value());
     if (_constraint.has_value()) ptr = _backend->gspat_with_constraint(ptr, _constraint.value());
@@ -388,7 +388,7 @@ class Naive final : public internal::Gain {
 
   AUTD3_HOLO_PARAM(Naive, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->naive(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_constraint.has_value()) ptr = _backend->naive_with_constraint(ptr, _constraint.value());
     return ptr;
@@ -434,7 +434,7 @@ class LM final : public internal::Gain {
     return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = _backend->lm(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_eps1.has_value()) ptr = _backend->lm_with_eps1(ptr, _eps1.value());
     if (_eps2.has_value()) ptr = _backend->lm_with_eps2(ptr, _eps2.value());
@@ -473,7 +473,7 @@ class Greedy final : public internal::Gain {
 
   AUTD3_HOLO_PARAM(Greedy, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_phase_div.has_value()) ptr = AUTDGainHoloGreedyWithPhaseDiv(ptr, _phase_div.value());
     if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());

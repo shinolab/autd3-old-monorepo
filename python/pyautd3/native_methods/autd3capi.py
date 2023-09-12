@@ -67,7 +67,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
         self.dll.AUTDGainIntoDatagram.restype = DatagramPtr
 
-        self.dll.AUTDGainCalc.argtypes = [GainPtr, ctypes.POINTER(DevicePtr), ctypes.POINTER(ctypes.POINTER(Drive)), ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(ctypes.POINTER(Drive)), ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDGainCalc.restype = ctypes.c_int32
 
         self.dll.AUTDGainNull.argtypes = [] 
@@ -424,8 +424,8 @@ class NativeMethods(metaclass=Singleton):
     def gain_into_datagram(self, gain: GainPtr) -> DatagramPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, devices: ctypes.Array, drives: ctypes.Array, num_dev: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDGainCalc(gain, devices, drives, num_dev, err)
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: ctypes.Array, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGainCalc(gain, geometry, drives, err)
 
     def gain_null(self) -> GainPtr:
         return self.dll.AUTDGainNull()

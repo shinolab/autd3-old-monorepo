@@ -20,7 +20,7 @@ from .constraint import AmplitudeConstraint
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.geometry import Device
+from pyautd3.geometry import Geometry
 
 
 from pyautd3.gain.gain import IGain
@@ -53,7 +53,7 @@ class Greedy(IGain):
         self._constraint = constraint
         return self
 
-    def gain_ptr(self, _: Iterable[Device]) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 12/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #include <type_traits>
 
-#include "autd3/internal/geometry/device.hpp"
+#include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
@@ -45,7 +45,7 @@ class Datagram {
   Datagram& operator=(Datagram&& obj) = default;
   virtual ~Datagram() = default;
 
-  [[nodiscard]] virtual native_methods::DatagramPtr ptr(const std::vector<const Device*>& devices) const = 0;
+  [[nodiscard]] virtual native_methods::DatagramPtr ptr(const Geometry& geometry) const = 0;
 };
 
 template <typename D>
@@ -63,7 +63,7 @@ class NullDatagram final : public Datagram {
   NullDatagram(NullDatagram&& obj) = default;
   NullDatagram& operator=(NullDatagram&& obj) = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::DatagramPtr{nullptr}; }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::DatagramPtr{nullptr}; }
 };
 
 /**
@@ -84,7 +84,7 @@ class Silencer final : public Datagram {
    */
   static Silencer disable() noexcept { return Silencer(0xFFFF); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
     return native_methods::AUTDCreateSilencer(_step);
   }
 
@@ -99,7 +99,7 @@ class ModDelayConfig final : public Datagram {
  public:
   ModDelayConfig() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDModDelayConfig(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDModDelayConfig(); }
 };
 
 /**
@@ -109,7 +109,7 @@ class Clear final : public Datagram {
  public:
   Clear() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDClear(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDClear(); }
 };
 
 /**
@@ -119,7 +119,7 @@ class UpdateFlags final : public Datagram {
  public:
   UpdateFlags() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDUpdateFlags(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDUpdateFlags(); }
 };
 
 /**
@@ -129,7 +129,7 @@ class Synchronize final : public Datagram {
  public:
   Synchronize() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const std::vector<const Device*>&) const override { return native_methods::AUTDSynchronize(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDSynchronize(); }
 };
 
 }  // namespace autd3::internal

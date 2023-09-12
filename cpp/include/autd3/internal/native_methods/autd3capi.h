@@ -92,9 +92,8 @@ int32_t AUTDSendSpecial(ControllerPtr cnt,
 
 [[nodiscard]]
 int32_t AUTDGainCalc(GainPtr gain,
-                     const DevicePtr *devices,
+                     GeometryPtr geometry,
                      Drive *const *drives,
-                     uint32_t num_dev,
                      char *err);
 
 [[nodiscard]]
@@ -121,9 +120,16 @@ GainPtr AUTDGainCustomSet(GainPtr custom,
 [[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
 
 [[nodiscard]]
-GainPtr AUTDGainGroup(const uint32_t *device_indices_ptr,
-                      const int32_t *const *map_ptr,
-                      uint32_t num_devices,
+GroupGainMapPtr AUTDGainGroupCreateMap(const uint32_t *device_indices_ptr,
+                                       uint32_t num_devices);
+
+[[nodiscard]]
+GroupGainMapPtr AUTDGainGroupMapSet(GroupGainMapPtr map,
+                                    uint32_t dev_idx,
+                                    const int32_t *map_data);
+
+[[nodiscard]]
+GainPtr AUTDGainGroup(GroupGainMapPtr map,
                       const int32_t *keys_ptr,
                       const GainPtr *values_ptr,
                       uint32_t kv_len);

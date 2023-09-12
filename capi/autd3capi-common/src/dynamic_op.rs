@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ impl DynamicGainOp {
 impl Operation<DynamicTransducer> for DynamicGainOp {
     fn init(
         &mut self,
-        devices: &[&autd3_driver::geometry::Device<DynamicTransducer>],
+        devices: &autd3_driver::geometry::Geometry<DynamicTransducer>,
     ) -> Result<(), autd3_driver::error::AUTDInternalError> {
         self.drives = self.gain.calc(devices, GainFilter::All)?;
         match self.mode {
@@ -135,7 +135,7 @@ impl DynamicGainSTMOp {
 impl Operation<DynamicTransducer> for DynamicGainSTMOp {
     fn init(
         &mut self,
-        devices: &[&autd3_driver::geometry::Device<DynamicTransducer>],
+        geometry: &autd3_driver::geometry::Geometry<DynamicTransducer>,
     ) -> Result<(), autd3_driver::error::AUTDInternalError> {
         match self.mode {
             TransMode::Legacy => GainSTMOp::<DynamicTransducer, Box<G>>::init_legacy(
@@ -145,7 +145,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 &mut self.sent,
                 self.gain_stm_mode,
                 self.freq_div,
-                devices,
+                geometry,
             ),
             TransMode::Advanced => GainSTMOp::<DynamicTransducer, Box<G>>::init_advanced(
                 &self.gains,
@@ -154,7 +154,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 &mut self.sent,
                 self.gain_stm_mode,
                 self.freq_div,
-                devices,
+                geometry,
             ),
             TransMode::AdvancedPhase => {
                 GainSTMOp::<DynamicTransducer, Box<G>>::init_advanced_phase(
@@ -164,7 +164,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                     &mut self.sent,
                     self.gain_stm_mode,
                     self.freq_div,
-                    devices,
+                    geometry,
                 )
             }
         }

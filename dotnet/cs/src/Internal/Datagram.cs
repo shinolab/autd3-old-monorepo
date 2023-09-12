@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,12 +26,12 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public interface IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices);
+        public DatagramPtr Ptr(Geometry geometry);
     }
 
     public class NullDatagram : IDatagram
     {
-        public DatagramPtr Ptr(IEnumerable<Device> devices)
+        public DatagramPtr Ptr(Geometry geometry)
         {
             return new DatagramPtr { _0 = IntPtr.Zero };
         }
