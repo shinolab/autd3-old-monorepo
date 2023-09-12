@@ -1,3 +1,7 @@
+# 15.0.2
+
+- Fix [#148](https://github.com/shinolab/autd3/issues/148): SoftwareSTM api is complex and difficult to use
+
 # 15.0.1
 
 - Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found

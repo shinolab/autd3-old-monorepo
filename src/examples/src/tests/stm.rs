@@ -4,14 +4,20 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::io;
+use std::{
+    io,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use autd3::prelude::*;
 
@@ -74,27 +80,40 @@ where
     let freq = 1.;
     let point_num = 100;
     let radius = 30.0 * MILLIMETER;
-    autd.software_stm(
-        move |i, _elapsed| {
-            let theta = 2.0 * PI * (i % point_num) as float / point_num as float;
-            let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-            Some(Focus::new(center + p)) // None if skip
-        },
-        |_i, _elapsed| {
-            println!("press any key to stop software stm...");
+    let fin = Arc::new(AtomicBool::new(false));
+    std::thread::scope(|s| -> anyhow::Result<(), AUTDError> {
+        println!("press enter to stop software stm...");
+        let fin2 = fin.clone();
+        s.spawn(move || {
             let mut _s = String::new();
             io::stdin().read_line(&mut _s).unwrap();
-            true
-        },
-        |e| {
-            eprintln!("{}", e);
-            true // if false, continue even when error occurred
-        },
-    )
-    .with_timer_strategy(TimerStrategy::NativeTimer)
-    .start(std::time::Duration::from_secs_f64(
-        1. / freq / point_num as f64,
-    ))?;
+
+            fin2.store(true, Ordering::Relaxed);
+        });
+        s.spawn(move || {
+            autd.software_stm(move |autd, i, _elapsed| {
+                if fin.load(Ordering::Relaxed) {
+                    return false; // return false to stop STM
+                }
+
+                let theta = 2.0 * PI * (i % point_num) as float / point_num as float;
+                let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
+                match autd.send(Focus::new(center + p)) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        false
+                    }
+                }
+            })
+            .with_timer_strategy(TimerStrategy::NativeTimer)
+            .start(std::time::Duration::from_secs_f64(
+                1. / freq / point_num as f64,
+            ))
+        })
+        .join()
+        .unwrap()
+    })?;
 
     Ok(true)
 }
