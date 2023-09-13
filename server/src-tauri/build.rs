@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,21 +20,6 @@ use std::{
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-
-    println!(
-        "cargo:rerun-if-changed={}/src/main.rs",
-        manifest_dir.join("../simulator").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}/src/main.rs",
-        manifest_dir.join("../SOEMAUTDServer").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}/src/main.rs",
-        manifest_dir
-            .join("../LightweightTwinCATAUTDServer")
-            .display()
-    );
 
     let ext = if cfg!(target_os = "windows") {
         ".exe"
