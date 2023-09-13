@@ -1,5 +1,7 @@
 # 15.0.2
 
+- Update firmware to v3.0.2
+- Fix [#143](https://github.com/shinolab/autd3/issues/143): Unify Rust/C++/C#/Python API
 - Fix [#147](https://github.com/shinolab/autd3/issues/147): Remove duplicate resources in unity
 
 # 15.0.1
