@@ -14,16 +14,8 @@ cargo run --release --features twincat --bin twincat
 
 ## Simulator
 
-### Server
-
 ```
-cargo run --release --features simulator_server --bin simulator_server
-```
-
-### Client
-
-```
-cargo run --release --features simulator_client --bin simulator_client
+cargo run --release --features simulator --bin simulator
 ```
 
 # Author

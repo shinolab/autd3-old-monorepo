@@ -99,12 +99,12 @@ jobs:
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator geometry_viewer" 
     - name: Build examples on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator geometry_viewer" 
 
   build-capi:
     name: release-build-capi-${{ matrix.os }}
@@ -242,7 +242,7 @@ jobs:
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --release --bins --features "soem remote_soem remote_twincat simulator_client" --target=armv7-unknown-linux-gnueabihf
+        cargo build --release --bins --features "soem remote_soem remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
       if: steps.changed-files.outputs.modified_files
 
   build-linux-arm32-capi:
@@ -341,7 +341,7 @@ jobs:
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --release --bins --features "soem remote_soem remote_twincat simulator_client" --target=aarch64-unknown-linux-gnu
+        cargo build --release --bins --features "soem remote_soem remote_twincat simulator" --target=aarch64-unknown-linux-gnu
       if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-capi:
