@@ -585,6 +585,10 @@ jobs:
           cargo build --release --target=x86_64-apple-darwin
           cargo build --release --target=aarch64-apple-darwin
           cd ..
+          cd LightweightTwinCATAUTDServer
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+          cd ..
           npm run tauri build -- --target universal-apple-darwin
       - name: build
         if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
@@ -595,5 +599,7 @@ jobs:
           cd ..
           cd SOEMAUTDServer
           cargo build --release
+          cd ..
+          cd LightweightTwinCATAUTDServer
           cd ..
           npm run tauri build
