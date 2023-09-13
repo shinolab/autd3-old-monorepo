@@ -3,6 +3,7 @@
 - Update firmware to v3.0.2
 - Fix [#143](https://github.com/shinolab/autd3/issues/143): Unify Rust/C++/C#/Python API
 - Fix [#147](https://github.com/shinolab/autd3/issues/147): Remove duplicate resources in unity
+- Fix [#148](https://github.com/shinolab/autd3/issues/148): SoftwareSTM api is complex and difficult to use
 
 # 15.0.1
 
