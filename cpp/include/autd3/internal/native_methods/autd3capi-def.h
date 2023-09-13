@@ -62,6 +62,10 @@ struct DevicePtr {
   void* _0;
 };
 
+struct TransducerPtr {
+  void* _0;
+};
+
 struct GeometryPtr {
   void* _0;
 };
