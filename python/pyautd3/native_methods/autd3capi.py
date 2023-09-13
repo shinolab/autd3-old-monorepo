@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -136,52 +136,55 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGeometryNumDevices.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDGeometryNumDevices.restype = ctypes.c_uint32
 
-        self.dll.AUTDTransPosition.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDGetTransducer.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransducer.restype = TransducerPtr
+
+        self.dll.AUTDTransPosition.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransPosition.restype = None
 
-        self.dll.AUTDTransRotation.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransRotation.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransRotation.restype = None
 
-        self.dll.AUTDTransXDirection.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransXDirection.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransXDirection.restype = None
 
-        self.dll.AUTDTransYDirection.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransYDirection.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransYDirection.restype = None
 
-        self.dll.AUTDTransZDirection.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransZDirection.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransZDirection.restype = None
 
-        self.dll.AUTDGetTransFrequency.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransFrequency.argtypes = [TransducerPtr]  # type: ignore 
         self.dll.AUTDGetTransFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDSetTransFrequency.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDSetTransFrequency.argtypes = [TransducerPtr, ctypes.c_double, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSetTransFrequency.restype = ctypes.c_bool
 
-        self.dll.AUTDGetTransCycle.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransCycle.argtypes = [TransducerPtr]  # type: ignore 
         self.dll.AUTDGetTransCycle.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetTransCycle.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_uint16, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDSetTransCycle.argtypes = [TransducerPtr, ctypes.c_uint16, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSetTransCycle.restype = ctypes.c_bool
 
-        self.dll.AUTDGetWavelength.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGetWavelength.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDGetWavelength.restype = ctypes.c_double
 
-        self.dll.AUTDGetTransModDelay.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransModDelay.argtypes = [TransducerPtr]  # type: ignore 
         self.dll.AUTDGetTransModDelay.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetTransModDelay.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_uint16]  # type: ignore 
+        self.dll.AUTDSetTransModDelay.argtypes = [TransducerPtr, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDSetTransModDelay.restype = None
 
-        self.dll.AUTDGetTransAmpFilter.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransAmpFilter.argtypes = [TransducerPtr]  # type: ignore 
         self.dll.AUTDGetTransAmpFilter.restype = ctypes.c_double
 
-        self.dll.AUTDSetTransAmpFilter.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDSetTransAmpFilter.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDSetTransAmpFilter.restype = None
 
-        self.dll.AUTDGetTransPhaseFilter.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransPhaseFilter.argtypes = [TransducerPtr]  # type: ignore 
         self.dll.AUTDGetTransPhaseFilter.restype = ctypes.c_double
 
-        self.dll.AUTDSetTransPhaseFilter.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDSetTransPhaseFilter.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDSetTransPhaseFilter.restype = None
 
         self.dll.AUTDCreateControllerBuilder.argtypes = [] 
@@ -496,53 +499,56 @@ class NativeMethods(metaclass=Singleton):
     def geometry_num_devices(self, geo: GeometryPtr) -> ctypes.c_uint32:
         return self.dll.AUTDGeometryNumDevices(geo)
 
-    def trans_position(self, dev: DevicePtr, tr_idx: int, pos: ctypes.Array[ctypes.c_double]) -> None:
-        return self.dll.AUTDTransPosition(dev, tr_idx, pos)
+    def get_transducer(self, dev: DevicePtr, tr_idx: int) -> TransducerPtr:
+        return self.dll.AUTDGetTransducer(dev, tr_idx)
 
-    def trans_rotation(self, dev: DevicePtr, tr_idx: int, rot: ctypes.Array[ctypes.c_double]) -> None:
-        return self.dll.AUTDTransRotation(dev, tr_idx, rot)
+    def trans_position(self, tr: TransducerPtr, pos: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDTransPosition(tr, pos)
 
-    def trans_x_direction(self, dev: DevicePtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
-        return self.dll.AUTDTransXDirection(dev, tr_idx, dir)
+    def trans_rotation(self, tr: TransducerPtr, rot: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDTransRotation(tr, rot)
 
-    def trans_y_direction(self, dev: DevicePtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
-        return self.dll.AUTDTransYDirection(dev, tr_idx, dir)
+    def trans_x_direction(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDTransXDirection(tr, dir)
 
-    def trans_z_direction(self, dev: DevicePtr, tr_idx: int, dir: ctypes.Array[ctypes.c_double]) -> None:
-        return self.dll.AUTDTransZDirection(dev, tr_idx, dir)
+    def trans_y_direction(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDTransYDirection(tr, dir)
 
-    def get_trans_frequency(self, dev: DevicePtr, idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetTransFrequency(dev, idx)
+    def trans_z_direction(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDTransZDirection(tr, dir)
 
-    def set_trans_frequency(self, dev: DevicePtr, idx: int, value: float, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
-        return self.dll.AUTDSetTransFrequency(dev, idx, value, err)
+    def get_trans_frequency(self, tr: TransducerPtr) -> ctypes.c_double:
+        return self.dll.AUTDGetTransFrequency(tr)
 
-    def get_trans_cycle(self, dev: DevicePtr, idx: int) -> ctypes.c_uint16:
-        return self.dll.AUTDGetTransCycle(dev, idx)
+    def set_trans_frequency(self, tr: TransducerPtr, value: float, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDSetTransFrequency(tr, value, err)
 
-    def set_trans_cycle(self, dev: DevicePtr, idx: int, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
-        return self.dll.AUTDSetTransCycle(dev, idx, value, err)
+    def get_trans_cycle(self, tr: TransducerPtr) -> ctypes.c_uint16:
+        return self.dll.AUTDGetTransCycle(tr)
 
-    def get_wavelength(self, dev: DevicePtr, idx: int, sound_speed: float) -> ctypes.c_double:
-        return self.dll.AUTDGetWavelength(dev, idx, sound_speed)
+    def set_trans_cycle(self, tr: TransducerPtr, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDSetTransCycle(tr, value, err)
 
-    def get_trans_mod_delay(self, dev: DevicePtr, tr_idx: int) -> ctypes.c_uint16:
-        return self.dll.AUTDGetTransModDelay(dev, tr_idx)
+    def get_wavelength(self, tr: TransducerPtr, sound_speed: float) -> ctypes.c_double:
+        return self.dll.AUTDGetWavelength(tr, sound_speed)
 
-    def set_trans_mod_delay(self, dev: DevicePtr, tr_idx: int, delay: int) -> None:
-        return self.dll.AUTDSetTransModDelay(dev, tr_idx, delay)
+    def get_trans_mod_delay(self, tr: TransducerPtr) -> ctypes.c_uint16:
+        return self.dll.AUTDGetTransModDelay(tr)
 
-    def get_trans_amp_filter(self, dev: DevicePtr, tr_idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetTransAmpFilter(dev, tr_idx)
+    def set_trans_mod_delay(self, tr: TransducerPtr, delay: int) -> None:
+        return self.dll.AUTDSetTransModDelay(tr, delay)
 
-    def set_trans_amp_filter(self, dev: DevicePtr, tr_idx: int, value: float) -> None:
-        return self.dll.AUTDSetTransAmpFilter(dev, tr_idx, value)
+    def get_trans_amp_filter(self, tr: TransducerPtr) -> ctypes.c_double:
+        return self.dll.AUTDGetTransAmpFilter(tr)
 
-    def get_trans_phase_filter(self, dev: DevicePtr, tr_idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetTransPhaseFilter(dev, tr_idx)
+    def set_trans_amp_filter(self, tr: TransducerPtr, value: float) -> None:
+        return self.dll.AUTDSetTransAmpFilter(tr, value)
 
-    def set_trans_phase_filter(self, dev: DevicePtr, tr_idx: int, value: float) -> None:
-        return self.dll.AUTDSetTransPhaseFilter(dev, tr_idx, value)
+    def get_trans_phase_filter(self, tr: TransducerPtr) -> ctypes.c_double:
+        return self.dll.AUTDGetTransPhaseFilter(tr)
+
+    def set_trans_phase_filter(self, tr: TransducerPtr, value: float) -> None:
+        return self.dll.AUTDSetTransPhaseFilter(tr, value)
 
     def create_controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDCreateControllerBuilder()
