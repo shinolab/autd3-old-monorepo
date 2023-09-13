@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="sin150.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="sin150.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AUTD3Sharp" Version="15.0.0" />
   </ItemGroup>
 
