@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/link/log.hpp"
 
 namespace autd3::link {
 
@@ -151,6 +152,8 @@ class SOEM : public internal::Link {
     _ptr = AUTDLinkSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
+
+  AUTD3_IMPL_WITH_LOG
 };
 
 /**
@@ -175,6 +178,8 @@ class RemoteSOEM : public internal::Link {
     _ptr = AUTDLinkRemoteSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
+
+  AUTD3_IMPL_WITH_LOG
 };
 
 }  // namespace autd3::link

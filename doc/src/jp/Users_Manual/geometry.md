@@ -255,7 +255,7 @@ let dev = &autd.geometry()[0];
 ```
 
 ```cpp
-const auto dev = autd.geometry()[0];
+const auto& dev = autd.geometry()[0];
 ```
 
 ```cs
@@ -286,7 +286,7 @@ for dev in autd.geometry().iter() {
 ```
 
 ```cpp
-for (const auto dev : autd.geometry()){
+for (const auto& dev : autd.geometry()){
   // do something
 }
 ```
@@ -447,6 +447,14 @@ autd.geometry_mut()[0].affine(t, r);
 # }
 ```
 
+```cpp
+const autd3::Vector3 t(1, 0, 0);
+const autd3::Quaternion r(1, 0, 0, 0);
+autd.geometry()[0].translate(t);
+autd.geometry()[0].rotate(r);
+autd.geometry()[0].affine(t, r);
+```
+
 ### force_fan
 
 AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る.
@@ -545,7 +553,7 @@ let tr = &autd.geometry()[0][0];
 ```
 
 ```cpp
-const auto tr = autd.geometry()[0][0];
+const auto& tr = autd.geometry()[0][0];
 ```
 
 ```cs
@@ -576,7 +584,7 @@ for tr in autd.geometry()[0].iter() {
 ```
 
 ```cpp
-for (const auto tr : autd.geometry()[0]) {
+for (const auto& tr : autd.geometry()[0]) {
   // do something
 }
 ```
@@ -615,7 +623,7 @@ let idx = tr.local_idx();
 ```
 
 ```cpp
-const auto idx = tr.idx();
+const auto idx = tr.local_idx();
 ```
 
 ```cs

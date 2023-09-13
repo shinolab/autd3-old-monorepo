@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -95,11 +95,11 @@ class Silencer final : public Datagram {
 /**
  * @brief Datagram to set modulation delay
  */
-class ModDelayConfig final : public Datagram {
+class ConfigureModDelay final : public Datagram {
  public:
-  ModDelayConfig() = default;
+  ConfigureModDelay() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDModDelayConfig(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDConfigureModDelay(); }
 };
 
 /**

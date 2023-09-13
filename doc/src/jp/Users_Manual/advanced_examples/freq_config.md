@@ -128,10 +128,12 @@ autd.send(amp)?;
 #    Ok(())
 # }
 ```
+
 ```cpp
-const auto amp = autd3::Amplitudes(1.0);
+const auto amp = autd3::Amplitudes::uniform(1.0);
 autd.send(amp);
 ```
+
 ```cs
 var amp = new Amplitudes(1.0);
 autd.Send(amp);

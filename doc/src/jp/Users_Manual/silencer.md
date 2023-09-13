@@ -54,7 +54,6 @@ autd.send(config)
 `Silencer`には`step`を設定できる.
 詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
 
-
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
@@ -83,7 +82,7 @@ config = Silencer(step)
 
 Silencerはデフォルトで適当な値に設定されている.
 
-Silencerを無効化する場合は, 以下のようにする.
+Silencerを無効化する場合は, 以下を送信する.
 
 ```rust,edition2021
 # extern crate autd3;

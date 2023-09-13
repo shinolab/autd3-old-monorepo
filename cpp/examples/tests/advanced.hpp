@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,7 @@ inline void advanced_test(autd3::Controller& autd) {
 
   autd.geometry()[0][0].set_mod_delay(0);
   autd.geometry()[0][17].set_mod_delay(1);
-  autd.send(autd3::ModDelayConfig());
+  autd.send(autd3::ConfigureModDelay());
 
   MyUniformGain g;
   BurstModulation m;

@@ -12,7 +12,6 @@
 #pragma once
 
 #include "autd3/internal/datagram.hpp"
-#include "autd3/internal/geometry/device.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
@@ -29,6 +28,8 @@ class Amplitudes final : public Datagram {
   Amplitudes(Amplitudes&& obj) = default;
   Amplitudes& operator=(Amplitudes&& obj) = default;
   ~Amplitudes() override = default;
+
+  static Amplitudes uniform(const double amp) noexcept { return Amplitudes(amp); }
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
     return native_methods::AUTDCreateAmplitudes(_amp);
