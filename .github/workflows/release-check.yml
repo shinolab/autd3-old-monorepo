@@ -236,7 +236,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
       if: steps.changed-files.outputs.modified_files
 
     - name: Build examples
@@ -335,7 +335,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
       if: steps.changed-files.outputs.modified_files
     
     - name: Build examples
