@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ namespace autd3::internal {
 
 class FirmwareInfo {
  public:
-  FirmwareInfo(std::string info) noexcept : _info(std::move(info)) {}
+  explicit FirmwareInfo(std::string info) noexcept : _info(std::move(info)) {}
 
   [[nodiscard]] std::string info() const { return _info; }
 

@@ -32,7 +32,7 @@ constexpr auto radius = 30.0;
 autd3::FocusSTM stm(1);
 for (size_t i = 0; i < points_num; i++) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    stm = stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+    stm.add_focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
 }
 autd.send(stm);
 ```

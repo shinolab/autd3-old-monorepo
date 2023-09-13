@@ -12,8 +12,9 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
+import functools
 import numpy as np
-from typing import Iterable, Optional, List
+from typing import Iterable, Optional, List, Tuple
 import ctypes
 
 from .backend import Backend
@@ -45,6 +46,15 @@ class GSPAT(IGain):
         self._foci.append(focus[2])
         self._amps.append(amp)
         return self
+
+    def add_foci_from_iter(
+        self, iterable: Iterable[Tuple[np.ndarray, float]]
+    ) -> "GSPAT":
+        return functools.reduce(
+            lambda acc, x: acc.add_focus(x[0], x[1]),
+            iterable,
+            self,
+        )
 
     def with_repeat(self, value: int) -> "GSPAT":
         self._repeat = value

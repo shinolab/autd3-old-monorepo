@@ -16,7 +16,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
 import numpy as np
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
@@ -32,7 +32,7 @@ from .native_methods.autd3capi_def import (
     LinkPtr,
 )
 from .link.link import Link
-from .geometry import Device, Geometry, AUTD3
+from .geometry import Geometry, AUTD3
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
@@ -79,6 +79,9 @@ class FPGAInfo:
 
     def is_thermal_assert(self) -> bool:
         return (int(self.info) & 0x01) != 0
+
+    def __str__(self) -> str:
+        return f"Thermal assert = {self.is_thermal_assert()}"
 
 
 class FirmwareInfo:
@@ -294,9 +297,9 @@ class Synchronize(Datagram):
         return Base().synchronize()
 
 
-class ModDelayConfig(Datagram):
+class ConfigureModDelay(Datagram):
     def __init__(self):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().mod_delay_config()
+        return Base().configure_mod_delay()

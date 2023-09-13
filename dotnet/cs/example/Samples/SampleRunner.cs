@@ -22,18 +22,21 @@ public class SampleRunner
 {
     public static void Run(Controller autd)
     {
-        var examples = new List<(TestFn, string)> { (FocusTest.Test, "Single Focal Point Test"),
-            (BesselBeamTest.Test, "BesselBeam Test"),
-            (GainHoloTest.Test, "Multiple Focal Points Test"),
-            (FocusSTMTest.Test, "FocusSTM Test"),
-            (GainSTMTest.Test, "GainSTM Test"),
-            (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)"),
-            (CustomTest.Test, "Custom Test (Custom Focus)")
+        var examples = new List<(TestFn, string)> { (FocusTest.Test, "Single focus test"),
+            (BesselBeamTest.Test, "Bessel beam test"),
+            (PlaneWaveTest.Test, "Plane wave test"),
+            (WavTest.Test, "Wav modulation test"),
+            (FocusSTMTest.Test, "FocusSTM test"),
+            (GainSTMTest.Test, "GainSTM test"),
+            (GainHoloTest.Test, "Multiple foci test"),
+            (CustomTest.Test, "Custom Gain & Modulation test"),
+            (FlagTest.Test, "Flag test"),
+            (TransTest.Test, "TransducerTest test")
         };
 
-        Console.WriteLine("==================================== Firmware information ======================================");
+        Console.WriteLine("======== AUTD3 firmware information ========");
         Console.WriteLine(string.Join("\n", autd.FirmwareInfoList()));
-        Console.WriteLine("================================================================================================");
+        Console.WriteLine("============================================");
 
         while (true)
         {

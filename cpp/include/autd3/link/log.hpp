@@ -3,7 +3,7 @@
 // Created Date: 22/06/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,5 +57,8 @@ class Log : public internal::Link {
     return std::move(*this);
   }
 };
+
+#define AUTD3_IMPL_WITH_LOG \
+  [[nodiscard]] Log with_log()&& { return Log(std::move(*this)); }
 
 }  // namespace autd3::link

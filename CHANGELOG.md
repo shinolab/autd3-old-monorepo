@@ -1,3 +1,7 @@
+# 15.0.2
+
+- Fix [#147](https://github.com/shinolab/autd3/issues/147): Remove duplicate resources in unity
+
 # 15.0.1
 
 - Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found

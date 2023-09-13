@@ -100,6 +100,18 @@ class Device {
    */
   void reads_fpga_info(const bool value) const { AUTDDeviceSetReadsFPGAInfo(_ptr, value); }
 
+  void translate(Vector3 t) const {
+      AUTDDeviceTranslate(_ptr, t.x(), t.y(), t.z());
+  }
+
+  void rotate(Quaternion r) const {
+	  AUTDDeviceRotate(_ptr, r.w(), r.x(), r.y(), r.z());
+  }
+
+  void affine(Vector3 t, Quaternion r) const {
+	  AUTDDeviceAffine(_ptr, t.x(), t.y(), t.z(), r.w(), r.x(), r.y(), r.z());
+  }
+
   [[nodiscard]] std::vector<Transducer>::const_iterator cbegin() const noexcept { return _transducers.cbegin(); }
   [[nodiscard]] std::vector<Transducer>::const_iterator cend() const noexcept { return _transducers.cend(); }
   [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept { return _transducers.begin(); }

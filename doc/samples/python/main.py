@@ -1,4 +1,4 @@
-from pyautd3 import AUTD3, Controller, SilencerConfig
+from pyautd3 import AUTD3, Controller, Silencer
 from pyautd3.link import SOEM, OnLostFunc
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     firm_info_list = autd.firmware_info_list()
     print("\n".join([f"[{i}]: {firm}" for i, firm in enumerate(firm_info_list)]))
 
-    autd.send(SilencerConfig())
+    autd.send(Silencer())
 
     g = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Sine(150)

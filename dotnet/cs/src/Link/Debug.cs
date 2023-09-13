@@ -14,13 +14,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using AUTD3Sharp.Internal;
 
 namespace AUTD3Sharp.Link
 {
     /// <summary>
     /// Link for debugging
     /// </summary>
-    public sealed class Debug : Link
+    public sealed class Debug : Internal.Link
     {
         public Debug() : base(NativeMethods.Base.AUTDLinkDebug())
         {

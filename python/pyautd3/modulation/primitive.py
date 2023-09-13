@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 from abc import ABCMeta, abstractmethod
+from datetime import timedelta
 import numpy as np
 from functools import reduce
 from ctypes import c_double
@@ -19,7 +20,7 @@ from typing import Optional
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr, FPGA_SUB_CLK_FREQ
-from .modulation import IModulation
+from pyautd3.internal.modulation import IModulation
 
 
 class Static(IModulation):
@@ -74,6 +75,9 @@ class Sine(IModulation):
     def with_sampling_frequency(self, freq: float) -> "Sine":
         div = int(FPGA_SUB_CLK_FREQ / freq)
         return self.with_sampling_frequency_division(div)
+
+    def with_sampling_period(self, period: timedelta) -> "Sine":
+        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000. * (period.total_seconds() * 1000. * 1000. * 1000.)))
 
     def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_sine(self._freq)
@@ -140,6 +144,9 @@ class SineLegacy(IModulation):
         div = int(FPGA_SUB_CLK_FREQ / freq)
         return self.with_sampling_frequency_division(div)
 
+    def with_sampling_period(self, period: timedelta) -> "SineLegacy":
+        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000. * (period.total_seconds() * 1000. * 1000. * 1000.)))
+
     def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_sine_legacy(self._freq)
         if self._amp is not None:
@@ -187,6 +194,9 @@ class Square(IModulation):
     def with_sampling_frequency(self, freq: float) -> "Square":
         div = int(FPGA_SUB_CLK_FREQ / freq)
         return self.with_sampling_frequency_division(div)
+
+    def with_sampling_period(self, period: timedelta) -> "Square":
+        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000. * (period.total_seconds() * 1000. * 1000. * 1000.)))
 
     def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_square(self._freq)

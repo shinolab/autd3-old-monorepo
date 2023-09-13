@@ -11,23 +11,25 @@
 
 namespace Samples
 
-open System
 open AUTD3Sharp
 
 module SampleRunner =
     let Run (autd : Controller) = 
         let examples = [
-                (FocusTest.Test, "Single Focal Point Test");
-                (BesselBeamTest.Test, "BesselBeam Test");
-                (GainHoloTest.Test, "Multiple Focal Points Test");
-                (FocusSTMTest.Test, "FocusSTM Test");
-                (GainSTMTest.Test, "GainSTM Test");
-                (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)");
-                (CustomTest.Test, "Custom Test (Custom Focus)")];
+                (FocusTest.Test, "Single focus test");
+                (BesselBeamTest.Test, "Bessel beam test");
+                (PlaneTest.Test, "Plane wave test");
+                (WavTest.Test, "Wav modulation test");
+                (FocusSTMTest.Test, "FocusSTM test");
+                (GainSTMTest.Test, "GainSTM test");
+                (GainHoloTest.Test, "Multiple foci test");
+                (CustomTest.Test, "Custom Gain & Modulation test");
+                (FlagTest.Test, "Flag test");
+                (TransTest.Test, "TransducerTest test")];
 
-        printfn "==================================== Firmware information ======================================"
+        printfn "======== AUTD3 firmware information ========"
         autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")
-        printfn "================================================================================================"
+        printfn "============================================"
 
         let rec run_example () =
             let print_example i =

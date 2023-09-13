@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ inline void mod_audio_file_test(autd3::Controller& autd) {
   autd.send(silencer);
 
   const fs::path path = fs::path(AUTD3_RESOURCE_PATH).append("sin150.wav");
-  autd3::modulation::Wav m(path);
+  autd3::modulation::audio_file::Wav m(path);
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 
