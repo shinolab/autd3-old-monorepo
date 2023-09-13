@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -193,8 +193,8 @@ pub unsafe extern "C" fn AUTDStop() -> DatagramSpecialPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModDelayConfig() -> DatagramPtr {
-    DatagramPtr::new(ModDelay::new())
+pub unsafe extern "C" fn AUTDConfigureModDelay() -> DatagramPtr {
+    DatagramPtr::new(ConfigureModDelay::new())
 }
 
 #[no_mangle]
@@ -398,7 +398,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDModDelayConfig();
+            let s = AUTDConfigureModDelay();
             assert_eq!(
                 AUTDSend(
                     cnt,

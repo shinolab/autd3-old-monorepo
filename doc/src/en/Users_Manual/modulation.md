@@ -144,19 +144,19 @@ autd.send(ModDelay::new())?;
 
 ```cpp
 autd.geometry()[0][0].set_mod_delay(1);
-autd.send(autd3::ModDelayConfig());
+autd.send(autd3::ConfigureModDelay());
 ```
 
 ```cs
 autd.Geometry[0][0].ModDelay = 1;
-autd.Send(new ModDelayConfig());
+autd.Send(new ConfigureModDelay());
 ```
 
 ```python
-from pyautd3 import ModDelayConfig
+from pyautd3 import ConfigureModDelay
 
 autd.geometry[0][0].mod_delay = 1
-autd.send(ModDelayConfig())
+autd.send(ConfigureModDelay())
 ```
 
 The delay is the delay for the index to be sampled, so the delay time depends on the sampling frequency of `Modulation`.
