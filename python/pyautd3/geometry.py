@@ -156,6 +156,22 @@ class Transducer:
     def mod_delay(self, delay: int):
         return Base().set_trans_mod_delay(self._ptr, self._local_idx, delay)
 
+    @property
+    def amp_filter(self) -> float:
+        return float(Base().get_trans_amp_filter(self._ptr, self._local_idx))
+
+    @amp_filter.setter
+    def amp_filter(self, value: float):
+        return Base().set_trans_amp_filter(self._ptr, self._local_idx, value)
+
+    @property
+    def phase_filter(self) -> float:
+        return float(Base().get_trans_phase_filter(self._ptr, self._local_idx))
+
+    @phase_filter.setter
+    def phase_filter(self, value: float):
+        return Base().set_trans_phase_filter(self._ptr, self._local_idx, value)
+
     def wavelength(self, sound_speed: float) -> float:
         return float(Base().get_wavelength(self._ptr, self._local_idx, sound_speed))
 
@@ -218,8 +234,21 @@ class Device:
     def force_fan(self, value: bool):
         return Base().device_set_force_fan(self._ptr, value)
 
+    force_fan = property(None, force_fan)
+
     def reads_fpga_info(self, value: bool):
         Base().device_set_reads_fpga_info(self._ptr, value)
+
+    reads_fpga_info = property(None, reads_fpga_info)
+
+    def translate(self, t: np.ndarray):
+        Base().device_translate(self._ptr, t[0], t[1], t[2])
+
+    def rotate(self, r: np.ndarray):
+        Base().device_rotate(self._ptr, r[0], r[1], r[2], r[3])
+
+    def affine(self, t: np.ndarray, r: np.ndarray):
+        Base().device_affine(self._ptr, t[0], t[1], t[2], r[0], r[1], r[2], r[3])
 
     def __getitem__(self, key: int) -> Transducer:
         return self._transducers[key]
@@ -257,6 +286,14 @@ class Geometry:
     @property
     def num_devices(self) -> int:
         return len(self._devices)
+
+    @property
+    def num_transducers(self) -> int:
+        return reduce(
+            lambda acc, x: acc + x.num_transducers,
+            self._devices,
+            0,
+        )
 
     def __getitem__(self, key: int) -> Device:
         return self._devices[key]

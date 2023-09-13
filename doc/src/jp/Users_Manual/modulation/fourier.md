@@ -27,6 +27,10 @@ var m = new Fourier()
         .AddComponentsFromIter(new []{new Sine(150), new Sine(200)});
 ```
 
+```python
+m = Fourier().add_component(Sine(100)).add_components_from_iter([Sine(150), Sine(200)])
+```
+
 `+`演算子も定義されている.
 
 ```rust,edition2021
@@ -69,4 +73,8 @@ const auto m = autd3::modulation::Sine(100) + autd3::modulation::Sine(150).with_
 
 ```cs
 var m = new Sine(100) + new Sine(150).WithPhase(AUTD3.Pi / 2.0);
+```
+
+```python
+m = Fourier().add_component(Sine(100)) + Sine(150).with_phase(np.pi / 2.0)
 ```

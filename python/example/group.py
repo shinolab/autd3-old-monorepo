@@ -1,22 +1,24 @@
-"""
-File: debug.py
+'''
+File: group.py
 Project: example
-Created Date: 17/04/2023
+Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 18/04/2023
+Last Modified: 14/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 from pyautd3 import Controller, Level, AUTD3
 from pyautd3.link import Debug
 
-from samples import runner
+from pyautd3.gain import Focus, Null, Group
+from pyautd3.modulation import Sine
 
+import numpy as np
 
 if __name__ == "__main__":
     autd = (
@@ -25,4 +27,14 @@ if __name__ == "__main__":
         .open_with(Debug().with_log_level(Level.Off))
     )
 
-    runner.run(autd)
+    cx = autd.geometry.center[0]
+    g1 = Focus(autd.geometry.center + np.array([0, 0, 150]))
+    g2 = Null()
+
+    g = Group(lambda _, tr: "focus" if tr.position[0] < cx else "null").set("focus", g1).set("null", g2)
+
+    m = Sine(150)
+
+    autd.send((m, g))
+
+    autd.close()

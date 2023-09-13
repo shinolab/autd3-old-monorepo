@@ -463,6 +463,14 @@ autd.Geometry[0].Rotate(r);
 autd.Geometry[0].Affine(t, r);
 ```
 
+```python
+t = np.array([1.0, 0.0, 0.0])
+r = np.array([1.0, 0.0, 0.0, 0.0])
+autd.geometry[0].translate(t)
+autd.geometry[0].rotate(r)
+autd.geometry[0].affine(t, r)
+```
+
 ### force_fan
 
 AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る.

@@ -20,7 +20,7 @@ from typing import Optional
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr, FPGA_SUB_CLK_FREQ
-from .modulation import IModulation
+from pyautd3.internal.modulation import IModulation
 
 
 class Static(IModulation):

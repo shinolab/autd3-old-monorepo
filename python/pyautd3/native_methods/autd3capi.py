@@ -172,14 +172,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetTransModDelay.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDSetTransModDelay.restype = None
 
-        self.dll.AUTDTransTranslate.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDTransTranslate.restype = None
+        self.dll.AUTDGetTransAmpFilter.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransAmpFilter.restype = ctypes.c_double
 
-        self.dll.AUTDTransRotate.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDTransRotate.restype = None
+        self.dll.AUTDSetTransAmpFilter.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDSetTransAmpFilter.restype = None
 
-        self.dll.AUTDTransAffine.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDTransAffine.restype = None
+        self.dll.AUTDGetTransPhaseFilter.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetTransPhaseFilter.restype = ctypes.c_double
+
+        self.dll.AUTDSetTransPhaseFilter.argtypes = [DevicePtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDSetTransPhaseFilter.restype = None
 
         self.dll.AUTDCreateControllerBuilder.argtypes = [] 
         self.dll.AUTDCreateControllerBuilder.restype = ControllerBuilderPtr
@@ -226,8 +229,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDStop.argtypes = [] 
         self.dll.AUTDStop.restype = DatagramSpecialPtr
 
-        self.dll.AUTDModDelayConfig.argtypes = [] 
-        self.dll.AUTDModDelayConfig.restype = DatagramPtr
+        self.dll.AUTDConfigureModDelay.argtypes = [] 
+        self.dll.AUTDConfigureModDelay.restype = DatagramPtr
 
         self.dll.AUTDCreateSilencer.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDCreateSilencer.restype = DatagramPtr
@@ -529,14 +532,17 @@ class NativeMethods(metaclass=Singleton):
     def set_trans_mod_delay(self, dev: DevicePtr, tr_idx: int, delay: int) -> None:
         return self.dll.AUTDSetTransModDelay(dev, tr_idx, delay)
 
-    def trans_translate(self, dev: DevicePtr, tr_idx: int, x: float, y: float, z: float) -> None:
-        return self.dll.AUTDTransTranslate(dev, tr_idx, x, y, z)
+    def get_trans_amp_filter(self, dev: DevicePtr, tr_idx: int) -> ctypes.c_double:
+        return self.dll.AUTDGetTransAmpFilter(dev, tr_idx)
 
-    def trans_rotate(self, dev: DevicePtr, tr_idx: int, w: float, i: float, j: float, k: float) -> None:
-        return self.dll.AUTDTransRotate(dev, tr_idx, w, i, j, k)
+    def set_trans_amp_filter(self, dev: DevicePtr, tr_idx: int, value: float) -> None:
+        return self.dll.AUTDSetTransAmpFilter(dev, tr_idx, value)
 
-    def trans_affine(self, dev: DevicePtr, tr_idx: int, x: float, y: float, z: float, w: float, i: float, j: float, k: float) -> None:
-        return self.dll.AUTDTransAffine(dev, tr_idx, x, y, z, w, i, j, k)
+    def get_trans_phase_filter(self, dev: DevicePtr, tr_idx: int) -> ctypes.c_double:
+        return self.dll.AUTDGetTransPhaseFilter(dev, tr_idx)
+
+    def set_trans_phase_filter(self, dev: DevicePtr, tr_idx: int, value: float) -> None:
+        return self.dll.AUTDSetTransPhaseFilter(dev, tr_idx, value)
 
     def create_controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDCreateControllerBuilder()
@@ -583,8 +589,8 @@ class NativeMethods(metaclass=Singleton):
     def stop(self) -> DatagramSpecialPtr:
         return self.dll.AUTDStop()
 
-    def mod_delay_config(self) -> DatagramPtr:
-        return self.dll.AUTDModDelayConfig()
+    def configure_mod_delay(self) -> DatagramPtr:
+        return self.dll.AUTDConfigureModDelay()
 
     def create_silencer(self, step: int) -> DatagramPtr:
         return self.dll.AUTDCreateSilencer(step)

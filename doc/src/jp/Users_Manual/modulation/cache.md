@@ -34,9 +34,7 @@ c[0] = 0;
 ```
 
 ```python
-from pyautd3.modulation import Cache
-
 # mは何らかのModulation
-c = Cache(m)
+c = m.with_cache()
 c[0] = 0
 ```

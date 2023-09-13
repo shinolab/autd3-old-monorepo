@@ -38,4 +38,11 @@ var g = new Group<string>((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
           .Set("focus", new Focus(new Vector3d(x, y, z)));
 ```
 
+```python
+from pyautd3.gain import Focus, Null, Group
+
+g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set("null", Null()).set("focus", Focus(np.array([x, y, z])))
+
+```
+
 上の場合は, ローカルインデックスが$0$から$100$の振動子は`Null`を, それ以外の振動子は`Focus`を出力する.

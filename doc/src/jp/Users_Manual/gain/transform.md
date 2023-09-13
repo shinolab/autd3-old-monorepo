@@ -33,4 +33,12 @@ var g = new Uniform(1.0).WithTransform((dev, tr, d) =>
 });
 ```
 
+```python
+def f(dev, tr, d):
+    d.amp -= 0.5
+    d.phase += np.pi
+    return d
+g = Uniform(1.0).with_transform(f)
+```
+
 `with_transform`の引数は`Fn(&Device<T>, &T, &Drive) -> Drive`であり, 第1引数はデバイス, 第2引数は振動子, 第3引数は元の振幅/位相データである.

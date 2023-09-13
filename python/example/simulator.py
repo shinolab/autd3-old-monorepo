@@ -1,15 +1,16 @@
-"""
-File: simulator_client.py
+'''
+File: simulator.py
 Project: example
-Created Date: 10/10/2022
+Created Date: 29/08/2023
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 14/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
-Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
+
 
 from pyautd3 import Controller, AUTD3, DEVICE_WIDTH, Synchronize
 from pyautd3.link import Simulator

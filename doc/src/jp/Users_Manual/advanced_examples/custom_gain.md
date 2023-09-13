@@ -81,18 +81,18 @@ public class FocalPoint : Gain.Gain
 ```
 
 ```python
-from pyautd3.gain import Gain, Drive
+from pyautd3 import Geometry, Drive
+from pyautd3.gain import Gain
 
-class FocalPoint(Gain):
+class Focus(Gain):
     def __init__(self, point):
         self.point = np.array(point)
 
-    def calc(self, geometry: Geometry):
-        sound_speed = geometry.sound_speed
+    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         return Gain.transform(
             geometry,
-            lambda tr: Drive(
-                np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
+            lambda dev, tr: Drive(
+                np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),
                 1.0,
             ),
         )
