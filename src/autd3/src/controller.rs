@@ -1051,8 +1051,8 @@ mod tests {
                     .zip(g[&cpu.idx()].iter())
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
-                        assert_eq!(d, crate::driver::fpga::AdvancedDriveDuty::to_duty(&g, c));
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                        assert_eq!(d, crate::driver::fpga::AdvancedDriveDuty::to_duty(g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1078,7 +1078,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1135,7 +1135,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1161,7 +1161,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(&g, c));
+                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
