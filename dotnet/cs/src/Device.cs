@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using AUTD3Sharp.NativeMethods;
-using AUTD3Sharp.Utils;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
+using Quaternion = UnityEngine.Quaternion;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
+using Quaternion = AUTD3Sharp.Utils.Quaterniond;
 #endif
 
 #if USE_SINGLE
@@ -113,12 +114,12 @@ namespace AUTD3Sharp
             Base.AUTDDeviceTranslate(Ptr, t.x, t.y, t.z);
         }
 
-        public void Rotate(Quaterniond r)
+        public void Rotate(Quaternion r)
         {
-            Base.AUTDDeviceRotate(Ptr,r.w, r.x, r.y, r.z);
+            Base.AUTDDeviceRotate(Ptr, r.w, r.x, r.y, r.z);
         }
 
-        public void Affine(Vector3 t, Quaterniond r)
+        public void Affine(Vector3 t, Quaternion r)
         {
             Base.AUTDDeviceAffine(Ptr, t.x, t.y, t.z, r.w, r.x, r.y, r.z);
         }

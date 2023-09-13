@@ -48,8 +48,8 @@ public class SimpleAUTDController : MonoBehaviour
     }
 
     private readonly AUTD3Sharp.Link.SOEM.OnLostCallbackDelegate _onLost = new(OnLost);
-    private readonly AUTD3Sharp.Link.OnLogOutputCallback _output = new(LogOutput);
-    private readonly AUTD3Sharp.Link.OnLogFlushCallback _flush = new(LogFlush);
+    private readonly AUTD3Sharp.Internal.OnLogOutputCallback _output = new(LogOutput);
+    private readonly AUTD3Sharp.Internal.OnLogFlushCallback _flush = new(LogFlush);
 
     private void Awake()
     {
