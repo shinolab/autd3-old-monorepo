@@ -19,7 +19,7 @@ let m = Sine::new(150).with_radiation_pressure();
 ```
 
 ```cpp
-autd3::modulation::RadiationPressure m(autd3::modulation::Sine(150));
+const auto m = autd3::modulation::Sine(150).with_radiation_pressure();
 ```
 
 ```cs

@@ -21,15 +21,13 @@ c[0] = 0.;
 
 ```cpp
 // mは何らかのModulation
-autd3::modulation::Cache c(m);
-
+auto c = m.with_cache();
 c[0] = 0;
 ```
 
 ```cs
 // mは何らかのModulation
 var c = new AUTD3Sharp.Modulation.Cache(m);
-
 c[0] = 0;
 ```
 
@@ -38,6 +36,5 @@ from pyautd3.modulation import Cache
 
 # mは何らかのModulation
 c = Cache(m)
-
 c[0] = 0
 ```

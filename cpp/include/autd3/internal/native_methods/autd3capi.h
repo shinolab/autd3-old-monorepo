@@ -67,7 +67,7 @@ void AUTDGetLatestFirmware(char *latest);
 
 [[nodiscard]] DatagramSpecialPtr AUTDStop();
 
-[[nodiscard]] DatagramPtr AUTDModDelayConfig();
+[[nodiscard]] DatagramPtr AUTDConfigureModDelay();
 
 [[nodiscard]] DatagramPtr AUTDCreateSilencer(uint16_t step);
 
@@ -214,19 +214,13 @@ void AUTDTransZDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
 
 void AUTDSetTransModDelay(DevicePtr dev, uint32_t tr_idx, uint16_t delay);
 
-void AUTDTransTranslate(DevicePtr dev, uint32_t tr_idx, double x, double y, double z);
+[[nodiscard]] double AUTDGetTransAmpFilter(DevicePtr dev, uint32_t tr_idx);
 
-void AUTDTransRotate(DevicePtr dev, uint32_t tr_idx, double w, double i, double j, double k);
+void AUTDSetTransAmpFilter(DevicePtr dev, uint32_t tr_idx, double value);
 
-void AUTDTransAffine(DevicePtr dev,
-                     uint32_t tr_idx,
-                     double x,
-                     double y,
-                     double z,
-                     double w,
-                     double i,
-                     double j,
-                     double k);
+[[nodiscard]] double AUTDGetTransPhaseFilter(DevicePtr dev, uint32_t tr_idx);
+
+void AUTDSetTransPhaseFilter(DevicePtr dev, uint32_t tr_idx, double value);
 
 [[nodiscard]] LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
 

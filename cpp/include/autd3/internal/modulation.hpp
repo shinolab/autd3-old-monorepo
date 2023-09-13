@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -47,18 +45,18 @@ class Modulation : public Datagram {
   [[nodiscard]] Cache with_cache()&& { return Cache(std::move(*this)); } \
   [[nodiscard]] Cache with_cache()& { return Cache(*this); }
 
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION       \
-  template <typename F>                            \
-  [[nodiscard]] Transform with_transform(F& f)&& { \
-    return Transform(std::move(*this), f);         \
-  }                                                \
-  template <typename F>                            \
-  [[nodiscard]] Transform with_transform(F& f)& {  \
-    return Transform(*this, f);                    \
+#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION               \
+  template <typename F>                                    \
+  [[nodiscard]] Transform&& with_transform(const F& f)&& { \
+    return Transform(std::move(*this), f);                 \
+  }                                                        \
+  template <typename F>                                    \
+  [[nodiscard]] Transform with_transform(const F& f)& {    \
+    return Transform(*this, f);                            \
   }
 
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                    \
-  [[nodiscard]] RadiationPressure with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
+#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                      \
+  [[nodiscard]] RadiationPressure&& with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
   [[nodiscard]] RadiationPressure with_radiation_pressure()& { return RadiationPressure(*this); }
 
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
@@ -77,13 +75,13 @@ class Modulation : public Datagram {
   template <typename Rep, typename Period>                                                                                            \
   void with_sampling_period(const std::chrono::duration<Rep, Period> period)& {                                                       \
     with_sampling_frequency_division(                                                                                                 \
-        static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                                 \
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
                               static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
   }                                                                                                                                   \
   template <typename Rep, typename Period>                                                                                            \
   [[nodiscard]] TYPE&& with_sampling_period(const std::chrono::duration<Rep, Period> period)&& {                                      \
     return std::move(*this).with_sampling_frequency_division(                                                                         \
-        static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                                 \
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
                               static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
   }
 
