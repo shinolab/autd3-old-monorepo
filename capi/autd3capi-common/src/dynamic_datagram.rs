@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -199,7 +199,7 @@ impl DynamicDatagram for Clear {
     }
 }
 
-impl DynamicDatagram for ModDelay {
+impl DynamicDatagram for ConfigureModDelay {
     fn operation(
         &mut self,
         _: TransMode,
@@ -211,7 +211,7 @@ impl DynamicDatagram for ModDelay {
         AUTDInternalError,
     > {
         Ok((
-            Box::<crate::driver::operation::ModDelayOp>::default(),
+            Box::<crate::driver::operation::ConfigureModDelayOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
