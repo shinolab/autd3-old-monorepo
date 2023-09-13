@@ -13,7 +13,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace AUTD3Sharp.Link
+namespace AUTD3Sharp.Internal
 {
     [ComVisible(false)]
     public class Link

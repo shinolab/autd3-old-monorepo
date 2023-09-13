@@ -24,4 +24,13 @@ const auto g = autd3::gain::Uniform(1.0).with_transform([](const autd3::Device& 
 });
 ```
 
+```cs
+var g = new Uniform(1.0).WithTransform((dev, tr, d) =>
+{
+    d.Amp -= 0.5;
+    d.Phase += AUTD3.Pi;
+    return d;
+});
+```
+
 `with_transform`の引数は`Fn(&Device<T>, &T, &Drive) -> Drive`であり, 第1引数はデバイス, 第2引数は振動子, 第3引数は元の振幅/位相データである.

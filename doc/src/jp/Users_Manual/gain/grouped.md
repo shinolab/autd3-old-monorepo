@@ -32,4 +32,10 @@ const auto g = autd3::gain::Group([](const autd3::Device& dev, const autd3::Tran
                    .set("focus", autd3::gain::Focus(autd3::Vector3(x, y, z)));
 ```
 
+```cs
+var g = new Group<string>((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
+          .Set("null", new Null())
+          .Set("focus", new Focus(new Vector3d(x, y, z)));
+```
+
 上の場合は, ローカルインデックスが$0$から$100$の振動子は`Null`を, それ以外の振動子は`Focus`を出力する.

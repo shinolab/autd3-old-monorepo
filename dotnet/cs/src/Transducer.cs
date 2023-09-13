@@ -152,6 +152,18 @@ namespace AUTD3Sharp
             set => Base.AUTDSetTransModDelay(_ptr, (uint)LocalIdx, value);
         }
 
+        public float_t AmpFilter
+        {
+            get => Base.AUTDGetTransAmpFilter(_ptr, (uint)LocalIdx);
+            set => Base.AUTDSetTransAmpFilter(_ptr, (uint)LocalIdx, value);
+        }
+
+        public float_t PhaseFilter
+        {
+                        get => Base.AUTDGetTransPhaseFilter(_ptr, (uint)LocalIdx);
+            set => Base.AUTDSetTransPhaseFilter(_ptr, (uint)LocalIdx, value);
+        }
+
         /// <summary>
         /// Wavelength of the transducer
         /// </summary>

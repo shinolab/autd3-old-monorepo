@@ -1,0 +1,23 @@
+﻿using AUTD3Sharp;
+using AUTD3Sharp.Gain;
+using AUTD3Sharp.Link;
+using AUTD3Sharp.Modulation;
+using AUTD3Sharp.Utils;
+
+var autd = Controller.Builder()
+    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+    .OpenWith(new Debug());
+
+var cx = autd.Geometry.Center.x;
+var g1 = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
+var g2 = new Null();
+
+var g = new Group<string>(
+    (_, tr) => tr.Position.x < cx ? "focus" : "null"
+    ).Set("focus", g1).Set("null", g2);
+
+var m = new Sine(150);
+
+autd.Send(m, g);
+
+autd.Close();

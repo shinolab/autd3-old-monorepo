@@ -15,7 +15,6 @@
 #define USE_SINGLE
 #endif
 
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using AUTD3Sharp.NativeMethods;
 
