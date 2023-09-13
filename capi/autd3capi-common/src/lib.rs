@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,6 +45,7 @@ pub use libc::c_void;
 pub type ConstPtr = *const c_void;
 pub type Cnt = Controller<DynamicTransducer, Box<dyn Link<DynamicTransducer>>>;
 pub type Dev = Device<DynamicTransducer>;
+pub type Tr = DynamicTransducer;
 pub type Geo = Geometry<DynamicTransducer>;
 pub type L = dyn Link<DynamicTransducer>;
 pub type G = dyn Gain<DynamicTransducer>;
