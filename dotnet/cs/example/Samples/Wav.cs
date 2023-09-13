@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ internal static class WavTest
         var config = new Silencer();
         autd.Send(config);
 
-        var m = new Wav("../../../../src/examples/src/resources/sin150.wav");
+        var m = new Wav("sin150.wav");
         var g = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
         autd.Send((m, g));
     }
