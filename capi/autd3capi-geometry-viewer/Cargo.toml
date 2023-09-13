@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-geometry-viewer"
-version = "15.0.0"
+version = "15.0.2"
 edition = "2021"
 license = "MIT"
 

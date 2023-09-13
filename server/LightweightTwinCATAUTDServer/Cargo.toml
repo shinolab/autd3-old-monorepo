@@ -1,6 +1,6 @@
 [package]
 name = "LightweightTwinCATAUTDServer"
-version = "15.0.0"
+version = "15.0.2"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -13,9 +13,9 @@ keywords = ["autd"]
 [dependencies]
 clap = { version = "4.3.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
-autd3-protobuf = { path = "../../src/autd3-protobuf", version = "15.0.0" }
-autd3-link-twincat = { path = "../../src/autd3-link-twincat", version = "15.0.0" }
-autd3-driver = { path = "../../src/autd3-driver", version = "15.0.0" }
+autd3-protobuf = { path = "../../src/autd3-protobuf", version = "15.0.2" }
+autd3-link-twincat = { path = "../../src/autd3-link-twincat", version = "15.0.2" }
+autd3-driver = { path = "../../src/autd3-driver", version = "15.0.2" }
 anyhow = "1.0.72"
 ctrlc = "3.3.0"
 spdlog-rs = "0.3.8"
