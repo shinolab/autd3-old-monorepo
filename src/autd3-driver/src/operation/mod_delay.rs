@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,17 +20,17 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct ModDelayOp {
+pub struct ConfigureModDelayOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for ModDelayOp {
+impl<T: Transducer> Operation<T> for ConfigureModDelayOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
         assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
 
-        tx[0] = TypeTag::ModDelay as u8;
+        tx[0] = TypeTag::ConfigureModDelay as u8;
 
         unsafe {
             let dst = std::slice::from_raw_parts_mut(
@@ -87,7 +87,7 @@ mod tests {
             })
         });
 
-        let mut op = ModDelayOp::default();
+        let mut op = ConfigureModDelayOp::default();
 
         assert!(op.init(&geometry).is_ok());
 
@@ -119,7 +119,7 @@ mod tests {
         geometry.devices().for_each(|dev| {
             assert_eq!(
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
-                TypeTag::ModDelay as u8
+                TypeTag::ConfigureModDelay as u8
             );
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())

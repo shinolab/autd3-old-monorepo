@@ -19,7 +19,7 @@ from typing import Optional, List, Iterator
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
-from .native_methods.autd3capi_def import GeometryPtr, TransMode, DevicePtr
+from .native_methods.autd3capi_def import GeometryPtr, TransMode, DevicePtr, TransducerPtr
 from .native_methods.autd3capi_def import TRANS_SPACING_MM, DEVICE_WIDTH_MM, DEVICE_HEIGHT_MM
 from .native_methods.autd3capi_def import NUM_TRANS_IN_X, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_Y
 from .native_methods.autd3capi_def import FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ
@@ -83,11 +83,11 @@ class AUTD3:
 
 class Transducer:
     _local_idx: int
-    _ptr: DevicePtr
+    _ptr: TransducerPtr
 
     def __init__(self, local_idx: int, ptr: DevicePtr):
         self._local_idx = local_idx
-        self._ptr = ptr
+        self._ptr = Base().get_transducer(ptr, local_idx)
 
     @property
     def local_idx(self) -> int:
@@ -97,67 +97,83 @@ class Transducer:
     def position(self) -> np.ndarray:
         v = np.zeros([3]).astype(c_double)
         vp = np.ctypeslib.as_ctypes(v)
-        Base().trans_position(self._ptr, self._local_idx, vp)
+        Base().trans_position(self._ptr, vp)
         return v
 
     @property
     def rotation(self) -> np.ndarray:
         v = np.zeros([4]).astype(c_double)
         vp = np.ctypeslib.as_ctypes(v)
-        Base().trans_rotation(self._ptr, self._local_idx, vp)
+        Base().trans_rotation(self._ptr, vp)
         return v
 
     @property
     def x_direction(self) -> np.ndarray:
         v = np.zeros([3]).astype(c_double)
         vp = np.ctypeslib.as_ctypes(v)
-        Base().trans_x_direction(self._ptr, self._local_idx, vp)
+        Base().trans_x_direction(self._ptr, vp)
         return v
 
     @property
     def y_direction(self) -> np.ndarray:
         v = np.zeros([3]).astype(c_double)
         vp = np.ctypeslib.as_ctypes(v)
-        Base().trans_y_direction(self._ptr, self._local_idx, vp)
+        Base().trans_y_direction(self._ptr, vp)
         return v
 
     @property
     def z_direction(self) -> np.ndarray:
         v = np.zeros([3]).astype(c_double)
         vp = np.ctypeslib.as_ctypes(v)
-        Base().trans_z_direction(self._ptr, self._local_idx, vp)
+        Base().trans_z_direction(self._ptr, vp)
         return v
 
     @property
     def frequency(self) -> float:
-        return float(Base().get_trans_frequency(self._ptr, self._local_idx))
+        return float(Base().get_trans_frequency(self._ptr))
 
     @frequency.setter
     def frequency(self, freq: float):
         err = create_string_buffer(256)
-        if not Base().set_trans_frequency(self._ptr, self._local_idx, freq, err):
+        if not Base().set_trans_frequency(self._ptr, freq, err):
             raise AUTDError(err)
 
     @property
     def cycle(self) -> int:
-        return int(Base().get_trans_cycle(self._ptr, self._local_idx))
+        return int(Base().get_trans_cycle(self._ptr))
 
     @cycle.setter
     def cycle(self, cycle: int):
         err = create_string_buffer(256)
-        if not Base().set_trans_cycle(self._ptr, self._local_idx, cycle, err):
+        if not Base().set_trans_cycle(self._ptr, cycle, err):
             raise AUTDError(err)
 
     @property
     def mod_delay(self) -> int:
-        return int(Base().get_trans_mod_delay(self._ptr, self._local_idx))
+        return int(Base().get_trans_mod_delay(self._ptr))
 
     @mod_delay.setter
     def mod_delay(self, delay: int):
-        return Base().set_trans_mod_delay(self._ptr, self._local_idx, delay)
+        return Base().set_trans_mod_delay(self._ptr, delay)
+
+    @property
+    def amp_filter(self) -> float:
+        return float(Base().get_trans_amp_filter(self._ptr))
+
+    @amp_filter.setter
+    def amp_filter(self, value: float):
+        return Base().set_trans_amp_filter(self._ptr, value)
+
+    @property
+    def phase_filter(self) -> float:
+        return float(Base().get_trans_phase_filter(self._ptr))
+
+    @phase_filter.setter
+    def phase_filter(self, value: float):
+        return Base().set_trans_phase_filter(self._ptr, value)
 
     def wavelength(self, sound_speed: float) -> float:
-        return float(Base().get_wavelength(self._ptr, self._local_idx, sound_speed))
+        return float(Base().get_wavelength(self._ptr, sound_speed))
 
     def wavenumber(self, sound_speed: float) -> float:
         return 2.0 * np.pi / self.wavelength(sound_speed)
@@ -215,11 +231,24 @@ class Device:
         Base().device_center(self._ptr, vp)
         return v
 
-    def force_fan(self, value: bool):
+    def _force_fan(self, value: bool):
         return Base().device_set_force_fan(self._ptr, value)
 
-    def reads_fpga_info(self, value: bool):
+    force_fan = property(None, _force_fan)
+
+    def _reads_fpga_info(self, value: bool):
         Base().device_set_reads_fpga_info(self._ptr, value)
+
+    reads_fpga_info = property(None, _reads_fpga_info)
+
+    def translate(self, t: np.ndarray):
+        Base().device_translate(self._ptr, t[0], t[1], t[2])
+
+    def rotate(self, r: np.ndarray):
+        Base().device_rotate(self._ptr, r[0], r[1], r[2], r[3])
+
+    def affine(self, t: np.ndarray, r: np.ndarray):
+        Base().device_affine(self._ptr, t[0], t[1], t[2], r[0], r[1], r[2], r[3])
 
     def __getitem__(self, key: int) -> Transducer:
         return self._transducers[key]
@@ -257,6 +286,14 @@ class Geometry:
     @property
     def num_devices(self) -> int:
         return len(self._devices)
+
+    @property
+    def num_transducers(self) -> int:
+        return reduce(
+            lambda acc, x: acc + x.num_transducers,
+            self._devices,
+            0,
+        )
 
     def __getitem__(self, key: int) -> Device:
         return self._devices[key]

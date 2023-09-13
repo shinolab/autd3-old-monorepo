@@ -4,13 +4,12 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
-
 
 using System;
 using System.Net;
@@ -20,7 +19,7 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link using TwinCAT3
     /// </summary>
-    public sealed class TwinCAT : Link
+    public sealed class TwinCAT : Internal.Link
     {
         public TwinCAT()
         {
@@ -38,9 +37,9 @@ namespace AUTD3Sharp.Link
     }
 
     /// <summary>
-    /// Link for remote TwinCAT3 server via <see cref="https://github.com/Beckhoff/ADS">ADS</see> library
+    /// Link for remote TwinCAT3 server via <see href="https://github.com/Beckhoff/ADS">ADS</see> library
     /// </summary>
-    public sealed class RemoteTwinCAT : Link
+    public sealed class RemoteTwinCAT : Internal.Link
     {
         /// <summary>
         /// Constructor

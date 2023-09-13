@@ -54,7 +54,7 @@ auto g = autd3::gain::holo::GSPAT(backend)
 ```cs
 var backend = new NalgebraBackend();
 
-var g = new GSPAT(backend)
+var g = new GSPAT<NalgebraBackend>(backend)
             .AddFocus(new Vector3d(x1, y1, z1), 1.0)
             .AddFocus(new Vector3d(x2, y2, z2), 1.0);
 ```
@@ -108,7 +108,7 @@ auto g = autd3::gain::holo::GSPAT(backend)
 ```
 
 ```cs
-var g = new GSPAT(backend).WithConstraint(new Uniform(1.0));
+var g = new GSPAT<NalgebraBackend>(backend).WithConstraint(new Uniform(1.0));
 ```
 
 ```python

@@ -60,6 +60,10 @@ class DevicePtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class TransducerPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class LinkPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 

@@ -1,3 +1,11 @@
+# 15.0.2
+
+- Update firmware to v3.0.2
+- Fix [#143](https://github.com/shinolab/autd3/issues/143): Unify Rust/C++/C#/Python API
+- Fix [#147](https://github.com/shinolab/autd3/issues/147): Remove duplicate resources in unity
+- Fix [#148](https://github.com/shinolab/autd3/issues/148): SoftwareSTM api is complex and difficult to use
+- Fix [#150](https://github.com/shinolab/autd3/issues/150): To remove indirect references, Transducer in C++/C#/Python should own TransducerPtr instead of DevicePtr
+
 # 15.0.1
 
 - Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found

@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,12 +37,12 @@ namespace AUTD3Sharp
 {
     public sealed class Transducer
     {
-        private readonly DevicePtr _ptr;
+        private readonly TransducerPtr _ptr;
 
         internal Transducer(int localIdx, DevicePtr ptr)
         {
             LocalIdx = localIdx;
-            _ptr = ptr;
+            _ptr = Base.AUTDGetTransducer(ptr, (uint)localIdx);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace AUTD3Sharp
             get
             {
                 var pos = new float_t[3];
-                Base.AUTDTransPosition(_ptr, (uint)LocalIdx, pos);
+                Base.AUTDTransPosition(_ptr, pos);
                 return new Vector3(pos[0], pos[1], pos[2]);
             }
         }
@@ -71,7 +71,7 @@ namespace AUTD3Sharp
             get
             {
                 var rot = new float_t[4];
-                Base.AUTDTransRotation(_ptr, (uint)LocalIdx, rot);
+                Base.AUTDTransRotation(_ptr, rot);
                 return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
             }
         }
@@ -84,7 +84,7 @@ namespace AUTD3Sharp
             get
             {
                 var dir = new float_t[3];
-                Base.AUTDTransXDirection(_ptr, (uint)LocalIdx, dir);
+                Base.AUTDTransXDirection(_ptr, dir);
                 return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
@@ -97,7 +97,7 @@ namespace AUTD3Sharp
             get
             {
                 var dir = new float_t[3];
-                Base.AUTDTransYDirection(_ptr, (uint)LocalIdx, dir);
+                Base.AUTDTransYDirection(_ptr, dir);
                 return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
@@ -110,7 +110,7 @@ namespace AUTD3Sharp
             get
             {
                 var dir = new float_t[3];
-                Base.AUTDTransZDirection(_ptr, (uint)LocalIdx, dir);
+                Base.AUTDTransZDirection(_ptr, dir);
                 return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
@@ -120,11 +120,11 @@ namespace AUTD3Sharp
         /// </summary>
         public float_t Frequency
         {
-            get => Base.AUTDGetTransFrequency(_ptr, (uint)LocalIdx);
+            get => Base.AUTDGetTransFrequency(_ptr);
             set
             {
                 var err = new byte[256];
-                if (!Base.AUTDSetTransFrequency(_ptr, (uint)LocalIdx, value, err))
+                if (!Base.AUTDSetTransFrequency(_ptr, value, err))
                     throw new AUTDException(err);
             }
         }
@@ -134,11 +134,11 @@ namespace AUTD3Sharp
         /// </summary>
         public ushort Cycle
         {
-            get => Base.AUTDGetTransCycle(_ptr, (uint)LocalIdx);
+            get => Base.AUTDGetTransCycle(_ptr);
             set
             {
                 var err = new byte[256];
-                if (!Base.AUTDSetTransCycle(_ptr, (uint)LocalIdx, value, err))
+                if (!Base.AUTDSetTransCycle(_ptr, value, err))
                     throw new AUTDException(err);
             }
         }
@@ -148,8 +148,20 @@ namespace AUTD3Sharp
         /// </summary>
         public ushort ModDelay
         {
-            get => Base.AUTDGetTransModDelay(_ptr, (uint)LocalIdx);
-            set => Base.AUTDSetTransModDelay(_ptr, (uint)LocalIdx, value);
+            get => Base.AUTDGetTransModDelay(_ptr);
+            set => Base.AUTDSetTransModDelay(_ptr, value);
+        }
+
+        public float_t AmpFilter
+        {
+            get => Base.AUTDGetTransAmpFilter(_ptr);
+            set => Base.AUTDSetTransAmpFilter(_ptr, value);
+        }
+
+        public float_t PhaseFilter
+        {
+            get => Base.AUTDGetTransPhaseFilter(_ptr);
+            set => Base.AUTDSetTransPhaseFilter(_ptr, value);
         }
 
         /// <summary>
@@ -157,7 +169,7 @@ namespace AUTD3Sharp
         /// </summary>
         /// <param name="soundSpeed">Speed of sound</param>
         /// <returns></returns>
-        public float_t Wavelength(float_t soundSpeed) => Base.AUTDGetWavelength(_ptr, (uint)LocalIdx, soundSpeed);
+        public float_t Wavelength(float_t soundSpeed) => Base.AUTDGetWavelength(_ptr, soundSpeed);
 
         /// <summary>
         /// Wavenumber of the transducer

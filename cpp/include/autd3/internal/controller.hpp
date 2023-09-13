@@ -54,6 +54,21 @@ class Controller {
         throw std::runtime_error("unreachable!");
       return *this;
     }
+    
+    Builder legacy() {
+        _mode = native_methods::TransMode::Legacy;
+        return *this;
+    }
+
+    Builder advanced() {
+		_mode = native_methods::TransMode::Advanced;
+		return *this;
+	}
+
+    Builder advanced_phase() {
+        _mode = native_methods::TransMode::AdvancedPhase;
+return *this;
+    }
 
     /**
      * @brief Open controller
@@ -69,7 +84,7 @@ class Controller {
     }
 
    private:
-    explicit Builder(const native_methods::TransMode mode) : _ptr(native_methods::AUTDCreateControllerBuilder()), _mode(mode) {}
+    explicit Builder() : _ptr(native_methods::AUTDCreateControllerBuilder()), _mode(native_methods::TransMode::Legacy) {}
 
     native_methods::ControllerBuilderPtr _ptr;
     native_methods::TransMode _mode;
@@ -80,28 +95,7 @@ class Controller {
    *
    * @return Builder
    */
-  static Builder builder() noexcept { return Builder{native_methods::TransMode::Legacy}; }
-
-  /**
-   * @brief Create Controller builder (legacy mode)
-   *
-   * @return Builder
-   */
-  static Builder legacy_builder() noexcept { return Builder{native_methods::TransMode::Legacy}; }
-
-  /**
-   * @brief Create Controller builder (advanced mode)
-   *
-   * @return Builder
-   */
-  static Builder advanced_builder() noexcept { return Builder{native_methods::TransMode::Advanced}; }
-
-  /**
-   * @brief Create Controller builder (advanced phase mode)
-   *
-   * @return Builder
-   */
-  static Builder advanced_phase_builder() noexcept { return Builder{native_methods::TransMode::AdvancedPhase}; }
+  static Builder builder() noexcept { return Builder{}; }
 
   Controller() = delete;
   Controller(const Controller& v) = delete;
@@ -297,7 +291,7 @@ class Controller {
   Controller(Geometry geometry, const native_methods::ControllerPtr ptr, const native_methods::TransMode mode)
       : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
 
-  bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) {
+  bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
     const auto res = AUTDSend(_ptr, _mode, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);

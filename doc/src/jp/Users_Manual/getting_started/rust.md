@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }))?;
 
     // ファームウェアバージョンのチェック
-    // ここで, v3.0.1以外が表示される場合の動作は保証しない
+    // ここで, v3.0.2以外が表示される場合の動作は保証しない
     autd.firmware_infos()?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });

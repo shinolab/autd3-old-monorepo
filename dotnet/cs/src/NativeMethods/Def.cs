@@ -89,6 +89,12 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct TransducerPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct LinkPtr
     {
         public IntPtr _0;

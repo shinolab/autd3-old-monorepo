@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,6 @@
 
 #if __cplusplus >= 202002L
 #include <ranges>
-#include <tuple>
 #endif
 
 namespace autd3::internal {
@@ -330,12 +329,11 @@ class GainSTM final : public STM {
   /**
    * @brief Add Gains to the GainSTM
    *
-   * @tparam G Gain
-   * @param gain gain
-   * @return GainSTM
+   * @tparam R Iterator
+   * @param iter gain iterator
    */
   template <std::ranges::viewable_range R>
-  void add_gains_from_iter(R&& iter)->std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>>& {
+  auto add_gains_from_iter(R&& iter) -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>>& {
     for (auto e : iter)
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
   }
@@ -343,8 +341,8 @@ class GainSTM final : public STM {
   /**
    * @brief Add Gains to the GainSTM
    *
-   * @tparam G Gain
-   * @param gain gain
+   * @tparam R Iterator
+   * @param iter gain iterator
    * @return GainSTM
    */
   template <std::ranges::viewable_range R>

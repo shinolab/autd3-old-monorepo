@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,16 +20,13 @@ macro_rules! run {
         use colored::*;
         use std::io::{self, Write};
 
-        println!("*********************************** Firmware information ****************************************");
+        println!("======== AUTD3 firmware information ========");
         $autd.firmware_infos()?.iter().for_each(|firm_info| {
             println!("{}", firm_info);
         });
-        println!("*************************************************************************************************");
+        println!("============================================");
 
-        let examples: Vec<(
-            &'static str,
-            &dyn Fn(&mut _) -> anyhow::Result<bool>,
-        )> = vec![
+        let examples: Vec<(&'static str, &dyn Fn(&mut _) -> anyhow::Result<bool>)> = vec![
             ("Single focus test", &focus),
             ("Bessel beam test", &bessel),
             ("Plane wave test", &plane),
@@ -73,5 +70,5 @@ macro_rules! run {
         println!("finish: {}", res);
 
         Ok(())
- }};
+    }};
 }

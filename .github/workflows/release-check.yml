@@ -99,12 +99,12 @@ jobs:
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator geometry_viewer" 
     - name: Build examples on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
         cd src/examples
-        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator geometry_viewer" 
 
   build-capi:
     name: release-build-capi-${{ matrix.os }}
@@ -236,13 +236,13 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
       if: steps.changed-files.outputs.modified_files
 
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --release --bins --features "soem remote_soem remote_twincat simulator_client" --target=armv7-unknown-linux-gnueabihf
+        cargo build --release --bins --features "soem remote_soem remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
       if: steps.changed-files.outputs.modified_files
 
   build-linux-arm32-capi:
@@ -335,13 +335,13 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-monitor --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
       if: steps.changed-files.outputs.modified_files
     
     - name: Build examples
       run: |
         cd src/examples
-        cargo build --release --bins --features "soem remote_soem remote_twincat simulator_client" --target=aarch64-unknown-linux-gnu
+        cargo build --release --bins --features "soem remote_soem remote_twincat simulator" --target=aarch64-unknown-linux-gnu
       if: steps.changed-files.outputs.modified_files
 
   build-linux-aarch64-capi:
@@ -585,6 +585,10 @@ jobs:
           cargo build --release --target=x86_64-apple-darwin
           cargo build --release --target=aarch64-apple-darwin
           cd ..
+          cd LightweightTwinCATAUTDServer
+          cargo build --release --target=x86_64-apple-darwin
+          cargo build --release --target=aarch64-apple-darwin
+          cd ..
           npm run tauri build -- --target universal-apple-darwin
       - name: build
         if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
@@ -595,5 +599,7 @@ jobs:
           cd ..
           cd SOEMAUTDServer
           cargo build --release
+          cd ..
+          cd LightweightTwinCATAUTDServer
           cd ..
           npm run tauri build

@@ -17,11 +17,12 @@ from pyautd3.autd import Controller, FirmwareInfo
 from pyautd3.geometry import AUTD3, Geometry, Transducer, Device
 from pyautd3.autd import Amplitudes
 from pyautd3.native_methods.autd3capi_def import (
-
     Level,
     TimerStrategy,
 )
-from pyautd3.autd import Clear, UpdateFlags, Synchronize, ModDelayConfig, Stop
+from pyautd3.autd import Clear, UpdateFlags, Synchronize, ConfigureModDelay
+from pyautd3.autd import Stop
+from pyautd3.native_methods.autd3capi import Drive
 
 __all__ = [
     "Silencer",
@@ -30,15 +31,16 @@ __all__ = [
     "Geometry",
     "Device",
     "Transducer",
+    "Drive",
     "FirmwareInfo",
     "Amplitudes",
     "Clear",
     "UpdateFlags",
     "Synchronize",
-    "ModDelayConfig",
+    "ConfigureModDelay",
     "Stop",
     "Level",
     "TimerStrategy",
 ]
 
-__version__ = "15.0.0"
+__version__ = "15.0.2"
