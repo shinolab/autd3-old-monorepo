@@ -1,4 +1,17 @@
-﻿using System.Net;
+﻿/*
+ * File: Program.cs
+ * Project: RemoteSOEM
+ * Created Date: 13/09/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 14/09/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ * 
+ */
+
+using System.Net;
 using AUTD3Sharp.Utils;
 using AUTD3Sharp;
 using AUTD3Sharp.Link;
