@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/09/2023
+ * Last Modified: 12/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,9 +16,10 @@
 #include "iodefine.h"
 #include "params.h"
 #include "utils.h"
+#include "kernel.h"
 
 #define CPU_VERSION_MAJOR (0x8A) /* v3.0 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MINOR (0x02)
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -674,11 +675,14 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
   }
 }
 
+#define AL_STATUS_CODE_SYNC_ERR (0x001A)
+#define AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG (0x001B)
+
 void update(void) {
   volatile uint8_t* p_data;
   Header* header;
 
-  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) {  // Synchronization error
+  if ((ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_ERR) || (ECATC.AL_STATUS_CODE.WORD == AL_STATUS_CODE_SYNC_MANAGER_WATCHDOG)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt-- == 0) clear();
   } else {
@@ -705,6 +709,8 @@ void update(void) {
     }
 
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
+  } else {
+    dly_tsk(1);
   }
 
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;

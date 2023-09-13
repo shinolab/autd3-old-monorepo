@@ -1,3 +1,7 @@
+# 15.0.1
+
+- Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found
+
 # 15.0.0
 
 - Update firmware to v3.0.1
@@ -12,7 +16,6 @@
   - Fix [#90](https://github.com/shinolab/autd3/issues/90): [C#] Poor documentation
 - Fix [#135](https://github.com/shinolab/autd3/issues/135): Compile error of 'autd3-backend-cuda v14.2.2'
 - Fix [#137](https://github.com/shinolab/autd3/issues/137): ninja is needed when build cpp examples on Windows
-- Fix [#138](https://github.com/shinolab/autd3/issues/138): [Unity] can't build because The type or namespace name UnityEditor could not be found
 - Fix [#141](https://github.com/shinolab/autd3/issues/141): cannot compile with native arm64 linux machine
 
 # 14.2.2
