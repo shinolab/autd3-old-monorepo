@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -152,11 +152,12 @@ mod tests {
             let num_trans = AUTDDeviceNumTransducers(dev) as usize;
 
             let mut v = vec![[0., 0., 0.]; num_trans];
-            (0..num_trans).for_each(|t| AUTDTransPosition(dev, t as _, v[t].as_mut_ptr()));
+            (0..num_trans)
+                .for_each(|t| AUTDTransPosition(AUTDGetTransducer(dev, t as _), v[t].as_mut_ptr()));
             AUTDDeviceTranslate(dev, 1., 2., 3.);
             (0..num_trans).for_each(|t| {
                 let mut v_new = [0., 0., 0.];
-                AUTDTransPosition(dev, t as _, v_new.as_mut_ptr());
+                AUTDTransPosition(AUTDGetTransducer(dev, t as _), v_new.as_mut_ptr());
                 assert_approx_eq::assert_approx_eq!(v_new[0], v[t][0] + 1.);
                 assert_approx_eq::assert_approx_eq!(v_new[1], v[t][1] + 2.);
                 assert_approx_eq::assert_approx_eq!(v_new[2], v[t][2] + 3.);
@@ -166,7 +167,7 @@ mod tests {
             AUTDDeviceRotate(dev, q.w, q.i, q.j, q.k);
             (0..num_trans).for_each(|t| {
                 let mut v_new = [0., 0., 0., 0.];
-                AUTDTransRotation(dev, t as _, v_new.as_mut_ptr());
+                AUTDTransRotation(AUTDGetTransducer(dev, t as _), v_new.as_mut_ptr());
                 assert_approx_eq::assert_approx_eq!(v_new[0], q.w);
                 assert_approx_eq::assert_approx_eq!(v_new[1], q.i);
                 assert_approx_eq::assert_approx_eq!(v_new[2], q.j);
@@ -180,7 +181,8 @@ mod tests {
             let dev = AUTDGetDevice(geo, 0);
 
             let mut v = vec![[0., 0., 0.]; num_trans];
-            (0..num_trans).for_each(|t| AUTDTransPosition(dev, t as _, v[t].as_mut_ptr()));
+            (0..num_trans)
+                .for_each(|t| AUTDTransPosition(AUTDGetTransducer(dev, t as _), v[t].as_mut_ptr()));
 
             let rot =
                 UnitQuaternion::from_axis_angle(&UnitVector3::new_normalize(Vector3::z()), PI / 2.);
@@ -188,8 +190,8 @@ mod tests {
             (0..num_trans).for_each(|t| {
                 let mut v_new = [0., 0., 0.];
                 let mut q_new = [0., 0., 0., 0.];
-                AUTDTransPosition(dev, t as _, v_new.as_mut_ptr());
-                AUTDTransRotation(dev, t as _, q_new.as_mut_ptr());
+                AUTDTransPosition(AUTDGetTransducer(dev, t as _), v_new.as_mut_ptr());
+                AUTDTransRotation(AUTDGetTransducer(dev, t as _), q_new.as_mut_ptr());
                 assert_approx_eq::assert_approx_eq!(v_new[0], -v[t][1] + 1.);
                 assert_approx_eq::assert_approx_eq!(v_new[1], v[t][0] + 2.);
                 assert_approx_eq::assert_approx_eq!(v_new[2], v[t][2] + 3.);
