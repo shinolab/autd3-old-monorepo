@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 14/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,15 +32,15 @@ class Gain : public Datagram {
 
 #define AUTD3_IMPL_WITH_CACHE_GAIN(T)                           \
   [[nodiscard]] Cache<T> with_cache()& { return Cache(*this); } \
-  [[nodiscard]] Cache<T>&& with_cache()&& { return Cache(std::move(*this)); }
+  [[nodiscard]] Cache<T> with_cache()&& { return Cache(std::move(*this)); }
 
 #define AUTD3_IMPL_WITH_TRANSFORM_GAIN(T)                        \
-  template <typename F>                                          \
-  [[nodiscard]] Transform<T, F> with_transform(const F& f)& {    \
+  template <typename _F>                                         \
+  [[nodiscard]] Transform<T, _F> with_transform(const _F& f)& {  \
     return Transform(*this, f);                                  \
   }                                                              \
-  template <typename F>                                          \
-  [[nodiscard]] Transform<T, F>&& with_transform(const F& f)&& { \
+  template <typename _F>                                         \
+  [[nodiscard]] Transform<T, _F> with_transform(const _F& f)&& { \
     return Transform(std::move(*this), f);                       \
   }
 

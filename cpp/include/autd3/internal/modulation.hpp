@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 14/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,18 +45,18 @@ class Modulation : public Datagram {
   [[nodiscard]] Cache with_cache()&& { return Cache(std::move(*this)); } \
   [[nodiscard]] Cache with_cache()& { return Cache(*this); }
 
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION               \
-  template <typename F>                                    \
-  [[nodiscard]] Transform&& with_transform(const F& f)&& { \
-    return Transform(std::move(*this), f);                 \
-  }                                                        \
-  template <typename F>                                    \
-  [[nodiscard]] Transform with_transform(const F& f)& {    \
-    return Transform(*this, f);                            \
+#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION             \
+  template <typename F>                                  \
+  [[nodiscard]] Transform with_transform(const F& f)&& { \
+    return Transform(std::move(*this), f);               \
+  }                                                      \
+  template <typename F>                                  \
+  [[nodiscard]] Transform with_transform(const F& f)& {  \
+    return Transform(*this, f);                          \
   }
 
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                      \
-  [[nodiscard]] RadiationPressure&& with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
+#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                    \
+  [[nodiscard]] RadiationPressure with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
   [[nodiscard]] RadiationPressure with_radiation_pressure()& { return RadiationPressure(*this); }
 
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
