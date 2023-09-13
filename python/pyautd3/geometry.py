@@ -231,15 +231,15 @@ class Device:
         Base().device_center(self._ptr, vp)
         return v
 
-    def force_fan(self, value: bool):
+    def _force_fan(self, value: bool):
         return Base().device_set_force_fan(self._ptr, value)
 
-    force_fan = property(None, force_fan)
+    force_fan = property(None, _force_fan)
 
-    def reads_fpga_info(self, value: bool):
+    def _reads_fpga_info(self, value: bool):
         Base().device_set_reads_fpga_info(self._ptr, value)
 
-    reads_fpga_info = property(None, reads_fpga_info)
+    reads_fpga_info = property(None, _reads_fpga_info)
 
     def translate(self, t: np.ndarray):
         Base().device_translate(self._ptr, t[0], t[1], t[2])

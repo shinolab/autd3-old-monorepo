@@ -37,7 +37,7 @@ class Fourier(IModulation):
         return functools.reduce(lambda acc, x: acc.add_component(x), components, self)
 
     def __add__(self, rhs) -> "Fourier":
-        self.add_component(rhs)
+        return self.add_component(rhs)
 
     def modulation_ptr(self) -> ModulationPtr:
         return reduce(
