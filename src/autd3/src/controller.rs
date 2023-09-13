@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -327,17 +327,12 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `finish_handler` - If this function returns true, STM will be finished
     ///
     pub fn software_stm<
-        S: Datagram<T>,
-        Fs: FnMut(usize, std::time::Duration) -> Option<S> + Send + 'static,
-        Ff: FnMut(usize, std::time::Duration) -> bool + Send + 'static,
-        Fe: FnMut(AUTDError) -> bool + Send + 'static,
+        F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
     >(
         &mut self,
-        callback: Fs,
-        finish_signal: Ff,
-        callback_err: Fe,
-    ) -> SoftwareSTM<T, L, S, Fs, Ff, Fe> {
-        SoftwareSTM::new(self, callback, finish_signal, callback_err)
+        callback: F,
+    ) -> SoftwareSTM<T, L, F> {
+        SoftwareSTM::new(self, callback)
     }
 }
 
