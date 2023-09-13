@@ -19,15 +19,13 @@ let m = Sine::new(150).with_radiation_pressure();
 ```
 
 ```cpp
-autd3::modulation::RadiationPressure m(autd3::modulation::Sine(150));
+const auto m = autd3::modulation::Sine(150).with_radiation_pressure();
 ```
 
 ```cs
-var m = new RadiationPressure(new Sine(150));
+var m = new Sine(150).WithRadiationPressure();
 ```
 
 ```python
-from pyautd3.modulation import Sine, RadiationPressure
-
-m = RadiationPressure(Sine(150))
+m = Sine(150).with_radiation_pressure()
 ```

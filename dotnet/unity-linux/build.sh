@@ -7,6 +7,10 @@ pushd $script_dir
 
 cd ../..
 
+cp -rf ./dotnet/unity/Assets/Models ./dotnet/unity-linux/Assets/
+cp -rf ./dotnet/unity/Assets/Samples ./dotnet/unity-linux/Assets/
+cp -rf ./dotnet/unity/Assets/Scripts ./dotnet/unity-linux/Assets/
+
 sourceDirectory="./dotnet/cs/src"
 destinationDirectory="./dotnet/unity-linux/Assets/Scripts"
 find "$sourceDirectory" -type f -name "*.cs" -print | while IFS= read -r sourceFilePath; do

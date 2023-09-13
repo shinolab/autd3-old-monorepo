@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -104,6 +104,12 @@ class Transducer {
    * @brief Set modulation delay of the transducer
    */
   void set_mod_delay(const uint16_t delay) const { AUTDSetTransModDelay(_ptr, _local_idx, delay); }
+
+  [[nodiscard]] double amp_filter() const { return AUTDGetTransAmpFilter(_ptr, _local_idx); }
+  void set_amp_filter(const double value) const { AUTDSetTransAmpFilter(_ptr, _local_idx, value); }
+
+  [[nodiscard]] double phase_filter() const { return AUTDGetTransPhaseFilter(_ptr, _local_idx); }
+  void set_phase_filter(const double value) const { AUTDSetTransPhaseFilter(_ptr, _local_idx, value); }
 
   /**
    * @brief Get cycle of the transducer

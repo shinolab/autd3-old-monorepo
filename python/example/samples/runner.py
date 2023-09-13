@@ -11,29 +11,28 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, Stop, FirmwareInfo
+from pyautd3 import Controller, Stop
 
-from . import focus, bessel, holo, custom, stm_gain, stm_focus, group
+from . import focus, bessel, plane, wav, holo, custom, stm_gain, stm_focus, flag, transtest
 
 
 def run(autd: Controller):
     samples = [
-        (focus.simple, "Single Focal Point Sample"),
-        (bessel.bessel, "Bessel beam Sample"),
-        (holo.holo, "Multiple Focal Points Sample"),
-        (stm_focus.stm_focus, "FocusSTM (Hardware STM) Sample"),
-        (stm_gain.stm_gain, "GainSTM (Hardware STM with arbitrary Gain) Sample"),
-        (custom.custom, "Custom Focus Sample"),
-        (group.group, "Group Sample"),
+        (focus.simple, "Single focus test"),
+        (bessel.bessel, "Bessel beam test"),
+        (plane.plane, "Plane wave test"),
+        (wav.wav, "Wav modulation test"),
+        (stm_focus.stm_focus, "FocusSTM test"),
+        (stm_gain.stm_gain, "GainSTM test"),
+        (holo.holo, "Multiple foci test"),
+        (custom.custom, "Custom Gain & Modulation test"),
+        (flag.flag, "Flag test"),
+        (transtest.transtest, "TransducerTest test"),
     ]
 
-    print(
-        "========================================= Firmware information ==========================================="
-    )
+    print("======== AUTD3 firmware information ========")
     print("\n".join([str(firm) for firm in autd.firmware_info_list()]))
-    print(
-        "=========================================================================================================="
-    )
+    print("============================================")
 
     while True:
         print("\n".join([f"[{i}]: {name}" for i, (_, name) in enumerate(samples)]))

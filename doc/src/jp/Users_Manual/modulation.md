@@ -154,26 +154,26 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 autd.geometry_mut()[0][0].set_mod_delay(1);
-autd.send(ModDelay::new())?;
+autd.send(ConfigureModDelay::new())?;
 # Ok(())
 # }
 ```
 
 ```cpp
 autd.geometry()[0][0].set_mod_delay(1);
-autd.send(autd3::ModDelayConfig());
+autd.send(autd3::ConfigureModDelay());
 ```
 
 ```cs
 autd.Geometry[0][0].ModDelay = 1;
-autd.Send(new ModDelayConfig());
+autd.Send(new ConfigureModDelay());
 ```
 
 ```python
-from pyautd3 import ModDelayConfig
+from pyautd3 import ConfigureModDelay
 
 autd.geometry[0][0].mod_delay = 1
-autd.send(ModDelayConfig())
+autd.send(ConfigureModDelay())
 ```
 
 サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかは`Modulation`のサンプリング周波数に依存する.

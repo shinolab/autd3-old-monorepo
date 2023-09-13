@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ pub enum TypeTag {
     FirmwareInfo = 0x03,
     UpdateFlags = 0x04,
     Modulation = 0x10,
-    ModDelay = 0x11,
+    ConfigureModDelay = 0x11,
     Silencer = 0x20,
     Gain = 0x30,
     FocusSTM = 0x40,
@@ -69,7 +69,7 @@ impl From<u8> for TypeTag {
             0x03 => Self::FirmwareInfo,
             0x04 => Self::UpdateFlags,
             0x10 => Self::Modulation,
-            0x11 => Self::ModDelay,
+            0x11 => Self::ConfigureModDelay,
             0x20 => Self::Silencer,
             0x30 => Self::Gain,
             0x40 => Self::FocusSTM,

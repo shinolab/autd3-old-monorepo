@@ -1,3 +1,6 @@
 *.cs
 CHANGELOG.md
 LICENSE.txt
+Models/
+Samples/
+Scripts/

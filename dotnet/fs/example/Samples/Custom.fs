@@ -25,9 +25,8 @@ module CustomTest =
             drive.Phase <- dist * tr.Wavenumber(dev.SoundSpeed);
             drive.Amp <- 1.0;
             drive
-        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, Calc_);
+        override this.Calc (geometry: Geometry) = AUTD3Sharp.Gain.Gain.Transform(geometry, Calc_);
         
-
     let Test (autd : Controller) = 
         (Silencer.Disable()) |> autd.Send |> ignore
 

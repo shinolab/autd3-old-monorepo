@@ -104,11 +104,13 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransModDelay(DevicePtr dev, uint trIdx, ushort delay);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransTranslate(DevicePtr dev, uint trIdx, double x, double y, double z);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDGetTransAmpFilter(DevicePtr dev, uint trIdx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransRotate(DevicePtr dev, uint trIdx, double w, double i, double j, double k);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransAmpFilter(DevicePtr dev, uint trIdx, double value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransAffine(DevicePtr dev, uint trIdx, double x, double y, double z, double w, double i, double j, double k);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDGetTransPhaseFilter(DevicePtr dev, uint trIdx);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransPhaseFilter(DevicePtr dev, uint trIdx, double value);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDCreateControllerBuilder();
 
@@ -140,7 +142,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramSpecialPtr AUTDStop();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDModDelayConfig();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigureModDelay();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDCreateSilencer(ushort step);
 

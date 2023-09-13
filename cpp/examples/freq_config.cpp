@@ -16,25 +16,12 @@
 int main() try {
   // Here we use link::Debug for example, but you can use any other link.
   auto autd =
-      autd3::Controller::advanced_builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Debug());
+      autd3::Controller::builder().advanced().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Debug());
 
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd.send(autd3::Synchronize());  // You must synchronize after configuring the frequencies.
-
-  autd3::Silencer silencer;
-  autd.send(silencer);
-
-  autd3::modulation::Sine m(150);
-  const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  autd3::gain::Focus g(center);
-  autd.send(m, g);
-
-  std::cout << "press any key to finish..." << std::endl;
-  std::cin.ignore();
-
-  autd.close();
 
   return 0;
 } catch (std::exception& e) {
