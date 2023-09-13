@@ -11,16 +11,12 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-
-from .primitive import (
-    Static,
-    Modulation,
-    Sine,
-    Fourier,
-    SineLegacy,
-    Square,
-)
-from .audio_file import Wav
+from .sine import Sine
+from .fourier import Fourier
+from .sine_legacy import SineLegacy
+from .square import Square
+from .static import Static
+from .modulation import Modulation
 
 
 __all__ = [
@@ -30,5 +26,4 @@ __all__ = [
     "Fourier",
     "SineLegacy",
     "Square",
-    "Wav",
 ]

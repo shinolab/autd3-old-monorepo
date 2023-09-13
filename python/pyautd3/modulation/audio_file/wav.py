@@ -20,7 +20,7 @@ from pyautd3.native_methods.autd3capi_modulation_audio_file import (
 from pyautd3.native_methods.autd3capi_def import ModulationPtr, FPGA_SUB_CLK_FREQ
 from pyautd3.autd_error import AUTDError
 
-from .modulation import IModulation
+from pyautd3.internal.modulation import IModulation
 
 from typing import Optional
 

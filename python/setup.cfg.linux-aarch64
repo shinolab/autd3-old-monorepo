@@ -20,9 +20,11 @@ packages =
     pyautd3
     pyautd3.bin
     pyautd3.native_methods
+    pyautd3.internal
     pyautd3.gain
     pyautd3.gain.holo
     pyautd3.modulation
+    pyautd3.modulation.audio_file
     pyautd3.link
     pyautd3.stm
     pyautd3.extra

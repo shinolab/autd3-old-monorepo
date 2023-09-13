@@ -27,7 +27,7 @@ var m = new Wav(path);
 ```
 
 ```python
-from pyautd3.modulation import Wav
+from pyautd3.modulation.audio_file import Wav
 
 path = "path/to/foo.wav"
 m = Wav(path)
