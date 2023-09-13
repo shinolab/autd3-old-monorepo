@@ -455,6 +455,14 @@ autd.geometry()[0].rotate(r);
 autd.geometry()[0].affine(t, r);
 ```
 
+```cs
+var t = new Vector3d(1, 0, 0);
+var r = new Quaterniond(1, 0, 0, 0);
+autd.Geometry[0].Translate(t);
+autd.Geometry[0].Rotate(r);
+autd.Geometry[0].Affine(t, r);
+```
+
 ### force_fan
 
 AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る.
@@ -627,7 +635,7 @@ const auto idx = tr.local_idx();
 ```
 
 ```cs
-var idx = tr.Idx;
+var idx = tr.LocalIdx;
 ```
 
 ```python

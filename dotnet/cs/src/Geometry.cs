@@ -42,6 +42,10 @@ namespace AUTD3Sharp
         /// </summary>
         public int NumDevices => _devices.Count;
 
+        /// <summary>
+        /// Number of transducers
+        /// </summary>
+        public int NumTransducers => _devices.Sum(d => d.NumTransducers);
 
         /// <summary>
         /// Get center position of all transducers

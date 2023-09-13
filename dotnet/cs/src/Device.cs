@@ -17,7 +17,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using AUTD3Sharp.NativeMethods;
+using AUTD3Sharp.Utils;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -74,7 +76,6 @@ namespace AUTD3Sharp
             set => Base.AUTDDeviceSetAttenuation(Ptr, value);
         }
 
-
         /// <summary>
         /// Get center position of all transducers
         /// </summary>
@@ -105,6 +106,21 @@ namespace AUTD3Sharp
         public bool ReadsFPGAInfo
         {
             set => Base.AUTDDeviceSetReadsFPGAInfo(Ptr, value);
+        }
+
+        public void Translate(Vector3 t)
+        {
+            Base.AUTDDeviceTranslate(Ptr, t.x, t.y, t.z);
+        }
+
+        public void Rotate(Quaterniond r)
+        {
+            Base.AUTDDeviceRotate(Ptr,r.w, r.x, r.y, r.z);
+        }
+
+        public void Affine(Vector3 t, Quaterniond r)
+        {
+            Base.AUTDDeviceAffine(Ptr, t.x, t.y, t.z, r.w, r.x, r.y, r.z);
         }
 
         /// <summary>

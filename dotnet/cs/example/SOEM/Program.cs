@@ -16,7 +16,7 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Utils;
 using Samples;
 
-var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+var onLost = new SOEM.OnLostCallbackDelegate(msg =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);

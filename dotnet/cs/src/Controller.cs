@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -158,6 +158,11 @@ namespace AUTD3Sharp
         /// Check if thermal sensor is asserted
         /// </summary>
         public bool IsThermalAssert => (_info & 0x01) != 0;
+
+        public override string ToString()
+        {
+            return $"Thermal assert = {IsThermalAssert}";
+        }
     }
 
     /// <summary>
@@ -202,7 +207,7 @@ namespace AUTD3Sharp
             /// <returns>ControllerBuilder</returns>
             public ControllerBuilder Legacy()
             {
-                this._mode = TransMode.Legacy;
+                _mode = TransMode.Legacy;
                 return this;
             }
 
@@ -212,7 +217,7 @@ namespace AUTD3Sharp
             /// <returns>ControllerBuilder</returns>
             public ControllerBuilder Advanced()
             {
-                this._mode = TransMode.Advanced;
+                _mode = TransMode.Advanced;
                 return this;
             }
 
@@ -224,7 +229,7 @@ namespace AUTD3Sharp
             /// <returns>ControllerBuilder</returns>
             public ControllerBuilder AdvancedPhase()
             {
-                this._mode = TransMode.AdvancedPhase;
+                _mode = TransMode.AdvancedPhase;
                 return this;
             }
 
@@ -233,9 +238,9 @@ namespace AUTD3Sharp
             /// </summary>
             /// <param name="link">link</param>
             /// <returns>Controller</returns>
-            public Controller OpenWith(Link.Link link)
+            public Controller OpenWith(Internal.Link link)
             {
-                return Controller.OpenImpl(_ptr, _mode, link.Ptr);
+                return OpenImpl(_ptr, _mode, link.Ptr);
             }
 
             internal ControllerBuilder()
@@ -446,9 +451,9 @@ namespace AUTD3Sharp
     /// <summary>
     /// SpecialData to set modulation delay
     /// </summary>
-    public sealed class ModDelayConfig : IDatagram
+    public sealed class ConfigureModDelay : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDModDelayConfig();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigureModDelay();
     }
 
     /// <summary>
@@ -485,6 +490,8 @@ namespace AUTD3Sharp
     public sealed class Amplitudes : IDatagram
     {
         private readonly float_t _amp;
+
+        public static Amplitudes Uniform(float_t amp = 1) => new Amplitudes(amp);
 
         public Amplitudes(float_t amp = 1)
         {

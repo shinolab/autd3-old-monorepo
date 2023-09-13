@@ -13,7 +13,9 @@
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .open_with(Debug::new())?;
-let mut c = Static::new().with_cache()?;
+# let m = Static::new();
+// mは何らかのModulation
+let mut c = m.with_cache()?;
 c[0] = 0.;
 # Ok(())
 # }
@@ -27,7 +29,7 @@ c[0] = 0;
 
 ```cs
 // mは何らかのModulation
-var c = new AUTD3Sharp.Modulation.Cache(m);
+var c = m.WithCache();
 c[0] = 0;
 ```
 

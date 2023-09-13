@@ -58,7 +58,7 @@ class FocalPoint final : public autd3::Gain {
 ```
 
 ```cs
-public class FocalPoint : Gain
+public class FocalPoint : Gain.Gain
 {
     private readonly Vector3d _point;
 
@@ -67,15 +67,14 @@ public class FocalPoint : Gain
         _point = point;
     }
 
-    public override Drive[] Calc(Geometry geometry)
+    public override Dictionary<int, Drive[]> Calc(Geometry geometry)
     {
-        var soundSpeed = geometry.SoundSpeed;
-        return Transform(geometry, tr =>
+        return Transform(geometry, (dev, tr) =>
         {
             var tp = tr.Position;
             var dist = (tp - _point).L2Norm;
-            var phase = dist * tr.Wavenumber(soundSpeed);
-            return new Drive{Phase = phase, Amp= 1.0};
+            var phase = dist * tr.Wavenumber(dev.SoundSpeed);
+            return new Drive { Phase = phase, Amp = 1.0 };
         });
     }
 }

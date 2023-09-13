@@ -21,6 +21,11 @@ const auto path = "path/to/foo.fat";
 const auto m = autd3::modulation::audio_file::RawPCM(path, 4000);
 ```
 
+```cs
+var path = "path/to/foo.dat";
+var m = new RawPCM(path, 4000);
+```
+
 コンストラクタの第2引数で, このデータのサンプリング周波数を指定する必要がある.
 
 > NOTE: `RawPCM`では, raw pcmファイルデータをModulationのサンプリング周波数でリサンプリングするので注意されたい.

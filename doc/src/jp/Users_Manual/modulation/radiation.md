@@ -23,7 +23,7 @@ const auto m = autd3::modulation::Sine(150).with_radiation_pressure();
 ```
 
 ```cs
-var m = new RadiationPressure(new Sine(150));
+var m = new Sine(150).WithRadiationPressure();
 ```
 
 ```python

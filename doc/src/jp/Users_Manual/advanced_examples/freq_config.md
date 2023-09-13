@@ -135,7 +135,7 @@ autd.send(amp);
 ```
 
 ```cs
-var amp = new Amplitudes(1.0);
+var amp = Amplitudes.Uniform(1.0);
 autd.Send(amp);
 ```
 ```python
