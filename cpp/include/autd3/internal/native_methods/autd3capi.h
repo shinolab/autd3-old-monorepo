@@ -67,7 +67,7 @@ void AUTDGetLatestFirmware(char *latest);
 
 [[nodiscard]] DatagramSpecialPtr AUTDStop();
 
-[[nodiscard]] DatagramPtr AUTDModDelayConfig();
+[[nodiscard]] DatagramPtr AUTDConfigureModDelay();
 
 [[nodiscard]] DatagramPtr AUTDCreateSilencer(uint16_t step);
 
@@ -190,43 +190,39 @@ void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
 
 void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
 
-void AUTDTransPosition(DevicePtr dev, uint32_t tr_idx, double *pos);
+[[nodiscard]] TransducerPtr AUTDGetTransducer(DevicePtr dev, uint32_t tr_idx);
 
-void AUTDTransRotation(DevicePtr dev, uint32_t tr_idx, double *rot);
+void AUTDTransPosition(TransducerPtr tr, double *pos);
 
-void AUTDTransXDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+void AUTDTransRotation(TransducerPtr tr, double *rot);
 
-void AUTDTransYDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+void AUTDTransXDirection(TransducerPtr tr, double *dir);
 
-void AUTDTransZDirection(DevicePtr dev, uint32_t tr_idx, double *dir);
+void AUTDTransYDirection(TransducerPtr tr, double *dir);
 
-[[nodiscard]] double AUTDGetTransFrequency(DevicePtr dev, uint32_t idx);
+void AUTDTransZDirection(TransducerPtr tr, double *dir);
 
-[[nodiscard]] bool AUTDSetTransFrequency(DevicePtr dev, uint32_t idx, double value, char *err);
+[[nodiscard]] double AUTDGetTransFrequency(TransducerPtr tr);
 
-[[nodiscard]] uint16_t AUTDGetTransCycle(DevicePtr dev, uint32_t idx);
+[[nodiscard]] bool AUTDSetTransFrequency(TransducerPtr tr, double value, char *err);
 
-[[nodiscard]] bool AUTDSetTransCycle(DevicePtr dev, uint32_t idx, uint16_t value, char *err);
+[[nodiscard]] uint16_t AUTDGetTransCycle(TransducerPtr tr);
 
-[[nodiscard]] double AUTDGetWavelength(DevicePtr dev, uint32_t idx, double sound_speed);
+[[nodiscard]] bool AUTDSetTransCycle(TransducerPtr tr, uint16_t value, char *err);
 
-[[nodiscard]] uint16_t AUTDGetTransModDelay(DevicePtr dev, uint32_t tr_idx);
+[[nodiscard]] double AUTDGetWavelength(TransducerPtr tr, double sound_speed);
 
-void AUTDSetTransModDelay(DevicePtr dev, uint32_t tr_idx, uint16_t delay);
+[[nodiscard]] uint16_t AUTDGetTransModDelay(TransducerPtr tr);
 
-void AUTDTransTranslate(DevicePtr dev, uint32_t tr_idx, double x, double y, double z);
+void AUTDSetTransModDelay(TransducerPtr tr, uint16_t delay);
 
-void AUTDTransRotate(DevicePtr dev, uint32_t tr_idx, double w, double i, double j, double k);
+[[nodiscard]] double AUTDGetTransAmpFilter(TransducerPtr tr);
 
-void AUTDTransAffine(DevicePtr dev,
-                     uint32_t tr_idx,
-                     double x,
-                     double y,
-                     double z,
-                     double w,
-                     double i,
-                     double j,
-                     double k);
+void AUTDSetTransAmpFilter(TransducerPtr tr, double value);
+
+[[nodiscard]] double AUTDGetTransPhaseFilter(TransducerPtr tr);
+
+void AUTDSetTransPhaseFilter(TransducerPtr tr, double value);
 
 [[nodiscard]] LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
 

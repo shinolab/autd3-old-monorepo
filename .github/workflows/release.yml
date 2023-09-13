@@ -524,7 +524,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         cd python
-        cp setup.cfg.linux-x86_64 setup.cfg -Force
+        cp setup.cfg.win-amd64 setup.cfg -Force
         python -m build -w
     - name: Build whl
       if: matrix.os == 'macos-latest'
@@ -703,7 +703,7 @@ jobs:
           cd server 
           npm install
       - name: build
-        if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest'
         run: |
           cd server
           cd simulator
@@ -718,7 +718,7 @@ jobs:
           cargo build --release --target=x86_64-apple-darwin
           cargo build --release --target=aarch64-apple-darwin
       - name: build
-        if: steps.changed-files.outputs.modified_files && matrix.os != 'macos-latest'
+        if: matrix.os != 'macos-latest'
         run: |
           cd server
           cd simulator

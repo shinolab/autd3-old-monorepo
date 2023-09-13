@@ -53,8 +53,8 @@ const auto m = autd3::modulation::Square(150)
 
 ```cs
 var m = new Square(150)
-        .WithLow(0.)
-        .WithHigh(1.);
+        .WithLow(0)
+        .WithHigh(1);
 ```
 
 ```python

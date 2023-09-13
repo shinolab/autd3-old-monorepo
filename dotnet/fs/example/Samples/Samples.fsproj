@@ -6,8 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="sin150.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="Wav.fs" />
+    <Compile Include="Transtest.fs" />
+    <Compile Include="Plane.fs" />
+    <Compile Include="Flag.fs" />
     <Compile Include="Custom.fs" />
-    <Compile Include="Advanced.fs" />
     <Compile Include="GainSTMTest.fs" />
     <Compile Include="FocusSTMTest.fs" />
     <Compile Include="GainHoloTest.fs" />
@@ -16,8 +22,10 @@
     <Compile Include="SampleRunner.fs" />
   </ItemGroup>
 
+  <ItemGroup />
+
   <ItemGroup>
-    <PackageReference Include="AUTD3Sharp" Version="15.0.0" />
+    <PackageReference Include="AUTD3Sharp" Version="15.0.2" />
   </ItemGroup>
 
 </Project>

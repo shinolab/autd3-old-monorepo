@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 13/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
+using AUTD3Sharp.Internal;
+
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
 #endif
@@ -23,15 +25,14 @@ using System.Runtime.InteropServices;
 namespace AUTD3Sharp.Link
 {
     /// <summary>
-    /// Link using <see cref="https://github.com/OpenEtherCATsociety/SOEM">SOEM</see>
+    /// Link using <see href="https://github.com/OpenEtherCATsociety/SOEM">SOEM</see>
     /// </summary>
-    public sealed class SOEM : Link
+    public sealed class SOEM : Internal.Link
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
         public SOEM() : base(NativeMethods.LinkSOEM.AUTDLinkSOEM())
         {
-
         }
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace AUTD3Sharp.Link
         /// <summary>
         /// Set sync mode
         /// </summary>
-        /// <remarks>See <see cref="https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html">Beckhoff's site</see> for more details.</remarks>
+        /// <remarks>See <see href="https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html">Beckhoff's site</see> for more details.</remarks>
         /// <param name="syncMode"></param>
         /// <returns></returns>
         public SOEM WithSyncMode(SyncMode syncMode)
@@ -170,7 +171,7 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link to connect to remote SOEMServer
     /// </summary>
-    public sealed class RemoteSOEM : Link
+    public sealed class RemoteSOEM : Internal.Link
     {
         /// <summary>
         /// Constructor

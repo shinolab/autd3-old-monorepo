@@ -11,7 +11,6 @@
 
 namespace Samples
 
-open System
 open AUTD3Sharp
 open AUTD3Sharp.Gain
 open AUTD3Sharp.Modulation

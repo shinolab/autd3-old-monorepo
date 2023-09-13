@@ -24,7 +24,7 @@ int main() try {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
   // Silencer is used to quiet down the transducers' noise by passing the phase/amplitude parameters through a low-pass filter.
-  autd3::SilencerConfig silencer;
+  autd3::Silencer silencer;
   autd.send(silencer);
 
   // focus is 150.0 mm above array center

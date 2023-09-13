@@ -15,7 +15,7 @@ Next, connect the $\SI{24}{V}$ power supply.
 ### Firmware update
 
 If the firmware is old, normal operation is not guaranteed.
-The firmware version in this document is assumed to be v3.0.1.
+The firmware version in this document is assumed to be v3.0.2.
 
 To update the firmware, you need a Windows 10/11 64bit PC with [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) installed.
 

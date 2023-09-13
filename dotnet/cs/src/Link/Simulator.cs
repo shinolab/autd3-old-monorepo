@@ -20,7 +20,7 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link for AUTD Simulator
     /// </summary>
-    public sealed class Simulator : Link
+    public sealed class Simulator : Internal.Link
     {
         public Simulator(ushort port)
         {

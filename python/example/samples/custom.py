@@ -11,10 +11,10 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from typing import Dict, Iterable
+from typing import Dict
 
-from pyautd3 import Controller, Silencer, Device
-from pyautd3.gain import Gain, Drive
+from pyautd3 import Controller, Silencer, Geometry, Drive
+from pyautd3.gain import Gain
 from pyautd3.modulation import Modulation
 
 import numpy as np
@@ -26,7 +26,7 @@ class Focus(Gain):
 
     def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         return Gain.transform(
-            devices,
+            geometry,
             lambda dev, tr: Drive(
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),
                 1.0,

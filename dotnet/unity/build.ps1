@@ -3,7 +3,7 @@
 # Created Date: 28/05/2023
 # Author: Shun Suzuki
 # -----
-# Last Modified: 12/09/2023
+# Last Modified: 14/09/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ cd ../..
 
 $sourceDirectory = Join-Path -Path $PWD -ChildPath "dotnet/cs/src"
 $destinationDirectory = "./dotnet/unity/Assets/Scripts"
-Get-ChildItem -Path $sourceDirectory -Recurse -File -Filter "*.cs" -Depth 1 | ForEach-Object {
+Get-ChildItem -Path $sourceDirectory -Recurse -File -Filter "*.cs" -Depth 2 | ForEach-Object {
     if ($_.Directory.Name -eq "NativeMethods") {
         return
     }

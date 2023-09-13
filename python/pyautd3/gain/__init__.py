@@ -12,17 +12,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from .primitive import (
-    Focus,
-    Bessel,
-    Plane,
-    Gain,
-    Null,
-    Group,
-    TransTest,
-    Drive,
-)
-
+from .focus import Focus
+from .bessel import Bessel
+from .plane import Plane
+from .gain import Gain
+from .null import Null
+from .group import Group
+from .transtest import TransducerTest
+from .uniform import Uniform
 
 __all__ = [
     "Focus",
@@ -31,6 +28,6 @@ __all__ = [
     "Gain",
     "Null",
     "Group",
-    "TransTest",
-    "Drive",
+    "TransducerTest",
+    "Uniform"
 ]
