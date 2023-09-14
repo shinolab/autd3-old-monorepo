@@ -1,3 +1,7 @@
+# 15.0.3
+
+- Fix [#149](https://github.com/shinolab/autd3/issues/149): Simulator's Info should show information for each device
+
 # 15.0.2
 
 - Update firmware to v3.0.2
