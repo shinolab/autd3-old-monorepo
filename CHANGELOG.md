@@ -1,3 +1,7 @@
+# 15.0.3
+
+- Fix [#154](https://github.com/shinolab/autd3/issues/154): emulator version is still v3.0.0
+
 # 15.0.2
 
 - Update firmware to v3.0.2
