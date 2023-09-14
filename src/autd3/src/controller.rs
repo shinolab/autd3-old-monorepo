@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -369,8 +369,8 @@ mod tests {
         let firm_infos = autd.firmware_infos().unwrap();
         assert_eq!(firm_infos.len(), autd.geometry().num_devices());
         firm_infos.iter().for_each(|f| {
-            assert_eq!(f.cpu_version(), "v3.0.0");
-            assert_eq!(f.fpga_version(), "v3.0.0");
+            assert_eq!(f.cpu_version(), "v3.0.2");
+            assert_eq!(f.fpga_version(), "v3.0.2");
         });
 
         assert!(autd.link().emulators().iter().all(|cpu| {
