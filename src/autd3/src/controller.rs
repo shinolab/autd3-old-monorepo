@@ -123,6 +123,7 @@ impl Controller<LegacyTransducer, NullLink> {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub struct GroupGuard<
     'a,
     K: Hash + Eq + Clone,
@@ -160,8 +161,8 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
 
         let enable_flags: HashMap<K, Vec<bool>> = self
             .op
-            .iter()
-            .map(|(k, _)| {
+            .keys()
+            .map(|k| {
                 (
                     k.clone(),
                     self.cnt
