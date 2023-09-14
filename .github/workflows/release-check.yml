@@ -527,5 +527,6 @@ jobs:
           cargo build --release
           cd ..
           cd LightweightTwinCATAUTDServer
+          cargo build --release
           cd ..
           npm run tauri build
