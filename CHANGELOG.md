@@ -2,6 +2,7 @@
 
 - Fix [#149](https://github.com/shinolab/autd3/issues/149): Simulator's Info should show information for each device
 - Fix [#152](https://github.com/shinolab/autd3/issues/152): [python] Stop does not work
+- Fix [#153](https://github.com/shinolab/autd3/issues/153): [python] cannot run simulator and geometry_viewer examples
 
 # 15.0.2
 
