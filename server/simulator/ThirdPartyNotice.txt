@@ -242,7 +242,7 @@ chlorine 1.0.10 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Lokathor/chlorine
 ---------------------------------------------------------
 
-chrono 0.4.28 (Apache-2.0 OR MIT)
+chrono 0.4.30 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
@@ -1164,10 +1164,6 @@ tiff 0.9.0 (MIT)
 https://github.com/image-rs/image-tiff
 ---------------------------------------------------------
 
-time 0.1.45 (Apache-2.0 OR MIT)
-https://github.com/time-rs/time
----------------------------------------------------------
-
 tiny-skia 0.8.4 (BSD-3-Clause)
 https://github.com/RazrFalcon/tiny-skia
 ---------------------------------------------------------
@@ -1294,10 +1290,6 @@ https://github.com/BurntSushi/walkdir
 
 want 0.3.1 (MIT)
 https://github.com/seanmonstar/want
----------------------------------------------------------
-
-wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
