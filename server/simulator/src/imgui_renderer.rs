@@ -931,7 +931,7 @@ impl ImGuiRenderer {
     }
 
     pub(crate) const fn system_time(&self) -> u64 {
-        ((self.real_time as usize * autd3::driver::fpga::FPGA_CLK_FREQ) / 1000000000) as _
+        ((self.real_time as u128 * autd3::driver::fpga::FPGA_CLK_FREQ as u128) / 1000000000) as _
     }
 
     pub(crate) fn stm_idx(system_time: u64, cpu: &CPUEmulator) -> usize {
