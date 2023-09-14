@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -338,7 +338,7 @@ impl<T: Transducer> Operation<T> for AmplitudeOp {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use rand::prelude::*;
 
     use super::*;
