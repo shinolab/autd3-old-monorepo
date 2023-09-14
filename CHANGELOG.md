@@ -1,3 +1,7 @@
+# 15.0.3
+
+- Fix [#152](https://github.com/shinolab/autd3/issues/152): [python] Stop does not work
+
 # 15.0.2
 
 - Update firmware to v3.0.2
