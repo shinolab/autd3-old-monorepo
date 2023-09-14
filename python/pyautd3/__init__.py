@@ -20,7 +20,9 @@ from pyautd3.native_methods.autd3capi_def import (
     Level,
     TimerStrategy,
 )
-from pyautd3.autd import Clear, UpdateFlags, Synchronize, ConfigureModDelay
+from pyautd3.autd import Clear, UpdateFlags, Synchronize
+from pyautd3.autd import ConfigureModDelay
+from pyautd3.autd import ConfigureAmpFilter, ConfigurePhaseFilter
 from pyautd3.autd import Stop
 from pyautd3.native_methods.autd3capi import Drive
 
@@ -38,6 +40,8 @@ __all__ = [
     "UpdateFlags",
     "Synchronize",
     "ConfigureModDelay",
+    "ConfigureAmpFilter",
+    "ConfigurePhaseFilter",
     "Stop",
     "Level",
     "TimerStrategy",

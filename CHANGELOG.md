@@ -1,3 +1,7 @@
+# 15.0.3
+
+- Fix [#155](https://github.com/shinolab/autd3/issues/155): missing "Filter" section in document
+
 # 15.0.2
 
 - Update firmware to v3.0.2

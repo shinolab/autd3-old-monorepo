@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,11 +38,11 @@ impl From<u8> for FilterType {
 }
 
 #[derive(Default)]
-pub struct PhaseFilterOp {
+pub struct ConfigurePhaseFilterOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for PhaseFilterOp {
+impl<T: Transducer> Operation<T> for ConfigurePhaseFilterOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
@@ -83,11 +83,11 @@ impl<T: Transducer> Operation<T> for PhaseFilterOp {
 }
 
 #[derive(Default)]
-pub struct AmpFilterOp {
+pub struct ConfigureAmpFilterOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for AmpFilterOp {
+impl<T: Transducer> Operation<T> for ConfigureAmpFilterOp {
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
@@ -154,7 +154,7 @@ mod tests {
             })
         });
 
-        let mut op = PhaseFilterOp::default();
+        let mut op = ConfigurePhaseFilterOp::default();
 
         assert!(op.init(&geometry).is_ok());
 
@@ -220,7 +220,7 @@ mod tests {
             })
         });
 
-        let mut op = AmpFilterOp::default();
+        let mut op = ConfigureAmpFilterOp::default();
 
         assert!(op.init(&geometry).is_ok());
 

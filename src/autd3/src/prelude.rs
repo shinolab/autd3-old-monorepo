@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,8 +29,8 @@ pub use crate::{
 
 pub use autd3_driver::{
     datagram::{
-        AmpFilter, Amplitudes, Clear, ConfigureModDelay, DatagramT, FocusSTM, GainSTM,
-        ModulationProperty, PhaseFilter, Silencer, Stop, Synchronize, UpdateFlags,
+        Amplitudes, Clear, ConfigureAmpFilter, ConfigureModDelay, ConfigurePhaseFilter, DatagramT,
+        FocusSTM, GainSTM, ModulationProperty, Silencer, Stop, Synchronize, UpdateFlags,
     },
     defined::{float, Drive, METER, MILLIMETER, PI},
     fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},

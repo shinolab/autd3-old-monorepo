@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ mod update_flag;
 
 pub use amplitude::Amplitudes;
 pub use clear::Clear;
-pub use filter::{AmpFilter, PhaseFilter};
+pub use filter::{ConfigureAmpFilter, ConfigurePhaseFilter};
 pub use gain::{Gain, GainAsAny, GainFilter};
 pub use mod_delay::ConfigureModDelay;
 pub use modulation::{Modulation, ModulationProperty};

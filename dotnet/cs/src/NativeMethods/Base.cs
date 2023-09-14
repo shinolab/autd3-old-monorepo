@@ -146,6 +146,10 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigureModDelay();
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigureAmpFilter();
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigurePhaseFilter();
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDCreateSilencer(ushort step);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDCreateAmplitudes(double amp);

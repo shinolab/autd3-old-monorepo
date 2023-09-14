@@ -66,7 +66,9 @@ using internal::native_methods::Drive;
 using modulation::Modulation;
 
 using internal::Clear;
+using internal::ConfigureAmpFilter;
 using internal::ConfigureModDelay;
+using internal::ConfigurePhaseFilter;
 using internal::Silencer;
 using internal::Synchronize;
 using internal::UpdateFlags;
