@@ -33,11 +33,8 @@
     0.3,
     1.0
   ],
-  "show_mod_plot": false,
-  "show_mod_plot_raw": false,
   "mod_enable": false,
-  "mod_auto_play": false,
-  "stm_auto_play": false,
+  "auto_play": false,
   "image_save_path": "image.png",
   "port": 8080,
   "camera_move_speed": 0.010000001
