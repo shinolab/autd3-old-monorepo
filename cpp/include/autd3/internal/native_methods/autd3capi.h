@@ -69,6 +69,10 @@ void AUTDGetLatestFirmware(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDConfigureModDelay();
 
+[[nodiscard]] DatagramPtr AUTDConfigureAmpFilter();
+
+[[nodiscard]] DatagramPtr AUTDConfigurePhaseFilter();
+
 [[nodiscard]] DatagramPtr AUTDCreateSilencer(uint16_t step);
 
 [[nodiscard]] DatagramPtr AUTDCreateAmplitudes(double amp);

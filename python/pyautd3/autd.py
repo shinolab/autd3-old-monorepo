@@ -303,3 +303,19 @@ class ConfigureModDelay(Datagram):
 
     def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().configure_mod_delay()
+
+
+class ConfigureAmpFilter(Datagram):
+    def __init__(self):
+        super().__init__()
+
+    def ptr(self, _: Geometry) -> DatagramPtr:
+        return Base().configure_amp_filter()
+
+
+class ConfigurePhaseFilter(Datagram):
+    def __init__(self):
+        super().__init__()
+
+    def ptr(self, _: Geometry) -> DatagramPtr:
+        return Base().configure_phase_filter()
