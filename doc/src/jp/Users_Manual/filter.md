@@ -19,6 +19,8 @@ Filterは以下のように, 各振動子に設定する.
 let amp_filter = tr.amp_filter();
 tr.set_amp_filter(-0.5);
 autd.send(ConfigureAmpFilter::new())?;
+
+# let mut tr = &mut autd.geometry_mut()[0][0];
 let phase_filter = tr.phase_filter();
 tr.set_phase_filter(PI);
 autd.send(ConfigurePhaseFilter::new())?;
@@ -30,6 +32,7 @@ autd.send(ConfigurePhaseFilter::new())?;
 const auto amp_filter = tr.amp_filter();
 tr.set_amp_filter(-0.5);
 autd.send(ConfigureAmpFilter());
+
 const auto phase_filter = tr.phase_filter();
 tr.set_phase_filter(autd3::pi);
 autd.send(ConfigurePhaseFilter());
@@ -39,6 +42,7 @@ autd.send(ConfigurePhaseFilter());
 var ampFilter = tr.AmpFilter;
 tr.AmpFilter = -0.5;
 autd.Send(new ConfigureAmpFilter());
+
 var phaseFilter = tr.PhaseFilter;
 tr.PhaseFilter = Math.PI;
 autd.Send(new ConfigurePhaseFilter());
@@ -50,6 +54,7 @@ from pyautd3 import ConfigureAmpFilter, ConfigurePhaseFilter
 amp_filter = tr.amp_filter
 tr.amp_filter = -0.5
 autd.send(ConfigureAmpFilter())
+
 phase_filter = tr.phase_filter
 tr.phase_filter = math.pi
 autd.send(ConfigurePhaseFilter())
