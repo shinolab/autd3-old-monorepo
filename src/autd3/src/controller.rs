@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -438,8 +438,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     ///
     /// # Arguments
     ///
-    /// * `callback` - Callback function called specified interval
-    /// * `finish_handler` - If this function returns true, STM will be finished
+    /// * `callback` - Callback function called specified interval. If this callback returns false, the STM finish.
     ///
     pub fn software_stm<
         F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
