@@ -1,3 +1,12 @@
+# 15.1.0
+
+- Add `group` func to `Controller`
+- Fix [#149](https://github.com/shinolab/autd3/issues/149): Simulator's Info should show information for each device
+- Fix [#152](https://github.com/shinolab/autd3/issues/152): [python] Stop does not work
+- Fix [#153](https://github.com/shinolab/autd3/issues/153): [python] cannot run simulator and geometry_viewer examples
+- Fix [#154](https://github.com/shinolab/autd3/issues/154): emulator version is still v3.0.0
+- Fix [#155](https://github.com/shinolab/autd3/issues/155): missing "Filter" section in document
+
 # 15.0.2
 
 - Update firmware to v3.0.2

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,9 +17,10 @@ use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
 use autd3::driver::fpga::{FPGAControlFlags, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
+use chrono::{Local, TimeZone, Utc};
 use imgui::{
     sys::{igDragFloat, igDragFloat2},
-    Context, FontConfig, FontGlyphRanges, FontSource,
+    Context, FontConfig, FontGlyphRanges, FontSource, TreeNodeFlags,
 };
 use vulkano::{
     command_buffer::{AutoCommandBufferBuilder, PrimaryAutoCommandBuffer},
@@ -37,6 +38,12 @@ use crate::{
     Matrix4, Quaternion, Vector3, Vector4, SCALE, ZPARITY,
 };
 
+fn get_current_ec_time() -> u64 {
+    (Local::now().time() - Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap().time())
+        .num_nanoseconds()
+        .unwrap() as _
+}
+
 pub struct ImGuiRenderer {
     imgui: Context,
     platform: WinitPlatform,
@@ -48,9 +55,11 @@ pub struct ImGuiRenderer {
     visible: Vec<bool>,
     enable: Vec<bool>,
     thermal: Vec<bool>,
-    mod_plot_size: [f32; 2],
-    mod_idx: i32,
-    stm_idx: i32,
+    show_mod_plot: Vec<bool>,
+    show_mod_plot_raw: Vec<bool>,
+    mod_plot_size: Vec<[f32; 2]>,
+    real_time: u64,
+    time_step: i32,
     initial_settings: ViewerSettings,
 }
 
@@ -92,9 +101,11 @@ impl ImGuiRenderer {
             visible: Vec::new(),
             enable: Vec::new(),
             thermal: Vec::new(),
-            mod_plot_size: [200., 50.],
-            mod_idx: 0,
-            stm_idx: 0,
+            real_time: get_current_ec_time(),
+            time_step: 1000000,
+            show_mod_plot: Vec::new(),
+            show_mod_plot_raw: Vec::new(),
+            mod_plot_size: Vec::new(),
             initial_settings,
         }
     }
@@ -103,6 +114,9 @@ impl ImGuiRenderer {
         self.visible = vec![true; dev_num];
         self.enable = vec![true; dev_num];
         self.thermal = vec![false; dev_num];
+        self.show_mod_plot = vec![false; dev_num];
+        self.show_mod_plot_raw = vec![false; dev_num];
+        self.mod_plot_size = vec![[200., 50.]; dev_num];
     }
 
     pub fn resized<T>(&mut self, window: &Window, event: &Event<T>) {
@@ -150,6 +164,7 @@ impl ImGuiRenderer {
             .prepare_frame(io, render.window())
             .expect("Failed to start frame");
 
+        let system_time = self.system_time();
         let ui = self.imgui.new_frame();
 
         {
@@ -623,182 +638,191 @@ impl ImGuiRenderer {
                     ui.text(format!("FPS: {:4.2}", fps));
                     ui.separator();
 
-                    ui.text("Silencer");
-                    ui.text(format!("Step: {}", cpus[0].fpga().silencer_step()));
+                    cpus.iter().for_each(|cpu| {
+                        if ui.collapsing_header(
+                            format!("Device {}", cpu.idx()),
+                            TreeNodeFlags::DEFAULT_OPEN,
+                        ) {
+                            ui.text("Silencer");
+                            ui.text(format!("Step: {}", cpu.fpga().silencer_step()));
+
+                            {
+                                ui.separator();
+                                let m = cpu.fpga().modulation();
+                                ui.text("Modulation");
+
+                                let mod_size = m.len();
+                                ui.text(format!("Size: {}", mod_size));
+                                ui.text(format!(
+                                    "Frequency division: {}",
+                                    cpu.fpga().modulation_frequency_division()
+                                ));
+                                let sampling_freq = FPGA_CLK_FREQ as f32
+                                    / cpu.fpga().modulation_frequency_division() as f32;
+                                ui.text(format!("Sampling Frequency: {:.3} [Hz]", sampling_freq));
+                                let sampling_period = 1000000.0
+                                    * cpu.fpga().modulation_frequency_division() as f32
+                                    / FPGA_CLK_FREQ as f32;
+                                ui.text(format!("Sampling period: {:.3} [us]", sampling_period));
+                                let period = sampling_period * mod_size as f32;
+                                ui.text(format!("Period: {:.3} [us]", period));
+
+                                ui.text(format!(
+                                    "Current Index: {}",
+                                    Self::mod_idx(system_time, cpu)
+                                ));
+
+                                if !m.is_empty() {
+                                    ui.text(format!("mod[0]: {}", m[0]));
+                                }
+                                if mod_size == 2 || mod_size == 3 {
+                                    ui.text(format!("mod[1]: {}", m[1]));
+                                } else if mod_size > 3 {
+                                    ui.text("...");
+                                }
+                                if mod_size >= 3 {
+                                    ui.text(format!("mod[{}]: {}", mod_size - 1, m[mod_size - 1]));
+                                }
+
+                                if ui.radio_button_bool(
+                                    format!("Show mod plot##{}", cpu.idx()),
+                                    self.show_mod_plot[cpu.idx()],
+                                ) {
+                                    dbg!(cpu.idx());
+                                    self.show_mod_plot[cpu.idx()] = !self.show_mod_plot[cpu.idx()];
+                                }
+                                if self.show_mod_plot[cpu.idx()] {
+                                    let mod_v: Vec<f32> = m
+                                        .iter()
+                                        .map(|&v| (v as f32 / 510.0 * std::f32::consts::PI).sin())
+                                        .collect();
+                                    ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
+                                        .graph_size(self.mod_plot_size[cpu.idx()])
+                                        .scale_min(0.)
+                                        .scale_max(1.)
+                                        .build();
+                                }
+
+                                if ui.radio_button_bool(
+                                    format!("Show mod plot (raw)##{}", cpu.idx()),
+                                    self.show_mod_plot_raw[cpu.idx()],
+                                ) {
+                                    self.show_mod_plot_raw[cpu.idx()] =
+                                        !self.show_mod_plot_raw[cpu.idx()];
+                                }
+                                if self.show_mod_plot_raw[cpu.idx()] {
+                                    let mod_v: Vec<f32> =
+                                        m.iter().map(|&v| v as f32 / 255.0).collect();
+                                    ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
+                                        .graph_size(self.mod_plot_size[cpu.idx()])
+                                        .scale_min(0.)
+                                        .scale_max(1.)
+                                        .build();
+                                }
+
+                                if self.show_mod_plot[cpu.idx()]
+                                    || self.show_mod_plot_raw[cpu.idx()]
+                                {
+                                    unsafe {
+                                        igDragFloat2(
+                                            CString::new(format!("plot size##{}", cpu.idx()))
+                                                .unwrap()
+                                                .as_c_str()
+                                                .as_ptr(),
+                                            self.mod_plot_size[cpu.idx()].as_mut_ptr(),
+                                            1.,
+                                            0.,
+                                            std::f32::MAX / 2.,
+                                            CString::new("%.0f").unwrap().as_c_str().as_ptr(),
+                                            0,
+                                        );
+                                    }
+                                }
+                            }
+
+                            if cpu.fpga().is_stm_mode() {
+                                ui.separator();
+
+                                if cpu.fpga().is_stm_gain_mode() {
+                                    ui.text("Gain STM");
+                                } else {
+                                    ui.text("Focus STM");
+                                    #[cfg(feature = "use_meter")]
+                                    ui.text(format!(
+                                        "Sound speed: {:.3} [m/s]",
+                                        cpu.fpga().sound_speed() as f32 / 1024.0
+                                    ));
+                                    #[cfg(not(feature = "use_meter"))]
+                                    ui.text(format!(
+                                        "Sound speed: {:.3} [mm/s]",
+                                        cpu.fpga().sound_speed() as f32 * 1000. / 1024.0
+                                    ));
+                                }
+
+                                if let Some(start_idx) = cpu.fpga().stm_start_idx() {
+                                    ui.text(format!("Start idx: {}", start_idx));
+                                }
+                                if let Some(finish_idx) = cpu.fpga().stm_finish_idx() {
+                                    ui.text(format!("Finish idx: {}", finish_idx));
+                                }
+
+                                let stm_size = cpu.fpga().stm_cycle();
+                                ui.text(format!("Size: {}", stm_size));
+                                ui.text(format!(
+                                    "Frequency division: {}",
+                                    cpu.fpga().stm_frequency_division()
+                                ));
+                                let sampling_freq = FPGA_CLK_FREQ as f32
+                                    / cpu.fpga().stm_frequency_division() as f32;
+                                ui.text(format!("Sampling Frequency: {:.3} [Hz]", sampling_freq));
+                                let sampling_period = 1000000.0
+                                    * cpu.fpga().stm_frequency_division() as f32
+                                    / FPGA_CLK_FREQ as f32;
+                                ui.text(format!("Sampling period: {:.3} [us]", sampling_period));
+                                let period = sampling_period / stm_size as f32;
+                                ui.text(format!("Period: {:.3} [us]", period));
+
+                                ui.text(format!(
+                                    "Current Index: {}",
+                                    Self::stm_idx(system_time, cpu)
+                                ));
+                            }
+
+                            ui.separator();
+                            ui.text("FPGA control flags");
+                            let fpga_flags = cpu.fpga_flags();
+                            let mut force_fan = fpga_flags.contains(FPGAControlFlags::FORCE_FAN);
+                            let mut reads_fpga_info =
+                                fpga_flags.contains(FPGAControlFlags::READS_FPGA_INFO);
+
+                            ui.checkbox("FORCE FAN", &mut force_fan);
+                            ui.checkbox("READS FPGA INFO", &mut reads_fpga_info);
+                        }
+                    });
+
                     ui.separator();
 
-                    {
-                        let m = cpus[0].fpga().modulation();
-                        ui.text("Modulation");
-
-                        let mod_size = m.len();
-                        ui.text(format!("Size: {}", mod_size));
-                        ui.text(format!(
-                            "Frequency division: {}",
-                            cpus[0].fpga().modulation_frequency_division()
-                        ));
-                        let sampling_freq = FPGA_CLK_FREQ as f32
-                            / cpus[0].fpga().modulation_frequency_division() as f32;
-                        ui.text(format!("Sampling Frequency: {:.3} [Hz]", sampling_freq));
-                        let sampling_period = 1000000.0
-                            * cpus[0].fpga().modulation_frequency_division() as f32
-                            / FPGA_CLK_FREQ as f32;
-                        ui.text(format!("Sampling period: {:.3} [us]", sampling_period));
-                        let period = sampling_period * mod_size as f32;
-                        ui.text(format!("Period: {:.3} [us]", period));
-
-                        if !m.is_empty() {
-                            ui.text(format!("mod[0]: {}", m[0]));
-                        }
-                        if mod_size == 2 || mod_size == 3 {
-                            ui.text(format!("mod[1]: {}", m[1]));
-                        } else if mod_size > 3 {
-                            ui.text("...");
-                        }
-                        if mod_size >= 3 {
-                            ui.text(format!("mod[{}]: {}", mod_size - 1, m[mod_size - 1]));
-                        }
-
-                        if ui.radio_button_bool("Show mod plot", settings.show_mod_plot) {
-                            settings.show_mod_plot = !settings.show_mod_plot;
-                        }
-                        if settings.show_mod_plot {
-                            let mod_v: Vec<f32> = m
-                                .iter()
-                                .map(|&v| (v as f32 / 510.0 * std::f32::consts::PI).sin())
-                                .collect();
-                            ui.plot_lines("##mod plot", &mod_v)
-                                .graph_size(self.mod_plot_size)
-                                .scale_min(0.)
-                                .scale_max(1.)
-                                .build();
-                        }
-
-                        if ui.radio_button_bool("Show mod plot (raw)", settings.show_mod_plot_raw) {
-                            settings.show_mod_plot_raw = !settings.show_mod_plot_raw;
-                        }
-                        if settings.show_mod_plot_raw {
-                            let mod_v: Vec<f32> = m.iter().map(|&v| v as f32 / 255.0).collect();
-                            ui.plot_lines("##mod plot", &mod_v)
-                                .graph_size(self.mod_plot_size)
-                                .scale_min(0.)
-                                .scale_max(1.)
-                                .build();
-                        }
-
-                        if settings.show_mod_plot || settings.show_mod_plot_raw {
-                            unsafe {
-                                igDragFloat2(
-                                    CString::new("plot size").unwrap().as_c_str().as_ptr(),
-                                    self.mod_plot_size.as_mut_ptr(),
-                                    1.,
-                                    0.,
-                                    std::f32::MAX / 2.,
-                                    CString::new("%.0f").unwrap().as_c_str().as_ptr(),
-                                    0,
-                                );
-                            }
-                        }
-
-                        if ui.checkbox("Enable##MOD", &mut settings.mod_enable) {
-                            update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                        }
-
-                        if settings.mod_enable {
-                            if ui.input_int("Index##MOD", &mut self.mod_idx).build() {
-                                update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                            }
-                            ui.checkbox("Auto play##MOD", &mut settings.mod_auto_play);
-                            if settings.mod_auto_play {
-                                update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                                self.mod_idx += 1;
-                            }
-                            if self.mod_idx >= mod_size as _ {
-                                self.mod_idx = 0;
-                            }
-                            if self.mod_idx < 0 {
-                                self.mod_idx = mod_size as i32 - 1;
-                            }
-
-                            ui.text(format!(
-                                "Time: {:.3} [us]",
-                                sampling_period * self.mod_idx as f32
-                            ));
-                        }
+                    if ui.checkbox("Mod enable", &mut settings.mod_enable) {
+                        update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
                     }
 
-                    if cpus.iter().any(|c| c.fpga().is_stm_mode()) {
-                        ui.separator();
+                    ui.checkbox("Auto play", &mut settings.auto_play);
 
-                        if cpus[0].fpga().is_stm_gain_mode() {
-                            ui.text("Gain STM");
-                        } else {
-                            ui.text("Focus STM");
-                            #[cfg(feature = "use_meter")]
-                            ui.text(format!(
-                                "Sound speed: {:.3} [m/s]",
-                                cpus[0].fpga().sound_speed() as f32 / 1024.0
-                            ));
-                            #[cfg(not(feature = "use_meter"))]
-                            ui.text(format!(
-                                "Sound speed: {:.3} [mm/s]",
-                                cpus[0].fpga().sound_speed() as f32 * 1000. / 1024.0
-                            ));
-                        }
-
-                        if let Some(start_idx) = cpus[0].fpga().stm_start_idx() {
-                            ui.text(format!("Start idx: {}", start_idx));
-                        }
-                        if let Some(finish_idx) = cpus[0].fpga().stm_finish_idx() {
-                            ui.text(format!("Finish idx: {}", finish_idx));
-                        }
-
-                        let stm_size = cpus[0].fpga().stm_cycle();
-                        ui.text(format!("Size: {}", stm_size));
-                        ui.text(format!(
-                            "Frequency division: {}",
-                            cpus[0].fpga().stm_frequency_division()
-                        ));
-                        let sampling_freq =
-                            FPGA_CLK_FREQ as f32 / cpus[0].fpga().stm_frequency_division() as f32;
-                        ui.text(format!("Sampling Frequency: {:.3} [Hz]", sampling_freq));
-                        let sampling_period = 1000000.0
-                            * cpus[0].fpga().stm_frequency_division() as f32
-                            / FPGA_CLK_FREQ as f32;
-                        ui.text(format!("Sampling period: {:.3} [us]", sampling_period));
-                        let period = sampling_period / stm_size as f32;
-                        ui.text(format!("Period: {:.3} [us]", period));
-
-                        if ui.input_int("Index##STM", &mut self.stm_idx).build() {
+                    ui.text(format!("System time: {} [ns]", self.real_time));
+                    if settings.auto_play {
+                        update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
+                        self.real_time = get_current_ec_time();
+                    } else {
+                        ui.same_line();
+                        if ui.button("+") {
+                            self.real_time =
+                                self.real_time.wrapping_add_signed(self.time_step as _);
                             update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
                         }
-                        ui.checkbox("Auto play##STM", &mut settings.stm_auto_play);
-                        if settings.stm_auto_play {
-                            update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                            self.stm_idx += 1;
-                        }
-                        if self.stm_idx >= stm_size as _ {
-                            self.stm_idx = 0;
-                        }
-                        if self.stm_idx < 0 {
-                            self.stm_idx = stm_size as i32 - 1;
-                        }
-
-                        ui.text(format!(
-                            "Time: {:.3} [us]",
-                            sampling_period * self.stm_idx as f32
-                        ));
+                        ui.input_int("time step", &mut self.time_step)
+                            .always_insert_mode(true)
+                            .build();
                     }
-
-                    ui.separator();
-                    ui.text("FPGA control flags");
-                    let fpga_flags = cpus[0].fpga_flags();
-                    let mut force_fan = fpga_flags.contains(FPGAControlFlags::FORCE_FAN);
-                    let mut reads_fpga_info =
-                        fpga_flags.contains(FPGAControlFlags::READS_FPGA_INFO);
-
-                    ui.checkbox("FORCE FAN", &mut force_fan);
-                    ui.checkbox("READS FPGA INFO", &mut reads_fpga_info);
 
                     tab.end();
                 }
@@ -906,11 +930,16 @@ impl ImGuiRenderer {
         }
     }
 
-    pub(crate) const fn stm_idx(&self) -> usize {
-        self.stm_idx as _
+    pub(crate) const fn system_time(&self) -> u64 {
+        ((self.real_time as u128 * autd3::driver::fpga::FPGA_CLK_FREQ as u128) / 1000000000) as _
     }
 
-    pub(crate) const fn mod_idx(&self) -> usize {
-        self.mod_idx as _
+    pub(crate) fn stm_idx(system_time: u64, cpu: &CPUEmulator) -> usize {
+        (system_time / cpu.fpga().stm_frequency_division() as u64) as usize % cpu.fpga().stm_cycle()
+    }
+
+    pub(crate) fn mod_idx(system_time: u64, cpu: &CPUEmulator) -> usize {
+        (system_time / cpu.fpga().modulation_frequency_division() as u64) as usize
+            % cpu.fpga().modulation_cycle()
     }
 }

@@ -46,3 +46,6 @@ g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set("null", 
 ```
 
 上の場合は, ローカルインデックスが$0$から$100$の振動子は`Null`を, それ以外の振動子は`Focus`を出力する.
+
+> NOTE:
+> このサンプルでは, キーとして文字列を使用しているが, HashMapのキーとして使用できるものなら何でも良い.

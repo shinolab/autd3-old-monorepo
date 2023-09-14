@@ -64,24 +64,17 @@ enableをOffにすると音場に寄与しなくなる.
 
 ### Infoタブ
 
-Infoタブでは, FPSやSilencerやModulation, STMの情報が確認できる.
+Infoタブでは, FPSや各デバイス毎のSilencerやModulation, STMの情報が確認できる.
 
 Silencerの設定は確認できるがこれは音場には反映されない.
 
-ModulationのEnableをOnにすると, Modulationが音場に反映される.
-何番目の変調データを適用するかをIndexで指定する.
-Auto playをOnにすると自動的にIndexをインクリメントする.
+「Mod enable」をOnにすると, Modulationが音場に反映されるようになる.
 
-> Note: Auto playによる変調のタイミングは実機のタイミングとは異なる.
+ModulationとSTMは実時間を元にどのインデックスのデータを出力するかを決めている.
+この時間を表すのが, 「System time」であり, 2000年1月1日0時0分0秒からの経過時間をナノ秒単位で表す.
 
-また, 音圧がどのように変調されるかがこのタブで表示される.
-さらに, rawモードではデューティー比がどのように変調されるかが表示される.
-
-STMを送信した場合は, STMの情報が表示される.
-何番目のSTMデータを表示するかをIndexで指定する.
-Auto playをOnにすると自動的にIndexをインクリメントする.
-
-> Note: Auto playによる変調のタイミングは実機のタイミングとは異なる.
+「Auto play」をOnにすると「System time」が自動的に設定される.
+そうでない場合は, 手動で時間を進めることができる.
 
 ### その他
 

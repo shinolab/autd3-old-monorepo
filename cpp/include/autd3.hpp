@@ -52,7 +52,7 @@ constexpr double pi = internal::pi;
 /**
  * @brief AUTD3 software version
  */
-static inline std::string version = "15.0.2";
+static inline std::string version = "15.1.0";
 
 using internal::Device;
 using internal::Geometry;
@@ -66,7 +66,9 @@ using internal::native_methods::Drive;
 using modulation::Modulation;
 
 using internal::Clear;
+using internal::ConfigureAmpFilter;
 using internal::ConfigureModDelay;
+using internal::ConfigurePhaseFilter;
 using internal::Silencer;
 using internal::Synchronize;
 using internal::UpdateFlags;

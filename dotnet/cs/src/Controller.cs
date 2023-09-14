@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -417,7 +417,7 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// SpecialData to update flags (Force fan flag and reads FPGA info flag)
+    /// Datagram to update flags (Force fan flag and reads FPGA info flag)
     /// </summary>
     public sealed class UpdateFlags : IDatagram
     {
@@ -425,7 +425,7 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// SpecialData for clear all data in devices
+    /// Datagram for clear all data in devices
     /// </summary>
     public sealed class Clear : IDatagram
     {
@@ -433,7 +433,7 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// SpecialData to synchronize devices
+    /// Datagram to synchronize devices
     /// </summary>
     public sealed class Synchronize : IDatagram
     {
@@ -449,7 +449,7 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// SpecialData to set modulation delay
+    /// Datagram to set modulation delay
     /// </summary>
     public sealed class ConfigureModDelay : IDatagram
     {
@@ -457,7 +457,24 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// Header to configure silencer
+    /// Datagram to configure amp filter
+    /// </summary>
+    public sealed class ConfigureAmpFilter : IDatagram
+    {
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigureAmpFilter();
+    }
+
+
+    /// <summary>
+    /// Datagram to configure phase filter
+    /// </summary>
+    public sealed class ConfigurePhaseFilter : IDatagram
+    {
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigurePhaseFilter();
+    }
+
+    /// <summary>
+    /// Datagram to configure silencer
     /// </summary>
     public sealed class Silencer : IDatagram
     {

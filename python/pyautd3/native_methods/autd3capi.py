@@ -235,6 +235,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDConfigureModDelay.argtypes = [] 
         self.dll.AUTDConfigureModDelay.restype = DatagramPtr
 
+        self.dll.AUTDConfigureAmpFilter.argtypes = [] 
+        self.dll.AUTDConfigureAmpFilter.restype = DatagramPtr
+
+        self.dll.AUTDConfigurePhaseFilter.argtypes = [] 
+        self.dll.AUTDConfigurePhaseFilter.restype = DatagramPtr
+
         self.dll.AUTDCreateSilencer.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDCreateSilencer.restype = DatagramPtr
 
@@ -597,6 +603,12 @@ class NativeMethods(metaclass=Singleton):
 
     def configure_mod_delay(self) -> DatagramPtr:
         return self.dll.AUTDConfigureModDelay()
+
+    def configure_amp_filter(self) -> DatagramPtr:
+        return self.dll.AUTDConfigureAmpFilter()
+
+    def configure_phase_filter(self) -> DatagramPtr:
+        return self.dll.AUTDConfigurePhaseFilter()
 
     def create_silencer(self, step: int) -> DatagramPtr:
         return self.dll.AUTDCreateSilencer(step)
