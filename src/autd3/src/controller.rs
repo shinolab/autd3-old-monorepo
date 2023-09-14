@@ -510,8 +510,8 @@ mod tests {
         let firm_infos = autd.firmware_infos().unwrap();
         assert_eq!(firm_infos.len(), autd.geometry().num_devices());
         firm_infos.iter().for_each(|f| {
-            assert_eq!(f.cpu_version(), "v3.0.0");
-            assert_eq!(f.fpga_version(), "v3.0.0");
+            assert_eq!(f.cpu_version(), "v3.0.2");
+            assert_eq!(f.fpga_version(), "v3.0.2");
         });
 
         assert!(autd.link().emulators().iter().all(|cpu| {

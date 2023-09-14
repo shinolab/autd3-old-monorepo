@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_driver::defined::{float, METER};
 
 pub const VERSION_NUM_MAJOR: u8 = 0x8A;
-pub const VERSION_NUM_MINOR: u8 = 0x00;
+pub const VERSION_NUM_MINOR: u8 = 0x02;
 
 pub const TRANS_SIZE_FIXED_POINT_UNIT: float = 40000. / METER;
 
