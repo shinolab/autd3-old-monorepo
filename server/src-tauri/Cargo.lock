@@ -237,7 +237,7 @@ checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
 
 [[package]]
 name = "autd-server"
-version = "15.0.2"
+version = "15.1.0"
 dependencies = [
  "autd3-driver",
  "libloading",
@@ -250,7 +250,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "15.0.2"
+version = "15.1.0"
 dependencies = [
  "bitflags 2.4.0",
  "bitvec",
