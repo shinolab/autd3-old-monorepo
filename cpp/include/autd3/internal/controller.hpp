@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 14/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,20 +54,20 @@ class Controller {
         throw std::runtime_error("unreachable!");
       return *this;
     }
-    
+
     Builder legacy() {
-        _mode = native_methods::TransMode::Legacy;
-        return *this;
+      _mode = native_methods::TransMode::Legacy;
+      return *this;
     }
 
     Builder advanced() {
-		_mode = native_methods::TransMode::Advanced;
-		return *this;
-	}
+      _mode = native_methods::TransMode::Advanced;
+      return *this;
+    }
 
     Builder advanced_phase() {
-        _mode = native_methods::TransMode::AdvancedPhase;
-return *this;
+      _mode = native_methods::TransMode::AdvancedPhase;
+      return *this;
     }
 
     /**
@@ -257,7 +257,7 @@ return *this;
   /**
    * @brief Send data to the devices
    *
-   * @tparam S Special type (Clear, Synchronize, Stop, ModDelay, or UpdateFlag)
+   * @tparam S Special type (Stop)
    * @tparam Rep
    * @tparam Period
    * @param s special data

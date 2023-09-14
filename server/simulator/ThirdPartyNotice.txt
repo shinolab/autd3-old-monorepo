@@ -122,27 +122,27 @@ atomic-polyfill 0.1.11 (Apache-2.0 OR MIT)
 https://github.com/embassy-rs/atomic-polyfill
 ---------------------------------------------------------
 
-autd3 15.0.2 (MIT)
+autd3 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 15.0.2 (MIT)
+autd3-derive 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 15.0.2 (MIT)
+autd3-driver 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 15.0.2 (MIT)
+autd3-firmware-emulator 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 15.0.2 (MIT)
+autd3-gain-holo 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 15.0.2 (MIT)
+autd3-protobuf 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -242,7 +242,7 @@ chlorine 1.0.10 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Lokathor/chlorine
 ---------------------------------------------------------
 
-chrono 0.4.28 (Apache-2.0 OR MIT)
+chrono 0.4.30 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
@@ -1072,7 +1072,7 @@ simd-adler32 0.3.7 (MIT)
 https://github.com/mcountryman/simd-adler32
 ---------------------------------------------------------
 
-simulator 15.0.2 (MIT)
+simulator 15.1.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -1162,10 +1162,6 @@ https://github.com/Amanieu/thread_local-rs
 
 tiff 0.9.0 (MIT)
 https://github.com/image-rs/image-tiff
----------------------------------------------------------
-
-time 0.1.45 (Apache-2.0 OR MIT)
-https://github.com/time-rs/time
 ---------------------------------------------------------
 
 tiny-skia 0.8.4 (BSD-3-Clause)
@@ -1294,10 +1290,6 @@ https://github.com/BurntSushi/walkdir
 
 want 0.3.1 (MIT)
 https://github.com/seanmonstar/want
----------------------------------------------------------
-
-wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)

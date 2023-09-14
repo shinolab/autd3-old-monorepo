@@ -222,7 +222,7 @@ class Controller:
 
     def send(
         self,
-        d: Union[DatagramSpecialPtr, Datagram, Tuple[Datagram, Datagram]],
+        d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
         timeout: Optional[timedelta] = None,
     ) -> bool:
         timeout_ = (
@@ -230,7 +230,7 @@ class Controller:
         )
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
-        if isinstance(d, DatagramSpecialPtr):
+        if isinstance(d, SpecialDatagram):
             res = Base().send_special(self._ptr, self._mode, d.ptr(self.geometry), timeout_, err)
         if isinstance(d, Datagram):
             res = Base().send(
@@ -303,3 +303,19 @@ class ConfigureModDelay(Datagram):
 
     def ptr(self, _: Geometry) -> DatagramPtr:
         return Base().configure_mod_delay()
+
+
+class ConfigureAmpFilter(Datagram):
+    def __init__(self):
+        super().__init__()
+
+    def ptr(self, _: Geometry) -> DatagramPtr:
+        return Base().configure_amp_filter()
+
+
+class ConfigurePhaseFilter(Datagram):
+    def __init__(self):
+        super().__init__()
+
+    def ptr(self, _: Geometry) -> DatagramPtr:
+        return Base().configure_phase_filter()

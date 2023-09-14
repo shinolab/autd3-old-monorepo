@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -55,11 +55,8 @@ pub struct ViewerSettings {
     pub camera_fov: f32,
     pub font_size: f32,
     pub background: [f32; 4],
-    pub show_mod_plot: bool,
-    pub show_mod_plot_raw: bool,
     pub mod_enable: bool,
-    pub mod_auto_play: bool,
-    pub stm_auto_play: bool,
+    pub auto_play: bool,
     pub image_save_path: String,
     pub port: u16,
     pub camera_move_speed: f32,
@@ -128,11 +125,8 @@ impl Default for ViewerSettings {
             camera_fov: 45.,
             font_size: 16.,
             background: [0.3, 0.3, 0.3, 1.],
-            show_mod_plot: false,
-            show_mod_plot_raw: false,
             mod_enable: false,
-            mod_auto_play: false,
-            stm_auto_play: false,
+            auto_play: false,
             image_save_path: "image.png".to_string(),
             port: 8080,
             camera_move_speed: 10. * SCALE,

@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 mod bundle;
 mod debug;
 mod log;
+mod test;
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
@@ -24,6 +25,7 @@ use autd3_driver::{
 pub use bundle::Bundle;
 pub use debug::Debug;
 pub use log::{IntoLog, Log};
+pub use test::Test;
 
 /// Link to do nothing
 pub struct NullLink {}

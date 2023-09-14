@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
     net::ToSocketAddrs,
     path::{Path, PathBuf},
     sync::{Arc, RwLock},
-}; 
+};
 
 use crate::{
     common::transform::{to_gl_pos, to_gl_rot},
@@ -447,11 +447,18 @@ impl Simulator {
                             if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
                                 cpus.iter().for_each(|cpu| {
                                     let cycles = cpu.fpga().cycles();
-                                    let drives = cpu.fpga().duties_and_phases(imgui.stm_idx());
+                                    let idx = if cpu.fpga().is_stm_mode() {
+                                        ImGuiRenderer::stm_idx(imgui.system_time(), cpu)
+                                    } else {
+                                        0
+                                    };
+                                    let drives = cpu.fpga().duties_and_phases(idx);
                                     let duty_filter = cpu.fpga().duty_filters();
                                     let phase_filter = cpu.fpga().phase_filters();
                                     let m = if self.settings.mod_enable {
-                                        cpu.fpga().modulation_at(imgui.mod_idx()) as f32 / 255.
+                                        let mod_idx =
+                                            ImGuiRenderer::mod_idx(imgui.system_time(), cpu);
+                                        cpu.fpga().modulation_at(mod_idx) as f32 / 255.
                                     } else {
                                         1.
                                     };

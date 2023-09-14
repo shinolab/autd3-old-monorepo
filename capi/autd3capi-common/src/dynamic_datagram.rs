@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -212,6 +212,50 @@ impl DynamicDatagram for ConfigureModDelay {
     > {
         Ok((
             Box::<crate::driver::operation::ConfigureModDelayOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
+    }
+}
+
+impl DynamicDatagram for ConfigureAmpFilter {
+    fn operation(
+        &mut self,
+        _: TransMode,
+    ) -> Result<
+        (
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
+        ),
+        AUTDInternalError,
+    > {
+        Ok((
+            Box::<crate::driver::operation::ConfigureAmpFilterOp>::default(),
+            Box::<crate::driver::operation::NullOp>::default(),
+        ))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
+    }
+}
+
+impl DynamicDatagram for ConfigurePhaseFilter {
+    fn operation(
+        &mut self,
+        _: TransMode,
+    ) -> Result<
+        (
+            Box<dyn Operation<DynamicTransducer>>,
+            Box<dyn Operation<DynamicTransducer>>,
+        ),
+        AUTDInternalError,
+    > {
+        Ok((
+            Box::<crate::driver::operation::ConfigurePhaseFilterOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
         ))
     }

@@ -4,18 +4,19 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::time::Duration;
+use std::{collections::HashMap, hash::Hash, time::Duration};
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
     datagram::{Clear, Datagram, Synchronize, UpdateFlags},
+    error::AUTDInternalError,
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{
@@ -23,7 +24,7 @@ use autd3_driver::{
         LegacyTransducer, Transducer,
     },
     link::Link,
-    operation::OperationHandler,
+    operation::{Operation, OperationHandler},
 };
 
 use crate::{
@@ -122,6 +123,107 @@ impl Controller<LegacyTransducer, NullLink> {
     }
 }
 
+#[allow(clippy::type_complexity)]
+pub struct GroupGuard<
+    'a,
+    K: Hash + Eq + Clone,
+    T: Transducer,
+    L: Link<T>,
+    F: Fn(&Device<T>) -> Option<K>,
+> {
+    cnt: &'a mut Controller<T, L>,
+    f: F,
+    timeout: Option<Duration>,
+    op: HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>,
+}
+
+impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> Option<K>>
+    GroupGuard<'a, K, T, L, F>
+{
+    pub fn set<D: Datagram<T>>(mut self, k: K, d: D) -> Result<Self, AUTDInternalError>
+    where
+        D::O1: 'static,
+        D::O2: 'static,
+    {
+        self.timeout = match (self.timeout, d.timeout()) {
+            (None, None) => None,
+            (None, Some(t)) => Some(t),
+            (Some(t), None) => Some(t),
+            (Some(t1), Some(t2)) => Some(t1.max(t2)),
+        };
+        let (op1, op2) = d.operation()?;
+        self.op.insert(k, (Box::new(op1), Box::new(op2)));
+        Ok(self)
+    }
+
+    pub fn send(mut self) -> Result<bool, AUTDInternalError> {
+        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
+
+        let enable_flags: HashMap<K, Vec<bool>> = self
+            .op
+            .keys()
+            .map(|k| {
+                (
+                    k.clone(),
+                    self.cnt
+                        .geometry
+                        .iter()
+                        .map(|dev| {
+                            if let Some(kk) = (self.f)(dev) {
+                                kk == *k
+                            } else {
+                                false
+                            }
+                        })
+                        .collect(),
+                )
+            })
+            .collect();
+
+        self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
+            self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+                dev.enable = enable_flags[k][dev.idx()];
+            });
+            OperationHandler::init(op1, op2, &self.cnt.geometry)
+        })?;
+
+        let r = loop {
+            self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
+                self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+                    dev.enable = enable_flags[k][dev.idx()];
+                });
+                OperationHandler::pack(op1, op2, &self.cnt.geometry, &mut self.cnt.tx_buf)
+            })?;
+
+            if !self
+                .cnt
+                .link
+                .send_receive(&self.cnt.tx_buf, &mut self.cnt.rx_buf, timeout)?
+            {
+                break false;
+            }
+            if self.op.iter_mut().all(|(k, (op1, op2))| {
+                self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+                    dev.enable = enable_flags[k][dev.idx()];
+                });
+                OperationHandler::is_finished(op1, op2, &self.cnt.geometry)
+            }) {
+                break true;
+            }
+            if timeout.is_zero() {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        };
+
+        self.cnt
+            .geometry
+            .iter_mut()
+            .for_each(|dev| dev.enable = true);
+
+        Ok(r)
+    }
+}
+
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
     #[doc(hidden)]
     pub fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
@@ -194,6 +296,19 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             }
         }
         Ok(true)
+    }
+
+    #[must_use]
+    pub fn group<K: Hash + Eq + Clone, F: Fn(&Device<T>) -> Option<K>>(
+        &mut self,
+        f: F,
+    ) -> GroupGuard<K, T, L, F> {
+        GroupGuard {
+            cnt: self,
+            f,
+            timeout: None,
+            op: HashMap::new(),
+        }
     }
 
     /// Send data to the devices asynchronously
@@ -340,7 +455,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 mod tests {
     use crate::{
         autd3_device::AUTD3,
-        link::Debug,
+        link::Test,
         prelude::{Focus, Sine},
     };
 
@@ -357,20 +472,47 @@ mod tests {
     };
 
     use super::*;
-    use spdlog::LevelFilter;
+
+    #[test]
+    fn group() {
+        let mut autd = Controller::builder()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .open_with(Test::new())
+            .unwrap();
+
+        for dev in autd.geometry_mut().iter_mut() {
+            dev.force_fan = true;
+        }
+
+        autd.group(|dev| match dev.idx() {
+            0 => Some("0"),
+            1 => Some("1"),
+            _ => None,
+        })
+        .set("0", UpdateFlags::new())
+        .unwrap()
+        .send()
+        .unwrap();
+
+        assert!(autd.link().emulators()[0].fpga().is_force_fan());
+        assert!(!autd.link().emulators()[1].fpga().is_force_fan());
+        assert!(!autd.link().emulators()[2].fpga().is_force_fan());
+    }
 
     #[test]
     fn basic_usage() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         let firm_infos = autd.firmware_infos().unwrap();
         assert_eq!(firm_infos.len(), autd.geometry().num_devices());
         firm_infos.iter().for_each(|f| {
-            assert_eq!(f.cpu_version(), "v3.0.0");
-            assert_eq!(f.fpga_version(), "v3.0.0");
+            assert_eq!(f.cpu_version(), "v3.0.2");
+            assert_eq!(f.fpga_version(), "v3.0.2");
         });
 
         assert!(autd.link().emulators().iter().all(|cpu| {
@@ -505,7 +647,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         for tr in autd.geometry_mut()[0].iter_mut() {
@@ -533,7 +675,7 @@ mod tests {
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
                 Vector3::zeros(),
             ))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         assert!(autd.link().emulators().iter().all(|cpu| {
@@ -674,7 +816,7 @@ mod tests {
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
                 Vector3::zeros(),
             ))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -816,7 +958,7 @@ mod tests {
     fn focus_stm() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -905,7 +1047,7 @@ mod tests {
     fn gain_stm_legacy() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         let center = autd.geometry().center();
@@ -1012,7 +1154,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -1094,7 +1236,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced_phase()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Debug::new().with_log_level(LevelFilter::Off))
+            .open_with(Test::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();

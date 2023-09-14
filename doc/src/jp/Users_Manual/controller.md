@@ -93,12 +93,43 @@ autd.send((m, g), timeout=timedelta(milliseconds=20))
 
 確実にデータを送信したい場合はこれを適当な値に設定しておくことをおすすめする.
 
-### stop
+### Stop
 
 `Stop`を送信すると, 出力を止めることができる.
 
 `Stop`を送信すると, Silencerの設定がリセットされるので注意されたい.
 
-### clear
+### Clear
 
 `Clear`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
+
+## group
+
+`group`関数を使用すると, デバイスをグルーピングすることができる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink{}).unwrap();
+# let x = 0.;
+# let y = 0.;
+# let z = 0.;
+autd.group(|dev| match dev.idx() {
+    0 => Some("focus"),
+    1 => Some("null"),
+    _ => None,
+})
+.set("null", Null::new())?
+.set("focus", Focus::new(Vector3::new(x, y, z)))?
+.send()?;
+# Ok(())
+# }
+```
+
+`gain::Group`とは異なり, 通常の`send`で送信できるデータなら何でも使用できる.
+ただし, デバイス単位でしかグルーピングできない.
+
+なお, タイムアウトは, `set`したものの中で最大のものが使用される.
+`set`したものの中にタイムアウトを指定したものがなければ, [Link](./link.md)で設定したタイムアウト時間が使用される.
