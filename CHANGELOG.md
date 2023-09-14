@@ -1,3 +1,7 @@
+# 15.0.3
+
+- Fix [#153](https://github.com/shinolab/autd3/issues/153): [python] cannot run simulator and geometry_viewer examples
+
 # 15.0.2
 
 - Update firmware to v3.0.2
