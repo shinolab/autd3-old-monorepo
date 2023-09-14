@@ -23,7 +23,7 @@
     - [Bessel](./Users_Manual/gain/bessel.md)
     - [Plane](./Users_Manual/gain/plane.md)
     - [Uniform](./Users_Manual/gain/uniform.md)
-    - [Grouped](./Users_Manual/gain/grouped.md)
+    - [Group](./Users_Manual/gain/grouped.md)
     - [Holo](./Users_Manual/gain/holo.md)
     - [Cache](./Users_Manual/gain/cache.md)
     - [Transform](./Users_Manual/gain/transform.md)
