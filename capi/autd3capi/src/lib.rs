@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 14/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -195,6 +195,18 @@ pub unsafe extern "C" fn AUTDStop() -> DatagramSpecialPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDConfigureModDelay() -> DatagramPtr {
     DatagramPtr::new(ConfigureModDelay::new())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDConfigureAmpFilter() -> DatagramPtr {
+    DatagramPtr::new(ConfigureAmpFilter::new())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDConfigurePhaseFilter() -> DatagramPtr {
+    DatagramPtr::new(ConfigurePhaseFilter::new())
 }
 
 #[no_mangle]

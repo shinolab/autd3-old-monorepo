@@ -4,6 +4,7 @@
 - Fix [#152](https://github.com/shinolab/autd3/issues/152): [python] Stop does not work
 - Fix [#153](https://github.com/shinolab/autd3/issues/153): [python] cannot run simulator and geometry_viewer examples
 - Fix [#154](https://github.com/shinolab/autd3/issues/154): emulator version is still v3.0.0
+- Fix [#155](https://github.com/shinolab/autd3/issues/155): missing "Filter" section in document
 
 # 15.0.2
 
