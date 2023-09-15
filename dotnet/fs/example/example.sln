@@ -21,7 +21,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FreqConfig", "FreqConfig\Fr
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RemoteSOEM", "RemoteSOEM\RemoteSOEM.fsproj", "{81FE887D-8564-4097-BFA7-6D8972421329}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Group", "Group\Group.fsproj", "{2B9D57BA-0EAC-41DD-BB75-60D69392E277}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GroupGain", "GroupGain\GroupGain.fsproj", "{2B9D57BA-0EAC-41DD-BB75-60D69392E277}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

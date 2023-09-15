@@ -34,6 +34,7 @@ public class SampleRunner
             (FlagTest.Test, "Flag test"),
             (TransTest.Test, "TransducerTest test")
         };
+        if (autd.Geometry.NumDevices >=2 ) examples.Add((GroupTest.Test, "Group test"));
 
         Console.WriteLine("======== AUTD3 firmware information ========");
         Console.WriteLine(string.Join("\n", autd.FirmwareInfoList()));
