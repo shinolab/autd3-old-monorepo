@@ -10,8 +10,8 @@ name = "debug"
 path = "src/debug.rs"
 
 [[bin]]
-name = "group"
-path = "src/group.rs"
+name = "group_gain"
+path = "src/group_gain.rs"
 
 [[bin]]
 name = "async"
