@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use thiserror::Error;
 
-use crate::{fpga::*, operation::GainSTMMode};
+use crate::{defined::float, fpga::*, operation::GainSTMMode};
 
-#[derive(Error, Debug, PartialEq, Eq)]
+#[derive(Error, Debug, PartialEq)]
 pub enum AUTDInternalError {
     #[error(
         "{} transducer{} connected, but you try to use {}", a, if *a == 1 {" is"} else {"s are"}, b)]
@@ -38,6 +38,8 @@ pub enum AUTDInternalError {
         SAMPLING_FREQ_DIV_MIN, u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
     )]
     FocusSTMFreqDivOutOfRange(u32),
+    #[error("Point ({0}, {1}, {2}) is out of range")]
+    FocusSTMPointOutOfRange(float, float, float),
     #[error("Maximum size is {}, but {0} is used", GAIN_STM_LEGACY_BUF_SIZE_MAX)]
     GainSTMLegacySizeOutOfRange(usize),
     #[error("Maximum size is {}, but {0} is used", GAIN_STM_BUF_SIZE_MAX)]
