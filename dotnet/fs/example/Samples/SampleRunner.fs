@@ -28,6 +28,10 @@ module SampleRunner =
                 (FlagTest.Test, "Flag test");
                 (TransTest.Test, "TransducerTest test")];
 
+        let examples = 
+            if autd.Geometry.NumDevices >= 2 then examples @ [(GroupTest.Test, "Group test")] else examples;
+
+
         printfn "======== AUTD3 firmware information ========"
         autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")
         printfn "============================================"
