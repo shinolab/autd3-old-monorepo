@@ -24,6 +24,7 @@
 #include "tests/bessel.hpp"
 #include "tests/flag.hpp"
 #include "tests/focus.hpp"
+#include "tests/group.hpp"
 #include "tests/holo.hpp"
 #include "tests/mod_audio_file.hpp"
 #include "tests/plane.hpp"
@@ -43,6 +44,8 @@ inline int run(autd3::Controller& autd) {
                                                   std::pair(F{advanced_test}, "Custom Gain & Modulation test"),
                                                   std::pair(F{flag_test}, "Flag test"),
                                                   std::pair(F{tran_test}, "TransducerTest test")};
+
+  if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_test}, "Group test");
 
   const auto firm_infos = autd.firmware_infos();
   std::cout << "======== AUTD3 firmware information ========" << std::endl;

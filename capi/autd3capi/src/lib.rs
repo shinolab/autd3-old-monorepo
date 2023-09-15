@@ -359,6 +359,35 @@ pub unsafe extern "C" fn AUTDGroupKVMapSet(
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDGroupKVMapSetSpecial(
+    map: GroupKVMapPtr,
+    key: i32,
+    special: DatagramSpecialPtr,
+    mode: TransMode,
+    timeout_ns: i64,
+    err: *mut c_char,
+) -> GroupKVMapPtr {
+    let timeout = if timeout_ns < 0 {
+        None
+    } else {
+        Some(Duration::from_nanos(timeout_ns as _))
+    };
+    let mode = mode.into();
+    let mut map = Box::from_raw(map.0 as *mut M);
+
+    let d = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
+    let (op1, op2) = try_or_return!(
+        (mode, d, timeout).operation(),
+        err,
+        GroupKVMapPtr(std::ptr::null())
+    );
+    map.insert(key, (op1, op2, timeout));
+
+    GroupKVMapPtr(Box::into_raw(map) as _)
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGroup(
     cnt: ControllerPtr,
     map: *const i32,
