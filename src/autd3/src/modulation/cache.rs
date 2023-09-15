@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 16/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,9 +86,16 @@ impl DerefMut for Cache {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+
     use crate::modulation::Static;
 
     use super::*;
+
+    use autd3_derive::Modulation;
 
     #[test]
     fn test_cache() {
@@ -105,5 +112,38 @@ mod tests {
         for d in m.calc().unwrap() {
             assert_eq!(d, 0.0);
         }
+    }
+
+    #[derive(Modulation)]
+    struct TestModulation {
+        pub calc_cnt: Arc<AtomicUsize>,
+        pub freq_div: u32,
+    }
+
+    impl Modulation for TestModulation {
+        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+            self.calc_cnt.fetch_add(1, Ordering::Relaxed);
+            Ok(vec![0.0; 2])
+        }
+    }
+
+    #[test]
+    fn test_cache_calc_once() {
+        let calc_cnt = Arc::new(AtomicUsize::new(0));
+
+        let modulation = TestModulation {
+            calc_cnt: calc_cnt.clone(),
+            freq_div: 4096,
+        }
+        .with_cache()
+        .unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
+
+        let _ = modulation.calc().unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
+        let _ = modulation.calc().unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
+        let _ = modulation.calc().unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
     }
 }
