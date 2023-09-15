@@ -1,6 +1,7 @@
 # 15.1.1
 
-- Add `SoftwareSTM` functionality to C++, C#, and Python
+- Add `Controller::software_stm` function to C++, C#, and Python
+- Add `Controller::group` function C++, C#, and Python
 
 # 15.1.0
 
