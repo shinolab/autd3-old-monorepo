@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 15/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -273,6 +273,135 @@ class Controller {
     const auto res = native_methods::AUTDSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
+  }
+
+  template <typename F>
+  class SoftwareSTM {
+    friend class Controller;
+    using software_stm_callback = bool (*)(void*, uint64_t, uint64_t);
+
+    struct Context {
+      Controller& controller;
+      const F& callback;
+    };
+
+   public:
+    template <typename Rep, typename Period>
+    void start(const std::chrono::duration<Rep, Period> interval) {
+      const auto interval_ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(interval).count());
+      const software_stm_callback callback_native = +[](void* context, const uint64_t idx, const uint64_t time) -> bool {
+        auto* c = static_cast<Context*>(context);
+        return c->callback(c->controller, static_cast<size_t>(idx), std::chrono::nanoseconds(time));
+      };
+      if (char err[256]{}; AUTDSoftwareSTM(_ptr, callback_native, _context.get(), _strategy, interval_ns, err) == native_methods::AUTD3_ERR)
+        throw AUTDException(err);
+    }
+
+    SoftwareSTM with_timer_strategy(const native_methods::TimerStrategy strategy) && {
+      _strategy = strategy;
+      return std::move(*this);
+    }
+
+   private:
+    explicit SoftwareSTM(const native_methods::ControllerPtr ptr, std::unique_ptr<Context> context)
+        : _ptr(ptr), _context(std::move(context)), _strategy(native_methods::TimerStrategy::Sleep) {}
+
+    native_methods::ControllerPtr _ptr;
+    std::unique_ptr<Context> _context;
+    native_methods::TimerStrategy _strategy;
+  };
+
+  template <typename F>
+  SoftwareSTM<F> software_stm(const F& callback) {
+    return SoftwareSTM<F>(_ptr, std::make_unique<SoftwareSTM<F>::Context>(SoftwareSTM<F>::Context{*this, callback}));
+  }
+
+  template <typename F>
+  class GroupGuard {
+   public:
+    using key_type = typename std::invoke_result_t<F, const internal::Device&>::value_type;
+
+    explicit GroupGuard(const F& map, Controller& controller)
+        : _controller(controller), _map(map), _kv_map(internal::native_methods::AUTDGroupCreateKVMap()) {}
+
+    template <typename D, typename Rep = uint64_t, typename Period = std::milli>
+    auto set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+        -> std::enable_if_t<is_datagram_v<D>, GroupGuard<F>> {
+      if (_keymap.find(key) != _keymap.end()) throw AUTDException("Key already exists");
+      const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
+      const auto ptr = data.ptr(_controller._geometry);
+      _keymap[key] = _k++;
+      char err[256]{};
+      _kv_map = internal::native_methods::AUTDGroupKVMapSet(_kv_map, _keymap[key], ptr, internal::native_methods::DatagramPtr{nullptr},
+                                                            _controller._mode, timeout_ns, err);
+      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      return std::move(*this);
+    }
+
+    template <typename D, typename Rep, typename Period>
+    auto set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, GroupGuard<F>> {
+      return set(key, std::forward<D>(data), std::optional(timeout));
+    }
+
+    template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
+    auto set(const key_type key, D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+        -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, GroupGuard<F>> {
+      if (_keymap.find(key) != _keymap.end()) throw AUTDException("Key already exists");
+      const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
+      const auto ptr1 = data1.ptr(_controller._geometry);
+      const auto ptr2 = data2.ptr(_controller._geometry);
+      _keymap[key] = _k++;
+      char err[256]{};
+      _kv_map = native_methods::AUTDGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, _controller._mode, timeout_ns, err);
+      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      return std::move(*this);
+    }
+
+    template <typename D1, typename D2, typename Rep, typename Period>
+    auto set(const key_type key, D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
+        -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, GroupGuard<F>> {
+      return set(key, std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
+    }
+
+    template <typename D, typename Rep = uint64_t, typename Period = std::milli>
+    auto set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+        -> std::enable_if_t<is_special_v<D>, GroupGuard<F>> {
+      if (_keymap.find(key) != _keymap.end()) throw AUTDException("Key already exists");
+      const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
+      const auto ptr = data.ptr();
+      _keymap[key] = _k++;
+      char err[256]{};
+      _kv_map = internal::native_methods::AUTDGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, _controller._mode, timeout_ns, err);
+      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      return std::move(*this);
+    }
+
+    template <typename D, typename Rep, typename Period>
+    auto set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<D>, GroupGuard<F>> {
+      return set(key, std::forward<D>(data), std::optional(timeout));
+    }
+
+    void send() {
+      std::vector<int32_t> map;
+      map.reserve(_controller.geometry().num_devices());
+      std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const internal::Device& d) {
+        const auto k = _map(d);
+        return k.has_value() ? _keymap[k.value()] : -1;
+      });
+      if (char err[256]{}; AUTDGroup(_controller._ptr, map.data(), _kv_map, err) == native_methods::AUTD3_ERR) throw AUTDException(err);
+    }
+
+   private:
+    Controller& _controller;
+    const F& _map;
+    internal::native_methods::GroupKVMapPtr _kv_map;
+    std::unordered_map<key_type, int32_t> _keymap;
+    int32_t _k{0};
+  };
+
+  template <typename F>
+  GroupGuard<F> group(const F& map) {
+    return GroupGuard<F>(map, *this);
   }
 
  private:

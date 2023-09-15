@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, Level, AUTD3
+from pyautd3 import Controller, AUTD3
 from pyautd3.link import Debug
 
 from samples import runner
@@ -20,9 +20,9 @@ from samples import runner
 
 if __name__ == "__main__":
     autd = (
-        Controller.advanced_builder()
+        Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(Debug().with_log_level(Level.Off))
+        .open_with(Debug())
     )
 
     runner.run(autd)

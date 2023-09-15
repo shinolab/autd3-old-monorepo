@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #endif
 
 using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -194,9 +195,11 @@ namespace AUTD3Sharp
             public ControllerBuilder AddDevice(AUTD3 device)
             {
                 if (device.Rot != null)
-                    _ptr = Base.AUTDAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x, device.Rot.Value.y, device.Rot.Value.z);
+                    _ptr = Base.AUTDAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
+                        device.Rot.Value.y, device.Rot.Value.z);
                 else if (device.Quat != null)
-                    _ptr = Base.AUTDAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
+                    _ptr = Base.AUTDAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
+                        device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
                 return this;
             }
 
@@ -254,7 +257,10 @@ namespace AUTD3Sharp
         /// Create Controller builder
         /// </summary>
         /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder Builder() { return new ControllerBuilder(); }
+        public static ControllerBuilder Builder()
+        {
+            return new ControllerBuilder();
+        }
 
         internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkPtr link)
         {
@@ -327,6 +333,7 @@ namespace AUTD3Sharp
         #endregion
 
         #region Property
+
         public Geometry Geometry { get; }
 
         /// <summary>
@@ -343,6 +350,7 @@ namespace AUTD3Sharp
                 return infos.Select(x => new FPGAInfo(x)).ToArray();
             }
         }
+
         #endregion
 
         /// <summary>
@@ -357,11 +365,13 @@ namespace AUTD3Sharp
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
-            var res = Base.AUTDSendSpecial(Ptr, _mode, special.Ptr(), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
+            var res = Base.AUTDSendSpecial(Ptr, _mode, special.Ptr(),
+                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
                 throw new AUTDException(err);
             }
+
             return res == Def.Autd3True;
         }
 
@@ -392,11 +402,13 @@ namespace AUTD3Sharp
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry), (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
+            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry),
+                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
                 throw new AUTDException(err);
             }
+
             return res == Def.Autd3True;
 
         }
@@ -413,6 +425,149 @@ namespace AUTD3Sharp
         {
             var (data1, data2) = data;
             return Send(data1, data2, timeout);
+        }
+
+        public sealed class SoftwareSTMHandler
+        {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate bool SoftwareSTMCallbackDelegate(IntPtr ptr, ulong i, ulong elapsed);
+
+            internal struct Context
+            {
+                internal readonly Controller Controller;
+                internal readonly Func<Controller, int, TimeSpan, bool> Callback;
+
+                public Context(Controller controller, Func<Controller, int, TimeSpan, bool> callback)
+                {
+                    Controller = controller;
+                    Callback = callback;
+                }
+            }
+
+            private readonly ControllerPtr _ptr;
+            private readonly Context _context;
+            private TimerStrategy _strategy;
+
+            public void Start(TimeSpan interval)
+            {
+                var intervalNs = (ulong)(interval.TotalMilliseconds * 1000 * 1000);
+                SoftwareSTMCallbackDelegate callbackNative = (ptr, i, elapsed) =>
+                {
+                    var gch = GCHandle.FromIntPtr(ptr);
+                    var context = (Context)gch.Target;
+                    return context.Callback(context.Controller, (int)i,
+                        TimeSpan.FromMilliseconds(elapsed / 1000.0 / 1000.0));
+                };
+                var err = new byte[256];
+                var gch = GCHandle.Alloc(_context);
+                if (Base.AUTDSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate(callbackNative),
+                        GCHandle.ToIntPtr(gch), _strategy, intervalNs, err) == Def.Autd3Err)
+                {
+                    gch.Free();
+                    throw new AUTDException(err);
+                }
+
+                gch.Free();
+            }
+
+            public SoftwareSTMHandler WithTimerStrategy(TimerStrategy strategy)
+            {
+                _strategy = strategy;
+                return this;
+            }
+
+            internal SoftwareSTMHandler(
+                ControllerPtr ptr,
+                Context context
+            )
+            {
+                _ptr = ptr;
+                _context = context;
+                _strategy = TimerStrategy.Sleep;
+            }
+        }
+
+        public SoftwareSTMHandler SoftwareSTM(Func<Controller, int, TimeSpan, bool> callback)
+        {
+            return new SoftwareSTMHandler(Ptr, new SoftwareSTMHandler.Context(this, callback));
+        }
+
+        public sealed class GroupGuard<TK>
+            where TK : class
+        {
+
+            private Controller _controller;
+            private readonly Func<Device, TK?> _map;
+            private GroupKVMapPtr _kvMap;
+            private IDictionary<TK, int> _keymap;
+            private int _k;
+
+            internal GroupGuard(Func<Device, TK?> map, Controller controller)
+            {
+                _controller = controller;
+                _map = map;
+                _kvMap = Base.AUTDGroupCreateKVMap();
+                _keymap = new Dictionary<TK, int>();
+                _k = 0;
+            }
+
+            public GroupGuard<TK> Set(TK key, IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
+            {
+                if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
+                if (data1 == null) throw new ArgumentNullException(nameof(data1));
+                if (data2 == null) throw new ArgumentNullException(nameof(data2));
+
+                var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
+                var ptr1 = data1.Ptr(_controller.Geometry);
+                var ptr2 = data2.Ptr(_controller.Geometry);
+                _keymap[key] = _k++;
+                var err = new byte[256];
+                _kvMap = Base.AUTDGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, _controller._mode, timeoutNs, err);
+                if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
+                return this;
+            }
+
+            public GroupGuard<TK> Set(TK key, IDatagram data, TimeSpan? timeout = null)
+            {
+                return Set(key, data, new NullDatagram(), timeout);
+            }
+
+            public GroupGuard<TK> Set(TK key, (IDatagram, IDatagram) data, TimeSpan? timeout = null)
+            {
+                return Set(key, data.Item1, data.Item2, timeout);
+            }
+
+            public GroupGuard<TK> Set(TK key, ISpecialDatagram data, TimeSpan? timeout = null)
+            {
+                if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
+                if (data == null) throw new ArgumentNullException(nameof(data));
+
+                var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
+                var ptr = data.Ptr();
+                _keymap[key] = _k++;
+                var err = new byte[256];
+                _kvMap = Base.AUTDGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, _controller._mode, timeoutNs, err);
+                if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
+                return this;
+            }
+
+            public void Send()
+            {
+                var map = _controller.Geometry.Select(dev =>
+                {
+                    var k = _map(dev);
+                    return k != null ? _keymap[k] : -1;
+                }).ToArray();
+                var err = new byte[256];
+                if (Base.AUTDGroup(_controller.Ptr, map, _kvMap, err) == Def.Autd3Err)
+                    throw new AUTDException(err);
+            }
+        }
+
+        public GroupGuard<TK> Group<TK>(Func<Device, TK?> map)
+            where TK : class
+        {
+            return new GroupGuard<TK>(map, this);
         }
     }
 

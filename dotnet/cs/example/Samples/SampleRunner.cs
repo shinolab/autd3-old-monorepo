@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,11 +28,13 @@ public class SampleRunner
             (WavTest.Test, "Wav modulation test"),
             (FocusSTMTest.Test, "FocusSTM test"),
             (GainSTMTest.Test, "GainSTM test"),
+            (SoftwareSTMTest.Test, "SoftwareSTM test"),
             (GainHoloTest.Test, "Multiple foci test"),
             (CustomTest.Test, "Custom Gain & Modulation test"),
             (FlagTest.Test, "Flag test"),
             (TransTest.Test, "TransducerTest test")
         };
+        if (autd.Geometry.NumDevices >=2 ) examples.Add((GroupTest.Test, "Group test"));
 
         Console.WriteLine("======== AUTD3 firmware information ========");
         Console.WriteLine(string.Join("\n", autd.FirmwareInfoList()));

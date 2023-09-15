@@ -24,5 +24,9 @@ namespace AUTD3Sharp
             : base($"AUTDException: {System.Text.Encoding.UTF8.GetString(value)}")
         {
         }
+        public AUTDException(string msg)
+            : base($"AUTDException: {msg}")
+        {
+        }
     }
 }
