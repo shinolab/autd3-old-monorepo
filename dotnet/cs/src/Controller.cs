@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #endif
 
 using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -414,6 +415,69 @@ namespace AUTD3Sharp
             var (data1, data2) = data;
             return Send(data1, data2, timeout);
         }
+
+        public sealed class SoftwareSTMHandler
+        {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate bool SoftwareSTMCallbackDelegate(IntPtr ptr, ulong i, ulong elapsed);
+
+            internal struct Context
+            {
+                internal readonly Controller Controller;
+                internal readonly Func<Controller, int, TimeSpan, bool> Callback;
+
+                public Context(Controller controller, Func<Controller, int, TimeSpan, bool> callback)
+                {
+                    Controller = controller;
+                    Callback = callback;
+                }
+            }
+
+            private readonly ControllerPtr _ptr;
+            private readonly Context _context;
+            private TimerStrategy _strategy;
+
+            public void Start(TimeSpan interval)
+            {
+                var intervalNs = (ulong)(interval.TotalMilliseconds * 1000 * 1000);
+                SoftwareSTMCallbackDelegate callbackNative = (ptr, i, elapsed) =>
+                {
+                    var gch = GCHandle.FromIntPtr(ptr);
+                    var context = (Context)gch.Target;
+                    return context.Callback(context.Controller, (int)i, TimeSpan.FromMilliseconds(elapsed / 1000.0 / 1000.0));
+                };
+                var err = new byte[256];
+                var gch = GCHandle.Alloc(_context);
+                if (Base.AUTDSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate(callbackNative),
+                        GCHandle.ToIntPtr(gch), _strategy, intervalNs, err) == Def.Autd3Err)
+                {
+                    gch.Free();
+                    throw new AUTDException(err);
+                }
+                gch.Free();
+            }
+
+            public SoftwareSTMHandler WithTimerStrategy(TimerStrategy strategy)
+            {
+                _strategy = strategy;
+                return this;
+            }
+
+            internal SoftwareSTMHandler(
+                ControllerPtr ptr,
+                Context context
+            )
+            {
+                _ptr = ptr;
+                _context = context;
+                _strategy = TimerStrategy.Sleep;
+            }
+        }
+
+        public SoftwareSTMHandler SoftwareSTM(Func<Controller, int, TimeSpan, bool> callback)
+        {
+            return new SoftwareSTMHandler(Ptr, new SoftwareSTMHandler.Context(this, callback));
+        }
+
     }
 
     /// <summary>

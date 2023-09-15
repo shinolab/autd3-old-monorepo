@@ -16,12 +16,13 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
 import numpy as np
-from typing import List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi import ControllerBuilderPtr
 from .native_methods.autd3capi_def import (
+    TimerStrategy,
     TransMode,
     AUTD3_ERR,
     AUTD3_TRUE,
@@ -252,6 +253,56 @@ class Controller:
             raise AUTDError(err)
 
         return res == AUTD3_TRUE
+
+    class SoftwareSTM():
+        class Context():
+            controller: "Controller"
+            callback: Callable[["Controller", int, timedelta], bool]
+
+            def __init__(self, controller: "Controller", callback: Callable[["Controller", int, timedelta], bool]):
+                self.controller = controller
+                self.callback = callback
+
+        _ptr: ControllerPtr
+        _context: Context
+        _strategy: TimerStrategy
+
+        def __init__(self, ptr: ControllerPtr, context: Context):
+            self._ptr = ptr
+            self._context = context
+            self._strategy = TimerStrategy.Sleep
+
+        def start(self, interval: timedelta):
+            interval_ns = int(interval.total_seconds() * 1000 * 1000 * 1000)
+
+            def callback_native(ptr: ctypes.c_void_p, i: ctypes.c_uint64, elapsed: ctypes.c_uint64):
+                context_ptr = ctypes.cast(ptr, ctypes.POINTER(ctypes.py_object)).contents
+                context: Controller.SoftwareSTM.Context = context_ptr.value
+                return context.callback(context.controller, int(i), timedelta(seconds=int(elapsed) / 1000 / 1000 / 1000))
+
+            callback_f = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64)(callback_native)
+
+            context = ctypes.py_object(self._context)
+            ptr = ctypes.cast(ctypes.pointer(context), ctypes.c_void_p)
+
+            err = ctypes.create_string_buffer(256)
+
+            if Base().software_stm(
+                self._ptr,
+                callback_f,  # type: ignore
+                ptr,
+                self._strategy,
+                interval_ns,
+                err
+            ) == AUTD3_ERR:
+                raise AUTDError(err)
+
+        def with_timer_strategy(self, strategy: TimerStrategy) -> "Controller.SoftwareSTM":
+            self._strategy = strategy
+            return self
+
+    def software_stm(self, callback: Callable[["Controller", int, timedelta], bool]) -> "Controller.SoftwareSTM":
+        return Controller.SoftwareSTM(self._ptr, Controller.SoftwareSTM.Context(self, callback))
 
 
 class Amplitudes(Datagram):

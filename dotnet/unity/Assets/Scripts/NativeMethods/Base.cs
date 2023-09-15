@@ -158,6 +158,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSendSpecial(ControllerPtr cnt, TransMode mode, DatagramSpecialPtr special, long timeoutNs, byte[] err);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSoftwareSTM(ControllerPtr cnt, IntPtr callback, IntPtr context, TimerStrategy timerStrategy, ulong intervalNs, byte[] err);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkDebug();

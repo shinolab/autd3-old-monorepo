@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -252,6 +252,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDSendSpecial.argtypes = [ControllerPtr, TransMode, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSendSpecial.restype = ctypes.c_int32
+
+        self.dll.AUTDSoftwareSTM.argtypes = [ControllerPtr, ctypes.c_void_p, ctypes.c_void_p, TimerStrategy, ctypes.c_uint64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDSoftwareSTM.restype = ctypes.c_int32
 
         self.dll.AUTDLinkBundle.argtypes = [LinkPtr, LinkPtr]  # type: ignore 
         self.dll.AUTDLinkBundle.restype = LinkPtr
@@ -621,6 +624,9 @@ class NativeMethods(metaclass=Singleton):
 
     def send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSendSpecial(cnt, mode, special, timeout_ns, err)
+
+    def software_stm(self, cnt: ControllerPtr, callback: ctypes.c_void_p, context: ctypes.c_void_p, timer_strategy: TimerStrategy, interval_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDSoftwareSTM(cnt, callback, context, timer_strategy, interval_ns, err)
 
     def link_bundle(self, main: LinkPtr, sub: LinkPtr) -> LinkPtr:
         return self.dll.AUTDLinkBundle(main, sub)

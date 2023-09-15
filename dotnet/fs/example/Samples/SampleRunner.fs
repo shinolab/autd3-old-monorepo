@@ -20,8 +20,9 @@ module SampleRunner =
                 (BesselBeamTest.Test, "Bessel beam test");
                 (PlaneTest.Test, "Plane wave test");
                 (WavTest.Test, "Wav modulation test");
-                (FocusSTMTest.Test, "FocusSTM test");
-                (GainSTMTest.Test, "GainSTM test");
+                (STMTest.FocusSTMTest, "FocusSTM test");
+                (STMTest.GainSTMTest, "GainSTM test");
+                (STMTest.SoftwareSTMTest, "SoftwareSTM test");
                 (GainHoloTest.Test, "Multiple foci test");
                 (CustomTest.Test, "Custom Gain & Modulation test");
                 (FlagTest.Test, "Flag test");

@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Stop
 
-from . import focus, bessel, plane, wav, holo, custom, stm_gain, stm_focus, flag, transtest
+from . import focus, bessel, plane, stm, wav, holo, custom, flag, transtest
 
 
 def run(autd: Controller):
@@ -22,8 +22,9 @@ def run(autd: Controller):
         (bessel.bessel, "Bessel beam test"),
         (plane.plane, "Plane wave test"),
         (wav.wav, "Wav modulation test"),
-        (stm_focus.stm_focus, "FocusSTM test"),
-        (stm_gain.stm_gain, "GainSTM test"),
+        (stm.stm_focus, "FocusSTM test"),
+        (stm.stm_gain, "GainSTM test"),
+        (stm.stm_software, "SoftwareSTM test"),
         (holo.holo, "Multiple foci test"),
         (custom.custom, "Custom Gain & Modulation test"),
         (flag.flag, "Flag test"),
