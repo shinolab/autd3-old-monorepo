@@ -1,3 +1,7 @@
+# 15.1.1
+
+- Fix [#157](https://github.com/shinolab/autd3/issues/157): Document sample is wrong (AUTD3::DEVICE_WIDTH is not available in pyautd3)
+
 # 15.1.0
 
 - Add `group` func to `Controller`
