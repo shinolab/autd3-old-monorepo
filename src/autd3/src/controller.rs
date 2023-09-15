@@ -156,6 +156,24 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
         Ok(self)
     }
 
+    #[doc(hidden)]
+    pub fn set_boxed_op(
+        mut self,
+        k: K,
+        op1: Box<dyn autd3_driver::operation::Operation<T>>,
+        op2: Box<dyn autd3_driver::operation::Operation<T>>,
+        timeout: Option<Duration>,
+    ) -> Result<Self, AUTDInternalError> {
+        self.timeout = match (self.timeout, timeout) {
+            (None, None) => None,
+            (None, Some(t)) => Some(t),
+            (Some(t), None) => Some(t),
+            (Some(t1), Some(t2)) => Some(t1.max(t2)),
+        };
+        self.op.insert(k, (op1, op2));
+        Ok(self)
+    }
+
     pub fn send(mut self) -> Result<bool, AUTDInternalError> {
         let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
 

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -266,3 +266,7 @@ pub struct ConstraintPtr(pub ConstPtr);
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct GroupGainMapPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct GroupKVMapPtr(pub ConstPtr);
