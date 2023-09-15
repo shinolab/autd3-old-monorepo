@@ -102,6 +102,10 @@ struct GroupGainMapPtr {
   void* _0;
 };
 
+struct GroupKVMapPtr {
+  void* _0;
+};
+
 constexpr const double TRANS_SPACING_MM = 10.16;
 
 constexpr const double DEVICE_HEIGHT_MM = 151.4;
