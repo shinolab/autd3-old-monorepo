@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-backend-cuda"
-version = "15.1.0"
+version = "15.1.1"
 edition = "2021"
 license = "MIT"
 

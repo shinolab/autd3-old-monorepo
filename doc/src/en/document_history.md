@@ -48,3 +48,4 @@
 | 2023/08/07 | Version 14.2.2 Initial release                |
 | 2023/09/14 | Version 15.0.2 Initial release                |
 | 2023/09/14 | Version 15.1.0 Initial release                |
+| 2023/09/15 | Version 15.1.1 Initial release                |
