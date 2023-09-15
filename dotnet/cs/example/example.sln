@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debug", "Debug\Debug.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSOEM", "RemoteSOEM\RemoteSOEM.csproj", "{55F1A21E-45F4-4AEA-BE2D-A57E77D2892A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Group", "Group\Group.csproj", "{C0C3B26E-1352-4C2D-9577-D791B2D2097E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupGain", "GroupGain\GroupGain.csproj", "{C0C3B26E-1352-4C2D-9577-D791B2D2097E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreqConfig", "FreqConfig\FreqConfig.csproj", "{21D247EF-33D8-49DB-9E1B-1C0E9EA8A40F}"
 EndProject

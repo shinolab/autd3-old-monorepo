@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 15/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,14 +34,14 @@ class Cache final : public internal::Gain {
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     std::vector<uint32_t> device_indices;
     device_indices.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(device_indices),
+    std::transform(geometry.cbegin(), geometry.cend(), std::back_inserter(device_indices),
                    [](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
 
     if (_cache.size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return _cache.find(idx) == _cache.end(); })) {
       std::vector<std::vector<internal::native_methods::Drive>> drives;
       drives.reserve(device_indices.size());
-      std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [](const internal::Device& dev) {
+      std::transform(geometry.cbegin(), geometry.cend(), std::back_inserter(drives), [](const internal::Device& dev) {
         std::vector<internal::native_methods::Drive> d;
         d.resize(dev.num_transducers());
         return std::move(d);
@@ -58,7 +58,7 @@ class Cache final : public internal::Gain {
       for (size_t i = 0; i < device_indices.size(); i++) _cache.emplace(device_indices[i], std::move(drives[i]));
     }
 
-    return std::accumulate(geometry.begin(), geometry.end(), internal::native_methods::AUTDGainCustom(),
+    return std::accumulate(geometry.cbegin(), geometry.cend(), internal::native_methods::AUTDGainCustom(),
                            [this](const internal::native_methods::GainPtr acc, const internal::Device& dev) {
                              return AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), _cache[dev.idx()].data(),
                                                       static_cast<uint32_t>(_cache[dev.idx()].size()));

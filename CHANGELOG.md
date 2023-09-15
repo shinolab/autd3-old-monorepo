@@ -2,6 +2,8 @@
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
 - Fix [#157](https://github.com/shinolab/autd3/issues/157): Document sample is wrong (AUTD3::DEVICE_WIDTH is not available in pyautd3)
+- Add `Controller::software_stm` function to C++, C#, and Python
+- Add `Controller::group` function C++, C#, and Python
 
 # 15.1.0
 

@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, LinkPtr, TransMode, AUTD3_ERR,
-    AUTD3_FALSE, AUTD3_TRUE,
+    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkPtr, TransMode,
+    AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -238,24 +238,24 @@ pub unsafe extern "C" fn AUTDSend(
     };
     let mode = mode.into();
     let res = if !d1.0.is_null() && !d2.0.is_null() {
-        let header = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
-        let body = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
+        let d1 = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
+        let d2 = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, header, body, timeout)),
+            cast_mut!(cnt.0, Cnt).send((mode, d1, d2, timeout)),
             err,
             AUTD3_ERR
         )
     } else if !d1.0.is_null() {
-        let header = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
+        let d = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, header, timeout)),
+            cast_mut!(cnt.0, Cnt).send((mode, d, timeout)),
             err,
             AUTD3_ERR
         )
     } else if !d2.0.is_null() {
-        let body = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
+        let d = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, body, timeout)),
+            cast_mut!(cnt.0, Cnt).send((mode, d, timeout)),
             err,
             AUTD3_ERR
         )
@@ -294,6 +294,167 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     } else {
         AUTD3_FALSE
     }
+}
+
+type K = i32;
+type V = (
+    Box<dyn driver::operation::Operation<DynamicTransducer>>,
+    Box<dyn driver::operation::Operation<DynamicTransducer>>,
+    Option<Duration>,
+);
+type M = std::collections::HashMap<K, V>;
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGroupCreateKVMap() -> GroupKVMapPtr {
+    GroupKVMapPtr(Box::into_raw(Box::<M>::default()) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGroupKVMapSet(
+    map: GroupKVMapPtr,
+    key: i32,
+    d1: DatagramPtr,
+    d2: DatagramPtr,
+    mode: TransMode,
+    timeout_ns: i64,
+    err: *mut c_char,
+) -> GroupKVMapPtr {
+    let timeout = if timeout_ns < 0 {
+        None
+    } else {
+        Some(Duration::from_nanos(timeout_ns as _))
+    };
+    let mode = mode.into();
+    let mut map = Box::from_raw(map.0 as *mut M);
+    if !d1.0.is_null() && !d2.0.is_null() {
+        let d1 = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
+        let d2 = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
+        let (op1, op2) = try_or_return!(
+            (mode, d1, d2, timeout).operation(),
+            err,
+            GroupKVMapPtr(std::ptr::null())
+        );
+        map.insert(key, (op1, op2, timeout));
+    } else if !d1.0.is_null() {
+        let d = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
+        let (op1, op2) = try_or_return!(
+            (mode, d, timeout).operation(),
+            err,
+            GroupKVMapPtr(std::ptr::null())
+        );
+        map.insert(key, (op1, op2, timeout));
+    } else if !d2.0.is_null() {
+        let d = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
+        let (op1, op2) = try_or_return!(
+            (mode, d, timeout).operation(),
+            err,
+            GroupKVMapPtr(std::ptr::null())
+        );
+        map.insert(key, (op1, op2, timeout));
+    }
+    GroupKVMapPtr(Box::into_raw(map) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGroupKVMapSetSpecial(
+    map: GroupKVMapPtr,
+    key: i32,
+    special: DatagramSpecialPtr,
+    mode: TransMode,
+    timeout_ns: i64,
+    err: *mut c_char,
+) -> GroupKVMapPtr {
+    let timeout = if timeout_ns < 0 {
+        None
+    } else {
+        Some(Duration::from_nanos(timeout_ns as _))
+    };
+    let mode = mode.into();
+    let mut map = Box::from_raw(map.0 as *mut M);
+
+    let d = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
+    let (op1, op2) = try_or_return!(
+        (mode, d, timeout).operation(),
+        err,
+        GroupKVMapPtr(std::ptr::null())
+    );
+    map.insert(key, (op1, op2, timeout));
+
+    GroupKVMapPtr(Box::into_raw(map) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGroup(
+    cnt: ControllerPtr,
+    map: *const i32,
+    kv_map: GroupKVMapPtr,
+    err: *mut c_char,
+) -> i32 {
+    let kv_map = Box::from_raw(kv_map.0 as *mut M);
+    try_or_return!(
+        try_or_return!(
+            kv_map.into_iter().try_fold(
+                cast_mut!(cnt.0, Cnt).group(|dev| {
+                    let k = map.add(dev.idx()).read();
+                    if k < 0 {
+                        None
+                    } else {
+                        Some(k)
+                    }
+                }),
+                |acc, (k, (op1, op2, timeout))| { acc.set_boxed_op(k, op1, op2, timeout) }
+            ),
+            err,
+            AUTD3_ERR
+        )
+        .send(),
+        err,
+        AUTD3_ERR
+    );
+
+    AUTD3_TRUE
+}
+
+struct SoftwareSTMCallbackPtr(ConstPtr);
+unsafe impl Send for SoftwareSTMCallbackPtr {}
+
+struct SoftwareSTMContextPtr(ConstPtr);
+unsafe impl Send for SoftwareSTMContextPtr {}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDSoftwareSTM(
+    cnt: ControllerPtr,
+    callback: ConstPtr,
+    context: ConstPtr,
+    timer_strategy: TimerStrategy,
+    interval_ns: u64,
+    err: *mut c_char,
+) -> i32 {
+    let callback = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMCallbackPtr(callback)));
+    let context = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMContextPtr(context)));
+    try_or_return!(
+        cast_mut!(cnt.0, Cnt)
+            .software_stm(move |_cnt: &mut Cnt, i: usize, elapsed: Duration| -> bool {
+                let f = std::mem::transmute::<
+                    _,
+                    unsafe extern "C" fn(SoftwareSTMContextPtr, u64, u64) -> bool,
+                >(callback.lock().unwrap().0);
+                f(
+                    SoftwareSTMContextPtr(context.lock().unwrap().0),
+                    i as u64,
+                    elapsed.as_nanos() as u64,
+                )
+            })
+            .with_timer_strategy(timer_strategy)
+            .start(Duration::from_nanos(interval_ns))
+            .map(|_| AUTD3_TRUE),
+        err,
+        AUTD3_ERR
+    )
 }
 
 #[cfg(test)]

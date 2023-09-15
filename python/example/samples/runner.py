@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Stop
 
-from . import focus, bessel, plane, wav, holo, custom, stm_gain, stm_focus, flag, transtest
+from . import focus, bessel, plane, stm, wav, holo, custom, flag, transtest, group
 
 
 def run(autd: Controller):
@@ -22,13 +22,17 @@ def run(autd: Controller):
         (bessel.bessel, "Bessel beam test"),
         (plane.plane, "Plane wave test"),
         (wav.wav, "Wav modulation test"),
-        (stm_focus.stm_focus, "FocusSTM test"),
-        (stm_gain.stm_gain, "GainSTM test"),
+        (stm.stm_focus, "FocusSTM test"),
+        (stm.stm_gain, "GainSTM test"),
+        (stm.stm_software, "SoftwareSTM test"),
         (holo.holo, "Multiple foci test"),
         (custom.custom, "Custom Gain & Modulation test"),
         (flag.flag, "Flag test"),
         (transtest.transtest, "TransducerTest test"),
     ]
+
+    if autd.geometry.num_devices >= 2:
+        samples.append((group.group, "Group test"))
 
     print("======== AUTD3 firmware information ========")
     print("\n".join([str(firm) for firm in autd.firmware_info_list()]))
