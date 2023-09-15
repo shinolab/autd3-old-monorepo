@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 15/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -273,6 +273,47 @@ class Controller {
     const auto res = native_methods::AUTDSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
+  }
+
+  template <typename F>
+  class SoftwareSTM {
+    friend class Controller;
+    using software_stm_callback = bool (*)(void*, uint64_t, uint64_t);
+
+    struct Context {
+      Controller& controller;
+      const F& callback;
+    };
+
+   public:
+    template <typename Rep, typename Period>
+    void start(const std::chrono::duration<Rep, Period> interval) {
+      const auto interval_ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(interval).count());
+      const software_stm_callback callback_native = +[](void* context, const uint64_t idx, const uint64_t time) -> bool {
+        auto* c = static_cast<Context*>(context);
+        return c->callback(c->controller, static_cast<size_t>(idx), std::chrono::nanoseconds(time));
+      };
+      if (char err[256]{}; AUTDSoftwareSTM(_ptr, callback_native, _context.get(), _strategy, interval_ns, err) == native_methods::AUTD3_ERR)
+        throw AUTDException(err);
+    }
+
+    SoftwareSTM with_timer_strategy(const native_methods::TimerStrategy strategy) && {
+      _strategy = strategy;
+      return std::move(*this);
+    }
+
+   private:
+    explicit SoftwareSTM(const native_methods::ControllerPtr ptr, std::unique_ptr<Context> context)
+        : _ptr(ptr), _context(std::move(context)), _strategy(native_methods::TimerStrategy::Sleep) {}
+
+    native_methods::ControllerPtr _ptr;
+    std::unique_ptr<Context> _context;
+    native_methods::TimerStrategy _strategy;
+  };
+
+  template <typename F>
+  SoftwareSTM<F> software_stm(const F& callback) {
+    return SoftwareSTM<F>(_ptr, std::make_unique<SoftwareSTM<F>::Context>(SoftwareSTM<F>::Context{*this, callback}));
   }
 
  private:

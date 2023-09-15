@@ -92,6 +92,13 @@ int32_t AUTDSendSpecial(ControllerPtr cnt,
                         int64_t timeout_ns,
                         char *err);
 
+int32_t AUTDSoftwareSTM(ControllerPtr cnt,
+                        void* callback,
+                        void* context,
+                        TimerStrategy timer_strategy,
+                        uint64_t interval_ns,
+                        char *err);
+
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
 [[nodiscard]]

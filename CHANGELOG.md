@@ -1,3 +1,7 @@
+# 15.1.1
+
+- Add `SoftwareSTM` functionality to C++, C#, and Python
+
 # 15.1.0
 
 - Add `group` func to `Controller`

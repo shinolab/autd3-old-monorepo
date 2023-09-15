@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -294,6 +294,44 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     } else {
         AUTD3_FALSE
     }
+}
+
+struct SoftwareSTMCallbackPtr(ConstPtr);
+unsafe impl Send for SoftwareSTMCallbackPtr {}
+
+struct SoftwareSTMContextPtr(ConstPtr);
+unsafe impl Send for SoftwareSTMContextPtr {}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDSoftwareSTM(
+    cnt: ControllerPtr,
+    callback: ConstPtr,
+    context: ConstPtr,
+    timer_strategy: TimerStrategy,
+    interval_ns: u64,
+    err: *mut c_char,
+) -> i32 {
+    let callback = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMCallbackPtr(callback)));
+    let context = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMContextPtr(context)));
+    try_or_return!(
+        cast_mut!(cnt.0, Cnt)
+            .software_stm(move |_cnt: &mut Cnt, i: usize, elapsed: Duration| -> bool {
+                let f = std::mem::transmute::<
+                    _,
+                    unsafe extern "C" fn(SoftwareSTMContextPtr, u64, u64) -> bool,
+                >(callback.lock().unwrap().0);
+                f(
+                    SoftwareSTMContextPtr(context.lock().unwrap().0),
+                    i as u64,
+                    elapsed.as_nanos() as u64,
+                )
+            })
+            .with_timer_strategy(timer_strategy.into())
+            .start(Duration::from_nanos(interval_ns))
+            .map(|_| AUTD3_TRUE),
+        err,
+        AUTD3_ERR
+    )
 }
 
 #[cfg(test)]
