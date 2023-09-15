@@ -281,6 +281,8 @@ class Controller {
     using software_stm_callback = bool (*)(void*, uint64_t, uint64_t);
 
     struct Context {
+      Context(Controller& controller, const F& callback) : controller(controller), callback(callback) {}
+
       Controller& controller;
       const F& callback;
     };
@@ -289,11 +291,12 @@ class Controller {
     template <typename Rep, typename Period>
     void start(const std::chrono::duration<Rep, Period> interval) {
       const auto interval_ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(interval).count());
-      const software_stm_callback callback_native = +[](void* context, const uint64_t idx, const uint64_t time) -> bool {
+      software_stm_callback callback_native = +[](void* context, const uint64_t idx, const uint64_t time) -> bool {
         auto* c = static_cast<Context*>(context);
         return c->callback(c->controller, static_cast<size_t>(idx), std::chrono::nanoseconds(time));
       };
-      if (char err[256]{}; AUTDSoftwareSTM(_ptr, callback_native, _context.get(), _strategy, interval_ns, err) == native_methods::AUTD3_ERR)
+      if (char err[256]{}; native_methods::AUTDSoftwareSTM(_ptr, reinterpret_cast<void*>(callback_native), _context.get(), _strategy, interval_ns,
+                                                           err) == native_methods::AUTD3_ERR)
         throw AUTDException(err);
     }
 
@@ -313,7 +316,7 @@ class Controller {
 
   template <typename F>
   SoftwareSTM<F> software_stm(const F& callback) {
-    return SoftwareSTM<F>(_ptr, std::make_unique<SoftwareSTM<F>::Context>(SoftwareSTM<F>::Context{*this, callback}));
+    return SoftwareSTM<F>(_ptr, std::make_unique<typename SoftwareSTM<F>::Context>(*this, callback));
   }
 
   template <typename F>

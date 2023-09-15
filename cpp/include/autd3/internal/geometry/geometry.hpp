@@ -118,10 +118,12 @@ class Geometry {
            static_cast<double>(num_devices());
   }
 
-  [[nodiscard]] std::vector<Device>::const_iterator cbegin() const noexcept { return _devices.cbegin(); }
-  [[nodiscard]] std::vector<Device>::const_iterator cend() const noexcept { return _devices.cend(); }
+  [[nodiscard]] std::vector<Device>::const_iterator begin() const noexcept { return _devices.cbegin(); }
+  [[nodiscard]] std::vector<Device>::const_iterator end() const noexcept { return _devices.cend(); }
   [[nodiscard]] std::vector<Device>::iterator begin() noexcept { return _devices.begin(); }
   [[nodiscard]] std::vector<Device>::iterator end() noexcept { return _devices.end(); }
+  [[nodiscard]] std::vector<Device>::const_iterator cbegin() const noexcept { return _devices.cbegin(); }
+  [[nodiscard]] std::vector<Device>::const_iterator cend() const noexcept { return _devices.cend(); }
 
   [[nodiscard]] const Device& operator[](const size_t i) const { return _devices[i]; }
   [[nodiscard]] Device& operator[](const size_t i) { return _devices[i]; }
