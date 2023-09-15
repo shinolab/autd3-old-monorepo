@@ -55,12 +55,9 @@ impl STMFocus {
         let ix = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let iy = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let iz = (z / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
-        if ix > FOCUS_STM_FIXED_NUM_UPPER
-            || ix < FOCUS_STM_FIXED_NUM_LOWER
-            || iy > FOCUS_STM_FIXED_NUM_UPPER
-            || iy < FOCUS_STM_FIXED_NUM_LOWER
-            || iz > FOCUS_STM_FIXED_NUM_UPPER
-            || iz < FOCUS_STM_FIXED_NUM_LOWER
+        if !(FOCUS_STM_FIXED_NUM_LOWER..=FOCUS_STM_FIXED_NUM_UPPER).contains(&ix)
+            || !(FOCUS_STM_FIXED_NUM_LOWER..=FOCUS_STM_FIXED_NUM_UPPER).contains(&iy)
+            || !(FOCUS_STM_FIXED_NUM_LOWER..=FOCUS_STM_FIXED_NUM_UPPER).contains(&iz)
         {
             return Err(AUTDInternalError::FocusSTMPointOutOfRange(x, y, z));
         }
@@ -209,13 +206,13 @@ mod tests {
 
         assert!(p.set(x, y, z, duty_shift).is_ok());
 
-        assert_eq!((p.buf[0] as u32) & (1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1, 1);
+        assert_eq!((p.buf[0] as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1), 1);
         assert_eq!(
-            ((p.buf[1] >> 2) as u32) & (1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1,
+            ((p.buf[1] >> 2) as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1),
             2
         );
         assert_eq!(
-            ((p.buf[2] >> 4) as u32) & (1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1,
+            ((p.buf[2] >> 4) as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1),
             3
         );
         assert_eq!((p.buf[3] >> 6) & 0xFF, 4);
