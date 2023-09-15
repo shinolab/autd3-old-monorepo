@@ -1,3 +1,7 @@
+# 15.1.1
+
+- Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
+
 # 15.1.0
 
 - Add `group` func to `Controller`
