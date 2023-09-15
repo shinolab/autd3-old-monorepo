@@ -16,12 +16,13 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
 import numpy as np
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi import ControllerBuilderPtr
 from .native_methods.autd3capi_def import (
+    GroupKVMapPtr,
     TimerStrategy,
     TransMode,
     AUTD3_ERR,
@@ -33,7 +34,9 @@ from .native_methods.autd3capi_def import (
     LinkPtr,
 )
 from .link.link import Link
-from .geometry import Geometry, AUTD3
+from .geometry import Device, Geometry, AUTD3
+
+K = TypeVar("K")
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
@@ -44,7 +47,7 @@ class SpecialDatagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
+    def ptr(self) -> DatagramSpecialPtr:
         pass
 
 
@@ -110,9 +113,21 @@ class Controller:
         _ptr: ControllerBuilderPtr
         _mode: TransMode
 
-        def __init__(self, mode: TransMode):
+        def __init__(self):
             self._ptr = Base().create_controller_builder()
-            self._mode = mode
+            self._mode = TransMode.Legacy
+
+        def legacy(self) -> "Controller.Builder":
+            self._mode = TransMode.Legacy
+            return self
+
+        def advanced(self) -> "Controller.Builder":
+            self._mode = TransMode.Advanced
+            return self
+
+        def advanced_phase(self) -> "Controller.Builder":
+            self._mode = TransMode.AdvancedPhase
+            return self
 
         def add_device(self, device: AUTD3) -> "Controller.Builder":
             if device._rot is not None:
@@ -152,19 +167,7 @@ class Controller:
 
     @staticmethod
     def builder() -> "Controller.Builder":
-        return Controller.Builder(TransMode.Legacy)
-
-    @staticmethod
-    def legacy_builder() -> "Controller.Builder":
-        return Controller.Builder(TransMode.Legacy)
-
-    @staticmethod
-    def advanced_builder() -> "Controller.Builder":
-        return Controller.Builder(TransMode.Advanced)
-
-    @staticmethod
-    def advanced_phase_builder() -> "Controller.Builder":
-        return Controller.Builder(TransMode.AdvancedPhase)
+        return Controller.Builder()
 
     def __del__(self):
         self.dispose()
@@ -232,7 +235,7 @@ class Controller:
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
         if isinstance(d, SpecialDatagram):
-            res = Base().send_special(self._ptr, self._mode, d.ptr(self.geometry), timeout_, err)
+            res = Base().send_special(self._ptr, self._mode, d.ptr(), timeout_, err)
         if isinstance(d, Datagram):
             res = Base().send(
                 self._ptr, self._mode, d.ptr(self.geometry), DatagramPtr(None), timeout_, err
@@ -304,6 +307,72 @@ class Controller:
     def software_stm(self, callback: Callable[["Controller", int, timedelta], bool]) -> "Controller.SoftwareSTM":
         return Controller.SoftwareSTM(self._ptr, Controller.SoftwareSTM.Context(self, callback))
 
+    class GroupGuard(Generic[K]):
+        _controller: "Controller"
+        _map: Callable[[Device], Optional[K]]
+        _kv_map: GroupKVMapPtr
+        _keymap: Dict[K, int]
+        _k: int
+
+        def __init__(self, map: Callable[[Device], Optional[K]], controller: "Controller"):
+            self._map = map
+            self._controller = controller
+            self._kv_map = Base().group_create_kv_map()
+            self._keymap = {}
+            self._k = 0
+
+        def set(self,
+                key: K,
+                d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
+                timeout: Optional[timedelta] = None,
+                ) -> "Controller.GroupGuard":
+            if key in self._keymap:
+                e = AUTDError()
+                e.msg = "Key is already exists"
+                raise e
+
+            timeout_ns = (
+                -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            )
+
+            err = ctypes.create_string_buffer(256)
+            if isinstance(d, SpecialDatagram):
+                self._keymap[key] = self._k
+                self._kv_map = Base().group_kv_map_set_special(self._kv_map, self._k, d.ptr(), self._controller._mode, timeout_ns, err)
+                self._k += 1
+                if self._kv_map._0 is None:
+                    raise AUTDError(err)
+            if isinstance(d, Datagram):
+                self._keymap[key] = self._k
+                self._kv_map = Base().group_kv_map_set(self._kv_map, self._k, d.ptr(self._controller._geometry), DatagramPtr(None), self._controller._mode, timeout_ns, err)
+                self._k += 1
+                if self._kv_map._0 is None:
+                    raise AUTDError(err)
+
+            if isinstance(d, tuple) and len(d) == 2:
+                (d1, d2) = d
+                if isinstance(d1, Datagram) and isinstance(d2, Datagram):
+                    self._keymap[key] = self._k
+                    self._kv_map = Base().group_kv_map_set(
+                        self._kv_map, self._k, d1.ptr(
+                            self._controller._geometry), d2.ptr(
+                            self._controller._geometry), self._controller._mode, timeout_ns, err)
+                    self._k += 1
+                    if self._kv_map._0 is None:
+                        raise AUTDError(err)
+
+            return self
+
+        def send(self):
+            m = np.fromiter(map(lambda k: self._keymap[k] if k is not None else -
+                                1, map(lambda dev: self._map(dev), self._controller.geometry)), dtype=np.int32)
+            err = ctypes.create_string_buffer(256)
+            if Base().group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err) == AUTD3_ERR:
+                raise AUTDError(err)
+
+    def group(self, map: Callable[[Device], Optional[K]]) -> "Controller.GroupGuard":
+        return Controller.GroupGuard(map, self)
+
 
 class Amplitudes(Datagram):
     _amp: float
@@ -328,7 +397,7 @@ class Stop(SpecialDatagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramSpecialPtr:
+    def ptr(self) -> DatagramSpecialPtr:
         return Base().stop()
 
 

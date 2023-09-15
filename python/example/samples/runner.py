@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Stop
 
-from . import focus, bessel, plane, stm, wav, holo, custom, flag, transtest
+from . import focus, bessel, plane, stm, wav, holo, custom, flag, transtest, group
 
 
 def run(autd: Controller):
@@ -30,6 +30,9 @@ def run(autd: Controller):
         (flag.flag, "Flag test"),
         (transtest.transtest, "TransducerTest test"),
     ]
+
+    if autd.geometry.num_devices >= 2:
+        samples.append((group.group, "Group test"))
 
     print("======== AUTD3 firmware information ========")
     print("\n".join([str(firm) for firm in autd.firmware_info_list()]))

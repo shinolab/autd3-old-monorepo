@@ -20,7 +20,7 @@ from samples import runner
 
 if __name__ == "__main__":
     autd = (
-        Controller.advanced_builder()
+        Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Debug())
     )

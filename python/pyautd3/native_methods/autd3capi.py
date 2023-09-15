@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -252,6 +252,18 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDSendSpecial.argtypes = [ControllerPtr, TransMode, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSendSpecial.restype = ctypes.c_int32
+
+        self.dll.AUTDGroupCreateKVMap.argtypes = [] 
+        self.dll.AUTDGroupCreateKVMap.restype = GroupKVMapPtr
+
+        self.dll.AUTDGroupKVMapSet.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramPtr, DatagramPtr, TransMode, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGroupKVMapSet.restype = GroupKVMapPtr
+
+        self.dll.AUTDGroupKVMapSetSpecial.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramSpecialPtr, TransMode, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGroupKVMapSetSpecial.restype = GroupKVMapPtr
+
+        self.dll.AUTDGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGroup.restype = ctypes.c_int32
 
         self.dll.AUTDSoftwareSTM.argtypes = [ControllerPtr, ctypes.c_void_p, ctypes.c_void_p, TimerStrategy, ctypes.c_uint64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSoftwareSTM.restype = ctypes.c_int32
@@ -624,6 +636,18 @@ class NativeMethods(metaclass=Singleton):
 
     def send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSendSpecial(cnt, mode, special, timeout_ns, err)
+
+    def group_create_kv_map(self) -> GroupKVMapPtr:
+        return self.dll.AUTDGroupCreateKVMap()
+
+    def group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> GroupKVMapPtr:
+        return self.dll.AUTDGroupKVMapSet(map, key, d1, d2, mode, timeout_ns, err)
+
+    def group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> GroupKVMapPtr:
+        return self.dll.AUTDGroupKVMapSetSpecial(map, key, special, mode, timeout_ns, err)
+
+    def group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32], kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGroup(cnt, map, kv_map, err)
 
     def software_stm(self, cnt: ControllerPtr, callback: ctypes.c_void_p, context: ctypes.c_void_p, timer_strategy: TimerStrategy, interval_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSoftwareSTM(cnt, callback, context, timer_strategy, interval_ns, err)
