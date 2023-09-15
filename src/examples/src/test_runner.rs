@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ macro_rules! run {
         });
         println!("============================================");
 
-        let examples: Vec<(&'static str, &dyn Fn(&mut _) -> anyhow::Result<bool>)> = vec![
+        let mut examples: Vec<(&'static str, &dyn Fn(&mut _) -> anyhow::Result<bool>)> = vec![
             ("Single focus test", &focus),
             ("Bessel beam test", &bessel),
             ("Plane wave test", &plane),
@@ -39,6 +39,9 @@ macro_rules! run {
             ("Flag test", &flag),
             ("TransducerTest test", &transtest),
         ];
+        if $autd.geometry().num_devices() >= 2 {
+            examples.push(("Group test", &group));
+        }
 
         loop {
             examples.iter().enumerate().for_each(|(i, (name, _))| {

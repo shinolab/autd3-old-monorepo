@@ -12,13 +12,14 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 import ctypes
+from typing import Optional
 
 
 class AUTDError(Exception):
     msg: str
 
-    def __init__(self, err: ctypes.Array[ctypes.c_char]):
-        self.msg = err.value.decode("utf-8")
+    def __init__(self, err: Optional[ctypes.Array[ctypes.c_char]] = None):
+        self.msg = err.value.decode("utf-8") if err is not None else ""
 
     def __str__(self):
         return self.msg

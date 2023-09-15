@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -227,10 +227,10 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             );
             dst.iter_mut()
                 .zip(self.points.iter().skip(sent).take(send_num))
-                .for_each(|(d, p)| {
+                .try_for_each(|(d, p)| {
                     let lp = device.to_local(p.point());
-                    d.set(lp.x, lp.y, lp.z, p.shift());
-                })
+                    d.set(lp.x, lp.y, lp.z, p.shift())
+                })?
         }
 
         self.sent.insert(device.idx(), sent + send_num);
@@ -419,7 +419,7 @@ mod tests {
                 .zip(points.iter())
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point.x, p.point.y, p.point.z, p.shift);
+                    f.set(p.point.x, p.point.y, p.point.z, p.shift).unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
                     assert_eq!(d[2], (f.buf[1] & 0xFF) as u8);
@@ -550,7 +550,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point.x, p.point.y, p.point.z, p.shift);
+                    f.set(p.point.x, p.point.y, p.point.z, p.shift).unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
                     assert_eq!(d[2], (f.buf[1] & 0xFF) as u8);
@@ -613,7 +613,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point.x, p.point.y, p.point.z, p.shift);
+                    f.set(p.point.x, p.point.y, p.point.z, p.shift).unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
                     assert_eq!(d[2], (f.buf[1] & 0xFF) as u8);
@@ -676,7 +676,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point.x, p.point.y, p.point.z, p.shift);
+                    f.set(p.point.x, p.point.y, p.point.z, p.shift).unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
                     assert_eq!(d[2], (f.buf[1] & 0xFF) as u8);
