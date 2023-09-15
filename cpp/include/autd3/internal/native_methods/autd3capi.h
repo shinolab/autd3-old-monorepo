@@ -92,6 +92,38 @@ int32_t AUTDSendSpecial(ControllerPtr cnt,
                         int64_t timeout_ns,
                         char *err);
 
+[[nodiscard]] GroupKVMapPtr AUTDGroupCreateKVMap();
+
+[[nodiscard]]
+GroupKVMapPtr AUTDGroupKVMapSet(GroupKVMapPtr map,
+                                int32_t key,
+                                DatagramPtr d1,
+                                DatagramPtr d2,
+                                TransMode mode,
+                                int64_t timeout_ns,
+                                char *err);
+
+[[nodiscard]]
+GroupKVMapPtr AUTDGroupKVMapSetSpecial(GroupKVMapPtr map,
+                                       int32_t key,
+                                       DatagramSpecialPtr special,
+                                       TransMode mode,
+                                       int64_t timeout_ns,
+                                       char *err);
+
+[[nodiscard]]
+int32_t AUTDGroup(ControllerPtr cnt,
+                  const int32_t *map,
+                  GroupKVMapPtr kv_map,
+                  char *err);
+
+int32_t AUTDSoftwareSTM(ControllerPtr cnt,
+                        void* callback,
+                        void* context,
+                        TimerStrategy timer_strategy,
+                        uint64_t interval_ns,
+                        char *err);
+
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
 [[nodiscard]]

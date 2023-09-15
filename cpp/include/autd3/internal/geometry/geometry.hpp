@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 15/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -122,6 +122,8 @@ class Geometry {
   [[nodiscard]] std::vector<Device>::const_iterator end() const noexcept { return _devices.cend(); }
   [[nodiscard]] std::vector<Device>::iterator begin() noexcept { return _devices.begin(); }
   [[nodiscard]] std::vector<Device>::iterator end() noexcept { return _devices.end(); }
+  [[nodiscard]] std::vector<Device>::const_iterator cbegin() const noexcept { return _devices.cbegin(); }
+  [[nodiscard]] std::vector<Device>::const_iterator cend() const noexcept { return _devices.cend(); }
 
   [[nodiscard]] const Device& operator[](const size_t i) const { return _devices[i]; }
   [[nodiscard]] Device& operator[](const size_t i) { return _devices[i]; }

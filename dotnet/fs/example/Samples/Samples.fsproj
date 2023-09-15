@@ -14,18 +14,18 @@
     <Compile Include="Plane.fs" />
     <Compile Include="Flag.fs" />
     <Compile Include="Custom.fs" />
-    <Compile Include="GainSTMTest.fs" />
-    <Compile Include="FocusSTMTest.fs" />
+    <Compile Include="STMTest.fs" />
     <Compile Include="GainHoloTest.fs" />
     <Compile Include="BesselBeam.fs" />
     <Compile Include="FocusTest.fs" />
+    <Compile Include="GroupTest.fs" />
     <Compile Include="SampleRunner.fs" />
   </ItemGroup>
 
   <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="AUTD3Sharp" Version="15.1.0" />
+    <PackageReference Include="AUTD3Sharp" Version="15.1.1" />
   </ItemGroup>
 
 </Project>

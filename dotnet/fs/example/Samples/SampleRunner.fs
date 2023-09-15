@@ -20,12 +20,17 @@ module SampleRunner =
                 (BesselBeamTest.Test, "Bessel beam test");
                 (PlaneTest.Test, "Plane wave test");
                 (WavTest.Test, "Wav modulation test");
-                (FocusSTMTest.Test, "FocusSTM test");
-                (GainSTMTest.Test, "GainSTM test");
+                (STMTest.FocusSTMTest, "FocusSTM test");
+                (STMTest.GainSTMTest, "GainSTM test");
+                (STMTest.SoftwareSTMTest, "SoftwareSTM test");
                 (GainHoloTest.Test, "Multiple foci test");
                 (CustomTest.Test, "Custom Gain & Modulation test");
                 (FlagTest.Test, "Flag test");
                 (TransTest.Test, "TransducerTest test")];
+
+        let examples = 
+            if autd.Geometry.NumDevices >= 2 then examples @ [(GroupTest.Test, "Group test")] else examples;
+
 
         printfn "======== AUTD3 firmware information ========"
         autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")

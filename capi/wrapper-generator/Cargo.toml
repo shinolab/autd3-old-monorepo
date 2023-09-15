@@ -1,6 +1,6 @@
 [package]
 name = "wrapper-generator"
-version = "15.1.0"
+version = "15.1.1"
 edition = "2021"
 license = "MIT"
 

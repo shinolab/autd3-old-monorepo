@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "15.1.0"
+version = "15.1.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -10,8 +10,8 @@ name = "debug"
 path = "src/debug.rs"
 
 [[bin]]
-name = "group"
-path = "src/group.rs"
+name = "group_gain"
+path = "src/group_gain.rs"
 
 [[bin]]
 name = "async"
