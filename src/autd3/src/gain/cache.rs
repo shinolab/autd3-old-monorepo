@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 16/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -118,11 +118,18 @@ impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for Cache<T, G> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+
     use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
 
     use super::*;
 
     use crate::{autd3_device::AUTD3, prelude::Plane};
+
+    use autd3_derive::Gain;
 
     #[test]
     fn test_cache() {
@@ -153,5 +160,47 @@ mod tests {
             assert_eq!(drive.phase, 1.0);
             assert_eq!(drive.amp, 0.5);
         });
+    }
+
+    #[derive(Gain)]
+    struct TestGain {
+        pub calc_cnt: Arc<AtomicUsize>,
+    }
+
+    impl<T: Transducer> Gain<T> for TestGain {
+        fn calc(
+            &self,
+            geometry: &Geometry<T>,
+            filter: GainFilter,
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+            self.calc_cnt.fetch_add(1, Ordering::Relaxed);
+            Ok(Self::transform(geometry, filter, |_, _| Drive {
+                amp: 0.0,
+                phase: 0.0,
+            }))
+        }
+    }
+
+    #[test]
+    fn test_cache_calc_once() {
+        let geometry: Geometry<LegacyTransducer> =
+            Geometry::new(vec![
+                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
+            ]);
+
+        let calc_cnt = Arc::new(AtomicUsize::new(0));
+
+        let gain = TestGain {
+            calc_cnt: calc_cnt.clone(),
+        }
+        .with_cache();
+
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 0);
+        let _ = gain.calc(&geometry, GainFilter::All).unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
+        let _ = gain.calc(&geometry, GainFilter::All).unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
+        let _ = gain.calc(&geometry, GainFilter::All).unwrap();
+        assert_eq!(calc_cnt.load(Ordering::Relaxed), 1);
     }
 }
