@@ -254,7 +254,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -267,7 +267,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "quote",
  "syn 2.0.31",
@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "bitflags 2.4.0",
  "bitvec",
@@ -289,7 +289,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -298,7 +298,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "assert_approx_eq",
  "autd3",
@@ -313,7 +313,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "autd3",
  "autd3-gain-holo",
@@ -2516,7 +2516,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simulator"
-version = "15.1.0"
+version = "15.1.1"
 dependencies = [
  "anyhow",
  "autd3",
