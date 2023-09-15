@@ -128,6 +128,51 @@ autd.group(|dev| match dev.idx() {
 # }
 ```
 
+```cpp
+autd.group([](const autd3::Device& dev) -> std::optional<const char*> {
+    if (dev.idx() == 0) {
+        return "null";
+    } else if (dev.idx() == 1) {
+        return "focus";
+    } else {
+        return std::nullopt;
+    }
+    })
+    .set("null", autd3::gain::Null())
+    .set("focus", autd3::gain::Focus(x, y, z))
+    .send();
+```
+
+```cs
+autd.Group(dev =>
+    {
+        return dev.Idx switch
+        {
+            0 => "null",
+            1 => "focus",
+            _ => null
+        };
+    })
+    .Set("null", new Null())
+    .Set("focus", new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150)))
+    .Send();
+```
+
+```python
+def grouping(dev):
+    if dev.idx == 0:
+        return "null"
+    elif dev.idx == 1:
+        return "focus"
+    else:
+        return None
+
+autd.group(grouping)\
+    .set("null", Null())\
+    .set("focus", Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))\
+    .send()
+```
+
 `gain::Group`とは異なり, 通常の`send`で送信できるデータなら何でも使用できる.
 ただし, デバイス単位でしかグルーピングできない.
 
