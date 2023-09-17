@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 17/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -177,7 +177,14 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
     pub fn send(mut self) -> Result<bool, AUTDInternalError> {
         let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
 
-        let enable_flags: HashMap<K, Vec<bool>> = self
+        let enable_flags_store = self
+            .cnt
+            .geometry
+            .iter()
+            .map(|dev| dev.enable)
+            .collect::<Vec<_>>();
+
+        let enable_flags_map: HashMap<K, Vec<bool>> = self
             .op
             .keys()
             .map(|k| {
@@ -187,6 +194,9 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
                         .geometry
                         .iter()
                         .map(|dev| {
+                            if !dev.enable {
+                                return false;
+                            }
                             if let Some(kk) = (self.f)(dev) {
                                 kk == *k
                             } else {
@@ -200,7 +210,7 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
 
         self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
             self.cnt.geometry_mut().iter_mut().for_each(|dev| {
-                dev.enable = enable_flags[k][dev.idx()];
+                dev.enable = enable_flags_map[k][dev.idx()];
             });
             OperationHandler::init(op1, op2, &self.cnt.geometry)
         })?;
@@ -208,7 +218,7 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
         let r = loop {
             self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
                 self.cnt.geometry_mut().iter_mut().for_each(|dev| {
-                    dev.enable = enable_flags[k][dev.idx()];
+                    dev.enable = enable_flags_map[k][dev.idx()];
                 });
                 OperationHandler::pack(op1, op2, &self.cnt.geometry, &mut self.cnt.tx_buf)
             })?;
@@ -222,7 +232,7 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
             }
             if self.op.iter_mut().all(|(k, (op1, op2))| {
                 self.cnt.geometry_mut().iter_mut().for_each(|dev| {
-                    dev.enable = enable_flags[k][dev.idx()];
+                    dev.enable = enable_flags_map[k][dev.idx()];
                 });
                 OperationHandler::is_finished(op1, op2, &self.cnt.geometry)
             }) {
@@ -236,7 +246,8 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link<T>, F: Fn(&Device<T>) -> O
         self.cnt
             .geometry
             .iter_mut()
-            .for_each(|dev| dev.enable = true);
+            .zip(enable_flags_store.iter())
+            .for_each(|(dev, &enable)| dev.enable = enable);
 
         Ok(r)
     }
