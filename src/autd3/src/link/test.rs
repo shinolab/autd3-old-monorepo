@@ -4,14 +4,17 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 18/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::time::Duration;
+use std::{
+    ops::{Deref, DerefMut},
+    time::Duration,
+};
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
@@ -44,6 +47,24 @@ impl Test {
 
     pub fn emulators(&self) -> &[CPUEmulator] {
         &self.cpus
+    }
+
+    pub fn emulators_mut(&mut self) -> &mut [CPUEmulator] {
+        &mut self.cpus
+    }
+}
+
+impl Deref for Test {
+    type Target = [CPUEmulator];
+
+    fn deref(&self) -> &Self::Target {
+        &self.cpus
+    }
+}
+
+impl DerefMut for Test {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.cpus
     }
 }
 
