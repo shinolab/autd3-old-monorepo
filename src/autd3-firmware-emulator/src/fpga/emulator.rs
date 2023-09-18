@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 18/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -324,7 +324,7 @@ impl FPGAEmulator {
             .collect()
     }
 
-    pub fn focus_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+    fn focus_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
         let ultrasound_cycles = self.cycles();
         let sound_speed = self.sound_speed() as u64;
         let duty_shift = (self.stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
