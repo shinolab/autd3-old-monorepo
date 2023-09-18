@@ -88,4 +88,4 @@ Simulator(8080)\
     .with_server_ip("127.0.0.1")
 ```
 
-The server IP address is localhost by default.
+The default server IP address is localhost.

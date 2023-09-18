@@ -19,10 +19,20 @@ Then, run the program.
 python main.py
 ```
 
-## For Linux, macOS users
+## For linux users
 
-You may need to run with administrator privileges when using SOEM on Linux or macOS.
+You may need to run with administrator privileges when using SOEM on Linux.
 
 ```shell
-sudo python main.py
+sudo setcap cap_net_raw,cap_net_admin=eip <your python path>
+python main.py
+```
+
+## For macOS users
+
+You may need to run with administrator privileges when using SOEM on macOS.
+
+```shell
+sudo chmod +r /dev/bpf*
+python main.py
 ```

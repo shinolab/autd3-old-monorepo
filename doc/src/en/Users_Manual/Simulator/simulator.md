@@ -1,4 +1,4 @@
-# Simulator
+# AUTD3 Simulator
 
 AUTD Simulator is a simulator for AUTD3 supporting Windows, Linux, and macOS.
 
@@ -10,13 +10,27 @@ Download the installer from [GitHub Releases](https://github.com/shinolab/autd3/
 When you run `AUTD Server`, the following screen will appear, so open the "Simulator" tab and click "Run" button.
 
 <figure>
-  <img src="../fig/Users_Manual/autdserver_simulator.jpg"/>
+  <img src="../../fig/Users_Manual/autdserver_simulator.jpg"/>
 </figure>
 
 When you run the simulator, it is waiting for connection.
+
+<figure>
+  <img src="../../fig/sim_waiting.jpg"/>
+</figure>
+
 In this state, when you `open` the `Controller` using `link::Simulator`, a black panel will appear on the simulator.
+
+<figure>
+  <img src="../../fig/sim_init.jpg"/>
+</figure>
+
 This black panel is called "Slice", and this "Slice" can be used to visualize the sound field at an arbitrary position.
 The phase of the transducer is represented by hue, and its amplitude is represented by intensity.
+
+<figure>
+  <img src="../../fig/sim_focus.jpg"/>
+</figure>
 
 The sound field displayed in the simulator is a simple superposition of spherical waves; directivity and nonlinear effects are not taken into account.
 
@@ -53,19 +67,13 @@ In the Info tab, information on FPS, Silencer, Modulation, and STM can be checke
 
 The Silencer setting can be checked, but it is not affected in the sound field.
 
-When "Enable" of Modulation is set to "On", the modulation is reflected in the sound field.
-Specify the index of modulation data to be applied by "Index".
-When "Auto play" is set to On, the index is automatically incremented.
+When "Mod enable" is set, the modulation is reflected in the sound field.
 
-> Note: The timing of modulation by Auto play is different from the actual timing.
+The index of modulation data and STM is determined by system time.
+"System time" represents the system time, which is elapsed time in nanoseconds since January 1, 2000, 0:00:00.
 
-In addition, how the sound pressure is modulated is shown in this tab.
-
-If an STM is transmitted, the information of the STM is displayed.
-The index of STM data to be displayed is specified by "Index".
-If "Auto play" is set to "On", the index is automatically incremented.
-
-> Note: The timing of modulation by Auto play is different from the actual timing.
+When "Auto play" is set, the system time is automatically incremented.
+Other wise, you can set the system time manually.
 
 ### Others
 

@@ -8,7 +8,6 @@ However, the number of `Gain`s that can be used is
 The following is an example of how to use `GainSTM`.
 This is a sample that rotates the focus on a circle with a radius of $\SI{30}{mm}$ centered on a point $\SI{150}{mm}$ directly above the center of the array.
 
-
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
@@ -40,6 +39,18 @@ for (size_t i = 0; i < points_num; i++) {
 autd.send(stm);
 ```
 
+- If you are using C++20 or later, you can use `add_gains_from_iter` as follows:
+    ```cpp
+    #include <ranges>
+    using namespace std::ranges::views;
+
+    auto stm = autd3::GainSTM(1).add_gains_from_iter(iota(0) | take(points_num) | transform([&](auto i) {
+                                                        const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+                                                        return autd3::gain::Focus(center +
+                                                                                autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+                                                    }));
+    ```
+
 ```cs
 var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 const int pointNum = 200;
@@ -67,6 +78,64 @@ stm = GainSTM(1.0).add_gains_from_iter(
     )
 )
 autd.send(stm)
+```
+
+## Specify the sampling frequency
+
+You can specify the sampling frequency by `with_sampling_frequency` instead of frequency.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
+let stm = GainSTM::with_sampling_frequency(1.0);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
+# autd.send(stm)?;
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::GainSTM::with_sampling_frequency(1);
+```
+
+```cs
+var stm = GainSTM.WithSamplingFrequency(1);
+```
+
+```python
+from pyautd3.stm import GainSTM
+
+stm = GainSTM.with_sampling_frequency(1.0)
+```
+
+Also, you can specify the sampling frequency division ratio $N$ by `with_sampling_frequency_division`.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
+let stm = GainSTM::with_sampling_frequency_division(5120);
+# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
+# autd.send(stm)?;
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::GainSTM::with_sampling_frequency_division(5120);
+```
+
+```cs
+var stm = GainSTM.WithSamplingFrequencyDivision(5120);
+```
+
+```python
+from pyautd3.stm import GainSTM
+
+stm = GainSTM.with_sampling_frequency_division(5120)
 ```
 
 ## GainSTMMode

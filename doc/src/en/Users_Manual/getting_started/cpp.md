@@ -27,7 +27,6 @@ Next, edit `CMakeLists.txt` as follows,
 {{#include ../../../../samples/cpp/CMakeLists.txt}}
 ```
 
-
 And, edit `main.cpp` as follows.
 This is the source code for generating a focus with $\SI{150}{Hz}$ AM modulation. 
 

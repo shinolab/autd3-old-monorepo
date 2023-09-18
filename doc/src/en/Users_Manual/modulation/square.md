@@ -27,7 +27,6 @@ from pyautd3.modulation import Square
 
 m = Square(150)
 ```
-
 ## Set amplitude
 
 You can set the amplitude of the square wave with `with_low` and `with_high` for low level and high level, respectively.
@@ -52,8 +51,8 @@ const auto m = autd3::modulation::Square(150)
 
 ```cs
 var m = new Square(150)
-        .WithLow(0.)
-        .WithHigh(1.);
+        .WithLow(0)
+        .WithHigh(1);
 ```
 
 ```python
