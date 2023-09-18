@@ -35,6 +35,19 @@ for (size_t i = 0; i < points_num; i++) {
 autd.send(stm);
 ```
 
+- If you are using C++20 or later, you can use `add_foci_from_iter` as follows:
+    ```cpp
+    #include <ranges>
+    using namespace std::ranges::views;
+
+    auto stm = autd3::FocusSTM(1).add_foci_from_iter(iota(0) | take(points_num) | transform([&](auto i) {
+                                                        const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+                                                        autd3::Vector3 p =
+                                                            center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0);
+                                                        return p;
+                                                    }));
+    ```
+
 ```cs
 var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 const int pointNum = 200;
@@ -69,3 +82,58 @@ However, if `point_num=199`, the sampling frequency must be $\SI{199}{Hz}$, but 
 Therefore, the closest $N$ is selected.
 As a result, the specified frequency and the actual frequency are shifted.
 `frequency` can be used to check the actual frequency.
+
+
+## Specify the sampling frequency
+
+You can specify the sampling frequency by `with_sampling_frequency` instead of frequency.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = FocusSTM::with_sampling_frequency(1.0);
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::FocusSTM::with_sampling_frequency(1);
+```
+
+```cs
+var stm = FocusSTM.WithSamplingFrequency(1);
+```
+
+```python
+from pyautd3.stm import FocusSTM
+
+stm = FocusSTM.with_sampling_frequency(1.0)
+```
+
+Also, you can specify the sampling frequency division ratio $N$ by `with_sampling_frequency_division`.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+let stm = FocusSTM::with_sampling_frequency_division(5120);
+# Ok(())
+# }
+```
+
+```cpp
+auto stm = autd3::FocusSTM::with_sampling_frequency_division(5120);
+```
+
+```cs
+var stm = FocusSTM.WithSamplingFrequencyDivision(5120);
+```
+
+```python
+from pyautd3.stm import FocusSTM
+
+stm = FocusSTM.with_sampling_frequency_division(5120)
+```

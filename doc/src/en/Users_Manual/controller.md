@@ -7,7 +7,7 @@ The followings are introductino of APIs in `Controller` class.
 ## fpga_info
 
 Get the FPGA status.
-Before using this, you need to set the `reads_fpga_info` flag.
+Before using this, you need to set the `reads_fpga_info` flag in `Device`.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -51,6 +51,9 @@ You can get the following information about the FPGA.
 
 Send the data to the device.
 
+You can send a single or two data at the same time.
+However, `Stop` is an exception and can only be sent alone.
+
 ### Timeout
 
 You can specify the timeout time with `with_timeout`.
@@ -88,12 +91,88 @@ If the timeout time is 0, the `send` function does not check whether the sent da
 
 If you want to data to be sent surely, it is recommended to set this to an appropriate value.
 
-### stop
+### Stop
 
 You can stop the output by sending `Stop` data.
 
 Note that the `Stop` data resets the settings of Silencer.
 
-### clear
+### Clear
 
 You can clear the flags and `Gain`/`Modulation` data in the device by sending `Clear` data.
+
+## group
+
+You can group the devices by using `group` function, and send different data to each group.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink{}).unwrap();
+# let x = 0.;
+# let y = 0.;
+# let z = 0.;
+autd.group(|dev| match dev.idx() {
+    0 => Some("focus"),
+    1 => Some("null"),
+    _ => None,
+})
+.set("null", Null::new())?
+.set("focus", Focus::new(Vector3::new(x, y, z)))?
+.send()?;
+# Ok(())
+# }
+```
+
+```cpp
+autd.group([](const autd3::Device& dev) -> std::optional<const char*> {
+    if (dev.idx() == 0) {
+        return "null";
+    } else if (dev.idx() == 1) {
+        return "focus";
+    } else {
+        return std::nullopt;
+    }
+    })
+    .set("null", autd3::gain::Null())
+    .set("focus", autd3::gain::Focus(x, y, z))
+    .send();
+```
+
+```cs
+autd.Group(dev =>
+    {
+        return dev.Idx switch
+        {
+            0 => "null",
+            1 => "focus",
+            _ => null
+        };
+    })
+    .Set("null", new Null())
+    .Set("focus", new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150)))
+    .Send();
+```
+
+```python
+def grouping(dev):
+    if dev.idx == 0:
+        return "null"
+    elif dev.idx == 1:
+        return "focus"
+    else:
+        return None
+
+autd.group(grouping)\
+    .set("null", Null())\
+    .set("focus", Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))\
+    .send()
+```
+
+Unlike `gain::Group`, you can use any data that can be sent with `send` as a value.
+However, you can only group by device.
+
+> NOTE:
+> This sample uses a string as a key, but you can use anything that can be used as a key for HashMap.

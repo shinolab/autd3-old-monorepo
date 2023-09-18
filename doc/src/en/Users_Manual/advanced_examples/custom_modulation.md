@@ -57,7 +57,7 @@ private:
 ```
 
 ```cs
-public class Burst : Modulation
+public class Burst : Modulation.Modulation
 {
     private readonly int _length;
 

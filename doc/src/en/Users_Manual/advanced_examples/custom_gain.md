@@ -42,24 +42,23 @@ impl<T: Transducer> Gain<T> for FocalPoint {
 #include "autd3.hpp"
 
 class FocalPoint final : public autd3::Gain {
-public:
-    explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
+ public:
+  explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
 
-    std::vector<autd3::Drive> calc(const autd3::Geometry& geometry) const override {
-        const auto sound_speed = geometry.sound_speed();
-        return autd3::Gain::transform(geometry, [&](const auto& tr) {
-            const auto phase = (tr.position() - _point).norm() * tr.wavelength(sound_speed);
-            return autd3::Drive{phase, 1.0};
-            });
-    }
+  std::unordered_map<size_t, std::vector<autd3::Drive>> calc(const autd3::Geometry& geometry) const override {
+    return autd3::Gain::transform(geometry, [&](const auto& dev, const auto& tr) {
+      const auto phase = (tr.position() - _point).norm() * tr.wavelength(dev.sound_speed());
+      return autd3::Drive{phase, 1.0};
+    });
+  }
 
-private:
-    autd3::Vector3 _point;
+ private:
+  autd3::Vector3 _point;
 };
 ```
 
 ```cs
-public class FocalPoint : Gain
+public class FocalPoint : Gain.Gain
 {
     private readonly Vector3d _point;
 
@@ -68,33 +67,32 @@ public class FocalPoint : Gain
         _point = point;
     }
 
-    public override Drive[] Calc(Geometry geometry)
+    public override Dictionary<int, Drive[]> Calc(Geometry geometry)
     {
-        var soundSpeed = geometry.SoundSpeed;
-        return Transform(geometry, tr =>
+        return Transform(geometry, (dev, tr) =>
         {
             var tp = tr.Position;
             var dist = (tp - _point).L2Norm;
-            var phase = dist * tr.Wavenumber(soundSpeed);
-            return new Drive{Phase = phase, Amp= 1.0};
+            var phase = dist * tr.Wavenumber(dev.SoundSpeed);
+            return new Drive { Phase = phase, Amp = 1.0 };
         });
     }
 }
 ```
 
 ```python
-from pyautd3.gain import Gain, Drive
+from pyautd3 import Geometry, Drive
+from pyautd3.gain import Gain
 
-class FocalPoint(Gain):
+class Focus(Gain):
     def __init__(self, point):
         self.point = np.array(point)
 
-    def calc(self, geometry: Geometry):
-        sound_speed = geometry.sound_speed
+    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         return Gain.transform(
             geometry,
-            lambda tr: Drive(
-                np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
+            lambda dev, tr: Drive(
+                np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),
                 1.0,
             ),
         )
