@@ -1,3 +1,7 @@
+# 15.1.2
+
+- Fix [#165](https://github.com/shinolab/autd3/issues/165): [Python] missing with_amp methods in Plane
+
 # 15.1.1
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
