@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 19/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::fmt;
 
 pub const LATEST_VERSION_NUM_MAJOR: u8 = 0x8A;
-pub const LATEST_VERSION_NUM_MINOR: u8 = 0x00;
+pub const LATEST_VERSION_NUM_MINOR: u8 = 0x02;
 
 const ENABLED_STM_BIT: u8 = 1 << 0;
 const ENABLED_MODULATOR_BIT: u8 = 1 << 1;
