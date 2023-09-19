@@ -1,3 +1,7 @@
+# 15.1.2
+
+- Fix [#163](https://github.com/shinolab/autd3/issues/163): FirmwareInfo.latest_version still returns "v3.0.0"
+
 # 15.1.1
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
