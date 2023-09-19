@@ -1,10 +1,10 @@
 /*
- * File: debug.rs
+ * File: audit.rs
  * Project: link
- * Created Date: 10/05/2023
+ * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/09/2023
+ * Last Modified: 19/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,24 +25,34 @@ use autd3_driver::{
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link for test
-pub struct Test {
+pub struct Audit {
     is_open: bool,
     timeout: Duration,
+    last_timeout: Duration,
     cpus: Vec<CPUEmulator>,
+    down: bool,
+    broken: bool,
 }
 
-impl Test {
+impl Audit {
     pub fn new() -> Self {
         Self {
             is_open: false,
             timeout: Duration::ZERO,
+            last_timeout: Duration::ZERO,
             cpus: Vec::new(),
+            down: false,
+            broken: false,
         }
     }
 
     /// set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
+    }
+
+    pub fn last_timeout(&self) -> Duration {
+        self.last_timeout
     }
 
     pub fn emulators(&self) -> &[CPUEmulator] {
@@ -52,9 +62,25 @@ impl Test {
     pub fn emulators_mut(&mut self) -> &mut [CPUEmulator] {
         &mut self.cpus
     }
+
+    pub fn down(&mut self) {
+        self.down = true;
+    }
+
+    pub fn up(&mut self) {
+        self.down = false;
+    }
+
+    pub fn break_down(&mut self) {
+        self.broken = true;
+    }
+
+    pub fn repair(&mut self) {
+        self.broken = false;
+    }
 }
 
-impl Deref for Test {
+impl Deref for Audit {
     type Target = [CPUEmulator];
 
     fn deref(&self) -> &Self::Target {
@@ -62,19 +88,19 @@ impl Deref for Test {
     }
 }
 
-impl DerefMut for Test {
+impl DerefMut for Audit {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.cpus
     }
 }
 
-impl Default for Test {
+impl Default for Audit {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Transducer> Link<T> for Test {
+impl<T: Transducer> Link<T> for Audit {
     fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
         self.cpus = devices
             .iter()
@@ -101,6 +127,14 @@ impl<T: Transducer> Link<T> for Test {
             return Ok(false);
         }
 
+        if self.broken {
+            return Err(AUTDInternalError::LinkError("broken".to_owned()));
+        }
+
+        if self.down {
+            return Ok(false);
+        }
+
         self.cpus.iter_mut().for_each(|cpu| {
             cpu.send(tx);
         });
@@ -113,12 +147,36 @@ impl<T: Transducer> Link<T> for Test {
             return Ok(false);
         }
 
+        if self.broken {
+            return Err(AUTDInternalError::LinkError("broken".to_owned()));
+        }
+
+        if self.down {
+            return Ok(false);
+        }
+
         self.cpus.iter_mut().for_each(|cpu| {
             rx[cpu.idx()].data = cpu.rx_data();
             rx[cpu.idx()].ack = cpu.ack();
         });
 
         Ok(true)
+    }
+
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        self.last_timeout = timeout;
+        if !<Self as Link<T>>::send(self, tx)? {
+            return Ok(false);
+        }
+        if timeout.is_zero() {
+            return <Self as Link<T>>::receive(self, rx);
+        }
+        <Self as Link<T>>::wait_msg_processed(self, tx, rx, timeout)
     }
 
     fn is_open(&self) -> bool {

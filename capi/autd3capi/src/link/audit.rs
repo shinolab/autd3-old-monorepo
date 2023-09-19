@@ -1,10 +1,10 @@
 /*
- * File: test.rs
+ * File: audit.rs
  * Project: link
- * Created Date: 17/09/2023
+ * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/09/2023
+ * Last Modified: 19/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,135 +14,191 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{autd3::link::Test, *},
+    common::{autd3::link::Audit, *},
     take_link, ControllerPtr, LinkPtr,
 };
 use std::time::Duration;
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTest() -> LinkPtr {
-    LinkPtr::new(Test::new())
+pub unsafe extern "C" fn AUTDLinkAudit() -> LinkPtr {
+    LinkPtr::new(Audit::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestWithTimeout(test: LinkPtr, timeout_ns: u64) -> LinkPtr {
-    LinkPtr::new(take_link!(test, Test).with_timeout(Duration::from_nanos(timeout_ns)))
+pub unsafe extern "C" fn AUTDLinkAuditWithTimeout(test: LinkPtr, timeout_ns: u64) -> LinkPtr {
+    LinkPtr::new(take_link!(test, Audit).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct TestLinkPtr(pub ConstPtr);
+pub struct AuditLinkPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetLink(cnt: ControllerPtr) -> TestLinkPtr {
-    TestLinkPtr(cast!(cnt.0, Cnt).link() as *const _ as _)
+pub unsafe extern "C" fn AUTDGetLink(cnt: ControllerPtr) -> AuditLinkPtr {
+    AuditLinkPtr(cast!(cnt.0, Cnt).link() as *const _ as _)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestCpuIdx(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize].idx() as _
+pub unsafe extern "C" fn AUTDLinkAuditIsOpen(audit: AuditLinkPtr) -> bool {
+    cast!(audit.0, Box<dyn Link<DynamicTransducer>>).is_open()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestCpuNumTransducers(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize].num_transducers() as _
+pub unsafe extern "C" fn AUTDLinkAuditTimeoutNs(audit: AuditLinkPtr) -> u64 {
+    cast!(audit.0, Box<dyn Link<DynamicTransducer>>)
+        .timeout()
+        .as_nanos() as _
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestCpuAck(test: TestLinkPtr, idx: u32) -> u8 {
-    cast!(test.0, Box<Test>)[idx as usize].ack()
+pub unsafe extern "C" fn AUTDLinkAuditLastTimeoutNs(audit: AuditLinkPtr) -> u64 {
+    cast!(audit.0, Box<Audit>).last_timeout().as_nanos() as _
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditDown(audit: AuditLinkPtr) {
+    cast_mut!(audit.0, Box<Audit>).down()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditUp(audit: AuditLinkPtr) {
+    cast_mut!(audit.0, Box<Audit>).up()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditBreakDown(audit: AuditLinkPtr) {
+    cast_mut!(audit.0, Box<Audit>).break_down()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditRepair(audit: AuditLinkPtr) {
+    cast_mut!(audit.0, Box<Audit>).repair()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditCpuUpdate(audit: AuditLinkPtr, idx: u32) {
+    cast_mut!(audit.0, Box<Audit>)[idx as usize].update()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestCpuRxData(test: TestLinkPtr, idx: u32) -> u8 {
-    cast!(test.0, Box<Test>)[idx as usize].rx_data()
+pub unsafe extern "C" fn AUTDLinkAuditCpuIdx(audit: AuditLinkPtr, idx: u32) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize].idx() as _
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestCpuFpgaFlags(test: TestLinkPtr, idx: u32) -> u8 {
-    cast!(test.0, Box<Test>)[idx as usize].fpga_flags().bits()
+pub unsafe extern "C" fn AUTDLinkAuditCpuNumTransducers(audit: AuditLinkPtr, idx: u32) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize].num_transducers() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaAssertThermalSensor(test: TestLinkPtr, idx: u32) {
-    cast_mut!(test.0, Box<Test>)[idx as usize]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditCpuAck(audit: AuditLinkPtr, idx: u32) -> u8 {
+    cast!(audit.0, Box<Audit>)[idx as usize].ack()
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditCpuRxData(audit: AuditLinkPtr, idx: u32) -> u8 {
+    cast!(audit.0, Box<Audit>)[idx as usize].rx_data()
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditCpuFpgaFlags(audit: AuditLinkPtr, idx: u32) -> u8 {
+    cast!(audit.0, Box<Audit>)[idx as usize].fpga_flags().bits()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaAssertThermalSensor(audit: AuditLinkPtr, idx: u32) {
+    cast_mut!(audit.0, Box<Audit>)[idx as usize]
         .fpga_mut()
         .assert_thermal_sensor()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaDeassertThermalSensor(test: TestLinkPtr, idx: u32) {
-    cast_mut!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaDeassertThermalSensor(audit: AuditLinkPtr, idx: u32) {
+    cast_mut!(audit.0, Box<Audit>)[idx as usize]
         .fpga_mut()
         .deassert_thermal_sensor()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaIsLegacyMode(test: TestLinkPtr, idx: u32) -> bool {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaIsLegacyMode(audit: AuditLinkPtr, idx: u32) -> bool {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .is_legacy_mode()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaIsForceFan(test: TestLinkPtr, idx: u32) -> bool {
-    cast!(test.0, Box<Test>)[idx as usize].fpga().is_force_fan()
+pub unsafe extern "C" fn AUTDLinkAuditFpgaIsForceFan(audit: AuditLinkPtr, idx: u32) -> bool {
+    cast!(audit.0, Box<Audit>)[idx as usize]
+        .fpga()
+        .is_force_fan()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaIsStmMode(test: TestLinkPtr, idx: u32) -> bool {
-    cast!(test.0, Box<Test>)[idx as usize].fpga().is_stm_mode()
+pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmMode(audit: AuditLinkPtr, idx: u32) -> bool {
+    cast!(audit.0, Box<Audit>)[idx as usize]
+        .fpga()
+        .is_stm_mode()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaIsStmGainMode(test: TestLinkPtr, idx: u32) -> bool {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmGainMode(audit: AuditLinkPtr, idx: u32) -> bool {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .is_stm_gain_mode()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaSilencerStep(test: TestLinkPtr, idx: u32) -> u16 {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStep(audit: AuditLinkPtr, idx: u32) -> u16 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .silencer_step()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaCycles(test: TestLinkPtr, idx: u32, cycles: *mut u16) {
+pub unsafe extern "C" fn AUTDLinkAuditFpgaCycles(audit: AuditLinkPtr, idx: u32, cycles: *mut u16) {
     std::ptr::copy_nonoverlapping(
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .cycles()
             .as_ptr(),
         cycles,
-        cast!(test.0, Box<Test>)[idx as usize].fpga().cycles().len(),
+        cast!(audit.0, Box<Audit>)[idx as usize]
+            .fpga()
+            .cycles()
+            .len(),
     )
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaModDelays(test: TestLinkPtr, idx: u32, delay: *mut u16) {
+pub unsafe extern "C" fn AUTDLinkAuditFpgaModDelays(
+    audit: AuditLinkPtr,
+    idx: u32,
+    delay: *mut u16,
+) {
     std::ptr::copy_nonoverlapping(
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .mod_delays()
             .as_ptr(),
         delay,
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .mod_delays()
             .len(),
@@ -150,18 +206,18 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaModDelays(test: TestLinkPtr, idx: u32, 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaDutyFilters(
-    test: TestLinkPtr,
+pub unsafe extern "C" fn AUTDLinkAuditFpgaDutyFilters(
+    audit: AuditLinkPtr,
     idx: u32,
     filters: *mut i16,
 ) {
     std::ptr::copy_nonoverlapping(
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .duty_filters()
             .as_ptr(),
         filters,
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .duty_filters()
             .len(),
@@ -169,18 +225,18 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaDutyFilters(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaPhaseFilters(
-    test: TestLinkPtr,
+pub unsafe extern "C" fn AUTDLinkAuditFpgaPhaseFilters(
+    audit: AuditLinkPtr,
     idx: u32,
     filters: *mut i16,
 ) {
     std::ptr::copy_nonoverlapping(
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .phase_filters()
             .as_ptr(),
         filters,
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .phase_filters()
             .len(),
@@ -189,28 +245,33 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaPhaseFilters(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaStmFrequencyDivision(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaStmFrequencyDivision(
+    audit: AuditLinkPtr,
+    idx: u32,
+) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .stm_frequency_division()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaStmCycle(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize].fpga().stm_cycle() as _
+pub unsafe extern "C" fn AUTDLinkAuditFpgaStmCycle(audit: AuditLinkPtr, idx: u32) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize].fpga().stm_cycle() as _
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaSoundSpeed(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize].fpga().sound_speed()
+pub unsafe extern "C" fn AUTDLinkAuditFpgaSoundSpeed(audit: AuditLinkPtr, idx: u32) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
+        .fpga()
+        .sound_speed()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaStmStartIdx(test: TestLinkPtr, idx: u32) -> i32 {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaStmStartIdx(audit: AuditLinkPtr, idx: u32) -> i32 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .stm_start_idx()
         .map_or(-1, |v| v as _)
@@ -218,8 +279,8 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaStmStartIdx(test: TestLinkPtr, idx: u32
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaStmFinishIdx(test: TestLinkPtr, idx: u32) -> i32 {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaStmFinishIdx(audit: AuditLinkPtr, idx: u32) -> i32 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .stm_finish_idx()
         .map_or(-1, |v| v as _)
@@ -227,32 +288,32 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaStmFinishIdx(test: TestLinkPtr, idx: u3
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaModulationFrequencyDivision(
-    test: TestLinkPtr,
+pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationFrequencyDivision(
+    audit: AuditLinkPtr,
     idx: u32,
 ) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize]
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .modulation_frequency_division()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTestFpgaModulationCycle(test: TestLinkPtr, idx: u32) -> u32 {
-    cast!(test.0, Box<Test>)[idx as usize]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationCycle(audit: AuditLinkPtr, idx: u32) -> u32 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .modulation_cycle() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaModulation(test: TestLinkPtr, idx: u32, data: *mut u8) {
+pub unsafe extern "C" fn AUTDLinkAuditFpgaModulation(audit: AuditLinkPtr, idx: u32, data: *mut u8) {
     std::ptr::copy_nonoverlapping(
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .modulation()
             .as_ptr(),
         data,
-        cast!(test.0, Box<Test>)[idx as usize]
+        cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .modulation()
             .len(),
@@ -260,14 +321,14 @@ pub unsafe extern "C" fn AUTDLinkTestFpgaModulation(test: TestLinkPtr, idx: u32,
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkTestFpgaDutiesAndPhases(
-    test: TestLinkPtr,
+pub unsafe extern "C" fn AUTDLinkAuditFpgaDutiesAndPhases(
+    audit: AuditLinkPtr,
     idx: u32,
     stm_idx: u32,
     duties: *mut u16,
     phases: *mut u16,
 ) {
-    let dp = cast!(test.0, Box<Test>)[idx as usize]
+    let dp = cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .duties_and_phases(stm_idx as _);
     let d = dp.iter().map(|v| v.0).collect::<Vec<_>>();
@@ -297,8 +358,8 @@ mod tests {
         let builder = AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         let builder = AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-        let test = AUTDLinkTest();
-        let test = AUTDLinkTestWithTimeout(test, 0);
+        let test = AUTDLinkAudit();
+        let test = AUTDLinkAuditWithTimeout(test, 0);
 
         let mut err = vec![c_char::default(); 256];
         let cnt = AUTDControllerOpenWith(builder, test, err.as_mut_ptr());
@@ -309,8 +370,8 @@ mod tests {
     #[test]
     fn test_link_debug() {
         unsafe {
-            let link = AUTDLinkTest();
-            let _ = AUTDLinkTestWithTimeout(link, 10);
+            let link = AUTDLinkAudit();
+            let _ = AUTDLinkAuditWithTimeout(link, 10);
         }
     }
 
@@ -320,8 +381,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert_eq!(AUTDLinkTestCpuIdx(link, 0), 0);
-            assert_eq!(AUTDLinkTestCpuIdx(link, 1), 1);
+            assert_eq!(AUTDLinkAuditCpuIdx(link, 0), 0);
+            assert_eq!(AUTDLinkAuditCpuIdx(link, 1), 1);
         }
     }
 
@@ -331,8 +392,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert_eq!(AUTDLinkTestCpuNumTransducers(link, 0), 249);
-            assert_eq!(AUTDLinkTestCpuNumTransducers(link, 1), 249);
+            assert_eq!(AUTDLinkAuditCpuNumTransducers(link, 0), 249);
+            assert_eq!(AUTDLinkAuditCpuNumTransducers(link, 1), 249);
         }
     }
 
@@ -342,8 +403,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert_eq!(AUTDLinkTestCpuAck(link, 0), 3);
-            assert_eq!(AUTDLinkTestCpuAck(link, 1), 3);
+            assert_eq!(AUTDLinkAuditCpuAck(link, 0), 3);
+            assert_eq!(AUTDLinkAuditCpuAck(link, 1), 3);
 
             let update = AUTDUpdateFlags();
             let mut err = vec![c_char::default(); 256];
@@ -356,8 +417,8 @@ mod tests {
                 err.as_mut_ptr(),
             );
 
-            assert_eq!(AUTDLinkTestCpuAck(link, 0), 4);
-            assert_eq!(AUTDLinkTestCpuAck(link, 1), 4);
+            assert_eq!(AUTDLinkAuditCpuAck(link, 0), 4);
+            assert_eq!(AUTDLinkAuditCpuAck(link, 1), 4);
         }
     }
 
@@ -367,8 +428,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert_eq!(AUTDLinkTestCpuRxData(link, 0), 0);
-            assert_eq!(AUTDLinkTestCpuRxData(link, 1), 0);
+            assert_eq!(AUTDLinkAuditCpuRxData(link, 0), 0);
+            assert_eq!(AUTDLinkAuditCpuRxData(link, 1), 0);
         }
     }
 
@@ -379,11 +440,11 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             assert_eq!(
-                AUTDLinkTestCpuFpgaFlags(link, 0),
+                AUTDLinkAuditCpuFpgaFlags(link, 0),
                 FPGAControlFlags::NONE.bits()
             );
             assert_eq!(
-                AUTDLinkTestCpuFpgaFlags(link, 1),
+                AUTDLinkAuditCpuFpgaFlags(link, 1),
                 FPGAControlFlags::NONE.bits()
             );
 
@@ -402,11 +463,11 @@ mod tests {
             );
 
             assert_eq!(
-                AUTDLinkTestCpuFpgaFlags(link, 0),
+                AUTDLinkAuditCpuFpgaFlags(link, 0),
                 FPGAControlFlags::FORCE_FAN.bits()
             );
             assert_eq!(
-                AUTDLinkTestCpuFpgaFlags(link, 1),
+                AUTDLinkAuditCpuFpgaFlags(link, 1),
                 FPGAControlFlags::FORCE_FAN.bits()
             );
         }
@@ -418,7 +479,7 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            AUTDLinkTestFpgaAssertThermalSensor(link, 0);
+            AUTDLinkAuditFpgaAssertThermalSensor(link, 0);
         }
     }
 
@@ -428,8 +489,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert!(!AUTDLinkTestFpgaIsLegacyMode(link, 0));
-            assert!(!AUTDLinkTestFpgaIsLegacyMode(link, 1));
+            assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 0));
+            assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 1));
 
             let gain = AUTDGainNull();
             let gain = AUTDGainIntoDatagram(gain);
@@ -443,8 +504,8 @@ mod tests {
                 err.as_mut_ptr(),
             );
 
-            assert!(AUTDLinkTestFpgaIsLegacyMode(link, 0));
-            assert!(AUTDLinkTestFpgaIsLegacyMode(link, 1));
+            assert!(AUTDLinkAuditFpgaIsLegacyMode(link, 0));
+            assert!(AUTDLinkAuditFpgaIsLegacyMode(link, 1));
         }
     }
 
@@ -454,8 +515,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert!(!AUTDLinkTestFpgaIsForceFan(link, 0));
-            assert!(!AUTDLinkTestFpgaIsForceFan(link, 1));
+            assert!(!AUTDLinkAuditFpgaIsForceFan(link, 0));
+            assert!(!AUTDLinkAuditFpgaIsForceFan(link, 1));
 
             AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 0), true);
             AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 1), true);
@@ -471,8 +532,8 @@ mod tests {
                 err.as_mut_ptr(),
             );
 
-            assert!(AUTDLinkTestFpgaIsForceFan(link, 0));
-            assert!(AUTDLinkTestFpgaIsForceFan(link, 1));
+            assert!(AUTDLinkAuditFpgaIsForceFan(link, 0));
+            assert!(AUTDLinkAuditFpgaIsForceFan(link, 1));
         }
     }
 
@@ -482,8 +543,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert!(!AUTDLinkTestFpgaIsStmMode(link, 0));
-            assert!(!AUTDLinkTestFpgaIsStmMode(link, 1));
+            assert!(!AUTDLinkAuditFpgaIsStmMode(link, 0));
+            assert!(!AUTDLinkAuditFpgaIsStmMode(link, 1));
         }
     }
 
@@ -493,8 +554,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert!(!AUTDLinkTestFpgaIsStmGainMode(link, 0));
-            assert!(!AUTDLinkTestFpgaIsStmGainMode(link, 1));
+            assert!(!AUTDLinkAuditFpgaIsStmGainMode(link, 0));
+            assert!(!AUTDLinkAuditFpgaIsStmGainMode(link, 1));
         }
     }
 
@@ -504,8 +565,8 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDGetLink(cnt);
 
-            assert_eq!(AUTDLinkTestFpgaSilencerStep(link, 0), 10);
-            assert_eq!(AUTDLinkTestFpgaSilencerStep(link, 1), 10);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 0), 10);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 1), 10);
         }
     }
 
@@ -516,10 +577,10 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestCpuNumTransducers(link, i);
+                let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
                 let mut cycles = vec![0; n as usize];
-                AUTDLinkTestFpgaCycles(link, i, cycles.as_mut_ptr());
+                AUTDLinkAuditFpgaCycles(link, i, cycles.as_mut_ptr());
 
                 cycles.iter().for_each(|&v| assert_eq!(v, 4096));
             })
@@ -533,10 +594,10 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestCpuNumTransducers(link, i);
+                let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
                 let mut delays = vec![0; n as usize];
-                AUTDLinkTestFpgaModDelays(link, i, delays.as_mut_ptr());
+                AUTDLinkAuditFpgaModDelays(link, i, delays.as_mut_ptr());
 
                 delays.iter().for_each(|&v| assert_eq!(v, 0));
             })
@@ -550,10 +611,10 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestCpuNumTransducers(link, i);
+                let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
                 let mut filters = vec![0; n as usize];
-                AUTDLinkTestFpgaDutyFilters(link, i, filters.as_mut_ptr());
+                AUTDLinkAuditFpgaDutyFilters(link, i, filters.as_mut_ptr());
 
                 filters.iter().for_each(|&v| assert_eq!(v, 0));
             })
@@ -567,10 +628,10 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestCpuNumTransducers(link, i);
+                let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
                 let mut filters = vec![0; n as usize];
-                AUTDLinkTestFpgaPhaseFilters(link, i, filters.as_mut_ptr());
+                AUTDLinkAuditFpgaPhaseFilters(link, i, filters.as_mut_ptr());
 
                 filters.iter().for_each(|&v| assert_eq!(v, 0));
             })
@@ -584,7 +645,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaStmFrequencyDivision(link, i), 0);
+                assert_eq!(AUTDLinkAuditFpgaStmFrequencyDivision(link, i), 0);
             })
         }
     }
@@ -596,7 +657,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaStmCycle(link, i), 1);
+                assert_eq!(AUTDLinkAuditFpgaStmCycle(link, i), 1);
             })
         }
     }
@@ -608,7 +669,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaSoundSpeed(link, i), 0);
+                assert_eq!(AUTDLinkAuditFpgaSoundSpeed(link, i), 0);
             })
         }
     }
@@ -620,7 +681,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaStmStartIdx(link, i), -1);
+                assert_eq!(AUTDLinkAuditFpgaStmStartIdx(link, i), -1);
             })
         }
     }
@@ -632,7 +693,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaStmFinishIdx(link, i), -1);
+                assert_eq!(AUTDLinkAuditFpgaStmFinishIdx(link, i), -1);
             })
         }
     }
@@ -644,7 +705,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaModulationFrequencyDivision(link, i), 40960);
+                assert_eq!(AUTDLinkAuditFpgaModulationFrequencyDivision(link, i), 40960);
             })
         }
     }
@@ -656,7 +717,7 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkTestFpgaModulationCycle(link, i), 2);
+                assert_eq!(AUTDLinkAuditFpgaModulationCycle(link, i), 2);
             })
         }
     }
@@ -668,9 +729,9 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestFpgaModulationCycle(link, i);
+                let n = AUTDLinkAuditFpgaModulationCycle(link, i);
                 let mut data = vec![0; n as usize];
-                AUTDLinkTestFpgaModulation(link, i, data.as_mut_ptr());
+                AUTDLinkAuditFpgaModulation(link, i, data.as_mut_ptr());
                 data.iter().for_each(|&v| assert_eq!(v, 0));
             })
         }
@@ -683,11 +744,11 @@ mod tests {
             let link = AUTDGetLink(cnt);
 
             (0..2).for_each(|i| {
-                let n = AUTDLinkTestCpuNumTransducers(link, i);
+                let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
                 let mut duties = vec![0; n as usize];
                 let mut phases = vec![0; n as usize];
-                AUTDLinkTestFpgaDutiesAndPhases(
+                AUTDLinkAuditFpgaDutiesAndPhases(
                     link,
                     i,
                     0,
