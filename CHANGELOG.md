@@ -1,3 +1,7 @@
+# 15.1.2
+
+- Fix [#166](https://github.com/shinolab/autd3/issues/166): There is no way to get modulation size
+
 # 15.1.1
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
