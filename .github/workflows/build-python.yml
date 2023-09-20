@@ -29,6 +29,24 @@ jobs:
           .github/workflows/build-python.yml
           python/pyautd3/*.py
           python/pyautd3/**/*.py
+
+    - name: install aarch64 target on macos
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
+      run: |
+        rustup target add aarch64-apple-darwin
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files
+      
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -38,3 +56,16 @@ jobs:
         cd python
         python3 -m mypy pyautd3
       if: steps.changed-files.outputs.modified_files
+
+    - run: |
+        python3 -m pip install -U pytest
+        cd python
+        ./run_test.ps1
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+
+    - run: |
+        python3 -m pip install -U pytest
+        cd python
+        chmod +x run_test.sh
+        ./run_test.sh
+      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
