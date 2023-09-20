@@ -73,10 +73,6 @@ class SDP(IGain):
         self._repeat = repeat
         return self
 
-    def with_backend(self, backend: Backend) -> "SDP":
-        self._backend = backend
-        return self
-
     def with_constraint(self, constraint: AmplitudeConstraint) -> "SDP":
         self._constraint = constraint
         return self
