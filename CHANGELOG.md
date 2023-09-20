@@ -4,6 +4,7 @@
 - Fix [#165](https://github.com/shinolab/autd3/issues/165): [Python] missing with_amp methods in Plane
 - Fix [#166](https://github.com/shinolab/autd3/issues/166): There is no way to get modulation size
 - Fix [#167](https://github.com/shinolab/autd3/issues/167): [Python] Gain.with_cache cause an error
+- Fix [#168](https://github.com/shinolab/autd3/issues/168): [Python] GainSTM has from_sampling_frequency_division instead with_sampling_frequency_division
 
 # 15.1.1
 
