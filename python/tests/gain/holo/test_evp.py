@@ -1,0 +1,59 @@
+'''
+File: test_evp.py
+Project: holo
+Created Date: 20/09/2023
+Author: Shun Suzuki
+-----
+Last Modified: 20/09/2023
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+-----
+Copyright (c) 2023 Shun Suzuki. All rights reserved.
+
+'''
+
+
+import pytest
+from ...test_autd import create_controller
+
+from pyautd3.gain.holo import NalgebraBackend, EVP, AmplitudeConstraint
+from pyautd3.gain.holo.backend_cuda import CUDABackend
+from pyautd3.link.audit import Audit
+
+import numpy as np
+
+
+def test_evp():
+    autd = create_controller()
+
+    backend = NalgebraBackend()
+    g = EVP(backend)\
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .with_gamma(1.)\
+        .with_constraint(AmplitudeConstraint.uniform(0.5))
+    assert autd.send(g)
+
+    for dev in autd.geometry:
+        duties, phases = Audit.duties_and_phases(autd._ptr, dev.idx, 0)
+        assert np.all(duties == 680)
+        assert not np.all(phases == 0)
+
+
+@pytest.mark.cuda
+def test_evp_cuda():
+    autd = create_controller()
+
+    backend = CUDABackend()
+    g = EVP(backend)\
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .with_gamma(1.)\
+        .with_constraint(AmplitudeConstraint.uniform(0.5))
+    assert autd.send(g)
+
+    for dev in autd.geometry:
+        duties, phases = Audit.duties_and_phases(autd._ptr, dev.idx, 0)
+        assert np.all(duties == 680)
+        assert not np.all(phases == 0)

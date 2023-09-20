@@ -13,6 +13,10 @@ class FirmwareInfoListPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class AuditLinkPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class Drive(ctypes.Structure):
     _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_double)]
 
@@ -273,6 +277,114 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDSoftwareSTM.argtypes = [ControllerPtr, ctypes.c_void_p, ctypes.c_void_p, TimerStrategy, ctypes.c_uint64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSoftwareSTM.restype = ctypes.c_int32
+
+        self.dll.AUTDLinkAudit.argtypes = [] 
+        self.dll.AUTDLinkAudit.restype = LinkPtr
+
+        self.dll.AUTDLinkAuditWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkAuditWithTimeout.restype = LinkPtr
+
+        self.dll.AUTDGetLink.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDGetLink.restype = AuditLinkPtr
+
+        self.dll.AUTDLinkAuditIsOpen.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditIsOpen.restype = ctypes.c_bool
+
+        self.dll.AUTDLinkAuditTimeoutNs.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditTimeoutNs.restype = ctypes.c_uint64
+
+        self.dll.AUTDLinkAuditLastTimeoutNs.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditLastTimeoutNs.restype = ctypes.c_uint64
+
+        self.dll.AUTDLinkAuditDown.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditDown.restype = None
+
+        self.dll.AUTDLinkAuditUp.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditUp.restype = None
+
+        self.dll.AUTDLinkAuditBreakDown.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditBreakDown.restype = None
+
+        self.dll.AUTDLinkAuditRepair.argtypes = [AuditLinkPtr]  # type: ignore 
+        self.dll.AUTDLinkAuditRepair.restype = None
+
+        self.dll.AUTDLinkAuditCpuUpdate.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuUpdate.restype = None
+
+        self.dll.AUTDLinkAuditCpuIdx.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuIdx.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditCpuNumTransducers.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuNumTransducers.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditCpuAck.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuAck.restype = ctypes.c_uint8
+
+        self.dll.AUTDLinkAuditCpuRxData.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuRxData.restype = ctypes.c_uint8
+
+        self.dll.AUTDLinkAuditCpuFpgaFlags.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditCpuFpgaFlags.restype = ctypes.c_uint8
+
+        self.dll.AUTDLinkAuditFpgaAssertThermalSensor.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaAssertThermalSensor.restype = None
+
+        self.dll.AUTDLinkAuditFpgaDeassertThermalSensor.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaDeassertThermalSensor.restype = None
+
+        self.dll.AUTDLinkAuditFpgaIsLegacyMode.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaIsLegacyMode.restype = ctypes.c_bool
+
+        self.dll.AUTDLinkAuditFpgaIsForceFan.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaIsForceFan.restype = ctypes.c_bool
+
+        self.dll.AUTDLinkAuditFpgaIsStmMode.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaIsStmMode.restype = ctypes.c_bool
+
+        self.dll.AUTDLinkAuditFpgaIsStmGainMode.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaIsStmGainMode.restype = ctypes.c_bool
+
+        self.dll.AUTDLinkAuditFpgaSilencerStep.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaSilencerStep.restype = ctypes.c_uint16
+
+        self.dll.AUTDLinkAuditFpgaCycles.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaCycles.restype = None
+
+        self.dll.AUTDLinkAuditFpgaModDelays.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaModDelays.restype = None
+
+        self.dll.AUTDLinkAuditFpgaDutyFilters.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_int16)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaDutyFilters.restype = None
+
+        self.dll.AUTDLinkAuditFpgaPhaseFilters.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_int16)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaPhaseFilters.restype = None
+
+        self.dll.AUTDLinkAuditFpgaStmFrequencyDivision.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaStmFrequencyDivision.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditFpgaStmCycle.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaStmCycle.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditFpgaSoundSpeed.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaSoundSpeed.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditFpgaStmStartIdx.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaStmStartIdx.restype = ctypes.c_int32
+
+        self.dll.AUTDLinkAuditFpgaStmFinishIdx.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaStmFinishIdx.restype = ctypes.c_int32
+
+        self.dll.AUTDLinkAuditFpgaModulationFrequencyDivision.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaModulationFrequencyDivision.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditFpgaModulationCycle.argtypes = [AuditLinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaModulationCycle.restype = ctypes.c_uint32
+
+        self.dll.AUTDLinkAuditFpgaModulation.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaModulation.restype = None
+
+        self.dll.AUTDLinkAuditFpgaDutiesAndPhases.argtypes = [AuditLinkPtr, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16), ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaDutiesAndPhases.restype = None
 
         self.dll.AUTDLinkBundle.argtypes = [LinkPtr, LinkPtr]  # type: ignore 
         self.dll.AUTDLinkBundle.restype = LinkPtr
@@ -660,6 +772,114 @@ class NativeMethods(metaclass=Singleton):
 
     def software_stm(self, cnt: ControllerPtr, callback: ctypes.c_void_p, context: ctypes.c_void_p, timer_strategy: TimerStrategy, interval_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSoftwareSTM(cnt, callback, context, timer_strategy, interval_ns, err)
+
+    def link_audit(self) -> LinkPtr:
+        return self.dll.AUTDLinkAudit()
+
+    def link_audit_with_timeout(self, test: LinkPtr, timeout_ns: int) -> LinkPtr:
+        return self.dll.AUTDLinkAuditWithTimeout(test, timeout_ns)
+
+    def get_link(self, cnt: ControllerPtr) -> AuditLinkPtr:
+        return self.dll.AUTDGetLink(cnt)
+
+    def link_audit_is_open(self, audit: AuditLinkPtr) -> ctypes.c_bool:
+        return self.dll.AUTDLinkAuditIsOpen(audit)
+
+    def link_audit_timeout_ns(self, audit: AuditLinkPtr) -> ctypes.c_uint64:
+        return self.dll.AUTDLinkAuditTimeoutNs(audit)
+
+    def link_audit_last_timeout_ns(self, audit: AuditLinkPtr) -> ctypes.c_uint64:
+        return self.dll.AUTDLinkAuditLastTimeoutNs(audit)
+
+    def link_audit_down(self, audit: AuditLinkPtr) -> None:
+        return self.dll.AUTDLinkAuditDown(audit)
+
+    def link_audit_up(self, audit: AuditLinkPtr) -> None:
+        return self.dll.AUTDLinkAuditUp(audit)
+
+    def link_audit_break_down(self, audit: AuditLinkPtr) -> None:
+        return self.dll.AUTDLinkAuditBreakDown(audit)
+
+    def link_audit_repair(self, audit: AuditLinkPtr) -> None:
+        return self.dll.AUTDLinkAuditRepair(audit)
+
+    def link_audit_cpu_update(self, audit: AuditLinkPtr, idx: int) -> None:
+        return self.dll.AUTDLinkAuditCpuUpdate(audit, idx)
+
+    def link_audit_cpu_idx(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditCpuIdx(audit, idx)
+
+    def link_audit_cpu_num_transducers(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditCpuNumTransducers(audit, idx)
+
+    def link_audit_cpu_ack(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint8:
+        return self.dll.AUTDLinkAuditCpuAck(audit, idx)
+
+    def link_audit_cpu_rx_data(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint8:
+        return self.dll.AUTDLinkAuditCpuRxData(audit, idx)
+
+    def link_audit_cpu_fpga_flags(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint8:
+        return self.dll.AUTDLinkAuditCpuFpgaFlags(audit, idx)
+
+    def link_audit_fpga_assert_thermal_sensor(self, audit: AuditLinkPtr, idx: int) -> None:
+        return self.dll.AUTDLinkAuditFpgaAssertThermalSensor(audit, idx)
+
+    def link_audit_fpga_deassert_thermal_sensor(self, audit: AuditLinkPtr, idx: int) -> None:
+        return self.dll.AUTDLinkAuditFpgaDeassertThermalSensor(audit, idx)
+
+    def link_audit_fpga_is_legacy_mode(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_bool:
+        return self.dll.AUTDLinkAuditFpgaIsLegacyMode(audit, idx)
+
+    def link_audit_fpga_is_force_fan(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_bool:
+        return self.dll.AUTDLinkAuditFpgaIsForceFan(audit, idx)
+
+    def link_audit_fpga_is_stm_mode(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_bool:
+        return self.dll.AUTDLinkAuditFpgaIsStmMode(audit, idx)
+
+    def link_audit_fpga_is_stm_gain_mode(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_bool:
+        return self.dll.AUTDLinkAuditFpgaIsStmGainMode(audit, idx)
+
+    def link_audit_fpga_silencer_step(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint16:
+        return self.dll.AUTDLinkAuditFpgaSilencerStep(audit, idx)
+
+    def link_audit_fpga_cycles(self, audit: AuditLinkPtr, idx: int, cycles: ctypes.Array[ctypes.c_uint16]) -> None:
+        return self.dll.AUTDLinkAuditFpgaCycles(audit, idx, cycles)
+
+    def link_audit_fpga_mod_delays(self, audit: AuditLinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16]) -> None:
+        return self.dll.AUTDLinkAuditFpgaModDelays(audit, idx, delay)
+
+    def link_audit_fpga_duty_filters(self, audit: AuditLinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16]) -> None:
+        return self.dll.AUTDLinkAuditFpgaDutyFilters(audit, idx, filters)
+
+    def link_audit_fpga_phase_filters(self, audit: AuditLinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16]) -> None:
+        return self.dll.AUTDLinkAuditFpgaPhaseFilters(audit, idx, filters)
+
+    def link_audit_fpga_stm_frequency_division(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditFpgaStmFrequencyDivision(audit, idx)
+
+    def link_audit_fpga_stm_cycle(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditFpgaStmCycle(audit, idx)
+
+    def link_audit_fpga_sound_speed(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditFpgaSoundSpeed(audit, idx)
+
+    def link_audit_fpga_stm_start_idx(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_int32:
+        return self.dll.AUTDLinkAuditFpgaStmStartIdx(audit, idx)
+
+    def link_audit_fpga_stm_finish_idx(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_int32:
+        return self.dll.AUTDLinkAuditFpgaStmFinishIdx(audit, idx)
+
+    def link_audit_fpga_modulation_frequency_division(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditFpgaModulationFrequencyDivision(audit, idx)
+
+    def link_audit_fpga_modulation_cycle(self, audit: AuditLinkPtr, idx: int) -> ctypes.c_uint32:
+        return self.dll.AUTDLinkAuditFpgaModulationCycle(audit, idx)
+
+    def link_audit_fpga_modulation(self, audit: AuditLinkPtr, idx: int, data: ctypes.Array[ctypes.c_uint8]) -> None:
+        return self.dll.AUTDLinkAuditFpgaModulation(audit, idx, data)
+
+    def link_audit_fpga_duties_and_phases(self, audit: AuditLinkPtr, idx: int, stm_idx: int, duties: ctypes.Array[ctypes.c_uint16], phases: ctypes.Array[ctypes.c_uint16]) -> None:
+        return self.dll.AUTDLinkAuditFpgaDutiesAndPhases(audit, idx, stm_idx, duties, phases)
 
     def link_bundle(self, main: LinkPtr, sub: LinkPtr) -> LinkPtr:
         return self.dll.AUTDLinkBundle(main, sub)
