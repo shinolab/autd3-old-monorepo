@@ -6,6 +6,7 @@
 - Fix [#167](https://github.com/shinolab/autd3/issues/167): [Python] Gain.with_cache cause an error
 - Fix [#168](https://github.com/shinolab/autd3/issues/168): [Python] GainSTM has from_sampling_frequency_division instead with_sampling_frequency_division
 - Fix [#169](https://github.com/shinolab/autd3/issues/168): Slightly different duty ratios in Legacy and Advanced modes
+- Fix [#170](https://github.com/shinolab/autd3/issues/170): Add sampling period settings for STM in capi
 
 # 15.1.1
 
