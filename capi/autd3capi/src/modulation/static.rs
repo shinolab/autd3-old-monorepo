@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 20/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,15 +30,6 @@ pub unsafe extern "C" fn AUTDModulationStaticWithAmp(
     ModulationPtr::new(take_mod!(m, Static).with_amp(amp))
 }
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationStaticWithSamplingFrequencyDivision(
-    m: ModulationPtr,
-    div: u32,
-) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Static).with_sampling_frequency_division(div))
-}
-
 #[cfg(test)]
 mod tests {
     use std::ffi::c_char;
@@ -56,8 +47,6 @@ mod tests {
 
             let m = AUTDModulationStatic();
             let m = AUTDModulationStaticWithAmp(m, 1.);
-            let div = 10240;
-            let m = AUTDModulationStaticWithSamplingFrequencyDivision(m, div);
 
             let m = AUTDModulationIntoDatagram(m);
 

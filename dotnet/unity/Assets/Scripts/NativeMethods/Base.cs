@@ -238,8 +238,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, float amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m, uint div);
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDFocusSTM(STMPropsPtr props, float[]? points, byte[]? shift, ulong size);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDGainSTM(STMPropsPtr props, GainPtr[]? gains, uint size, GainSTMMode mode);

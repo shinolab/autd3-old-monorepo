@@ -373,9 +373,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationStaticWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationStaticWithAmp.restype = ModulationPtr
 
-        self.dll.AUTDModulationStaticWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDModulationStaticWithSamplingFrequencyDivision.restype = ModulationPtr
-
         self.dll.AUTDFocusSTM.argtypes = [STMPropsPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDFocusSTM.restype = DatagramPtr
 
@@ -756,9 +753,6 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_static_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
         return self.dll.AUTDModulationStaticWithAmp(m, amp)
-
-    def modulation_static_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
-        return self.dll.AUTDModulationStaticWithSamplingFrequencyDivision(m, div)
 
     def focus_stm(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double], shift: ctypes.Array[ctypes.c_uint8], size: int) -> DatagramPtr:
         return self.dll.AUTDFocusSTM(props, points, shift, size)
