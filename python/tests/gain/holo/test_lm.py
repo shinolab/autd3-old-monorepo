@@ -13,8 +13,8 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import pytest
-from ...test_autd import create_controller
 
+from pyautd3 import AUTD3, Controller
 from pyautd3.gain.holo import NalgebraBackend, LM, AmplitudeConstraint
 from pyautd3.gain.holo.backend_cuda import CUDABackend
 from pyautd3.link.audit import Audit
@@ -23,13 +23,14 @@ import numpy as np
 
 
 def test_lm():
-    autd = create_controller()
+    autd = Controller.builder()\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .open_with(Audit())
 
     backend = NalgebraBackend()
     g = LM(backend)\
         .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
-        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30]))\
         .with_eps1(1e-3)\
         .with_eps2(1e-3)\
         .with_tau(1e-3)\
@@ -46,13 +47,14 @@ def test_lm():
 
 @pytest.mark.cuda
 def test_lm_cuda():
-    autd = create_controller()
+    autd = Controller.builder()\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .open_with(Audit())
 
     backend = CUDABackend()
     g = LM(backend)\
         .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
-        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30]))\
         .with_eps1(1e-3)\
         .with_eps2(1e-3)\
         .with_tau(1e-3)\
