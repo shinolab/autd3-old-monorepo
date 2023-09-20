@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 20/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,5 +35,16 @@ namespace AUTD3Sharp.Internal
         public DatagramPtr Ptr(Geometry geometry) => Base.AUTDModulationIntoDatagram(ModulationPtr());
 
         public abstract ModulationPtr ModulationPtr();
+
+        public int Length
+        {
+            get
+            {
+                var err = new byte[256];
+                var n = Base.AUTDModulationSize(ModulationPtr(), err);
+                if (n < 0) throw new AUTDException(err);
+                return n;
+            }
+        }
     }
 }

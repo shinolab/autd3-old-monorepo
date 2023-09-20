@@ -41,6 +41,13 @@ class IModulation(Datagram, metaclass=ABCMeta):
     def sampling_frequency(self) -> float:
         return AUTD3.fpga_sub_clk_freq() / self.sampling_frequency_division
 
+    def __len__(self):
+        err = create_string_buffer(256)
+        n = Base().modulation_size(self.modulation_ptr(), err)
+        if n < 0:
+            raise AUTDError(err)
+        return int(n)
+
     @abstractmethod
     def modulation_ptr(self) -> ModulationPtr:
         pass

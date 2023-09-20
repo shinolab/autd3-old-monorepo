@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 20/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,6 +39,13 @@ class Modulation : public Datagram {
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return AUTDModulationIntoDatagram(modulation_ptr()); }
 
   [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
+
+  [[nodiscard]] size_t size() const {
+    char err[256]{};
+    const int32_t n = native_methods::AUTDModulationSize(modulation_ptr(), err);
+    if (n < 0) throw AUTDException(err);
+    return static_cast<size_t>(n);
+  }
 };
 
 #define AUTD3_IMPL_WITH_CACHE_MODULATION                                 \

@@ -86,15 +86,15 @@ let div = m.sampling_frequency_division();
 ```
 
 ```cpp
-const auto fs = m.sampling_frequency_division();
+const auto div = m.sampling_frequency_division();
 ```
 
 ```cs
-var fs = m.SamplingFrequencyDivision;
+var div = m.SamplingFrequencyDivision;
 ```
 
 ```python
-fs = m.sampling_frequency_division
+div = m.sampling_frequency_division
 ```
 
 Some `Modulation` can set the sampling frequency division with `with_sampling_frequency_division`.
@@ -120,6 +120,34 @@ Some `Modulation` can set the sampling frequency division with `with_sampling_fr
   ```python
   m = Sine(150).with_sampling_frequency_division(5120)
   ```
+
+### Modulation data size
+
+The modulation data size can be obtained as follows.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let n = m.len();
+# Ok(())
+# }
+```
+
+```cpp
+const auto n = m.size();
+```
+
+```cs
+var n = m.Length;
+```
+
+```python
+n = len(m)
+```
+
 
 ## Modulation Delay
 
