@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 20/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AUTD3Sharp.NativeMethods;
 
@@ -31,15 +32,20 @@ namespace AUTD3Sharp.Gain
 
         public override GainPtr GainPtr(Geometry geometry)
         {
-            var drives = geometry.Select(d => new Drive[d.NumTransducers]).ToArray();
             var err = new byte[256];
-            if (Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, drives, err) ==
-                Def.Autd3Err) throw new AUTDException(err);
+            var res = Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, err);
+            if (res._0 == IntPtr.Zero) throw new AUTDException(err);
 
+            var drives = new Dictionary<int, Drive[]>();
             foreach (var dev in geometry)
+            {
+                var d = new Drive[dev.NumTransducers];
+                Base.AUTDGainCalcGetResult(res, d, (uint)dev.Idx);
                 foreach (var tr in dev)
-                    drives[dev.Idx][tr.LocalIdx] = _f(dev, tr, drives[dev.Idx][tr.LocalIdx]);
-
+                    d[tr.LocalIdx] = _f(dev, tr, d[tr.LocalIdx]);
+                drives[dev.Idx] = d;
+            }
+            Base.AUTDGainCalcFreeResult(res);
             return geometry.Aggregate(Base.AUTDGainCustom(), (acc, dev) => Base.AUTDGainCustomSet(acc, (uint)dev.Idx, drives[dev.Idx], (uint)drives[dev.Idx].Length));
         }
     }

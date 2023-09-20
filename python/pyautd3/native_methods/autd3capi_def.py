@@ -96,6 +96,10 @@ class ConstraintPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class GainCalcDrivesMapPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class GroupGainMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 

@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -67,8 +67,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
         self.dll.AUTDGainIntoDatagram.restype = DatagramPtr
 
-        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.POINTER(ctypes.POINTER(Drive)), ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDGainCalc.restype = ctypes.c_int32
+        self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGainCalc.restype = GainCalcDrivesMapPtr
+
+        self.dll.AUTDGainCalcGetResult.argtypes = [GainCalcDrivesMapPtr, ctypes.POINTER(Drive), ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainCalcGetResult.restype = None
+
+        self.dll.AUTDGainCalcFreeResult.argtypes = [GainCalcDrivesMapPtr]  # type: ignore 
+        self.dll.AUTDGainCalcFreeResult.restype = None
 
         self.dll.AUTDGainNull.argtypes = [] 
         self.dll.AUTDGainNull.restype = GainPtr
@@ -448,8 +454,14 @@ class NativeMethods(metaclass=Singleton):
     def gain_into_datagram(self, gain: GainPtr) -> DatagramPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, drives: ctypes.Array, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDGainCalc(gain, geometry, drives, err)
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> GainCalcDrivesMapPtr:
+        return self.dll.AUTDGainCalc(gain, geometry, err)
+
+    def gain_calc_get_result(self, src: GainCalcDrivesMapPtr, dst: ctypes.Array, idx: int) -> None:
+        return self.dll.AUTDGainCalcGetResult(src, dst, idx)
+
+    def gain_calc_free_result(self, src: GainCalcDrivesMapPtr) -> None:
+        return self.dll.AUTDGainCalcFreeResult(src)
 
     def gain_null(self) -> GainPtr:
         return self.dll.AUTDGainNull()
