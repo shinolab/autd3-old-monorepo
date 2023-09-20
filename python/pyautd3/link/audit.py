@@ -39,11 +39,11 @@ class Audit(Link):
 
     @staticmethod
     def is_open(cnt_ptr: ControllerPtr) -> bool:
-        return LinkAudit().link_audit_is_open(LinkAudit().get_link(cnt_ptr))
+        return bool(LinkAudit().link_audit_is_open(LinkAudit().get_link(cnt_ptr)))
 
     @staticmethod
     def last_timeout_ns(cnt_ptr: ControllerPtr) -> int:
-        return LinkAudit().link_audit_last_timeout_ns(LinkAudit().get_link(cnt_ptr))
+        return int(LinkAudit().link_audit_last_timeout_ns(LinkAudit().get_link(cnt_ptr)))
 
     @staticmethod
     def up(cnt_ptr: ControllerPtr):
@@ -54,34 +54,34 @@ class Audit(Link):
         return LinkAudit().link_audit_break_down(LinkAudit().get_link(cnt_ptr))
 
     @staticmethod
-    def update(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return LinkAudit().link_audit_cpu_update(LinkAudit().get_link(cnt_ptr), idx)
+    def update(cnt_ptr: ControllerPtr, idx: int):
+        LinkAudit().link_audit_cpu_update(LinkAudit().get_link(cnt_ptr), idx)
 
     @staticmethod
     def fpga_flags(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return LinkAudit().link_audit_cpu_fpga_flags(LinkAudit().get_link(cnt_ptr), idx)
+        return int(LinkAudit().link_audit_cpu_fpga_flags(LinkAudit().get_link(cnt_ptr), idx))
 
     @staticmethod
     def is_legacy(cnt_ptr: ControllerPtr, idx: int) -> bool:
-        return LinkAudit().link_audit_fpga_is_legacy_mode(LinkAudit().get_link(cnt_ptr), idx)
+        return bool(LinkAudit().link_audit_fpga_is_legacy_mode(LinkAudit().get_link(cnt_ptr), idx))
 
     @staticmethod
     def silencer_step(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return LinkAudit().link_audit_fpga_silencer_step(LinkAudit().get_link(cnt_ptr), idx)
+        return int(LinkAudit().link_audit_fpga_silencer_step(LinkAudit().get_link(cnt_ptr), idx))
 
     @staticmethod
-    def assert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return LinkAudit().link_audit_fpga_assert_thermal_sensor(LinkAudit().get_link(cnt_ptr), idx)
+    def assert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int):
+        LinkAudit().link_audit_fpga_assert_thermal_sensor(LinkAudit().get_link(cnt_ptr), idx)
 
     @staticmethod
-    def deassert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return LinkAudit().link_audit_fpga_deassert_thermal_sensor(LinkAudit().get_link(cnt_ptr), idx)
+    def deassert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int):
+        LinkAudit().link_audit_fpga_deassert_thermal_sensor(LinkAudit().get_link(cnt_ptr), idx)
 
     @staticmethod
     def modulation(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = LinkAudit().link_audit_fpga_modulation_cycle(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_fpga_modulation_cycle(LinkAudit().get_link(cnt_ptr), idx))
         buf = np.zeros([n]).astype(np.uint8)
-        LinkAudit().link_audit_fpga_modulation(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))
+        LinkAudit().link_audit_fpga_modulation(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
     @staticmethod
@@ -90,39 +90,39 @@ class Audit(Link):
 
     @staticmethod
     def cycles(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx))
         buf = np.zeros([n]).astype(np.uint16)
-        LinkAudit().link_audit_fpga_cycles(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))
+        LinkAudit().link_audit_fpga_cycles(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
     @staticmethod
     def mod_delays(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx))
         buf = np.zeros([n]).astype(np.uint16)
-        LinkAudit().link_audit_fpga_mod_delays(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))
+        LinkAudit().link_audit_fpga_mod_delays(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
     @staticmethod
     def duty_filters(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx))
         buf = np.zeros([n]).astype(np.int16)
-        LinkAudit().link_audit_fpga_duty_filters(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))
+        LinkAudit().link_audit_fpga_duty_filters(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
     @staticmethod
     def phase_filters(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx))
         buf = np.zeros([n]).astype(np.int16)
-        LinkAudit().link_audit_fpga_phase_filters(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))
+        LinkAudit().link_audit_fpga_phase_filters(LinkAudit().get_link(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
     @staticmethod
     def duties_and_phases(cnt_ptr: ControllerPtr, idx: int, stm_idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        n = LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx)
+        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().get_link(cnt_ptr), idx))
         duties = np.zeros([n]).astype(np.uint16)
         phases = np.zeros([n]).astype(np.uint16)
         LinkAudit().link_audit_fpga_duties_and_phases(LinkAudit().get_link(cnt_ptr),
-                                                      idx, stm_idx, np.ctypeslib.as_ctypes(duties), np.ctypeslib.as_ctypes(phases))
+                                                      idx, stm_idx, np.ctypeslib.as_ctypes(duties), np.ctypeslib.as_ctypes(phases))  # type: ignore
         return (duties, phases)
 
     @staticmethod
