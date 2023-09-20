@@ -2,6 +2,7 @@
 
 - Fix [#163](https://github.com/shinolab/autd3/issues/163): FirmwareInfo.latest_version still returns "v3.0.0"
 - Fix [#165](https://github.com/shinolab/autd3/issues/165): [Python] missing with_amp methods in Plane
+- Fix [#166](https://github.com/shinolab/autd3/issues/166): There is no way to get modulation size
 
 # 15.1.1
 
