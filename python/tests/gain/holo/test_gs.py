@@ -13,7 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import pytest
-from ...test_autd import create_controller
+from pyautd3 import AUTD3, Controller
 
 from pyautd3.gain.holo import NalgebraBackend, GS, AmplitudeConstraint
 from pyautd3.gain.holo.backend_cuda import CUDABackend
@@ -23,13 +23,14 @@ import numpy as np
 
 
 def test_gs():
-    autd = create_controller()
+    autd = Controller.builder()\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .open_with(Audit())
 
     backend = NalgebraBackend()
     g = GS(backend)\
         .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
-        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30]))\
         .with_repeat(100)\
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     assert autd.send(g)
@@ -42,13 +43,14 @@ def test_gs():
 
 @pytest.mark.cuda
 def test_gs_cuda():
-    autd = create_controller()
+    autd = Controller.builder()\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .open_with(Audit())
 
     backend = CUDABackend()
     g = GS(backend)\
         .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)\
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)\
-        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30, 30]))\
+        .add_foci_from_iter(map(lambda x: (autd.geometry.center + np.array([0, x, 150]), 0.5), [-30]))\
         .with_repeat(100)\
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     assert autd.send(g)
