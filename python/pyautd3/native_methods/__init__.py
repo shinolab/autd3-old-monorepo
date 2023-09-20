@@ -14,6 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import os
 import os.path
 import platform
+import sys
 
 from .autd3capi import NativeMethods as Base
 from .autd3capi_gain_holo import NativeMethods as GainHolo
@@ -21,7 +22,6 @@ from .autd3capi_modulation_audio_file import NativeMethods as ModulationAudioFil
 from .autd3capi_link_simulator import NativeMethods as LinkSimulator
 from .autd3capi_link_twincat import NativeMethods as LinkTwincAT
 from .autd3capi_link_soem import NativeMethods as LinkSOEM
-from .autd3capi_simulator import NativeMethods as ExtraSimulator
 from .autd3capi_geometry_viewer import NativeMethods as ExtraGeometryViewer
 from .autd3capi_backend_cuda import NativeMethods as BackendCUDA
 
@@ -47,6 +47,7 @@ ModulationAudioFile().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkSimulator().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkSOEM().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
-ExtraSimulator().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraGeometryViewer().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
+if sys.platform == "win32":
+    os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
 BackendCUDA().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
