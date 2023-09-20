@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 from abc import ABCMeta, abstractmethod
+from datetime import timedelta
 import functools
 from typing import Optional, List, Tuple, Union
 from collections.abc import Iterable
@@ -35,6 +36,7 @@ class STM(Datagram, metaclass=ABCMeta):
     _freq: Optional[float]
     _sampling_freq: Optional[float]
     _sampling_freq_div: Optional[int]
+    _sampling_period: Optional[timedelta]
     _start_idx: int
     _finish_idx: int
 
@@ -43,29 +45,31 @@ class STM(Datagram, metaclass=ABCMeta):
         freq: Optional[float],
         sampling_freq: Optional[float],
         sampling_freq_div: Optional[int],
+        sampling_period: Optional[timedelta]
     ):
         super().__init__()
         self._freq = freq
         self._sampling_freq = sampling_freq
         self._sampling_freq_div = sampling_freq_div
+        self._sampling_period = sampling_period
         self._start_idx = -1
         self._finish_idx = -1
 
     @property
     def start_idx(self) -> Optional[int]:
-        idx = int(Base().stm_props_start_idx(self.props()))
+        idx = int(Base().stm_props_start_idx(self._props()))
         if idx < 0:
             return None
         return idx
 
     @property
     def finish_idx(self) -> Optional[int]:
-        idx = int(Base().stm_props_finish_idx(self.props()))
+        idx = int(Base().stm_props_finish_idx(self._props()))
         if idx < 0:
             return None
         return idx
 
-    def props(self) -> STMPropsPtr:
+    def _props(self) -> STMPropsPtr:
         ptr: STMPropsPtr
         if self._freq is not None:
             ptr = Base().stm_props(self._freq)
@@ -73,18 +77,23 @@ class STM(Datagram, metaclass=ABCMeta):
             ptr = Base().stm_props_with_sampling_freq(self._sampling_freq)
         if self._sampling_freq_div is not None:
             ptr = Base().stm_props_with_sampling_freq_div(self._sampling_freq_div)
+        if self._sampling_period is not None:
+            ptr = Base().stm_props_with_sampling_period(int(self._sampling_period.total_seconds() * 1000 * 1000 * 1000))
         ptr = Base().stm_props_with_start_idx(ptr, self._start_idx)
         ptr = Base().stm_props_with_finish_idx(ptr, self._finish_idx)
         return ptr
 
-    def frequency_from_size(self, size: int) -> float:
-        return float(Base().stm_props_frequency(self.props(), size))
+    def _frequency_from_size(self, size: int) -> float:
+        return float(Base().stm_props_frequency(self._props(), size))
 
-    def sampling_frequency_from_size(self, size: int) -> float:
-        return float(Base().stm_props_sampling_frequency(self.props(), size))
+    def _sampling_frequency_from_size(self, size: int) -> float:
+        return float(Base().stm_props_sampling_frequency(self._props(), size))
 
-    def sampling_frequency_division_from_size(self, size: int) -> int:
-        return int(Base().stm_props_sampling_frequency_division(self.props(), size))
+    def _sampling_frequency_division_from_size(self, size: int) -> int:
+        return int(Base().stm_props_sampling_frequency_division(self._props(), size))
+
+    def _sampling_period_from_size(self, size: int) -> timedelta:
+        return timedelta(microseconds=int(Base().stm_props_sampling_period(self._props(), size)) / 1000)
 
     @abstractmethod
     def ptr(self, _: Geometry) -> DatagramPtr:
@@ -100,8 +109,9 @@ class FocusSTM(STM):
         freq: Optional[float],
         sampling_freq: Optional[float] = None,
         sampling_freq_div: Optional[int] = None,
+        sampling_period: Optional[timedelta] = None,
     ):
-        super().__init__(freq, sampling_freq, sampling_freq_div)
+        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
         self._points = []
         self._duty_shifts = []
 
@@ -110,15 +120,19 @@ class FocusSTM(STM):
         shifts = np.ctypeslib.as_ctypes(
             np.array(self._duty_shifts).astype(ctypes.c_uint8)
         )
-        return Base().focus_stm(self.props(), points, shifts, len(self._duty_shifts))
+        return Base().focus_stm(self._props(), points, shifts, len(self._duty_shifts))
 
     @staticmethod
     def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
-        return FocusSTM(None, sampling_freq, None)
+        return FocusSTM(None, sampling_freq, None, None)
 
     @staticmethod
     def with_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
-        return FocusSTM(None, None, sampling_freq_div)
+        return FocusSTM(None, None, sampling_freq_div, None)
+
+    @staticmethod
+    def with_sampling_period(sampling_period: timedelta) -> "FocusSTM":
+        return FocusSTM(None, None, None, sampling_period)
 
     def add_focus(self, point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
         self._points.append(point[0])
@@ -140,15 +154,19 @@ class FocusSTM(STM):
 
     @property
     def frequency(self) -> float:
-        return self.frequency_from_size(len(self._duty_shifts))
+        return self._frequency_from_size(len(self._duty_shifts))
 
     @property
     def sampling_frequency(self) -> float:
-        return self.sampling_frequency_from_size(len(self._duty_shifts))
+        return self._sampling_frequency_from_size(len(self._duty_shifts))
 
     @property
     def sampling_frequency_division(self) -> int:
-        return self.sampling_frequency_division_from_size(len(self._duty_shifts))
+        return self._sampling_frequency_division_from_size(len(self._duty_shifts))
+
+    @property
+    def sampling_period(self) -> timedelta:
+        return self._sampling_period_from_size(len(self._duty_shifts))
 
     def with_start_idx(self, value: Optional[int]) -> "FocusSTM":
         self._start_idx = -1 if value is None else value
@@ -168,8 +186,9 @@ class GainSTM(STM):
         freq: Optional[float],
         sampling_freq: Optional[float] = None,
         sampling_freq_div: Optional[int] = None,
+        sampling_period: Optional[timedelta] = None,
     ):
-        super().__init__(freq, sampling_freq, sampling_freq_div)
+        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
         self._gains = []
         self._mode = GainSTMMode.PhaseDutyFull
 
@@ -177,17 +196,21 @@ class GainSTM(STM):
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
             gains[i]["_0"] = g.gain_ptr(geometry)._0
-        return Base().gain_stm(self.props(),
+        return Base().gain_stm(self._props(),
                                gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore
                                len(self._gains), self._mode)
 
     @staticmethod
     def from_sampling_frequency(sampling_freq: float) -> "GainSTM":
-        return GainSTM(None, sampling_freq, None)
+        return GainSTM(None, sampling_freq, None, None)
 
     @staticmethod
     def from_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
-        return GainSTM(None, None, sampling_freq_div)
+        return GainSTM(None, None, sampling_freq_div, None)
+
+    @staticmethod
+    def from_sampling_period(sampling_period: timedelta) -> "GainSTM":
+        return GainSTM(None, None, None, sampling_period)
 
     def add_gain(self, gain: IGain) -> "GainSTM":
         self._gains.append(gain)
@@ -199,15 +222,19 @@ class GainSTM(STM):
 
     @property
     def frequency(self) -> float:
-        return self.frequency_from_size(len(self._gains))
+        return self._frequency_from_size(len(self._gains))
 
     @property
     def sampling_frequency(self) -> float:
-        return self.sampling_frequency_from_size(len(self._gains))
+        return self._sampling_frequency_from_size(len(self._gains))
 
     @property
     def sampling_frequency_division(self) -> int:
-        return self.sampling_frequency_division_from_size(len(self._gains))
+        return self._sampling_frequency_division_from_size(len(self._gains))
+
+    @property
+    def sampling_period(self) -> timedelta:
+        return self._sampling_period_from_size(len(self._gains))
 
     def with_mode(self, mode: GainSTMMode) -> "GainSTM":
         self._mode = mode

@@ -1,3 +1,7 @@
+# 15.1.2
+
+- Fix [#170](https://github.com/shinolab/autd3/issues/170): Add sampling period settings for STM in capi
+
 # 15.1.1
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
