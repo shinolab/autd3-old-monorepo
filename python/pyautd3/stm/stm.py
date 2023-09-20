@@ -182,11 +182,11 @@ class GainSTM(STM):
                                len(self._gains), self._mode)
 
     @staticmethod
-    def from_sampling_frequency(sampling_freq: float) -> "GainSTM":
+    def with_sampling_frequency(sampling_freq: float) -> "GainSTM":
         return GainSTM(None, sampling_freq, None)
 
     @staticmethod
-    def from_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
+    def with_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
         return GainSTM(None, None, sampling_freq_div)
 
     def add_gain(self, gain: IGain) -> "GainSTM":
