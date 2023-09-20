@@ -27,7 +27,7 @@ class CUDABackend(Backend):
     def __init__(self):
         err = ctypes.create_string_buffer(256)
         ptr = AUTD3BackendCUDA().cuda_backend(err)
-        if self._ptr._0 is None:
+        if ptr._0 is None:
             raise AUTDError(err)
         super().__init__(ptr)
 
