@@ -65,7 +65,7 @@ class Cache(IGain):
 
             for dev in geometry:
                 drives = np.zeros(dev.num_transducers, dtype=Drive)
-                Base().gain_calc_get_result(res, drives.ctypes.data_as(POINTER(Drive)), dev.idx)
+                Base().gain_calc_get_result(res, drives.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
                 self._cache[dev.idx] = drives
             Base().gain_calc_free_result(res)
 
@@ -96,9 +96,10 @@ class Transform(IGain):
         drives: Dict[int, np.ndarray] = {}
         for dev in geometry:
             d = np.zeros(dev.num_transducers, dtype=Drive)
-            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)
+
+            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
             for tr in dev:
-                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))
+                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))  # type: ignore
             drives[dev.idx] = d
 
         Base().gain_calc_free_result(res)
