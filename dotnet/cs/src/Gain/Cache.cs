@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 20/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 #define USE_SINGLE
 #endif
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AUTD3Sharp.NativeMethods;
@@ -39,11 +40,16 @@ namespace AUTD3Sharp.Gain
         {
             var deviceIndices = geometry.Select(d => d.Idx).ToArray();
             if (_cache.Count == geometry.NumDevices && deviceIndices.All(i => _cache.ContainsKey(i))) return;
-            var drives = geometry.Select(d => new Drive[d.NumTransducers]).ToArray();
             var err = new byte[256];
-            if (Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, drives, err) ==
-                Def.Autd3Err) throw new AUTDException(err);
-            for (var i = 0; i < geometry.NumDevices; i++) _cache[deviceIndices[i]] = drives[i];
+            var res = Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, err);
+            if (res._0 == IntPtr.Zero) throw new AUTDException(err);
+            foreach (var dev in geometry)
+            {
+                var drives = new Drive[dev.NumTransducers];
+                Base.AUTDGainCalcGetResult(res, drives, (uint)dev.Idx);
+                _cache[dev.Idx] = drives;
+            }
+            Base.AUTDGainCalcFreeResult(res);
         }
 
         public override GainPtr GainPtr(Geometry geometry)

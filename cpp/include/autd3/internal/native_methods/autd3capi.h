@@ -126,11 +126,11 @@ int32_t AUTDSoftwareSTM(ControllerPtr cnt,
 
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
-[[nodiscard]]
-int32_t AUTDGainCalc(GainPtr gain,
-                     GeometryPtr geometry,
-                     Drive *const *drives,
-                     char *err);
+[[nodiscard]] GainCalcDrivesMapPtr AUTDGainCalc(GainPtr gain, GeometryPtr geometry, char *err);
+
+void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive *dst, uint32_t idx);
+
+void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
 
 [[nodiscard]]
 GainPtr AUTDGainBessel(double x,
