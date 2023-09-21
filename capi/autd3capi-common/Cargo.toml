@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-common"
-version = "15.1.1"
+version = "15.1.2"
 edition = "2021"
 license = "MIT"
 
