@@ -213,7 +213,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=armv7-unknown-linux-gnueabihf --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire --exclude autd3-geometry-viewer
 
 
     - name: Build examples
@@ -297,7 +297,7 @@ jobs:
     - name: Build src
       run: |
         cd src
-        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire
+        cargo build --all --release --target=aarch64-unknown-linux-gnu --exclude autd3-backend-cuda --exclude autd3-link-visualizer --exclude autd3-backend-arrayfire --exclude autd3-geometry-viewer
 
     
     - name: Build examples
