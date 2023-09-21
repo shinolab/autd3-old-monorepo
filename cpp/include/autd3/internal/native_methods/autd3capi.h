@@ -368,8 +368,6 @@ void AUTDLinkAuditFpgaDutiesAndPhases(AuditLinkPtr audit,
 
 [[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
 
-[[nodiscard]] int32_t AUTDModulationCalc(ModulationPtr m, double *buffer, char *err);
-
 [[nodiscard]] ModulationCachePtr AUTDModulationWithCache(ModulationPtr m, char *err);
 
 [[nodiscard]] uint32_t AUTDModulationCacheGetBufferSize(ModulationCachePtr m);

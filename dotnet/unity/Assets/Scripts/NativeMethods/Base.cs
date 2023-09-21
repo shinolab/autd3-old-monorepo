@@ -290,8 +290,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDModulationSize(ModulationPtr m, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDModulationCalc(ModulationPtr m, float[] buffer, byte[] err);
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWithRadiationPressure(ModulationPtr m);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationSine(uint freq);

@@ -459,9 +459,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSize.argtypes = [ModulationPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDModulationSize.restype = ctypes.c_int32
 
-        self.dll.AUTDModulationCalc.argtypes = [ModulationPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDModulationCalc.restype = ctypes.c_int32
-
         self.dll.AUTDModulationWithRadiationPressure.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationWithRadiationPressure.restype = ModulationPtr
 
@@ -974,9 +971,6 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_size(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDModulationSize(m, err)
-
-    def modulation_calc(self, m: ModulationPtr, buffer: ctypes.Array[ctypes.c_double], err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDModulationCalc(m, buffer, err)
 
     def modulation_with_radiation_pressure(self, m: ModulationPtr) -> ModulationPtr:
         return self.dll.AUTDModulationWithRadiationPressure(m)
