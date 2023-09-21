@@ -17,6 +17,10 @@ class AuditLinkPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class ModulationCachePtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class Drive(ctypes.Structure):
     _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_double)]
 
@@ -409,6 +413,21 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkLogWithLogFunc.argtypes = [LinkPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
         self.dll.AUTDLinkLogWithLogFunc.restype = LinkPtr
+
+        self.dll.AUTDModulationWithCache.argtypes = [ModulationPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDModulationWithCache.restype = ModulationCachePtr
+
+        self.dll.AUTDModulationCacheGetBufferSize.argtypes = [ModulationCachePtr]  # type: ignore 
+        self.dll.AUTDModulationCacheGetBufferSize.restype = ctypes.c_uint32
+
+        self.dll.AUTDModulationCacheGetBuffer.argtypes = [ModulationCachePtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDModulationCacheGetBuffer.restype = None
+
+        self.dll.AUTDModulationCacheIntoModulation.argtypes = [ModulationCachePtr]  # type: ignore 
+        self.dll.AUTDModulationCacheIntoModulation.restype = ModulationPtr
+
+        self.dll.AUTDModulationCacheDelete.argtypes = [ModulationCachePtr]  # type: ignore 
+        self.dll.AUTDModulationCacheDelete.restype = None
 
         self.dll.AUTDModulationCustom.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
         self.dll.AUTDModulationCustom.restype = ModulationPtr
@@ -910,6 +929,21 @@ class NativeMethods(metaclass=Singleton):
 
     def link_log_with_log_func(self, log: LinkPtr, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> LinkPtr:
         return self.dll.AUTDLinkLogWithLogFunc(log, out_func, flush_func)
+
+    def modulation_with_cache(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ModulationCachePtr:
+        return self.dll.AUTDModulationWithCache(m, err)
+
+    def modulation_cache_get_buffer_size(self, m: ModulationCachePtr) -> ctypes.c_uint32:
+        return self.dll.AUTDModulationCacheGetBufferSize(m)
+
+    def modulation_cache_get_buffer(self, m: ModulationCachePtr, buf: ctypes.Array[ctypes.c_double]) -> None:
+        return self.dll.AUTDModulationCacheGetBuffer(m, buf)
+
+    def modulation_cache_into_modulation(self, m: ModulationCachePtr) -> ModulationPtr:
+        return self.dll.AUTDModulationCacheIntoModulation(m)
+
+    def modulation_cache_delete(self, m: ModulationCachePtr) -> None:
+        return self.dll.AUTDModulationCacheDelete(m)
 
     def modulation_custom(self, freq_div: int, ptr: ctypes.Array[ctypes.c_double], len: int) -> ModulationPtr:
         return self.dll.AUTDModulationCustom(freq_div, ptr, len)

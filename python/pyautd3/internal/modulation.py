@@ -15,12 +15,12 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 import ctypes
 import numpy as np
-from ctypes import c_double, create_string_buffer
+from ctypes import create_string_buffer
 from typing import Callable, Iterator
 
+from pyautd3.native_methods.autd3capi import ModulationCachePtr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import DatagramPtr, ModulationPtr
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.autd import Datagram
@@ -64,20 +64,19 @@ class IModulation(Datagram, metaclass=ABCMeta):
 
 
 class Cache(IModulation):
-    _freq_div: int
+    _cache: ModulationCachePtr
     _buffer: np.ndarray
 
     def __init__(self, m: IModulation):
-        self._freq_div = m.sampling_frequency_division
-
         err = create_string_buffer(256)
-        size = Base().modulation_size(m.modulation_ptr(), err)
-        if size == AUTD3_ERR:
+        cache = Base().modulation_with_cache(m.modulation_ptr(), err)
+        if cache._0 is None:
             raise AUTDError(err)
-        self._buffer = np.zeros(int(size), dtype=c_double)
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
-            raise AUTDError(err)
+        self._cache = cache
+
+        n = int(Base().modulation_cache_get_buffer_size(self._cache))
+        self._buffer = np.zeros(n, dtype=float)
+        Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
 
     @property
     def buffer(self) -> np.ndarray:
@@ -90,8 +89,10 @@ class Cache(IModulation):
         return iter(self._buffer)
 
     def modulation_ptr(self) -> ModulationPtr:
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))
+        return Base().modulation_cache_into_modulation(self._cache)
+
+    def __del__(self):
+        Base().modulation_cache_delete(self._cache)
 
 
 class Transform(IModulation):

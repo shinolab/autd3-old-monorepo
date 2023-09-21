@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_derive::Modulation;
 use autd3_driver::derive::prelude::*;
 
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 
 /// Modulation to cache the result of calculation
 #[derive(Modulation)]
@@ -57,11 +57,6 @@ impl Cache {
     pub fn buffer(&self) -> &[float] {
         &self.cache
     }
-
-    /// get cached modulation data mutably
-    pub fn buffer_mut(&mut self) -> &mut [float] {
-        &mut self.cache
-    }
 }
 
 impl Modulation for Cache {
@@ -75,12 +70,6 @@ impl Deref for Cache {
 
     fn deref(&self) -> &Self::Target {
         &self.cache
-    }
-}
-
-impl DerefMut for Cache {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.cache
     }
 }
 
@@ -99,18 +88,10 @@ mod tests {
 
     #[test]
     fn test_cache() {
-        let mut m = Static::new().with_cache().unwrap();
+        let m = Static::new().with_cache().unwrap();
 
         for d in m.calc().unwrap() {
             assert_eq!(d, 1.0);
-        }
-
-        for d in m.iter_mut() {
-            *d = 0.0;
-        }
-
-        for d in m.calc().unwrap() {
-            assert_eq!(d, 0.0);
         }
     }
 

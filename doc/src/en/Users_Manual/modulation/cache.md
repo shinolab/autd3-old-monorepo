@@ -2,8 +2,6 @@
 
 You can cache the calculation result of `Modulation` by `with_cache` method.
 
-Also, you can modify the modulation data.
-
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
@@ -16,7 +14,6 @@ Also, you can modify the modulation data.
 # let m = Static::new();
 // m is some Modulation
 let mut c = m.with_cache()?;
-c[0] = 0.;
 # Ok(())
 # }
 ```
@@ -24,17 +21,14 @@ c[0] = 0.;
 ```cpp
 // m is some Modulation
 auto c = m.with_cache();
-c[0] = 0;
 ```
 
 ```cs
 // m is some Modulation
 var c = m.WithCache();
-c[0] = 0;
 ```
 
 ```python
 # m is some Modulation
 c = m.with_cache()
-c[0] = 0
 ```
