@@ -15,9 +15,6 @@
 
 use autd3capi_def::{common::*, ModulationPtr};
 
-struct ModTransformFuncPtr(ConstPtr);
-unsafe impl Send for ModTransformFuncPtr {}
-
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationWithTransform(
