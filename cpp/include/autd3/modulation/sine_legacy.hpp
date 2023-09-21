@@ -37,7 +37,7 @@ class SineLegacy final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE(SineLegacy)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(SineLegacy)
 
   AUTD3_DEF_PARAM(SineLegacy, double, amp)
   AUTD3_DEF_PARAM(SineLegacy, double, offset)

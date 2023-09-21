@@ -35,7 +35,7 @@ class Square final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE(Square)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Square)
 
   AUTD3_DEF_PARAM(Square, double, low)
   AUTD3_DEF_PARAM(Square, double, high)
