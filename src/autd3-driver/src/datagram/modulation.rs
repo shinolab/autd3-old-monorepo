@@ -56,4 +56,8 @@ impl Modulation for Box<dyn Modulation> {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         self.as_ref().calc()
     }
+    
+    fn len(&self) -> Result<usize, AUTDInternalError> {
+        self.as_ref().len()
+    }
 }
