@@ -7,7 +7,7 @@ The SDK provides `FocusSTM` that supports only a single focus and `GainSTM` that
 - [FocusSTM](./stm/focus.md)
 - [GainSTM](./stm/gain.md)
 
-## FocusSTM/GainSTM API
+## FocusSTM/GainSTM common API
 
 ### frequency
 
@@ -42,7 +42,7 @@ auto stm = autd3::FocusSTM(1).with_start_idx(0);
 ```
 
 ```cs
-var stm = new FocusSTM(1).withStartIdx(0);
+var stm = new FocusSTM(1).WithStartIdx(0);
 ```
 
 ```python
@@ -74,7 +74,7 @@ auto stm = autd3::FocusSTM(1).with_start_idx(std::nullopt);
 ```
 
 ```cs
-var stm = new FocusSTM(1).withStartIdx(null);
+var stm = new FocusSTM(1).WithStartIdx(null);
 ```
 
 ```python

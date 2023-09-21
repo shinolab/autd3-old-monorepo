@@ -1,11 +1,11 @@
 # Visualizer
 
-`Visualizer`リンクは位相パターンや音場を可視化するための`Link`である.
+`Visualizer` link is a link for visualizing phase pattern and sound field.
 
 > NOTE:
-> このリンクは現在Rustからのみ使用可能である.
+> This link is currently available only from Rust.
 
-## 位相パターンの可視化
+## Visualize phase pattern
 
 ```rust,edition2021
 # extern crate autd3;
@@ -41,7 +41,7 @@ autd.link().plot_phase(
   <img src="../../fig/Users_Manual/phase.png"/>
 </figure>
 
-## 変調データの可視化
+## Visualize modulation data
 
 ```rust,edition2021
 # extern crate autd3;
@@ -75,7 +75,7 @@ autd.link().plot_modulation(
   <img src="../../fig/Users_Manual/mod.png"/>
 </figure>
 
-## 音場の可視化
+## Visualize sound field
 
 ```rust,edition2021
 # extern crate autd3;
@@ -117,9 +117,9 @@ autd.link().plot_field(
   <img src="../../fig/Users_Manual/xy.png"/>
 </figure>
 
-### 音場計算
+### Calculate sound field
 
-`calc_field`関数で, プロットせずに音場の計算を行うことができる.
+You can calculate sound field without plotting by using `calc_field` function.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -150,12 +150,12 @@ println!(
 # }
 ```
 
-第1引数に, 音場を計算する位置のイテレータを指定する.
-返り値は, 指定した点における複素音圧の`Vec`である.
+The first argument of `calc_field` is an iterator of positions to calculate sound field.
+The return value is a `Vec` of complex acoustic pressure at the specified positions.
 
-## GPUの有効化
+## Enable GPU
 
-`gpu` featureを有効化することで, 音場の計算をGPU行うことができるようになる.
+With `gpu` feature, you can calculate sound field on GPU.
 
 ```shell
 cargo add autd3-link-visualizer --features gpu
@@ -179,12 +179,11 @@ Visualizer::new().with_gpu(-1)
 # }
 ```
 
-`with_gpu`の引数にはGPUのIDを指定する. `-1`を指定すると, 適当なGPUが自動的に選択される.
+The argument of `with_gpu` is GPU id. If you specify `-1`, the most suitable GPU is selected automatically.
 
-## Matplotlibの使用
+## Using Matplotlib
 
-`python` featureを有効化することで, Pythonとmatplotlibを使用してプロットを行うことができるようになる.
-このfeatureを使用する場合は, Pythonとmatplotlib, 及び, numpyをインストールしておく必要がある.
+With `python` feature, you can plot using Python and matplotlib.
 
 ```shell
 cagro add autd3-link-visualizer --features python
