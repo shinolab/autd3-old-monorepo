@@ -11,7 +11,7 @@ On the other hand, SOEM is cross-platform and easy to install.
 If you are using Windows, install [npcap](https://nmap.org/npcap/) in **WinPcap API compatible mode**.
 If you are using Linux/macOS, no special preparation is required.
 
-> NOTE: If you are using `SOEM`, be aware that it takes about 10-20 seconds after opening `Controller`[^soem_init_sync] for the EtherCAT slaves to synchronize with each other.
+> NOTE: If you are using `SOEM`, be aware that it takes about 10-20 seconds after opening `Controller` for the EtherCAT slaves to synchronize with each other.
 > This period is subject to individual differences and changes depending on the synchronization signal/transmission cycle.
 > During this period, the ultrasound synchronization between devices is not guaranteed.
 
@@ -31,7 +31,6 @@ use autd3_link_soem::SOEM;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 SOEM::new()
     .with_ifname("")
@@ -76,7 +75,6 @@ use autd3_link_soem::SOEM;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 SOEM::new()
     .with_on_lost(|msg| {
@@ -140,7 +138,6 @@ use autd3_link_soem::SOEM;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 SOEM::new()
     .with_sync0_cycle(2)
@@ -189,7 +186,6 @@ use autd3_link_soem::SOEM;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 SOEM::new()
     .with_timer_strategy(TimerStrategy::BusyWait)
@@ -231,6 +227,7 @@ You can set the EtherCAT sync mode (`DC` or `FreeRun`) with `with_sync_mode`.
 
 - Please refer to [Beckhoff's explanation](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for details.
 
+
 ```rust,should_panic,edition2021
 # extern crate autd3;
 # extern crate autd3_link_soem;
@@ -241,7 +238,6 @@ use autd3_link_soem::{SOEM, SyncMode};
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 SOEM::new()
     .with_sync_mode(SyncMode::DC)
@@ -313,7 +309,6 @@ use autd3_link_soem::RemoteSOEM;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
 RemoteSOEM::new("172.16.99.104:8080".parse()?)?
 # )?;
@@ -345,8 +340,6 @@ Please see `SOEMAUTDServer --help` for details.
 ## Firewall
 
 If you get a TCP-related error when using `RemoteSOEM`, it may be blocked by the firewall.
-
-[^soem_init_sync]: It is not after sending `Synchronize`.
 
 [^fn_soem]: It is looser than TwinCAT, and sometimes it works normally.
 

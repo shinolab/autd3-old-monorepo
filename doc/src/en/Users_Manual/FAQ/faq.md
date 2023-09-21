@@ -12,7 +12,7 @@
       sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
       ```
 
-- (Windows) Use the latest npcap
+- (Windows) Install the latest npcap
 
 - Virtual machines such as WSL are not supported.
    - VirtualBox and other virtual machines may work, but the behavior will be unstable.
@@ -23,11 +23,11 @@
    - If you are using Realtek on Windows, please download latest `Win10 Auto Installation Program (NDIS)` driver from [official site](https://www.realtek.com/ja/component/zoo/category/network-interface-controllers-10-100-1000m-gigabit-ethernet-pci-express-software), and install it.
         - Even if you use Windows 11, you must use NDIS version.
 
-- (Windows) Use the latest npcap.
+- (Windows) Install the latest npcap.
 
 - Increase the values of `send_cycle` and `sync0_cycle`.
 
-## Frequent send failures when using `link::SOEM`.
+## Frequent send failures when using `link::SOEM`
 
 - This problem occurs when using the onboard ethernet interface, and one of the following situations
 
@@ -40,12 +40,12 @@
       * Other operations (modeling, etc.) are fine.
 
 - As a workaround, try one of the following
-  1. use `link::TwinCAT`, `link::RemoteTwinCAT`, or `link::RemoteSOEM`
-  1. use a USB to Ethernet adapter
+  1. Use `link::TwinCAT`, `link::RemoteTwinCAT`, or `link::RemoteSOEM`
+  1. Use a USB to Ethernet adapter
      - It has been confirmed that at least the adapter using the "ASIX AX88179" chip works properly.
      - The same problem may occur with PCIe ethernet adapters.
-  1. set to `FreeRun` mode
-  1. increase the values of `send_cycle` and `sync0_cycle`
+  1. Set to `FreeRun` mode
+  1. Increase the values of `send_cycle` and `sync0_cycle`
      - In this case, however, the send latency will increase.
   1. Use Linux or macOS.
      - Virtual machines are not acceptable.
@@ -59,11 +59,6 @@
 
 - It may be blocked by a firewall, turn off the firewall or allow port 48898 of TCP/UDP.
 - Disconnect all client PCs from LAN except for the server.
-
-## Ultrasound output is abnormally weak/frequency is wrong
-
-- Check if initialization/synchronization has been done.
-   - Synchronization is necessary even if you use only one device
 
 ## Miscellaneous
 

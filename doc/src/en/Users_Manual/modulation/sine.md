@@ -32,10 +32,9 @@ m = Sine(150)
 
 `Sine` applies AM so that the waveform of the sound pressure is
 $$
-    \frac{amplitude}{2} \times \sin(2\pi ft) + offset.
+    \frac{amplitude}{2} \times \sin(2\pi ft) + offset
 $$
 Here, $amplitude$ and $offset$ can be specified by `with_amp` and `with_offset`, respectively (default is $1$ and $0.5$, respectively).
-
 Note that the value that exceeds $\[0, 1\]$ is clamped in $\[0, 1\]$.
 
 ```rust,edition2021

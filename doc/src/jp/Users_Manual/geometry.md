@@ -387,7 +387,7 @@ $$
 $$
 のようにモデル化されている.
 ここで, $D(\theta)$は指向性, $k = 2\pi / \lambda$は波数であり, $\alpha$が減衰係数である.
-`Geometry`の`attenuation`メンバーがこの減衰係数$\alpha$を表している.
+`Device`の`attenuation`メンバーがこの減衰係数$\alpha$を表している.
 
 ```rust,edition2021
 # extern crate autd3;

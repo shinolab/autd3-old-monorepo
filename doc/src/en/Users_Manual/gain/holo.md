@@ -5,7 +5,7 @@ Several algorithms for generating multiple foci have been proposed, and the foll
 
 * `SDP` - Semi-definite programming, based on Inoue et al.[^inoue2015]
 * `EVP` - Eigen value decomposition, based on Long et al.[^long2014]
-* `LSS` - Linear Synthesis Scheme of single-focus solutions
+* `Naive` - Linear synthesis of single-focus solutions
 * `GS` - Gershberg-Saxon, based on Marzo et al.[^marzo2019]
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, based on Plasencia et al.[^plasencia2020]
 * `LM` - Levenberg-Marquardt, LM method proposed by Levenberg [^levenberg1944] and Marquardt [^marquardt1963] for optimization of nonlinear least-squares problems, implementation based on Madsen's text[^madsen2004]
@@ -15,7 +15,6 @@ You can select the backend for the calculation of the algorithm from the followi
 
 * `NalgebraBackend` - uses [Nalgebra](hthttps://nalgebra.org/)
 * `CUDABackend` - uses CUDA, which runs on GPUs
-
 
 ```rust,edition2021
 # extern crate autd3;
@@ -53,7 +52,7 @@ auto g = autd3::gain::holo::GSPAT(backend)
 ```cs
 var backend = new NalgebraBackend();
 
-var g = new GSPAT(backend)
+var g = new GSPAT<NalgebraBackend>(backend)
             .AddFocus(new Vector3d(x1, y1, z1), 1.0)
             .AddFocus(new Vector3d(x2, y2, z2), 1.0);
 ```
@@ -67,8 +66,6 @@ g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 ```
 
 The constructor argument of each algorithm is `backend`.
-There are additional parameters for each algorithm.
-For the details of each parameter, please refer to the respective papers.
 
 The `add_focus` function specifies the position of each focus and the amplitude.
 
@@ -90,13 +87,18 @@ use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let x1 = 0.;
+# let y1 = 0.;
+# let z1 = 0.;
+# let x2 = 0.;
+# let y2 = 0.;
+# let z2 = 0.;
 let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
       .with_constraint(Constraint::Uniform(1.));
 # Ok(())
 # }
-
 ```
 
 ```cpp
@@ -105,7 +107,7 @@ auto g = autd3::gain::holo::GSPAT(backend)
 ```
 
 ```cs
-var g = new GSPAT(backend).WithConstraint(new Uniform(1.0));
+var g = new GSPAT<NalgebraBackend>(backend).WithConstraint(new Uniform(1.0));
 ```
 
 ```python
@@ -114,7 +116,7 @@ from pyautd3.gain.holo import AmplitudeConstraint
 g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
 ```
 
-## Optional parameters
+## Optimization parameters
 
 Each algorithm has additional parameters.
 These are all specified by `with_xxx`.
