@@ -11,6 +11,7 @@
 - Fix [#170](https://github.com/shinolab/autd3/issues/170): Add sampling period settings for STM in capi
 - Fix [#171](https://github.com/shinolab/autd3/issues/171): [Python] SOEM.enumerate_adapters() cause an error
 - Fix [#172](https://github.com/shinolab/autd3/issues/172): [Python] could not use CUDABackend
+- Fix [#173](https://github.com/shinolab/autd3/issues/173): [Python] cannot use TwinCAT: pyautd3.autd_error.AUTDError: TcAdsDll not found. Please install TwinCAT3
 
 # 15.1.1
 
