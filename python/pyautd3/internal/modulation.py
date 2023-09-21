@@ -1,15 +1,15 @@
-"""
+'''
 File: modulation.py
 Project: modulation
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 from abc import ABCMeta, abstractmethod
@@ -118,22 +118,10 @@ class Transform(IModulation):
 
 
 class RadiationPressure(IModulation):
-    _freq_div: int
-    _buffer: np.ndarray
+    _m: IModulation
 
     def __init__(self, m: IModulation):
-        self._freq_div = m.sampling_frequency_division
-
-        err = create_string_buffer(256)
-        size = Base().modulation_size(m.modulation_ptr(), err)
-        if size == AUTD3_ERR:
-            raise AUTDError(err)
-        buf = np.zeros(int(size), dtype=c_double)
-        bufp = np.ctypeslib.as_ctypes(buf)
-        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
-            raise AUTDError(err)
-        self._buffer = np.sqrt(buf)
+        self._m = m
 
     def modulation_ptr(self) -> ModulationPtr:
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))
+        return Base().modulation_with_radiation_pressure(self._m.modulation_ptr())

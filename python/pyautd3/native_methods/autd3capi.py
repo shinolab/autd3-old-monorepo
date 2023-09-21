@@ -443,6 +443,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationCalc.argtypes = [ModulationPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDModulationCalc.restype = ctypes.c_int32
 
+        self.dll.AUTDModulationWithRadiationPressure.argtypes = [ModulationPtr]  # type: ignore 
+        self.dll.AUTDModulationWithRadiationPressure.restype = ModulationPtr
+
         self.dll.AUTDModulationSine.argtypes = [ctypes.c_uint32] 
         self.dll.AUTDModulationSine.restype = ModulationPtr
 
@@ -937,6 +940,9 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_calc(self, m: ModulationPtr, buffer: ctypes.Array[ctypes.c_double], err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDModulationCalc(m, buffer, err)
+
+    def modulation_with_radiation_pressure(self, m: ModulationPtr) -> ModulationPtr:
+        return self.dll.AUTDModulationWithRadiationPressure(m)
 
     def modulation_sine(self, freq: int) -> ModulationPtr:
         return self.dll.AUTDModulationSine(freq)

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,25 +35,16 @@ namespace AUTD3Sharp.Modulation
     /// </summary>
     public sealed class RadiationPressure : Internal.Modulation
     {
-        private readonly uint _freqDiv;
-        private readonly float_t[] _buffer;
+        private readonly Internal.Modulation _m;
 
         public RadiationPressure(Internal.Modulation m)
         {
-            _freqDiv = m.SamplingFrequencyDivision;
-
-            var err = new byte[256];
-            var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
-            if (size == Def.Autd3Err) throw new AUTDException(err);
-            var buf = new float_t[size];
-            if (Base.AUTDModulationCalc(m.ModulationPtr(), buf, err) == Def.Autd3Err)
-                throw new AUTDException(err);
-            _buffer = buf.Select(Math.Sqrt).ToArray();
+            _m = m;
         }
 
         public override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            return Base.AUTDModulationWithRadiationPressure(_m.ModulationPtr());
         }
     }
 
