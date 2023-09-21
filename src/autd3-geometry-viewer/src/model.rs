@@ -60,7 +60,7 @@ impl Model {
 
     pub fn new() -> anyhow::Result<Self> {
         let glb = Self::load_autd3_model()?;
-        let (document, buffers, images) = gltf::import_slice(&glb).unwrap();
+        let (document, buffers, images) = gltf::import_slice(glb).unwrap();
         let node = document.scenes().next().unwrap().nodes().next().unwrap();
 
         let materials = Self::load_materials(&document);
