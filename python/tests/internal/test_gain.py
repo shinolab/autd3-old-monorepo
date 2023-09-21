@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,10 +12,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 '''
 
 
+from typing import Dict
 from ..test_autd import create_controller
 
-from pyautd3 import Drive
-from pyautd3.gain import Uniform
+from pyautd3 import Drive, Geometry
+from pyautd3.gain import Uniform, Gain
 from pyautd3.link.audit import Audit
 
 import numpy as np
@@ -30,6 +31,40 @@ def test_cache():
         duties, phases = Audit.duties_and_phases(autd._ptr, dev.idx, 0)
         assert np.all(duties == 680)
         assert np.all(phases == 2048)
+
+
+class CacheTest(Gain):
+    calc_cnt: int
+
+    def __init__(self):
+        self.calc_cnt = 0
+
+    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
+        self.calc_cnt += 1
+        return Gain.transform(
+            geometry,
+            lambda dev, tr: Drive(
+                0.0,
+                1.0,
+            ),
+        )
+
+
+def test_cache_check_once():
+    autd = create_controller()
+
+    g = CacheTest()
+    assert autd.send(g)
+    assert g.calc_cnt == 1
+    assert autd.send(g)
+    assert g.calc_cnt == 2
+
+    g = CacheTest()
+    g_cached = g.with_cache()
+    assert autd.send(g_cached)
+    assert g.calc_cnt == 1
+    assert autd.send(g_cached)
+    assert g.calc_cnt == 1
 
 
 def test_transform():

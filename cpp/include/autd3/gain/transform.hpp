@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iterator>
 #include <numeric>
 #include <vector>
 
@@ -35,7 +34,7 @@ class Transform final : public internal::Gain {
     auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
     if (res._0 == nullptr) throw internal::AUTDException(err);
 
-    std::for_each(geometry.begin(), geometry.end(), [this, &drives](const internal::Device& dev) {
+    std::for_each(geometry.begin(), geometry.end(), [this, &res, &drives](const internal::Device& dev) {
       std::vector<internal::native_methods::Drive> d;
       d.resize(dev.num_transducers());
       internal::native_methods::AUTDGainCalcGetResult(res, d.data(), static_cast<uint32_t>(dev.idx()));
