@@ -15,7 +15,7 @@ use std::{collections::HashMap, hash::Hash, time::Duration};
 
 use autd3_driver::{
     cpu::{RxDatagram, TxDatagram},
-    datagram::{Clear, Datagram, Synchronize, UpdateFlags},
+    datagram::{Clear, Datagram, Stop, Synchronize, UpdateFlags},
     error::AUTDInternalError,
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
@@ -360,7 +360,6 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         if !self.link.is_open() {
             return Ok(false);
         }
-        let res = true;
         let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
         self.link.close()?;
