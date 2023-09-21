@@ -2,6 +2,7 @@
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
 - Fix [#159](https://github.com/shinolab/autd3/issues/159): `Controller::group` should save device enable flag
+- Fix [#163](https://github.com/shinolab/autd3/issues/163): FirmwareInfo.latest_version still returns "v3.0.0"
 
 # 15.1.1
 
