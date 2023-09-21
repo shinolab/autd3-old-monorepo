@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,7 +84,7 @@ impl GeometryViewer {
     /// ## Platform-specific
     ///
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
-    pub fn run<T: Transducer>(&mut self, devices: &[Device<T>]) -> i32 {
+    pub fn run<T: Transducer>(&mut self, devices: &[Device<T>]) -> anyhow::Result<i32> {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
         self.run_with_event_loop(devices, &mut event_loop)
     }
@@ -113,7 +113,7 @@ impl GeometryViewer {
         &mut self,
         devices: &[Device<T>],
         event_loop: &mut EventLoop<()>,
-    ) -> i32 {
+    ) -> anyhow::Result<i32> {
         let mut render = Renderer::new(
             event_loop,
             "AUTD GeometryViewer",
@@ -123,7 +123,7 @@ impl GeometryViewer {
         );
         render.window().focus_window();
 
-        let model = Model::new();
+        let model = Model::new()?;
         let mut device_viewer = DeviceViewer::new(&render, &model);
 
         let num_dev = devices.len();
@@ -273,6 +273,6 @@ impl GeometryViewer {
             );
         }
 
-        r
+        Ok(r)
     }
 }
