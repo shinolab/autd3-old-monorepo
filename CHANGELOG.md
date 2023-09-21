@@ -11,6 +11,7 @@
 - Fix [#170](https://github.com/shinolab/autd3/issues/170): Add sampling period settings for STM in capi
 - Fix [#171](https://github.com/shinolab/autd3/issues/171): [Python] SOEM.enumerate_adapters() cause an error
 - Fix [#172](https://github.com/shinolab/autd3/issues/172): [Python] could not use CUDABackend
+- Fix [#175](https://github.com/shinolab/autd3/issues/175): rm autd3_model.rs
 
 # 15.1.1
 
