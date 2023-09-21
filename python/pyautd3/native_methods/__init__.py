@@ -4,7 +4,7 @@ Project: native_methods
 Created Date: 09/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 22/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ LinkSOEM().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 if sys.platform == "win32":
     try:
         os.add_dll_directory("C:\\TwinCAT\\Common64")
-    except KeyError:
+    except FileNotFoundError:
         pass
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraGeometryViewer().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
