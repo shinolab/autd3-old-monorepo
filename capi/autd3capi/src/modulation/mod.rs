@@ -26,6 +26,7 @@ pub mod sine;
 pub mod sine_legacy;
 pub mod square;
 pub mod r#static;
+pub mod transform;
 
 #[no_mangle]
 #[must_use]

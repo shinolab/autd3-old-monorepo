@@ -439,6 +439,8 @@ ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
 
+[[nodiscard]] ModulationPtr AUTDModulationWithTransform(ModulationPtr m, void* f);
+
 [[nodiscard]] STMPropsPtr AUTDSTMProps(double freq);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithSamplingFreq(double freq);

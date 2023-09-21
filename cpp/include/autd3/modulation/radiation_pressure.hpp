@@ -29,7 +29,7 @@ class RadiationPressure final : public internal::Modulation {
   }
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(RadiationPressure)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     return internal::native_methods::AUTDModulationWithRadiationPressure(_m.modulation_ptr());

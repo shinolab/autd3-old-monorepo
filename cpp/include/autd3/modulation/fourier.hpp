@@ -30,7 +30,7 @@ class Fourier final : public internal::Modulation {
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE(Fourier)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Fourier)
 
   void add_component(Sine component) & { _components.emplace_back(std::move(component)); }
 

@@ -13,6 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from abc import ABCMeta, abstractmethod
+import ctypes
 import numpy as np
 from ctypes import c_double, create_string_buffer
 from typing import Callable, Iterator
@@ -94,27 +95,14 @@ class Cache(IModulation):
 
 
 class Transform(IModulation):
-    _freq_div: int
-    _buffer: np.ndarray
+    _m: IModulation
 
     def __init__(self, m: IModulation, f: Callable[[int, float], float]):
-        self._freq_div = m.sampling_frequency_division
-
-        err = create_string_buffer(256)
-        size = Base().modulation_size(m.modulation_ptr(), err)
-        if size == AUTD3_ERR:
-            raise AUTDError(err)
-        self._buffer = np.zeros(int(size), dtype=c_double)
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        if Base().modulation_calc(m.modulation_ptr(), bufp, err) == AUTD3_ERR:
-            raise AUTDError(err)
-
-        for i in range(len(self._buffer)):
-            self._buffer[i] = f(i, self._buffer[i])
+        self._m = m
+        self._f_native = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_uint32, ctypes.c_double)(lambda i, d: f(int(i), float(d)))
 
     def modulation_ptr(self) -> ModulationPtr:
-        bufp = np.ctypeslib.as_ctypes(self._buffer)
-        return Base().modulation_custom(self._freq_div, bufp, len(self._buffer))
+        return Base().modulation_with_transform(self._m.modulation_ptr(), self._f_native)  # type: ignore
 
 
 class RadiationPressure(IModulation):
