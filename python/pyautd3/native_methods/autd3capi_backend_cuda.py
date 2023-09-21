@@ -28,167 +28,167 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDCUDABackend.argtypes = [ctypes.c_char_p] 
         self.dll.AUTDCUDABackend.restype = BackendPtr
 
-        self.dll.AUTDDeleteCUDABackend.argtypes = [BackendPtr]  # type: ignore 
-        self.dll.AUTDDeleteCUDABackend.restype = None
+        self.dll.AUTDCUDABackendDelete.argtypes = [BackendPtr]  # type: ignore 
+        self.dll.AUTDCUDABackendDelete.restype = None
 
-        self.dll.AUTDGainHoloSDPCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloSDPCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDASDP.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDASDP.restype = GainPtr
 
-        self.dll.AUTDGainHoloSDPWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloSDPWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDASDPWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDASDPWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloSDPWithAlphaCUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloSDPWithAlphaCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDASDPWithAlpha.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDASDPWithAlpha.restype = GainPtr
 
-        self.dll.AUTDGainHoloSDPWithLambdaCUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloSDPWithLambdaCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDASDPWithLambda.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDASDPWithLambda.restype = GainPtr
 
-        self.dll.AUTDGainHoloSDPWithRepeatCUDA.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDGainHoloSDPWithRepeatCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDASDPWithRepeat.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainHoloCUDASDPWithRepeat.restype = GainPtr
 
-        self.dll.AUTDGainHoloEVPCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloEVPCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAEVP.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAEVP.restype = GainPtr
 
-        self.dll.AUTDGainHoloEVPWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloEVPWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAEVPWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAEVPWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloEVPWithGammaCUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloEVPWithGammaCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAEVPWithGamma.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAEVPWithGamma.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloGSCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGS.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGS.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloGSWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGSWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGSWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSWithRepeatCUDA.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDGainHoloGSWithRepeatCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGSWithRepeat.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGSWithRepeat.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSPATCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloGSPATCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGSPAT.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGSPAT.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSPATWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloGSPATWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGSPATWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGSPATWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloGSPATWithRepeatCUDA.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDGainHoloGSPATWithRepeatCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGSPATWithRepeat.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGSPATWithRepeat.restype = GainPtr
 
-        self.dll.AUTDGainHoloNaiveCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloNaiveCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDANaive.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDANaive.restype = GainPtr
 
-        self.dll.AUTDGainHoloNaiveWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloNaiveWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDANaiveWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDANaiveWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloGreedyCUDA.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
-        self.dll.AUTDGainHoloGreedyCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGreedy.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDGainHoloCUDAGreedy.restype = GainPtr
 
-        self.dll.AUTDGainHoloGreedyWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloGreedyWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGreedyWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGreedyWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloGreedyWithPhaseDivCUDA.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDGainHoloGreedyWithPhaseDivCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDAGreedyWithPhaseDiv.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainHoloCUDAGreedyWithPhaseDiv.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMCUDA.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloLMCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALM.argtypes = [BackendPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALM.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithConstraintCUDA.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithConstraintCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithConstraint.argtypes = [GainPtr, ConstraintPtr]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithConstraint.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithEps1CUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithEps1CUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithEps1.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithEps1.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithEps2CUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithEps2CUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithEps2.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithEps2.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithTauCUDA.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithTauCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithTau.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithTau.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithKMaxCUDA.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithKMaxCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithKMax.argtypes = [GainPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithKMax.restype = GainPtr
 
-        self.dll.AUTDGainHoloLMWithInitialCUDA.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDGainHoloLMWithInitialCUDA.restype = GainPtr
+        self.dll.AUTDGainHoloCUDALMWithInitial.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDGainHoloCUDALMWithInitial.restype = GainPtr
 
     def cuda_backend(self, err: ctypes.Array[ctypes.c_char]) -> BackendPtr:
         return self.dll.AUTDCUDABackend(err)
 
-    def delete_cuda_backend(self, backend: BackendPtr) -> None:
-        return self.dll.AUTDDeleteCUDABackend(backend)
+    def cuda_backend_delete(self, backend: BackendPtr) -> None:
+        return self.dll.AUTDCUDABackendDelete(backend)
 
-    def gain_holo_sdpcuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloSDPCUDA(backend, points, amps, size)
+    def gain_holo_cudasdp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDASDP(backend, points, amps, size)
 
-    def gain_holo_sdp_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloSDPWithConstraintCUDA(holo, constraint)
+    def gain_holo_cudasdp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDASDPWithConstraint(holo, constraint)
 
-    def gain_holo_sdp_with_alpha_cuda(self, holo: GainPtr, alpha: float) -> GainPtr:
-        return self.dll.AUTDGainHoloSDPWithAlphaCUDA(holo, alpha)
+    def gain_holo_cudasdp_with_alpha(self, holo: GainPtr, alpha: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDASDPWithAlpha(holo, alpha)
 
-    def gain_holo_sdp_with_lambda_cuda(self, holo: GainPtr, lambda_: float) -> GainPtr:
-        return self.dll.AUTDGainHoloSDPWithLambdaCUDA(holo, lambda_)
+    def gain_holo_cudasdp_with_lambda(self, holo: GainPtr, lambda_: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDASDPWithLambda(holo, lambda_)
 
-    def gain_holo_sdp_with_repeat_cuda(self, holo: GainPtr, repeat: int) -> GainPtr:
-        return self.dll.AUTDGainHoloSDPWithRepeatCUDA(holo, repeat)
+    def gain_holo_cudasdp_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDASDPWithRepeat(holo, repeat)
 
-    def gain_holo_evpcuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloEVPCUDA(backend, points, amps, size)
+    def gain_holo_cudaevp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAEVP(backend, points, amps, size)
 
-    def gain_holo_evp_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloEVPWithConstraintCUDA(holo, constraint)
+    def gain_holo_cudaevp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAEVPWithConstraint(holo, constraint)
 
-    def gain_holo_evp_with_gamma_cuda(self, holo: GainPtr, gamma: float) -> GainPtr:
-        return self.dll.AUTDGainHoloEVPWithGammaCUDA(holo, gamma)
+    def gain_holo_cudaevp_with_gamma(self, holo: GainPtr, gamma: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAEVPWithGamma(holo, gamma)
 
-    def gain_holo_gscuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGSCUDA(backend, points, amps, size)
+    def gain_holo_cudags(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGS(backend, points, amps, size)
 
-    def gain_holo_gs_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloGSWithConstraintCUDA(holo, constraint)
+    def gain_holo_cudags_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGSWithConstraint(holo, constraint)
 
-    def gain_holo_gs_with_repeat_cuda(self, holo: GainPtr, repeat: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGSWithRepeatCUDA(holo, repeat)
+    def gain_holo_cudags_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGSWithRepeat(holo, repeat)
 
-    def gain_holo_gspatcuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGSPATCUDA(backend, points, amps, size)
+    def gain_holo_cudagspat(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGSPAT(backend, points, amps, size)
 
-    def gain_holo_gspat_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloGSPATWithConstraintCUDA(holo, constraint)
+    def gain_holo_cudagspat_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGSPATWithConstraint(holo, constraint)
 
-    def gain_holo_gspat_with_repeat_cuda(self, holo: GainPtr, repeat: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGSPATWithRepeatCUDA(holo, repeat)
+    def gain_holo_cudagspat_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGSPATWithRepeat(holo, repeat)
 
-    def gain_holo_naive_cuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloNaiveCUDA(backend, points, amps, size)
+    def gain_holo_cuda_naive(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDANaive(backend, points, amps, size)
 
-    def gain_holo_naive_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloNaiveWithConstraintCUDA(holo, constraint)
+    def gain_holo_cuda_naive_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDANaiveWithConstraint(holo, constraint)
 
-    def gain_holo_greedy_cuda(self, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGreedyCUDA(points, amps, size)
+    def gain_holo_cuda_greedy(self, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGreedy(points, amps, size)
 
-    def gain_holo_greedy_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloGreedyWithConstraintCUDA(holo, constraint)
+    def gain_holo_cuda_greedy_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGreedyWithConstraint(holo, constraint)
 
-    def gain_holo_greedy_with_phase_div_cuda(self, holo: GainPtr, div: int) -> GainPtr:
-        return self.dll.AUTDGainHoloGreedyWithPhaseDivCUDA(holo, div)
+    def gain_holo_cuda_greedy_with_phase_div(self, holo: GainPtr, div: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDAGreedyWithPhaseDiv(holo, div)
 
-    def gain_holo_lmcuda(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
-        return self.dll.AUTDGainHoloLMCUDA(backend, points, amps, size)
+    def gain_holo_cudalm(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALM(backend, points, amps, size)
 
-    def gain_holo_lm_with_constraint_cuda(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithConstraintCUDA(holo, constraint)
+    def gain_holo_cudalm_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithConstraint(holo, constraint)
 
-    def gain_holo_lm_with_eps_1_cuda(self, holo: GainPtr, eps: float) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithEps1CUDA(holo, eps)
+    def gain_holo_cudalm_with_eps_1(self, holo: GainPtr, eps: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithEps1(holo, eps)
 
-    def gain_holo_lm_with_eps_2_cuda(self, holo: GainPtr, eps: float) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithEps2CUDA(holo, eps)
+    def gain_holo_cudalm_with_eps_2(self, holo: GainPtr, eps: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithEps2(holo, eps)
 
-    def gain_holo_lm_with_tau_cuda(self, holo: GainPtr, tau: float) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithTauCUDA(holo, tau)
+    def gain_holo_cudalm_with_tau(self, holo: GainPtr, tau: float) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithTau(holo, tau)
 
-    def gain_holo_lm_with_k_max_cuda(self, holo: GainPtr, k_max: int) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithKMaxCUDA(holo, k_max)
+    def gain_holo_cudalm_with_k_max(self, holo: GainPtr, k_max: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithKMax(holo, k_max)
 
-    def gain_holo_lm_with_initial_cuda(self, holo: GainPtr, initial_ptr: ctypes.Array[ctypes.c_double], len: int) -> GainPtr:
-        return self.dll.AUTDGainHoloLMWithInitialCUDA(holo, initial_ptr, len)
+    def gain_holo_cudalm_with_initial(self, holo: GainPtr, initial_ptr: ctypes.Array[ctypes.c_double], len: int) -> GainPtr:
+        return self.dll.AUTDGainHoloCUDALMWithInitial(holo, initial_ptr, len)

@@ -28,17 +28,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkSimulator.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDLinkSimulator.restype = LinkPtr
 
-        self.dll.AUTDLinkSimulatorAddr.argtypes = [LinkPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkSimulatorAddr.restype = LinkPtr
+        self.dll.AUTDLinkSimulatorWithAddr.argtypes = [LinkPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSimulatorWithAddr.restype = LinkPtr
 
-        self.dll.AUTDLinkSimulatorTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkSimulatorTimeout.restype = LinkPtr
+        self.dll.AUTDLinkSimulatorWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSimulatorWithTimeout.restype = LinkPtr
 
     def link_simulator(self, port: int) -> LinkPtr:
         return self.dll.AUTDLinkSimulator(port)
 
-    def link_simulator_addr(self, simulator: LinkPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
-        return self.dll.AUTDLinkSimulatorAddr(simulator, addr, err)
+    def link_simulator_with_addr(self, simulator: LinkPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
+        return self.dll.AUTDLinkSimulatorWithAddr(simulator, addr, err)
 
-    def link_simulator_timeout(self, simulator: LinkPtr, timeout_ns: int) -> LinkPtr:
-        return self.dll.AUTDLinkSimulatorTimeout(simulator, timeout_ns)
+    def link_simulator_with_timeout(self, simulator: LinkPtr, timeout_ns: int) -> LinkPtr:
+        return self.dll.AUTDLinkSimulatorWithTimeout(simulator, timeout_ns)

@@ -29,108 +29,110 @@ struct ModulationCachePtr {
 
 extern "C" {
 
-[[nodiscard]] ControllerBuilderPtr AUTDCreateControllerBuilder();
+[[nodiscard]] ControllerBuilderPtr AUTDControllerBuilder();
 
-ControllerBuilderPtr AUTDAddDevice(ControllerBuilderPtr builder,
-                                   double x,
-                                   double y,
-                                   double z,
-                                   double rz1,
-                                   double ry,
-                                   double rz2);
+ControllerBuilderPtr AUTDControllerBuilderAddDevice(ControllerBuilderPtr builder,
+                                                    double x,
+                                                    double y,
+                                                    double z,
+                                                    double rz1,
+                                                    double ry,
+                                                    double rz2);
 
-ControllerBuilderPtr AUTDAddDeviceQuaternion(ControllerBuilderPtr builder,
-                                             double x,
-                                             double y,
-                                             double z,
-                                             double qw,
-                                             double qx,
-                                             double qy,
-                                             double qz);
+ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder,
+                                                              double x,
+                                                              double y,
+                                                              double z,
+                                                              double qw,
+                                                              double qx,
+                                                              double qy,
+                                                              double qz);
 
 [[nodiscard]]
 ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder,
                                      LinkPtr link,
                                      char *err);
 
-[[nodiscard]] bool AUTDClose(ControllerPtr cnt, char *err);
+[[nodiscard]] bool AUTDControllerClose(ControllerPtr cnt, char *err);
 
-void AUTDFreeController(ControllerPtr cnt);
+void AUTDControllerDelete(ControllerPtr cnt);
 
-[[nodiscard]] bool AUTDGetFPGAInfo(ControllerPtr cnt, uint8_t *out, char *err);
-
-[[nodiscard]] FirmwareInfoListPtr AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, char *err);
-
-void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info);
-
-void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPtr p_info_list);
-
-void AUTDGetLatestFirmware(char *latest);
-
-[[nodiscard]] DatagramPtr AUTDSynchronize();
-
-[[nodiscard]] DatagramPtr AUTDClear();
-
-[[nodiscard]] DatagramPtr AUTDUpdateFlags();
-
-[[nodiscard]] DatagramSpecialPtr AUTDStop();
-
-[[nodiscard]] DatagramPtr AUTDConfigureModDelay();
-
-[[nodiscard]] DatagramPtr AUTDConfigureAmpFilter();
-
-[[nodiscard]] DatagramPtr AUTDConfigurePhaseFilter();
-
-[[nodiscard]] DatagramPtr AUTDCreateSilencer(uint16_t step);
-
-[[nodiscard]] DatagramPtr AUTDCreateAmplitudes(double amp);
+[[nodiscard]] bool AUTDControllerFPGAInfo(ControllerPtr cnt, uint8_t *out, char *err);
 
 [[nodiscard]]
-int32_t AUTDSend(ControllerPtr cnt,
-                 TransMode mode,
-                 DatagramPtr d1,
-                 DatagramPtr d2,
-                 int64_t timeout_ns,
-                 char *err);
+FirmwareInfoListPtr AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt,
+                                                          char *err);
+
+void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info);
+
+void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr p_info_list);
+
+void AUTDFirmwareLatest(char *latest);
+
+[[nodiscard]] DatagramPtr AUTDDatagramSynchronize();
+
+[[nodiscard]] DatagramPtr AUTDDatagramClear();
+
+[[nodiscard]] DatagramPtr AUTDDatagramUpdateFlags();
+
+[[nodiscard]] DatagramSpecialPtr AUTDDatagramStop();
+
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
+
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureAmpFilter();
+
+[[nodiscard]] DatagramPtr AUTDDatagramConfigurePhaseFilter();
+
+[[nodiscard]] DatagramPtr AUTDDatagramSilencer(uint16_t step);
+
+[[nodiscard]] DatagramPtr AUTDDatagramAmplitudes(double amp);
 
 [[nodiscard]]
-int32_t AUTDSendSpecial(ControllerPtr cnt,
-                        TransMode mode,
-                        DatagramSpecialPtr special,
-                        int64_t timeout_ns,
-                        char *err);
-
-[[nodiscard]] GroupKVMapPtr AUTDGroupCreateKVMap();
-
-[[nodiscard]]
-GroupKVMapPtr AUTDGroupKVMapSet(GroupKVMapPtr map,
-                                int32_t key,
-                                DatagramPtr d1,
-                                DatagramPtr d2,
-                                TransMode mode,
-                                int64_t timeout_ns,
-                                char *err);
+int32_t AUTDControllerSend(ControllerPtr cnt,
+                           TransMode mode,
+                           DatagramPtr d1,
+                           DatagramPtr d2,
+                           int64_t timeout_ns,
+                           char *err);
 
 [[nodiscard]]
-GroupKVMapPtr AUTDGroupKVMapSetSpecial(GroupKVMapPtr map,
-                                       int32_t key,
-                                       DatagramSpecialPtr special,
-                                       TransMode mode,
-                                       int64_t timeout_ns,
-                                       char *err);
+int32_t AUTDControllerSendSpecial(ControllerPtr cnt,
+                                  TransMode mode,
+                                  DatagramSpecialPtr special,
+                                  int64_t timeout_ns,
+                                  char *err);
+
+[[nodiscard]] GroupKVMapPtr AUTDControllerGroupCreateKVMap();
 
 [[nodiscard]]
-int32_t AUTDGroup(ControllerPtr cnt,
-                  const int32_t *map,
-                  GroupKVMapPtr kv_map,
-                  char *err);
+GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map,
+                                          int32_t key,
+                                          DatagramPtr d1,
+                                          DatagramPtr d2,
+                                          TransMode mode,
+                                          int64_t timeout_ns,
+                                          char *err);
 
-int32_t AUTDSoftwareSTM(ControllerPtr cnt,
-                        void* callback,
-                        void* context,
-                        TimerStrategy timer_strategy,
-                        uint64_t interval_ns,
-                        char *err);
+[[nodiscard]]
+GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map,
+                                                 int32_t key,
+                                                 DatagramSpecialPtr special,
+                                                 TransMode mode,
+                                                 int64_t timeout_ns,
+                                                 char *err);
+
+[[nodiscard]]
+int32_t AUTDControllerGroup(ControllerPtr cnt,
+                            const int32_t *map,
+                            GroupKVMapPtr kv_map,
+                            char *err);
+
+int32_t AUTDControllerSoftwareSTM(ControllerPtr cnt,
+                                  void* callback,
+                                  void* context,
+                                  TimerStrategy timer_strategy,
+                                  uint64_t interval_ns,
+                                  char *err);
 
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
@@ -197,11 +199,11 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
 
 [[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
 
-[[nodiscard]] GeometryPtr AUTDGetGeometry(ControllerPtr cnt);
+[[nodiscard]] GeometryPtr AUTDGeometry(ControllerPtr cnt);
 
 [[nodiscard]] uint32_t AUTDGeometryNumDevices(GeometryPtr geo);
 
-[[nodiscard]] DevicePtr AUTDGetDevice(GeometryPtr geo, uint32_t dev_idx);
+[[nodiscard]] DevicePtr AUTDDevice(GeometryPtr geo, uint32_t dev_idx);
 
 [[nodiscard]] uint32_t AUTDDeviceNumTransducers(DevicePtr dev);
 
@@ -234,39 +236,39 @@ void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
 
 void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
 
-[[nodiscard]] TransducerPtr AUTDGetTransducer(DevicePtr dev, uint32_t tr_idx);
+[[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
 
-void AUTDTransPosition(TransducerPtr tr, double *pos);
+void AUTDTransducerPosition(TransducerPtr tr, double *pos);
 
-void AUTDTransRotation(TransducerPtr tr, double *rot);
+void AUTDTransducerRotation(TransducerPtr tr, double *rot);
 
-void AUTDTransXDirection(TransducerPtr tr, double *dir);
+void AUTDTransducerDirectionX(TransducerPtr tr, double *dir);
 
-void AUTDTransYDirection(TransducerPtr tr, double *dir);
+void AUTDTransducerDirectionY(TransducerPtr tr, double *dir);
 
-void AUTDTransZDirection(TransducerPtr tr, double *dir);
+void AUTDTransducerDirectionZ(TransducerPtr tr, double *dir);
 
-[[nodiscard]] double AUTDGetTransFrequency(TransducerPtr tr);
+[[nodiscard]] double AUTDTransducerFrequencyGet(TransducerPtr tr);
 
-[[nodiscard]] bool AUTDSetTransFrequency(TransducerPtr tr, double value, char *err);
+[[nodiscard]] bool AUTDTransducerFrequencySet(TransducerPtr tr, double value, char *err);
 
-[[nodiscard]] uint16_t AUTDGetTransCycle(TransducerPtr tr);
+[[nodiscard]] uint16_t AUTDTransducerCycleGet(TransducerPtr tr);
 
-[[nodiscard]] bool AUTDSetTransCycle(TransducerPtr tr, uint16_t value, char *err);
+[[nodiscard]] bool AUTDTransducerCycleSet(TransducerPtr tr, uint16_t value, char *err);
 
-[[nodiscard]] double AUTDGetWavelength(TransducerPtr tr, double sound_speed);
+[[nodiscard]] double AUTDTransducerWavelength(TransducerPtr tr, double sound_speed);
 
-[[nodiscard]] uint16_t AUTDGetTransModDelay(TransducerPtr tr);
+[[nodiscard]] uint16_t AUTDTransducerModDelayGet(TransducerPtr tr);
 
-void AUTDSetTransModDelay(TransducerPtr tr, uint16_t delay);
+void AUTDTransducerModDelaySet(TransducerPtr tr, uint16_t delay);
 
-[[nodiscard]] double AUTDGetTransAmpFilter(TransducerPtr tr);
+[[nodiscard]] double AUTDTransducerAmpFilterGet(TransducerPtr tr);
 
-void AUTDSetTransAmpFilter(TransducerPtr tr, double value);
+void AUTDTransducerAmpFilterSet(TransducerPtr tr, double value);
 
-[[nodiscard]] double AUTDGetTransPhaseFilter(TransducerPtr tr);
+[[nodiscard]] double AUTDTransducerPhaseFilterGet(TransducerPtr tr);
 
-void AUTDSetTransPhaseFilter(TransducerPtr tr, double value);
+void AUTDTransducerPhaseFilterSet(TransducerPtr tr, double value);
 
 [[nodiscard]] LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
 
@@ -288,7 +290,7 @@ void AUTDSetTransPhaseFilter(TransducerPtr tr, double value);
 
 [[nodiscard]] LinkPtr AUTDLinkAuditWithTimeout(LinkPtr test, uint64_t timeout_ns);
 
-[[nodiscard]] AuditLinkPtr AUTDGetLink(ControllerPtr cnt);
+[[nodiscard]] AuditLinkPtr AUTDAuditLinkGet(ControllerPtr cnt);
 
 [[nodiscard]] bool AUTDLinkAuditIsOpen(AuditLinkPtr audit);
 
@@ -478,18 +480,18 @@ ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
 [[nodiscard]] int32_t AUTDSTMPropsFinishIdx(STMPropsPtr props);
 
 [[nodiscard]]
-DatagramPtr AUTDFocusSTM(STMPropsPtr props,
+DatagramPtr AUTDSTMFocus(STMPropsPtr props,
                          const double *points,
                          const uint8_t *shift,
                          uint64_t size);
 
 [[nodiscard]]
-DatagramPtr AUTDGainSTM(STMPropsPtr props,
+DatagramPtr AUTDSTMGain(STMPropsPtr props,
                         const GainPtr *gains,
                         uint32_t size,
                         GainSTMMode mode);
 
-[[nodiscard]] DatagramPtr AUTDGainSTMAddGain(DatagramPtr stm, GainPtr gain);
+[[nodiscard]] DatagramPtr AUTDSTMGainAddGain(DatagramPtr stm, GainPtr gain);
 
 } // extern "C"
 

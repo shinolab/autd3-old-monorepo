@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ namespace AUTD3Sharp.Link
 
         public TwinCAT WithTimeout(TimeSpan timeout)
         {
-            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkTwinCATTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkTwinCATWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
             return this;
         }
     }
@@ -61,7 +61,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public RemoteTwinCAT WithServerIp(IPAddress serverIp)
         {
-            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATServerIP(Ptr, serverIp.ToString());
+            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithServerIP(Ptr, serverIp.ToString());
             return this;
         }
 
@@ -72,13 +72,13 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public RemoteTwinCAT WithClientAmsNetId(string clientAmsNetId)
         {
-            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATClientAmsNetId(Ptr, clientAmsNetId);
+            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithClientAmsNetId(Ptr, clientAmsNetId);
             return this;
         }
 
         public RemoteTwinCAT WithTimeout(TimeSpan timeout)
         {
-            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+            Ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
             return this;
         }
     }

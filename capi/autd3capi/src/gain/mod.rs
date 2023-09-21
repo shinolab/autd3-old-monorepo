@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,10 +82,10 @@ mod tests {
     fn gain() {
         unsafe {
             let cnt = create_controller();
-            let geo = AUTDGetGeometry(cnt);
+            let geo = AUTDGeometry(cnt);
 
-            let dev0 = AUTDGetDevice(geo, 0);
-            let dev1 = AUTDGetDevice(geo, 1);
+            let dev0 = AUTDDevice(geo, 0);
+            let dev1 = AUTDDevice(geo, 1);
 
             let g = AUTDGainUniform(0.9);
             let g = AUTDGainUniformWithPhase(g, 0.8);
@@ -115,7 +115,7 @@ mod tests {
                 assert_eq!(d.phase, 0.8);
             });
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

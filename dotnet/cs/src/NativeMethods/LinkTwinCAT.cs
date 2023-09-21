@@ -16,15 +16,15 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkTwinCAT(byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkTwinCATTimeout(LinkPtr twincat, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCAT(string serverAmsNetId, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATServerIP(LinkPtr twincat, string addr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithServerIP(LinkPtr twincat, string addr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATClientAmsNetId(LinkPtr twincat, string id);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkPtr twincat, string id);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATTimeout(LinkPtr twincat, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
         }
     }
 

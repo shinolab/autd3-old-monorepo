@@ -1,15 +1,15 @@
-"""
+'''
 File: geometry_viewer.py
 Project: extra
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 from pyautd3.autd import Geometry
@@ -26,13 +26,13 @@ class GeometryViewer:
         self._handle = ExtraGeometryViewer().geometry_viewer()
 
     def with_window_size(self, width: int, height: int) -> "GeometryViewer":
-        self._handle = ExtraGeometryViewer().geometry_viewer_size(
+        self._handle = ExtraGeometryViewer().geometry_viewer_with_size(
             self._handle, width, height
         )
         return self
 
     def with_vsync(self, value: bool) -> "GeometryViewer":
-        self._handle = ExtraGeometryViewer().geometry_viewer_vsync(self._handle, value)
+        self._handle = ExtraGeometryViewer().geometry_viewer_with_vsync(self._handle, value)
         return self
 
     def run(self, geometry: Geometry) -> int:

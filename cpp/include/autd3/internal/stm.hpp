@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -123,7 +123,7 @@ class FocusSTM final : public STM {
   }
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
-    return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
+    return AUTDSTMFocus(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
   }
 
   /**
@@ -316,7 +316,7 @@ class GainSTM final : public STM {
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
     std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
-    return AUTDGainSTM(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
+    return AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 
   /**

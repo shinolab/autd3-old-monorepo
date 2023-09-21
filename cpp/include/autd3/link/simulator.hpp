@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ class Simulator : public internal::Link {
    */
   Simulator with_server_ip(const std::string& ip) {
     char err[256];
-    _ptr = AUTDLinkSimulatorAddr(_ptr, ip.c_str(), err);
+    _ptr = AUTDLinkSimulatorWithAddr(_ptr, ip.c_str(), err);
     if (_ptr._0 == nullptr) throw internal::AUTDException(err);
     return *this;
   }
@@ -45,7 +45,7 @@ class Simulator : public internal::Link {
   template <typename Rep, typename Period>
   Simulator with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkSimulatorTimeout(_ptr, static_cast<uint64_t>(ns));
+    _ptr = AUTDLinkSimulatorWithTimeout(_ptr, static_cast<uint64_t>(ns));
     return *this;
   }
 

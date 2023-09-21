@@ -54,7 +54,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainUniformWithPhase(GainPtr uniform, float phase);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DevicePtr AUTDGetDevice(GeometryPtr geo, uint devIdx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DevicePtr AUTDDevice(GeometryPtr geo, uint devIdx);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDDeviceNumTransducers(DevicePtr dev);
 
@@ -80,103 +80,103 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeviceSetForceFan(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryPtr AUTDGetGeometry(ControllerPtr cnt);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryPtr AUTDGeometry(ControllerPtr cnt);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDGeometryNumDevices(GeometryPtr geo);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern TransducerPtr AUTDGetTransducer(DevicePtr dev, uint trIdx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern TransducerPtr AUTDTransducer(DevicePtr dev, uint trIdx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransPosition(TransducerPtr tr, float[] pos);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerPosition(TransducerPtr tr, float[] pos);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransRotation(TransducerPtr tr, float[] rot);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerRotation(TransducerPtr tr, float[] rot);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransXDirection(TransducerPtr tr, float[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerDirectionX(TransducerPtr tr, float[] dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransYDirection(TransducerPtr tr, float[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerDirectionY(TransducerPtr tr, float[] dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransZDirection(TransducerPtr tr, float[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerDirectionZ(TransducerPtr tr, float[] dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetTransFrequency(TransducerPtr tr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDTransducerFrequencyGet(TransducerPtr tr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSetTransFrequency(TransducerPtr tr, float value, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDTransducerFrequencySet(TransducerPtr tr, float value, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetTransCycle(TransducerPtr tr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDTransducerCycleGet(TransducerPtr tr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSetTransCycle(TransducerPtr tr, ushort value, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDTransducerCycleSet(TransducerPtr tr, ushort value, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetWavelength(TransducerPtr tr, float soundSpeed);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDTransducerWavelength(TransducerPtr tr, float soundSpeed);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetTransModDelay(TransducerPtr tr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDTransducerModDelayGet(TransducerPtr tr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransModDelay(TransducerPtr tr, ushort delay);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerModDelaySet(TransducerPtr tr, ushort delay);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetTransAmpFilter(TransducerPtr tr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDTransducerAmpFilterGet(TransducerPtr tr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransAmpFilter(TransducerPtr tr, float value);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerAmpFilterSet(TransducerPtr tr, float value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetTransPhaseFilter(TransducerPtr tr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDTransducerPhaseFilterGet(TransducerPtr tr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransPhaseFilter(TransducerPtr tr, float value);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransducerPhaseFilterSet(TransducerPtr tr, float value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDCreateControllerBuilder();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDControllerBuilder();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDAddDevice(ControllerBuilderPtr builder, float x, float y, float z, float rz1, float ry, float rz2);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDControllerBuilderAddDevice(ControllerBuilderPtr builder, float x, float y, float z, float rz1, float ry, float rz2);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDAddDeviceQuaternion(ControllerBuilderPtr builder, float x, float y, float z, float qw, float qx, float qy, float qz);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder, float x, float y, float z, float qw, float qx, float qy, float qz);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkPtr link, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDClose(ControllerPtr cnt, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDControllerClose(ControllerPtr cnt, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeController(ControllerPtr cnt);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDControllerDelete(ControllerPtr cnt);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDGetFPGAInfo(ControllerPtr cnt, byte[] @out, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDControllerFPGAInfo(ControllerPtr cnt, byte[] @out, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern FirmwareInfoListPtr AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern FirmwareInfoListPtr AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetFirmwareInfo(FirmwareInfoListPtr pInfoList, uint idx, byte[] info);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr pInfoList, uint idx, byte[] info);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPtr pInfoList);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr pInfoList);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetLatestFirmware(byte[] latest);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFirmwareLatest(byte[] latest);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDSynchronize();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramSynchronize();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDClear();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramClear();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDUpdateFlags();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramUpdateFlags();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramSpecialPtr AUTDStop();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramSpecialPtr AUTDDatagramStop();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigureModDelay();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigureAmpFilter();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramConfigureAmpFilter();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDConfigurePhaseFilter();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramConfigurePhaseFilter();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDCreateSilencer(ushort step);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramSilencer(ushort step);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDCreateAmplitudes(float amp);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDDatagramAmplitudes(float amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSend(ControllerPtr cnt, TransMode mode, DatagramPtr d1, DatagramPtr d2, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDControllerSend(ControllerPtr cnt, TransMode mode, DatagramPtr d1, DatagramPtr d2, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSendSpecial(ControllerPtr cnt, TransMode mode, DatagramSpecialPtr special, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDControllerSendSpecial(ControllerPtr cnt, TransMode mode, DatagramSpecialPtr special, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDGroupCreateKVMap();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDControllerGroupCreateKVMap();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDGroupKVMapSet(GroupKVMapPtr map, int key, DatagramPtr d1, DatagramPtr d2, TransMode mode, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map, int key, DatagramPtr d1, DatagramPtr d2, TransMode mode, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDGroupKVMapSetSpecial(GroupKVMapPtr map, int key, DatagramSpecialPtr special, TransMode mode, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map, int key, DatagramSpecialPtr special, TransMode mode, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGroup(ControllerPtr cnt, int[]? map, GroupKVMapPtr kvMap, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDControllerGroup(ControllerPtr cnt, int[]? map, GroupKVMapPtr kvMap, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSoftwareSTM(ControllerPtr cnt, IntPtr callback, IntPtr context, TimerStrategy timerStrategy, ulong intervalNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDControllerSoftwareSTM(ControllerPtr cnt, IntPtr callback, IntPtr context, TimerStrategy timerStrategy, ulong intervalNs, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkAudit();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkAuditWithTimeout(LinkPtr test, ulong timeoutNs);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern AuditLinkPtr AUTDGetLink(ControllerPtr cnt);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern AuditLinkPtr AUTDAuditLinkGet(ControllerPtr cnt);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDLinkAuditIsOpen(AuditLinkPtr audit);
 
@@ -326,11 +326,11 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWithTransform(ModulationPtr m, IntPtr f);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDFocusSTM(STMPropsPtr props, float[]? points, byte[]? shift, ulong size);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDSTMFocus(STMPropsPtr props, float[]? points, byte[]? shift, ulong size);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDGainSTM(STMPropsPtr props, GainPtr[]? gains, uint size, GainSTMMode mode);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDSTMGain(STMPropsPtr props, GainPtr[]? gains, uint size, GainSTMMode mode);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDGainSTMAddGain(DatagramPtr stm, GainPtr gain);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDSTMGainAddGain(DatagramPtr stm, GainPtr gain);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern STMPropsPtr AUTDSTMProps(float freq);
 

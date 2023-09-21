@@ -37,7 +37,7 @@ pub struct AuditLinkPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetLink(cnt: ControllerPtr) -> AuditLinkPtr {
+pub unsafe extern "C" fn AUTDAuditLinkGet(cnt: ControllerPtr) -> AuditLinkPtr {
     AuditLinkPtr(cast!(cnt.0, Cnt).link() as *const _ as _)
 }
 
@@ -344,8 +344,8 @@ mod tests {
     use crate::{
         gain::{null::AUTDGainNull, AUTDGainIntoDatagram},
         geometry::{
-            device::{AUTDDeviceSetForceFan, AUTDGetDevice},
-            AUTDGetGeometry,
+            device::{AUTDDeviceSetForceFan, AUTDDevice},
+            AUTDGeometry,
         },
         *,
     };
@@ -353,9 +353,9 @@ mod tests {
     use super::*;
 
     unsafe fn create_controller() -> ControllerPtr {
-        let builder = AUTDCreateControllerBuilder();
-        let builder = AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let builder = AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilder();
+        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
         let test = AUTDLinkAudit();
         let test = AUTDLinkAuditWithTimeout(test, 0);
@@ -378,7 +378,7 @@ mod tests {
     fn test_link_cpu_idx() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(AUTDLinkAuditCpuIdx(link, 0), 0);
             assert_eq!(AUTDLinkAuditCpuIdx(link, 1), 1);
@@ -389,7 +389,7 @@ mod tests {
     fn test_link_cpu_num_transducers() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(AUTDLinkAuditCpuNumTransducers(link, 0), 249);
             assert_eq!(AUTDLinkAuditCpuNumTransducers(link, 1), 249);
@@ -400,14 +400,14 @@ mod tests {
     fn test_link_cpu_ack() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(AUTDLinkAuditCpuAck(link, 0), 3);
             assert_eq!(AUTDLinkAuditCpuAck(link, 1), 3);
 
-            let update = AUTDUpdateFlags();
+            let update = AUTDDatagramUpdateFlags();
             let mut err = vec![c_char::default(); 256];
-            let _ = AUTDSend(
+            let _ = AUTDControllerSend(
                 cnt,
                 TransMode::Legacy,
                 update,
@@ -425,7 +425,7 @@ mod tests {
     fn test_link_cpu_rx_data() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(AUTDLinkAuditCpuRxData(link, 0), 0);
             assert_eq!(AUTDLinkAuditCpuRxData(link, 1), 0);
@@ -436,7 +436,7 @@ mod tests {
     fn test_link_cpu_fpga_flags() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(
                 AUTDLinkAuditCpuFpgaFlags(link, 0),
@@ -447,12 +447,12 @@ mod tests {
                 FPGAControlFlags::NONE.bits()
             );
 
-            AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 0), true);
-            AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 1), true);
+            AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 0), true);
+            AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 1), true);
 
-            let update = AUTDUpdateFlags();
+            let update = AUTDDatagramUpdateFlags();
             let mut err = vec![c_char::default(); 256];
-            let _ = AUTDSend(
+            let _ = AUTDControllerSend(
                 cnt,
                 TransMode::Legacy,
                 update,
@@ -476,7 +476,7 @@ mod tests {
     fn test_fpga_thermal_sensor() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             AUTDLinkAuditFpgaAssertThermalSensor(link, 0);
         }
@@ -486,7 +486,7 @@ mod tests {
     fn test_fpga_is_legacy_mode() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 0));
             assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 1));
@@ -494,7 +494,7 @@ mod tests {
             let gain = AUTDGainNull();
             let gain = AUTDGainIntoDatagram(gain);
             let mut err = vec![c_char::default(); 256];
-            let _ = AUTDSend(
+            let _ = AUTDControllerSend(
                 cnt,
                 TransMode::Legacy,
                 gain,
@@ -512,17 +512,17 @@ mod tests {
     fn test_fpga_is_force_fan() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert!(!AUTDLinkAuditFpgaIsForceFan(link, 0));
             assert!(!AUTDLinkAuditFpgaIsForceFan(link, 1));
 
-            AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 0), true);
-            AUTDDeviceSetForceFan(AUTDGetDevice(AUTDGetGeometry(cnt), 1), true);
+            AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 0), true);
+            AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 1), true);
 
-            let update = AUTDUpdateFlags();
+            let update = AUTDDatagramUpdateFlags();
             let mut err = vec![c_char::default(); 256];
-            let _ = AUTDSend(
+            let _ = AUTDControllerSend(
                 cnt,
                 TransMode::Legacy,
                 update,
@@ -540,7 +540,7 @@ mod tests {
     fn test_fpga_is_stm_mode() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert!(!AUTDLinkAuditFpgaIsStmMode(link, 0));
             assert!(!AUTDLinkAuditFpgaIsStmMode(link, 1));
@@ -551,7 +551,7 @@ mod tests {
     fn test_fpga_is_stm_gain_mode() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert!(!AUTDLinkAuditFpgaIsStmGainMode(link, 0));
             assert!(!AUTDLinkAuditFpgaIsStmGainMode(link, 1));
@@ -562,7 +562,7 @@ mod tests {
     fn test_fpga_silencer_step() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 0), 10);
             assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 1), 10);
@@ -573,7 +573,7 @@ mod tests {
     fn test_fpga_cycles() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);
@@ -590,7 +590,7 @@ mod tests {
     fn test_fpga_mod_delays() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);
@@ -607,7 +607,7 @@ mod tests {
     fn test_fpga_duty_filter() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);
@@ -624,7 +624,7 @@ mod tests {
     fn test_fpga_phase_filter() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);
@@ -641,7 +641,7 @@ mod tests {
     fn test_fpga_stm_freq_div() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaStmFrequencyDivision(link, i), 0);
@@ -653,7 +653,7 @@ mod tests {
     fn test_fpga_stm_cycle() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaStmCycle(link, i), 1);
@@ -665,7 +665,7 @@ mod tests {
     fn test_fpga_stm_sound_speed() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaSoundSpeed(link, i), 0);
@@ -677,7 +677,7 @@ mod tests {
     fn test_fpga_stm_start_idx() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaStmStartIdx(link, i), -1);
@@ -689,7 +689,7 @@ mod tests {
     fn test_fpga_stm_finish_idx() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaStmFinishIdx(link, i), -1);
@@ -701,7 +701,7 @@ mod tests {
     fn test_fpga_modulation_freq_div() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaModulationFrequencyDivision(link, i), 40960);
@@ -713,7 +713,7 @@ mod tests {
     fn test_fpga_modulation_cycle() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 assert_eq!(AUTDLinkAuditFpgaModulationCycle(link, i), 2);
@@ -725,7 +725,7 @@ mod tests {
     fn test_fpga_modulation() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditFpgaModulationCycle(link, i);
@@ -740,7 +740,7 @@ mod tests {
     fn test_fpga_duties_and_phases() {
         unsafe {
             let cnt = create_controller();
-            let link = AUTDGetLink(cnt);
+            let link = AUTDAuditLinkGet(cnt);
 
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);

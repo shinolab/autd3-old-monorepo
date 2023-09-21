@@ -4,7 +4,7 @@ Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 19/09/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,12 +20,12 @@ from .test_autd import create_controller
 
 
 def test_autd3_props():
-    assert AUTD3.trans_spacing() == 10.16
+    assert AUTD3.transducer_spacing() == 10.16
     assert AUTD3.device_width() == 192.0
     assert AUTD3.device_height() == 151.4
-    assert AUTD3.num_trans_in_x() == 18
-    assert AUTD3.num_trans_in_y() == 14
-    assert AUTD3.num_trans_in_unit() == 249
+    assert AUTD3.num_transducer_in_x() == 18
+    assert AUTD3.num_transducer_in_y() == 14
+    assert AUTD3.num_transducer_in_unit() == 249
     assert AUTD3.fpga_clk_freq() == 163.84e6
     assert AUTD3.fpga_sub_clk_freq() == 20.48e6
 
@@ -181,12 +181,12 @@ def test_transducer_position():
     autd = create_controller()
 
     assert np.allclose(autd.geometry[0][0].position, [0.0, 0.0, 0.0])
-    assert np.allclose(autd.geometry[0][-1].position, [(AUTD3.num_trans_in_x() - 1) *
-                       AUTD3.trans_spacing(), (AUTD3.num_trans_in_y() - 1) * AUTD3.trans_spacing(), 0.0])
+    assert np.allclose(autd.geometry[0][-1].position, [(AUTD3.num_transducer_in_x() - 1) *
+                       AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0])
 
     assert np.allclose(autd.geometry[1][0].position, [0.0, 0.0, 0.0])
-    assert np.allclose(autd.geometry[1][-1].position, [(AUTD3.num_trans_in_x() - 1) *
-                       AUTD3.trans_spacing(), (AUTD3.num_trans_in_y() - 1) * AUTD3.trans_spacing(), 0.0])
+    assert np.allclose(autd.geometry[1][-1].position, [(AUTD3.num_transducer_in_x() - 1) *
+                       AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0])
 
 
 def test_transducer_rotation():

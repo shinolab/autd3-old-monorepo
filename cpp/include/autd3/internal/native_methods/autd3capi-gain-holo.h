@@ -8,13 +8,13 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloDotCareConstraint();
+[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintDotCare();
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloNormalizeConstraint();
+[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintNormalize();
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloUniformConstraint(double value);
+[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintUniform(double value);
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloClampConstraint(double min_v, double max_v);
+[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintClamp(double min_v, double max_v);
 
 [[nodiscard]]
 GainPtr AUTDGainHoloEVP(BackendPtr backend,

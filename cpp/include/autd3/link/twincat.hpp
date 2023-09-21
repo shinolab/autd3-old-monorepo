@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ class TwinCAT final: public internal::Link {
   template <typename Rep, typename Period>
   TwinCAT with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkTwinCATTimeout(_ptr, static_cast<uint64_t>(ns));
+    _ptr = AUTDLinkTwinCATWithTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
 
@@ -65,7 +65,7 @@ class RemoteTwinCAT final : public internal::Link {
    * @return RemoteTwinCAT
    */
   RemoteTwinCAT with_server_ip(const std::string& ip) {
-    _ptr = AUTDLinkRemoteTwinCATServerIP(_ptr, ip.c_str());
+    _ptr = AUTDLinkRemoteTwinCATWithServerIP(_ptr, ip.c_str());
     return *this;
   }
 
@@ -76,14 +76,14 @@ class RemoteTwinCAT final : public internal::Link {
    * @return RemoteTwinCAT
    */
   RemoteTwinCAT with_client_ams_net_id(const std::string& id) {
-    _ptr = AUTDLinkRemoteTwinCATClientAmsNetId(_ptr, id.c_str());
+    _ptr = AUTDLinkRemoteTwinCATWithClientAmsNetId(_ptr, id.c_str());
     return *this;
   }
 
   template <typename Rep, typename Period>
   RemoteTwinCAT with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkRemoteTwinCATTimeout(_ptr, static_cast<uint64_t>(ns));
+    _ptr = AUTDLinkRemoteTwinCATWithTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
 

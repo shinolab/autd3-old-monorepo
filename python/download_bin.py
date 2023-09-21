@@ -1,15 +1,15 @@
-"""
+'''
 File: download_bin.py
 Project: python
 Created Date: 24/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 24/07/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 import glob
 import requests
@@ -76,7 +76,7 @@ class Target:
             self.bin_ext = "so"
             self.archive_ext = "tar.gz"
             if arch is not None:
-               self.arch = arch
+                self.arch = arch
             else:
                 if is_32bit:
                     print("32bit is not supported")

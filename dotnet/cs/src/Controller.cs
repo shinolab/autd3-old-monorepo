@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -195,10 +195,10 @@ namespace AUTD3Sharp
             public ControllerBuilder AddDevice(AUTD3 device)
             {
                 if (device.Rot != null)
-                    _ptr = Base.AUTDAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
+                    _ptr = Base.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
                         device.Rot.Value.y, device.Rot.Value.z);
                 else if (device.Quat != null)
-                    _ptr = Base.AUTDAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
+                    _ptr = Base.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
                         device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
                 return this;
             }
@@ -248,7 +248,7 @@ namespace AUTD3Sharp
 
             internal ControllerBuilder()
             {
-                _ptr = Base.AUTDCreateControllerBuilder();
+                _ptr = Base.AUTDControllerBuilder();
                 _mode = TransMode.Legacy;
             }
         }
@@ -269,7 +269,7 @@ namespace AUTD3Sharp
             if (ptr._0 == IntPtr.Zero)
                 throw new AUTDException(err);
 
-            var geometry = new Geometry(Base.AUTDGetGeometry(ptr), mode);
+            var geometry = new Geometry(Base.AUTDGeometry(ptr), mode);
 
             return new Controller(geometry, ptr, mode);
         }
@@ -288,18 +288,18 @@ namespace AUTD3Sharp
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
         {
             var err = new byte[256];
-            var handle = Base.AUTDGetFirmwareInfoListPointer(Ptr, err);
+            var handle = Base.AUTDControllerFirmwareInfoListPointer(Ptr, err);
             if (handle._0 == IntPtr.Zero)
                 throw new AUTDException(err);
 
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
                 var info = new byte[256];
-                Base.AUTDGetFirmwareInfo(handle, i, info);
+                Base.AUTDControllerFirmwareInfoGet(handle, i, info);
                 yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info));
             }
 
-            Base.AUTDFreeFirmwareInfoListPointer(handle);
+            Base.AUTDControllerFirmwareInfoListPointerDelete(handle);
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace AUTD3Sharp
         {
             if (Ptr._0 == IntPtr.Zero) return;
             var err = new byte[256];
-            if (!Base.AUTDClose(Ptr, err))
+            if (!Base.AUTDControllerClose(Ptr, err))
                 throw new AUTDException(err);
         }
 
@@ -318,7 +318,7 @@ namespace AUTD3Sharp
         {
             if (_isDisposed) return;
 
-            if (Ptr._0 != IntPtr.Zero) Base.AUTDFreeController(Ptr);
+            if (Ptr._0 != IntPtr.Zero) Base.AUTDControllerDelete(Ptr);
             Ptr._0 = IntPtr.Zero;
 
             _isDisposed = true;
@@ -345,7 +345,7 @@ namespace AUTD3Sharp
             {
                 var infos = new byte[Geometry.NumDevices];
                 var err = new byte[256];
-                if (!Base.AUTDGetFPGAInfo(Ptr, infos, err))
+                if (!Base.AUTDControllerFPGAInfo(Ptr, infos, err))
                     throw new AUTDException(err);
                 return infos.Select(x => new FPGAInfo(x)).ToArray();
             }
@@ -365,7 +365,7 @@ namespace AUTD3Sharp
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
-            var res = Base.AUTDSendSpecial(Ptr, _mode, special.Ptr(),
+            var res = Base.AUTDControllerSendSpecial(Ptr, _mode, special.Ptr(),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
@@ -402,7 +402,7 @@ namespace AUTD3Sharp
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var res = Base.AUTDSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry),
+            var res = Base.AUTDControllerSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
@@ -460,7 +460,7 @@ namespace AUTD3Sharp
                 };
                 var err = new byte[256];
                 var gch = GCHandle.Alloc(_context);
-                if (Base.AUTDSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate(callbackNative),
+                if (Base.AUTDControllerSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate(callbackNative),
                         GCHandle.ToIntPtr(gch), _strategy, intervalNs, err) == Def.Autd3Err)
                 {
                     gch.Free();
@@ -506,7 +506,7 @@ namespace AUTD3Sharp
             {
                 _controller = controller;
                 _map = map;
-                _kvMap = Base.AUTDGroupCreateKVMap();
+                _kvMap = Base.AUTDControllerGroupCreateKVMap();
                 _keymap = new Dictionary<TK, int>();
                 _k = 0;
             }
@@ -522,7 +522,7 @@ namespace AUTD3Sharp
                 var ptr2 = data2.Ptr(_controller.Geometry);
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, _controller._mode, timeoutNs, err);
+                _kvMap = Base.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, _controller._mode, timeoutNs, err);
                 if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
@@ -546,7 +546,7 @@ namespace AUTD3Sharp
                 var ptr = data.Ptr();
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, _controller._mode, timeoutNs, err);
+                _kvMap = Base.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, _controller._mode, timeoutNs, err);
                 if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
@@ -559,7 +559,7 @@ namespace AUTD3Sharp
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();
                 var err = new byte[256];
-                if (Base.AUTDGroup(_controller.Ptr, map, _kvMap, err) == Def.Autd3Err)
+                if (Base.AUTDControllerGroup(_controller.Ptr, map, _kvMap, err) == Def.Autd3Err)
                     throw new AUTDException(err);
             }
         }
@@ -576,7 +576,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class UpdateFlags : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDUpdateFlags();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramUpdateFlags();
     }
 
     /// <summary>
@@ -584,7 +584,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Clear : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDClear();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramClear();
     }
 
     /// <summary>
@@ -592,7 +592,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Synchronize : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDSynchronize();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramSynchronize();
     }
 
     /// <summary>
@@ -600,7 +600,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Stop : ISpecialDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDStop();
+        public DatagramSpecialPtr Ptr() => Base.AUTDDatagramStop();
     }
 
     /// <summary>
@@ -608,7 +608,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigureModDelay : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigureModDelay();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigureModDelay();
     }
 
     /// <summary>
@@ -616,7 +616,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigureAmpFilter : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigureAmpFilter();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigureAmpFilter();
     }
 
 
@@ -625,7 +625,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigurePhaseFilter : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDConfigurePhaseFilter();
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigurePhaseFilter();
     }
 
     /// <summary>
@@ -644,7 +644,7 @@ namespace AUTD3Sharp
             _step = step;
         }
 
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDCreateSilencer(_step);
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramSilencer(_step);
 
         /// <summary>
         /// Disable silencer
@@ -670,6 +670,6 @@ namespace AUTD3Sharp
             _amp = amp;
         }
 
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDCreateAmplitudes(_amp);
+        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramAmplitudes(_amp);
     }
 }
