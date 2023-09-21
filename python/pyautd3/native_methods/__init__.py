@@ -46,6 +46,11 @@ GainHolo().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ModulationAudioFile().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkSimulator().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkSOEM().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
+if sys.platform == "win32":
+    try:
+        os.add_dll_directory("C:\\TwinCAT\\Common64")
+    except KeyError:
+        pass
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraGeometryViewer().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 if sys.platform == "win32":
