@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,14 +60,14 @@ pub unsafe extern "C" fn AUTDModulationCalc(
 mod tests {
     use super::*;
 
-    use crate::modulation::r#static::*;
+    use crate::modulation::{r#static::*, sine::*};
 
     #[test]
     fn test_modulation_sampling_frequency_div() {
         unsafe {
-            let div = 10240;
-            let m = AUTDModulationStatic();
-            let m = AUTDModulationStaticWithSamplingFrequencyDivision(m, div);
+            let div = 5120;
+            let m = AUTDModulationSine(150);
+            let m = AUTDModulationSineWithSamplingFrequencyDivision(m, div);
             assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
         }
     }
