@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/09/2023
+ * Last Modified: 19/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -102,5 +102,27 @@ impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
 
     fn timeout(&self) -> Duration {
         self.as_ref().timeout()
+    }
+
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        self.as_mut().send_receive(tx, rx, timeout)
+    }
+
+    fn wait_msg_processed(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        self.as_mut().wait_msg_processed(tx, rx, timeout)
+    }
+
+    fn check(&self, tx: &TxDatagram, rx: &mut RxDatagram) -> Vec<bool> {
+        self.as_ref().check(tx, rx)
     }
 }

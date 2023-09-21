@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/09/2023
+ * Last Modified: 17/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -83,10 +83,6 @@ impl CPUEmulator {
 
     pub fn fpga_mut(&mut self) -> &mut FPGAEmulator {
         &mut self.fpga
-    }
-
-    pub fn synchronized(&self) -> bool {
-        self.synchronized
     }
 
     pub fn send(&mut self, tx: &TxDatagram) {

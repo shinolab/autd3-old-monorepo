@@ -25,13 +25,13 @@ class GeometryViewer:
     def __init__(self):
         self._handle = ExtraGeometryViewer().geometry_viewer()
 
-    def window_size(self, width: int, height: int) -> "GeometryViewer":
+    def with_window_size(self, width: int, height: int) -> "GeometryViewer":
         self._handle = ExtraGeometryViewer().geometry_viewer_size(
             self._handle, width, height
         )
         return self
 
-    def vsync(self, value: bool) -> "GeometryViewer":
+    def with_vsync(self, value: bool) -> "GeometryViewer":
         self._handle = ExtraGeometryViewer().geometry_viewer_vsync(self._handle, value)
         return self
 

@@ -61,10 +61,6 @@ class GS(IGain):
         self._repeat = value
         return self
 
-    def with_backend(self, backend: Backend) -> "GS":
-        self._backend = backend
-        return self
-
     def with_constraint(self, constraint: AmplitudeConstraint) -> "GS":
         self._constraint = constraint
         return self

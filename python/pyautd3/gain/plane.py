@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 20/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,6 +29,10 @@ class Plane(IGain):
         super().__init__()
         self._d = dir
         self._amp = None
+
+    def with_amp(self, amp: float) -> "Plane":
+        self._amp = amp
+        return self
 
     def gain_ptr(self, _: Geometry) -> GainPtr:
         ptr = Base().gain_plane(self._d[0], self._d[1], self._d[2])

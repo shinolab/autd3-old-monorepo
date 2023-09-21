@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 20/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -88,7 +88,7 @@ impl LegacyDrive {
     }
 
     pub fn to_duty(d: &Drive) -> u8 {
-        (510.0 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+        (512.0 * d.amp.clamp(0.00613588464, 1.).asin() / PI - 1.0).round() as _
     }
 
     pub fn set(&mut self, d: &Drive) {
@@ -206,7 +206,10 @@ mod tests {
 
         assert!(p.set(x, y, z, duty_shift).is_ok());
 
-        assert_eq!((p.buf[0] as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1), 1);
+        assert_eq!(
+            (p.buf[0] as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1),
+            1
+        );
         assert_eq!(
             ((p.buf[1] >> 2) as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1),
             2
@@ -284,7 +287,6 @@ mod tests {
         let dc = d;
         assert_eq!(d.phase, dc.phase);
         assert_eq!(d.duty, dc.duty);
-        dbg!(d);
 
         let mut d = [0x00u8; 2];
 
@@ -303,7 +305,7 @@ mod tests {
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 128);
-            assert_eq!(d[1], 85);
+            assert_eq!(d[1], 84);
 
             let s = Drive {
                 phase: 2.0 * PI,
@@ -338,7 +340,6 @@ mod tests {
         let d = AdvancedDrivePhase { phase: 0x0001 };
         let dc = d;
         assert_eq!(d.phase, dc.phase);
-        dbg!(d);
 
         let mut d = 0x0000u16;
 
@@ -426,7 +427,6 @@ mod tests {
         let d = AdvancedDriveDuty { duty: 0x0001 };
         let dc = d;
         assert_eq!(d.duty, dc.duty);
-        dbg!(d);
 
         let mut d = 0x0000u16;
 
