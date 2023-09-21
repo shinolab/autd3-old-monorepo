@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,12 +34,6 @@ class Transform final : public internal::Gain {
     char err[256]{};
     auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
     if (res._0 == nullptr) throw internal::AUTDException(err);
-    for (const auto& dev : geometry) {
-      std::vector<internal::native_methods::Drive> drives;
-      drives.resize(dev.num_transducers());
-      internal::native_methods::AUTDGainCalcGetResult(res, drives.data(), static_cast<uint32_t>(dev.idx()));
-      _cache.emplace(dev.idx(), std::move(drives));
-    }
 
     std::for_each(geometry.begin(), geometry.end(), [this, &drives](const internal::Device& dev) {
       std::vector<internal::native_methods::Drive> d;
