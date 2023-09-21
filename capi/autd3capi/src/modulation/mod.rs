@@ -14,7 +14,7 @@
 use std::ffi::c_char;
 
 use autd3capi_def::{
-    common::{autd3::driver::defined::*, *},
+    common::{*},
     *,
 };
 
