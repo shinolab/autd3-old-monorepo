@@ -3,6 +3,14 @@
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
 - Fix [#159](https://github.com/shinolab/autd3/issues/159): `Controller::group` should save device enable flag
 - Fix [#163](https://github.com/shinolab/autd3/issues/163): FirmwareInfo.latest_version still returns "v3.0.0"
+- Fix [#165](https://github.com/shinolab/autd3/issues/165): [Python] missing with_amp methods in Plane
+- Fix [#166](https://github.com/shinolab/autd3/issues/166): There is no way to get modulation size
+- Fix [#167](https://github.com/shinolab/autd3/issues/167): [Python] Gain.with_cache cause an error
+- Fix [#168](https://github.com/shinolab/autd3/issues/168): [Python] GainSTM has from_sampling_frequency_division instead with_sampling_frequency_division
+- Fix [#169](https://github.com/shinolab/autd3/issues/168): Slightly different duty ratios in Legacy and Advanced modes
+- Fix [#170](https://github.com/shinolab/autd3/issues/170): Add sampling period settings for STM in capi
+- Fix [#171](https://github.com/shinolab/autd3/issues/171): [Python] SOEM.enumerate_adapters() cause an error
+- Fix [#172](https://github.com/shinolab/autd3/issues/172): [Python] could not use CUDABackend
 
 # 15.1.1
 

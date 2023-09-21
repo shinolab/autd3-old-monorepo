@@ -34,7 +34,11 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGainCalc(GainPtr gain, GeometryPtr geometry, Drive[][]? drives, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainCalcDrivesMapPtr AUTDGainCalc(GainPtr gain, GeometryPtr geometry, byte[] err);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive[] dst, uint idx);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainNull();
 
@@ -237,8 +241,6 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStatic();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, float amp);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationStaticWithSamplingFrequencyDivision(ModulationPtr m, uint div);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern DatagramPtr AUTDFocusSTM(STMPropsPtr props, float[]? points, byte[]? shift, ulong size);
 

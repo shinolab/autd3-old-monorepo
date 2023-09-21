@@ -102,15 +102,15 @@ let div = m.sampling_frequency_division();
 ```
 
 ```cpp
-const auto fs = m.sampling_frequency_division();
+const auto div = m.sampling_frequency_division();
 ```
 
 ```cs
-var fs = m.SamplingFrequencyDivision;
+var div = m.SamplingFrequencyDivision;
 ```
 
 ```python
-fs = m.sampling_frequency_division
+div = m.sampling_frequency_division
 ```
 
 また, 一部の`Modulation`は`with_sampling_frequency_division`でサンプリング周波数分周比を設定できる.
@@ -136,6 +136,33 @@ fs = m.sampling_frequency_division
   ```python
   m = Sine(150).with_sampling_frequency_division(5120)
   ```
+
+### 変調データサイズ
+
+変調データサイズは以下のように取得する.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let n = m.len();
+# Ok(())
+# }
+```
+
+```cpp
+const auto n = m.size();
+```
+
+```cs
+var n = m.Length;
+```
+
+```python
+n = len(m)
+```
 
 ## Modulation Delay
 

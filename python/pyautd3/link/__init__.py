@@ -15,10 +15,12 @@ from .soem import SOEM, RemoteSOEM, OnLostFunc
 from .debug import Debug
 from .twincat import TwinCAT, RemoteTwinCAT
 from .simulator import Simulator
+from .audit import Audit
 from .link import LogOutputFunc, LogFlushFunc
 from pyautd3.native_methods.autd3capi_link_soem import SyncMode
 
 __all__ = [
+    "Audit",
     "RemoteTwinCAT",
     "SOEM",
     "OnLostFunc",

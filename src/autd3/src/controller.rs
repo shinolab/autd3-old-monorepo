@@ -483,7 +483,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 mod tests {
     use crate::{
         autd3_device::AUTD3,
-        link::Test,
+        link::Audit,
         prelude::{Focus, Sine},
     };
 
@@ -507,7 +507,7 @@ mod tests {
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         for dev in autd.geometry_mut().iter_mut() {
@@ -533,7 +533,7 @@ mod tests {
     fn basic_usage() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         let firm_infos = autd.firmware_infos().unwrap();
@@ -675,7 +675,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         for tr in autd.geometry_mut()[0].iter_mut() {
@@ -703,7 +703,7 @@ mod tests {
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
                 Vector3::zeros(),
             ))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         assert!(autd.link().emulators().iter().all(|cpu| {
@@ -844,7 +844,7 @@ mod tests {
                 Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
                 Vector3::zeros(),
             ))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -986,7 +986,7 @@ mod tests {
     fn focus_stm() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -1075,7 +1075,7 @@ mod tests {
     fn gain_stm_legacy() {
         let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         let center = autd.geometry().center();
@@ -1182,7 +1182,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();
@@ -1264,7 +1264,7 @@ mod tests {
         let mut autd = Controller::builder()
             .advanced_phase()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .open_with(Test::new())
+            .open_with(Audit::new())
             .unwrap();
 
         autd.send(Clear::new()).unwrap();

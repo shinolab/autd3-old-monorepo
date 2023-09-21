@@ -101,7 +101,7 @@ class SOEM(Link):
                 sb_name.value.decode("utf-8"), sb_desc.value.decode("utf-8")
             )
 
-        res = list(map(get_adapter, range(int(size.value))))
+        res = list(map(get_adapter, range(int(size))))
 
         LinkSOEM().free_adapter_pointer(handle)
 
