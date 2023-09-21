@@ -1,7 +1,7 @@
 /*
- * File: fir.rs
+ * File: radiation_pressure.rs
  * Project: modulation
- * Created Date: 24/08/2023
+ * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
  * Last Modified: 21/09/2023
