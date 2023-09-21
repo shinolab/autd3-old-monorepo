@@ -1,3 +1,7 @@
+# 15.1.2
+
+- Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
+
 # 15.1.1
 
 - Fix [#156](https://github.com/shinolab/autd3/issues/156): Err should be returned when the focus range available is exceeded in FocusSTM
