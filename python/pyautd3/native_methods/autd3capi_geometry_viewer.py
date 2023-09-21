@@ -38,7 +38,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGeometryViewerWithVsync.argtypes = [GeometryViewerPtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDGeometryViewerWithVsync.restype = GeometryViewerPtr
 
-        self.dll.AUTDGeometryViewerRun.argtypes = [GeometryViewerPtr, GeometryPtr]  # type: ignore 
+        self.dll.AUTDGeometryViewerRun.argtypes = [GeometryViewerPtr, GeometryPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDGeometryViewerRun.restype = ctypes.c_int32
 
     def geometry_viewer(self) -> GeometryViewerPtr:
@@ -50,5 +50,5 @@ class NativeMethods(metaclass=Singleton):
     def geometry_viewer_with_vsync(self, viewer: GeometryViewerPtr, vsync: bool) -> GeometryViewerPtr:
         return self.dll.AUTDGeometryViewerWithVsync(viewer, vsync)
 
-    def geometry_viewer_run(self, viewer: GeometryViewerPtr, geometry: GeometryPtr) -> ctypes.c_int32:
-        return self.dll.AUTDGeometryViewerRun(viewer, geometry)
+    def geometry_viewer_run(self, viewer: GeometryViewerPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDGeometryViewerRun(viewer, geometry, err)

@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,8 +52,11 @@ namespace AUTD3Sharp.Extra
         /// <param name="geometry"></param>
         /// <returns>0 if success, otherwise error code</returns>
         public int Run(Geometry geometry)
-        =>
-            NativeMethods.GeometryViewer.AUTDGeometryViewerRun(_handle, geometry.Ptr);
-
+        {
+            var err = new byte[256];
+            var res = NativeMethods.GeometryViewer.AUTDGeometryViewerRun(_handle, geometry.Ptr, err);
+            if (res < 0) throw new AUTDException(err);
+            return res;
+        }
     }
 }

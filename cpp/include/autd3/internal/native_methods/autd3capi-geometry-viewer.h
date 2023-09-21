@@ -21,7 +21,10 @@ GeometryViewerPtr AUTDGeometryViewerWithSize(GeometryViewerPtr viewer,
 
 [[nodiscard]] GeometryViewerPtr AUTDGeometryViewerWithVsync(GeometryViewerPtr viewer, bool vsync);
 
-[[nodiscard]] int32_t AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry);
+[[nodiscard]]
+int32_t AUTDGeometryViewerRun(GeometryViewerPtr viewer,
+                              GeometryPtr geometry,
+                              char *err);
 
 } // extern "C"
 
