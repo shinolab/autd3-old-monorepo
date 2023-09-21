@@ -195,7 +195,7 @@ class Controller:
     def firmware_info_list(self) -> List[FirmwareInfo]:
         err = ctypes.create_string_buffer(256)
         handle = Base().get_firmware_info_list_pointer(self._ptr, err)
-        if not handle:
+        if handle._0 is None:
             raise AUTDError(err)
 
         def get_firmware_info(i: int) -> FirmwareInfo:
