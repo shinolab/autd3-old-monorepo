@@ -21,6 +21,7 @@ use autd3capi_def::{
 pub mod custom;
 pub mod fir;
 pub mod fourier;
+pub mod radiation_pressure;
 pub mod sine;
 pub mod sine_legacy;
 pub mod square;

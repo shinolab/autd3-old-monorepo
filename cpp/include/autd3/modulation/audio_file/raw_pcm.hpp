@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ class RawPCM final : public internal::Modulation {
   explicit RawPCM(std::filesystem::path path, const uint32_t sample_rate) : _sample_rate(sample_rate), _path(std::move(path)) {}
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE
+  AUTD3_IMPL_WITH_RADIATION_PRESSURE(RawPCM)
   AUTD3_IMPL_WITH_TRANSFORM_MODULATION
 
   AUTD3_IMPL_MOD_PROP(RawPCM)

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,9 +62,9 @@ class Modulation : public Datagram {
     return Transform(*this, f);                          \
   }
 
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE                                                                    \
-  [[nodiscard]] RadiationPressure with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
-  [[nodiscard]] RadiationPressure with_radiation_pressure()& { return RadiationPressure(*this); }
+#define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                                                    \
+  [[nodiscard]] RadiationPressure<TYPE> with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
+  [[nodiscard]] RadiationPressure<TYPE> with_radiation_pressure()& { return RadiationPressure(*this); }
 
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
   void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \

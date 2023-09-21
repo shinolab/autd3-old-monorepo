@@ -19,6 +19,10 @@ struct Drive {
   double amp;
 };
 
+struct AuditLinkPtr {
+  void* _0;
+};
+
 extern "C" {
 
 [[nodiscard]] ControllerBuilderPtr AUTDCreateControllerBuilder();
@@ -276,6 +280,84 @@ void AUTDSetTransPhaseFilter(TransducerPtr tr, double value);
 
 [[nodiscard]] LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, void* out_func, void* flush_func);
 
+[[nodiscard]] LinkPtr AUTDLinkAudit();
+
+[[nodiscard]] LinkPtr AUTDLinkAuditWithTimeout(LinkPtr test, uint64_t timeout_ns);
+
+[[nodiscard]] AuditLinkPtr AUTDGetLink(ControllerPtr cnt);
+
+[[nodiscard]] bool AUTDLinkAuditIsOpen(AuditLinkPtr audit);
+
+[[nodiscard]] uint64_t AUTDLinkAuditTimeoutNs(AuditLinkPtr audit);
+
+[[nodiscard]] uint64_t AUTDLinkAuditLastTimeoutNs(AuditLinkPtr audit);
+
+void AUTDLinkAuditDown(AuditLinkPtr audit);
+
+void AUTDLinkAuditUp(AuditLinkPtr audit);
+
+void AUTDLinkAuditBreakDown(AuditLinkPtr audit);
+
+void AUTDLinkAuditRepair(AuditLinkPtr audit);
+
+void AUTDLinkAuditCpuUpdate(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint32_t AUTDLinkAuditCpuIdx(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint32_t AUTDLinkAuditCpuNumTransducers(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint8_t AUTDLinkAuditCpuAck(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint8_t AUTDLinkAuditCpuRxData(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint8_t AUTDLinkAuditCpuFpgaFlags(AuditLinkPtr audit, uint32_t idx);
+
+void AUTDLinkAuditFpgaAssertThermalSensor(AuditLinkPtr audit, uint32_t idx);
+
+void AUTDLinkAuditFpgaDeassertThermalSensor(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] bool AUTDLinkAuditFpgaIsLegacyMode(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] bool AUTDLinkAuditFpgaIsForceFan(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] bool AUTDLinkAuditFpgaIsStmMode(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] bool AUTDLinkAuditFpgaIsStmGainMode(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStep(AuditLinkPtr audit, uint32_t idx);
+
+void AUTDLinkAuditFpgaCycles(AuditLinkPtr audit, uint32_t idx, uint16_t *cycles);
+
+void AUTDLinkAuditFpgaModDelays(AuditLinkPtr audit, uint32_t idx, uint16_t *delay);
+
+void AUTDLinkAuditFpgaDutyFilters(AuditLinkPtr audit, uint32_t idx, int16_t *filters);
+
+void AUTDLinkAuditFpgaPhaseFilters(AuditLinkPtr audit, uint32_t idx, int16_t *filters);
+
+[[nodiscard]] uint32_t AUTDLinkAuditFpgaStmFrequencyDivision(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint32_t AUTDLinkAuditFpgaStmCycle(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint32_t AUTDLinkAuditFpgaSoundSpeed(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] int32_t AUTDLinkAuditFpgaStmStartIdx(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]] int32_t AUTDLinkAuditFpgaStmFinishIdx(AuditLinkPtr audit, uint32_t idx);
+
+[[nodiscard]]
+uint32_t AUTDLinkAuditFpgaModulationFrequencyDivision(AuditLinkPtr audit,
+                                                      uint32_t idx);
+
+[[nodiscard]] uint32_t AUTDLinkAuditFpgaModulationCycle(AuditLinkPtr audit, uint32_t idx);
+
+void AUTDLinkAuditFpgaModulation(AuditLinkPtr audit, uint32_t idx, uint8_t *data);
+
+void AUTDLinkAuditFpgaDutiesAndPhases(AuditLinkPtr audit,
+                                      uint32_t idx,
+                                      uint32_t stm_idx,
+                                      uint16_t *duties,
+                                      uint16_t *phases);
+
 [[nodiscard]] uint32_t AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
 
 [[nodiscard]] DatagramPtr AUTDModulationIntoDatagram(ModulationPtr m);
@@ -316,6 +398,8 @@ ModulationPtr AUTDModulationWithBandStop(ModulationPtr m,
 [[nodiscard]]
 ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
                                                 ModulationPtr m);
+
+[[nodiscard]] ModulationPtr AUTDModulationWithRadiationPressure(ModulationPtr m);
 
 [[nodiscard]] ModulationPtr AUTDModulationSine(uint32_t freq);
 
