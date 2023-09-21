@@ -49,5 +49,8 @@ LinkSOEM().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraGeometryViewer().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 if sys.platform == "win32":
-    os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
+    try:
+        os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
+    except KeyError:
+        pass
 BackendCUDA().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
