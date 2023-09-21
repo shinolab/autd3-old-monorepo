@@ -1,6 +1,7 @@
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
+- Fix [#159](https://github.com/shinolab/autd3/issues/159): `Controller::group` should save device enable flag
 
 # 15.1.1
 
