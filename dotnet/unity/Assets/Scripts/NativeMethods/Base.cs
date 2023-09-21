@@ -260,6 +260,16 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, IntPtr outFunc, IntPtr flushFunc);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationCachePtr AUTDModulationWithCache(ModulationPtr m, byte[] err);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDModulationCacheGetBufferSize(ModulationCachePtr m);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDModulationCacheGetBuffer(ModulationCachePtr m, float[] buf);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCacheIntoModulation(ModulationCachePtr m);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDModulationCacheDelete(ModulationCachePtr m);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationCustom(uint freqDiv, float[]? ptr, ulong len);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWithLowPass(ModulationPtr m, uint nTaps, float cutoff);
@@ -364,6 +374,12 @@ namespace AUTD3Sharp
 
     [StructLayout(LayoutKind.Sequential)]
     public struct AuditLinkPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ModulationCachePtr
     {
         public IntPtr _0;
     }

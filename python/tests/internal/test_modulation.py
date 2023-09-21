@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from ..test_autd import create_controller
 
+from pyautd3.modulation import Modulation
 from pyautd3.modulation import Sine
 from pyautd3.link.audit import Audit
 
@@ -112,6 +113,36 @@ def test_cache():
             63]
         assert np.array_equal(mod, mod_expext)
         assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+
+
+class CacheTest(Modulation):
+    calc_cnt: int
+
+    def __init__(self, freq_div: int = 5120):
+        super().__init__(freq_div)
+        self.calc_cnt = 0
+
+    def calc(self):
+        self.calc_cnt += 1
+        return np.ones(2, dtype=np.float64)
+
+
+def test_cache_check_once():
+    autd = create_controller()
+
+    m = CacheTest()
+    assert autd.send(m)
+    assert m.calc_cnt == 1
+    assert autd.send(m)
+    assert m.calc_cnt == 2
+
+    m = CacheTest()
+    m_cached = m.with_cache()
+
+    assert autd.send(m_cached)
+    assert m.calc_cnt == 1
+    assert autd.send(m_cached)
+    assert m.calc_cnt == 1
 
 
 def test_transform():

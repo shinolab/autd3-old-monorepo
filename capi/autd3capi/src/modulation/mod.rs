@@ -18,6 +18,7 @@ use autd3capi_def::{
     *,
 };
 
+pub mod cache;
 pub mod custom;
 pub mod fir;
 pub mod fourier;

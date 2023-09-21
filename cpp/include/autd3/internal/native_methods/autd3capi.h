@@ -23,6 +23,10 @@ struct AuditLinkPtr {
   void* _0;
 };
 
+struct ModulationCachePtr {
+  void* _0;
+};
+
 extern "C" {
 
 [[nodiscard]] ControllerBuilderPtr AUTDCreateControllerBuilder();
@@ -365,6 +369,16 @@ void AUTDLinkAuditFpgaDutiesAndPhases(AuditLinkPtr audit,
 [[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
 
 [[nodiscard]] int32_t AUTDModulationCalc(ModulationPtr m, double *buffer, char *err);
+
+[[nodiscard]] ModulationCachePtr AUTDModulationWithCache(ModulationPtr m, char *err);
+
+[[nodiscard]] uint32_t AUTDModulationCacheGetBufferSize(ModulationCachePtr m);
+
+void AUTDModulationCacheGetBuffer(ModulationCachePtr m, double *buf);
+
+[[nodiscard]] ModulationPtr AUTDModulationCacheIntoModulation(ModulationCachePtr m);
+
+void AUTDModulationCacheDelete(ModulationCachePtr m);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,
