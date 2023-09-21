@@ -32,8 +32,7 @@ pub unsafe extern "C" fn AUTDModulationWithCache(
 ) -> ModulationCachePtr {
     try_or_return!(
         Box::from_raw(m.0 as *mut Box<M>)
-            .with_cache()
-            .and_then(|m| Ok(ModulationCachePtr(Box::into_raw(Box::new(m)) as _))),
+            .with_cache().map(|m| ModulationCachePtr(Box::into_raw(Box::new(m)) as _)),
         err,
         ModulationCachePtr(std::ptr::null())
     )
