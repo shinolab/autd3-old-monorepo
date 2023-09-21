@@ -50,3 +50,4 @@
 | 2023/09/14 | Version 15.1.0 Initial release                |
 | 2023/09/15 | Version 15.1.1 Initial release                |
 | 2023/09/18 | Version 15.1.1 Update                         |
+| 2023/09/22 | Version 15.1.2 Initial release                |
