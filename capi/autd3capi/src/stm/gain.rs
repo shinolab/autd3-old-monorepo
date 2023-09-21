@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3capi_def::{common::*, DatagramPtr, GainPtr, GainSTMMode, STMPropsPtr};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainSTM(
+pub unsafe extern "C" fn AUTDSTMGain(
     props: STMPropsPtr,
     gains: *const GainPtr,
     size: u32,
@@ -37,7 +37,7 @@ pub unsafe extern "C" fn AUTDGainSTM(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainSTMAddGain(stm: DatagramPtr, gain: GainPtr) -> DatagramPtr {
+pub unsafe extern "C" fn AUTDSTMGainAddGain(stm: DatagramPtr, gain: GainPtr) -> DatagramPtr {
     DatagramPtr::new(
         Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer, _>>)
             .add_gain(*Box::from_raw(gain.0 as *mut Box<G>)),
@@ -63,7 +63,7 @@ mod tests {
 
             let gains = [g0, g1];
 
-            let stm = AUTDGainSTM(
+            let stm = AUTDSTMGain(
                 props,
                 gains.as_ptr(),
                 gains.len() as u32,
@@ -72,7 +72,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     stm,
@@ -83,7 +83,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

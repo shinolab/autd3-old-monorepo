@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -81,7 +81,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     m,
@@ -92,7 +92,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 
@@ -107,7 +107,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     m,
@@ -118,7 +118,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 
@@ -133,7 +133,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     m,
@@ -144,7 +144,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 
@@ -159,7 +159,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     m,
@@ -170,7 +170,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

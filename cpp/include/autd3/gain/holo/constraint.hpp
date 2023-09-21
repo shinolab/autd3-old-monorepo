@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,19 +23,19 @@ class AmplitudeConstraint {
   /**
    * @brief Do nothing (this is equivalent to `Clamp(0, 1)`)
    */
-  static AmplitudeConstraint dont_care() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloDotCareConstraint()}; }
+  static AmplitudeConstraint dont_care() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintDotCare()}; }
 
   /**
    * @brief Normalize the value by dividing the maximum value
    */
-  static AmplitudeConstraint normalize() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloNormalizeConstraint()}; }
+  static AmplitudeConstraint normalize() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintNormalize()}; }
 
   /**
    * @brief Set all amplitudes to the specified value
    * @param value amplitude
    */
   static AmplitudeConstraint uniform(const double value) {
-    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloUniformConstraint(value)};
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintUniform(value)};
   }
 
   /**
@@ -45,7 +45,7 @@ class AmplitudeConstraint {
    * @param max_v maximum amplitude
    */
   static AmplitudeConstraint clamp(const double min_v, const double max_v) {
-    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloClampConstraint(min_v, max_v)};
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintClamp(min_v, max_v)};
   }
 
   [[nodiscard]] internal::native_methods::ConstraintPtr ptr() const { return _ptr; }

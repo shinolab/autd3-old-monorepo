@@ -10,15 +10,15 @@ extern "C" {
 
 [[nodiscard]] LinkPtr AUTDLinkTwinCAT(char *err);
 
-[[nodiscard]] LinkPtr AUTDLinkTwinCATTimeout(LinkPtr twincat, uint64_t timeout_ns);
+[[nodiscard]] LinkPtr AUTDLinkTwinCATWithTimeout(LinkPtr twincat, uint64_t timeout_ns);
 
 [[nodiscard]] LinkPtr AUTDLinkRemoteTwinCAT(const char *server_ams_net_id, char *err);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATServerIP(LinkPtr twincat, const char *addr);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithServerIP(LinkPtr twincat, const char *addr);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATClientAmsNetId(LinkPtr twincat, const char *id);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkPtr twincat, const char *id);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATTimeout(LinkPtr twincat, uint64_t timeout_ns);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithTimeout(LinkPtr twincat, uint64_t timeout_ns);
 
 } // extern "C"
 

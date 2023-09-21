@@ -1,15 +1,15 @@
-"""
+'''
 File: simulator.py
 Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 from datetime import timedelta
@@ -29,7 +29,7 @@ class Simulator(Link):
 
     def with_server_ip(self, addr: str) -> "Simulator":
         err = ctypes.create_string_buffer(256)
-        self._ptr = LinkSimulator().link_simulator_addr(
+        self._ptr = LinkSimulator().link_simulator_with_addr(
             self._ptr, addr.encode("utf-8"), err
         )
         if self._ptr._0 is None:
@@ -37,7 +37,7 @@ class Simulator(Link):
         return self
 
     def with_timeout(self, timeout: timedelta) -> "Simulator":
-        self._ptr = LinkSimulator().link_simulator_timeout(
+        self._ptr = LinkSimulator().link_simulator_with_timeout(
             self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )
         return self

@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/06/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ pub unsafe extern "C" fn AUTDLinkSimulator(port: u16) -> LinkPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSimulatorAddr(
+pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
     simulator: LinkPtr,
     addr: *const c_char,
     err: *mut c_char,
@@ -46,6 +46,6 @@ pub unsafe extern "C" fn AUTDLinkSimulatorAddr(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSimulatorTimeout(simulator: LinkPtr, timeout_ns: u64) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSimulatorWithTimeout(simulator: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(simulator, Simulator).with_timeout(Duration::from_nanos(timeout_ns)))
 }

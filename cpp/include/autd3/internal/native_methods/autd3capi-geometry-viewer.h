@@ -15,11 +15,11 @@ extern "C" {
 [[nodiscard]] GeometryViewerPtr AUTDGeometryViewer();
 
 [[nodiscard]]
-GeometryViewerPtr AUTDGeometryViewerSize(GeometryViewerPtr viewer,
-                                         uint32_t width,
-                                         uint32_t height);
+GeometryViewerPtr AUTDGeometryViewerWithSize(GeometryViewerPtr viewer,
+                                             uint32_t width,
+                                             uint32_t height);
 
-[[nodiscard]] GeometryViewerPtr AUTDGeometryViewerVsync(GeometryViewerPtr viewer, bool vsync);
+[[nodiscard]] GeometryViewerPtr AUTDGeometryViewerWithVsync(GeometryViewerPtr viewer, bool vsync);
 
 [[nodiscard]] int32_t AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry);
 

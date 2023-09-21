@@ -3,7 +3,7 @@
 // Created Date: 04/06/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ class Amplitudes final : public Datagram {
   static Amplitudes uniform(const double amp) noexcept { return Amplitudes(amp); }
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
-    return native_methods::AUTDCreateAmplitudes(_amp);
+    return native_methods::AUTDDatagramAmplitudes(_amp);
   }
 
  private:

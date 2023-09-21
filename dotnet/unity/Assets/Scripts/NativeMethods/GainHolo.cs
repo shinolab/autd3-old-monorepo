@@ -14,13 +14,13 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_gain_holo";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloDotCareConstraint();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloConstraintDotCare();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloNormalizeConstraint();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloConstraintNormalize();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloUniformConstraint(float value);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloConstraintUniform(float value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloClampConstraint(float minV, float maxV);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloConstraintClamp(float minV, float maxV);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloEVP(BackendPtr backend, float[]? points, float[]? amps, ulong size);
 

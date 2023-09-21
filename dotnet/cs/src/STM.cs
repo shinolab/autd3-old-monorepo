@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -185,7 +185,7 @@ namespace AUTD3Sharp
 
             public override DatagramPtr STMPtr(Geometry geometry)
             {
-                return Base.AUTDFocusSTM(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
+                return Base.AUTDSTMFocus(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
             }
         }
 
@@ -275,7 +275,7 @@ namespace AUTD3Sharp
             public override DatagramPtr STMPtr(Geometry geometry)
             {
                 var gains = _gains.Select(g => g.GainPtr(geometry)).ToArray();
-                return Base.AUTDGainSTM(Props(), gains, (uint)gains.Length, _mode);
+                return Base.AUTDSTMGain(Props(), gains, (uint)gains.Length, _mode);
             }
         }
     }

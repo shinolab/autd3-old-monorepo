@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ namespace AUTD3Sharp
             get
             {
                 var latest = new byte[256];
-                NativeMethods.Base.AUTDGetLatestFirmware(latest);
+                NativeMethods.Base.AUTDFirmwareLatest(latest);
                 return Encoding.UTF8.GetString(latest);
             }
         }

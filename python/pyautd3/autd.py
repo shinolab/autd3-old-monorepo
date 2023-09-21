@@ -1,15 +1,15 @@
-"""
+'''
 File: autd.py
 Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 from abc import ABCMeta, abstractmethod
@@ -72,7 +72,7 @@ class Silencer(Datagram):
         return Silencer(0xFFFF)
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().create_silencer(self._step)
+        return Base().datagram_silencer(self._step)
 
 
 class FPGAInfo:
@@ -101,7 +101,7 @@ class FirmwareInfo:
     @staticmethod
     def latest_version() -> str:
         sb = ctypes.create_string_buffer(256)
-        Base().get_latest_firmware(sb)
+        Base().firmware_latest(sb)
         return sb.value.decode("utf-8")
 
     def __repr__(self) -> str:
@@ -114,7 +114,7 @@ class Controller:
         _mode: TransMode
 
         def __init__(self):
-            self._ptr = Base().create_controller_builder()
+            self._ptr = Base().controller_builder()
             self._mode = TransMode.Legacy
 
         def legacy(self) -> "Controller.Builder":
@@ -131,7 +131,7 @@ class Controller:
 
         def add_device(self, device: AUTD3) -> "Controller.Builder":
             if device._rot is not None:
-                self._ptr = Base().add_device(
+                self._ptr = Base().controller_builder_add_device(
                     self._ptr,
                     device._pos[0],
                     device._pos[1],
@@ -141,7 +141,7 @@ class Controller:
                     device._rot[2],
                 )
             elif device._quat is not None:
-                self._ptr = Base().add_device_quaternion(
+                self._ptr = Base().controller_builder_add_device_quaternion(
                     self._ptr,
                     device._pos[0],
                     device._pos[1],
@@ -174,7 +174,7 @@ class Controller:
 
     def dispose(self):
         if self._ptr._0 is not None:
-            Base().free_controller(self._ptr)
+            Base().controller_delete(self._ptr)
             self._ptr._0 = None
 
     @property
@@ -189,30 +189,30 @@ class Controller:
         ptr = Base().controller_open_with(builder, link, err)
         if ptr._0 is None:
             raise AUTDError(err)
-        geometry = Geometry(Base().get_geometry(ptr), mode)
+        geometry = Geometry(Base().geometry(ptr), mode)
         return Controller(geometry, ptr, mode)
 
     def firmware_info_list(self) -> List[FirmwareInfo]:
         err = ctypes.create_string_buffer(256)
-        handle = Base().get_firmware_info_list_pointer(self._ptr, err)
+        handle = Base().controller_firmware_info_list_pointer(self._ptr, err)
         if handle._0 is None:
             raise AUTDError(err)
 
         def get_firmware_info(i: int) -> FirmwareInfo:
             sb = ctypes.create_string_buffer(256)
-            Base().get_firmware_info(handle, i, sb)
+            Base().controller_firmware_info_get(handle, i, sb)
             info = sb.value.decode("utf-8")
             return FirmwareInfo(info)
 
         res = list(map(get_firmware_info, range(self.geometry.num_devices)))
 
-        Base().free_firmware_info_list_pointer(handle)
+        Base().controller_firmware_info_list_pointer_delete(handle)
 
         return res
 
     def close(self):
         err = ctypes.create_string_buffer(256)
-        if not Base().close(self._ptr, err):
+        if not Base().controller_close(self._ptr, err):
             raise AUTDError(err)
 
     @property
@@ -220,7 +220,7 @@ class Controller:
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         err = ctypes.create_string_buffer(256)
-        if not Base().get_fpga_info(self._ptr, pinfos, err):
+        if not Base().controller_fpga_info(self._ptr, pinfos, err):
             raise AUTDError(err)
         return list(map(lambda x: FPGAInfo(x), infos))
 
@@ -235,15 +235,15 @@ class Controller:
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
         if isinstance(d, SpecialDatagram):
-            res = Base().send_special(self._ptr, self._mode, d.ptr(), timeout_, err)
+            res = Base().controller_send_special(self._ptr, self._mode, d.ptr(), timeout_, err)
         if isinstance(d, Datagram):
-            res = Base().send(
+            res = Base().controller_send(
                 self._ptr, self._mode, d.ptr(self.geometry), DatagramPtr(None), timeout_, err
             )
         if isinstance(d, tuple) and len(d) == 2:
             (d1, d2) = d
             if isinstance(d1, Datagram) and isinstance(d2, Datagram):
-                res = Base().send(
+                res = Base().controller_send(
                     self._ptr,
                     self._mode,
                     d1.ptr(self.geometry),
@@ -290,7 +290,7 @@ class Controller:
 
             err = ctypes.create_string_buffer(256)
 
-            if Base().software_stm(
+            if Base().controller_software_stm(
                 self._ptr,
                 callback_f,  # type: ignore
                 ptr,
@@ -317,7 +317,7 @@ class Controller:
         def __init__(self, map: Callable[[Device], Optional[K]], controller: "Controller"):
             self._map = map
             self._controller = controller
-            self._kv_map = Base().group_create_kv_map()
+            self._kv_map = Base().controller_group_create_kv_map()
             self._keymap = {}
             self._k = 0
 
@@ -338,13 +338,14 @@ class Controller:
             err = ctypes.create_string_buffer(256)
             if isinstance(d, SpecialDatagram):
                 self._keymap[key] = self._k
-                self._kv_map = Base().group_kv_map_set_special(self._kv_map, self._k, d.ptr(), self._controller._mode, timeout_ns, err)
+                self._kv_map = Base().controller_group_kv_map_set_special(self._kv_map, self._k, d.ptr(), self._controller._mode, timeout_ns, err)
                 self._k += 1
                 if self._kv_map._0 is None:
                     raise AUTDError(err)
             if isinstance(d, Datagram):
                 self._keymap[key] = self._k
-                self._kv_map = Base().group_kv_map_set(self._kv_map, self._k, d.ptr(self._controller._geometry), DatagramPtr(None), self._controller._mode, timeout_ns, err)
+                self._kv_map = Base().controller_group_kv_map_set(self._kv_map, self._k, d.ptr(
+                    self._controller._geometry), DatagramPtr(None), self._controller._mode, timeout_ns, err)
                 self._k += 1
                 if self._kv_map._0 is None:
                     raise AUTDError(err)
@@ -353,7 +354,7 @@ class Controller:
                 (d1, d2) = d
                 if isinstance(d1, Datagram) and isinstance(d2, Datagram):
                     self._keymap[key] = self._k
-                    self._kv_map = Base().group_kv_map_set(
+                    self._kv_map = Base().controller_group_kv_map_set(
                         self._kv_map, self._k, d1.ptr(
                             self._controller._geometry), d2.ptr(
                             self._controller._geometry), self._controller._mode, timeout_ns, err)
@@ -367,7 +368,7 @@ class Controller:
             m = np.fromiter(map(lambda k: self._keymap[k] if k is not None else -
                                 1, map(lambda dev: self._map(dev), self._controller.geometry)), dtype=np.int32)
             err = ctypes.create_string_buffer(256)
-            if Base().group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err) == AUTD3_ERR:
+            if Base().controller_group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err) == AUTD3_ERR:
                 raise AUTDError(err)
 
     def group(self, map: Callable[[Device], Optional[K]]) -> "Controller.GroupGuard":
@@ -382,7 +383,7 @@ class Amplitudes(Datagram):
         self._amp = amp
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().create_amplitudes(self._amp)
+        return Base().datagram_amplitudes(self._amp)
 
 
 class Clear(Datagram):
@@ -390,7 +391,7 @@ class Clear(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().clear()
+        return Base().datagram_clear()
 
 
 class Stop(SpecialDatagram):
@@ -398,7 +399,7 @@ class Stop(SpecialDatagram):
         super().__init__()
 
     def ptr(self) -> DatagramSpecialPtr:
-        return Base().stop()
+        return Base().datagram_stop()
 
 
 class UpdateFlags(Datagram):
@@ -406,7 +407,7 @@ class UpdateFlags(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().update_flags()
+        return Base().datagram_update_flags()
 
 
 class Synchronize(Datagram):
@@ -414,7 +415,7 @@ class Synchronize(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().synchronize()
+        return Base().datagram_synchronize()
 
 
 class ConfigureModDelay(Datagram):
@@ -422,7 +423,7 @@ class ConfigureModDelay(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().configure_mod_delay()
+        return Base().datagram_configure_mod_delay()
 
 
 class ConfigureAmpFilter(Datagram):
@@ -430,7 +431,7 @@ class ConfigureAmpFilter(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().configure_amp_filter()
+        return Base().datagram_configure_amp_filter()
 
 
 class ConfigurePhaseFilter(Datagram):
@@ -438,4 +439,4 @@ class ConfigurePhaseFilter(Datagram):
         super().__init__()
 
     def ptr(self, _: Geometry) -> DatagramPtr:
-        return Base().configure_phase_filter()
+        return Base().datagram_configure_phase_filter()

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public sealed class DontCare : IAmplitudeConstraint
     {
-        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloDotCareConstraint();
+        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloConstraintDotCare();
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public sealed class Normalize : IAmplitudeConstraint
     {
-        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloNormalizeConstraint();
+        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloConstraintNormalize();
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ namespace AUTD3Sharp.Gain.Holo
             Value = value;
         }
 
-        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloUniformConstraint(Value);
+        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloConstraintUniform(Value);
     }
 
     /// <summary>
@@ -77,6 +77,6 @@ namespace AUTD3Sharp.Gain.Holo
             Max = max;
         }
 
-        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloClampConstraint(Min, Max);
+        public ConstraintPtr Ptr() => NativeMethods.GainHolo.AUTDGainHoloConstraintClamp(Min, Max);
     }
 }

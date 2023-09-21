@@ -1,15 +1,15 @@
-"""
+'''
 File: stm.py
 Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
@@ -120,7 +120,7 @@ class FocusSTM(STM):
         shifts = np.ctypeslib.as_ctypes(
             np.array(self._duty_shifts).astype(ctypes.c_uint8)
         )
-        return Base().focus_stm(self._props(), points, shifts, len(self._duty_shifts))
+        return Base().stm_focus(self._props(), points, shifts, len(self._duty_shifts))
 
     @staticmethod
     def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
@@ -196,7 +196,7 @@ class GainSTM(STM):
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
             gains[i]["_0"] = g.gain_ptr(geometry)._0
-        return Base().gain_stm(self._props(),
+        return Base().stm_gain(self._props(),
                                gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore
                                len(self._gains), self._mode)
 

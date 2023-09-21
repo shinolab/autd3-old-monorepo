@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/07/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,18 +25,18 @@ use autd3_link_soem::{local::SOEM, remote::RemoteSOEM, EthernetAdapters};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetAdapterPointer() -> ConstPtr {
+pub unsafe extern "C" fn AUTDAdapterPointer() -> ConstPtr {
     Box::into_raw(Box::new(EthernetAdapters::new())) as _
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetAdapterSize(adapters: ConstPtr) -> u32 {
+pub unsafe extern "C" fn AUTDAdapterGetSize(adapters: ConstPtr) -> u32 {
     cast!(adapters, EthernetAdapters).len() as u32
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetAdapter(
+pub unsafe extern "C" fn AUTDAdapterGetAdapter(
     adapters: ConstPtr,
     idx: u32,
     desc: *mut c_char,
@@ -51,7 +51,7 @@ pub unsafe extern "C" fn AUTDGetAdapter(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDFreeAdapterPointer(adapters: ConstPtr) {
+pub unsafe extern "C" fn AUTDAdapterPointerDelete(adapters: ConstPtr) {
     let _ = Box::from_raw(adapters as *mut EthernetAdapters);
 }
 
@@ -63,25 +63,25 @@ pub unsafe extern "C" fn AUTDLinkSOEM() -> LinkPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMSendCycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithSendCycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_send_cycle(cycle))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMSync0Cycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithSync0Cycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_sync0_cycle(cycle))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMBufSize(soem: LinkPtr, buf_size: u32) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithBufSize(soem: LinkPtr, buf_size: u32) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_buf_size(buf_size as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMTimerStrategy(
+pub unsafe extern "C" fn AUTDLinkSOEMWithTimerStrategy(
     soem: LinkPtr,
     timer_strategy: TimerStrategy,
 ) -> LinkPtr {
@@ -105,19 +105,19 @@ impl From<SyncMode> for autd3_link_soem::SyncMode {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMSyncMode(soem: LinkPtr, mode: SyncMode) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithSyncMode(soem: LinkPtr, mode: SyncMode) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_sync_mode(mode.into()))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMIfname(soem: LinkPtr, ifname: *const c_char) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithIfname(soem: LinkPtr, ifname: *const c_char) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_ifname(CStr::from_ptr(ifname).to_str().unwrap()))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMStateCheckInterval(
+pub unsafe extern "C" fn AUTDLinkSOEMWithStateCheckInterval(
     soem: LinkPtr,
     interval_ms: u32,
 ) -> LinkPtr {
@@ -131,7 +131,7 @@ unsafe impl Send for SOEMCallbackPtr {}
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMOnLost(soem: LinkPtr, on_lost_func: ConstPtr) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithOnLost(soem: LinkPtr, on_lost_func: ConstPtr) -> LinkPtr {
     if on_lost_func.is_null() {
         return soem;
     }
@@ -148,13 +148,13 @@ pub unsafe extern "C" fn AUTDLinkSOEMOnLost(soem: LinkPtr, on_lost_func: ConstPt
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMLogLevel(soem: LinkPtr, level: Level) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithLogLevel(soem: LinkPtr, level: Level) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_log_level(level.into()))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
+pub unsafe extern "C" fn AUTDLinkSOEMWithLogFunc(
     soem: LinkPtr,
     out_func: ConstPtr,
     flush_func: ConstPtr,
@@ -185,7 +185,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(soem, SOEM).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
@@ -205,6 +205,6 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char, err: *mut c_cha
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEMTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(soem, RemoteSOEM).with_timeout(Duration::from_nanos(timeout_ns)))
 }
