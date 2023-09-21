@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -361,7 +361,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             return Ok(false);
         }
         let res = true;
-        // let res = self.send(Stop::new())?;
+        let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
         self.link.close()?;
         Ok(res)
