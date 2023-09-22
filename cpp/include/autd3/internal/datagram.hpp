@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,7 +84,7 @@ class Silencer final : public Datagram {
    */
   static Silencer disable() noexcept { return Silencer(0xFFFF); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDCreateSilencer(_step); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramSilencer(_step); }
 
  private:
   uint16_t _step;
@@ -97,7 +97,7 @@ class ConfigureModDelay final : public Datagram {
  public:
   ConfigureModDelay() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDConfigureModDelay(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigureModDelay(); }
 };
 
 /**
@@ -107,7 +107,7 @@ class ConfigureAmpFilter final : public Datagram {
  public:
   ConfigureAmpFilter() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDConfigureAmpFilter(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigureAmpFilter(); }
 };
 
 /**
@@ -117,7 +117,7 @@ class ConfigurePhaseFilter final : public Datagram {
  public:
   ConfigurePhaseFilter() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDConfigurePhaseFilter(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigurePhaseFilter(); }
 };
 
 /**
@@ -127,7 +127,7 @@ class Clear final : public Datagram {
  public:
   Clear() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDClear(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramClear(); }
 };
 
 /**
@@ -137,7 +137,7 @@ class UpdateFlags final : public Datagram {
  public:
   UpdateFlags() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDUpdateFlags(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramUpdateFlags(); }
 };
 
 /**
@@ -147,7 +147,7 @@ class Synchronize final : public Datagram {
  public:
   Synchronize() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDSynchronize(); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramSynchronize(); }
 };
 
 }  // namespace autd3::internal

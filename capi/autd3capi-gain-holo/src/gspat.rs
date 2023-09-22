@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,13 +69,13 @@ mod tests {
             let amps = vec![1.; size];
 
             let holo = AUTDGainHoloGSPAT(backend, points.as_ptr(), amps.as_ptr(), size as _);
-            let constraint = AUTDGainHoloDotCareConstraint();
+            let constraint = AUTDGainHoloConstraintDotCare();
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloNormalizeConstraint();
+            let constraint = AUTDGainHoloConstraintNormalize();
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloUniformConstraint(1.);
+            let constraint = AUTDGainHoloConstraintUniform(1.);
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloClampConstraint(0., 1.);
+            let constraint = AUTDGainHoloConstraintClamp(0., 1.);
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
 
             let holo = AUTDGainHoloGSPATWithRepeat(holo, 100);
@@ -84,7 +84,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     autd3capi_def::TransMode::Legacy,
                     DatagramPtr(std::ptr::null()),
@@ -96,7 +96,7 @@ mod tests {
             );
 
             AUTDDeleteNalgebraBackend(backend);
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

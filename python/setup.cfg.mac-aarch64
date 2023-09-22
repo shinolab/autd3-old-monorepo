@@ -1,6 +1,6 @@
 [metadata]
 name = pyautd3
-version = 15.1.1
+version = 15.1.2
 description = AUTD3 library wrapper for python
 long_description = file: README.md
 long_description_content_type = text/markdown

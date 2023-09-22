@@ -16,7 +16,6 @@ In SDK, you must call `add_device` function **in the order of the connected devi
 
 <figure>
   <img src="../fig/Users_Manual/hor_left_ori_left_1.png"/>
-  <figcaption>Horizontal alignment</figcaption>
 </figure>
 
 For example, suppose you have two devices as shown in the figure above.
@@ -52,7 +51,7 @@ var autd = Controller.Builder()
 ```python
 auto = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 
 Here, the first argument of the `AUTD3` constructor is the position, and the second argument is the rotation.
@@ -62,7 +61,6 @@ In this example, no rotation is performed, so the second argument can be zero.
 
 <figure>
   <img src="../fig/Users_Manual/hor_right_ori_left_1.png"/>
-  <figcaption>Horizontal alignment</figcaption>
 </figure>
 
 And, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the left device.
@@ -96,13 +94,12 @@ var autd = Controller.Builder()
 
 ```python
 auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([-AUTD3::DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([-AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
 ```
 
 <figure>
   <img src="../fig/Users_Manual/vert.png"/>
-  <figcaption>Vertical alignment</figcaption>
 </figure>
 
 Furthermore, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the lower device.
@@ -137,8 +134,12 @@ var autd = Controller.Builder()
 ```python
 autd = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3::DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3.device_width()], [0.0, np.pi/2, 0.0]))\
 ```
+
+<figure>
+  <img src="../fig/Users_Manual/hor_right_ori_right_1.png"/>
+</figure>
 
 ## Device/Transducer index
 
@@ -236,7 +237,7 @@ let dev = &autd.geometry()[0];
 ```
 
 ```cpp
-const auto dev = autd.geometry()[0];
+const auto& dev = autd.geometry()[0];
 ```
 
 ```cs
@@ -267,18 +268,27 @@ for dev in autd.geometry().iter() {
 ```
 
 ```cpp
-for (const auto dev : autd.geometry())
+for (const auto& dev : autd.geometry()){
+  // do something
+}
 ```
 
 ```cs
-foreach (var dev in autd.Geometry)
+foreach (var dev in autd.Geometry) {
+  // do something
+}
 ```
 
 ```python
 for dev in autd.geometry:
+  # do something
 ```
 
 ## Device API
+
+### Idx
+
+Get the index of the device with `idx` method.
 
 ### Speed of sound
 
@@ -350,10 +360,10 @@ The unit of the temperature is Celsius.
 
 In the SDK, the sound pressure $p(\br)$ at the position $\br$ of the emitted ultrasonic wave from the transducer is modeled as
 $$
-  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|},
+  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|}
 $$
 where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
-`attenuation` member of `Geometry` represents this attenuation coefficient $\alpha$.
+`attenuation` member of `Device` represents this attenuation coefficient $\alpha$.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -412,11 +422,110 @@ autd.geometry_mut()[0].affine(t, r);
 # }
 ```
 
+```cpp
+const autd3::Vector3 t(1, 0, 0);
+const autd3::Quaternion r(1, 0, 0, 0);
+autd.geometry()[0].translate(t);
+autd.geometry()[0].rotate(r);
+autd.geometry()[0].affine(t, r);
+```
+
+```cs
+var t = new Vector3d(1, 0, 0);
+var r = new Quaterniond(1, 0, 0, 0);
+autd.Geometry[0].Translate(t);
+autd.Geometry[0].Rotate(r);
+autd.Geometry[0].Affine(t, r);
+```
+
+```python
+t = np.array([1.0, 0.0, 0.0])
+r = np.array([1.0, 0.0, 0.0, 0.0])
+autd.geometry[0].translate(t)
+autd.geometry[0].rotate(r)
+autd.geometry[0].affine(t, r)
+```
+
+### force_fan
+
+AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On.
+In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically.
+In Off mode, the fan is always off, and in On mode, the fan is always on.
+
+The fan mode is switched by the jumper switch next to the fan.
+As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.
+
+<figure>
+  <img src="../fig/Users_Manual/fan.jpg"/>
+  <figcaption>Jumper switch to specify fan mode</figcaption>
+</figure>
+
+`force_fan` flag is a flag to force the fan to start in Auto mode.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new()).unwrap();
+autd.geometry_mut()[0].force_fan = true;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].force_fan(true);
+```
+
+```cs
+autd.Geometry[0].ForceFan = true;
+```
+
+```python
+autd.geometry[0].force_fan = True
+```
+
+The flag is actually updated when some data is sent.
+If you want to update only the flag, send `UpdateFlags`.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
+autd.geometry_mut()[0].force_fan = true;
+autd.send(UpdateFlags::new())?;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].force_fan(true);
+autd.send(autd3::UpdateFlags());
+```
+
+```cs
+autd.Geometry[0].ForceFan = true;
+autd.Send(new UpdateFlags());
+```
+
+```python
+autd.force_fan(True)
+autd.geometry[0].force_fan = True
+```
+
+## reads_fpga_info
+
+`reads_fpga_info` flag is a flag to read the FPGA status.
+
+See [Controller/fpga_info](./controller.md#fpga_info) for details.
+
 ### Transducer access
 
 `Device` is a container of `Transducer`, and `Transducer` contains information of each transducer.
 
-To access `Transducer`, use the following methods.
+To access `Transducer`, use the indexer.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -434,7 +543,7 @@ let tr = &autd.geometry()[0][0];
 ```
 
 ```cpp
-const auto tr = autd.geometry()[0][0];
+const auto& tr = autd.geometry()[0][0];
 ```
 
 ```cs
@@ -465,15 +574,20 @@ for tr in autd.geometry()[0].iter() {
 ```
 
 ```cpp
-for (const auto tr : autd.geometry()[0])
+for (const auto& tr : autd.geometry()[0]) {
+  // do something
+}
 ```
 
 ```cs
-foreach (var tr in autd.Geometry[0])
+foreach (var tr in autd.Geometry[0]) {
+  // do something
+}
 ```
 
 ```python
 for tr in autd.geometry[0]:
+  # do something
 ```
 
 ## Transducer API
@@ -507,7 +621,7 @@ var idx = tr.LocalIdx;
 ```
 
 ```python
-idx = tr.local_idx
+idx = tr.idx
 ```
 
 ### position/rotation
@@ -625,11 +739,56 @@ delay = tr.mod_delay
 tr.mod_delay = 0
 ```
 
+### amp_filter/phase_filter
+
+Set/Get amplitude and phase filter.
+See [Filter](./filter.md) for details.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+# let mut tr = &mut autd.geometry_mut()[0][0];
+let amp_filter = tr.amp_filter();
+tr.set_amp_filter(-0.5);
+let phase_filter = tr.phase_filter();
+tr.set_phase_filter(PI);
+# Ok(())
+# }
+```
+
+```cpp
+const auto amp_filter = tr.amp_filter();
+tr.set_amp_filter(-0.5);
+const auto phase_filter = tr.phase_filter();
+tr.set_phase_filter(autd3::pi);
+```
+
+```cs
+var ampFilter = tr.AmpFilter;
+tr.AmpFilter = -0.5;
+var phaseFilter = tr.PhaseFilter;
+tr.PhaseFilter = Math.PI;
+```
+
+```python
+amp_filter = tr.amp_filter
+tr.amp_filter = -0.5
+phase_filter = tr.phase_filter
+tr.phase_filter = math.pi
+```
+
 ### cycle
 
 Set/get the cycle of the transducer.
 
-Note: The cycle setting is not available in Legacy mode.
+> Note: The cycle setting is not available in Legacy mode.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -673,7 +832,7 @@ See, [Mode configuration / Changing the frequency](./advanced_examples/freq_conf
 Set/get the frequency of the transducer.
 When setting the frequency $f$, the closest period $N$ to $\clkf/f$ is selected.
 
-Note: The frequency setting is not available in Legacy mode.
+> Note: The frequency setting is not available in Legacy mode.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -750,4 +909,89 @@ var wavenum = tr.Wavenumber(soundSpeed);
 ```python
 wavelen = tr.wavelength(sound_speed)
 wavenum = tr.wavenumber(sound_speed)
+```
+
+## Geometry Viewer
+
+You can use `GeometryViewer` to check the arrangement of the devices graphically.
+
+<figure>
+  <img src="../fig/Users_Manual/geometry_viewer.jpg"/>
+</figure>
+
+```rust,ignore,edition2021
+# extern crate autd3;
+# extern crate autd3_geometry_viewer;
+use autd3::prelude::*;
+use autd3_geometry_viewer::GeometryViewer;
+
+# fn main() -> Result<(), Box<dyn std::error::Error>>{
+let autd = Controller::builder()
+    .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+    .add_device(AUTD3::new(
+        Vector3::new(0., 0., AUTD3::DEVICE_WIDTH),
+        Vector3::new(0., PI / 2., 0.),
+    ))
+    .add_device(AUTD3::new(
+        Vector3::new(AUTD3::DEVICE_WIDTH, 0., AUTD3::DEVICE_WIDTH),
+        Vector3::new(0., PI, 0.),
+    ))
+    .add_device(AUTD3::new(
+        Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
+        Vector3::new(0., -PI / 2., 0.),
+    ))
+    .open_with(NullLink {})?;
+
+GeometryViewer::new().run(autd.geometry())
+# }
+```
+
+```cpp
+#include "autd3/extra/geometry_viewer.hpp"
+
+#include "autd3.hpp"
+#include "autd3/link/debug.hpp"
+
+const auto autd = autd3::Controller::builder()
+                        .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                        .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
+                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH),
+                                                 autd3::Vector3(0, autd3::pi, 0)))
+                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0)))
+                        .open_with(autd3::link::Debug());
+
+autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).run(autd.geometry());
+```
+
+```cs
+var autd = Controller.Builder()
+            .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+            .AddDevice(new AUTD3(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi / 2.0, 0)))
+            .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi, 0)))
+            .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0), new Vector3d(0, -AUTD3.Pi / 2.0, 0)))
+            .OpenWith(new Debug());
+
+new AUTD3Sharp.Extra.GeometryViewer().WindowSize(800, 600).Vsync(true).Run(autd.Geometry);
+```
+
+  - You may need `[STAThread]` attribute.
+
+```python
+from pyautd3 import AUTD3, Controller, Level
+from pyautd3.link import Debug
+from pyautd3.extra import GeometryViewer
+from math import pi
+
+autd = (
+    Controller.builder()
+    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3.device_width()], [0.0, pi / 2, 0.0]))
+    .add_device(
+        AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, AUTD3.device_width()], [0.0, pi, 0.0])
+    )
+    .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, -pi / 2, 0.0]))
+    .open_with(Debug().with_log_level(Level.Off))
+)
+
+GeometryViewer().window_size(800, 600).vsync(True).run(autd.geometry)
 ```

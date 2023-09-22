@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "15.1.1"
+version = "15.1.2"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,9 @@
 #define USE_SINGLE
 #endif
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 
 #if USE_SINGLE
 using float_t = System.Single;
@@ -32,36 +33,53 @@ namespace AUTD3Sharp.Modulation
     /// <summary>
     /// Modulation to cache the result of calculation
     /// </summary>
-    public class Cache : Internal.Modulation, IEnumerable<float_t>
+    public class Cache : Internal.Modulation, IEnumerable<float_t>, IDisposable
     {
-        private readonly uint _freqDiv;
+        private bool _isDisposed;
+
+        private ModulationCachePtr _cache;
+        private readonly float_t[] _buffer;
 
         public Cache(Internal.Modulation m)
         {
-            _freqDiv = m.SamplingFrequencyDivision;
-
             var err = new byte[256];
-            var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
-            if (size == Def.Autd3Err) throw new AUTDException(err);
-            Buffer = new float_t[size];
-            if (Base.AUTDModulationCalc(m.ModulationPtr(), Buffer, err) == Def.Autd3Err)
-                throw new AUTDException(err);
+            _cache = Base.AUTDModulationWithCache(m.ModulationPtr(), err);
+            if (_cache._0 == System.IntPtr.Zero) throw new AUTDException(err);
+
+            var n = Base.AUTDModulationCacheGetBufferSize(_cache);
+            _buffer = new float_t[n];
+            Base.AUTDModulationCacheGetBuffer(_cache, _buffer);
+        }
+
+        ~Cache()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+
+            if (_cache._0 != IntPtr.Zero) Base.AUTDModulationCacheDelete(_cache);
+            _cache._0 = IntPtr.Zero;
+
+            _isDisposed = true;
+            GC.SuppressFinalize(this);
         }
 
         public override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationCustom(_freqDiv, Buffer, (ulong)Buffer.Length);
+            return Base.AUTDModulationCacheIntoModulation(_cache);
         }
 
-        public float_t this[int index]
+        public float_t this[int index] => _buffer[index];
+
+        public ReadOnlyCollection<float_t> Buffer => Array.AsReadOnly(_buffer);
+
+        public IEnumerator<float_t> GetEnumerator()
         {
-            get => Buffer[index];
-            set => Buffer[index] = value;
+            foreach (var e in _buffer) yield return e;
         }
-
-        public float_t[] Buffer { get; }
-
-        public IEnumerator<float_t> GetEnumerator() => Buffer.AsEnumerable().GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }

@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCAT(err: *mut c_char) -> LinkPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTwinCATTimeout(twincat: LinkPtr, timeout_ns: u64) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkTwinCATWithTimeout(twincat: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(twincat, TwinCAT).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
@@ -53,7 +53,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteTwinCATServerIP(
+pub unsafe extern "C" fn AUTDLinkRemoteTwinCATWithServerIP(
     twincat: LinkPtr,
     addr: *const c_char,
 ) -> LinkPtr {
@@ -64,7 +64,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATServerIP(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteTwinCATClientAmsNetId(
+pub unsafe extern "C" fn AUTDLinkRemoteTwinCATWithClientAmsNetId(
     twincat: LinkPtr,
     id: *const c_char,
 ) -> LinkPtr {
@@ -76,7 +76,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATClientAmsNetId(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteTwinCATTimeout(
+pub unsafe extern "C" fn AUTDLinkRemoteTwinCATWithTimeout(
     twincat: LinkPtr,
     timeout_ns: u64,
 ) -> LinkPtr {

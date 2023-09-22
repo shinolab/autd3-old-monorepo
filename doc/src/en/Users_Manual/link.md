@@ -6,6 +6,8 @@ You need to choose one of the following.
 - [TwinCAT/RemoteTwinCAT](./link/twincat.md)
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
+- [Visualizer](./link/visualize.md)
+- [Bundle](./link/bundle.md)
 
 ## Link options
 
@@ -45,4 +47,43 @@ Set the default timeout with `with_timeout`.
 from datetime import timedelta
 
 .with_timeout(timedelta(milliseconds=20))
+```
+
+### Log
+
+You can enable logging by `with_log`.
+
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
+# use autd3::prelude::*;
+use autd3::link::Log;
+use autd3_link_soem::SOEM;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#            .open_with(
+SOEM::new().with_log()
+# )?;
+# Ok(())
+# }
+```
+
+```cpp
+#include "autd3/link/log.hpp"
+
+// link is some Link
+link.with_log()
+```
+
+```cs
+// link is some Link
+link.WithLog()
+```
+
+```python
+# link is some Link
+link.with_log()
 ```

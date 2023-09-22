@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <memory>
 
 #include "autd3/internal/datagram.hpp"
@@ -26,8 +27,9 @@ namespace autd3::internal {
 
 class STM : public Datagram {
  public:
-  explicit STM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
-      : _freq(freq), _sampling_freq(sampling_freq), _sampling_freq_div(sampling_freq_div) {}
+  explicit STM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div,
+               const std::optional<std::chrono::nanoseconds> sampling_period)
+      : _freq(freq), _sampling_freq(sampling_freq), _sampling_freq_div(sampling_freq_div), _sampling_period(sampling_period) {}
 
   STM(const STM& obj) = default;
   STM& operator=(const STM& obj) = default;
@@ -51,6 +53,7 @@ class STM : public Datagram {
     if (_freq.has_value()) ptr = native_methods::AUTDSTMProps(_freq.value());
     if (_sampling_freq.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreq(_sampling_freq.value());
     if (_sampling_freq_div.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreqDiv(_sampling_freq_div.value());
+    if (_sampling_period.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingPeriod(_sampling_period.value().count());
     if (ptr._0 == nullptr) throw std::runtime_error("unreachable!");
     ptr = AUTDSTMPropsWithStartIdx(ptr, _start_idx);
     ptr = AUTDSTMPropsWithFinishIdx(ptr, _finish_idx);
@@ -65,9 +68,14 @@ class STM : public Datagram {
     return AUTDSTMPropsSamplingFrequencyDivision(props(), size);
   }
 
+  [[nodiscard]] std::chrono::nanoseconds sampling_period_from_size(const size_t size) const {
+    return std::chrono::nanoseconds(AUTDSTMPropsSamplingPeriod(props(), size));
+  }
+
   std::optional<double> _freq;
   std::optional<double> _sampling_freq;
   std::optional<uint32_t> _sampling_freq_div;
+  std::optional<std::chrono::nanoseconds> _sampling_period;
   int32_t _start_idx{-1};
   int32_t _finish_idx{-1};
 };
@@ -97,7 +105,7 @@ struct ControlPoint {
  */
 class FocusSTM final : public STM {
  public:
-  explicit FocusSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
+  explicit FocusSTM(const double freq) : STM(freq, std::nullopt, std::nullopt, std::nullopt) {}
 
   FocusSTM(const FocusSTM& obj) = default;
   FocusSTM& operator=(const FocusSTM& obj) = default;
@@ -105,12 +113,17 @@ class FocusSTM final : public STM {
   FocusSTM& operator=(FocusSTM&& obj) = default;
   ~FocusSTM() override = default;
 
-  static FocusSTM with_sampling_frequency(const double freq) { return FocusSTM(std::nullopt, freq, std::nullopt); }
+  static FocusSTM with_sampling_frequency(const double freq) { return FocusSTM(std::nullopt, freq, std::nullopt, std::nullopt); }
 
-  static FocusSTM with_sampling_frequency_division(const uint32_t div) { return FocusSTM(std::nullopt, std::nullopt, div); }
+  static FocusSTM with_sampling_frequency_division(const uint32_t div) { return FocusSTM(std::nullopt, std::nullopt, div, std::nullopt); }
+
+  template <typename Rep, typename Period>
+  static FocusSTM with_sampling_period(const std::chrono::duration<Rep, Period> period) {
+    return FocusSTM(std::nullopt, std::nullopt, std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period));
+  }
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
-    return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
+    return AUTDSTMFocus(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), _shifts.size());
   }
 
   /**
@@ -227,6 +240,8 @@ class FocusSTM final : public STM {
 
   [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_points.size()); }
 
+  [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_points.size()); }
+
   void with_start_idx(const std::optional<uint16_t> start_idx) & {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
   }
@@ -245,8 +260,9 @@ class FocusSTM final : public STM {
   }
 
  private:
-  explicit FocusSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
-      : STM(freq, sampling_freq, sampling_freq_div) {}
+  explicit FocusSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div,
+                    const std::optional<std::chrono::nanoseconds> sampling_period)
+      : STM(freq, sampling_freq, sampling_freq_div, sampling_period) {}
 
   std::vector<Vector3> _points;
   std::vector<uint8_t> _shifts;
@@ -267,7 +283,7 @@ class GainSTM final : public STM {
    *
    * @param freq STM frequency
    */
-  explicit GainSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
+  explicit GainSTM(const double freq) : STM(freq, std::nullopt, std::nullopt, std::nullopt) {}
   GainSTM(const GainSTM& obj) = default;
   GainSTM& operator=(const GainSTM& obj) = default;
   GainSTM(GainSTM&& obj) = default;
@@ -280,7 +296,7 @@ class GainSTM final : public STM {
    * @param freq Sampling frequency
    * @return GainSTM
    */
-  static GainSTM with_sampling_frequency(const double freq) { return GainSTM(std::nullopt, freq, std::nullopt); }
+  static GainSTM with_sampling_frequency(const double freq) { return GainSTM(std::nullopt, freq, std::nullopt, std::nullopt); }
 
   /**
    * @brief Constructor
@@ -288,14 +304,19 @@ class GainSTM final : public STM {
    * @param div  Sampling frequency division
    * @return GainSTM
    */
-  static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
+  static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div, std::nullopt); }
+
+  template <typename Rep, typename Period>
+  static GainSTM with_sampling_period(const std::chrono::duration<Rep, Period> period) {
+    return GainSTM(std::nullopt, std::nullopt, std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period));
+  }
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const override {
     const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseDutyFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
     std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
-    return AUTDGainSTM(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
+    return AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 
   /**
@@ -360,6 +381,8 @@ class GainSTM final : public STM {
 
   [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_gains.size()); }
 
+  [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_gains.size()); }
+
   void with_mode(const native_methods::GainSTMMode mode) & { _mode = mode; }
   [[nodiscard]] GainSTM&& with_mode(const native_methods::GainSTMMode mode) && {
     _mode = mode;
@@ -385,8 +408,9 @@ class GainSTM final : public STM {
   }
 
  private:
-  explicit GainSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div)
-      : STM(freq, sampling_freq, sampling_freq_div) {}
+  explicit GainSTM(const std::optional<double> freq, const std::optional<double> sampling_freq, const std::optional<uint32_t> sampling_freq_div,
+                   const std::optional<std::chrono::nanoseconds> sampling_period)
+      : STM(freq, sampling_freq, sampling_freq_div, sampling_period) {}
 
   std::vector<std::shared_ptr<Gain>> _gains;
   std::optional<native_methods::GainSTMMode> _mode;

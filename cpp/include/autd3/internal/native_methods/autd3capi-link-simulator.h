@@ -10,9 +10,9 @@ extern "C" {
 
 [[nodiscard]] LinkPtr AUTDLinkSimulator(uint16_t port);
 
-[[nodiscard]] LinkPtr AUTDLinkSimulatorAddr(LinkPtr simulator, const char *addr, char *err);
+[[nodiscard]] LinkPtr AUTDLinkSimulatorWithAddr(LinkPtr simulator, const char *addr, char *err);
 
-[[nodiscard]] LinkPtr AUTDLinkSimulatorTimeout(LinkPtr simulator, uint64_t timeout_ns);
+[[nodiscard]] LinkPtr AUTDLinkSimulatorWithTimeout(LinkPtr simulator, uint64_t timeout_ns);
 
 } // extern "C"
 

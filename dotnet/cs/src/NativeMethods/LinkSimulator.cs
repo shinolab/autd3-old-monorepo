@@ -16,9 +16,9 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkSimulator(ushort port);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkSimulatorAddr(LinkPtr simulator, string addr, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkSimulatorWithAddr(LinkPtr simulator, string addr, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkSimulatorTimeout(LinkPtr simulator, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkSimulatorWithTimeout(LinkPtr simulator, ulong timeoutNs);
         }
     }
 

@@ -14,4 +14,7 @@ You can install the library via Unity Package Manager.
   - Scope(s): com.shinolab
 1. From the menu bar, select "Window" > "Package Manager".
 1. Select "My Registries" from the drop-down menu in the upper left corner.
-1. Select "autd3-unity" and install it.
+1. Install the following package depending on your OS.
+  1. For Windows, "autd3-unity"
+  1. For macOS, "autd3-unity-mac"
+  1. For Linux, "autd3-unity-linux"

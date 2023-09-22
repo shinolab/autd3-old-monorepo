@@ -4,7 +4,7 @@ Project: internal
 Created Date: 29/08/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 20/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ from pyautd3.autd_error import AUTDError
 
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import DatagramPtr, GainPtr, AUTD3_ERR
+from pyautd3.native_methods.autd3capi_def import DatagramPtr, GainPtr
 
 
 class IGain(Datagram, metaclass=ABCMeta):
@@ -58,23 +58,20 @@ class Cache(IGain):
         device_indices = [dev.idx for dev in geometry]
 
         if len(self._cache) != len(device_indices) or any([idx not in self._cache for idx in device_indices]):
-
-            drives = [np.zeros(dev.num_transducers, dtype=Drive) for dev in geometry]
-            drives_ptrs = np.array([d.ctypes.data_as(POINTER(Drive)) for d in drives])
-            drives_ptrs_ = np.ctypeslib.as_ctypes(drives_ptrs)
-
             err = create_string_buffer(256)
-            if Base().gain_calc(self._g.gain_ptr(geometry),
-                                geometry.ptr(),
-                                drives_ptrs_, err) == AUTD3_ERR:
+            res = Base().gain_calc(self._g.gain_ptr(geometry), geometry.ptr(), err)
+            if res._0 is None:
                 raise AUTDError(err)
 
-            for i, dev in enumerate(geometry):
-                self._cache[dev.idx] = drives_ptrs[i]
+            for dev in geometry:
+                drives = np.zeros(dev.num_transducers, dtype=Drive)
+                Base().gain_calc_get_result(res, drives.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
+                self._cache[dev.idx] = drives
+            Base().gain_calc_free_result(res)
 
         return reduce(
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
-                                                    self._cache[dev.idx],  # type: ignore
+                                                    self._cache[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
                                                     len(self._cache[dev.idx])),
             geometry,
             Base().gain_custom(),
@@ -91,19 +88,21 @@ class Transform(IGain):
         self._f = f
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        drives = [np.zeros(dev.num_transducers, dtype=Drive) for dev in geometry]
-        drives_ptrs = np.array([d.ctypes.data_as(POINTER(Drive)) for d in drives])
-        drives_ptrs_ = np.ctypeslib.as_ctypes(drives_ptrs)
-
         err = create_string_buffer(256)
-        if Base().gain_calc(self._g.gain_ptr(geometry),
-                            geometry.ptr(),
-                            drives_ptrs_, err) == AUTD3_ERR:
+        res = Base().gain_calc(self._g.gain_ptr(geometry), geometry.ptr(), err)
+        if res._0 is None:
             raise AUTDError(err)
 
+        drives: Dict[int, np.ndarray] = {}
         for dev in geometry:
+            d = np.zeros(dev.num_transducers, dtype=Drive)
+
+            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
             for tr in dev:
-                drives[dev.idx][tr.local_idx] = self._f(dev, tr, drives[dev.idx][tr.local_idx])
+                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))  # type: ignore
+            drives[dev.idx] = d
+
+        Base().gain_calc_free_result(res)
 
         return reduce(
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,

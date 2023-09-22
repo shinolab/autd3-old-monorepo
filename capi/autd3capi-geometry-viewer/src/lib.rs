@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 #![allow(clippy::missing_safety_doc)]
+
+use std::ffi::c_char;
 
 use autd3capi_def::{common::*, GeometryPtr};
 
@@ -29,7 +31,7 @@ pub unsafe extern "C" fn AUTDGeometryViewer() -> GeometryViewerPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGeometryViewerSize(
+pub unsafe extern "C" fn AUTDGeometryViewerWithSize(
     viewer: GeometryViewerPtr,
     width: u32,
     height: u32,
@@ -40,7 +42,7 @@ pub unsafe extern "C" fn AUTDGeometryViewerSize(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGeometryViewerVsync(
+pub unsafe extern "C" fn AUTDGeometryViewerWithVsync(
     viewer: GeometryViewerPtr,
     vsync: bool,
 ) -> GeometryViewerPtr {
@@ -53,7 +55,12 @@ pub unsafe extern "C" fn AUTDGeometryViewerVsync(
 pub unsafe extern "C" fn AUTDGeometryViewerRun(
     viewer: GeometryViewerPtr,
     geometry: GeometryPtr,
+    err: *mut c_char,
 ) -> i32 {
-    Box::from_raw(viewer.0 as *mut GeometryViewer)
-        .run(cast!(geometry.0, Geometry<DynamicTransducer>))
+    try_or_return!(
+        Box::from_raw(viewer.0 as *mut GeometryViewer)
+            .run(cast!(geometry.0, Geometry<DynamicTransducer>)),
+        err,
+        -1
+    )
 }

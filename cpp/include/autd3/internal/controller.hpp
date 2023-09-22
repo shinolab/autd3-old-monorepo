@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,10 +45,10 @@ class Controller {
      */
     Builder add_device(const AUTD3& device) {
       if (const auto euler = device.euler(); euler.has_value())
-        _ptr = AUTDAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
+        _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
                              euler.value().z());
       else if (const auto quat = device.quaternion(); quat.has_value())
-        _ptr = AUTDAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(), quat.value().x(),
+        _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(), quat.value().x(),
                                        quat.value().y(), quat.value().z());
       else
         throw std::runtime_error("unreachable!");
@@ -84,7 +84,7 @@ class Controller {
     }
 
    private:
-    explicit Builder() : _ptr(native_methods::AUTDCreateControllerBuilder()), _mode(native_methods::TransMode::Legacy) {}
+    explicit Builder() : _ptr(native_methods::AUTDControllerBuilder()), _mode(native_methods::TransMode::Legacy) {}
 
     native_methods::ControllerBuilderPtr _ptr;
     native_methods::TransMode _mode;
@@ -103,7 +103,7 @@ class Controller {
   Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _mode(obj._mode) { obj._ptr._0 = nullptr; }
   Controller& operator=(Controller&& obj) noexcept {
     if (this != &obj) {
-      if (_ptr._0 != nullptr) AUTDFreeController(_ptr);
+      if (_ptr._0 != nullptr) AUTDControllerDelete(_ptr);
 
       _geometry = std::move(obj._geometry);
       _ptr = obj._ptr;
@@ -116,7 +116,7 @@ class Controller {
   ~Controller() noexcept {
     try {
       if (_ptr._0 != nullptr) {
-        AUTDFreeController(_ptr);
+        AUTDControllerDelete(_ptr);
         _ptr._0 = nullptr;
       }
     } catch (std::exception&) {
@@ -130,7 +130,7 @@ class Controller {
    * @brief Close connection
    */
   void close() const {
-    if (char err[256]{}; !AUTDClose(_ptr, err)) throw AUTDException(err);
+    if (char err[256]{}; !AUTDControllerClose(_ptr, err)) throw AUTDException(err);
   }
 
   /**
@@ -142,7 +142,7 @@ class Controller {
     char err[256]{};
     const size_t num_devices = geometry().num_devices();
     std::vector<uint8_t> info(num_devices);
-    if (!AUTDGetFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
+    if (!AUTDControllerFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
     std::vector<FPGAInfo> ret;
     ret.reserve(num_devices);
     std::transform(info.begin(), info.end(), std::back_inserter(ret), [](const uint8_t i) { return FPGAInfo(i); });
@@ -156,15 +156,15 @@ class Controller {
    */
   [[nodiscard]] std::vector<FirmwareInfo> firmware_infos() {
     char err[256]{};
-    const auto handle = AUTDGetFirmwareInfoListPointer(_ptr, err);
+    const auto handle = AUTDControllerFirmwareInfoListPointer(_ptr, err);
     if (handle._0 == nullptr) throw AUTDException(err);
     std::vector<FirmwareInfo> ret;
     for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
       char info[256]{};
-      AUTDGetFirmwareInfo(handle, i, info);
+      AUTDControllerFirmwareInfoGet(handle, i, info);
       ret.emplace_back(std::string(info));
     }
-    AUTDFreeFirmwareInfoListPointer(handle);
+    AUTDControllerFirmwareInfoListPointerDelete(handle);
     return ret;
   }
 
@@ -270,7 +270,7 @@ class Controller {
     char err[256]{};
     const int64_t timeout_ns =
         timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
-    const auto res = native_methods::AUTDSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
+    const auto res = native_methods::AUTDControllerSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
   }
@@ -295,7 +295,7 @@ class Controller {
         auto* c = static_cast<Context*>(context);
         return c->callback(c->controller, static_cast<size_t>(idx), std::chrono::nanoseconds(time));
       };
-      if (char err[256]{}; native_methods::AUTDSoftwareSTM(_ptr, reinterpret_cast<void*>(callback_native), _context.get(), _strategy, interval_ns,
+      if (char err[256]{}; native_methods::AUTDControllerSoftwareSTM(_ptr, reinterpret_cast<void*>(callback_native), _context.get(), _strategy, interval_ns,
                                                            err) == native_methods::AUTD3_ERR)
         throw AUTDException(err);
     }
@@ -325,7 +325,7 @@ class Controller {
     using key_type = typename std::invoke_result_t<F, const internal::Device&>::value_type;
 
     explicit GroupGuard(const F& map, Controller& controller)
-        : _controller(controller), _map(map), _kv_map(internal::native_methods::AUTDGroupCreateKVMap()) {}
+        : _controller(controller), _map(map), _kv_map(internal::native_methods::AUTDControllerGroupCreateKVMap()) {}
 
     template <typename D, typename Rep = uint64_t, typename Period = std::milli>
     auto set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
@@ -335,7 +335,7 @@ class Controller {
       const auto ptr = data.ptr(_controller._geometry);
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = internal::native_methods::AUTDGroupKVMapSet(_kv_map, _keymap[key], ptr, internal::native_methods::DatagramPtr{nullptr},
+      _kv_map = internal::native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, internal::native_methods::DatagramPtr{nullptr},
                                                             _controller._mode, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
@@ -355,7 +355,7 @@ class Controller {
       const auto ptr2 = data2.ptr(_controller._geometry);
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = native_methods::AUTDGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, _controller._mode, timeout_ns, err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, _controller._mode, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
@@ -374,7 +374,7 @@ class Controller {
       const auto ptr = data.ptr();
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = internal::native_methods::AUTDGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, _controller._mode, timeout_ns, err);
+      _kv_map = internal::native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, _controller._mode, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
@@ -391,7 +391,7 @@ class Controller {
         const auto k = _map(d);
         return k.has_value() ? _keymap[k.value()] : -1;
       });
-      if (char err[256]{}; AUTDGroup(_controller._ptr, map.data(), _kv_map, err) == native_methods::AUTD3_ERR) throw AUTDException(err);
+      if (char err[256]{}; AUTDControllerGroup(_controller._ptr, map.data(), _kv_map, err) == native_methods::AUTD3_ERR) throw AUTDException(err);
     }
 
    private:
@@ -415,7 +415,7 @@ class Controller {
     const auto ptr = AUTDControllerOpenWith(builder, link, err);
     if (ptr._0 == nullptr) throw AUTDException(err);
 
-    Geometry geometry(AUTDGetGeometry(ptr), mode);
+    Geometry geometry(AUTDGeometry(ptr), mode);
 
     return {std::move(geometry), ptr, mode};
   }
@@ -426,7 +426,7 @@ class Controller {
   bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
-    const auto res = AUTDSend(_ptr, _mode, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
+    const auto res = AUTDControllerSend(_ptr, _mode, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
   }

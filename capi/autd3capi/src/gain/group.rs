@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -90,8 +90,8 @@ mod tests {
     use crate::{
         gain::{null::AUTDGainNull, *},
         geometry::{
-            device::{AUTDDeviceNumTransducers, AUTDGetDevice},
-            AUTDGetGeometry,
+            device::{AUTDDeviceNumTransducers, AUTDDevice},
+            AUTDGeometry,
         },
         tests::*,
         *,
@@ -103,10 +103,10 @@ mod tests {
     fn test_group_by_transducer() {
         unsafe {
             let cnt = create_controller();
-            let geo = AUTDGetGeometry(cnt);
+            let geo = AUTDGeometry(cnt);
 
-            let dev0 = AUTDGetDevice(geo, 0);
-            let dev1 = AUTDGetDevice(geo, 1);
+            let dev0 = AUTDDevice(geo, 0);
+            let dev1 = AUTDDevice(geo, 1);
 
             let num_transducer = AUTDDeviceNumTransducers(dev0);
             let map0 = vec![0; num_transducer as _];
@@ -126,7 +126,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     DatagramPtr(std::ptr::null()),
@@ -137,7 +137,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

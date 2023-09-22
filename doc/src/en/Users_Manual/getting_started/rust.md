@@ -1,6 +1,5 @@
 # Rust tutorial
 
-
 First, make a new project and add `autd3` and `autd3-link-soem` libraries as dependencies.
 
 ```shell
@@ -34,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }))?;
 
     // Check firmware version
-    // This code assumes that the version is v2.9
+    // This code assumes that the version is v3.0.2
     autd.firmware_infos()?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });
@@ -50,7 +49,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 150Hz sine wave modulation
     let m = Sine::new(150);
-
 
     // Send data
     autd.send((m, g))?;

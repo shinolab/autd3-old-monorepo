@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/08/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,13 +33,13 @@ pub unsafe extern "C" fn AUTDCUDABackend(err: *mut c_char) -> BackendPtr {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteCUDABackend(backend: BackendPtr) {
+pub unsafe extern "C" fn AUTDCUDABackendDelete(backend: BackendPtr) {
     let _ = Box::from_raw(backend.0 as *mut Rc<CUDABackend>);
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloSDPCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDASDP(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -50,7 +50,7 @@ pub unsafe extern "C" fn AUTDGainHoloSDPCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloSDPWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -61,25 +61,25 @@ pub unsafe extern "C" fn AUTDGainHoloSDPWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloSDPWithAlphaCUDA(holo: GainPtr, alpha: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithAlpha(holo: GainPtr, alpha: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, SDP<CUDABackend>).with_alpha(alpha))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloSDPWithLambdaCUDA(holo: GainPtr, lambda: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithLambda(holo: GainPtr, lambda: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, SDP<CUDABackend>).with_lambda(lambda))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloSDPWithRepeatCUDA(holo: GainPtr, repeat: u32) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, SDP<CUDABackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloEVPCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAEVP(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -90,7 +90,7 @@ pub unsafe extern "C" fn AUTDGainHoloEVPCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloEVPWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAEVPWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -101,13 +101,13 @@ pub unsafe extern "C" fn AUTDGainHoloEVPWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloEVPWithGammaCUDA(holo: GainPtr, gamma: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDAEVPWithGamma(holo: GainPtr, gamma: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, EVP<CUDABackend>).with_gamma(gamma))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGS(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -118,7 +118,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGSWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -129,13 +129,13 @@ pub unsafe extern "C" fn AUTDGainHoloGSWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSWithRepeatCUDA(holo: GainPtr, repeat: u32) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDAGSWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, GS<CUDABackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSPATCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGSPAT(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -146,7 +146,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSPATWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGSPATWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -157,13 +157,13 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGSPATWithRepeatCUDA(holo: GainPtr, repeat: u32) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDAGSPATWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, GSPAT<CUDABackend>).with_repeat(repeat as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloNaiveCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDANaive(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -174,7 +174,7 @@ pub unsafe extern "C" fn AUTDGainHoloNaiveCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloNaiveWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDANaiveWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -185,7 +185,7 @@ pub unsafe extern "C" fn AUTDGainHoloNaiveWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGreedyCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGreedy(
     points: *const float,
     amps: *const float,
     size: u64,
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn AUTDGainHoloGreedyCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGreedyWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDAGreedyWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -204,13 +204,13 @@ pub unsafe extern "C" fn AUTDGainHoloGreedyWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloGreedyWithPhaseDivCUDA(holo: GainPtr, div: u32) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDAGreedyWithPhaseDiv(holo: GainPtr, div: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, Greedy).with_phase_div(div as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDALM(
     backend: BackendPtr,
     points: *const float,
     amps: *const float,
@@ -221,7 +221,7 @@ pub unsafe extern "C" fn AUTDGainHoloLMCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithConstraintCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithConstraint(
     holo: GainPtr,
     constraint: ConstraintPtr,
 ) -> GainPtr {
@@ -232,31 +232,31 @@ pub unsafe extern "C" fn AUTDGainHoloLMWithConstraintCUDA(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithEps1CUDA(holo: GainPtr, eps: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithEps1(holo: GainPtr, eps: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, LM<CUDABackend>).with_eps_1(eps))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithEps2CUDA(holo: GainPtr, eps: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithEps2(holo: GainPtr, eps: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, LM<CUDABackend>).with_eps_2(eps))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithTauCUDA(holo: GainPtr, tau: float) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithTau(holo: GainPtr, tau: float) -> GainPtr {
     GainPtr::new(take_gain!(holo, LM<CUDABackend>).with_tau(tau))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithKMaxCUDA(holo: GainPtr, k_max: u32) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithKMax(holo: GainPtr, k_max: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, LM<CUDABackend>).with_k_max(k_max as _))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloLMWithInitialCUDA(
+pub unsafe extern "C" fn AUTDGainHoloCUDALMWithInitial(
     holo: GainPtr,
     initial_ptr: *const float,
     len: u64,

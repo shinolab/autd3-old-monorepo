@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_ifname(const std::string& ifname) {
-    _ptr = AUTDLinkSOEMIfname(_ptr, ifname.c_str());
+    _ptr = AUTDLinkSOEMWithIfname(_ptr, ifname.c_str());
     return *this;
   }
 
@@ -50,7 +50,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_buf_size(const size_t value) {
-    _ptr = AUTDLinkSOEMBufSize(_ptr, static_cast<uint32_t>(value));
+    _ptr = AUTDLinkSOEMWithBufSize(_ptr, static_cast<uint32_t>(value));
     return *this;
   }
 
@@ -61,7 +61,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_send_cycle(const uint16_t value) {
-    _ptr = AUTDLinkSOEMSendCycle(_ptr, value);
+    _ptr = AUTDLinkSOEMWithSendCycle(_ptr, value);
     return *this;
   }
 
@@ -72,7 +72,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_sync0_cycle(const uint16_t value) {
-    _ptr = AUTDLinkSOEMSync0Cycle(_ptr, value);
+    _ptr = AUTDLinkSOEMWithSync0Cycle(_ptr, value);
     return *this;
   }
 
@@ -83,7 +83,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_on_lost(const internal::LogOutCallback value) {
-    _ptr = AUTDLinkSOEMOnLost(_ptr, reinterpret_cast<void*>(value));
+    _ptr = AUTDLinkSOEMWithOnLost(_ptr, reinterpret_cast<void*>(value));
     return *this;
   }
 
@@ -94,7 +94,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_timer_strategy(const internal::native_methods::TimerStrategy value) {
-    _ptr = AUTDLinkSOEMTimerStrategy(_ptr, value);
+    _ptr = AUTDLinkSOEMWithTimerStrategy(_ptr, value);
     return *this;
   }
 
@@ -106,7 +106,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_sync_mode(const SyncMode value) {
-    _ptr = AUTDLinkSOEMSyncMode(_ptr, value);
+    _ptr = AUTDLinkSOEMWithSyncMode(_ptr, value);
     return *this;
   }
 
@@ -119,7 +119,7 @@ class SOEM : public internal::Link {
   template <typename Rep, typename Period>
   SOEM with_state_check_interval(const std::chrono::duration<Rep, Period> value) {
     const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
-    _ptr = AUTDLinkSOEMStateCheckInterval(_ptr, static_cast<uint64_t>(ms));
+    _ptr = AUTDLinkSOEMWithStateCheckInterval(_ptr, static_cast<uint64_t>(ms));
     return std::move(*this);
   }
 
@@ -130,7 +130,7 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_log_level(const internal::native_methods::Level value) {
-    _ptr = AUTDLinkSOEMLogLevel(_ptr, value);
+    _ptr = AUTDLinkSOEMWithLogLevel(_ptr, value);
     return *this;
   }
 
@@ -142,14 +142,14 @@ class SOEM : public internal::Link {
    * @return SOEM
    */
   SOEM with_log_func(const internal::LogOutCallback out, const internal::LogFlushCallback flush) {
-    _ptr = AUTDLinkSOEMLogFunc(_ptr, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
+    _ptr = AUTDLinkSOEMWithLogFunc(_ptr, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
   template <typename Rep, typename Period>
   SOEM with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
+    _ptr = AUTDLinkSOEMWithTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
 
@@ -175,7 +175,7 @@ class RemoteSOEM : public internal::Link {
   template <typename Rep, typename Period>
   RemoteSOEM with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkRemoteSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
+    _ptr = AUTDLinkRemoteSOEMWithTimeout(_ptr, static_cast<uint64_t>(ns));
     return std::move(*this);
   }
 

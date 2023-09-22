@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -39,25 +40,20 @@ namespace AUTD3Sharp.Modulation
 
     public class Transform : Internal.Modulation
     {
-        private readonly float_t[] _buffer;
-        private readonly uint _freqDiv;
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate float_t ModTransformDelegate(uint i, float_t d);
+
+        private readonly Internal.Modulation _m;
+        private readonly ModTransformDelegate _f;
 
         public Transform(Internal.Modulation m, Func<int, float_t, float_t> f)
         {
-            _freqDiv = m.SamplingFrequencyDivision;
-
-            var err = new byte[256];
-            var size = Base.AUTDModulationSize(m.ModulationPtr(), err);
-            if (size == Def.Autd3Err) throw new AUTDException(err);
-            _buffer = new float_t[size];
-            if (Base.AUTDModulationCalc(m.ModulationPtr(), _buffer, err) == Def.Autd3Err)
-                throw new AUTDException(err);
-            _buffer = _buffer.Select((v, i) => f(i, v)).ToArray();
+            _m = m;
+            _f = new ModTransformDelegate((i, d) => f((int)i, d));
         }
 
         public override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationCustom(_freqDiv, _buffer, (ulong)_buffer.Length);
+            return Base.AUTDModulationWithTransform(_m.ModulationPtr(), Marshal.GetFunctionPointerForDelegate(_f));
         }
     }
 
