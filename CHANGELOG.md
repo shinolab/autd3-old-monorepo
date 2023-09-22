@@ -1,3 +1,7 @@
+# 15.1.3
+
+- Fix [#164](https://github.com/shinolab/autd3/issues/164): [Python] Controller.software_stm sometimes stucks
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything

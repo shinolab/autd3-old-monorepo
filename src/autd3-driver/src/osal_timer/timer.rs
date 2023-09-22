@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -52,13 +52,10 @@ impl<F: TimerCallback> Timer<F> {
 
     #[cfg(target_os = "windows")]
     unsafe extern "system" fn rt_thread(
-        _u_timer_id: u32,
-        _u_msg: u32,
-        dw_user: usize,
-        _dw1: usize,
-        _dw2: usize,
+        param0: *mut std::ffi::c_void,
+        _: windows::Win32::Foundation::BOOLEAN,
     ) {
-        let ptr = dw_user as *mut Self;
+        let ptr = param0 as *mut Self;
         if let Some(timer) = ptr.as_mut() {
             if let Ok(false) =
                 timer

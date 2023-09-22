@@ -4,7 +4,7 @@ Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 22/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from datetime import timedelta
 import numpy as np
-from pyautd3 import Clear, Controller, AUTD3, FirmwareInfo, Silencer, Stop, Synchronize, UpdateFlags, Amplitudes
+from pyautd3 import Clear, Controller, AUTD3, FirmwareInfo, Silencer, Stop, Synchronize, TimerStrategy, UpdateFlags, Amplitudes
 from pyautd3 import ConfigureModDelay, ConfigureAmpFilter, ConfigurePhaseFilter
 from pyautd3.link import Audit
 from pyautd3.modulation import Static, Sine
@@ -233,17 +233,26 @@ def test_send_special():
     assert str(e.value) == "broken"
 
 
-# TODO: See [#164](https://github.com/shinolab/autd3/issues/164)
-# def test_software_stm():
-#     autd = create_controller()
+def test_software_stm():
+    autd = create_controller()
 
-#     def callback(autd: Controller, i: int, elapsed: timedelta):
-#         print('call')
-#         return False
+    cnt = 0
 
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.Sleep).start(timedelta(milliseconds=1.0))
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.BusyWait).start(timedelta(milliseconds=1.0))
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.NativeTimer).start(timedelta(milliseconds=1.0))
+    def callback(autd: Controller, i: int, elapsed: timedelta):
+        nonlocal cnt
+        cnt += 1
+        return False
+
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.Sleep).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
+
+    cnt = 0
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.BusyWait).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
+
+    cnt = 0
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.NativeTimer).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
 
 
 def test_group():
