@@ -66,8 +66,8 @@ namespace AUTD3Sharp
     public enum TimerStrategy : byte
     {
         Sleep = 0,
-        NativeTimer = 1,
-        BusyWait = 2,
+        BusyWait = 1,
+        NativeTimer = 2,
     }
 
     [StructLayout(LayoutKind.Sequential)]

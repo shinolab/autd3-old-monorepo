@@ -1,3 +1,7 @@
+# 15.1.3
+
+- Fix [#178](https://github.com/shinolab/autd3/issues/178): The value of TimerStrategy is not consistent between capi and the original source
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything

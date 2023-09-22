@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -106,8 +106,8 @@ impl From<Level> for common::autd3::prelude::LevelFilter {
 #[repr(u8)]
 pub enum TimerStrategy {
     Sleep = 0,
-    NativeTimer = 1,
-    BusyWait = 2,
+    BusyWait = 1,
+    NativeTimer = 2,
 }
 
 impl From<TimerStrategy> for common::autd3::prelude::TimerStrategy {
@@ -274,3 +274,24 @@ pub struct GroupGainMapPtr(pub ConstPtr);
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct GroupKVMapPtr(pub ConstPtr);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_timer_strategy() {
+        assert_eq!(
+            TimerStrategy::Sleep as u8,
+            common::autd3::prelude::TimerStrategy::Sleep as u8
+        );
+        assert_eq!(
+            TimerStrategy::BusyWait as u8,
+            common::autd3::prelude::TimerStrategy::BusyWait as u8
+        );
+        assert_eq!(
+            TimerStrategy::NativeTimer as u8,
+            common::autd3::prelude::TimerStrategy::NativeTimer as u8
+        );
+    }
+}

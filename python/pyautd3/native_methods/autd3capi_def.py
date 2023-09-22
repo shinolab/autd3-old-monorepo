@@ -40,8 +40,8 @@ class Level(IntEnum):
 
 class TimerStrategy(IntEnum):
     Sleep = 0
-    NativeTimer = 1
-    BusyWait = 2
+    BusyWait = 1
+    NativeTimer = 2
 
     @classmethod
     def from_param(cls, obj):
