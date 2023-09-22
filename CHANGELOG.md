@@ -1,3 +1,7 @@
+# 15.1.3
+
+- Fix [#177](https://github.com/shinolab/autd3/issues/177): [C++] Avoid unnecessary copying in gain::Cache
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
