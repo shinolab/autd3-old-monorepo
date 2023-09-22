@@ -34,7 +34,7 @@ The followings is the dimension of transducer array.
 
 <figure>
   <img src="../fig/Users_Manual/transducers_array.jpg"/>
-  <figcaption>The dimensino of transducer array</figcaption>
+  <figcaption>The dimension of transducer array</figcaption>
 </figure>
 
 In addition, AUTD3 can be connected to each other via the daisy chain.

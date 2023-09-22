@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ class FirmwareInfo {
 
   [[nodiscard]] static std::string latest_version() {
     char info[256];
-    native_methods::AUTDGetLatestFirmware(info);
+    native_methods::AUTDFirmwareLatest(info);
     return {info};
   }
 

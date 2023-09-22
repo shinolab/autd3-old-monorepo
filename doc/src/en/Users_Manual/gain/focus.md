@@ -1,6 +1,6 @@
 # Focus
 
-`Focus` is the simplest `Gain` and generates a single focal point.
+`Focus` generates a single focal point.
 
 ```rust,edition2021
 # extern crate autd3;

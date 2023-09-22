@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 22/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "autd3/internal/exception.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -31,7 +32,7 @@ class GeometryViewer {
    * @return GeometryViewer&
    */
   GeometryViewer& with_window_size(const uint32_t width, const uint32_t height) {
-    _ptr = AUTDGeometryViewerSize(_ptr, width, height);
+    _ptr = AUTDGeometryViewerWithSize(_ptr, width, height);
     return *this;
   }
 
@@ -42,7 +43,7 @@ class GeometryViewer {
    * @return GeometryViewer&
    */
   GeometryViewer& with_vsync(const uint32_t vsync) {
-    _ptr = AUTDGeometryViewerVsync(_ptr, vsync);
+    _ptr = AUTDGeometryViewerWithVsync(_ptr, vsync);
     return *this;
   }
 
@@ -53,7 +54,12 @@ class GeometryViewer {
    *
    * @return 0 if success, otherwise error code
    */
-  [[nodiscard]] int32_t run(const internal::Geometry& geometry) const { return AUTDGeometryViewerRun(_ptr, geometry.ptr()); }
+  [[nodiscard]] int32_t run(const internal::Geometry& geometry) const {
+    char err[256]{};
+    const auto res = AUTDGeometryViewerRun(_ptr, geometry.ptr(), err);
+    if (res < 0) throw internal::AUTDException(err);
+    return res;
+  }
 
  private:
   internal::native_methods::GeometryViewerPtr _ptr;

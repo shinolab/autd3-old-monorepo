@@ -3,7 +3,7 @@
 You can change the frequency of ultrasound from $\ufreq$.
 The conventional mode with $\ufreq$ is called Legacy mode, and the mode with variable frequency is called Advanced mode.
 
-The default mode is Legacy mode.
+The default is Legacy mode.
 
 You can change to the Advanced mode by the following.
 
@@ -11,7 +11,6 @@ You can change to the Advanced mode by the following.
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced()
@@ -33,9 +32,7 @@ var autd = Controller.Builder()
 autd = Controller.builder().advanced()
 ```
 
-
 The frequency is specified by `set_frequency` or by changing `cycle` directly of `Transducer`.
-The `Transducer` can be accessed via the `Geometry` iterator or via the indexer.
 The frequency can be specified as $\clkf/N,N=2,...,8191$.
 The `cycle` represents this $N$.
 In the case of `set_frequency`, the closest value of the possible $N$ is chosen.
@@ -46,7 +43,6 @@ Note that you must send `Synchronize` after frequency configuration.
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced()
@@ -95,7 +91,6 @@ In practice, amplitude data is not expected to be updated frequently, so the Adv
 # extern crate autd3;
 # use autd3::prelude::*;
 # use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced_phase()
@@ -117,7 +112,7 @@ var autd = Controller.Builder()
 autd = Controller.builder().advanced_phase()
 ```
 
-In this mode, the amplitude is controlled by sending the `Amplitudes` class in advance.
+In AdvancedPhase mode, the amplitude is controlled by sending the `Amplitudes` class in advance.
 All `Gain` amplitude parameters are ignored in this mode.
 
 ```rust,edition2021
@@ -135,12 +130,14 @@ autd.send(amp)?;
 #    Ok(())
 # }
 ```
+
 ```cpp
-const auto amp = autd3::Amplitudes(1.0);
+const auto amp = autd3::Amplitudes::uniform(1.0);
 autd.send(amp);
 ```
+
 ```cs
-var amp = new Amplitudes(1.0);
+var amp = Amplitudes.Uniform(1.0);
 autd.Send(amp);
 ```
 ```python

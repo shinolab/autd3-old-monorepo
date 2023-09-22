@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,14 +42,14 @@ unsafe impl Send for CallbackPtr {}
 #[no_mangle]
 #[must_use]
 #[allow(clippy::box_default)]
-pub unsafe extern "C" fn AUTDCreateControllerBuilder() -> ControllerBuilderPtr {
+pub unsafe extern "C" fn AUTDControllerBuilder() -> ControllerBuilderPtr {
     ControllerBuilderPtr(
         Box::into_raw(Box::new(ControllerBuilder::<DynamicTransducer>::default())) as _,
     )
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDAddDevice(
+pub unsafe extern "C" fn AUTDControllerBuilderAddDevice(
     builder: ControllerBuilderPtr,
     x: float,
     y: float,
@@ -66,7 +66,7 @@ pub unsafe extern "C" fn AUTDAddDevice(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
+pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
     builder: ControllerBuilderPtr,
     x: float,
     y: float,
@@ -104,20 +104,20 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDClose(cnt: ControllerPtr, err: *mut c_char) -> bool {
+pub unsafe extern "C" fn AUTDControllerClose(cnt: ControllerPtr, err: *mut c_char) -> bool {
     try_or_return!(cast_mut!(cnt.0, Cnt).close(), err, false);
     true
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDFreeController(cnt: ControllerPtr) {
+pub unsafe extern "C" fn AUTDControllerDelete(cnt: ControllerPtr) {
     let mut cnt = Box::from_raw(cnt.0 as *mut Cnt);
     let _ = cnt.close();
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetFPGAInfo(
+pub unsafe extern "C" fn AUTDControllerFPGAInfo(
     cnt: ControllerPtr,
     out: *mut u8,
     err: *mut c_char,
@@ -133,7 +133,7 @@ pub struct FirmwareInfoListPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetFirmwareInfoListPointer(
+pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointer(
     cnt: ControllerPtr,
     err: *mut c_char,
 ) -> FirmwareInfoListPtr {
@@ -146,7 +146,7 @@ pub unsafe extern "C" fn AUTDGetFirmwareInfoListPointer(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetFirmwareInfo(
+pub unsafe extern "C" fn AUTDControllerFirmwareInfoGet(
     p_info_list: FirmwareInfoListPtr,
     idx: u32,
     info: *mut c_char,
@@ -157,73 +157,73 @@ pub unsafe extern "C" fn AUTDGetFirmwareInfo(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDFreeFirmwareInfoListPointer(p_info_list: FirmwareInfoListPtr) {
+pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(p_info_list: FirmwareInfoListPtr) {
     let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetLatestFirmware(latest: *mut c_char) {
+pub unsafe extern "C" fn AUTDFirmwareLatest(latest: *mut c_char) {
     let info_str = std::ffi::CString::new(FirmwareInfo::latest_version()).unwrap();
     libc::strcpy(latest, info_str.as_ptr());
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSynchronize() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramSynchronize() -> DatagramPtr {
     DatagramPtr::new(Synchronize::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDClear() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramClear() -> DatagramPtr {
     DatagramPtr::new(Clear::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDUpdateFlags() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramUpdateFlags() -> DatagramPtr {
     DatagramPtr::new(UpdateFlags::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDStop() -> DatagramSpecialPtr {
+pub unsafe extern "C" fn AUTDDatagramStop() -> DatagramSpecialPtr {
     DatagramSpecialPtr::new(Stop::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDConfigureModDelay() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
     DatagramPtr::new(ConfigureModDelay::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDConfigureAmpFilter() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramConfigureAmpFilter() -> DatagramPtr {
     DatagramPtr::new(ConfigureAmpFilter::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDConfigurePhaseFilter() -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramConfigurePhaseFilter() -> DatagramPtr {
     DatagramPtr::new(ConfigurePhaseFilter::new())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDCreateSilencer(step: u16) -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramSilencer(step: u16) -> DatagramPtr {
     DatagramPtr::new(Silencer::new(step))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> DatagramPtr {
+pub unsafe extern "C" fn AUTDDatagramAmplitudes(amp: float) -> DatagramPtr {
     DatagramPtr::new(Amplitudes::uniform(amp))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSend(
+pub unsafe extern "C" fn AUTDControllerSend(
     cnt: ControllerPtr,
     mode: TransMode,
     d1: DatagramPtr,
@@ -271,7 +271,7 @@ pub unsafe extern "C" fn AUTDSend(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSendSpecial(
+pub unsafe extern "C" fn AUTDControllerSendSpecial(
     cnt: ControllerPtr,
     mode: TransMode,
     special: DatagramSpecialPtr,
@@ -306,13 +306,13 @@ type M = std::collections::HashMap<K, V>;
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGroupCreateKVMap() -> GroupKVMapPtr {
+pub unsafe extern "C" fn AUTDControllerGroupCreateKVMap() -> GroupKVMapPtr {
     GroupKVMapPtr(Box::into_raw(Box::<M>::default()) as _)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGroupKVMapSet(
+pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
     map: GroupKVMapPtr,
     key: i32,
     d1: DatagramPtr,
@@ -359,7 +359,7 @@ pub unsafe extern "C" fn AUTDGroupKVMapSet(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGroupKVMapSetSpecial(
+pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
     map: GroupKVMapPtr,
     key: i32,
     special: DatagramSpecialPtr,
@@ -388,7 +388,7 @@ pub unsafe extern "C" fn AUTDGroupKVMapSetSpecial(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGroup(
+pub unsafe extern "C" fn AUTDControllerGroup(
     cnt: ControllerPtr,
     map: *const i32,
     kv_map: GroupKVMapPtr,
@@ -426,7 +426,7 @@ struct SoftwareSTMContextPtr(ConstPtr);
 unsafe impl Send for SoftwareSTMContextPtr {}
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDSoftwareSTM(
+pub unsafe extern "C" fn AUTDControllerSoftwareSTM(
     cnt: ControllerPtr,
     callback: ConstPtr,
     context: ConstPtr,
@@ -474,9 +474,9 @@ mod tests {
     }
 
     pub unsafe fn create_controller() -> ControllerPtr {
-        let builder = AUTDCreateControllerBuilder();
-        let builder = AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let builder = AUTDAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilder();
+        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilderAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
         let link = make_debug_link();
         let mut err = vec![c_char::default(); 256];
@@ -508,17 +508,17 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
 
-            let firm_p = AUTDGetFirmwareInfoListPointer(cnt, err.as_mut_ptr());
+            let firm_p = AUTDControllerFirmwareInfoListPointer(cnt, err.as_mut_ptr());
             assert_ne!(firm_p.0, NULL);
             (0..2).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
-                AUTDGetFirmwareInfo(firm_p, i as _, info.as_mut_ptr());
+                AUTDControllerFirmwareInfoGet(firm_p, i as _, info.as_mut_ptr());
                 dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
             });
-            AUTDFreeFirmwareInfoListPointer(firm_p);
+            AUTDControllerFirmwareInfoListPointerDelete(firm_p);
 
             let mut fpga_info = vec![0xFFu8; 2];
-            assert!(AUTDGetFPGAInfo(
+            assert!(AUTDControllerFPGAInfo(
                 cnt,
                 fpga_info.as_mut_ptr() as _,
                 err.as_mut_ptr()
@@ -526,9 +526,9 @@ mod tests {
             assert_eq!(fpga_info[0], 0x00);
             assert_eq!(fpga_info[1], 0x00);
 
-            let s = AUTDSynchronize();
+            let s = AUTDDatagramSynchronize();
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     s,
@@ -539,9 +539,9 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDClear();
+            let s = AUTDDatagramClear();
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     s,
@@ -552,9 +552,9 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDUpdateFlags();
+            let s = AUTDDatagramUpdateFlags();
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     s,
@@ -565,15 +565,15 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDStop();
+            let s = AUTDDatagramStop();
             assert_eq!(
-                AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()),
+                AUTDControllerSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
-            let s = AUTDConfigureModDelay();
+            let s = AUTDDatagramConfigureModDelay();
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     s,
@@ -584,9 +584,9 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDCreateSilencer(10);
+            let s = AUTDDatagramSilencer(10);
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     s,
@@ -597,9 +597,9 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            let s = AUTDCreateAmplitudes(1.);
+            let s = AUTDDatagramAmplitudes(1.);
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     DatagramPtr(std::ptr::null()),
@@ -610,9 +610,9 @@ mod tests {
                 AUTD3_ERR
             );
 
-            let s = AUTDCreateAmplitudes(1.);
+            let s = AUTDDatagramAmplitudes(1.);
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Advanced,
                     DatagramPtr(std::ptr::null()),
@@ -623,9 +623,9 @@ mod tests {
                 AUTD3_ERR
             );
 
-            let s = AUTDCreateAmplitudes(1.);
+            let s = AUTDDatagramAmplitudes(1.);
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::AdvancedPhase,
                     DatagramPtr(std::ptr::null()),
@@ -636,9 +636,9 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            assert!(AUTDClose(cnt, err.as_mut_ptr()));
+            assert!(AUTDControllerClose(cnt, err.as_mut_ptr()));
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iterator>
 #include <numeric>
 #include <vector>
 
@@ -29,29 +28,22 @@ class Transform final : public internal::Gain {
   Transform(G g, F& f) : _g(std::move(g)), _f(f) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    std::vector<std::vector<internal::native_methods::Drive>> drives;
-    drives.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [](const internal::Device& dev) {
+    std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> drives;
+
+    char err[256]{};
+    auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
+    if (res._0 == nullptr) throw internal::AUTDException(err);
+
+    std::for_each(geometry.begin(), geometry.end(), [this, &res, &drives](const internal::Device& dev) {
       std::vector<internal::native_methods::Drive> d;
       d.resize(dev.num_transducers());
-      return std::move(d);
+      internal::native_methods::AUTDGainCalcGetResult(res, d.data(), static_cast<uint32_t>(dev.idx()));
+      std::for_each(dev.cbegin(), dev.cend(),
+                    [this, &d, &dev](const internal::Transducer& tr) { d[tr.local_idx()] = _f(dev, tr, d[tr.local_idx()]); });
+      drives.emplace(dev.idx(), std::move(d));
     });
 
-    std::vector<internal::native_methods::Drive*> drives_ptrs;
-    drives_ptrs.reserve(drives.size());
-    std::transform(drives.begin(), drives.end(), std::back_inserter(drives_ptrs),
-                   [](std::vector<internal::native_methods::Drive>& d) { return d.data(); });
-
-    if (char err[256]{};
-        internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), drives_ptrs.data(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
-
-    std::for_each(geometry.begin(), geometry.end(), [this, &drives](const internal::Device& dev) {
-      std::for_each(dev.cbegin(), dev.cend(), [this, &drives, &dev](const internal::Transducer& tr) {
-        drives[dev.idx()][tr.local_idx()] = _f(dev, tr, drives[dev.idx()][tr.local_idx()]);
-      });
-    });
-
+    internal::native_methods::AUTDGainCalcFreeResult(res);
     return std::accumulate(geometry.begin(), geometry.end(), internal::native_methods::AUTDGainCustom(),
                            [this, &drives](const internal::native_methods::GainPtr acc, const internal::Device& dev) {
                              return AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), drives[dev.idx()].data(),

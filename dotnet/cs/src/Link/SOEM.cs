@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithIfname(string ifname)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMIfname(Ptr, ifname);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithIfname(Ptr, ifname);
             return this;
         }
 
@@ -53,7 +53,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithBufSize(uint size)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMBufSize(Ptr, size);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithBufSize(Ptr, size);
             return this;
         }
 
@@ -64,7 +64,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithSendCycle(ushort sendCycle)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMSendCycle(Ptr, sendCycle);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSendCycle(Ptr, sendCycle);
             return this;
         }
 
@@ -75,7 +75,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithSync0Cycle(ushort sync0Cycle)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMSync0Cycle(Ptr, sync0Cycle);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSync0Cycle(Ptr, sync0Cycle);
             return this;
         }
 
@@ -87,7 +87,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithSyncMode(SyncMode syncMode)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMSyncMode(Ptr, syncMode);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSyncMode(Ptr, syncMode);
             return this;
         }
 
@@ -98,7 +98,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithTimerStrategy(TimerStrategy timerStrategy)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMTimerStrategy(Ptr, timerStrategy);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimerStrategy(Ptr, timerStrategy);
             return this;
         }
 
@@ -109,7 +109,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithOnLost(OnLostCallbackDelegate onLost)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMOnLost(Ptr, Marshal.GetFunctionPointerForDelegate(onLost));
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithOnLost(Ptr, Marshal.GetFunctionPointerForDelegate(onLost));
             return this;
         }
 
@@ -120,7 +120,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithStateCheckInterval(TimeSpan interval)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMStateCheckInterval(Ptr, (uint)interval.TotalMilliseconds);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithStateCheckInterval(Ptr, (uint)interval.TotalMilliseconds);
             return this;
         }
 
@@ -132,7 +132,7 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMLogFunc(Ptr, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithLogFunc(Ptr, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
             return this;
         }
 
@@ -143,28 +143,28 @@ namespace AUTD3Sharp.Link
         /// <returns></returns>
         public SOEM WithLogLevel(Level level)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMLogLevel(Ptr, level);
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithLogLevel(Ptr, level);
             return this;
         }
 
         public SOEM WithTimeout(TimeSpan timeout)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
             return this;
         }
 
         public static IEnumerable<EtherCATAdapter> EnumerateAdapters()
         {
-            var handle = NativeMethods.LinkSOEM.AUTDGetAdapterPointer();
-            var len = NativeMethods.LinkSOEM.AUTDGetAdapterSize(handle);
+            var handle = NativeMethods.LinkSOEM.AUTDAdapterPointer();
+            var len = NativeMethods.LinkSOEM.AUTDAdapterGetSize(handle);
             for (uint i = 0; i < len; i++)
             {
                 var sbDesc = new byte[128];
                 var sbName = new byte[128];
-                NativeMethods.LinkSOEM.AUTDGetAdapter(handle, i, sbDesc, sbName);
+                NativeMethods.LinkSOEM.AUTDAdapterGetAdapter(handle, i, sbDesc, sbName);
                 yield return new EtherCATAdapter(System.Text.Encoding.UTF8.GetString(sbDesc), System.Text.Encoding.UTF8.GetString(sbName));
             }
-            NativeMethods.LinkSOEM.AUTDFreeAdapterPointer(handle);
+            NativeMethods.LinkSOEM.AUTDAdapterPointerDelete(handle);
         }
     }
 
@@ -188,7 +188,7 @@ namespace AUTD3Sharp.Link
 
         public RemoteSOEM WithTimeout(TimeSpan timeout)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEMTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+            Ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEMWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
             return this;
         }
 

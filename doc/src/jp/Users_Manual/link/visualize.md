@@ -119,7 +119,7 @@ autd.link().plot_field(
 
 ### 音場計算
 
-`calc_filed`関数で, プロットせずに音場の計算を行うことができる.
+`calc_field`関数で, プロットせずに音場の計算を行うことができる.
 
 ```rust,edition2021
 # extern crate autd3;

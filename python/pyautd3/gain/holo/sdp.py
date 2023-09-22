@@ -1,15 +1,15 @@
-"""
+'''
 File: sdp.py
 Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 
 import functools
@@ -71,10 +71,6 @@ class SDP(IGain):
 
     def with_repeat(self, repeat: int) -> "SDP":
         self._repeat = repeat
-        return self
-
-    def with_backend(self, backend: Backend) -> "SDP":
-        self._backend = backend
         return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "SDP":

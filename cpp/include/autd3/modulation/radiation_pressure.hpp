@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 21/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,30 +21,22 @@ namespace autd3::modulation {
 /**
  * @brief Modulation for modulating radiation pressure
  */
+template <class M>
 class RadiationPressure final : public internal::Modulation {
  public:
-  template <class M>
-  explicit RadiationPressure(M&& m) : _freq_div(m.sampling_frequency_division()) {
+  explicit RadiationPressure(M m) : _m(std::move(m)) {
     static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
-    char err[256]{};
-    const auto size = internal::native_methods::AUTDModulationSize(m.modulation_ptr(), err);
-    if (size == internal::native_methods::AUTD3_ERR) throw internal::AUTDException(err);
-    _buffer.resize(static_cast<size_t>(size));
-    if (internal::native_methods::AUTDModulationCalc(m.modulation_ptr(), _buffer.data(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
-    std::transform(_buffer.begin(), _buffer.end(), _buffer.begin(), [](const double v) { return std::sqrt(v); });
   }
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION
+  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(RadiationPressure)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    return internal::native_methods::AUTDModulationCustom(_freq_div, _buffer.data(), _buffer.size());
+    return internal::native_methods::AUTDModulationWithRadiationPressure(_m.modulation_ptr());
   }
 
  private:
-  std::vector<double> _buffer;
-  uint32_t _freq_div;
+  M _m;
 };
 
 }  // namespace autd3::modulation

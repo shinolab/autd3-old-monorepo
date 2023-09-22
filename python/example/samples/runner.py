@@ -1,15 +1,15 @@
-"""
+'''
 File: runner.py
 Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 28/05/2023
+Last Modified: 21/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
-"""
+'''
 
 from pyautd3 import Controller, Stop
 

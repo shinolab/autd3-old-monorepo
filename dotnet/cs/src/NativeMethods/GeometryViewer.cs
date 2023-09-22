@@ -16,11 +16,11 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewer();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerSize(GeometryViewerPtr viewer, uint width, uint height);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerWithSize(GeometryViewerPtr viewer, uint width, uint height);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerVsync(GeometryViewerPtr viewer, [MarshalAs(UnmanagedType.U1)] bool vsync);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerWithVsync(GeometryViewerPtr viewer, [MarshalAs(UnmanagedType.U1)] bool vsync);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry, byte[] err);
         }
     }
 

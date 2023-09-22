@@ -1,12 +1,18 @@
 # Modulation
 
 `Modulation` is a mechanism to control AM modulation.
-`Modulation` samples data from the buffer at a constant sampling rate and multiplies it by the duty ratio to realize AM modulation.
+
+The modulation is applied to the amplitude of the sound pressure.
+For example, if you use `Sine` with $\SI{1}{kHz}$, the sound pressure amplitude is as follows, and the envelope of the positive part (or negative part) of sound pressure follows the $\SI{1}{kHz}$ sine wave.
+
+<figure>
+  <img src="../fig/Users_Manual/sine_1k_mod.png"/>
+</figure>
+
 Currently, `Modulation` has the following restrictions.
 
 - The buffer size is up to 65536.
 - The sampling rate is $\clklf/N$, where $N$ is a 32-bit unsigned integer and must be at least 512.
-- Modulation is common to all devices.
 - Modulation automatically loops. It is not possible to control only one loop, etc.
 - The start/end timing of Modulation cannot be controlled.
 
@@ -14,11 +20,17 @@ The SDK has `Modulation` by default to generate several types of AM.
 
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
+  * [Fourier](./modulation/fourier.md)
 * [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
+* [RawPCM](./modulation/rawpcm.md)
+* [Cache](./modulation/cache.md)
+* [RadiationPressure](./modulation/radiation.md)
+* [FIR](./modulation/fir.md)
+* [Transform](./modulation/transform.md)
 
-## Modulation API
+## Modulation common API
 
 ### Sampling frequency
 
@@ -86,15 +98,15 @@ let div = m.sampling_frequency_division();
 ```
 
 ```cpp
-const auto fs = m.sampling_frequency_division();
+const auto div = m.sampling_frequency_division();
 ```
 
 ```cs
-var fs = m.SamplingFrequencyDivision;
+var div = m.SamplingFrequencyDivision;
 ```
 
 ```python
-fs = m.sampling_frequency_division
+div = m.sampling_frequency_division
 ```
 
 Some `Modulation` can set the sampling frequency division with `with_sampling_frequency_division`.
@@ -120,6 +132,34 @@ Some `Modulation` can set the sampling frequency division with `with_sampling_fr
   ```python
   m = Sine(150).with_sampling_frequency_division(5120)
   ```
+
+### Modulation data size
+
+The modulation data size can be obtained as follows.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let n = m.len();
+# Ok(())
+# }
+```
+
+```cpp
+const auto n = m.size();
+```
+
+```cs
+var n = m.Length;
+```
+
+```python
+n = len(m)
+```
+
 
 ## Modulation Delay
 

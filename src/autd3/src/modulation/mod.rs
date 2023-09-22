@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/09/2023
+ * Last Modified: 15/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ mod square;
 mod r#static;
 mod transform;
 
+pub use cache::Cache as ModulationCache;
 pub use cache::IntoCache;
 pub use fir::FIR;
 pub use fourier::Fourier;

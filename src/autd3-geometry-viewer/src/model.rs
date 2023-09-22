@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,10 +47,20 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new() -> Self {
-        #[allow(clippy::needless_borrow)]
-        let (document, buffers, images) =
-            gltf::import_slice(&crate::autd3_model::AUTD3_MODEL).unwrap();
+    fn load_autd3_model() -> anyhow::Result<Vec<u8>> {
+        if !std::path::Path::new("autd3.glb").exists() {
+            let mut file = std::fs::File::create("autd3.glb")?;
+            reqwest::blocking::get(
+                "https://github.com/shinolab/autd3/releases/download/autd3-model-v0.0.1/autd3.glb",
+            )?
+            .copy_to(&mut file)?;
+        }
+        Ok(std::fs::read("autd3.glb")?)
+    }
+
+    pub fn new() -> anyhow::Result<Self> {
+        let glb = Self::load_autd3_model()?;
+        let (document, buffers, images) = gltf::import_slice(glb).unwrap();
         let node = document.scenes().next().unwrap().nodes().next().unwrap();
 
         let materials = Self::load_materials(&document);
@@ -60,13 +70,13 @@ impl Model {
         let mut primitives = Vec::new();
         Self::load_node(node, &buffers, &mut indices, &mut vertices, &mut primitives);
 
-        Self {
+        Ok(Self {
             indices,
             vertices,
             primitives,
             image: images[0].clone(),
             materials,
-        }
+        })
     }
 
     fn load_node(

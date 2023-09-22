@@ -143,6 +143,12 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct GainCalcDrivesMapPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct GroupGainMapPtr
     {
         public IntPtr _0;

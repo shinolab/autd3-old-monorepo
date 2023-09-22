@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,9 +57,9 @@ mod tests {
     fn test_custom_gain() {
         unsafe {
             let cnt = create_controller();
-            let geo = AUTDGetGeometry(cnt);
-            let dev0 = AUTDGetDevice(geo, 0);
-            let dev1 = AUTDGetDevice(geo, 1);
+            let geo = AUTDGeometry(cnt);
+            let dev0 = AUTDDevice(geo, 0);
+            let dev1 = AUTDDevice(geo, 1);
 
             let g = AUTDGainCustom();
 
@@ -74,7 +74,7 @@ mod tests {
             let g = AUTDGainIntoDatagram(g);
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDSend(
+                AUTDControllerSend(
                     cnt,
                     TransMode::Legacy,
                     DatagramPtr(std::ptr::null()),
@@ -85,7 +85,7 @@ mod tests {
                 AUTD3_TRUE
             );
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }

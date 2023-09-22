@@ -37,7 +37,7 @@ The first argument of the constructor is the apex of the virtual cone producing 
 
 <figure>
   <img src="../../fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
-  <figcaption>Bessel beam (長谷川らの論文より引用)</figcaption>
+  <figcaption>Bessel beam[^hasegawa2017]</figcaption>
 </figure>
 
 ## Set amplitude

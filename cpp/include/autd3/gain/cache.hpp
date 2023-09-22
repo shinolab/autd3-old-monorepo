@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2023
+// Last Modified: 20/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,23 +39,16 @@ class Cache final : public internal::Gain {
 
     if (_cache.size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return _cache.find(idx) == _cache.end(); })) {
-      std::vector<std::vector<internal::native_methods::Drive>> drives;
-      drives.reserve(device_indices.size());
-      std::transform(geometry.cbegin(), geometry.cend(), std::back_inserter(drives), [](const internal::Device& dev) {
-        std::vector<internal::native_methods::Drive> d;
-        d.resize(dev.num_transducers());
-        return std::move(d);
-      });
-
-      std::vector<internal::native_methods::Drive*> drives_ptrs;
-      drives_ptrs.reserve(drives.size());
-      std::transform(drives.begin(), drives.end(), std::back_inserter(drives_ptrs),
-                     [](std::vector<internal::native_methods::Drive>& d) { return d.data(); });
-
-      if (char err[256]{}; internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), drives_ptrs.data(), err) ==
-                           internal::native_methods::AUTD3_ERR)
-        throw internal::AUTDException(err);
-      for (size_t i = 0; i < device_indices.size(); i++) _cache.emplace(device_indices[i], std::move(drives[i]));
+      char err[256]{};
+      auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
+      if (res._0 == nullptr) throw internal::AUTDException(err);
+      for (const auto& dev : geometry) {
+        std::vector<internal::native_methods::Drive> drives;
+        drives.resize(dev.num_transducers());
+        internal::native_methods::AUTDGainCalcGetResult(res, drives.data(), static_cast<uint32_t>(dev.idx()));
+        _cache.emplace(dev.idx(), std::move(drives));
+      }
+      internal::native_methods::AUTDGainCalcFreeResult(res);
     }
 
     return std::accumulate(geometry.cbegin(), geometry.cend(), internal::native_methods::AUTDGainCustom(),

@@ -4,19 +4,19 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 21/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::ffi::c_char;
+use std::{collections::HashMap, ffi::c_char};
 
 use crate::Drive;
 use autd3capi_def::{
     common::{autd3::driver::datagram::GainFilter, *},
-    DatagramPtr, GainPtr, GeometryPtr, AUTD3_ERR, AUTD3_TRUE,
+    DatagramPtr, GainCalcDrivesMapPtr, GainPtr, GeometryPtr,
 };
 
 pub mod bessel;
@@ -39,20 +39,30 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramPtr {
 pub unsafe extern "C" fn AUTDGainCalc(
     gain: GainPtr,
     geometry: GeometryPtr,
-    drives: *const *mut Drive,
     err: *mut c_char,
-) -> i32 {
+) -> GainCalcDrivesMapPtr {
     let geo = cast!(geometry.0, Geo);
-    let res = try_or_return!(
+    GainCalcDrivesMapPtr(Box::into_raw(Box::new(try_or_return!(
         Box::from_raw(gain.0 as *mut Box<G>).calc(geo, GainFilter::All),
         err,
-        AUTD3_ERR
-    );
-    geo.devices().enumerate().for_each(|(i, dev)| {
-        let res = &res[&dev.idx()];
-        std::ptr::copy_nonoverlapping(res.as_ptr(), drives.add(i).read() as _, res.len());
-    });
-    AUTD3_TRUE
+        GainCalcDrivesMapPtr(std::ptr::null())
+    ))) as _)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainCalcGetResult(
+    src: GainCalcDrivesMapPtr,
+    dst: *mut Drive,
+    idx: u32,
+) {
+    let idx = idx as usize;
+    let src = cast!(src.0, HashMap<usize, Vec<Drive>>);
+    std::ptr::copy_nonoverlapping(src[&idx].as_ptr(), dst, src[&idx].len());
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: GainCalcDrivesMapPtr) {
+    let _ = Box::from_raw(src.0 as *mut HashMap<usize, Vec<Drive>>);
 }
 
 #[cfg(test)]
@@ -68,16 +78,14 @@ mod tests {
         Drive, *,
     };
 
-    use autd3capi_def::AUTD3_TRUE;
-
     #[test]
     fn gain() {
         unsafe {
             let cnt = create_controller();
-            let geo = AUTDGetGeometry(cnt);
+            let geo = AUTDGeometry(cnt);
 
-            let dev0 = AUTDGetDevice(geo, 0);
-            let dev1 = AUTDGetDevice(geo, 1);
+            let dev0 = AUTDDevice(geo, 0);
+            let dev1 = AUTDDevice(geo, 1);
 
             let g = AUTDGainUniform(0.9);
             let g = AUTDGainUniformWithPhase(g, 0.8);
@@ -91,12 +99,12 @@ mod tests {
                 vec![Drive { amp: 0., phase: 0. }; num_trans as _]
             };
 
-            let drives = [drives0.as_mut_ptr(), drives1.as_mut_ptr()];
             let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDGainCalc(g, geo, drives.as_ptr(), err.as_mut_ptr()),
-                AUTD3_TRUE
-            );
+            let res = AUTDGainCalc(g, geo, err.as_mut_ptr());
+            assert!(!res.0.is_null());
+
+            AUTDGainCalcGetResult(res, drives0.as_mut_ptr(), 0);
+            AUTDGainCalcGetResult(res, drives1.as_mut_ptr(), 1);
 
             drives0.iter().for_each(|d| {
                 assert_eq!(d.amp, 0.9);
@@ -107,7 +115,7 @@ mod tests {
                 assert_eq!(d.phase, 0.8);
             });
 
-            AUTDFreeController(cnt);
+            AUTDControllerDelete(cnt);
         }
     }
 }
