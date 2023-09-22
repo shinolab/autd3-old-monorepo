@@ -40,8 +40,8 @@ enum class Level : uint8_t {
 
 enum class TimerStrategy : uint8_t {
   Sleep = 0,
-  NativeTimer = 1,
-  BusyWait = 2,
+  BusyWait = 1,
+  NativeTimer = 2,
 };
 
 enum class TransMode : uint8_t {
