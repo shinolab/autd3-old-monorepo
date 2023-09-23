@@ -316,6 +316,7 @@ name = "autd3-protobuf"
 version = "15.1.2"
 dependencies = [
  "autd3",
+ "autd3-driver",
  "autd3-gain-holo",
  "h2",
  "prost",
@@ -2520,6 +2521,7 @@ version = "15.1.2"
 dependencies = [
  "anyhow",
  "autd3",
+ "autd3-driver",
  "autd3-firmware-emulator",
  "autd3-protobuf",
  "bitflags 2.4.0",

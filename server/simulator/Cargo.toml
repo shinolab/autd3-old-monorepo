@@ -11,6 +11,7 @@ keywords = ["autd"]
 
 [dependencies]
 autd3 = { path = "../../src/autd3", version = "15.1.2" }
+autd3-driver = { path = "../../src/autd3-driver", version = "15.1.2" }
 autd3-firmware-emulator = { path = "../../src/autd3-firmware-emulator", version = "15.1.2" }
 autd3-protobuf = { path = "../../src/autd3-protobuf", version = "15.1.2" }
 bitflags = "2.3.1"

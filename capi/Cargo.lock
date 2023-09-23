@@ -360,6 +360,7 @@ name = "autd3-protobuf"
 version = "15.1.2"
 dependencies = [
  "autd3",
+ "autd3-driver",
  "autd3-gain-holo",
  "h2",
  "prost",

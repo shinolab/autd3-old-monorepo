@@ -65,6 +65,7 @@ required-features = ["lightweight"]
 [dependencies]
 anyhow = "1.0.72"
 autd3 = { path = "../autd3" }
+autd3-driver = { path = "../autd3-driver" }
 autd3-gain-holo = { path = "../autd3-gain-holo" }
 autd3-link-simulator = { path = "../autd3-link-simulator", optional = true }
 autd3-backend-cuda = { path = "../autd3-backend-cuda", optional = true }
