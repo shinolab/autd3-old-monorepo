@@ -10,7 +10,6 @@ members = [
     "autd3capi-link-soem",
     "autd3capi-link-twincat",
     "autd3capi-modulation-audio-file",
-    "autd3capi-geometry-viewer",
 ]
 default-members = [
     "wrapper-generator",

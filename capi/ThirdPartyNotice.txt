@@ -130,10 +130,6 @@ autd3-gain-holo 15.1.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-geometry-viewer 15.1.2 (MIT)
-https://github.com/shinolab/autd3
----------------------------------------------------------
-
 autd3-link-simulator 15.1.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
@@ -277,9 +273,6 @@ autd3capi-def 15.1.2 (MIT)
 ---------------------------------------------------------
 
 autd3capi-gain-holo 15.1.2 (MIT)
----------------------------------------------------------
-
-autd3capi-geometry-viewer 15.1.2 (MIT)
 ---------------------------------------------------------
 
 autd3capi-link-simulator 15.1.2 (MIT)
