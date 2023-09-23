@@ -8,7 +8,7 @@ cd ..
 mkdir -p cpp/bin
 cd capi
 
-cargo build --all --release  --target=armv7-unknown-linux-gnueabihf --exclude autd3capi-backend-cuda --exclude autd3capi-simulator --exclude autd3capi-geometry-viewer
+cargo build --all --release  --target=armv7-unknown-linux-gnueabihf --exclude autd3capi-backend-cuda
 cd ..
 cp ./capi/target/armv7-unknown-linux-gnueabihf/release/*.so cpp/bin
 
