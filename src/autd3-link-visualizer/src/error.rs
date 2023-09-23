@@ -4,14 +4,14 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3::driver::error::AUTDInternalError;
+use autd3_driver::error::AUTDInternalError;
 use thiserror::Error;
 
 #[cfg(feature = "plotters")]

@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -157,7 +157,9 @@ pub unsafe extern "C" fn AUTDControllerFirmwareInfoGet(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(p_info_list: FirmwareInfoListPtr) {
+pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(
+    p_info_list: FirmwareInfoListPtr,
+) {
     let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
 }
 
@@ -476,7 +478,8 @@ mod tests {
     pub unsafe fn create_controller() -> ControllerPtr {
         let builder = AUTDControllerBuilder();
         let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let builder = AUTDControllerBuilderAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let builder =
+            AUTDControllerBuilderAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
         let link = make_debug_link();
         let mut err = vec![c_char::default(); 256];
@@ -488,15 +491,15 @@ mod tests {
     #[test]
     fn drive_test() {
         assert_eq!(
-            std::mem::size_of::<autd3::driver::defined::Drive>(),
+            std::mem::size_of::<autd3_driver::defined::Drive>(),
             std::mem::size_of::<Drive>()
         );
         assert_eq!(
-            memoffset::offset_of!(autd3::driver::defined::Drive, phase),
+            memoffset::offset_of!(autd3_driver::defined::Drive, phase),
             memoffset::offset_of!(Drive, phase)
         );
         assert_eq!(
-            memoffset::offset_of!(autd3::driver::defined::Drive, amp),
+            memoffset::offset_of!(autd3_driver::defined::Drive, amp),
             memoffset::offset_of!(Drive, amp)
         );
     }

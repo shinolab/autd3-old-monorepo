@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,9 @@ use std::collections::HashMap;
 
 use autd3::{
     derive::{Gain, Modulation},
-    driver::derive::prelude::*,
     prelude::*,
 };
+use autd3_driver::derive::prelude::*;
 
 #[derive(Gain, Clone, Copy)]
 pub struct MyUniform {}
@@ -62,7 +62,7 @@ impl Modulation for Burst {
 
 pub fn custom<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where
-    autd3::driver::operation::GainOp<T, MyUniform>: autd3::driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, MyUniform>: autd3_driver::operation::Operation<T>,
 {
     autd.send(Silencer::disable())?;
 

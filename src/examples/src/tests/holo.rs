@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,13 +24,13 @@ use NalgebraBackend as Backend;
 
 pub fn holo<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where
-    autd3::driver::operation::GainOp<T, SDP<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, EVP<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, GS<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, GSPAT<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, Naive<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, LM<Backend>>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, Greedy>: autd3::driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, SDP<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, EVP<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, GS<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, GSPAT<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, Naive<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, LM<Backend>>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, Greedy>: autd3_driver::operation::Operation<T>,
 {
     autd.send(Silencer::default())?;
 

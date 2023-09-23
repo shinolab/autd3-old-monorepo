@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, SCALE,
 };
-use autd3::driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
+use autd3_driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
@@ -60,7 +60,7 @@ enum Signal {
 }
 
 struct SimulatorServer {
-    rx_buf: Arc<RwLock<autd3::driver::cpu::RxDatagram>>,
+    rx_buf: Arc<RwLock<autd3_driver::cpu::RxDatagram>>,
     sender: Sender<Signal>,
 }
 
@@ -189,7 +189,7 @@ impl Simulator {
         let (tx_shutdown, rx_shutdown) = oneshot::channel::<()>();
         let port = self.port.unwrap_or(self.settings.port);
 
-        let rx_buf = Arc::new(RwLock::new(autd3::driver::cpu::RxDatagram::new(0)));
+        let rx_buf = Arc::new(RwLock::new(autd3_driver::cpu::RxDatagram::new(0)));
 
         let server_th = std::thread::spawn({
             let rx_buf = rx_buf.clone();
@@ -225,7 +225,7 @@ impl Simulator {
     fn run_simulator(
         &mut self,
         server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
-        rx_buf: Arc<RwLock<autd3::driver::cpu::RxDatagram>>,
+        rx_buf: Arc<RwLock<autd3_driver::cpu::RxDatagram>>,
         receiver: Receiver<Signal>,
         shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> i32 {
@@ -260,7 +260,7 @@ impl Simulator {
             cpus.iter_mut().for_each(CPUEmulator::update);
             if cpus.iter().any(CPUEmulator::should_update) {
                 rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                    autd3::driver::cpu::RxMessage {
+                    autd3_driver::cpu::RxMessage {
                         ack: c.ack(),
                         data: c.rx_data(),
                     }
@@ -272,7 +272,7 @@ impl Simulator {
                     sources.clear();
                     cpus.clear();
 
-                    let geometry = autd3::driver::geometry::Geometry::<_>::from_msg(&geometry);
+                    let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
                     geometry.iter().for_each(|dev| {
                         dev.iter().for_each(|tr| {
                             let p = tr.position();
@@ -310,7 +310,7 @@ impl Simulator {
                         .collect::<Vec<_>>();
 
                     *rx_buf.write().unwrap() =
-                        autd3::driver::cpu::RxDatagram::new(geometry.num_devices());
+                        autd3_driver::cpu::RxDatagram::new(geometry.num_devices());
 
                     field_compute_pipeline.init(&render, &sources);
                     trans_viewer.init(&render, &sources);
@@ -325,7 +325,7 @@ impl Simulator {
                         cpu.send(&tx);
                     });
                     rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                        autd3::driver::cpu::RxMessage {
+                        autd3_driver::cpu::RxMessage {
                             ack: c.ack(),
                             data: c.rx_data(),
                         }
