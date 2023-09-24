@@ -6,12 +6,13 @@ Here, we will define a `FocalPoint` that generates a single focus just like `Foc
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate autd3_driver;
 use std::collections::HashMap;
 use autd3::{
-    driver::derive::prelude::*,
     derive::Gain,
     prelude::*,
 };
+use autd3_driver::derive::prelude::*;
 
 #[derive(Gain, Clone, Copy)]
 pub struct FocalPoint {

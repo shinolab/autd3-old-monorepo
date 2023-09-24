@@ -7,10 +7,11 @@ The following is a sample of `Burst`.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate autd3_driver;
 use autd3::{
-    driver::derive::prelude::*,
     derive::Modulation,
 };
+use autd3_driver::derive::prelude::*;
 
 #[derive(Modulation, Clone, Copy)]
 pub struct Burst {
