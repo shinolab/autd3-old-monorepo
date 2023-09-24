@@ -1,3 +1,7 @@
+# 15.2.0
+
+- Merge `GeometryViewer` into Simulator
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
