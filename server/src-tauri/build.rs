@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         ""
     };
+
+    std::fs::create_dir_all(manifest_dir.join("assets"))?;
+    std::fs::copy(
+        manifest_dir.join("../simulator/assets/autd3.glb"),
+        manifest_dir.join("assets/autd3.glb"),
+    )?;
 
     if cfg!(target_os = "macos") {
         std::fs::copy(
