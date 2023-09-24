@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{ffi::CString, path::PathBuf, time::Instant};
 
 use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
-use autd3::driver::fpga::{FPGAControlFlags, FPGA_CLK_FREQ};
+use autd3_driver::fpga::{FPGAControlFlags, FPGA_CLK_FREQ};
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
 use chrono::{Local, TimeZone, Utc};
@@ -930,7 +930,7 @@ impl ImGuiRenderer {
     }
 
     pub(crate) const fn system_time(&self) -> u64 {
-        ((self.real_time as u128 * autd3::driver::fpga::FPGA_CLK_FREQ as u128) / 1000000000) as _
+        ((self.real_time as u128 * autd3_driver::fpga::FPGA_CLK_FREQ as u128) / 1000000000) as _
     }
 
     pub(crate) fn stm_idx(system_time: u64, cpu: &CPUEmulator) -> usize {

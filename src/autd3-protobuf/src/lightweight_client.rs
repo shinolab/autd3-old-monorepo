@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::net::SocketAddr;
 
-use autd3::driver::{
+use autd3_driver::{
     datagram::{Clear, Synchronize},
     geometry::{Device, Geometry, IntoDevice, LegacyTransducer},
 };
@@ -89,7 +89,7 @@ impl LightweightClient {
     ///
     pub async fn firmware_infos(
         &mut self,
-    ) -> Result<Vec<autd3::driver::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
+    ) -> Result<Vec<autd3_driver::firmware_version::FirmwareInfo>, crate::error::AUTDProtoBufError>
     {
         let res = self
             .client
@@ -139,7 +139,7 @@ impl LightweightClient {
     ///
     pub async fn fpga_info(
         &mut self,
-    ) -> Result<Vec<autd3::driver::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
+    ) -> Result<Vec<autd3_driver::fpga::FPGAInfo>, crate::error::AUTDProtoBufError> {
         let res = self
             .client
             .fpga_info(crate::pb::FpgaInfoRequest {})

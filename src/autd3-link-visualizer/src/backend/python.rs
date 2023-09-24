@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 
 use crate::{error::VisualizerError, Backend, Config};
 
-use autd3::driver::{
+use autd3_driver::{
     acoustics::Complex,
     float,
     geometry::{Geometry, Transducer},
@@ -377,7 +377,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
                 trans_y,
                 phases,
                 config,
-                autd3::driver::autd3_device::AUTD3::TRANS_SPACING,
+                autd3_driver::autd3_device::AUTD3::TRANS_SPACING,
             ))?;
             Ok(())
         })?;

@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,18 +22,14 @@ pub use autd3_driver as driver;
 pub use autd3_gain_holo as holo;
 pub use libc;
 
-pub use autd3::{
-    controller::ControllerBuilder,
-    driver::{
-        datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, STMProps},
-        error::AUTDInternalError,
-        firmware_version::FirmwareInfo,
-        geometry::{Device, Geometry},
-        logger::get_logger_with_custom_func,
-        spdlog,
-    },
-    link::Debug,
-    prelude::*,
+pub use autd3::{controller::ControllerBuilder, link::Debug, prelude::*};
+pub use autd3_driver::{
+    datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, STMProps},
+    error::AUTDInternalError,
+    firmware_version::FirmwareInfo,
+    geometry::{Device, Geometry},
+    logger::get_logger_with_custom_func,
+    spdlog,
 };
 
 pub use custom::{CustomGain, CustomModulation};
