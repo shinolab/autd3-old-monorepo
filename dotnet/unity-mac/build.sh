@@ -28,8 +28,8 @@ rm -rf ./dotnet/unity-mac/Assets/Scripts/Gain/BackendCUDA.cs
 rm -rf ./dotnet/unity-mac/Assets/Scripts/Gain/BackendCUDA.cs.meta
 
 cd capi
-cargo build --release --all --exclude autd3capi-backend-cuda --features "single_float left_handed use_meter" --target=x86_64-apple-darwin
-cargo build --release --all --exclude autd3capi-backend-cuda --features "single_float left_handed use_meter" --target=aarch64-apple-darwin
+cargo build --release --all --exclude autd3capi-backend-cuda --features "single_float use_meter" --target=x86_64-apple-darwin
+cargo build --release --all --exclude autd3capi-backend-cuda --features "single_float use_meter" --target=aarch64-apple-darwin
 cd ..
 for binfile in `ls ./capi/target/x86_64-apple-darwin/release/*.dylib`; do
   cp -f $binfile ./dotnet/unity-mac/Assets/Plugins/x86_64/

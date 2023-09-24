@@ -1,10 +1,10 @@
 /*
- * File: simulator.rs
- * Project: src
- * Created Date: 24/05/2023
+ * File: model.rs
+ * Project: autd-server
+ * Created Date: 23/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/09/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,14 +48,7 @@ pub struct Model {
 
 impl Model {
     fn load_autd3_model() -> anyhow::Result<Vec<u8>> {
-        if !std::path::Path::new("autd3.glb").exists() {
-            let mut file = std::fs::File::create("autd3.glb")?;
-            reqwest::blocking::get(
-                "https://github.com/shinolab/autd3/releases/download/autd3-model-v0.0.1/autd3.glb",
-            )?
-            .copy_to(&mut file)?;
-        }
-        Ok(std::fs::read("autd3.glb")?)
+        Ok(std::fs::read("assets/autd3.glb")?)
     }
 
     pub fn new() -> anyhow::Result<Self> {

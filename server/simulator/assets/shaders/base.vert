@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ layout (location = 1) out vec2 outUV;
 layout (location = 2) out vec3 outViewVec;
 layout (location = 3) out vec3 outLightVec;
 
-void main() 
+void main()
 {
 	vec4 pos = primitive.model * vec4(position, 1.0);
 

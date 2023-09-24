@@ -43,13 +43,6 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
         echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-    - name: install shaderc
-      run: |
-        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
-        tar -xzf shaderc.tgz
-        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        rm shaderc.tgz
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
@@ -107,10 +100,6 @@ jobs:
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
         cd autd3-modulation-audio-file
-        cargo publish --no-verify --dry-run
-        cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-        cd ..
-        cd autd3-geometry-viewer
         cargo publish --no-verify --dry-run
         cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
 
@@ -242,13 +231,7 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
-      - name: install shaderc
-        run: |
-          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
-          tar -xzf shaderc.tgz
-          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-          rm shaderc.tgz
+
       - name: Build project x64
         run: |
           cp LICENSE cpp/
@@ -432,14 +415,7 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-macos-universal.tar.gz';
-      - name: install shaderc
-        run: |
-          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
-          tar -xzf shaderc.tgz
-          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-          echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-          cp install/lib/*.dylib /usr/local/lib/
-          rm shaderc.tgz
+
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
         with:

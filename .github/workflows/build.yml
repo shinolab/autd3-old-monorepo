@@ -46,7 +46,7 @@ jobs:
       run: |
         cd src
         cargo build
-        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire
+        cargo test --workspace --features test-utilities --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-backend-cuda --exclude autd3-backend-arrayfire
     - name: Build src on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |
@@ -99,7 +99,7 @@ jobs:
       run: |
         cd capi
         cargo build
-        cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-geometry-viewer --exclude autd3capi-backend-cuda
+        cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-backend-cuda
     - name: Build capi on ${{ matrix.os }}
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
       run: |

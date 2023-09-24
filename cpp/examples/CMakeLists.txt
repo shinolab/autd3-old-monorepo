@@ -59,10 +59,6 @@ add_executable(remote_soem remote_soem.cpp)
 autd3_target_link_library(remote_soem PRIVATE)
 target_link_libraries(remote_soem PRIVATE autd3-example)
 
-add_executable(geometry_viewer geometry_viewer.cpp)
-autd3_target_link_library(geometry_viewer PRIVATE)
-target_link_libraries(geometry_viewer PRIVATE autd3-example)
-
 add_executable(simulator simulator.cpp)
 autd3_target_link_library(simulator PRIVATE)
 target_link_libraries(simulator PRIVATE autd3-example)

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ use crate::{
     sound_sources::SoundSources,
     update_flag::UpdateFlag,
     viewer_settings::{ColorMapType, ViewerSettings},
-    Matrix4, Quaternion, Vector3, Vector4, SCALE, ZPARITY,
+    Matrix4, Quaternion, Vector3, Vector4, MILLIMETER, ZPARITY,
 };
 
 fn get_current_ec_time() -> u64 {
@@ -219,7 +219,7 @@ impl ImGuiRenderer {
                         if igDragFloat(
                             CString::new("X##Slice").unwrap().as_c_str().as_ptr(),
                             &mut settings.slice_pos_x as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -230,7 +230,7 @@ impl ImGuiRenderer {
                         if igDragFloat(
                             CString::new("Y##Slice").unwrap().as_c_str().as_ptr(),
                             &mut settings.slice_pos_y as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -241,7 +241,7 @@ impl ImGuiRenderer {
                         if igDragFloat(
                             CString::new("Z##Slice").unwrap().as_c_str().as_ptr(),
                             &mut settings.slice_pos_z as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -295,28 +295,28 @@ impl ImGuiRenderer {
                         if igDragFloat(
                             CString::new("Width##Slice").unwrap().as_c_str().as_ptr(),
                             &mut settings.slice_width as _,
-                            1. * SCALE,
-                            1. * SCALE,
-                            2000. * SCALE,
+                            1. * MILLIMETER,
+                            1. * MILLIMETER,
+                            2000. * MILLIMETER,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
                             0,
                         ) {
-                            if settings.slice_width < 1. * SCALE {
-                                settings.slice_width = 1. * SCALE;
+                            if settings.slice_width < 1. * MILLIMETER {
+                                settings.slice_width = 1. * MILLIMETER;
                             }
                             update_flag.set(UpdateFlag::UPDATE_SLICE_SIZE, true);
                         }
                         if igDragFloat(
                             CString::new("Height##Slice").unwrap().as_c_str().as_ptr(),
                             &mut settings.slice_height as _,
-                            1. * SCALE,
-                            1. * SCALE,
-                            2000. * SCALE,
+                            1. * MILLIMETER,
+                            1. * MILLIMETER,
+                            2000. * MILLIMETER,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
                             0,
                         ) {
-                            if settings.slice_height < 1. * SCALE {
-                                settings.slice_height = 1. * SCALE;
+                            if settings.slice_height < 1. * MILLIMETER {
+                                settings.slice_height = 1. * MILLIMETER;
                             }
                             update_flag.set(UpdateFlag::UPDATE_SLICE_SIZE, true);
                         }
@@ -326,14 +326,14 @@ impl ImGuiRenderer {
                                 .as_c_str()
                                 .as_ptr(),
                             &mut settings.slice_pixel_size as _,
-                            1. * SCALE,
-                            0.1 * SCALE,
-                            8. * SCALE,
+                            1. * MILLIMETER,
+                            0.1 * MILLIMETER,
+                            8. * MILLIMETER,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
                             0,
                         ) {
-                            if settings.slice_pixel_size < 0.1 * SCALE {
-                                settings.slice_height = 0.1 * SCALE;
+                            if settings.slice_pixel_size < 0.1 * MILLIMETER {
+                                settings.slice_height = 0.1 * MILLIMETER;
                             }
                             update_flag.set(UpdateFlag::UPDATE_SLICE_SIZE, true);
                         }
@@ -446,7 +446,7 @@ impl ImGuiRenderer {
                         igDragFloat(
                             CString::new("X##Camera").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_pos_x as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -455,7 +455,7 @@ impl ImGuiRenderer {
                         igDragFloat(
                             CString::new("Y##Camera").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_pos_y as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -464,7 +464,7 @@ impl ImGuiRenderer {
                         igDragFloat(
                             CString::new("Z##Camera").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_pos_z as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             f32::MIN / 2.,
                             f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -510,8 +510,8 @@ impl ImGuiRenderer {
                             CString::new("Move speed").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_move_speed as _,
                             1.,
-                            1. * SCALE,
-                            100. * SCALE,
+                            1. * MILLIMETER,
+                            100. * MILLIMETER,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
                             0,
                         );
@@ -533,7 +533,7 @@ impl ImGuiRenderer {
                         igDragFloat(
                             CString::new("Near clip").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_near_clip as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             0.,
                             std::f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -542,7 +542,7 @@ impl ImGuiRenderer {
                         igDragFloat(
                             CString::new("Far clip").unwrap().as_c_str().as_ptr(),
                             &mut settings.camera_far_clip as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             0.,
                             std::f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -557,7 +557,7 @@ impl ImGuiRenderer {
                         if igDragFloat(
                             CString::new("Sound speed").unwrap().as_c_str().as_ptr(),
                             &mut settings.sound_speed as _,
-                            1. * SCALE,
+                            1. * MILLIMETER,
                             0.,
                             std::f32::MAX / 2.,
                             CString::new("%.3f").unwrap().as_c_str().as_ptr(),
@@ -596,7 +596,6 @@ impl ImGuiRenderer {
                     ui.separator();
 
                     ui.text("Device index: show/enable/overheat");
-
                     cpus.iter_mut().enumerate().for_each(|(i, cpu)| {
                         ui.text(format!("Device {}: ", i));
                         ui.same_line();
@@ -627,6 +626,73 @@ impl ImGuiRenderer {
                             }
                         }
                     });
+                    ui.separator();
+
+                    if ui.checkbox(format!("View as device"), &mut settings.view_device) {}
+                    if settings.view_device {
+                        ui.text("Light position");
+                        unsafe {
+                            igDragFloat(
+                                CString::new("X##Light").unwrap().as_c_str().as_ptr(),
+                                &mut settings.light_pos_x as _,
+                                1. * MILLIMETER,
+                                f32::MIN / 2.,
+                                f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                            igDragFloat(
+                                CString::new("Y##Light").unwrap().as_c_str().as_ptr(),
+                                &mut settings.light_pos_y as _,
+                                1. * MILLIMETER,
+                                f32::MIN / 2.,
+                                f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                            igDragFloat(
+                                CString::new("Z##Light").unwrap().as_c_str().as_ptr(),
+                                &mut settings.light_pos_z as _,
+                                1. * MILLIMETER,
+                                f32::MIN / 2.,
+                                f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                        }
+                        ui.separator();
+
+                        ui.text("Light properties");
+                        unsafe {
+                            igDragFloat(
+                                CString::new("Power").unwrap().as_c_str().as_ptr(),
+                                &mut settings.light_power as _,
+                                0.1,
+                                0.,
+                                std::f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                            igDragFloat(
+                                CString::new("Ambient").unwrap().as_c_str().as_ptr(),
+                                &mut settings.ambient as _,
+                                0.1,
+                                0.,
+                                std::f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                            igDragFloat(
+                                CString::new("Specular").unwrap().as_c_str().as_ptr(),
+                                &mut settings.specular as _,
+                                0.1,
+                                0.,
+                                std::f32::MAX / 2.,
+                                CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                                0,
+                            );
+                        }
+                    }
                     ui.separator();
 
                     ui.color_picker4("Background", &mut settings.background);
@@ -844,7 +910,7 @@ impl ImGuiRenderer {
                 let sr = Matrix4::from(rot);
                 let srf = sr * Vector4::new(0.0, 0.0, 1.0 * ZPARITY, 1.0);
 
-                let camera_pos = settings.slice_pos() + srf.truncate() * 600.0 * SCALE;
+                let camera_pos = settings.slice_pos() + srf.truncate() * 600.0 * MILLIMETER;
                 settings.set_camera_pos(camera_pos);
                 settings.set_camera_rot(settings.slice_rotation());
             }
@@ -940,5 +1006,9 @@ impl ImGuiRenderer {
     pub(crate) fn mod_idx(system_time: u64, cpu: &CPUEmulator) -> usize {
         (system_time / cpu.fpga().modulation_frequency_division() as u64) as usize
             % cpu.fpga().modulation_cycle()
+    }
+
+    pub(crate) fn visible(&self) -> &[bool] {
+        &self.visible
     }
 }
