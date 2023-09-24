@@ -62,6 +62,8 @@ showをOffにした場合は, 表示されないだけで音場に寄与する.
 enableをOffにすると音場に寄与しなくなる.
 また, overheatをOnにすると, 温度センサがアサートされた状態を模擬できる.
 
+「View as device」をOnにすると, 振動子を単なる円ではなく, AUTD3の3Dモデルで表示する.
+
 ### Infoタブ
 
 Infoタブでは, FPSや各デバイス毎のSilencerやModulation, STMの情報が確認できる.
