@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ use crate::{
     trans_viewer::TransViewer,
     update_flag::UpdateFlag,
     viewer_settings::ViewerSettings,
-    Quaternion, Vector3, SCALE,
+    Quaternion, Vector3, MILLIMETER,
 };
 use autd3::driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
 use autd3_firmware_emulator::CPUEmulator;
@@ -181,7 +181,7 @@ impl Simulator {
     /// ## Platform-specific
     ///
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
-    pub fn run(&mut self) -> i32 {
+    pub fn run(&mut self) -> anyhow::Result<i32> {
         spdlog::info!("Initializing window...");
 
         let (tx, rx) = bounded(32);
@@ -228,7 +228,7 @@ impl Simulator {
         rx_buf: Arc<RwLock<autd3::driver::cpu::RxDatagram>>,
         receiver: Receiver<Signal>,
         shutdown: tokio::sync::oneshot::Sender<()>,
-    ) -> i32 {
+    ) -> anyhow::Result<i32> {
         let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
 
         let mut render = Renderer::new(
@@ -248,6 +248,8 @@ impl Simulator {
 
         let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings);
         let mut slice_viewer = SliceViewer::new(&render, &self.settings);
+        let model = crate::device_viewer::Model::new()?;
+        let mut device_viewer = crate::device_viewer::DeviceViewer::new(&render, &model);
         let mut imgui = ImGuiRenderer::new(self.settings.clone(), &self.config_path, &render);
         let mut trans_viewer = TransViewer::new(&render);
 
@@ -315,6 +317,7 @@ impl Simulator {
                     field_compute_pipeline.init(&render, &sources);
                     trans_viewer.init(&render, &sources);
                     slice_viewer.init(&self.settings);
+                    device_viewer.init(&geometry);
                     imgui.init(geometry.num_devices());
 
                     is_initialized = true;
@@ -427,7 +430,17 @@ impl Simulator {
                             let view = render.get_view();
                             let proj = render.get_projection(&self.settings);
                             let slice_model = slice_viewer.model();
-                            trans_viewer.render(view, proj, &mut builder);
+                            if self.settings.view_device {
+                                device_viewer.render(
+                                    &model,
+                                    (view, proj),
+                                    &self.settings,
+                                    &imgui.visible(),
+                                    &mut builder,
+                                );
+                            } else {
+                                trans_viewer.render(view, proj, &mut builder);
+                            }
                             slice_viewer.render(&render, view, proj, &self.settings, &mut builder);
                             builder.end_render_pass().unwrap();
 
@@ -493,7 +506,6 @@ impl Simulator {
                             );
                             slice_viewer.update(&render, &self.settings, &update_flag);
                             trans_viewer.update(&sources, &update_flag);
-
                             let command_buffer = builder.build().unwrap();
 
                             let field_image = slice_viewer.field_image_view();
@@ -531,7 +543,7 @@ impl Simulator {
                                     / self.settings.slice_pixel_size)
                                     as _,
                                 pixel_size: self.settings.slice_pixel_size as _,
-                                scale: SCALE,
+                                scale: MILLIMETER,
                                 model: slice_model.into(),
                                 ..Default::default()
                             };
@@ -580,6 +592,6 @@ impl Simulator {
             }
         }
 
-        res
+        Ok(res)
     }
 }
