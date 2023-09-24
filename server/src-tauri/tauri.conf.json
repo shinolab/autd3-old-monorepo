@@ -77,6 +77,7 @@
       "resources": [
         "./LICENSE",
         "./NOTICE",
+        "./assets/autd3.glb",
         "./TwinCATAUTDServer/LICENSE",
         "./TwinCATAUTDServer/README.md",
         "./TwinCATAUTDServer/AUTD.xml",
