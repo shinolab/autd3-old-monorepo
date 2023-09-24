@@ -3,6 +3,7 @@
 - Fix [#176](https://github.com/shinolab/autd3/issues/176): [C++] modulation::Cache can cause errors due to double free
 - Fix [#177](https://github.com/shinolab/autd3/issues/177): [C++] Avoid unnecessary copying in gain::Cache
 - Fix [#178](https://github.com/shinolab/autd3/issues/178): The value of TimerStrategy is not consistent between capi and the original source
+- Fix [#164](https://github.com/shinolab/autd3/issues/164): [Python] Controller.software_stm sometimes stucks
 
 # 15.1.2
 
