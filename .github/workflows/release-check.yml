@@ -122,30 +122,6 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
         echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-    - name: install shaderc
-      if: matrix.os == 'windows-latest'
-      run: |
-        Invoke-WebRequest -URI https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/windows/continuous_release_2019/10/20230531-104731/install.zip -OutFile shaderc.zip
-        Expand-Archive -Path shaderc.zip -DestinationPath shaderc
-        echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
-        rm shaderc.zip
-    - name: install shaderc
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
-        tar -xzf shaderc.tgz
-        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        rm shaderc.tgz
-    - name: install shaderc
-      if: matrix.os == 'macos-latest'
-      run: |
-        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
-        tar -xzf shaderc.tgz
-        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        cp install/lib/*.dylib /usr/local/lib/
-        rm shaderc.tgz
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
@@ -356,15 +332,6 @@ jobs:
         sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
         echo "/usr/local/cuda/bin" >> $GITHUB_PATH
 
-    - name: install shaderc
-      run: |
-        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
-        tar -xzf shaderc.tgz
-        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        rm shaderc.tgz
-
-
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
@@ -374,7 +341,6 @@ jobs:
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './src -> target'
-
 
     - name: lint src
       run: |
@@ -395,26 +361,15 @@ jobs:
         sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
         echo "/usr/local/cuda/bin" >> $GITHUB_PATH
 
-    - name: install shaderc
-      run: |
-        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
-        tar -xzf shaderc.tgz
-        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
-        rm shaderc.tgz
-
-
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-
  
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
         workspaces: './capi -> target'
-
 
     - name: lint capi
       run: |
