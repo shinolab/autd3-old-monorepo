@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,10 +18,8 @@ use scarlet::colormap::{ColorMap, ListedColorMap};
 
 use crate::{colormap, error::VisualizerError, Backend, Config};
 
-use autd3::{
-    autd3_device::AUTD3,
-    driver::{defined::float, geometry::Geometry},
-};
+use autd3::autd3_device::AUTD3;
+use autd3_driver::{defined::float, geometry::Geometry};
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {
@@ -106,7 +104,7 @@ impl PlottersBackend {
     fn plot_1d_impl<B: plotters::backend::DrawingBackend>(
         root: &DrawingArea<B, Shift>,
         observe_points: &[float],
-        acoustic_pressures: &[autd3::driver::acoustics::Complex],
+        acoustic_pressures: &[autd3_driver::acoustics::Complex],
         x_label: &str,
         yrange: (float, float),
         config: &PlotConfig,
@@ -160,7 +158,7 @@ impl PlottersBackend {
         root: &DrawingArea<B, Shift>,
         observe_points_x: &[float],
         observe_points_y: &[float],
-        acoustic_pressures: &[autd3::driver::acoustics::Complex],
+        acoustic_pressures: &[autd3_driver::acoustics::Complex],
         x_label: &str,
         y_label: &str,
         zrange: (float, float),
@@ -304,7 +302,7 @@ impl PlottersBackend {
     }
 
     fn plot_phase_impl<
-        T: autd3::driver::geometry::Transducer,
+        T: autd3_driver::geometry::Transducer,
         B: plotters::backend::DrawingBackend,
     >(
         root: DrawingArea<B, Shift>,
@@ -388,7 +386,7 @@ impl PlottersBackend {
                 .draw()?;
 
             scatter_ctx.draw_series(p.iter().zip(phases.iter()).map(|(&(x, y), &p)| {
-                let v = (p / (2.0 * autd3::driver::defined::PI)) % 1.;
+                let v = (p / (2.0 * autd3_driver::defined::PI)) % 1.;
                 let c = cmap[((v * color_map_size as float) as usize).clamp(0, cmap.len() - 1)];
                 Circle::new(
                     (x, y),
@@ -462,7 +460,7 @@ impl Backend for PlottersBackend {
 
     fn plot_1d(
         observe_points: Vec<float>,
-        acoustic_pressures: Vec<autd3::driver::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3_driver::acoustics::Complex>,
         _resolution: float,
         x_label: &str,
         config: Self::PlotConfig,
@@ -502,7 +500,7 @@ impl Backend for PlottersBackend {
     fn plot_2d(
         observe_x: Vec<float>,
         observe_y: Vec<float>,
-        acoustic_pressures: Vec<autd3::driver::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3_driver::acoustics::Complex>,
         resolution: float,
         x_label: &str,
         y_label: &str,
@@ -570,9 +568,9 @@ impl Backend for PlottersBackend {
         }
     }
 
-    fn plot_phase<T: autd3::driver::geometry::Transducer>(
+    fn plot_phase<T: autd3_driver::geometry::Transducer>(
         config: Self::PlotConfig,
-        geometry: &autd3::driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry<T>,
         phases: Vec<float>,
     ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
