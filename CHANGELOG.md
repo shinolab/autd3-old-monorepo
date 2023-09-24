@@ -1,3 +1,7 @@
+# 15.1.3
+
+- Fix [#176](https://github.com/shinolab/autd3/issues/176): [C++] modulation::Cache can cause errors due to double free
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything
