@@ -218,7 +218,7 @@ SOEM()\
 * `Sleep`       : 標準ライブラリのsleepを用いる
 * `BusyWait`    : ビジーウェイトを用いる. 高解像度だが, CPU負荷が高い.
 * `NativeTimer` : OSのタイマー機能を用いる
-  * Windowsではマルチメディアタイマー, linuxではPOSIXタイマー, macOSではGrand Central Dispatch Timer
+  * WindowsではTimerQueueTimer, linuxではPOSIXタイマー, macOSではGrand Central Dispatch Timer
 
 デフォルトは`Sleep`である.
 

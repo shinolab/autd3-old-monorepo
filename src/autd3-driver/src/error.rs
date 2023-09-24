@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 22/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -84,4 +84,15 @@ pub enum AUTDInternalError {
     TimerCreationFailed(),
     #[error("failed to delete timer")]
     TimerDeleteFailed(),
+
+    #[cfg(target_os = "windows")]
+    #[error("{0}")]
+    WindowsError(windows::core::Error),
+}
+
+#[cfg(target_os = "windows")]
+impl From<windows::core::Error> for AUTDInternalError {
+    fn from(e: windows::core::Error) -> Self {
+        AUTDInternalError::WindowsError(e)
+    }
 }
