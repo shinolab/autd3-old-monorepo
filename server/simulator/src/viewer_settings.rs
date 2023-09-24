@@ -60,13 +60,44 @@ pub struct ViewerSettings {
     pub image_save_path: String,
     pub port: u16,
     pub camera_move_speed: f32,
+    #[serde(default)]
     pub view_device: bool,
+    #[serde(default = "default_ambient")]
     pub ambient: f32,
+    #[serde(default = "default_specular")]
     pub specular: f32,
+    #[serde(default = "default_light_pos_x")]
     pub light_pos_x: f32,
+    #[serde(default = "default_light_pos_y")]
     pub light_pos_y: f32,
+    #[serde(default = "default_light_pos_z")]
     pub light_pos_z: f32,
+    #[serde(default = "default_light_power")]
     pub light_power: f32,
+}
+
+fn default_ambient() -> f32 {
+    60.
+}
+
+fn default_specular() -> f32 {
+    80.
+}
+
+fn default_light_pos_x() -> f32 {
+    86.6252 * MILLIMETER
+}
+
+fn default_light_pos_y() -> f32 {
+    -533.2867 * MILLIMETER
+}
+
+fn default_light_pos_z() -> f32 {
+    150.0 * MILLIMETER * ZPARITY
+}
+
+fn default_light_power() -> f32 {
+    5.
 }
 
 impl ViewerSettings {
