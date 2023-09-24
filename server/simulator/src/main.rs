@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -142,7 +142,7 @@ fn main() -> anyhow::Result<()> {
                 simulator = simulator.with_config_path(path);
             }
 
-            simulator.run();
+            simulator.run()?;
 
             {
                 let settings = simulator.get_settings();

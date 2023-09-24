@@ -26,7 +26,7 @@ rm -rf ./dotnet/unity-linux/Assets/Scripts/Utils
 rm -rf ./dotnet/unity-linux/Assets/Scripts/obj
 
 cd capi
-cargo build --release --all --features "single_float left_handed use_meter"
+cargo build --release --all --features "single_float use_meter"
 cd ..
 for binfile in `ls ./capi/target/release/*.so`; do
   cp -f $binfile ./dotnet/unity-linux/Assets/Plugins/x86_64/

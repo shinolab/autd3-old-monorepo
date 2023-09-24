@@ -1,18 +1,19 @@
 /*
- * File: slice_viewer.rs
- * Project: src
- * Created Date: 11/11/2021
+ * File: viewer.rs
+ * Project: autd-server
+ * Created Date: 23/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2021 Hapis Lab. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
 use std::sync::Arc;
 
+use autd3::prelude::{Geometry, Transducer};
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},
     command_buffer::{
@@ -36,11 +37,12 @@ use vulkano::{
     sync::GpuFuture,
 };
 
+use super::model::{Model, ModelVertex};
 use crate::{
-    model::{Model, ModelVertex},
+    common::transform::{to_gl_pos, to_gl_rot},
     renderer::Renderer,
-    settings::Settings,
-    Matrix4, Quaternion, Vector3, GL_SCALE,
+    viewer_settings::ViewerSettings,
+    Matrix4, Quaternion, Vector3,
 };
 
 #[allow(clippy::needless_question_mark)]
@@ -64,6 +66,7 @@ pub struct DeviceViewer {
     indices: Subbuffer<[u32]>,
     texture_desc_set: Arc<PersistentDescriptorSet>,
     pipeline: Arc<GraphicsPipeline>,
+    pos_rot: Vec<(Vector3, Quaternion)>,
 }
 
 impl DeviceViewer {
@@ -100,15 +103,30 @@ impl DeviceViewer {
             indices,
             texture_desc_set,
             pipeline,
+            pos_rot: Vec::new(),
         }
+    }
+
+    pub fn init<T: Transducer>(&mut self, geometry: &Geometry<T>) {
+        self.pos_rot = geometry
+            .iter()
+            .map(|dev| {
+                let p = dev[0].position();
+                let r = dev[0].rotation();
+                (
+                    to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                    to_gl_rot(Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _)),
+                )
+            })
+            .collect();
     }
 
     pub fn render(
         &mut self,
         model: &Model,
-        pos_rot: &[(Vector3, Quaternion)],
         view_proj: (Matrix4, Matrix4),
-        setting: &Settings,
+        setting: &ViewerSettings,
+        visible: &[bool],
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
     ) {
         builder
@@ -121,29 +139,32 @@ impl DeviceViewer {
                 self.texture_desc_set.clone(),
             );
 
-        let (view, proj) = view_proj;
+        let (mut view, proj) = view_proj;
+        view[3][0] /= crate::METER;
+        view[3][1] /= crate::METER;
+        view[3][2] /= crate::METER;
 
-        pos_rot
+        self.pos_rot
             .iter()
-            .zip(setting.shows.iter())
+            .zip(visible.iter())
             .filter(|&(_, &s)| s)
             .for_each(|(&(pos, rot), _)| {
                 model.primitives.iter().for_each(|primitive| {
                     let material = &model.materials[primitive.material_index];
-
                     let pcf = fs::PushConsts {
                         proj_view: (proj * view).into(),
-                        model: (Matrix4::from_translation(pos) * Matrix4::from(rot)).into(),
+                        model: (Matrix4::from_translation(pos / crate::METER) * Matrix4::from(rot))
+                            .into(),
                         lightPos: [
-                            setting.light_pos_x * GL_SCALE,
-                            setting.light_pos_y * GL_SCALE,
-                            setting.light_pos_z * GL_SCALE,
+                            setting.light_pos_x / crate::METER,
+                            setting.light_pos_y / crate::METER,
+                            setting.light_pos_z / crate::METER,
                             1.,
                         ],
                         viewPos: [
-                            setting.camera_pos_x * GL_SCALE,
-                            setting.camera_pos_y * GL_SCALE,
-                            setting.camera_pos_z * GL_SCALE,
+                            setting.camera_pos_x / crate::METER,
+                            setting.camera_pos_y / crate::METER,
+                            setting.camera_pos_z / crate::METER,
                             1.,
                         ],
                         ambient: setting.ambient,

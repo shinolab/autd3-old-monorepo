@@ -61,6 +61,8 @@ You can also switch the show/enable/overheat settings for each device.
 When "show" is turned off, the devices contribute to the sound field only by not being displayed.
 When "enable" is turned off, it does not contribute to the sound field.
 
+When "View as device" is turned on, the transducers are displayed as AUTD3 3D models instead of simple circles.
+
 ### Info tab
 
 In the Info tab, information on FPS, Silencer, Modulation, and STM can be checked.
