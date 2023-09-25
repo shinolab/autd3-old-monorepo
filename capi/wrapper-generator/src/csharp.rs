@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/09/2023
+ * Last Modified: 25/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -176,7 +176,7 @@ impl CSharpGenerator {
                 },
                 Type::Custom(ref s) => match arg.inout {
                     InOut::In => format!("{}[]?", s),
-                    InOut::Out => format!("{}[]", s),
+                    InOut::Out => format!("{}*", s),
                     InOut::InOut => panic!("INOUT {} is not supported.", s),
                 },
                 _ => unimplemented!(),
@@ -309,7 +309,7 @@ namespace AUTD3Sharp
                 writeln!(
                     w,
                     r"
-            {}{} public static extern {} {}({});",
+            {}{} public unsafe static extern {} {}({});",
                     attr,
                     ret_attr,
                     Self::to_return_ty(&function.return_ty),
