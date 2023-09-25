@@ -14,17 +14,17 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_link_twincat";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkTwinCAT(byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkTwinCAT(byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCAT(string serverAmsNetId, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteTwinCAT(string serverAmsNetId, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithServerIP(LinkPtr twincat, string addr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteTwinCATWithServerIP(LinkPtr twincat, string addr);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkPtr twincat, string id);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkPtr twincat, string id);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern LinkPtr AUTDLinkRemoteTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteTwinCATWithTimeout(LinkPtr twincat, ulong timeoutNs);
         }
     }
 

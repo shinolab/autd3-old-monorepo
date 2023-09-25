@@ -38,6 +38,17 @@ jobs:
         cd ./dotnet/cs/src
         dotnet build -c:Release
       if: steps.changed-files.outputs.modified_files
+    - name: Test with dotnet
+      run: |
+        cd ./dotnet/cs/tests
+        ./run_test.ps1
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+    - name: Test with dotnet
+      run: |
+        cd ./dotnet/cs/tests
+        chmod +x ./run_test.sh
+        ./run_test.sh
+      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
     - name: Build example with dotnet
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
