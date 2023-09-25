@@ -25,6 +25,7 @@ jobs:
       id: changed-files
       with:
         files: |
+          .github/workflows/build-cs.yml
           dotnet/cs/*.cs
           dotnet/cs/**/*.cs
     - name: Setup .NET Core
@@ -40,12 +41,12 @@ jobs:
       if: steps.changed-files.outputs.modified_files
     - name: Test with dotnet
       run: |
-        cd ./dotnet/cs/tests
+        cd ./dotnet/cs
         ./run_test.ps1
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
     - name: Test with dotnet
       run: |
-        cd ./dotnet/cs/tests
+        cd ./dotnet/cs
         chmod +x ./run_test.sh
         ./run_test.sh
       if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
