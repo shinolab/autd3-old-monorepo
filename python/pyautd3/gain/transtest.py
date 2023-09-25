@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 25/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ class TransducerTest(IGain):
         super().__init__()
         self._data = []
 
-    def set(self, dev_idx: int, tr_idx: int, amp: float, phase: float) -> "TransducerTest":
+    def set(self, dev_idx: int, tr_idx: int, phase: float, amp: float) -> "TransducerTest":
         self._data.append((dev_idx, tr_idx, phase, amp))
         return self
 

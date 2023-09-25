@@ -7,6 +7,7 @@
 - Fix [#164](https://github.com/shinolab/autd3/issues/164): [Python] Controller.software_stm sometimes stucks
 - Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
 - Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
+- Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
 
 # 15.1.2
 
