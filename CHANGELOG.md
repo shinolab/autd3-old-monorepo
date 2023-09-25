@@ -8,6 +8,7 @@
 - Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
 - Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
 - Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
+- Fix [#182](https://github.com/shinolab/autd3/issues/182): Cannot use autd3-link-visualizer with python or gpu features
 
 # 15.1.2
 
