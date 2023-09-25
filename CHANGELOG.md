@@ -5,6 +5,8 @@
 - Fix [#177](https://github.com/shinolab/autd3/issues/177): [C++] Avoid unnecessary copying in gain::Cache
 - Fix [#178](https://github.com/shinolab/autd3/issues/178): The value of TimerStrategy is not consistent between capi and the original source
 - Fix [#164](https://github.com/shinolab/autd3/issues/164): [Python] Controller.software_stm sometimes stucks
+- Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
+- Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
 
 # 15.1.2
 
