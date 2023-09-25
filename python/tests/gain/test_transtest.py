@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 25/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ import numpy as np
 def test_transtest():
     autd = create_controller()
 
-    assert autd.send(TransducerTest().set(0, 0, 0.5, np.pi).set(1, 248, 0.5, np.pi))
+    assert autd.send(TransducerTest().set(0, 0, np.pi, 0.5).set(1, 248, np.pi, 0.5))
 
     duties, phases = Audit.duties_and_phases(autd._ptr, 0, 0)
     assert duties[0] == 680
