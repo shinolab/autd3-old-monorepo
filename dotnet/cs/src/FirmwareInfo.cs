@@ -30,13 +30,13 @@ namespace AUTD3Sharp
             {
                 var latest = new byte[256];
                 NativeMethods.Base.AUTDFirmwareLatest(latest);
-                return Encoding.UTF8.GetString(latest);
+                return Encoding.UTF8.GetString(latest).TrimEnd('\0');
             }
         }
 
         internal FirmwareInfo(string info)
         {
-            Info = info;
+            Info = info.TrimEnd('\0');
         }
 
         public override string ToString() => $"{Info}";
