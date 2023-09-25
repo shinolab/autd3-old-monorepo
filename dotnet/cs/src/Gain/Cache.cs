@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 25/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,13 @@ namespace AUTD3Sharp.Gain
             foreach (var dev in geometry)
             {
                 var drives = new Drive[dev.NumTransducers];
-                Base.AUTDGainCalcGetResult(res, drives, (uint)dev.Idx);
+                unsafe
+                {
+                    fixed (Drive* p = drives)
+                    {
+                        Base.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                    }
+                }
                 _cache[dev.Idx] = drives;
             }
             Base.AUTDGainCalcFreeResult(res);
