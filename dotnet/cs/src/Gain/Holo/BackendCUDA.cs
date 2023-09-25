@@ -1,10 +1,10 @@
 /*
- * File: BackendCUDA.cs
+ * File: CUDABackend.cs
  * Project: src
  * Created Date: 08/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 25/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,9 +33,9 @@ namespace AUTD3Sharp.Gain.Holo
     /// Backend using CUDA
     /// </summary>
     [ComVisible(false)]
-    public class BackendCUDA : Backend
+    public class CUDABackend : Backend
     {
-        public BackendCUDA()
+        public CUDABackend()
         {
             var err = new byte[256];
             Ptr = NativeMethods.BackendCUDA.AUTDCUDABackend(err);
@@ -43,7 +43,7 @@ namespace AUTD3Sharp.Gain.Holo
                 throw new AUTDException(err);
         }
 
-        ~BackendCUDA()
+        ~CUDABackend()
         {
             if (Ptr._0 == IntPtr.Zero) return;
             NativeMethods.BackendCUDA.AUTDCUDABackendDelete(Ptr);
