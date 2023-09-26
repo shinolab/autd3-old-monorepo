@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ class LM final : public internal::Gain {
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
   AUTD3_DEF_PARAM(LM, double, tau)
-  AUTD3_DEF_PARAM(LM, double, k_max)
+  AUTD3_DEF_PARAM(LM, uint32_t, k_max)
 
   AUTD3_DEF_PARAM(LM, AmplitudeConstraint, constraint)
 

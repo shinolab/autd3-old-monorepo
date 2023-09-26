@@ -8,6 +8,7 @@
 - Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
 - Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
 - Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
+- Fix [#188](https://github.com/shinolab/autd3/issues/188): [C++] autd3::gain::holo::LM::with_k_max type is invalid
 
 # 15.1.2
 
