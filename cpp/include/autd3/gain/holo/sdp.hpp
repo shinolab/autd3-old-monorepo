@@ -46,6 +46,9 @@ class SDP final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(SDP)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(SDP)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(SDP)
+
   AUTD3_DEF_PARAM(SDP, double, alpha)
   AUTD3_DEF_PARAM(SDP, uint32_t, repeat)
   AUTD3_DEF_PARAM(SDP, double, lambda)

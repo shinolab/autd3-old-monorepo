@@ -41,6 +41,9 @@ class Greedy final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(Greedy)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(Greedy)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Greedy)
+
   AUTD3_DEF_PARAM(Greedy, uint32_t, phase_div)
 
   AUTD3_DEF_PARAM(Greedy, AmplitudeConstraint, constraint)

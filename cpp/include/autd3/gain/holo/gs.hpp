@@ -45,6 +45,9 @@ class GS final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(GS)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(GS)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(GS)
+
   AUTD3_DEF_PARAM(GS, uint32_t, repeat)
   AUTD3_DEF_PARAM(GS, AmplitudeConstraint, constraint)
 
