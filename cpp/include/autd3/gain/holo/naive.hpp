@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,9 @@ class Naive final : public internal::Gain {
 #if __cplusplus >= 202002L
   AUTD3_HOLO_ADD_FOCI(Naive)
 #endif
+
+  AUTD3_IMPL_WITH_CACHE_GAIN(Naive)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Naive)
 
   AUTD3_DEF_PARAM(Naive, AmplitudeConstraint, constraint)
 
