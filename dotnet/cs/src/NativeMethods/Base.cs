@@ -324,7 +324,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationWithTransform(ModulationPtr m, IntPtr f);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationWithTransform(ModulationPtr m, IntPtr f, IntPtr context);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern DatagramPtr AUTDSTMFocus(STMPropsPtr props, double[]? points, byte[]? shift, ulong size);
 
