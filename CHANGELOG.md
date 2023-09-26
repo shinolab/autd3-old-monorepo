@@ -9,6 +9,7 @@
 - Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
 - Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
 - Fix [#184](https://github.com/shinolab/autd3/issues/184): [C++] Cannot use Gain::with_transform
+- Fix [#185](https://github.com/shinolab/autd3/issues/185): [C++] Cannot use AUTD3_IMPL_WITH_CACHE_GAIN and other similar macros
 
 # 15.1.2
 
