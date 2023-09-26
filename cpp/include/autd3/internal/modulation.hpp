@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,23 +48,25 @@ class Modulation : public Datagram {
   }
 };
 
-#define AUTD3_IMPL_WITH_CACHE_MODULATION                                 \
-  [[nodiscard]] Cache with_cache()&& { return Cache(std::move(*this)); } \
-  [[nodiscard]] Cache with_cache()& { return Cache(*this); }
+#define AUTD3_IMPL_WITH_CACHE_MODULATION                                                                       \
+  [[nodiscard]] autd3::modulation::Cache with_cache()&& { return autd3::modulation::Cache(std::move(*this)); } \
+  [[nodiscard]] autd3::modulation::Cache with_cache()& { return autd3::modulation::Cache(*this); }
 
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)             \
-  template <typename F>                                        \
-  [[nodiscard]] Transform<TYPE> with_transform(const F& f)&& { \
-    return Transform(std::move(*this), f);                     \
-  }                                                            \
-  template <typename F>                                        \
-  [[nodiscard]] Transform<TYPE> with_transform(const F& f)& {  \
-    return Transform(*this, f);                                \
+#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)                                \
+  template <typename F>                                                           \
+  [[nodiscard]] autd3::modulation::Transform<TYPE> with_transform(const F& f)&& { \
+    return autd3::modulation::Transform(std::move(*this), f);                     \
+  }                                                                               \
+  template <typename F>                                                           \
+  [[nodiscard]] autd3::modulation::Transform<TYPE> with_transform(const F& f)& {  \
+    return autd3::modulation::Transform(*this, f);                                \
   }
 
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                                                    \
-  [[nodiscard]] RadiationPressure<TYPE> with_radiation_pressure()&& { return RadiationPressure(std::move(*this)); } \
-  [[nodiscard]] RadiationPressure<TYPE> with_radiation_pressure()& { return RadiationPressure(*this); }
+#define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                         \
+  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()&& { \
+    return autd3::modulation::RadiationPressure(std::move(*this));                       \
+  }                                                                                      \
+  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()& { return autd3::modulation::RadiationPressure(*this); }
 
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
   void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \
