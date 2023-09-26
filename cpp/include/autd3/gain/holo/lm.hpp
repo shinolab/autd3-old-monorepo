@@ -58,7 +58,7 @@ class LM final : public internal::Gain {
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
   AUTD3_DEF_PARAM(LM, double, tau)
-  AUTD3_DEF_PARAM(LM, double, k_max)
+  AUTD3_DEF_PARAM(LM, uint32_t, k_max)
 
   AUTD3_DEF_PARAM(LM, AmplitudeConstraint, constraint)
 

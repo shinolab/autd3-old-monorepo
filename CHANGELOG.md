@@ -12,6 +12,7 @@
 - Fix [#185](https://github.com/shinolab/autd3/issues/185): [C++] Cannot use AUTD3_IMPL_WITH_CACHE_GAIN and other similar macros
 - Fix [#186](https://github.com/shinolab/autd3/issues/186): [C++] cannot compile autd3::gain::holo::*
 - Fix [#187](https://github.com/shinolab/autd3/issues/187): [C++] missing with_cache and with_transform for autd3::gain::holo::*
+- Fix [#188](https://github.com/shinolab/autd3/issues/188): [C++] autd3::gain::holo::LM::with_k_max type is invalid
 
 # 15.1.2
 
