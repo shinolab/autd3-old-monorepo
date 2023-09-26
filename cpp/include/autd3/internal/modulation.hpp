@@ -52,14 +52,14 @@ class Modulation : public Datagram {
   [[nodiscard]] autd3::modulation::Cache with_cache()&& { return autd3::modulation::Cache(std::move(*this)); } \
   [[nodiscard]] autd3::modulation::Cache with_cache()& { return autd3::modulation::Cache(*this); }
 
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)                                \
-  template <typename F>                                                           \
-  [[nodiscard]] autd3::modulation::Transform<TYPE> with_transform(const F& f)&& { \
-    return autd3::modulation::Transform(std::move(*this), f);                     \
-  }                                                                               \
-  template <typename F>                                                           \
-  [[nodiscard]] autd3::modulation::Transform<TYPE> with_transform(const F& f)& {  \
-    return autd3::modulation::Transform(*this, f);                                \
+#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)                                     \
+  template <typename _F>                                                               \
+  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)&& { \
+    return autd3::modulation::Transform(std::move(*this), f);                          \
+  }                                                                                    \
+  template <typename _F>                                                               \
+  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)& {  \
+    return autd3::modulation::Transform(*this, f);                                     \
   }
 
 #define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                         \
