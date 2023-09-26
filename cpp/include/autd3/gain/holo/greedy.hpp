@@ -13,8 +13,10 @@
 
 #include <vector>
 
+#include "autd3/gain/cache.hpp"
 #include "autd3/gain/holo/constraint.hpp"
 #include "autd3/gain/holo/utils.hpp"
+#include "autd3/gain/transform.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
