@@ -8,6 +8,7 @@
 - Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
 - Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
 - Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
+- Fix [#184](https://github.com/shinolab/autd3/issues/184): [C++] Cannot use Gain::with_transform
 
 # 15.1.2
 
