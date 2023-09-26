@@ -46,6 +46,9 @@ class EVP final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(EVP)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(EVP)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(EVP)
+
   AUTD3_DEF_PARAM(EVP, double, gamma)
   AUTD3_DEF_PARAM(EVP, AmplitudeConstraint, constraint)
 

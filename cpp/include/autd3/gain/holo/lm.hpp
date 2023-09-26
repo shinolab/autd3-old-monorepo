@@ -50,6 +50,9 @@ class LM final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(LM)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(LM)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(LM)
+
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
   AUTD3_DEF_PARAM(LM, double, tau)

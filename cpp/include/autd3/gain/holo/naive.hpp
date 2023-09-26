@@ -43,6 +43,9 @@ class Naive final : public internal::Gain {
   AUTD3_HOLO_ADD_FOCI(Naive)
 #endif
 
+  AUTD3_IMPL_WITH_CACHE_GAIN(Naive)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Naive)
+
   AUTD3_DEF_PARAM(Naive, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
