@@ -53,7 +53,7 @@ class Greedy final : public internal::Gain {
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_phase_div.has_value()) ptr = AUTDGainHoloGreedyWithPhaseDiv(ptr, _phase_div.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());
+    if (_constraint.has_value()) ptr = AUTDGainHoloGreedyWithConstraint(ptr, _constraint.value().ptr());
     return ptr;
   }
 
