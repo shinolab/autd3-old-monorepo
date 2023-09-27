@@ -3,15 +3,16 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#include <gtest/gtest.h>
+
 #include <autd3/modulation/modulation.hpp>
 #include <autd3/modulation/sine.hpp>
-#include <gtest/gtest.h>
 
 #include "utils.hpp"
 
@@ -34,7 +35,7 @@ TEST(Modulation, Cache) {
 class ForModulationCacheTest final : public autd3::modulation::Modulation {
  public:
   [[nodiscard]] std::vector<double> calc() const override {
-    ++(*_cnt);
+    ++*_cnt;
     return {1, 1};
   }
 

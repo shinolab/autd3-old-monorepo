@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <numeric>
 #include <unordered_map>
 #include <vector>
@@ -40,7 +41,7 @@ class Cache final : public internal::Gain {
                    [](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
 
     if (_cache->size() != device_indices.size() ||
-        std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return _cache->find(idx) == _cache->end(); })) {
+        std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
       char err[256]{};
       auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
       if (res._0 == nullptr) throw internal::AUTDException(err);

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -77,7 +77,7 @@ class Group final : public internal::Gain {
       m.reserve(dev.num_transducers());
       std::for_each(dev.cbegin(), dev.cend(), [this, &dev, &m, &keymap, &k](const auto& tr) {
         if (auto key = this->_f(dev, tr); key.has_value()) {
-          if (keymap.find(key.value()) == keymap.end()) {
+          if (!keymap.contains(key.value())) {
             keymap[key.value()] = k++;
           }
           m.emplace_back(keymap[key.value()]);

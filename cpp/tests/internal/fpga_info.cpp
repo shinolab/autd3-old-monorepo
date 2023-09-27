@@ -14,7 +14,6 @@
 #include <autd3/internal/datagram.hpp>
 #include <autd3/internal/exception.hpp>
 #include <autd3/internal/fpga_info.hpp>
-#include <ranges>
 
 #include "utils.hpp"
 
@@ -26,8 +25,7 @@ TEST(Internal, FPGAInfo) {
   ASSERT_TRUE(autd.send(autd3::internal::UpdateFlags()));
 
   {
-    auto infos = autd.fpga_info();
-    for (auto info : infos) ASSERT_FALSE(info.is_thermal_assert());
+    for (const auto infos = autd.fpga_info(); auto info : infos) ASSERT_FALSE(info.is_thermal_assert());
   }
 
   {
@@ -35,7 +33,7 @@ TEST(Internal, FPGAInfo) {
     autd3::link::Audit::update(autd, 0);
     autd3::link::Audit::update(autd, 1);
 
-    auto infos = autd.fpga_info();
+    const auto infos = autd.fpga_info();
     ASSERT_TRUE(infos[0].is_thermal_assert());
     ASSERT_FALSE(infos[1].is_thermal_assert());
   }
@@ -46,7 +44,7 @@ TEST(Internal, FPGAInfo) {
     autd3::link::Audit::update(autd, 0);
     autd3::link::Audit::update(autd, 1);
 
-    auto infos = autd.fpga_info();
+    const auto infos = autd.fpga_info();
     ASSERT_FALSE(infos[0].is_thermal_assert());
     ASSERT_TRUE(infos[1].is_thermal_assert());
   }

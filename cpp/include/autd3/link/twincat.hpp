@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace autd3::link {
 /**
  * @brief Link using TwinCAT3
  */
-class TwinCAT final: public internal::Link {
+class TwinCAT final : public internal::Link {
  public:
   TwinCAT() : Link(internal::native_methods::LinkPtr{nullptr}) {
     char err[256];
@@ -36,7 +36,7 @@ class TwinCAT final: public internal::Link {
   TwinCAT with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
     _ptr = AUTDLinkTwinCATWithTimeout(_ptr, static_cast<uint64_t>(ns));
-    return std::move(*this);
+    return *this;
   }
 
   AUTD3_IMPL_WITH_LOG
@@ -84,7 +84,7 @@ class RemoteTwinCAT final : public internal::Link {
   RemoteTwinCAT with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
     _ptr = AUTDLinkRemoteTwinCATWithTimeout(_ptr, static_cast<uint64_t>(ns));
-    return std::move(*this);
+    return *this;
   }
 
   AUTD3_IMPL_WITH_LOG
