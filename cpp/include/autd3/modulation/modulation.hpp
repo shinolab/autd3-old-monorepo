@@ -3,14 +3,13 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
-
 
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -22,8 +21,6 @@ namespace autd3::modulation {
  */
 class Modulation : public internal::Modulation {
  public:
-  explicit Modulation(const double sampling_freq)
-      : _freq_div(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / sampling_freq)) {}
   explicit Modulation(const uint32_t freq_div) : _freq_div(freq_div) {}
 
   [[nodiscard]] virtual std::vector<double> calc() const = 0;

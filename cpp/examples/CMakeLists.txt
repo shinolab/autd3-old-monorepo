@@ -6,7 +6,7 @@ endif()
 
 project(autd3-examples)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -25,17 +25,17 @@ if(AUTD_LOCAL_TEST)
 elseif(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-win-x64.zip
+    URL https://github.com/shinolab/autd3/releases/download/v15.2.0/autd3-v15.2.0-win-x64.zip
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-macos-universal.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v15.2.0/autd3-v15.2.0-macos-universal.tar.gz
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v14.2.2/autd3-v14.2.2-linux-x64.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v15.2.0/autd3-v15.2.0-linux-x64.tar.gz
   )
 endif()
 FetchContent_MakeAvailable(autd3)
@@ -58,10 +58,6 @@ target_link_libraries(remote_twincat PRIVATE autd3-example)
 add_executable(remote_soem remote_soem.cpp)
 autd3_target_link_library(remote_soem PRIVATE)
 target_link_libraries(remote_soem PRIVATE autd3-example)
-
-add_executable(geometry_viewer geometry_viewer.cpp)
-autd3_target_link_library(geometry_viewer PRIVATE)
-target_link_libraries(geometry_viewer PRIVATE autd3-example)
 
 add_executable(simulator simulator.cpp)
 autd3_target_link_library(simulator PRIVATE)

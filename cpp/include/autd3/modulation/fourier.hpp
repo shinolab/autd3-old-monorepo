@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,6 @@ class Fourier final : public internal::Modulation {
     return std::move(*this);
   }
 
-#if __cplusplus >= 202002L
   /**
    * @brief Add components from iterator
    *
@@ -61,7 +60,6 @@ class Fourier final : public internal::Modulation {
     for (Sine e : iter) _components.emplace_back(std::move(e));
     return std::move(*this);
   }
-#endif
 
   Fourier& operator+=(const Sine& rhs) {
     _components.emplace_back(rhs);

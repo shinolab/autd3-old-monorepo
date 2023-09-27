@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 26/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,9 +17,9 @@ use pyo3::prelude::*;
 
 use crate::{error::VisualizerError, Backend, Config};
 
-use autd3::driver::{
+use autd3_driver::{
     acoustics::Complex,
-    float,
+    defined::float,
     geometry::{Geometry, Transducer},
 };
 
@@ -314,12 +314,12 @@ def plot(modulation, config):
         phases: Vec<float>,
     ) -> Result<(), VisualizerError> {
         let trans_x = geometry
-            .transducers()
-            .map(|t| t.position().x)
+            .iter()
+            .flat_map(|dev| dev.iter().map(|t| t.position().x))
             .collect::<Vec<_>>();
         let trans_y = geometry
-            .transducers()
-            .map(|t| t.position().y)
+            .iter()
+            .flat_map(|dev| dev.iter().map(|t| t.position().y))
             .collect::<Vec<_>>();
 
         Python::with_gil(|py| -> PyResult<()> {
@@ -377,180 +377,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
                 trans_y,
                 phases,
                 config,
-                autd3::driver::autd3_device::AUTD3::TRANS_SPACING,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
-    fn animate_1d(
-        observe_points: Vec<float>,
-        acoustic_pressures: Vec<Vec<Complex>>,
-        resolution: float,
-        x_label: &str,
-        config: Self::PlotConfig,
-    ) -> Result<(), VisualizerError> {
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .flat_map(|x| x.iter().map(|&x| x.norm()))
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-            py,
-            r#"
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.animation import FuncAnimation
-import sys
-
-def plot_acoustic_field_1d(axes, acoustic_pressures, observe, resolution, config):
-    plot = axes.plot(acoustic_pressures)
-    x_label_num = int(np.floor((observe[-1] - observe[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe[0] + config.ticks_step * i) for i in range(x_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    axes.set_xticks(np.array(x_ticks), minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    return plot
-
-def plot(observe, acoustic_pressures, resolution, x_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111)
-
-    nx = len(observe)
-    size = len(acoustic_pressures) // nx
-    acoustic_pressures = np.array(acoustic_pressures)
-    max_p = np.max(acoustic_pressures)
-    acoustic_pressures = acoustic_pressures.reshape((size, nx))
-
-    def plot_frame(frame):
-        ax.cla()
-        plot_acoustic_field_1d(ax, acoustic_pressures[frame], observe, resolution, config)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel("Amplitude [-]")
-        ax.set_ylim([0, max_p*1.1])
-        plt.tight_layout()
-        if config.print_progress:
-            percent = 100 * (frame+1) / size
-            sys.stdout.write('\r')
-            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-            sys.stdout.flush()
-
-    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-    if config.fname != "":
-        ani.save(config.fname, dpi=fig.dpi)
-
-    if config.show:
-        plt.show()
-    plt.close()"#,
-            "",
-            "",
-        )?
-        .getattr("plot")?;
-            fun.call1((
-                observe_points,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                config,
-            ))?;
-            Ok(())
-        })?;
-
-        Ok(())
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn animate_2d(
-        observe_x: Vec<float>,
-        observe_y: Vec<float>,
-        acoustic_pressures: Vec<Vec<Complex>>,
-        resolution: float,
-        x_label: &str,
-        y_label: &str,
-        config: Self::PlotConfig,
-    ) -> Result<(), VisualizerError> {
-        let acoustic_pressures = acoustic_pressures
-            .iter()
-            .flat_map(|x| x.iter().map(|&x| x.norm()))
-            .collect::<Vec<_>>();
-
-        Python::with_gil(|py| -> PyResult<()> {
-            let fun = PyModule::from_code(
-            py,
-            r#"
-from matplotlib.animation import FuncAnimation
-import matplotlib.pyplot as plt
-import numpy as np
-import mpl_toolkits.axes_grid1
-import sys
-from matplotlib.colors import Normalize
-
-def config_heatmap(axes, observe_x, observe_y, resolution, config):
-    x_label_num = int(np.floor((observe_x[-1] - observe_x[0]) / config.ticks_step)) + 1
-    y_label_num = int(np.floor((observe_y[-1] - observe_y[0]) / config.ticks_step)) + 1
-    x_labels = ['{:.2f}'.format(observe_x[0] + config.ticks_step * i) for i in range(x_label_num)]
-    y_labels = ['{:.2f}'.format(observe_y[0] + config.ticks_step * i) for i in range(y_label_num)]
-    x_ticks = [config.ticks_step / resolution * i for i in range(x_label_num)]
-    y_ticks = [config.ticks_step / resolution * i for i in range(y_label_num)]
-    axes.set_xticks(np.array(x_ticks) + 0.5, minor=False)
-    axes.set_yticks(np.array(y_ticks) + 0.5, minor=False)
-    axes.set_xticklabels(x_labels, minor=False)
-    axes.set_yticklabels(y_labels, minor=False)
-
-def add_colorbar(fig, axes, mappable, max_p, config):
-    divider = mpl_toolkits.axes_grid1.make_axes_locatable(axes)
-    cax = divider.append_axes(config.cbar_position, config.cbar_size, pad=config.cbar_pad)
-    cbar = fig.colorbar(mappable, cax=cax)
-    cbar.ax.set_ylabel("Amplitude [-]")
-    cbar.ax.set_ylim(0, max_p)
-
-def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label, config):
-    plt.rcParams["font.size"] = config.fontsize
-    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
-    ax = fig.add_subplot(111, aspect="equal")
-    nx = len(observe_x)
-    ny = len(observe_y)
-    size = len(acoustic_pressures) // (nx * ny)
-    acoustic_pressures = np.array(acoustic_pressures).reshape((size, ny, nx))
-
-    max_p = np.max(acoustic_pressures)
-    heatmap = ax.pcolor(acoustic_pressures[0], cmap=config.cmap, norm=Normalize(vmin=0, vmax=max_p))
-    config_heatmap(ax, observe_x, observe_y, resolution, config)
-    add_colorbar(fig, ax, heatmap, max_p, config)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    plt.tight_layout()
-
-    def plot_frame(frame):
-        heatmap.set_array(acoustic_pressures[frame].flatten())
-        if config.print_progress:
-            percent = 100 * (frame+1) / size
-            sys.stdout.write('\r')
-            sys.stdout.write(f"Plotted: [{'='*int(percent/(100/30)):30}] {frame+1}/{size} ({int(percent):>3}%)")
-            sys.stdout.flush()
-        
-    ani = FuncAnimation(fig, plot_frame, frames=size, interval=config.interval)    
-    if config.fname != "":
-        ani.save(config.fname, dpi=fig.dpi)
-    if config.show:
-        plt.show()
-    plt.close()"#,
-            "",
-            "",
-        )?
-        .getattr("plot")?;
-            fun.call1((
-                observe_x,
-                observe_y,
-                acoustic_pressures,
-                resolution,
-                x_label,
-                y_label,
-                config,
+                autd3::autd3_device::AUTD3::TRANS_SPACING,
             ))?;
             Ok(())
         })?;

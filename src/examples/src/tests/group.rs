@@ -4,7 +4,7 @@
  * Created Date: 15/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@ pub fn group<T: Transducer + 'static, L: Link<T>>(
     autd: &mut Controller<T, L>,
 ) -> anyhow::Result<bool>
 where
-    autd3::driver::operation::GainOp<T, Null>: autd3::driver::operation::Operation<T>,
-    autd3::driver::operation::GainOp<T, Focus>: autd3::driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, Null>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<T, Focus>: autd3_driver::operation::Operation<T>,
 {
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 

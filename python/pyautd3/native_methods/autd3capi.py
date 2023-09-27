@@ -144,6 +144,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeviceSetForceFan.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDDeviceSetForceFan.restype = None
 
+        self.dll.AUTDDeviceEnableSet.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
+        self.dll.AUTDDeviceEnableSet.restype = None
+
+        self.dll.AUTDDeviceEnableGet.argtypes = [DevicePtr]  # type: ignore 
+        self.dll.AUTDDeviceEnableGet.restype = ctypes.c_bool
+
         self.dll.AUTDGeometry.argtypes = [ControllerPtr]  # type: ignore 
         self.dll.AUTDGeometry.restype = GeometryPtr
 
@@ -510,7 +516,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationStaticWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationStaticWithAmp.restype = ModulationPtr
 
-        self.dll.AUTDModulationWithTransform.argtypes = [ModulationPtr, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDModulationWithTransform.argtypes = [ModulationPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
         self.dll.AUTDModulationWithTransform.restype = ModulationPtr
 
         self.dll.AUTDSTMFocus.argtypes = [STMPropsPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64]  # type: ignore 
@@ -656,6 +662,12 @@ class NativeMethods(metaclass=Singleton):
 
     def device_set_force_fan(self, dev: DevicePtr, value: bool) -> None:
         return self.dll.AUTDDeviceSetForceFan(dev, value)
+
+    def device_enable_set(self, dev: DevicePtr, value: bool) -> None:
+        return self.dll.AUTDDeviceEnableSet(dev, value)
+
+    def device_enable_get(self, dev: DevicePtr) -> ctypes.c_bool:
+        return self.dll.AUTDDeviceEnableGet(dev)
 
     def geometry(self, cnt: ControllerPtr) -> GeometryPtr:
         return self.dll.AUTDGeometry(cnt)
@@ -1023,8 +1035,8 @@ class NativeMethods(metaclass=Singleton):
     def modulation_static_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
         return self.dll.AUTDModulationStaticWithAmp(m, amp)
 
-    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p) -> ModulationPtr:
-        return self.dll.AUTDModulationWithTransform(m, f)
+    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p, context: ctypes.c_void_p) -> ModulationPtr:
+        return self.dll.AUTDModulationWithTransform(m, f, context)
 
     def stm_focus(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double], shift: ctypes.Array[ctypes.c_uint8], size: int) -> DatagramPtr:
         return self.dll.AUTDSTMFocus(props, points, shift, size)

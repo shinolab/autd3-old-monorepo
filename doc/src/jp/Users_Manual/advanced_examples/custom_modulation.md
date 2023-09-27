@@ -7,10 +7,11 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate autd3_driver;
 use autd3::{
-    driver::derive::prelude::*,
     derive::Modulation,
 };
+use autd3_driver::derive::prelude::*;
 
 #[derive(Modulation, Clone, Copy)]
 pub struct Burst {
@@ -48,9 +49,6 @@ public:
     explicit BurstModulation(const size_t buf_size = 4000, const uint32_t sampling_freq_div = 5120) noexcept
         : autd3::Modulation(sampling_freq_div), _buf_size(buf_size) {}
 
-    explicit BurstModulation(const size_t buf_size = 4000, const double sampling_freq = 4e3) noexcept
-        : autd3::Modulation(sampling_freq), _buf_size(buf_size) {}
-
 private:
     size_t _buf_size;
 };
@@ -62,10 +60,6 @@ public class Burst : Modulation.Modulation
     private readonly int _length;
 
     public Burst(int length, uint sampleFreqDiv = 5120) : base(sampleFreqDiv)
-    {
-        _length = length;
-    }
-    public Burst(int length, double sampleFreq = 4e3) : base(sampleFreq)
     {
         _length = length;
     }

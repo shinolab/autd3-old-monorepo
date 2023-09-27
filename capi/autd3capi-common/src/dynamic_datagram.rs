@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 23/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,8 @@
 
 use std::time::Duration;
 
-use autd3::{
-    driver::{datagram::Datagram, error::AUTDInternalError, operation::Operation},
-    prelude::*,
-};
+use autd3::prelude::*;
+use autd3_driver::{datagram::Datagram, error::AUTDInternalError, operation::Operation};
 
 use crate::{
     dynamic_op::{DynamicGainOp, DynamicGainSTMOp},
@@ -302,7 +300,7 @@ impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
             Box<dyn Operation<DynamicTransducer>>,
             Box<dyn Operation<DynamicTransducer>>,
         ),
-        autd3::driver::error::AUTDInternalError,
+        autd3_driver::error::AUTDInternalError,
     > {
         let freq_div = self.sampling_frequency_division();
         Ok((
@@ -332,11 +330,11 @@ impl DynamicDatagram for Amplitudes {
             Box<dyn Operation<DynamicTransducer>>,
             Box<dyn Operation<DynamicTransducer>>,
         ),
-        autd3::driver::error::AUTDInternalError,
+        autd3_driver::error::AUTDInternalError,
     > {
         match mode {
             TransMode::Legacy | TransMode::Advanced => {
-                Err(autd3::driver::error::AUTDInternalError::NotSupported(
+                Err(autd3_driver::error::AUTDInternalError::NotSupported(
                     "Amplitudes can not be used in Legacy or Advanced mode".to_string(),
                 ))
             }
@@ -362,7 +360,7 @@ impl DynamicDatagram for Box<G> {
             Box<dyn Operation<DynamicTransducer>>,
             Box<dyn Operation<DynamicTransducer>>,
         ),
-        autd3::driver::error::AUTDInternalError,
+        autd3_driver::error::AUTDInternalError,
     > {
         let mut tmp: Box<G> = Box::<Null>::default();
         std::mem::swap(&mut tmp, self);

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -73,7 +73,7 @@ namespace AUTD3Sharp
         /// <summary>
         /// Number of transducer in an AUTD3 device
         /// </summary>
-        public const uint NumTransInUnit = Def.NumTransInUnit;
+        public const int NumTransInUnit = (int)Def.NumTransInUnit;
 
         /// <summary>
         /// Spacing between transducers in mm
@@ -88,12 +88,12 @@ namespace AUTD3Sharp
         /// <summary>
         /// Number of transducer in x-axis of AUTD3 device
         /// </summary>
-        public const uint NumTransInX = Def.NumTransInX;
+        public const int NumTransInX = (int)Def.NumTransInX;
 
         /// <summary>
         /// Number of transducer in y-axis of AUTD3 device
         /// </summary>
-        public const uint NumTransInY = Def.NumTransInY;
+        public const int NumTransInY = (int)Def.NumTransInY;
 
         /// <summary>
         /// FPGA main clock frequency
@@ -289,6 +289,7 @@ namespace AUTD3Sharp
         {
             var err = new byte[256];
             var handle = Base.AUTDControllerFirmwareInfoListPointer(Ptr, err);
+            System.Diagnostics.Debug.WriteLine(handle._0);
             if (handle._0 == IntPtr.Zero)
                 throw new AUTDException(err);
 
@@ -555,6 +556,7 @@ namespace AUTD3Sharp
             {
                 var map = _controller.Geometry.Select(dev =>
                 {
+                    if (!dev.Enable) return -1;
                     var k = _map(dev);
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();

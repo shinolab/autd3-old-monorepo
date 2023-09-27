@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 26/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use std::sync::Arc;
 
-use autd3::driver::{
+use autd3_driver::{
     acoustics::Complex,
-    float,
+    defined::float,
     geometry::{Geometry, Transducer, Vector3},
 };
 use vulkano::{
@@ -130,7 +130,7 @@ impl FieldCompute {
         }
     }
 
-    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3::driver::acoustics::Directivity>(
+    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3_driver::acoustics::Directivity>(
         &self,
         observe_points: Vec<Vector3>,
         geometry: &Geometry<T>,
@@ -171,14 +171,19 @@ impl FieldCompute {
                 usage: MemoryUsage::Upload,
                 ..Default::default()
             },
-            geometry.transducers().map(|t| {
-                [
-                    t.position().x as f32,
-                    t.position().y as f32,
-                    t.position().z as f32,
-                    0.,
-                ]
-            }),
+            geometry
+                .iter()
+                .flat_map(|dev| {
+                    dev.iter().map(|t| {
+                        [
+                            t.position().x as f32,
+                            t.position().y as f32,
+                            t.position().z as f32,
+                            0.,
+                        ]
+                    })
+                })
+                .collect::<Vec<_>>(),
         )
         .unwrap();
         let set_1 = PersistentDescriptorSet::new(
@@ -260,14 +265,19 @@ impl FieldCompute {
                 usage: MemoryUsage::Upload,
                 ..Default::default()
             },
-            geometry.transducers().map(|t| {
-                [
-                    t.z_direction().x as f32,
-                    t.z_direction().y as f32,
-                    t.z_direction().z as f32,
-                    0.,
-                ]
-            }),
+            geometry
+                .iter()
+                .flat_map(|dev| {
+                    dev.iter().map(|t| {
+                        [
+                            t.z_direction().x as f32,
+                            t.z_direction().y as f32,
+                            t.z_direction().z as f32,
+                            0.,
+                        ]
+                    })
+                })
+                .collect::<Vec<_>>(),
         )
         .unwrap();
         let set_5 = PersistentDescriptorSet::new(

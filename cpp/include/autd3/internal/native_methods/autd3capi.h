@@ -236,6 +236,10 @@ void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
 
 void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
 
+void AUTDDeviceEnableSet(DevicePtr dev, bool value);
+
+[[nodiscard]] bool AUTDDeviceEnableGet(DevicePtr dev);
+
 [[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
 
 void AUTDTransducerPosition(TransducerPtr tr, double *pos);
@@ -453,7 +457,7 @@ ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
 
-[[nodiscard]] ModulationPtr AUTDModulationWithTransform(ModulationPtr m, void* f);
+[[nodiscard]] ModulationPtr AUTDModulationWithTransform(ModulationPtr m, void* f, void* context);
 
 [[nodiscard]] STMPropsPtr AUTDSTMProps(double freq);
 

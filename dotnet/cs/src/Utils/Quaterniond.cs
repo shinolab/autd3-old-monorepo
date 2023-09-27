@@ -33,12 +33,15 @@ namespace AUTD3Sharp.Utils
         public double x { get; }
         public double y { get; }
         public double z { get; }
+
+        public static Quaterniond identity => new Quaterniond(0, 0, 0, 1);
 #pragma warning restore IDE1006
         #endregion
 
         public Quaterniond Normalized => this / L2Norm;
         public double L2Norm => Math.Sqrt(L2NormSquared);
         public double L2NormSquared => w * w + x * x + y * y + z * z;
+
 
         #region indexcer
         public double this[int index]
@@ -80,6 +83,8 @@ namespace AUTD3Sharp.Utils
 
         #region util
         public override int GetHashCode() => w.GetHashCode() ^ x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
+        
+        public override string ToString() => $"({w}, {x}, {y}, {z})";
         #endregion
     }
 }

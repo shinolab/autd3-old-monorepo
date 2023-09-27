@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,10 +11,13 @@
 
 #pragma once
 
+#include <ranges>
 #include <vector>
 
+#include "autd3/gain/cache.hpp"
 #include "autd3/gain/holo/constraint.hpp"
 #include "autd3/gain/holo/utils.hpp"
+#include "autd3/gain/transform.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -33,23 +36,24 @@ class Greedy final : public internal::Gain {
   Greedy() = default;
 
   AUTD3_HOLO_ADD_FOCUS(Greedy)
-#if __cplusplus >= 202002L
   AUTD3_HOLO_ADD_FOCI(Greedy)
-#endif
+
+  AUTD3_IMPL_WITH_CACHE_GAIN(Greedy)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Greedy)
 
   AUTD3_DEF_PARAM(Greedy, uint32_t, phase_div)
 
   AUTD3_DEF_PARAM(Greedy, AmplitudeConstraint, constraint)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_phase_div.has_value()) ptr = AUTDGainHoloGreedyWithPhaseDiv(ptr, _phase_div.value());
-    if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());
+    if (_constraint.has_value()) ptr = AUTDGainHoloGreedyWithConstraint(ptr, _constraint.value().ptr());
     return ptr;
   }
 
  private:
-  std::vector<Vector3> _foci;
+  std::vector<internal::Vector3> _foci;
   std::vector<double> _amps;
   std::optional<uint32_t> _phase_div;
   std::optional<AmplitudeConstraint> _constraint;

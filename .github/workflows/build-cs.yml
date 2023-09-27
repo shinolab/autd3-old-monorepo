@@ -25,8 +25,22 @@ jobs:
       id: changed-files
       with:
         files: |
+          .github/workflows/build-cs.yml
           dotnet/cs/*.cs
           dotnet/cs/**/*.cs
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+      
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './capi -> target'
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
@@ -38,9 +52,22 @@ jobs:
         cd ./dotnet/cs/src
         dotnet build -c:Release
       if: steps.changed-files.outputs.modified_files
+    - name: Test with dotnet
+      run: |
+        cd capi
+        cargo build
+        cd ..
+        foreach($dll in Get-ChildItem -Path capi/target/debug | Where {$_.extension -like ".dll"}){
+          Copy-Item -Path $dll -Destination dotnet/cs/tests -Force
+        }
+        cd dotnet/cs/tests
+        dotnet test
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
     - name: Build example with dotnet
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
       run: |
         dotnet nuget add source $pwd/dotnet/cs/src/bin/Release -n autd3sharp_local
         cd ./dotnet/cs/example
+        dotnet build -c:Release
+        cd ../../fs/example
         dotnet build -c:Release

@@ -29,6 +29,8 @@ jobs:
           .github/workflows/build-python.yml
           python/pyautd3/*.py
           python/pyautd3/**/*.py
+          python/tests/*.py
+          python/tests/**/*.py
 
     - name: install aarch64 target on macos
       if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
@@ -59,13 +61,35 @@ jobs:
 
     - run: |
         python3 -m pip install -U pytest
+        cd capi
+        cargo build
+        cd ..
+        mkdir python/pyautd3/bin > NUL 2>&1
+        foreach($dll in Get-ChildItem -Path capi/target/debug | Where {$_.extension -like ".dll"}){
+          Copy-Item -Path $dll -Destination python/pyautd3/bin
+        }
         cd python
-        ./run_test.ps1
+        python3 -m pytest
       if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
 
     - run: |
         python3 -m pip install -U pytest
+        cd capi
+        cargo build
+        cd ..
+        mkdir -p python/pyautd3/bin
+        cp ./capi/target/debug/*.so python/pyautd3/bin
         cd python
-        chmod +x run_test.sh
-        ./run_test.sh
-      if: steps.changed-files.outputs.modified_files && matrix.os != 'windows-latest'
+        python3 -m pytest
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'ubuntu-latest'
+
+    - run: |
+        python3 -m pip install -U pytest
+        cd capi
+        cargo build
+        cd ..
+        mkdir -p python/pyautd3/bin
+        cp ./capi/target/debug/*.dylib python/pyautd3/bin
+        cd python
+        python3 -m pytest
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'

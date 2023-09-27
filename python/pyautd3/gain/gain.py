@@ -4,7 +4,7 @@ Project: gain
 Created Date: 29/08/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ class Gain(IGain, metaclass=ABCMeta):
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
                                                     drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
                                                     len(drives[dev.idx])),
-            geometry,
+            geometry.devices(),
             Base().gain_custom(),
         )
 
@@ -45,6 +45,6 @@ class Gain(IGain, metaclass=ABCMeta):
         return dict(
             map(
                 lambda dev: (dev.idx, np.fromiter(map(lambda tr: np.void(f(dev, tr)), dev), dtype=Drive)),  # type: ignore
-                geometry,
+                geometry.devices(),
             )
         )

@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 26/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ pub mod colormap;
 
 use std::{marker::PhantomData, time::Duration};
 
-use autd3::driver::{
+use autd3_driver::{
     acoustics::{propagate, Complex, Directivity, Sphere},
     cpu::{RxDatagram, TxDatagram},
     defined::{float, PI},
@@ -331,21 +331,18 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
         #[cfg(feature = "gpu")]
         {
             if let Some(gpu) = &self.gpu_compute {
-                let sound_speed = geometry.sound_speed;
                 let source_drive = self
                     .cpus
                     .iter()
                     .enumerate()
                     .flat_map(|(i, cpu)| {
+                        let dev = &geometry[i];
+                        let sound_speed = dev.sound_speed;
                         cpu.fpga()
                             .duties_and_phases(idx)
                             .iter()
-                            .zip(geometry.transducers_of(i).map(|t| t.cycle()))
-                            .zip(
-                                geometry
-                                    .transducers_of(i)
-                                    .map(|t| t.wavenumber(sound_speed)),
-                            )
+                            .zip(dev.iter().map(|t| t.cycle()))
+                            .zip(dev.iter().map(|t| t.wavenumber(sound_speed)))
                             .map(|((d, c), w)| {
                                 let amp = (std::f32::consts::PI * d.0 as f32 / c as f32).sin();
                                 let phase = 2. * std::f32::consts::PI * d.1 as f32 / c as f32;
