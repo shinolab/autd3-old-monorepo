@@ -17,6 +17,7 @@
 - Fix [#190](https://github.com/shinolab/autd3/issues/190): [C++] Modulation::with_transform cause an SEH exception
 - Fix [#191](https://github.com/shinolab/autd3/issues/191): [C++] Transducer::rotation value order is invalid
 - Fix [#192](https://github.com/shinolab/autd3/issues/192): [C++] missing FPGA_CLK_FREQ and FPGA_SUB_CLK_FREQ
+- Fix [#182](https://github.com/shinolab/autd3/issues/182): Cannot use autd3-link-visualizer with python or gpu features
 
 # 15.1.2
 
