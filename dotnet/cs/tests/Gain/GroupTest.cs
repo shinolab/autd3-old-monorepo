@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,6 +44,34 @@ public class GroupTest
                     Assert.Equal(0, phases[tr.LocalIdx]);
                 }
             }
+        }
+    }
+
+    [Fact]
+    public void GroupCheckOnlyForEnabled()
+    {
+        var autd = AUTDTest.CreateController();
+        autd.Geometry[0].Enable = false;
+
+        var check = new bool[autd.Geometry.NumDevices];
+        Assert.True(autd.Send(new Group<string>((dev, tr) =>
+        {
+            check[dev.Idx] = true;
+            return "uniform";
+        }).Set("uniform", new Uniform(0.5).WithPhase(Math.PI))));
+
+        Assert.False(check[0]);
+        Assert.True(check[1]);
+
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 0, 0);
+            Assert.All(duties, d => Assert.Equal(0, d));
+            Assert.All(phases, p => Assert.Equal(0, p));
+        }
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 1, 0);
+            Assert.All(duties, d => Assert.Equal(680, d));
+            Assert.All(phases, p => Assert.Equal(2048, p));
         }
     }
 }

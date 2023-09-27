@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -331,6 +331,36 @@ public class AUTDTest
     }
 
     [Fact]
+    public void TestGroupCheckOnlyForEnabled()
+    {
+        var autd = AUTDTest.CreateController();
+        autd.Geometry[0].Enable = false;
+
+        var check = new bool[autd.Geometry.NumDevices];
+        autd.Group(dev =>
+        {
+            check[dev.Idx] = true;
+            return "0";
+        })
+                 .Set("0", new Sine(150), new Uniform(0.5).WithPhase(Math.PI))
+                 .Send();
+
+        Assert.False(check[0]);
+        Assert.True(check[1]);
+
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 0, 0);
+            Assert.All(duties, d => Assert.Equal(0, d));
+            Assert.All(phases, p => Assert.Equal(0, p));
+        }
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 1, 0);
+            Assert.All(duties, d => Assert.Equal(680, d));
+            Assert.All(phases, p => Assert.Equal(2048, p));
+        }
+    }
+
+    [Fact]
     public void TestAmplitudes()
     {
         var autd = Controller.Builder().AdvancedPhase().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
@@ -418,7 +448,7 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             dev.ForceFan = true;
-            Assert.Equal(0 , Audit.FpgaFlags(autd, dev.Idx));
+            Assert.Equal(0, Audit.FpgaFlags(autd, dev.Idx));
         }
 
         Assert.True(autd.Send(new UpdateFlags()));

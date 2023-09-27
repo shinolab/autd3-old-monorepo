@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -556,6 +556,7 @@ namespace AUTD3Sharp
             {
                 var map = _controller.Geometry.Select(dev =>
                 {
+                    if (!dev.Enable) return -1;
                     var k = _map(dev);
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();
