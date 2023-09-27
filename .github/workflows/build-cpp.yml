@@ -25,6 +25,7 @@ jobs:
       id: changed-files
       with:
         files: |
+          .github/workflows/build-cpp.yml
           cpp/**/*.hpp
           cpp/**/*.cpp
     - uses: Jimver/cuda-toolkit@v0.2.11
@@ -76,3 +77,30 @@ jobs:
         cmake .. -DAUTD_LOCAL_TEST=ON
         cmake --build . --config Release
       if: steps.changed-files.outputs.modified_files
+    - name: Run C++ tests on ${{ matrix.os }}
+      run: |
+        cd cpp/tests
+        mkdir build
+        cd build
+        cmake .. -DENABLE_BACKEND_CUDA=ON
+        cmake --build . --config Release
+        ./Release/test_autd3.exe
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+    - name: Run C++ tests on ${{ matrix.os }}
+      run: |
+        cd cpp/tests
+        mkdir build
+        cd build
+        cmake .. -DENABLE_BACKEND_CUDA=ON
+        cmake --build . --config Release
+        ./test_autd3
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'ubuntu-latest'
+    - name: Run C++ tests on ${{ matrix.os }}
+      run: |
+        cd cpp/tests
+        mkdir build
+        cd build
+        cmake .. -DENABLE_BACKEND_CUDA=OFF
+        cmake --build . --config Release
+        ./test_autd3
+      if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
