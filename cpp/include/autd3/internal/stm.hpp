@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -242,8 +242,9 @@ class FocusSTM final : public STM {
 
   [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_points.size()); }
 
-  void with_start_idx(const std::optional<uint16_t> start_idx) & {
+  FocusSTM& with_start_idx(const std::optional<uint16_t> start_idx) & {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    return *this;
   }
 
   [[nodiscard]] FocusSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
@@ -251,9 +252,11 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
-  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+  FocusSTM& with_finish_idx(const std::optional<uint16_t> finish_idx) & {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    return *this;
   }
+
   [[nodiscard]] FocusSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
@@ -383,14 +386,18 @@ class GainSTM final : public STM {
 
   [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_gains.size()); }
 
-  void with_mode(const native_methods::GainSTMMode mode) & { _mode = mode; }
+  GainSTM& with_mode(const native_methods::GainSTMMode mode) & {
+    _mode = mode;
+    return *this;
+  }
   [[nodiscard]] GainSTM&& with_mode(const native_methods::GainSTMMode mode) && {
     _mode = mode;
     return std::move(*this);
   }
 
-  void with_start_idx(const std::optional<uint16_t> start_idx) & {
+  GainSTM& with_start_idx(const std::optional<uint16_t> start_idx) & {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    return *this;
   }
 
   [[nodiscard]] GainSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
@@ -398,8 +405,9 @@ class GainSTM final : public STM {
     return std::move(*this);
   }
 
-  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+  GainSTM& with_finish_idx(const std::optional<uint16_t> finish_idx) & {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    return *this;
   }
 
   [[nodiscard]] GainSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
