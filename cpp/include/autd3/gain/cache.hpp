@@ -41,7 +41,7 @@ class Cache final : public internal::Gain {
                    [](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
 
     if (_cache->size() != device_indices.size() ||
-        std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return _cache->find(idx) == _cache->end(); })) {
+        std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
       char err[256]{};
       auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
       if (res._0 == nullptr) throw internal::AUTDException(err);

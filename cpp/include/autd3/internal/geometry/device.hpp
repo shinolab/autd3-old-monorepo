@@ -24,14 +24,13 @@ class Device {
   class DeviceView : public std::ranges::view_interface<DeviceView> {
    public:
     DeviceView() = default;
-    DeviceView(const std::vector<Transducer>& vec) : m_begin(vec.cbegin()), m_end(vec.cend()) {}
+    explicit DeviceView(const std::vector<Transducer>& vec) : _begin(vec.cbegin()), _end(vec.cend()) {}
 
-    auto begin() const { return m_begin; }
-
-    auto end() const { return m_end; }
+    [[nodiscard]] auto begin() const { return _begin; }
+    [[nodiscard]] auto end() const { return _end; }
 
    private:
-    typename std::vector<Transducer>::const_iterator m_begin{}, m_end{};
+    std::vector<Transducer>::const_iterator _begin{}, _end{};
   };
 
  public:

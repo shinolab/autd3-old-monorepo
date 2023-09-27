@@ -58,7 +58,8 @@ TEST(STMTest, FocusSTM) {
     ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
   }
 
-  stm.with_start_idx(std::nullopt).with_finish_idx(0);
+  stm.with_start_idx(std::nullopt);
+  stm.with_finish_idx(0);
   ASSERT_TRUE(autd.send(stm));
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
@@ -152,7 +153,8 @@ TEST(STMTest, GainSTMLegacy) {
     ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
   }
 
-  stm.with_start_idx(std::nullopt).with_finish_idx(0);
+  stm.with_start_idx(std::nullopt);
+  stm.with_finish_idx(0);
   ASSERT_TRUE(autd.send(stm));
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
@@ -275,7 +277,8 @@ TEST(STMTest, GainSTMAdvanced) {
     ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
   }
 
-  stm.with_start_idx(std::nullopt).with_finish_idx(0);
+  stm.with_start_idx(std::nullopt);
+  stm.with_finish_idx(0);
   ASSERT_TRUE(autd.send(stm));
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
@@ -388,7 +391,8 @@ TEST(STMTest, GainSTMAdvancedPhase) {
     ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
   }
 
-  stm.with_start_idx(std::nullopt).with_finish_idx(0);
+  stm.with_start_idx(std::nullopt);
+  stm.with_finish_idx(0);
   ASSERT_TRUE(autd.send(stm));
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
