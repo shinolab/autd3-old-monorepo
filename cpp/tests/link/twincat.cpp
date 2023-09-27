@@ -14,6 +14,7 @@
 #include <autd3/internal/controller.hpp>
 #include <autd3/link/twincat.hpp>
 
+#ifdef WIN32
 TEST(Link, TwinCAT) {
   auto link = autd3::link::TwinCAT().with_timeout(std::chrono::milliseconds(200));
 
@@ -27,6 +28,7 @@ TEST(Link, TwinCAT) {
   (void)link;
 #endif
 }
+#endif
 
 TEST(Link, RemoteTwinCAT) {
   auto link = autd3::link::RemoteTwinCAT("xxx.xxx.xxx.xxx.xxx.xxx")
