@@ -13,15 +13,12 @@
 
 #include <chrono>
 #include <memory>
+#include <ranges>
 
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/native_methods.hpp"
-
-#if __cplusplus >= 202002L
-#include <ranges>
-#endif
 
 namespace autd3::internal {
 
@@ -174,7 +171,6 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
-#if __cplusplus >= 202002L
   /**
    * @brief Add foci
    *
@@ -232,7 +228,6 @@ class FocusSTM final : public STM {
     }
     return std::move(*this);
   }
-#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_points.size()); }
 
@@ -349,7 +344,6 @@ class GainSTM final : public STM {
     return std::move(*this);
   }
 
-#if __cplusplus >= 202002L
   /**
    * @brief Add Gains to the GainSTM
    *
@@ -376,7 +370,6 @@ class GainSTM final : public STM {
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
     return std::move(*this);
   }
-#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_gains.size()); }
 

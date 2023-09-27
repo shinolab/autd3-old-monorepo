@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <vector>
 
 #include "autd3/gain/cache.hpp"
@@ -21,10 +22,6 @@
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
-
-#if __cplusplus >= 202002L
-#include <ranges>
-#endif
 
 namespace autd3::gain::holo {
 
@@ -39,9 +36,7 @@ class Greedy final : public internal::Gain {
   Greedy() = default;
 
   AUTD3_HOLO_ADD_FOCUS(Greedy)
-#if __cplusplus >= 202002L
   AUTD3_HOLO_ADD_FOCI(Greedy)
-#endif
 
   AUTD3_IMPL_WITH_CACHE_GAIN(Greedy)
   AUTD3_IMPL_WITH_TRANSFORM_GAIN(Greedy)

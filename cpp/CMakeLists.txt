@@ -8,7 +8,7 @@ project(autd3 VERSION 15.1.2)
 
 message(STATUS "Build AUTD3: ${PROJECT_VERSION}")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -67,7 +67,6 @@ function(autd3_target_link_library target scope)
 endfunction()
 
 enable_cxx_compiler_flag_if_supported(autd3 INTERFACE /wd4819)
-enable_cxx_compiler_flag_if_supported(autd3 INTERFACE /Zc:__cplusplus)
 
 if(WIN32)
   target_link_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/lib)
