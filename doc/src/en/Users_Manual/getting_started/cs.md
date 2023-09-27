@@ -6,7 +6,7 @@ The, install AUTD3Sharp library.
 ```shell
 dotnet new console --name autd3-sample
 cd autd3-sample
-dotnet add package AUTD3Sharp --version 15.1.2
+dotnet add package AUTD3Sharp --version 15.2.0
 ```
 
 Next, make `Program.cs` file.
