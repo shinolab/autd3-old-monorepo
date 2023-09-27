@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,10 +60,10 @@ namespace AUTD3Sharp.Gain
         public override GainPtr GainPtr(Geometry geometry)
         {
             var keymap = new Dictionary<TK, int>();
-            var deviceIndices = geometry.Select(dev => (uint)dev.Idx).ToArray();
+            var deviceIndices = geometry.Devices().Select(dev => (uint)dev.Idx).ToArray();
             var map = Base.AUTDGainGroupCreateMap(deviceIndices, (uint)deviceIndices.Length);
             var k = 0;
-            foreach (var dev in geometry)
+            foreach (var dev in geometry.Devices())
             {
                 var m = new int[dev.NumTransducers];
                 foreach (var tr in dev)

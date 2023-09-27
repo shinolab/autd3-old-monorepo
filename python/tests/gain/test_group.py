@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,3 +44,26 @@ def test_group():
             else:
                 assert np.all(duties[tr.local_idx] == 8)
                 assert np.all(phases[tr.local_idx] == 0)
+
+
+def test_group_check_only_for_enabled():
+    autd = create_controller()
+    autd.geometry[0].enable = False
+
+    check = np.zeros(autd.geometry.num_devices, dtype=bool)
+
+    def f(dev, tr):
+        check[dev.idx] = True
+        return 0
+    assert autd.send(Group(f).set(0, Uniform(0.5).with_phase(np.pi)))
+
+    assert not check[0]
+    assert check[1]
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 0, 0)
+    assert np.all(duties == 0)
+    assert np.all(phases == 0)
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
+    assert np.all(duties == 680)
+    assert np.all(phases == 2048)

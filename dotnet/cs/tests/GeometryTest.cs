@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,6 +86,18 @@ public class GeometryTest
             Assert.Equal(0.0, dev.Attenuation);
             dev.Attenuation = 1.0;
             Assert.Equal(1.0, dev.Attenuation);
+        }
+    }
+
+    [Fact]
+    public void TestDeviceEnable()
+    {
+        var autd = AUTDTest.CreateController();
+        foreach (var dev in autd.Geometry)
+        {
+            Assert.True(dev.Enable);
+            dev.Enable = false;
+            Assert.False(dev.Enable);
         }
     }
 
@@ -177,7 +189,7 @@ public class GeometryTest
         {
             var originalPos = dev.Select(tr => tr.Position).ToArray();
             var t = new Vector3d(1, 2, 3);
-            var r = new Quaterniond( 0, 0, 0.7071067811865476, 0.7071067811865476);
+            var r = new Quaterniond(0, 0, 0.7071067811865476, 0.7071067811865476);
             dev.Affine(t, r);
             foreach (var tr in dev)
             {
@@ -211,7 +223,7 @@ public class GeometryTest
         Assert.Equal(autd.Geometry[0][0].Position, new Vector3d(0.0, 0.0, 0.0));
         Assert.Equal(autd.Geometry[0][AUTD3.NumTransInUnit - 1].Position,
             new Vector3d((AUTD3.NumTransInX - 1) * AUTD3.TransSpacing, (AUTD3.NumTransInY - 1) * AUTD3.TransSpacing, 0.0));
-      
+
         Assert.Equal(autd.Geometry[1][0].Position, new Vector3d(0.0, 0.0, 0.0));
         Assert.Equal(autd.Geometry[1][AUTD3.NumTransInUnit - 1].Position,
             new Vector3d((AUTD3.NumTransInX - 1) * AUTD3.TransSpacing, (AUTD3.NumTransInY - 1) * AUTD3.TransSpacing, 0.0));

@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,11 +41,12 @@ class Group(IGain, Generic[K]):
 
         keymap: Dict[K, int] = {}
 
-        device_indices = np.array([dev.idx for dev in geometry])
+        device_indices = np.array([dev.idx for dev in geometry.devices()])
+        print(device_indices)
 
         map = Base().gain_group_create_map(np.ctypeslib.as_ctypes(device_indices.astype(c_uint32)), len(device_indices))
         k: int = 0
-        for dev in geometry:
+        for dev in geometry.devices():
             m = np.zeros(dev.num_transducers, dtype=np.int32)
             for tr in dev:
                 key = self._f(dev, tr)

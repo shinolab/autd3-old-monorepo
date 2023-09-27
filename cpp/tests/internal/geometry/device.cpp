@@ -75,6 +75,16 @@ TEST(Internal_Geometry, DeviceForceFan) {
   ASSERT_EQ(autd3::link::Audit::fpga_flags(autd, 1), 1);
 }
 
+TEST(Internal_Geometry, DeviceEnable) {
+  auto autd = create_controller();
+  for (auto& dev : autd.geometry()) ASSERT_TRUE(dev.enable());
+
+  autd.geometry()[0].set_enable(true);
+  autd.geometry()[1].set_enable(false);
+  ASSERT_TRUE(autd.geometry()[0].enable());
+  ASSERT_FALSE(autd.geometry()[1].enable());
+}
+
 TEST(Internal_Geometry, DeviceTranslate) {
   for (auto autd = create_controller(); const auto& dev : autd.geometry()) {
     auto original_pos_view = dev.transducers() | std::views::transform([](const auto& tr) { return tr.position(); });

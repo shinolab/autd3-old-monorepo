@@ -236,6 +236,10 @@ void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
 
 void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
 
+void AUTDDeviceEnableSet(DevicePtr dev, bool value);
+
+[[nodiscard]] bool AUTDDeviceEnableGet(DevicePtr dev);
+
 [[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
 
 void AUTDTransducerPosition(TransducerPtr tr, double *pos);
