@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ namespace autd3::gain {
 template <class G, typename F>
 class Transform final : public internal::Gain {
  public:
-  Transform(G g, F& f) : _g(std::move(g)), _f(f) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
+  Transform(G g, const F& f) : _g(std::move(g)), _f(f) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> drives;
