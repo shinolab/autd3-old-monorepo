@@ -20,6 +20,7 @@
 - Fix [#192](https://github.com/shinolab/autd3/issues/192): [C++] missing FPGA_CLK_FREQ and FPGA_SUB_CLK_FREQ
 - Fix [#182](https://github.com/shinolab/autd3/issues/182): Cannot use autd3-link-visualizer with python or gpu features
 - Fix [#183](https://github.com/shinolab/autd3/issues/183): Controller::close should also stop output for disabled devices
+- Fix [#193](https://github.com/shinolab/autd3/issues/193): missing Device::enable flag in capi
 
 # 15.1.2
 
