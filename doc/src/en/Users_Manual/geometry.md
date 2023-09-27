@@ -290,6 +290,40 @@ for dev in autd.geometry:
 
 Get the index of the device with `idx` method.
 
+### Enable
+
+`enable` flag is a flag to enable/disable the device.
+If the flag is off, the device data will not be updated.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+autd.geometry_mut()[0].enable = false;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].set_enable(false);
+```
+
+```cs
+autd.Geometry[0].Enable = false;
+```
+
+```python
+autd.geometry[0].enable = False
+```
+
+> NOTE: This flag controls whether the data is updated or not, and does not stop the output.
+
 ### Speed of sound
 
 When calculating the phase of the transducer, there are some cases where the wavelength is required.
@@ -909,89 +943,4 @@ var wavenum = tr.Wavenumber(soundSpeed);
 ```python
 wavelen = tr.wavelength(sound_speed)
 wavenum = tr.wavenumber(sound_speed)
-```
-
-## Geometry Viewer
-
-You can use `GeometryViewer` to check the arrangement of the devices graphically.
-
-<figure>
-  <img src="../fig/Users_Manual/geometry_viewer.jpg"/>
-</figure>
-
-```rust,ignore,edition2021
-# extern crate autd3;
-# extern crate autd3_geometry_viewer;
-use autd3::prelude::*;
-use autd3_geometry_viewer::GeometryViewer;
-
-# fn main() -> Result<(), Box<dyn std::error::Error>>{
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(
-        Vector3::new(0., 0., AUTD3::DEVICE_WIDTH),
-        Vector3::new(0., PI / 2., 0.),
-    ))
-    .add_device(AUTD3::new(
-        Vector3::new(AUTD3::DEVICE_WIDTH, 0., AUTD3::DEVICE_WIDTH),
-        Vector3::new(0., PI, 0.),
-    ))
-    .add_device(AUTD3::new(
-        Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.),
-        Vector3::new(0., -PI / 2., 0.),
-    ))
-    .open_with(NullLink {})?;
-
-GeometryViewer::new().run(autd.geometry())
-# }
-```
-
-```cpp
-#include "autd3/extra/geometry_viewer.hpp"
-
-#include "autd3.hpp"
-#include "autd3/link/debug.hpp"
-
-const auto autd = autd3::Controller::builder()
-                        .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                        .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
-                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH),
-                                                 autd3::Vector3(0, autd3::pi, 0)))
-                        .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0)))
-                        .open_with(autd3::link::Debug());
-
-autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).run(autd.geometry());
-```
-
-```cs
-var autd = Controller.Builder()
-            .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .AddDevice(new AUTD3(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi / 2.0, 0)))
-            .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi, 0)))
-            .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0), new Vector3d(0, -AUTD3.Pi / 2.0, 0)))
-            .OpenWith(new Debug());
-
-new AUTD3Sharp.Extra.GeometryViewer().WindowSize(800, 600).Vsync(true).Run(autd.Geometry);
-```
-
-  - You may need `[STAThread]` attribute.
-
-```python
-from pyautd3 import AUTD3, Controller, Level
-from pyautd3.link import Debug
-from pyautd3.extra import GeometryViewer
-from math import pi
-
-autd = (
-    Controller.builder()
-    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-    .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3.device_width()], [0.0, pi / 2, 0.0]))
-    .add_device(
-        AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, AUTD3.device_width()], [0.0, pi, 0.0])
-    )
-    .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, -pi / 2, 0.0]))
-    .open_with(Debug().with_log_level(Level.Off))
-)
-
-GeometryViewer().window_size(800, 600).vsync(True).run(autd.geometry)
 ```

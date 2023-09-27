@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <vector>
 
 #include "autd3/internal/def.hpp"
@@ -20,6 +21,18 @@
 namespace autd3::internal {
 
 class Device {
+  class DeviceView : public std::ranges::view_interface<DeviceView> {
+   public:
+    DeviceView() = default;
+    explicit DeviceView(const std::vector<Transducer>& vec) : _begin(vec.cbegin()), _end(vec.cend()) {}
+
+    [[nodiscard]] auto begin() const { return _begin; }
+    [[nodiscard]] auto end() const { return _end; }
+
+   private:
+    std::vector<Transducer>::const_iterator _begin{}, _end{};
+  };
+
  public:
   explicit Device(const size_t idx, const native_methods::DevicePtr ptr) : _idx(idx), _ptr(ptr) {
     const auto size = static_cast<size_t>(AUTDDeviceNumTransducers(_ptr));
@@ -94,23 +107,29 @@ class Device {
   void force_fan(const bool value) const { AUTDDeviceSetForceFan(_ptr, value); }
 
   /**
+   * @brief get enable flag
+   */
+  [[nodiscard]] bool enable() const { return AUTDDeviceEnableGet(_ptr); }
+
+  /**
+   * @brief set enable flag
+   */
+  void set_enable(const bool value) const { AUTDDeviceEnableSet(_ptr, value); }
+
+  /**
    * @brief set reads fpga info flag
    *
    * @param value
    */
   void reads_fpga_info(const bool value) const { AUTDDeviceSetReadsFPGAInfo(_ptr, value); }
 
-  void translate(Vector3 t) const {
-      AUTDDeviceTranslate(_ptr, t.x(), t.y(), t.z());
-  }
+  void translate(Vector3 t) const { AUTDDeviceTranslate(_ptr, t.x(), t.y(), t.z()); }
 
-  void rotate(Quaternion r) const {
-	  AUTDDeviceRotate(_ptr, r.w(), r.x(), r.y(), r.z());
-  }
+  void rotate(Quaternion r) const { AUTDDeviceRotate(_ptr, r.w(), r.x(), r.y(), r.z()); }
 
-  void affine(Vector3 t, Quaternion r) const {
-	  AUTDDeviceAffine(_ptr, t.x(), t.y(), t.z(), r.w(), r.x(), r.y(), r.z());
-  }
+  void affine(Vector3 t, Quaternion r) const { AUTDDeviceAffine(_ptr, t.x(), t.y(), t.z(), r.w(), r.x(), r.y(), r.z()); }
+
+  [[nodiscard]] DeviceView transducers() const noexcept { return DeviceView(_transducers); }
 
   [[nodiscard]] std::vector<Transducer>::const_iterator cbegin() const noexcept { return _transducers.cbegin(); }
   [[nodiscard]] std::vector<Transducer>::const_iterator cend() const noexcept { return _transducers.cend(); }

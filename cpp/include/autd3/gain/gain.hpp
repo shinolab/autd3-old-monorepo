@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ class Gain : public internal::Gain {
   [[nodiscard]] static std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> transform(const internal::Geometry& geometry,
                                                                                                           Fn func) {
     std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> drives_map;
-    std::for_each(geometry.cbegin(), geometry.cend(), [&drives_map, &func](const internal::Device& dev) {
+    std::for_each(geometry.devices().begin(), geometry.devices().end(), [&drives_map, &func](const internal::Device& dev) {
       std::vector<internal::native_methods::Drive> drives;
       drives.reserve(dev.num_transducers());
       std::transform(dev.cbegin(), dev.cend(), std::back_inserter(drives),

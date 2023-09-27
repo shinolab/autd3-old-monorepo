@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 26/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -359,6 +359,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn close(&mut self) -> Result<bool, AUTDError> {
         if !self.link.is_open() {
             return Ok(false);
+        }
+        for dev in self.geometry_mut().iter_mut() {
+            dev.enable = true;
         }
         let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
@@ -1220,8 +1223,8 @@ mod tests {
                     .zip(g[&cpu.idx()].iter())
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
-                        assert_eq!(d, crate::driver::fpga::AdvancedDriveDuty::to_duty(g, c));
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
+                        assert_eq!(d, autd3_driver::fpga::AdvancedDriveDuty::to_duty(g, c));
+                        assert_eq!(p, autd3_driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1247,7 +1250,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
+                        assert_eq!(p, autd3_driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1304,7 +1307,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
+                        assert_eq!(p, autd3_driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });
@@ -1330,7 +1333,7 @@ mod tests {
                     .zip(cpu.fpga().cycles().iter())
                     .for_each(|((&(d, p), g), &c)| {
                         assert_eq!(d, c >> 1);
-                        assert_eq!(p, crate::driver::fpga::AdvancedDrivePhase::to_phase(g, c));
+                        assert_eq!(p, autd3_driver::fpga::AdvancedDrivePhase::to_phase(g, c));
                     })
             });
         });

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,11 +12,14 @@
 #pragma once
 
 #include <memory>
+#include <ranges>
 #include <vector>
 
+#include "autd3/gain/cache.hpp"
 #include "autd3/gain/holo/backend.hpp"
 #include "autd3/gain/holo/constraint.hpp"
 #include "autd3/gain/holo/utils.hpp"
+#include "autd3/gain/transform.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -42,14 +45,15 @@ class LM final : public internal::Gain {
   }
 
   AUTD3_HOLO_ADD_FOCUS(LM)
-#if __cplusplus >= 202002L
   AUTD3_HOLO_ADD_FOCI(LM)
-#endif
+
+  AUTD3_IMPL_WITH_CACHE_GAIN(LM)
+  AUTD3_IMPL_WITH_TRANSFORM_GAIN(LM)
 
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
   AUTD3_DEF_PARAM(LM, double, tau)
-  AUTD3_DEF_PARAM(LM, double, k_max)
+  AUTD3_DEF_PARAM(LM, uint32_t, k_max)
 
   AUTD3_DEF_PARAM(LM, AmplitudeConstraint, constraint)
 
@@ -60,7 +64,7 @@ class LM final : public internal::Gain {
     return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = _backend->lm(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
     if (_eps1.has_value()) ptr = _backend->lm_with_eps1(ptr, _eps1.value());
     if (_eps2.has_value()) ptr = _backend->lm_with_eps2(ptr, _eps2.value());
@@ -73,7 +77,7 @@ class LM final : public internal::Gain {
 
  private:
   std::shared_ptr<B> _backend;
-  std::vector<Vector3> _foci;
+  std::vector<internal::Vector3> _foci;
   std::vector<double> _amps;
   std::optional<double> _eps1;
   std::optional<double> _eps2;

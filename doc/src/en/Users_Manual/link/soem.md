@@ -217,7 +217,7 @@ SOEM()\
 * `Sleep`       : Use sleep function. Low resolution but low CPU load.
 * `BusyWait`    : Use busywait (spinloop). High resolution but high CPU load.
 * `NativeTimer` : Use OS native timer.
-    - Multimedia timer on Windows, POSIX timer on Linux, Grand Central Dispatch Timer on macOS
+    - TimerQueueTimer on Windows, POSIX timer on Linux, Grand Central Dispatch Timer on macOS
 
 The default is `Sleep`.
 

@@ -4,14 +4,15 @@
  * Created Date: 30/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 25/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3::{driver::geometry::IntoDevice, prelude::*};
+use autd3::prelude::*;
+use autd3_driver::geometry::IntoDevice;
 
 pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
     Geometry::new(

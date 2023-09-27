@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,6 +49,16 @@ class AUTD3 {
   static constexpr double DEVICE_HEIGHT = native_methods::DEVICE_HEIGHT_MM;
 
   /**
+   * @brief FPGA main clock frequency
+   */
+  static constexpr double FPGA_CLK_FREQ = native_methods::FPGA_CLK_FREQ;
+
+  /**
+   * @brief FPGA sub clock frequency
+   */
+  static constexpr double FPGA_SUB_CLK_FREQ = native_methods::FPGA_SUB_CLK_FREQ;
+
+  /**
    * @brief Constructor
    *
    * @param pos Global position
@@ -75,6 +85,18 @@ class AUTD3 {
 };
 
 class Geometry {
+  class GeometryView : public std::ranges::view_interface<GeometryView> {
+   public:
+    GeometryView() = default;
+    explicit GeometryView(const std::vector<Device>& vec) : _begin(vec.cbegin()), _end(vec.cend()) {}
+
+    [[nodiscard]] auto begin() const { return _begin; }
+    [[nodiscard]] auto end() const { return _end; }
+
+   private:
+    std::vector<Device>::const_iterator _begin{}, _end{};
+  };
+
  public:
   Geometry(const native_methods::GeometryPtr ptr, const native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {
     const auto size = AUTDGeometryNumDevices(_ptr);
@@ -116,6 +138,10 @@ class Geometry {
                              return res;
                            }) /
            static_cast<double>(num_devices());
+  }
+
+  [[nodiscard]] auto devices() const noexcept {
+    return GeometryView(_devices) | std::views::filter([](const auto& dev) { return dev.enable(); });
   }
 
   [[nodiscard]] std::vector<Device>::const_iterator begin() const noexcept { return _devices.cbegin(); }

@@ -4,7 +4,7 @@ Project: audio_file
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 25/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,8 +28,6 @@ def test_rawpcm():
 
     for dev in autd.geometry:
         mod = Audit.modulation(autd._ptr, dev.idx)
-        for m in mod:
-            print(m, end=", ")
         mod_expext = [
             107,
             131,

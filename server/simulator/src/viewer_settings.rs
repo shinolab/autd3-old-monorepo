@@ -4,14 +4,14 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 24/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use crate::{Quaternion, Vector3, SCALE, ZPARITY};
+use crate::{Quaternion, Vector3, MILLIMETER, ZPARITY};
 use cgmath::{Deg, Euler};
 use serde::{Deserialize, Serialize};
 
@@ -60,6 +60,44 @@ pub struct ViewerSettings {
     pub image_save_path: String,
     pub port: u16,
     pub camera_move_speed: f32,
+    #[serde(default)]
+    pub view_device: bool,
+    #[serde(default = "default_ambient")]
+    pub ambient: f32,
+    #[serde(default = "default_specular")]
+    pub specular: f32,
+    #[serde(default = "default_light_pos_x")]
+    pub light_pos_x: f32,
+    #[serde(default = "default_light_pos_y")]
+    pub light_pos_y: f32,
+    #[serde(default = "default_light_pos_z")]
+    pub light_pos_z: f32,
+    #[serde(default = "default_light_power")]
+    pub light_power: f32,
+}
+
+fn default_ambient() -> f32 {
+    60.
+}
+
+fn default_specular() -> f32 {
+    80.
+}
+
+fn default_light_pos_x() -> f32 {
+    86.6252 * MILLIMETER
+}
+
+fn default_light_pos_y() -> f32 {
+    -533.2867 * MILLIMETER
+}
+
+fn default_light_pos_z() -> f32 {
+    150.0 * MILLIMETER * ZPARITY
+}
+
+fn default_light_power() -> f32 {
+    5.
 }
 
 impl ViewerSettings {
@@ -100,18 +138,18 @@ impl Default for ViewerSettings {
             window_height: 600,
             vsync: true,
             gpu_idx: 0,
-            slice_pos_x: 86.6252 * SCALE,
-            slice_pos_y: 66.7133 * SCALE,
-            slice_pos_z: 150.0 * SCALE * ZPARITY,
-            slice_width: 300.0 * SCALE,
-            slice_height: 300.0 * SCALE,
-            slice_pixel_size: 1.0 * SCALE,
-            camera_pos_x: 86.6252 * SCALE,
-            camera_pos_y: -533.2867 * SCALE,
-            camera_pos_z: 150.0 * SCALE * ZPARITY,
-            camera_near_clip: 0.1 * SCALE,
-            camera_far_clip: 1000. * SCALE,
-            sound_speed: 340.0e3 * SCALE,
+            slice_pos_x: 86.6252 * MILLIMETER,
+            slice_pos_y: 66.7133 * MILLIMETER,
+            slice_pos_z: 150.0 * MILLIMETER * ZPARITY,
+            slice_width: 300.0 * MILLIMETER,
+            slice_height: 300.0 * MILLIMETER,
+            slice_pixel_size: 1.0 * MILLIMETER,
+            camera_pos_x: 86.6252 * MILLIMETER,
+            camera_pos_y: -533.2867 * MILLIMETER,
+            camera_pos_z: 150.0 * MILLIMETER * ZPARITY,
+            camera_near_clip: 0.1 * MILLIMETER,
+            camera_far_clip: 1000. * MILLIMETER,
+            sound_speed: 340.0e3 * MILLIMETER,
             slice_rot_x: 90.0 * ZPARITY,
             slice_rot_y: 0.,
             slice_rot_z: 0.,
@@ -129,7 +167,14 @@ impl Default for ViewerSettings {
             auto_play: false,
             image_save_path: "image.png".to_string(),
             port: 8080,
-            camera_move_speed: 10. * SCALE,
+            camera_move_speed: 10. * MILLIMETER,
+            view_device: false,
+            ambient: 60.,
+            specular: 80.,
+            light_pos_x: 86.6252 * MILLIMETER,
+            light_pos_y: -533.2867 * MILLIMETER,
+            light_pos_z: 150.0 * MILLIMETER * ZPARITY,
+            light_power: 5.,
         }
     }
 }

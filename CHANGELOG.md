@@ -1,3 +1,27 @@
+# 15.2.0
+
+- Merge `GeometryViewer` into Simulator
+- Update C++ version to C++20
+- Fix [#176](https://github.com/shinolab/autd3/issues/176): [C++] modulation::Cache can cause errors due to double free
+- Fix [#177](https://github.com/shinolab/autd3/issues/177): [C++] Avoid unnecessary copying in gain::Cache
+- Fix [#178](https://github.com/shinolab/autd3/issues/178): The value of TimerStrategy is not consistent between capi and the original source
+- Fix [#164](https://github.com/shinolab/autd3/issues/164): [Python] Controller.software_stm sometimes stucks
+- Fix [#180](https://github.com/shinolab/autd3/issues/180): [C#] Gain.WithCache and Gain.WIthTransform do not work
+- Fix [#181](https://github.com/shinolab/autd3/issues/181): [C#] Rename BackendCUDA to CUDABackend for consistency
+- Fix [#179](https://github.com/shinolab/autd3/issues/179): [Python] Inconsistent parameter order in TransducerTest.set
+- Fix [#184](https://github.com/shinolab/autd3/issues/184): [C++] Cannot use Gain::with_transform
+- Fix [#185](https://github.com/shinolab/autd3/issues/185): [C++] Cannot use AUTD3_IMPL_WITH_CACHE_GAIN and other similar macros
+- Fix [#186](https://github.com/shinolab/autd3/issues/186): [C++] cannot compile autd3::gain::holo::*
+- Fix [#187](https://github.com/shinolab/autd3/issues/187): [C++] missing with_cache and with_transform for autd3::gain::holo::*
+- Fix [#188](https://github.com/shinolab/autd3/issues/188): [C++] autd3::gain::holo::LM::with_k_max type is invalid
+- Fix [#189](https://github.com/shinolab/autd3/issues/189): [C++] autd3::gain::holo::Greedy cause an SEHException
+- Fix [#190](https://github.com/shinolab/autd3/issues/190): [C++] Modulation::with_transform cause an SEH exception
+- Fix [#191](https://github.com/shinolab/autd3/issues/191): [C++] Transducer::rotation value order is invalid
+- Fix [#192](https://github.com/shinolab/autd3/issues/192): [C++] missing FPGA_CLK_FREQ and FPGA_SUB_CLK_FREQ
+- Fix [#182](https://github.com/shinolab/autd3/issues/182): Cannot use autd3-link-visualizer with python or gpu features
+- Fix [#183](https://github.com/shinolab/autd3/issues/183): Controller::close should also stop output for disabled devices
+- Fix [#193](https://github.com/shinolab/autd3/issues/193): missing Device::enable flag in capi
+
 # 15.1.2
 
 - Fix [#158](https://github.com/shinolab/autd3/issues/158): Cache doesn't actually do anything

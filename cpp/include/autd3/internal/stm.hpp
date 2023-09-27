@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,15 +13,12 @@
 
 #include <chrono>
 #include <memory>
+#include <ranges>
 
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/native_methods.hpp"
-
-#if __cplusplus >= 202002L
-#include <ranges>
-#endif
 
 namespace autd3::internal {
 
@@ -174,7 +171,6 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
-#if __cplusplus >= 202002L
   /**
    * @brief Add foci
    *
@@ -232,7 +228,6 @@ class FocusSTM final : public STM {
     }
     return std::move(*this);
   }
-#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_points.size()); }
 
@@ -254,6 +249,7 @@ class FocusSTM final : public STM {
   void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
   }
+
   [[nodiscard]] FocusSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
@@ -315,7 +311,7 @@ class GainSTM final : public STM {
     const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseDutyFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
-    std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
+    std::ranges::transform(_gains, std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
     return AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 
@@ -346,7 +342,6 @@ class GainSTM final : public STM {
     return std::move(*this);
   }
 
-#if __cplusplus >= 202002L
   /**
    * @brief Add Gains to the GainSTM
    *
@@ -373,7 +368,6 @@ class GainSTM final : public STM {
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
     return std::move(*this);
   }
-#endif
 
   [[nodiscard]] double frequency() const { return frequency_from_size(_gains.size()); }
 

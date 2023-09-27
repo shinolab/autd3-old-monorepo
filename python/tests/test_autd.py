@@ -4,7 +4,7 @@ Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from datetime import timedelta
 import numpy as np
-from pyautd3 import Clear, Controller, AUTD3, FirmwareInfo, Silencer, Stop, Synchronize, UpdateFlags, Amplitudes
+from pyautd3 import Clear, Controller, AUTD3, FirmwareInfo, Silencer, Stop, Synchronize, TimerStrategy, UpdateFlags, Amplitudes
 from pyautd3 import ConfigureModDelay, ConfigureAmpFilter, ConfigurePhaseFilter
 from pyautd3.link import Audit
 from pyautd3.modulation import Static, Sine
@@ -233,17 +233,26 @@ def test_send_special():
     assert str(e.value) == "broken"
 
 
-# TODO: See [#164](https://github.com/shinolab/autd3/issues/164)
-# def test_software_stm():
-#     autd = create_controller()
+def test_software_stm():
+    autd = create_controller()
 
-#     def callback(autd: Controller, i: int, elapsed: timedelta):
-#         print('call')
-#         return False
+    cnt = 0
 
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.Sleep).start(timedelta(milliseconds=1.0))
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.BusyWait).start(timedelta(milliseconds=1.0))
-#     autd.software_stm(callback).with_timer_strategy(TimerStrategy.NativeTimer).start(timedelta(milliseconds=1.0))
+    def callback(autd: Controller, i: int, elapsed: timedelta):
+        nonlocal cnt
+        cnt += 1
+        return False
+
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.Sleep).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
+
+    cnt = 0
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.BusyWait).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
+
+    cnt = 0
+    autd.software_stm(callback).with_timer_strategy(TimerStrategy.NativeTimer).start(timedelta(milliseconds=1.0))
+    assert cnt == 1
 
 
 def test_group():
@@ -281,6 +290,34 @@ def test_group():
     mod = Audit.modulation(autd._ptr, 1)
     duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
     assert np.all(duties == 0)
+
+
+def test_group_check_only_for_enabled():
+    autd = create_controller()
+    autd.geometry[0].enable = False
+
+    check = np.zeros(autd.geometry.num_devices, dtype=bool)
+
+    def f(dev):
+        check[dev.idx] = True
+        return 0
+    autd.group(f)\
+        .set(0, (Sine(150), Uniform(0.5).with_phase(np.pi)))\
+        .send()
+
+    assert not check[0]
+    assert check[1]
+
+    mod = Audit.modulation(autd._ptr, 0)
+    duties, phases = Audit.duties_and_phases(autd._ptr, 0, 0)
+    assert np.all(duties == 0)
+    assert np.all(phases == 0)
+
+    mod = Audit.modulation(autd._ptr, 1)
+    assert len(mod) == 80
+    duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
+    assert np.all(duties == 680)
+    assert np.all(phases == 2048)
 
 
 def test_amplitudes():
