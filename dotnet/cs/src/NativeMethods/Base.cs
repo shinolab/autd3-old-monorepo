@@ -80,6 +80,10 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceSetForceFan(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceEnableSet(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDDeviceEnableGet(DevicePtr dev);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GeometryPtr AUTDGeometry(ControllerPtr cnt);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDGeometryNumDevices(GeometryPtr geo);

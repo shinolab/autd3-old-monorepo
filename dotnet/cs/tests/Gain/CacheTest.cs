@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ public class CacheTest
         public override Dictionary<int, Drive[]> Calc(Geometry geometry)
         {
             CalcCnt++;
-            return Transform(geometry, (_, _) => new Drive { Phase = 0, Amp = 1 });
+            return Transform(geometry, (_, _) => new Drive { Phase = Math.PI, Amp = 0.5 });
         }
     }
 
@@ -60,6 +60,31 @@ public class CacheTest
             Assert.Equal(1, g.CalcCnt);
             Assert.True(autd.Send(gc));
             Assert.Equal(1, g.CalcCnt);
+        }
+    }
+
+    [Fact]
+    public void CacheCheckOnlyForEnabled()
+    {
+        var autd = AUTDTest.CreateController();
+        autd.Geometry[0].Enable = false;
+
+        var g = new ForCacheTest();
+        var gc = g.WithCache();
+        Assert.True(autd.Send(gc));
+
+        Assert.False(gc.Drives().ContainsKey(0));
+        Assert.True(gc.Drives().ContainsKey(1));
+
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 0, 0);
+            Assert.All(duties, d => Assert.Equal(0, d));
+            Assert.All(phases, p => Assert.Equal(0, p));
+        }
+        {
+            var (duties, phases) = Audit.DutiesAndPhases(autd, 1, 0);
+            Assert.All(duties, d => Assert.Equal(680, d));
+            Assert.All(phases, p => Assert.Equal(2048, p));
         }
     }
 }
