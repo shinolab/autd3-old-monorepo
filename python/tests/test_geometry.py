@@ -4,7 +4,7 @@ Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,6 +71,14 @@ def test_device_attenuation():
         assert dev.attenuation == 0.0
         dev.attenuation = 1.0
         assert dev.attenuation == 1.0
+
+
+def test_device_enable():
+    autd = create_controller()
+    for dev in autd.geometry:
+        assert dev.enable
+        dev.enable = False
+        assert not dev.enable
 
 
 def test_device_num_transducers():

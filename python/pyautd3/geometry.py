@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 05/06/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -221,6 +221,14 @@ class Device:
         Base().device_set_attenuation(self._ptr, attenuation)
 
     @property
+    def enable(self) -> bool:
+        return bool(Base().device_enable_get(self._ptr))
+
+    @enable.setter
+    def enable(self, value: bool):
+        Base().device_enable_set(self._ptr, value)
+
+    @property
     def num_transducers(self) -> int:
         return len(self._transducers)
 
@@ -300,6 +308,9 @@ class Geometry:
 
     def __iter__(self) -> Iterator[Device]:
         return iter(self._devices)
+
+    def devices(self) -> Iterator[Device]:
+        return filter(lambda x: x.enable, self._devices)
 
     def ptr(self) -> GeometryPtr:
         return self._ptr

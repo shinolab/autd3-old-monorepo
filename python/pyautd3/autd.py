@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -366,7 +366,7 @@ class Controller:
 
         def send(self):
             m = np.fromiter(map(lambda k: self._keymap[k] if k is not None else -
-                                1, map(lambda dev: self._map(dev), self._controller.geometry)), dtype=np.int32)
+                                1, map(lambda dev: self._map(dev) if dev.enable else None, self._controller.geometry)), dtype=np.int32)
             err = ctypes.create_string_buffer(256)
             if Base().controller_group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err) == AUTD3_ERR:
                 raise AUTDError(err)
