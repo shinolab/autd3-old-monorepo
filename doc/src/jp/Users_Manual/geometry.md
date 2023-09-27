@@ -308,6 +308,39 @@ for dev in autd.geometry:
 
 デバイスのインデックスを取得する.
 
+### Enable
+
+enableフラグをオフにすると, 以降, そのデバイスのデータは更新されなくなる.
+
+```rust,edition2021
+# extern crate autd3;
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+# 
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#    .open_with(Debug::new())?;
+autd.geometry_mut()[0].enable = false;
+# Ok(())
+# }
+```
+
+```cpp
+autd.geometry()[0].set_enable(false);
+```
+
+```cs
+autd.Geometry[0].Enable = false;
+```
+
+```python
+autd.geometry[0].enable = False
+```
+
+> NOTE: 更新されなくなるだけで, 出力が止まるわけではないことに注意.
+
 ### 音速の設定
 
 振動子の位相を計算する際に, 波長が必要な場面がある.
