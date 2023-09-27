@@ -14,6 +14,7 @@
 #include <autd3/internal/exception.hpp>
 #include <autd3/internal/firmware_info.hpp>
 #include <ranges>
+#include <sstream>
 
 #include "utils.hpp"
 
@@ -24,8 +25,12 @@ TEST(Internal, FirmwareInfo) {
 
   {
     const auto infos = autd.firmware_infos();
-    std::ranges::for_each(std::ranges::views::iota(0) | std::ranges::views::take(infos.size()),
-                          [&](auto i) { ASSERT_EQ(std::format("{}: CPU = v3.0.2, FPGA = v3.0.2  [Emulator]", i), infos[i].info()); });
+    std::ranges::for_each(std::ranges::views::iota(0) | std::ranges::views::take(infos.size()), [&](auto i) {
+      std::stringstream ss;
+      ss << i;
+      ss << ": CPU = v3.0.2, FPGA = v3.0.2  [Emulator]";
+      ASSERT_EQ(ss.str(), infos[i].info());
+    });
   }
 
   {
