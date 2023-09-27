@@ -3,27 +3,28 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#include <ranges>
-#include <autd3/modulation/fourier.hpp>
 #include <gtest/gtest.h>
+
+#include <autd3/modulation/fourier.hpp>
+#include <ranges>
 
 #include "utils.hpp"
 
 TEST(Modulation, Fourier) {
   auto autd = create_controller();
 
-  autd3::modulation::Fourier m = (autd3::modulation::Sine(50) + autd3::modulation::Sine(100))
-                                     .add_component(autd3::modulation::Sine(150))
-                                     .add_components_from_iter(std::vector{200} | std::ranges::views::transform([](const auto x) {
-                                                                 return autd3::modulation::Sine(x);
-                                                               })) +
-                                 autd3::modulation::Sine(250);
+  std::vector f{200};
+  autd3::modulation::Fourier m =
+      (autd3::modulation::Sine(50) + autd3::modulation::Sine(100))
+          .add_component(autd3::modulation::Sine(150))
+          .add_components_from_iter(f | std::ranges::views::transform([](const auto x) { return autd3::modulation::Sine(x); })) +
+      autd3::modulation::Sine(250);
 
   ASSERT_TRUE(autd.send(m));
 

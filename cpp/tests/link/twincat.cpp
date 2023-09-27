@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 28/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,19 +14,15 @@
 #include <autd3/internal/controller.hpp>
 #include <autd3/link/twincat.hpp>
 
-#ifdef WIN32
+#ifdef RUN_LINK_TWINCAT
 TEST(Link, TwinCAT) {
   auto link = autd3::link::TwinCAT().with_timeout(std::chrono::milliseconds(200));
 
-#ifdef RUN_LINK_TWINCAT
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .open_with(std::move(link));
 
   autd.close();
-#else
-  (void)link;
-#endif
 }
 #endif
 
