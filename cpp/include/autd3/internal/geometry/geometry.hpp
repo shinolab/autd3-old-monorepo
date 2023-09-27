@@ -85,6 +85,18 @@ class AUTD3 {
 };
 
 class Geometry {
+  class GeometryView : public std::ranges::view_interface<GeometryView> {
+   public:
+    GeometryView() = default;
+    explicit GeometryView(const std::vector<Device>& vec) : _begin(vec.cbegin()), _end(vec.cend()) {}
+
+    [[nodiscard]] auto begin() const { return _begin; }
+    [[nodiscard]] auto end() const { return _end; }
+
+   private:
+    std::vector<Device>::const_iterator _begin{}, _end{};
+  };
+
  public:
   Geometry(const native_methods::GeometryPtr ptr, const native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {
     const auto size = AUTDGeometryNumDevices(_ptr);
@@ -127,6 +139,8 @@ class Geometry {
                            }) /
            static_cast<double>(num_devices());
   }
+
+  [[nodiscard]] GeometryView devices() const noexcept { return GeometryView(_devices); }
 
   [[nodiscard]] std::vector<Device>::const_iterator begin() const noexcept { return _devices.cbegin(); }
   [[nodiscard]] std::vector<Device>::const_iterator end() const noexcept { return _devices.cend(); }
