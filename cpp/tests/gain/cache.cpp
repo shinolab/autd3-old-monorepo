@@ -35,7 +35,7 @@ class ForCacheTest final : public autd3::gain::Gain {
   [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::internal::native_methods::Drive>> calc(
       const autd3::internal::Geometry& geometry) const override {
     ++*_cnt;
-    return transform(geometry, [&](const auto&, const auto&) { return autd3::internal::native_methods::Drive{0.0, 1.0}; });
+    return transform(geometry, [&](const auto&, const auto&) { return autd3::internal::native_methods::Drive{autd3::internal::pi, 0.5}; });
   }
 
   AUTD3_IMPL_WITH_CACHE_GAIN(ForCacheTest)
@@ -64,5 +64,28 @@ TEST(Gain, CacheCheckOnce) {
     ASSERT_EQ(cnt, 1);
     ASSERT_TRUE(autd.send(gc));
     ASSERT_EQ(cnt, 1);
+  }
+}
+
+TEST(Gain, CacheCheckOnlyForEnabled) {
+  auto autd = create_controller();
+  autd.geometry()[0].set_enable(false);
+
+  size_t cnt = 0;
+  auto g = ForCacheTest(&cnt).with_cache();
+  ASSERT_TRUE(autd.send(g));
+
+  ASSERT_FALSE(g.drives()->contains(0));
+  ASSERT_TRUE(g.drives()->contains(1));
+
+  {
+    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
+  }
+  {
+    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
   }
 }

@@ -65,14 +65,12 @@ class Group final : public internal::Gain {
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     std::unordered_map<key_type, int32_t> keymap;
 
-    std::vector<uint32_t> device_indices;
-    device_indices.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(device_indices),
-                   [](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+    auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+    std::vector<uint32_t> device_indices(view.begin(), view.end());
 
     auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));
     int32_t k = 0;
-    for (const auto& dev : geometry) {
+    for (const auto& dev : geometry.devices()) {
       std::vector<int32_t> m;
       m.reserve(dev.num_transducers());
       std::for_each(dev.cbegin(), dev.cend(), [this, &dev, &m, &keymap, &k](const auto& tr) {

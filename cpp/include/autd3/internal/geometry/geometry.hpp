@@ -140,7 +140,9 @@ class Geometry {
            static_cast<double>(num_devices());
   }
 
-  [[nodiscard]] GeometryView devices() const noexcept { return GeometryView(_devices); }
+  [[nodiscard]] auto devices() const noexcept {
+    return GeometryView(_devices) | std::views::filter([](const auto& dev) { return dev.enable(); });
+  }
 
   [[nodiscard]] std::vector<Device>::const_iterator begin() const noexcept { return _devices.cbegin(); }
   [[nodiscard]] std::vector<Device>::const_iterator end() const noexcept { return _devices.cend(); }

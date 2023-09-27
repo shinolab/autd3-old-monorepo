@@ -21,9 +21,10 @@ TEST(Link, Log) {
   const auto autd = autd3::internal::Controller::builder()
                         .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                         .open_with(autd3::link::Debug()
+                                       .with_log_level(autd3::internal::native_methods::Level::Off)
                                        .with_log()
                                        .with_log_func(&test_log_out, &test_log_flush)
-                                       .with_log_level(autd3::internal::native_methods::Level::Trace));
+                                       .with_log_level(autd3::internal::native_methods::Level::Off));
 
   autd.close();
 }
