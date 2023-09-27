@@ -237,9 +237,8 @@ class FocusSTM final : public STM {
 
   [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_points.size()); }
 
-  FocusSTM& with_start_idx(const std::optional<uint16_t> start_idx) & {
+  void with_start_idx(const std::optional<uint16_t> start_idx) & {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
-    return *this;
   }
 
   [[nodiscard]] FocusSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
@@ -247,9 +246,8 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
-  FocusSTM& with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
-    return *this;
   }
 
   [[nodiscard]] FocusSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
@@ -313,7 +311,7 @@ class GainSTM final : public STM {
     const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseDutyFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
-    std::transform(_gains.begin(), _gains.end(), std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
+    std::ranges::transform(_gains, std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
     return AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
   }
 
@@ -379,18 +377,14 @@ class GainSTM final : public STM {
 
   [[nodiscard]] std::chrono::nanoseconds sampling_period() const { return sampling_period_from_size(_gains.size()); }
 
-  GainSTM& with_mode(const native_methods::GainSTMMode mode) & {
-    _mode = mode;
-    return *this;
-  }
+  void with_mode(const native_methods::GainSTMMode mode) & { _mode = mode; }
   [[nodiscard]] GainSTM&& with_mode(const native_methods::GainSTMMode mode) && {
     _mode = mode;
     return std::move(*this);
   }
 
-  GainSTM& with_start_idx(const std::optional<uint16_t> start_idx) & {
+  void with_start_idx(const std::optional<uint16_t> start_idx) & {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
-    return *this;
   }
 
   [[nodiscard]] GainSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
@@ -398,9 +392,8 @@ class GainSTM final : public STM {
     return std::move(*this);
   }
 
-  GainSTM& with_finish_idx(const std::optional<uint16_t> finish_idx) & {
+  void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
     _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
-    return *this;
   }
 
   [[nodiscard]] GainSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {

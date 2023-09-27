@@ -13,7 +13,6 @@
 
 #include <autd3/gain/uniform.hpp>
 #include <autd3/internal/amplitudes.hpp>
-#include <ranges>
 
 #include "utils.hpp"
 
