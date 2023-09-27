@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,8 +44,8 @@ class CacheTest(Gain):
         return Gain.transform(
             geometry,
             lambda dev, tr: Drive(
-                0.0,
-                1.0,
+                np.pi,
+                0.5,
             ),
         )
 
@@ -67,6 +67,26 @@ def test_cache_check_once():
     assert g.calc_cnt == 1
 
 
+def test_cache_check_only_for_enabled():
+    autd = create_controller()
+    autd.geometry[0].enable = False
+
+    g = CacheTest()
+    g_cached = g.with_cache()
+    assert autd.send(g_cached)
+
+    assert 0 not in g_cached.drives()
+    assert 1 in g_cached.drives()
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 0, 0)
+    assert np.all(duties == 0)
+    assert np.all(phases == 0)
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
+    assert np.all(duties == 680)
+    assert np.all(phases == 2048)
+
+
 def test_transform():
     autd = create_controller()
 
@@ -85,3 +105,27 @@ def test_transform():
     duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
     assert np.all(duties == 680)
     assert np.all(phases == 2048 - 512)
+
+
+def test_transform_check_only_for_enabled():
+    autd = create_controller()
+    autd.geometry[0].enable = False
+
+    check = np.zeros(2, dtype=bool)
+
+    def transform(dev, tr, d) -> Drive:
+        check[dev.idx] = True
+        return d
+
+    assert autd.send(Uniform(0.5).with_phase(np.pi).with_transform(transform))
+
+    assert not check[0]
+    assert check[1]
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 0, 0)
+    assert np.all(duties == 0)
+    assert np.all(phases == 0)
+
+    duties, phases = Audit.duties_and_phases(autd._ptr, 1, 0)
+    assert np.all(duties == 680)
+    assert np.all(phases == 2048)

@@ -144,6 +144,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeviceSetForceFan.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDDeviceSetForceFan.restype = None
 
+        self.dll.AUTDDeviceEnableSet.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
+        self.dll.AUTDDeviceEnableSet.restype = None
+
+        self.dll.AUTDDeviceEnableGet.argtypes = [DevicePtr]  # type: ignore 
+        self.dll.AUTDDeviceEnableGet.restype = ctypes.c_bool
+
         self.dll.AUTDGeometry.argtypes = [ControllerPtr]  # type: ignore 
         self.dll.AUTDGeometry.restype = GeometryPtr
 
@@ -656,6 +662,12 @@ class NativeMethods(metaclass=Singleton):
 
     def device_set_force_fan(self, dev: DevicePtr, value: bool) -> None:
         return self.dll.AUTDDeviceSetForceFan(dev, value)
+
+    def device_enable_set(self, dev: DevicePtr, value: bool) -> None:
+        return self.dll.AUTDDeviceEnableSet(dev, value)
+
+    def device_enable_get(self, dev: DevicePtr) -> ctypes.c_bool:
+        return self.dll.AUTDDeviceEnableGet(dev)
 
     def geometry(self, cnt: ControllerPtr) -> GeometryPtr:
         return self.dll.AUTDGeometry(cnt)

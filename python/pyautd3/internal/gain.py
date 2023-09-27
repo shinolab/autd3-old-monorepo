@@ -4,7 +4,7 @@ Project: internal
 Created Date: 29/08/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 27/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ class Cache(IGain):
         self._cache = {}
 
     def gain_ptr(self, geometry: Geometry) -> GainPtr:
-        device_indices = [dev.idx for dev in geometry]
+        device_indices = [dev.idx for dev in geometry.devices()]
 
         if len(self._cache) != len(device_indices) or any([idx not in self._cache for idx in device_indices]):
             err = create_string_buffer(256)
@@ -63,7 +63,7 @@ class Cache(IGain):
             if res._0 is None:
                 raise AUTDError(err)
 
-            for dev in geometry:
+            for dev in geometry.devices():
                 drives = np.zeros(dev.num_transducers, dtype=Drive)
                 Base().gain_calc_get_result(res, drives.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
                 self._cache[dev.idx] = drives
@@ -73,9 +73,12 @@ class Cache(IGain):
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
                                                     self._cache[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
                                                     len(self._cache[dev.idx])),
-            geometry,
+            geometry.devices(),
             Base().gain_custom(),
         )
+
+    def drives(self) -> Dict[int, np.ndarray]:
+        return self._cache
 
 
 class Transform(IGain):
@@ -94,7 +97,7 @@ class Transform(IGain):
             raise AUTDError(err)
 
         drives: Dict[int, np.ndarray] = {}
-        for dev in geometry:
+        for dev in geometry.devices():
             d = np.zeros(dev.num_transducers, dtype=Drive)
 
             Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
@@ -108,6 +111,6 @@ class Transform(IGain):
             lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
                                                     drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
                                                     len(drives[dev.idx])),
-            geometry,
+            geometry.devices(),
             Base().gain_custom(),
         )
