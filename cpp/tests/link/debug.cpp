@@ -22,7 +22,7 @@ TEST(Link, Debug) {
                         .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                         .open_with(autd3::link::Debug()
                                        .with_log_func(&test_debug_out, &test_debug_flush)
-                                       .with_log_level(autd3::internal::native_methods::Level::Trace)
+                                       .with_log_level(autd3::internal::native_methods::Level::Off)
                                        .with_timeout(std::chrono::milliseconds(20)));
 
   autd.close();

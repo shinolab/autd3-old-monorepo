@@ -35,17 +35,15 @@ class Cache final : public internal::Gain {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    std::vector<uint32_t> device_indices;
-    device_indices.reserve(geometry.num_devices());
-    std::transform(geometry.cbegin(), geometry.cend(), std::back_inserter(device_indices),
-                   [](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+    auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+    std::vector<uint32_t> device_indices(view.begin(), view.end());
 
     if (_cache->size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
       char err[256]{};
       auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
       if (res._0 == nullptr) throw internal::AUTDException(err);
-      for (const auto& dev : geometry) {
+      for (const auto& dev : geometry.devices()) {
         std::vector<internal::native_methods::Drive> drives;
         drives.resize(dev.num_transducers());
         internal::native_methods::AUTDGainCalcGetResult(res, drives.data(), static_cast<uint32_t>(dev.idx()));
@@ -54,12 +52,15 @@ class Cache final : public internal::Gain {
       internal::native_methods::AUTDGainCalcFreeResult(res);
     }
 
-    return std::accumulate(geometry.cbegin(), geometry.cend(), internal::native_methods::AUTDGainCustom(),
+    return std::accumulate(geometry.devices().begin(), geometry.devices().end(), internal::native_methods::AUTDGainCustom(),
                            [this](const internal::native_methods::GainPtr acc, const internal::Device& dev) {
                              return AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), _cache->at(dev.idx()).data(),
                                                       static_cast<uint32_t>(_cache->at(dev.idx()).size()));
                            });
   }
+
+  [[nodiscard]] std::shared_ptr<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>> drives() const { return _cache; }
+  [[nodiscard]] std::shared_ptr<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>> drives() { return _cache; }
 
  private:
   G _g;

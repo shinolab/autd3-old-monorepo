@@ -107,6 +107,16 @@ class Device {
   void force_fan(const bool value) const { AUTDDeviceSetForceFan(_ptr, value); }
 
   /**
+   * @brief get enable flag
+   */
+  [[nodiscard]] bool enable() const { return AUTDDeviceEnableGet(_ptr); }
+
+  /**
+   * @brief set enable flag
+   */
+  void set_enable(const bool value) const { AUTDDeviceEnableSet(_ptr, value); }
+
+  /**
    * @brief set reads fpga info flag
    *
    * @param value
