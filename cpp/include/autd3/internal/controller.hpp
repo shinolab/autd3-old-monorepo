@@ -394,6 +394,7 @@ class Controller {
       std::vector<int32_t> map;
       map.reserve(_controller.geometry().num_devices());
       std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const Device& d) {
+        if (!d.enable()) return -1;
         const auto k = _map(d);
         return k.has_value() ? _keymap[k.value()] : -1;
       });

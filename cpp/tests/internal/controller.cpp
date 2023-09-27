@@ -227,3 +227,32 @@ TEST(Internal, ControllerGroup) {
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
   }
 }
+
+TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
+  auto autd = create_controller();
+  autd.geometry()[0].set_enable(false);
+
+  std::vector check(autd.geometry().num_devices(), false);
+  autd.group([&check](auto& dev) -> std::optional<int> {
+        check[dev.idx()] = true;
+        return 0;
+      })
+      .set(0, autd3::modulation::Sine(150), autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi))
+      .send();
+
+  ASSERT_FALSE(check[0]);
+  ASSERT_TRUE(check[1]);
+
+  {
+    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
+  }
+  {
+    const auto m = autd3::link::Audit::modulation(autd, 1);
+    ASSERT_EQ(80, m.size());
+    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
+  }
+}
