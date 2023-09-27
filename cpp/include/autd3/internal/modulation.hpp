@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ class Modulation : public Datagram {
 
   [[nodiscard]] size_t size() const {
     char err[256]{};
-    const int32_t n = native_methods::AUTDModulationSize(modulation_ptr(), err);
+    const int32_t n = AUTDModulationSize(modulation_ptr(), err);
     if (n < 0) throw AUTDException(err);
     return static_cast<size_t>(n);
   }

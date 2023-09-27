@@ -23,7 +23,7 @@
 
 TEST(Internal, ControllerClose) {
   {
-    auto autd = create_controller();
+    const auto autd = create_controller();
     ASSERT_TRUE(autd3::link::Audit::is_open(autd));
 
     autd.close();
@@ -31,7 +31,7 @@ TEST(Internal, ControllerClose) {
   }
 
   {
-    auto autd = create_controller();
+    const auto autd = create_controller();
     autd3::link::Audit::break_down(autd);
     ASSERT_THROW(autd.close(), autd3::internal::AUTDException);
   }

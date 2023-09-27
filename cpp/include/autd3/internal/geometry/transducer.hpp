@@ -19,8 +19,7 @@ namespace autd3::internal {
 
 class Transducer {
  public:
-  Transducer(const uint32_t local_idx, const native_methods::DevicePtr ptr)
-      : _ptr(internal::native_methods::AUTDTransducer(ptr, local_idx)), _local_idx(local_idx) {}
+  Transducer(const uint32_t local_idx, const native_methods::DevicePtr ptr) : _ptr(AUTDTransducer(ptr, local_idx)), _local_idx(local_idx) {}
 
   /**
    * @brief Get the position of the transducer
@@ -37,7 +36,7 @@ class Transducer {
   [[nodiscard]] Quaternion rotation() const noexcept {
     double v[4];
     AUTDTransducerRotation(_ptr, v);
-    return Quaternion(v[0], v[1], v[2], v[3]);
+    return {v[0], v[1], v[2], v[3]};
   }
 
   /**
