@@ -1,6 +1,6 @@
 # autd3-cpp
 
-[autd3 library](https://github.com/shinolab/autd3) for C++17.
+[autd3 library](https://github.com/shinolab/autd3) for C++20.
 
 version: 15.1.2
 
