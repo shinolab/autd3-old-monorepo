@@ -18,7 +18,7 @@ adler 1.0.2 (0BSD OR Apache-2.0 OR MIT)
 https://github.com/jonas-schievink/adler.git
 ---------------------------------------------------------
 
-aho-corasick 1.0.5 (MIT OR Unlicense)
+aho-corasick 1.1.1 (MIT OR Unlicense)
 https://github.com/BurntSushi/aho-corasick
 ---------------------------------------------------------
 
@@ -38,7 +38,7 @@ anstream 0.5.0 (Apache-2.0 OR MIT)
 https://github.com/rust-cli/anstyle.git
 ---------------------------------------------------------
 
-anstyle 1.0.2 (Apache-2.0 OR MIT)
+anstyle 1.0.3 (Apache-2.0 OR MIT)
 https://github.com/rust-cli/anstyle.git
 ---------------------------------------------------------
 
@@ -178,7 +178,7 @@ backtrace 0.3.69 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/backtrace-rs
 ---------------------------------------------------------
 
-base64 0.21.3 (Apache-2.0 OR MIT)
+base64 0.21.4 (Apache-2.0 OR MIT)
 https://github.com/marshallpierce/rust-base64
 ---------------------------------------------------------
 
@@ -194,15 +194,15 @@ bitvec 1.0.1 (MIT)
 https://github.com/bitvecto-rs/bitvec
 ---------------------------------------------------------
 
-bumpalo 3.13.0 (Apache-2.0 OR MIT)
+bumpalo 3.14.0 (Apache-2.0 OR MIT)
 https://github.com/fitzgen/bumpalo
 ---------------------------------------------------------
 
-bytemuck 1.13.1 (Apache-2.0 OR MIT OR Zlib)
+bytemuck 1.14.0 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Lokathor/bytemuck
 ---------------------------------------------------------
 
-bytes 1.4.0 (MIT)
+bytes 1.5.0 (MIT)
 https://github.com/tokio-rs/bytes
 ---------------------------------------------------------
 
@@ -218,7 +218,7 @@ cfg-if 1.0.0 (Apache-2.0 OR MIT)
 https://github.com/alexcrichton/cfg-if
 ---------------------------------------------------------
 
-chrono 0.4.28 (Apache-2.0 OR MIT)
+chrono 0.4.31 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
@@ -234,11 +234,11 @@ ciborium-ll 0.2.1 (Apache-2.0)
 https://github.com/enarx/ciborium
 ---------------------------------------------------------
 
-clap 4.4.2 (Apache-2.0 OR MIT)
+clap 4.4.5 (Apache-2.0 OR MIT)
 https://github.com/clap-rs/clap
 ---------------------------------------------------------
 
-clap_builder 4.4.2 (Apache-2.0 OR MIT)
+clap_builder 4.4.5 (Apache-2.0 OR MIT)
 https://github.com/clap-rs/clap
 ---------------------------------------------------------
 
@@ -264,10 +264,6 @@ https://github.com/bheisler/criterion.rs
 
 criterion-plot 0.5.0 (Apache-2.0 OR MIT)
 https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
-crossbeam-channel 0.5.8 (Apache-2.0 OR MIT)
-https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
 crossbeam-deque 0.8.3 (Apache-2.0 OR MIT)
@@ -302,7 +298,7 @@ errno-dragonfly 0.1.2 (MIT)
 https://github.com/mneumann/errno-dragonfly-rs
 ---------------------------------------------------------
 
-fastrand 2.0.0 (Apache-2.0 OR MIT)
+fastrand 2.0.1 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/fastrand
 ---------------------------------------------------------
 
@@ -366,8 +362,8 @@ heck 0.4.1 (Apache-2.0 OR MIT)
 https://github.com/withoutboats/heck
 ---------------------------------------------------------
 
-hermit-abi 0.3.2 (Apache-2.0 OR MIT)
-https://github.com/hermitcore/rusty-hermit
+hermit-abi 0.3.3 (Apache-2.0 OR MIT)
+https://github.com/hermitcore/hermit-rs
 ---------------------------------------------------------
 
 home 0.5.5 (Apache-2.0 OR MIT)
@@ -414,7 +410,7 @@ indexmap 1.9.3 (Apache-2.0 OR MIT)
 https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
-indexmap 2.0.0 (Apache-2.0 OR MIT)
+indexmap 2.0.1 (Apache-2.0 OR MIT)
 https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
@@ -438,7 +434,7 @@ js-sys 0.3.64 (Apache-2.0 OR MIT)
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/js-sys
 ---------------------------------------------------------
 
-libc 0.2.147 (Apache-2.0 OR MIT)
+libc 0.2.148 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/libc
 ---------------------------------------------------------
 
@@ -446,7 +442,7 @@ libloading 0.8.0 (ISC)
 https://github.com/nagisa/rust_libloading/
 ---------------------------------------------------------
 
-linux-raw-sys 0.4.5 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+linux-raw-sys 0.4.7 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
@@ -458,11 +454,11 @@ log 0.4.20 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/log
 ---------------------------------------------------------
 
-matchit 0.7.2 (MIT AND BSD-3-Clause)
+matchit 0.7.3 (MIT AND BSD-3-Clause)
 https://github.com/ibraheemdev/matchit
 ---------------------------------------------------------
 
-matrixmultiply 0.3.7 (Apache-2.0 OR MIT)
+matrixmultiply 0.3.8 (Apache-2.0 OR MIT)
 https://github.com/bluss/matrixmultiply/
 ---------------------------------------------------------
 
@@ -594,27 +590,27 @@ ppv-lite86 0.2.17 (Apache-2.0 OR MIT)
 https://github.com/cryptocorrosion/cryptocorrosion
 ---------------------------------------------------------
 
-prettyplease 0.2.14 (Apache-2.0 OR MIT)
+prettyplease 0.2.15 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/prettyplease
 ---------------------------------------------------------
 
-proc-macro2 1.0.66 (Apache-2.0 OR MIT)
+proc-macro2 1.0.67 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/proc-macro2
 ---------------------------------------------------------
 
-prost 0.12.0 (Apache-2.0)
+prost 0.12.1 (Apache-2.0)
 https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-prost-build 0.12.0 (Apache-2.0)
+prost-build 0.12.1 (Apache-2.0)
 https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-prost-derive 0.12.0 (Apache-2.0)
+prost-derive 0.12.1 (Apache-2.0)
 https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
-prost-types 0.12.0 (Apache-2.0)
+prost-types 0.12.1 (Apache-2.0)
 https://github.com/tokio-rs/prost
 ---------------------------------------------------------
 
@@ -642,11 +638,11 @@ rawpointer 0.2.1 (Apache-2.0 OR MIT)
 https://github.com/bluss/rawpointer/
 ---------------------------------------------------------
 
-rayon 1.7.0 (Apache-2.0 OR MIT)
+rayon 1.8.0 (Apache-2.0 OR MIT)
 https://github.com/rayon-rs/rayon
 ---------------------------------------------------------
 
-rayon-core 1.11.0 (Apache-2.0 OR MIT)
+rayon-core 1.12.0 (Apache-2.0 OR MIT)
 https://github.com/rayon-rs/rayon
 ---------------------------------------------------------
 
@@ -674,7 +670,7 @@ rustc_version 0.4.0 (Apache-2.0 OR MIT)
 https://github.com/Kimundi/rustc-version-rs
 ---------------------------------------------------------
 
-rustix 0.38.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+rustix 0.38.14 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
@@ -698,7 +694,7 @@ scopeguard 1.2.0 (Apache-2.0 OR MIT)
 https://github.com/bluss/scopeguard
 ---------------------------------------------------------
 
-semver 1.0.18 (Apache-2.0 OR MIT)
+semver 1.0.19 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/semver
 ---------------------------------------------------------
 
@@ -710,7 +706,7 @@ serde_derive 1.0.188 (Apache-2.0 OR MIT)
 https://github.com/serde-rs/serde
 ---------------------------------------------------------
 
-serde_json 1.0.105 (Apache-2.0 OR MIT)
+serde_json 1.0.107 (Apache-2.0 OR MIT)
 https://github.com/serde-rs/json
 ---------------------------------------------------------
 
@@ -726,7 +722,7 @@ socket2 0.4.9 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/socket2
 ---------------------------------------------------------
 
-socket2 0.5.3 (Apache-2.0 OR MIT)
+socket2 0.5.4 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/socket2
 ---------------------------------------------------------
 
@@ -734,7 +730,7 @@ spdlog-macros 0.1.0 (Apache-2.0 OR MIT)
 https://github.com/SpriteOvO/spdlog-rs
 ---------------------------------------------------------
 
-spdlog-rs 0.3.10 (Apache-2.0 OR MIT)
+spdlog-rs 0.3.11 (Apache-2.0 OR MIT)
 https://github.com/SpriteOvO/spdlog-rs
 ---------------------------------------------------------
 
@@ -754,7 +750,7 @@ syn 1.0.109 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
-syn 2.0.31 (Apache-2.0 OR MIT)
+syn 2.0.37 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/syn
 ---------------------------------------------------------
 
@@ -770,16 +766,12 @@ tempfile 3.8.0 (Apache-2.0 OR MIT)
 https://github.com/Stebalien/tempfile
 ---------------------------------------------------------
 
-thiserror 1.0.48 (Apache-2.0 OR MIT)
+thiserror 1.0.49 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/thiserror
 ---------------------------------------------------------
 
-thiserror-impl 1.0.48 (Apache-2.0 OR MIT)
+thiserror-impl 1.0.49 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/thiserror
----------------------------------------------------------
-
-time 0.1.45 (Apache-2.0 OR MIT)
-https://github.com/time-rs/time
 ---------------------------------------------------------
 
 tinytemplate 1.2.1 (Apache-2.0 OR MIT)
@@ -802,15 +794,15 @@ tokio-stream 0.1.14 (MIT)
 https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-tokio-util 0.7.8 (MIT)
+tokio-util 0.7.9 (MIT)
 https://github.com/tokio-rs/tokio
 ---------------------------------------------------------
 
-tonic 0.10.0 (MIT)
+tonic 0.10.1 (MIT)
 https://github.com/hyperium/tonic
 ---------------------------------------------------------
 
-tonic-build 0.10.0 (MIT)
+tonic-build 0.10.1 (MIT)
 https://github.com/hyperium/tonic
 ---------------------------------------------------------
 
@@ -842,11 +834,11 @@ try-lock 0.2.4 (MIT)
 https://github.com/seanmonstar/try-lock
 ---------------------------------------------------------
 
-typenum 1.16.0 (Apache-2.0 OR MIT)
+typenum 1.17.0 (Apache-2.0 OR MIT)
 https://github.com/paholg/typenum
 ---------------------------------------------------------
 
-unicode-ident 1.0.11 ((MIT OR Apache-2.0) AND Unicode-DFS-2016)
+unicode-ident 1.0.12 ((MIT OR Apache-2.0) AND Unicode-DFS-2016)
 https://github.com/dtolnay/unicode-ident
 ---------------------------------------------------------
 
@@ -854,16 +846,12 @@ utf8parse 0.2.1 (Apache-2.0 OR MIT)
 https://github.com/alacritty/vte
 ---------------------------------------------------------
 
-walkdir 2.3.3 (MIT OR Unlicense)
+walkdir 2.4.0 (MIT OR Unlicense)
 https://github.com/BurntSushi/walkdir
 ---------------------------------------------------------
 
 want 0.3.1 (MIT)
 https://github.com/seanmonstar/want
----------------------------------------------------------
-
-wasi 0.10.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
-https://github.com/bytecodealliance/wasi
 ---------------------------------------------------------
 
 wasi 0.11.0+wasi-snapshot-preview1 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
@@ -910,7 +898,7 @@ winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
 https://github.com/retep998/winapi-rs
 ---------------------------------------------------------
 
-winapi-util 0.1.5 (MIT OR Unlicense)
+winapi-util 0.1.6 (MIT OR Unlicense)
 https://github.com/BurntSushi/winapi-util
 ---------------------------------------------------------
 
