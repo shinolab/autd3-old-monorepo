@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,12 +17,15 @@
 #include "autd3/gain/holo.hpp"
 
 TEST(Gain_Holo, GSPAT) {
-  auto autd = autd3::internal::Controller::builder().add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero())).open_with(autd3::link::Audit());
+  auto autd = autd3::internal::Controller::builder()
+                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
+                  .open_with(autd3::link::Audit());
 
   auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
+  std::vector<double> p{-30};
   auto g = autd3::gain::holo::GSPAT(std::move(backend))
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 0.5)
-               .add_foci_from_iter(std::vector<double>{-30} | std::ranges::views::transform([&](auto x) {
+               .add_foci_from_iter(p | std::ranges::views::transform([&](auto x) {
                                      autd3::internal::Vector3 p = autd.geometry().center() + autd3::internal::Vector3(x, 0, 150);
                                      return std::make_pair(p, 0.5);
                                    }))
@@ -43,12 +46,15 @@ TEST(Gain_Holo, GSPAT) {
 #include "autd3/gain/holo/backend_cuda.hpp"
 
 TEST(Gain_Holo, GSPATWithCUDA) {
-  auto autd = autd3::internal::Controller::builder().add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero())).open_with(autd3::link::Audit());
+  auto autd = autd3::internal::Controller::builder()
+                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
+                  .open_with(autd3::link::Audit());
 
   auto backend = std::make_shared<autd3::gain::holo::CUDABackend>();
+  std::vector<double> p{-30};
   auto g = autd3::gain::holo::GSPAT(std::move(backend))
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 0.5)
-               .add_foci_from_iter(std::vector<double>{-30} | std::ranges::views::transform([&](auto x) {
+               .add_foci_from_iter(p | std::ranges::views::transform([&](auto x) {
                                      autd3::internal::Vector3 p = autd.geometry().center() + autd3::internal::Vector3(x, 0, 150);
                                      return std::make_pair(p, 0.5);
                                    }))
