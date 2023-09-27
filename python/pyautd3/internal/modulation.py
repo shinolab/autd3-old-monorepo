@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 26/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -100,10 +100,10 @@ class Transform(IModulation):
 
     def __init__(self, m: IModulation, f: Callable[[int, float], float]):
         self._m = m
-        self._f_native = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_uint32, ctypes.c_double)(lambda i, d: f(int(i), float(d)))
+        self._f_native = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_double)(lambda _, i, d: f(int(i), float(d)))
 
     def modulation_ptr(self) -> ModulationPtr:
-        return Base().modulation_with_transform(self._m.modulation_ptr(), self._f_native)  # type: ignore
+        return Base().modulation_with_transform(self._m.modulation_ptr(), self._f_native, None)  # type: ignore
 
 
 class RadiationPressure(IModulation):

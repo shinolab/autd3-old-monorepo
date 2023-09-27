@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 26/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,11 +36,6 @@ namespace AUTD3Sharp.Modulation
         protected Modulation(uint freqDiv)
         {
             _freqDiv = freqDiv;
-        }
-
-        protected Modulation(float_t samplingFreq)
-        {
-            _freqDiv = (uint)(Def.FpgaSubClkFreq / samplingFreq);
         }
 
         public sealed override ModulationPtr ModulationPtr()

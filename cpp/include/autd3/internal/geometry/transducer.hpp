@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 27/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,9 +35,9 @@ class Transducer {
    * @brief Get the rotation quaternion of the transducer
    */
   [[nodiscard]] Quaternion rotation() const noexcept {
-    Quaternion v;
-    AUTDTransducerRotation(_ptr, v.vec().data());
-    return v;
+    double v[4];
+    AUTDTransducerRotation(_ptr, v);
+    return Quaternion(v[0], v[1], v[2], v[3]);
   }
 
   /**

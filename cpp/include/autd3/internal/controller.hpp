@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 26/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,10 @@
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
+namespace autd3::link {
+class Audit;
+};
+
 namespace autd3::internal {
 
 /**
@@ -30,6 +34,8 @@ namespace autd3::internal {
  */
 class Controller {
  public:
+  friend class autd3::link::Audit;
+
   /**
    * @brief Builder for Controller
    */
@@ -45,11 +51,11 @@ class Controller {
      */
     Builder add_device(const AUTD3& device) {
       if (const auto euler = device.euler(); euler.has_value())
-        _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
-                             euler.value().z());
+        _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(),
+                                              euler.value().y(), euler.value().z());
       else if (const auto quat = device.quaternion(); quat.has_value())
-        _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(), quat.value().x(),
-                                       quat.value().y(), quat.value().z());
+        _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
+                                                        quat.value().x(), quat.value().y(), quat.value().z());
       else
         throw std::runtime_error("unreachable!");
       return *this;
@@ -295,8 +301,8 @@ class Controller {
         auto* c = static_cast<Context*>(context);
         return c->callback(c->controller, static_cast<size_t>(idx), std::chrono::nanoseconds(time));
       };
-      if (char err[256]{}; native_methods::AUTDControllerSoftwareSTM(_ptr, reinterpret_cast<void*>(callback_native), _context.get(), _strategy, interval_ns,
-                                                           err) == native_methods::AUTD3_ERR)
+      if (char err[256]{}; native_methods::AUTDControllerSoftwareSTM(_ptr, reinterpret_cast<void*>(callback_native), _context.get(), _strategy,
+                                                                     interval_ns, err) == native_methods::AUTD3_ERR)
         throw AUTDException(err);
     }
 
@@ -336,7 +342,7 @@ class Controller {
       _keymap[key] = _k++;
       char err[256]{};
       _kv_map = internal::native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, internal::native_methods::DatagramPtr{nullptr},
-                                                            _controller._mode, timeout_ns, err);
+                                                                      _controller._mode, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
