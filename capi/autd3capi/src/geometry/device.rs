@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 27/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -105,6 +105,17 @@ pub unsafe extern "C" fn AUTDDeviceSetForceFan(dev: DevicePtr, value: bool) {
     cast_mut!(dev.0, Dev).force_fan = value;
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn AUTDDeviceEnableSet(dev: DevicePtr, value: bool) {
+    cast_mut!(dev.0, Dev).enable = value;
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDeviceEnableGet(dev: DevicePtr) -> bool {
+    cast_mut!(dev.0, Dev).enable
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -138,6 +149,10 @@ mod tests {
             assert_approx_eq::assert_approx_eq!(v[1], 66.71325301204786);
             assert_approx_eq::assert_approx_eq!(v[2], 0.);
 
+            assert!(AUTDDeviceEnableGet(dev));
+            AUTDDeviceEnableSet(dev, false);
+            assert!(!AUTDDeviceEnableGet(dev));
+
             AUTDControllerDelete(cnt);
         }
     }
@@ -152,8 +167,9 @@ mod tests {
             let num_trans = AUTDDeviceNumTransducers(dev) as usize;
 
             let mut v = vec![[0., 0., 0.]; num_trans];
-            (0..num_trans)
-                .for_each(|t| AUTDTransducerPosition(AUTDTransducer(dev, t as _), v[t].as_mut_ptr()));
+            (0..num_trans).for_each(|t| {
+                AUTDTransducerPosition(AUTDTransducer(dev, t as _), v[t].as_mut_ptr())
+            });
             AUTDDeviceTranslate(dev, 1., 2., 3.);
             (0..num_trans).for_each(|t| {
                 let mut v_new = [0., 0., 0.];
@@ -181,8 +197,9 @@ mod tests {
             let dev = AUTDDevice(geo, 0);
 
             let mut v = vec![[0., 0., 0.]; num_trans];
-            (0..num_trans)
-                .for_each(|t| AUTDTransducerPosition(AUTDTransducer(dev, t as _), v[t].as_mut_ptr()));
+            (0..num_trans).for_each(|t| {
+                AUTDTransducerPosition(AUTDTransducer(dev, t as _), v[t].as_mut_ptr())
+            });
 
             let rot =
                 UnitQuaternion::from_axis_angle(&UnitVector3::new_normalize(Vector3::z()), PI / 2.);
