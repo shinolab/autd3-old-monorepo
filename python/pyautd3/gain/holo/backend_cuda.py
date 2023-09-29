@@ -4,7 +4,7 @@ Project: holo
 Created Date: 08/06/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,10 @@ from pyautd3.autd_error import AUTDError
 
 
 class CUDABackend(Backend):
+    """Backend using CUDA
+
+    """
+
     def __init__(self):
         err = ctypes.create_string_buffer(256)
         ptr = AUTD3BackendCUDA().cuda_backend(err)

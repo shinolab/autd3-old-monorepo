@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 27/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -61,14 +61,28 @@ class Datagram(metaclass=ABCMeta):
 
 
 class Silencer(Datagram):
+    """Datagram for configure silencer
+
+    """
+
     _step: int
 
     def __init__(self, step: int = 10):
+        """Constructor
+
+        Arguments:
+        - `step` - The update step of silencer. The lower the value, the stronger the silencer effect.
+        """
+
         super().__init__()
         self._step = step
 
     @staticmethod
     def disable() -> "Silencer":
+        """Disable silencer
+
+        """
+
         return Silencer(0xFFFF)
 
     def ptr(self, _: Geometry) -> DatagramPtr:
@@ -76,12 +90,20 @@ class Silencer(Datagram):
 
 
 class FPGAInfo:
+    """FPGA information
+
+    """
+
     info: ctypes.c_uint8
 
     def __init__(self, info: ctypes.c_uint8):
         self.info = info
 
     def is_thermal_assert(self) -> bool:
+        """Check if thermal sensor is asserted
+
+        """
+
         return (int(self.info) & 0x01) != 0
 
     def __str__(self) -> str:
@@ -89,6 +111,10 @@ class FPGAInfo:
 
 
 class FirmwareInfo:
+    """Firmware information
+
+    """
+
     _info: str
 
     def __init__(self, info: str):
@@ -100,6 +126,10 @@ class FirmwareInfo:
 
     @staticmethod
     def latest_version() -> str:
+        """Get latest firmware version
+
+        """
+
         sb = ctypes.create_string_buffer(256)
         Base().firmware_latest(sb)
         return sb.value.decode("utf-8")
@@ -118,18 +148,36 @@ class Controller:
             self._mode = TransMode.Legacy
 
         def legacy(self) -> "Controller.Builder":
+            """Set legacy mode
+
+            """
+
             self._mode = TransMode.Legacy
             return self
 
         def advanced(self) -> "Controller.Builder":
+            """Set advanced mode
+
+            """
+
             self._mode = TransMode.Advanced
             return self
 
         def advanced_phase(self) -> "Controller.Builder":
+            """Set advanced phase mode
+
+            """
+
             self._mode = TransMode.AdvancedPhase
             return self
 
         def add_device(self, device: AUTD3) -> "Controller.Builder":
+            """Add device
+
+            Arguments:
+            - `device` - Device to add
+            """
+
             if device._rot is not None:
                 self._ptr = Base().controller_builder_add_device(
                     self._ptr,
@@ -154,6 +202,12 @@ class Controller:
             return self
 
         def open_with(self, link: Link) -> "Controller":
+            """Open controller
+
+            Arguments:
+            - `link` - Link
+            """
+
             return Controller._open_impl(self._ptr, self._mode, link.ptr())
 
     _geometry: Geometry
@@ -167,6 +221,10 @@ class Controller:
 
     @staticmethod
     def builder() -> "Controller.Builder":
+        """Create builder
+
+        """
+
         return Controller.Builder()
 
     def __del__(self):
@@ -179,6 +237,10 @@ class Controller:
 
     @property
     def geometry(self) -> Geometry:
+        """Get geometry
+
+        """
+
         return self._geometry
 
     @staticmethod
@@ -193,6 +255,10 @@ class Controller:
         return Controller(geometry, ptr, mode)
 
     def firmware_info_list(self) -> List[FirmwareInfo]:
+        """Get firmware information list
+
+        """
+
         err = ctypes.create_string_buffer(256)
         handle = Base().controller_firmware_info_list_pointer(self._ptr, err)
         if handle._0 is None:
@@ -211,12 +277,20 @@ class Controller:
         return res
 
     def close(self):
+        """Close controller
+
+        """
+
         err = ctypes.create_string_buffer(256)
         if not Base().controller_close(self._ptr, err):
             raise AUTDError(err)
 
     @property
     def fpga_info(self) -> List[FPGAInfo]:
+        """Get FPGA information list
+
+        """
+
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         err = ctypes.create_string_buffer(256)
@@ -229,6 +303,20 @@ class Controller:
         d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
         timeout: Optional[timedelta] = None,
     ) -> bool:
+        """Send data
+
+        Arguments:
+        - `d` - Data to send
+        - `timeout` - Timeout
+
+        Returns:
+        - `bool` - If true, it is confirmed that the data has been successfully transmitted.
+          If false, there are no errors, but it is unclear whether the data has been sent reliably or not.
+
+        Raises:
+        - `AUTDError` - If an error occurs
+        """
+
         timeout_ = (
             -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )
@@ -376,9 +464,19 @@ class Controller:
 
 
 class Amplitudes(Datagram):
+    """Amplitudes settings for advanced phase mode
+
+    """
+
     _amp: float
 
     def __init__(self, amp: float):
+        """Constructor
+
+        Arguments:
+        - `amp` - Amplitude
+        """
+
         super().__init__()
         self._amp = amp
 
@@ -387,6 +485,10 @@ class Amplitudes(Datagram):
 
 
 class Clear(Datagram):
+    """Datagram for clear all data in devices
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -395,6 +497,10 @@ class Clear(Datagram):
 
 
 class Stop(SpecialDatagram):
+    """Datagram to stop output
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -403,6 +509,10 @@ class Stop(SpecialDatagram):
 
 
 class UpdateFlags(Datagram):
+    """Datagram to update flags (Force fan flag and reads FPGA info flag)
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -411,6 +521,10 @@ class UpdateFlags(Datagram):
 
 
 class Synchronize(Datagram):
+    """Datagram to synchronize devices
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -419,6 +533,10 @@ class Synchronize(Datagram):
 
 
 class ConfigureModDelay(Datagram):
+    """Datagram to configure modulation delay
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -427,6 +545,10 @@ class ConfigureModDelay(Datagram):
 
 
 class ConfigureAmpFilter(Datagram):
+    """Datagram to configure amplitude filter
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -435,6 +557,10 @@ class ConfigureAmpFilter(Datagram):
 
 
 class ConfigurePhaseFilter(Datagram):
+    """Datagram to configure phase filter
+
+    """
+
     def __init__(self):
         super().__init__()
 

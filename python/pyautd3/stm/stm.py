@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -57,6 +57,10 @@ class STM(Datagram, metaclass=ABCMeta):
 
     @property
     def start_idx(self) -> Optional[int]:
+        """Start index of STM
+
+        """
+
         idx = int(Base().stm_props_start_idx(self._props()))
         if idx < 0:
             return None
@@ -64,6 +68,10 @@ class STM(Datagram, metaclass=ABCMeta):
 
     @property
     def finish_idx(self) -> Optional[int]:
+        """Finish index of STM
+
+        """
+
         idx = int(Base().stm_props_finish_idx(self._props()))
         if idx < 0:
             return None
@@ -101,6 +109,15 @@ class STM(Datagram, metaclass=ABCMeta):
 
 
 class FocusSTM(STM):
+    """FocusSTM is an STM for moving a single focal point.
+
+    The sampling timing is determined by hardware, thus the sampling time is precise.
+
+    FocusSTM has following restrictions:
+    - The maximum number of sampling points is 65536.
+    - The sampling frequency is `pyautd3.AUTD3.fpga_sub_clk_freq()`/N, where `N` is a 32-bit unsigned integer.
+    """
+
     _points: List[float]
     _duty_shifts: List[int]
 
@@ -111,6 +128,12 @@ class FocusSTM(STM):
         sampling_freq_div: Optional[int] = None,
         sampling_period: Optional[timedelta] = None,
     ):
+        """Constructor
+
+        Arguments:
+        - `freq` - Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
+        """
+
         super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
         self._points = []
         self._duty_shifts = []
@@ -124,17 +147,42 @@ class FocusSTM(STM):
 
     @staticmethod
     def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_freq` - Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
+        """
+
         return FocusSTM(None, sampling_freq, None, None)
 
     @staticmethod
     def with_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_freq_div` - Sampling frequency division.
+        """
+
         return FocusSTM(None, None, sampling_freq_div, None)
 
     @staticmethod
     def with_sampling_period(sampling_period: timedelta) -> "FocusSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_period` - Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
+        """
+
         return FocusSTM(None, None, None, sampling_period)
 
     def add_focus(self, point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
+        """Add focus
+
+        Arguments:
+        - `point` - Focal point
+        `duty_shift` - Duty shift. Duty ratio of ultrasound will be `50% >> shift`.
+        """
+
         self._points.append(point[0])
         self._points.append(point[1])
         self._points.append(point[2])
@@ -144,6 +192,12 @@ class FocusSTM(STM):
     def add_foci_from_iter(
         self, iterable: Union[Iterable[np.ndarray], Iterable[Tuple[np.ndarray, int]]]
     ) -> "FocusSTM":
+        """Add foci
+
+        Arguments:
+        - `iterable` - Iterable of focal points or tuples of focal points and duty shifts.
+        """
+
         return functools.reduce(
             lambda acc, x: acc.add_focus(x)
             if isinstance(x, np.ndarray)
@@ -169,10 +223,22 @@ class FocusSTM(STM):
         return self._sampling_period_from_size(len(self._duty_shifts))
 
     def with_start_idx(self, value: Optional[int]) -> "FocusSTM":
+        """Set the start index of STM
+
+        Arguments:
+        - `value` - Start index of STM.
+        """
+
         self._start_idx = -1 if value is None else value
         return self
 
     def with_finish_idx(self, value: Optional[int]) -> "FocusSTM":
+        """Set the finish index of STM
+
+        Arguments:
+        - `value` - Finish index of STM.
+        """
+
         self._finish_idx = -1 if value is None else value
         return self
 
@@ -202,21 +268,51 @@ class GainSTM(STM):
 
     @staticmethod
     def with_sampling_frequency(sampling_freq: float) -> "GainSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_freq` - Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
+        """
+
         return GainSTM(None, sampling_freq, None)
 
     @staticmethod
     def with_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_freq_div` - Sampling frequency division.
+        """
+
         return GainSTM(None, None, sampling_freq_div)
 
     @staticmethod
     def with_sampling_period(sampling_period: timedelta) -> "GainSTM":
+        """Constructor
+
+        Arguments:
+        - `sampling_period` - Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
+        """
+
         return GainSTM(None, None, None, sampling_period)
 
     def add_gain(self, gain: IGain) -> "GainSTM":
+        """Add gain
+
+        Arguments:
+        - `gain` - Gain
+        """
+
         self._gains.append(gain)
         return self
 
     def add_gains_from_iter(self, iter: Iterable[IGain]) -> "GainSTM":
+        """Add gains
+
+        Arguments:
+        - `iter` - Iterable of gains
+        """
+
         self._gains.extend(iter)
         return self
 
@@ -237,13 +333,31 @@ class GainSTM(STM):
         return self._sampling_period_from_size(len(self._gains))
 
     def with_mode(self, mode: GainSTMMode) -> "GainSTM":
+        """Set GainSTMMode
+
+        Arguments:
+        - `mode` - GainSTMMode
+        """
+
         self._mode = mode
         return self
 
     def with_start_idx(self, value: Optional[int]) -> "GainSTM":
+        """Set the start index of STM
+
+        Arguments:
+        - `value` - Start index of STM.
+        """
+
         self._start_idx = -1 if value is None else value
         return self
 
     def with_finish_idx(self, value: Optional[int]) -> "GainSTM":
+        """Set the finish index of STM
+
+        Arguments:
+        - `value` - Finish index of STM.
+        """
+
         self._finish_idx = -1 if value is None else value
         return self

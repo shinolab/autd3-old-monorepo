@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,10 @@ from ..internal.gain import IGain
 
 
 class Null(IGain):
+    """Gain to output nothing
+
+    """
+
     def __init__(self):
         super().__init__()
 

@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ impl Uniform {
     ///
     /// # Arguments
     ///
-    /// * `phase` - phasae
+    /// * `phase` - phase (from 0 to 2π)
     ///
     pub fn with_phase(self, phase: float) -> Self {
         Self { phase, ..self }

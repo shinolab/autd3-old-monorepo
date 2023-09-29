@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ const ENABLED_MOD_DELAY_BIT: u8 = 1 << 3;
 const ENABLED_FILTER_BIT: u8 = 1 << 4;
 const ENABLED_EMULATOR_BIT: u8 = 1 << 7;
 
+/// Firmware information
 pub struct FirmwareInfo {
     idx: usize,
     cpu_version_number_major: u8,

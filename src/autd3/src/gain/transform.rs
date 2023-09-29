@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ pub trait IntoTransform<T: Transducer, G: Gain<T>> {
     ///
     /// # Arguments
     ///
-    /// * `f` - transform function. The first argument is the device, the second argument is transducer, and the third argument is the original gain data.
+    /// * `f` - transform function. The first argument is the device, the second is transducer, and the third is the original drive data.
     ///
     fn with_transform<F: Fn(&Device<T>, &T, &Drive) -> Drive>(self, f: F) -> Transform<T, G, F>;
 }
