@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,19 +43,13 @@ pub unsafe extern "C" fn AUTDGainHoloNaiveWithConstraint(
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
 
     use super::*;
-    use crate::{constraint::*, nalgebra_backend::*, tests::*};
-
-    use autd3capi::{gain::*, *};
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
+    use crate::{constraint::*, nalgebra_backend::*};
 
     #[test]
     fn test_holo_naive() {
         unsafe {
-            let cnt = create_controller();
-
             let backend = AUTDNalgebraBackend();
 
             let size = 2;
@@ -70,25 +64,9 @@ mod tests {
             let constraint = AUTDGainHoloConstraintUniform(1.);
             let holo = AUTDGainHoloNaiveWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintClamp(0., 1.);
-            let holo = AUTDGainHoloNaiveWithConstraint(holo, constraint);
-
-            let holo = AUTDGainIntoDatagram(holo);
-
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    autd3capi_def::TransMode::Legacy,
-                    DatagramPtr(std::ptr::null()),
-                    holo,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let _ = AUTDGainHoloNaiveWithConstraint(holo, constraint);
 
             AUTDDeleteNalgebraBackend(backend);
-            AUTDControllerDelete(cnt);
         }
     }
 }
