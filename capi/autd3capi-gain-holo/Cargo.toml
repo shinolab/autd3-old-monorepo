@@ -13,9 +13,6 @@ autd3capi-def = { path = "../autd3capi-def" }
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }
 
-[dev-dependencies]
-autd3capi = { path = "../autd3capi" }
-
 [features]
 single_float = ["autd3capi-def/single_float"]
 use_meter = ["autd3capi-def/use_meter"]

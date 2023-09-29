@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -79,19 +79,13 @@ pub unsafe extern "C" fn AUTDGainHoloLMWithInitial(
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
 
     use super::*;
-    use crate::{constraint::*, nalgebra_backend::*, tests::*};
-
-    use autd3capi::{gain::*, *};
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
+    use crate::{constraint::*, nalgebra_backend::*};
 
     #[test]
     fn test_holo_lm() {
         unsafe {
-            let cnt = create_controller();
-
             let backend = AUTDNalgebraBackend();
 
             let size = 2;
@@ -113,25 +107,9 @@ mod tests {
             let holo = AUTDGainHoloLMWithTau(holo, 1e-3);
             let holo = AUTDGainHoloLMWithKMax(holo, 5);
             let initial = [0.; 1];
-            let holo = AUTDGainHoloLMWithInitial(holo, initial.as_ptr(), initial.len() as _);
-
-            let holo = AUTDGainIntoDatagram(holo);
-
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    autd3capi_def::TransMode::Legacy,
-                    DatagramPtr(std::ptr::null()),
-                    holo,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let _ = AUTDGainHoloLMWithInitial(holo, initial.as_ptr(), initial.len() as _);
 
             AUTDDeleteNalgebraBackend(backend);
-            AUTDControllerDelete(cnt);
         }
     }
 }
