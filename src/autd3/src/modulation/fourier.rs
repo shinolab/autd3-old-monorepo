@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,7 @@ use std::ops::{Deref, DerefMut};
 
 use super::sine::Sine;
 
-use autd3_driver::{
-    derive::prelude::*,
-};
+use autd3_driver::derive::prelude::*;
 
 use num::integer::lcm;
 
@@ -36,6 +34,11 @@ impl Fourier {
         }
     }
 
+    /// Add a sine wave component
+    ///
+    /// # Arguments
+    /// - `sine` - `Sine` modulation
+    ///
     pub fn add_component(self, sine: Sine) -> Self {
         let Self {
             mut components,
@@ -49,6 +52,11 @@ impl Fourier {
         }
     }
 
+    /// Add sine wave components from iterator
+    ///
+    /// # Arguments
+    /// - `iter` - Iterator of `Sine` modulation
+    ///
     pub fn add_components_from_iter<M: Into<Sine>, T: IntoIterator<Item = M>>(
         self,
         iter: T,

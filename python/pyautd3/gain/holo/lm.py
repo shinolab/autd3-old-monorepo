@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,16 @@ from pyautd3.gain.gain import IGain
 
 
 class LM(IGain):
+    """Gain to produce multiple foci with Levenberg-Marquardt algorithm
+
+    - Reference
+        * Levenberg, Kenneth. "A method for the solution of certain non-linear problems in least squares,"
+          Quarterly of applied mathematics 2.2 (1944): 164-168.
+        * Marquardt, Donald W. "An algorithm for least-squares estimation of nonlinear parameters,"
+          Journal of the society for Industrial and Applied Mathematics 11.2 (1963): 431-441.
+        * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
+    """
+
     _foci: List[float]
     _amps: List[float]
     _backend: Backend
@@ -50,6 +60,13 @@ class LM(IGain):
         self._constraint = None
 
     def add_focus(self, focus: np.ndarray, amp: float) -> "LM":
+        """Add focus
+
+        Arguments:
+        - `focus` - Focus point
+        - `amp` - Focus amplitude
+        """
+
         self._foci.append(focus[0])
         self._foci.append(focus[1])
         self._foci.append(focus[2])
@@ -59,6 +76,12 @@ class LM(IGain):
     def add_foci_from_iter(
         self, iterable: Iterable[Tuple[np.ndarray, float]]
     ) -> "LM":
+        """Add foci from iterable
+
+        Arguments:
+        - `iterable` - Iterable of focus point and amplitude
+        """
+
         return functools.reduce(
             lambda acc, x: acc.add_focus(x[0], x[1]),
             iterable,
@@ -86,6 +109,12 @@ class LM(IGain):
         return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "LM":
+        """Set amplitude constraint
+
+        Arguments:
+        - `constraint` - Amplitude constraint
+        """
+
         self._constraint = constraint
         return self
 

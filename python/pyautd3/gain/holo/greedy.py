@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,13 @@ from pyautd3.gain.gain import IGain
 
 
 class Greedy(IGain):
+    """Gain to produce multiple foci with greedy algorithm
+
+    - Reference
+        * Suzuki, Shun, et al. "Radiation pressure field reconstruction for ultrasound midair haptics by Greedy algorithm with brute-force search,"
+          IEEE Transactions on Haptics 14.4 (2021): 914-921.
+    """
+
     _foci: List[float]
     _amps: List[float]
     _div: Optional[int]
@@ -40,6 +47,13 @@ class Greedy(IGain):
         self._constraint = None
 
     def add_focus(self, focus: np.ndarray, amp: float) -> "Greedy":
+        """Add focus
+
+        Arguments:
+        - `focus` - Focus point
+        - `amp` - Focus amplitude
+        """
+
         self._foci.append(focus[0])
         self._foci.append(focus[1])
         self._foci.append(focus[2])
@@ -49,6 +63,12 @@ class Greedy(IGain):
     def add_foci_from_iter(
         self, iterable: Iterable[Tuple[np.ndarray, float]]
     ) -> "Greedy":
+        """Add foci from iterable
+
+        Arguments:
+        - `iterable` - Iterable of focus point and amplitude
+        """
+
         return functools.reduce(
             lambda acc, x: acc.add_focus(x[0], x[1]),
             iterable,
@@ -60,6 +80,12 @@ class Greedy(IGain):
         return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "Greedy":
+        """Set amplitude constraint
+
+        Arguments:
+        - `constraint` - Amplitude constraint
+        """
+
         self._constraint = constraint
         return self
 
