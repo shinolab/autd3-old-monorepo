@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 29/09/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,9 +22,8 @@ int main() try {
                   .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                   .open_with(autd3::link::Debug());
 
-  for (auto& tr : autd.geometry().devices() | std::views::transform([](const auto& dev) { return dev.transducers(); }) | std::views::join) {
-    tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
-  }
+  for (auto& dev : autd.geometry())
+    for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd.send(autd3::Synchronize());  // You must synchronize after configuring the frequencies.
 
