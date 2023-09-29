@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -14,13 +14,10 @@
 use autd3::prelude::*;
 use autd3_gain_holo::*;
 
+use super::test_runner::Backend;
+
 use colored::*;
 use std::io::{self, Write};
-
-#[cfg(feature = "cuda")]
-use autd3_backend_cuda::CUDABackend as Backend;
-#[cfg(not(feature = "cuda"))]
-use NalgebraBackend as Backend;
 
 pub fn holo<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -71,12 +71,12 @@ impl<T: Transducer> Device<T> {
         self.inv * (p - self.transducers[0].position())
     }
 
-    /// Translate all devices
+    /// Translate all transducers in the device
     pub fn translate(&mut self, t: Vector3) {
         self.affine(t, UnitQuaternion::identity());
     }
 
-    /// Rorate all devices
+    /// Rorate all transducers in the device
     pub fn rotate(&mut self, r: UnitQuaternion) {
         self.affine(Vector3::zeros(), r);
     }
@@ -86,7 +86,7 @@ impl<T: Transducer> Device<T> {
         self.transducers.iter_mut().for_each(|tr| tr.affine(t, r));
     }
 
-    /// Set speed of sound of all devices from temperature
+    /// Set speed of sound from temperature
     /// This is equivalent to `set_sound_speed_from_temp_with(temp, 1.4, 8.314463, 28.9647e-3)`
     ///
     /// # Arguments
@@ -122,6 +122,24 @@ impl<T: Transducer> Deref for Device<T> {
 impl<T: Transducer> DerefMut for Device<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.transducers
+    }
+}
+
+impl<'a, T: Transducer> IntoIterator for &'a Device<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.transducers.iter()
+    }
+}
+
+impl<'a, T: Transducer> IntoIterator for &'a mut Device<T> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.transducers.iter_mut()
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,10 +18,20 @@ use anyhow::Result;
 use autd3::prelude::*;
 use autd3_link_visualizer::*;
 
+#[cfg(not(feature = "python"))]
+use PlotConfig as Config;
+#[cfg(feature = "python")]
+use PyPlotConfig as Config;
+
 fn main() -> Result<()> {
+    #[cfg(feature = "python")]
+    let link = Visualizer::python();
+    #[cfg(not(feature = "python"))]
+    let link = Visualizer::plotters();
+
     let mut autd = Controller::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Visualizer::default())?;
+        .open_with(link)?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -31,9 +41,9 @@ fn main() -> Result<()> {
     autd.send((m, g))?;
 
     autd.link().plot_phase(
-        PlotConfig {
+        Config {
             fname: Path::new("phase.png").into(),
-            ..PlotConfig::default()
+            ..Config::default()
         },
         autd.geometry(),
     )?;
@@ -44,9 +54,9 @@ fn main() -> Result<()> {
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        PlotConfig {
+        Config {
             fname: Path::new("x.png").into(),
-            ..PlotConfig::default()
+            ..Config::default()
         },
         autd.geometry(),
     )?;
@@ -57,9 +67,9 @@ fn main() -> Result<()> {
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        PlotConfig {
+        Config {
             fname: Path::new("xy.png").into(),
-            ..PlotConfig::default()
+            ..Config::default()
         },
         autd.geometry(),
     )?;
@@ -70,9 +80,9 @@ fn main() -> Result<()> {
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
         },
-        PlotConfig {
+        Config {
             fname: Path::new("yz.png").into(),
-            ..PlotConfig::default()
+            ..Config::default()
         },
         autd.geometry(),
     )?;
@@ -83,17 +93,17 @@ fn main() -> Result<()> {
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
         },
-        PlotConfig {
+        Config {
             fname: Path::new("zx.png").into(),
             ticks_step: 20.,
-            ..PlotConfig::default()
+            ..Config::default()
         },
         autd.geometry(),
     )?;
 
-    autd.link().plot_modulation(PlotConfig {
+    autd.link().plot_modulation(Config {
         fname: Path::new("mod.png").into(),
-        ..PlotConfig::default()
+        ..Config::default()
     })?;
 
     // Calculate acoustic pressure without plotting

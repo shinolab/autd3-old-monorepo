@@ -4,7 +4,7 @@ Project: internal
 Created Date: 29/08/2023
 Author: Shun Suzuki
 -----
-Last Modified: 27/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,13 +39,27 @@ class IGain(Datagram, metaclass=ABCMeta):
         pass
 
     def with_cache(self):
+        """Cache the result of calculation
+
+        """
+
         return Cache(self)
 
-    def with_transform(self, f):
+    def with_transform(self, f: Callable[[Device, Transducer, Drive], Drive]):
+        """Transform the result of calculation
+
+        Arguments:
+        - `f` - Transform function. The first argument is device, the second is transducer, and the third is the original drive data.
+        """
+
         return Transform(self, f)
 
 
 class Cache(IGain):
+    """Gain to cache the result of calculation
+
+    """
+
     _g: IGain
     _cache: Dict[int, np.ndarray]
 
@@ -78,10 +92,18 @@ class Cache(IGain):
         )
 
     def drives(self) -> Dict[int, np.ndarray]:
+        """get cached drives
+
+        """
+
         return self._cache
 
 
 class Transform(IGain):
+    """Gain to transform gain data
+
+    """
+
     _g: IGain
     _f: Callable[[Device, Transducer, Drive], Drive]
 
