@@ -48,8 +48,8 @@ Note that you must send `Synchronize` after frequency configuration.
 #                  .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #        .open_with(Debug::new())?;
-for dev in autd.geometry_mut().iter_mut() {
-    for tr in dev.iter_mut() {
+for dev in autd.geometry_mut() {
+    for tr in dev {
         tr.set_frequency(70e3)?;
     }
 }

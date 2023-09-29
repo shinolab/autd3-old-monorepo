@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -108,6 +108,24 @@ impl<T: Transducer> Deref for Geometry<T> {
 impl<T: Transducer> DerefMut for Geometry<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.devices
+    }
+}
+
+impl<'a, T: Transducer> IntoIterator for &'a Geometry<T> {
+    type Item = &'a Device<T>;
+    type IntoIter = std::slice::Iter<'a, Device<T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.devices.iter()
+    }
+}
+
+impl<'a, T: Transducer> IntoIterator for &'a mut Geometry<T> {
+    type Item = &'a mut Device<T>;
+    type IntoIter = std::slice::IterMut<'a, Device<T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.devices.iter_mut()
     }
 }
 

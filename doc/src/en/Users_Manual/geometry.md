@@ -260,7 +260,7 @@ Or, you can use an iterator.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-for dev in autd.geometry().iter() {
+for dev in autd.geometry() {
   // do something
 }
 # Ok(())

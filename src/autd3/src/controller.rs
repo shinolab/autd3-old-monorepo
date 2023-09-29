@@ -360,7 +360,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         if !self.link.is_open() {
             return Ok(false);
         }
-        for dev in self.geometry_mut().iter_mut() {
+        for dev in self.geometry_mut() {
             dev.enable = true;
         }
         let res = self.send(Stop::new())?;
@@ -512,7 +512,7 @@ mod tests {
             .open_with(Audit::new())
             .unwrap();
 
-        for dev in autd.geometry_mut().iter_mut() {
+        for dev in autd.geometry_mut() {
             dev.force_fan = true;
         }
 
