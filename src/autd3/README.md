@@ -2,13 +2,13 @@
 
 [autd3](https://github.com/shinolab/autd3) library
 
-version: 15.2.0
+version: 15.2.1
 
 ## Install with Cargo
 
 ```
 [dependencies]
-autd3 = "15.2.0"
+autd3 = "15.2.1"
 ```
 
 ## Documents

@@ -1,6 +1,6 @@
 [package]
 name = "autd3-protobuf"
-version = "15.2.0"
+version = "15.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -14,9 +14,9 @@ keywords = ["autd"]
 h2 = "0.3.20"
 prost = { version = "0.12.0" }
 tonic = { version = "0.10.0", default-features = false, features = ["prost", "codegen", "transport"] }
-autd3 = { path = "../autd3", version = "15.2.0" }
-autd3-driver = { path = "../autd3-driver", version = "15.2.0" }
-autd3-gain-holo = { path = "../autd3-gain-holo", version = "15.2.0" }
+autd3 = { path = "../autd3", version = "15.2.1" }
+autd3-driver = { path = "../autd3-driver", version = "15.2.1" }
+autd3-gain-holo = { path = "../autd3-gain-holo", version = "15.2.1" }
 thiserror = "1.0.40"
 tokio = { version = "1.0", features = ["rt-multi-thread"] }
 
