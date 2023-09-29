@@ -11,6 +11,9 @@
  *
  */
 
+use colored::*;
+use std::io::{self, Write};
+
 use autd3::prelude::*;
 pub use autd3_gain_holo::*;
 
@@ -41,9 +44,10 @@ where
     autd3_driver::operation::GainOp<T, TransducerTest>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, MyUniform>: autd3_driver::operation::Operation<T>,
 {
-    use autd3::prelude::*;
-    use colored::*;
-    use std::io::{self, Write};
+    type Test<'a, T, L> = (
+        &'static str,
+        &'a dyn Fn(&mut Controller<T, L>) -> anyhow::Result<bool>,
+    );
 
     println!("======== AUTD3 firmware information ========");
     autd.firmware_infos()?.iter().for_each(|firm_info| {
@@ -51,7 +55,7 @@ where
     });
     println!("============================================");
 
-    let mut examples: Vec<(&'static str, &dyn Fn(&mut _) -> anyhow::Result<bool>)> = vec![
+    let mut examples: Vec<Test<_, _>> = vec![
         ("Single focus test", &focus),
         ("Bessel beam test", &bessel),
         ("Plane wave test", &plane),
