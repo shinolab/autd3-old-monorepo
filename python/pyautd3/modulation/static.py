@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,10 @@ from pyautd3.internal.modulation import IModulation
 
 
 class Static(IModulation):
+    """Without modulation
+
+    """
+
     _amp: Optional[float]
 
     def __init__(self):
@@ -27,6 +31,12 @@ class Static(IModulation):
         self._amp = None
 
     def with_amp(self, amp: float) -> "Static":
+        """Set amplitude
+
+        Arguments:
+        - `amp` - Normalized amplitude (from 0 to 1)
+        """
+
         self._amp = amp
         return self
 

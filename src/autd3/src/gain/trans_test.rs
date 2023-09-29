@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,13 +31,13 @@ impl TransducerTest {
         }
     }
 
-    /// set drive
+    /// set drive parameters
     ///
     /// # Arguments
     ///
     /// * `dev_idx` - device transducer index
     /// * `tr_idx` - local transducer index
-    /// * `phase` - phase
+    /// * `phase` - phase (from 0 to 2π)
     /// * `amp` - normalized amplitude (from 0 to 1)
     pub fn set(mut self, dev_idx: usize, tr_idx: usize, phase: float, amp: float) -> Self {
         self.test_drive.insert((dev_idx, tr_idx), (phase, amp));

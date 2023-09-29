@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,15 +21,31 @@ from ..internal.gain import IGain
 
 
 class Uniform(IGain):
+    """Gain with uniform amplitude and phase
+
+    """
+
     _amp: float
     _phase: Optional[float]
 
     def __init__(self, amp: float):
+        """Constructor
+
+        Arguments:
+        - `amp` - Normalized amplitude (from 0 to 1)
+        """
+
         super().__init__()
         self._amp = amp
         self._phase = None
 
     def with_phase(self, phase: float) -> "Uniform":
+        """Set phase
+
+        Arguments:
+        - `phase` - Phase (from 0 to 2π)
+        """
+
         self._phase = phase
         return self
 

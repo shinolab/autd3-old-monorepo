@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use std::{
 
 use crate::error::AudioFileError;
 
-/// Modulation constructed from raw PCM data
+/// Modulation constructed from a raw PCM data
 ///
 /// The raw PCM data must be 8bit unsigned integer.
 ///

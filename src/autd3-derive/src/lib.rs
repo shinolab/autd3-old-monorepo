@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             ///
             /// # Arguments
             ///
-            /// * `freq_div` - Sampling frequency division. The sampling frequency will be [FPGA_SUB_CLK_FREQ] / `freq_div`. The value must be and must be at least [SAMPLING_FREQ_DIV_MIN]
+            /// * `freq_div` - Sampling frequency division. The sampling frequency will be [FPGA_SUB_CLK_FREQ] / `freq_div`. The value must be at least [SAMPLING_FREQ_DIV_MIN]
             ///
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
