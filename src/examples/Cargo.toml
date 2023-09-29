@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "15.2.0"
+version = "15.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
@@ -81,6 +81,8 @@ remote_soem = ["autd3-link-soem/remote"]
 twincat = ["autd3-link-twincat/local"]
 remote_twincat = ["autd3-link-twincat/remote"]
 visualizer = ["autd3-link-visualizer"]
+gpu = ["autd3-link-visualizer/gpu"]
+python = ["autd3-link-visualizer/python"]
 lightweight = ["autd3-protobuf", "tokio"]
 all = ["twincat", "remote_twincat", "soem", "remote_soem", "async", "lightweight", "simulator", "visualizer"]
 

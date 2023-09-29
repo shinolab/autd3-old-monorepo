@@ -28,3 +28,4 @@ resolver = "2"
 strip = true
 lto = true
 codegen-units = 1
+rpath = true

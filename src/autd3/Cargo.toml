@@ -1,6 +1,6 @@
 [package]
 name = "autd3"
-version = "15.2.0"
+version = "15.2.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,9 +11,9 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-driver = { path = "../autd3-driver", version = "15.2.0" }
-autd3-derive = { path = "../autd3-derive", version = "15.2.0" }
-autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "15.2.0" }
+autd3-driver = { path = "../autd3-driver", version = "15.2.1" }
+autd3-derive = { path = "../autd3-derive", version = "15.2.1" }
+autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "15.2.1" }
 num = "0.4.0"
 thiserror = "1.0.31"
 spdlog-rs = "0.3.8"

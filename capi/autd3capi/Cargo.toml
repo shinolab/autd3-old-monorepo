@@ -1,11 +1,11 @@
 [package]
 name = "autd3capi"
-version = "15.2.0"
+version = "15.2.1"
 edition = "2021"
 license = "MIT"
 
 [lib]
-crate-type = ["rlib", "cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }

@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 26/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -54,16 +54,34 @@ class IModulation(Datagram, metaclass=ABCMeta):
         pass
 
     def with_cache(self):
+        """Cache the result of calculation
+
+        """
+
         return Cache(self)
 
     def with_radiation_pressure(self):
+        """Apply modulation to radiation pressure instead of amplitude
+
+        """
+
         return RadiationPressure(self)
 
     def with_transform(self, f: Callable[[int, float], float]):
+        """Transform modulation data
+
+        Arguments:
+        - `f` - Transform function. The first argument is the index of the modulation data, and the second is the original data.
+        """
+
         return Transform(self, f)
 
 
 class Cache(IModulation):
+    """Modulation to cache the result of calculation
+
+    """
+
     _cache: ModulationCachePtr
     _buffer: np.ndarray
 
@@ -80,6 +98,10 @@ class Cache(IModulation):
 
     @property
     def buffer(self) -> np.ndarray:
+        """get cached modulation data
+
+        """
+
         return self._buffer
 
     def __getitem__(self, key: int) -> float:
@@ -96,6 +118,10 @@ class Cache(IModulation):
 
 
 class Transform(IModulation):
+    """Modulation to transform modulation data
+
+    """
+
     _m: IModulation
 
     def __init__(self, m: IModulation, f: Callable[[int, float], float]):
@@ -107,6 +133,10 @@ class Transform(IModulation):
 
 
 class RadiationPressure(IModulation):
+    """Modulation for modulating radiation pressure
+
+    """
+
     _m: IModulation
 
     def __init__(self, m: IModulation):

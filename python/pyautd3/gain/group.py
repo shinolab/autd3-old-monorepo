@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 27/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,11 +29,24 @@ class Group(IGain, Generic[K]):
     _f: Callable[[Device, Transducer], Optional[K]]
 
     def __init__(self, f: Callable[[Device, Transducer], Optional[K]]):
+        """Constructor
+
+        Arguments:
+        - `f` - Function to get key from device and transducer
+        """
+
         super().__init__()
         self._map = {}
         self._f = f
 
     def set(self, key: K, gain: IGain) -> "Group":
+        """Set gain
+
+        Arguments:
+        - `key` - Key
+        - `gain` - Gain
+        """
+
         self._map[key] = gain
         return self
 

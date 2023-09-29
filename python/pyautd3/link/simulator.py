@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,10 +24,20 @@ from pyautd3.autd_error import AUTDError
 
 
 class Simulator(Link):
+    """Link for Simulator
+
+    """
+
     def __init__(self, port: int):
         super().__init__(LinkSimulator().link_simulator(port))
 
     def with_server_ip(self, addr: str) -> "Simulator":
+        """Set server IP address
+
+        Arguments:
+        - `addr` - Server IP address
+        """
+
         err = ctypes.create_string_buffer(256)
         self._ptr = LinkSimulator().link_simulator_with_addr(
             self._ptr, addr.encode("utf-8"), err
@@ -37,6 +47,12 @@ class Simulator(Link):
         return self
 
     def with_timeout(self, timeout: timedelta) -> "Simulator":
+        """Set timeout
+
+        Arguments:
+        - `timeout` - Timeout
+        """
+
         self._ptr = LinkSimulator().link_simulator_with_timeout(
             self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )

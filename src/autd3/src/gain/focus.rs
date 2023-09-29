@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use autd3_driver::{
 
 use autd3_derive::Gain;
 
-/// Gain to produce single focal point
+/// Gain to produce a focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Focus {
     amp: float,
@@ -32,7 +32,7 @@ impl Focus {
     ///
     /// # Arguments
     ///
-    /// * `pos` - position of focal point
+    /// * `pos` - position of the focal point
     ///
     pub fn new(pos: Vector3) -> Self {
         Self { pos, amp: 1.0 }

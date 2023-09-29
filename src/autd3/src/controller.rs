@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -301,7 +301,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// # Returns
     ///
     /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
-    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent reliably or not
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent or not
     ///
     pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         let timeout = s.timeout().unwrap_or(self.link.timeout());
@@ -360,7 +360,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         if !self.link.is_open() {
             return Ok(false);
         }
-        for dev in self.geometry_mut().iter_mut() {
+        for dev in self.geometry_mut() {
             dev.enable = true;
         }
         let res = self.send(Stop::new())?;
@@ -512,7 +512,7 @@ mod tests {
             .open_with(Audit::new())
             .unwrap();
 
-        for dev in autd.geometry_mut().iter_mut() {
+        for dev in autd.geometry_mut() {
             dev.force_fan = true;
         }
 

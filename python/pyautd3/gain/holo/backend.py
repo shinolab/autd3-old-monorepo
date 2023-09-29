@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,10 @@ from pyautd3.native_methods.autd3capi_def import GainPtr
 
 
 class Backend(metaclass=ABCMeta):
+    """Calculation backend
+
+    """
+
     _ptr: BackendPtr
 
     def __init__(self, ptr: BackendPtr):
@@ -123,6 +127,10 @@ class Backend(metaclass=ABCMeta):
 
 
 class NalgebraBackend(Backend):
+    """Backend using nalgebra
+
+    """
+
     def __init__(self):
         super().__init__(GainHolo().nalgebra_backend())
 

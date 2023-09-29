@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,16 +15,21 @@ use std::time::Duration;
 
 use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
-/// Datagram for clear all data in devices
+/// Datagram for configure silencer
 pub struct Silencer {
     step: u16,
 }
 
 impl Silencer {
+    /// constructor
+    ///
+    /// # Arguments
+    /// * `step` - The update step of silencer. The lower the value, the stronger the silencer effect.
     pub const fn new(step: u16) -> Self {
         Self { step }
     }
 
+    /// Disable silencer
     pub const fn disable() -> Self {
         Self { step: 0xFFFF }
     }

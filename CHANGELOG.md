@@ -1,3 +1,8 @@
+# 15.2.1
+
+- impl `IntoIterator` for `Geometry` and `Device`
+- Fix [#194](https://github.com/shinolab/autd3/issues/194): Cannot use C++ library on macOS 
+
 # 15.2.0
 
 - Merge `GeometryViewer` into Simulator

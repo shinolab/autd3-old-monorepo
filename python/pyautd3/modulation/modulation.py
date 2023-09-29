@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 14/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,9 +21,20 @@ from pyautd3.internal.modulation import IModulation
 
 
 class Modulation(IModulation, metaclass=ABCMeta):
+    """Base class of custom Modulation
+
+    """
+
     _freq_div: int
 
     def __init__(self, freq_div: int):
+        """Constructor
+
+        Arguments:
+        - `freq_div` - Sampling frequency division.
+          The sampling frequency will be `pyautd3.AUTD3.fpga_sub_clk_freq()` / `freq_div`.
+        """
+
         super().__init__()
         self._freq_div = freq_div
 
