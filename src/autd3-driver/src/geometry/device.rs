@@ -125,6 +125,24 @@ impl<T: Transducer> DerefMut for Device<T> {
     }
 }
 
+impl<'a, T: Transducer> IntoIterator for &'a Device<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.transducers.iter()
+    }
+}
+
+impl<'a, T: Transducer> IntoIterator for &'a mut Device<T> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.transducers.iter_mut()
+    }
+}
+
 pub trait IntoDevice<T: Transducer> {
     fn into_device(self, dev_idx: usize) -> Device<T>;
 }

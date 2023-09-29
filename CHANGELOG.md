@@ -1,3 +1,7 @@
+# 15.2.1
+
+- impl `IntoIterator` for `Geometry` and `Device`
+
 # 15.2.0
 
 - Merge `GeometryViewer` into Simulator
