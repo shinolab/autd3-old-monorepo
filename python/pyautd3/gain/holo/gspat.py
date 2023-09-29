@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,13 @@ from pyautd3.gain.gain import IGain
 
 
 class GSPAT(IGain):
+    """Gain to produce multiple foci with GS-PAT algorithm
+
+    - Reference
+        * Plasencia, Diego Martinez, et al. "GS-PAT: high-speed multi-point sound-fields for phased arrays of transducers,"
+          ACM Transactions on Graphics (TOG) 39.4 (2020): 138-1.
+    """
+
     _foci: List[float]
     _amps: List[float]
     _backend: Backend
@@ -41,6 +48,13 @@ class GSPAT(IGain):
         self._constraint = None
 
     def add_focus(self, focus: np.ndarray, amp: float) -> "GSPAT":
+        """Add focus
+
+        Arguments:
+        - `focus` - Focus point
+        - `amp` - Focus amplitude
+        """
+
         self._foci.append(focus[0])
         self._foci.append(focus[1])
         self._foci.append(focus[2])
@@ -50,6 +64,12 @@ class GSPAT(IGain):
     def add_foci_from_iter(
         self, iterable: Iterable[Tuple[np.ndarray, float]]
     ) -> "GSPAT":
+        """Add foci from iterable
+
+        Arguments:
+        - `iterable` - Iterable of focus point and amplitude
+        """
+
         return functools.reduce(
             lambda acc, x: acc.add_focus(x[0], x[1]),
             iterable,
@@ -61,6 +81,12 @@ class GSPAT(IGain):
         return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "GSPAT":
+        """Set amplitude constraint
+
+        Arguments:
+        - `constraint` - Amplitude constraint
+        """
+
         self._constraint = constraint
         return self
 

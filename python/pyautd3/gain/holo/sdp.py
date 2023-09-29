@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,13 @@ from pyautd3.gain.gain import IGain
 
 
 class SDP(IGain):
+    """Gain to produce multiple foci by solving Semi-Denfinite Programming
+
+    - Reference
+        * Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram,"
+          2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
+    """
+
     _foci: List[float]
     _amps: List[float]
     _backend: Backend
@@ -46,6 +53,13 @@ class SDP(IGain):
         self._constraint = None
 
     def add_focus(self, focus: np.ndarray, amp: float) -> "SDP":
+        """Add focus
+
+        Arguments:
+        - `focus` - Focus point
+        - `amp` - Focus amplitude
+        """
+
         self._foci.append(focus[0])
         self._foci.append(focus[1])
         self._foci.append(focus[2])
@@ -55,6 +69,12 @@ class SDP(IGain):
     def add_foci_from_iter(
         self, iterable: Iterable[Tuple[np.ndarray, float]]
     ) -> "SDP":
+        """Add foci from iterable
+
+        Arguments:
+        - `iterable` - Iterable of focus point and amplitude
+        """
+
         return functools.reduce(
             lambda acc, x: acc.add_focus(x[0], x[1]),
             iterable,
@@ -74,6 +94,12 @@ class SDP(IGain):
         return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "SDP":
+        """Set amplitude constraint
+
+        Arguments:
+        - `constraint` - Amplitude constraint
+        """
+
         self._constraint = constraint
         return self
 

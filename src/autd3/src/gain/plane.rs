@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3_driver::{
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
-/// Gain to produce plane wave
+/// Gain to produce a plane wave
 #[derive(Gain, Clone, Copy)]
 pub struct Plane {
     amp: float,
@@ -31,7 +31,7 @@ impl Plane {
     ///
     /// # Arguments
     ///
-    /// * `dir` - direction of plane wave
+    /// * `dir` - direction of the plane wave
     ///
     pub fn new(dir: Vector3) -> Self {
         Self { dir, amp: 1.0 }

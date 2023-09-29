@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -71,12 +71,12 @@ impl<T: Transducer> Device<T> {
         self.inv * (p - self.transducers[0].position())
     }
 
-    /// Translate all devices
+    /// Translate all transducers in the device
     pub fn translate(&mut self, t: Vector3) {
         self.affine(t, UnitQuaternion::identity());
     }
 
-    /// Rorate all devices
+    /// Rorate all transducers in the device
     pub fn rotate(&mut self, r: UnitQuaternion) {
         self.affine(Vector3::zeros(), r);
     }
@@ -86,7 +86,7 @@ impl<T: Transducer> Device<T> {
         self.transducers.iter_mut().for_each(|tr| tr.affine(t, r));
     }
 
-    /// Set speed of sound of all devices from temperature
+    /// Set speed of sound from temperature
     /// This is equivalent to `set_sound_speed_from_temp_with(temp, 1.4, 8.314463, 28.9647e-3)`
     ///
     /// # Arguments

@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 29/09/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,15 +22,30 @@ from ..internal.gain import IGain
 
 
 class Plane(IGain):
+    """Gain to produce a plane wave
+
+    """
+
     _d: np.ndarray
     _amp: Optional[float]
 
     def __init__(self, dir: np.ndarray):
+        """Constructor
+
+        Arguments:
+        - `dir` - Direction of the plane wave
+        """
         super().__init__()
         self._d = dir
         self._amp = None
 
     def with_amp(self, amp: float) -> "Plane":
+        """Set amplitude
+
+        Arguments:
+        - `amp` - Normalized amplitude (from 0 to 1)
+        """
+
         self._amp = amp
         return self
 

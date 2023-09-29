@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ impl SineLegacy {
     ///
     /// # Arguments
     ///
-    /// * `freq` - Frequency of the sine wave
+    /// * `freq` - Frequency of the sine wave [Hz]
     ///
     pub fn new(freq: float) -> Self {
         Self {
