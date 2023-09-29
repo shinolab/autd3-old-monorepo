@@ -312,7 +312,6 @@ dependencies = [
 name = "autd3capi-gain-holo"
 version = "15.2.0"
 dependencies = [
- "autd3capi",
  "autd3capi-def",
  "wrapper-generator",
 ]
