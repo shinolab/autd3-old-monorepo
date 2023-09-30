@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/09/2023
+ * Last Modified: 30/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,18 @@ pub use debug::Debug;
 pub use log::{IntoLog, Log};
 
 /// Link to do nothing
+#[derive(Debug, Clone, Copy, Default)]
 pub struct NullLink {}
+
+impl NullLink {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn with_timeout(self, _timeout: std::time::Duration) -> Self {
+        self
+    }
+}
 
 impl<T: Transducer> Link<T> for NullLink {
     fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {

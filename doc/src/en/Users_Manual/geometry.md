@@ -600,7 +600,7 @@ Or, you can use an iterator.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(Debug::new())?;
-for tr in autd.geometry()[0].iter() {
+for tr in &autd.geometry()[0] {
   // do something
 }
 # Ok(())
@@ -655,7 +655,7 @@ var idx = tr.LocalIdx;
 ```
 
 ```python
-idx = tr.idx
+idx = tr.local_idx
 ```
 
 ### position/rotation
