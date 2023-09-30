@@ -49,3 +49,4 @@ g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set("null", 
 
 > NOTE:
 > このサンプルでは, キーとして文字列を使用しているが, HashMapのキーとして使用できるものなら何でも良い.
+> ただし, C#のみ, キーは`class`である必要がある.
