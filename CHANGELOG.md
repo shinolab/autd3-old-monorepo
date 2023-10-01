@@ -1,3 +1,7 @@
+# 15.2.2
+
+- Fix [#195](https://github.com/shinolab/autd3/issues/195): missing setter for speed of sound in Geometry for C++/C#/Python
+
 # 15.2.1
 
 - impl `IntoIterator` for `Geometry` and `Device`
