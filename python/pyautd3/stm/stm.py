@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 02/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -182,6 +182,8 @@ class FocusSTM(STM):
         - `point` - Focal point
         `duty_shift` - Duty shift. Duty ratio of ultrasound will be `50% >> shift`.
         """
+
+        assert len(point) == 3
 
         self._points.append(point[0])
         self._points.append(point[1])

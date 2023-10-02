@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 02/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -51,6 +51,8 @@ class Naive(IGain):
         - `focus` - Focus point
         - `amp` - Focus amplitude
         """
+
+        assert len(focus) == 3
 
         self._foci.append(focus[0])
         self._foci.append(focus[1])
