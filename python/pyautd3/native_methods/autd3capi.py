@@ -237,6 +237,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [FirmwareInfoListPtr]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.restype = None
 
+        self.dll.AUTDControllerNotifyLinkGeometryUpdated.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerNotifyLinkGeometryUpdated.restype = ctypes.c_bool
+
         self.dll.AUTDFirmwareLatest.argtypes = [ctypes.c_char_p] 
         self.dll.AUTDFirmwareLatest.restype = None
 
@@ -755,6 +758,9 @@ class NativeMethods(metaclass=Singleton):
 
     def controller_firmware_info_list_pointer_delete(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDControllerFirmwareInfoListPointerDelete(p_info_list)
+
+    def controller_notify_link_geometry_updated(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDControllerNotifyLinkGeometryUpdated(cnt, err)
 
     def firmware_latest(self, latest: ctypes.Array[ctypes.c_char]) -> None:
         return self.dll.AUTDFirmwareLatest(latest)
