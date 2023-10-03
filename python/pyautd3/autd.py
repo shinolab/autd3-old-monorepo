@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 03/10/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
 import numpy as np
-from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
@@ -300,7 +300,7 @@ class Controller:
 
     def send(
         self,
-        d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
+        d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
         timeout: Optional[timedelta] = None,
     ) -> bool:
         """Send data
@@ -411,7 +411,7 @@ class Controller:
 
         def set(self,
                 key: K,
-                d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
+                d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
                 timeout: Optional[timedelta] = None,
                 ) -> "Controller.GroupGuard":
             if key in self._keymap:

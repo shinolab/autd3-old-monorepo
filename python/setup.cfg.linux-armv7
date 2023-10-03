@@ -27,7 +27,7 @@ packages =
     pyautd3.modulation.audio_file
     pyautd3.link
     pyautd3.stm
-python_requires = >=3.9
+python_requires = >=3.10
 include_package_data = True
 install_requires =
     numpy
