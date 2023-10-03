@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 03/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,6 +45,36 @@ public class GroupTest
                 }
             }
         }
+    }
+
+    [Fact]
+    public void GroupUnknownKey()
+    {
+        var autd = AUTDTest.CreateController();
+
+        var exception = Record.Exception(() =>
+        {
+            autd.Send(new Group<string>((_, _) => "null").Set("uniform", new Uniform(0.5).WithPhase(Math.PI)).Set("null", new Null()));
+        });
+
+        if (exception == null) Assert.Fail("Exception is expected");
+        Assert.Equal(typeof(AUTDException), exception.GetType());
+        Assert.Equal("AUTDException: Unknown group key", exception.Message);
+    }
+
+    [Fact]
+    public void GroupUnspecifiedKey()
+    {
+        var autd = AUTDTest.CreateController();
+
+        var exception = Record.Exception(() =>
+        {
+            autd.Send(new Group<string>((_, _) => "null"));
+        });
+
+        if (exception == null) Assert.Fail("Exception is expected");
+        Assert.Equal(typeof(AUTDException), exception.GetType());
+        Assert.Equal("AUTDException: Unspecified group key", exception.Message);
     }
 
     [Fact]

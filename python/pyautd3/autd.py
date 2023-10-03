@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 03/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -415,9 +415,7 @@ class Controller:
                 timeout: Optional[timedelta] = None,
                 ) -> "Controller.GroupGuard":
             if key in self._keymap:
-                e = AUTDError()
-                e.msg = "Key is already exists"
-                raise e
+                raise AUTDError("Key is already exists")
 
             timeout_ns = (
                 -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)

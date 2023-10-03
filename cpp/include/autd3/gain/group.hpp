@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 03/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -88,6 +88,7 @@ class Group final : public internal::Gain {
     std::vector<int32_t> keys;
     std::vector<internal::native_methods::GainPtr> values;
     for (auto& kv : _map) {
+      if (!keymap.contains(kv.first)) throw internal::AUTDException("Unknown group key");
       keys.emplace_back(keymap[kv.first]);
       values.emplace_back(kv.second->gain_ptr(geometry));
     }

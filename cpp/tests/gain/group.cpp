@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 03/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,6 +41,36 @@ TEST(Gain, Group) {
       }
     }
   }
+}
+
+TEST(Gain, GroupUnkownKey) {
+  auto autd = create_controller();
+
+  bool caught_err = false;
+  try {
+    autd.send(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; })
+                  .set("uniform", autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi))
+                  .set("null", autd3::gain::Null()));
+  } catch (autd3::internal::AUTDException& e) {
+    caught_err = true;
+    ASSERT_STREQ("Unknown group key", e.what());
+  }
+
+  if (!caught_err) FAIL();
+}
+
+TEST(Gain, GroupUnspecifiedKey) {
+  auto autd = create_controller();
+
+  bool caught_err = false;
+  try {
+    autd.send(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; }));
+  } catch (autd3::internal::AUTDException& e) {
+    caught_err = true;
+    ASSERT_STREQ("Unspecified group key", e.what());
+  }
+
+  if (!caught_err) FAIL();
 }
 
 TEST(Gain, GroupCheckOnlyForEnabled) {
