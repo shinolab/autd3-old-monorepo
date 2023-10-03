@@ -1,3 +1,7 @@
+# 15.3.0
+
+- Fix [#196](https://github.com/shinolab/autd3/issues/196): modulation::Fourier must have one component at least
+
 # 15.2.1
 
 - impl `IntoIterator` for `Geometry` and `Device`

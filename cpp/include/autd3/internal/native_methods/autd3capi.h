@@ -411,7 +411,7 @@ ModulationPtr AUTDModulationWithBandStop(ModulationPtr m,
                                          double f_low,
                                          double f_high);
 
-[[nodiscard]] ModulationPtr AUTDModulationFourier();
+[[nodiscard]] ModulationPtr AUTDModulationFourier(ModulationPtr m);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
