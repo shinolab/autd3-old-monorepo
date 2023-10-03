@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,10 @@ pub enum SOEMError {
     NotReachedSafeOp(u16),
     #[error("Non-AUTD3 device detected: {0}")]
     NotAUTD3Device(String),
+    #[error("Invalid send cycle time")]
+    InvalidSendCycleTime,
+    #[error("Invalid sync0 cycle time")]
+    InvalidSync0CycleTime,
 }
 
 impl From<SOEMError> for AUTDInternalError {
