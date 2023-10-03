@@ -4,7 +4,7 @@
  * Created Date: 26/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -115,6 +115,7 @@ message GeometryResponse {}
 
 service Simulator {
   rpc ConfigGeomety(Geometry) returns (GeometryResponse) {}
+  rpc UpdateGeomety(Geometry) returns (GeometryResponse) {}
   rpc SendData(TxRawData) returns (SendResponse) {}
   rpc ReadData(ReadRequest) returns (RxMessage) {}
   rpc Close(CloseRequest) returns (CloseResponse) {}

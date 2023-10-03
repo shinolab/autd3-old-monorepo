@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -153,6 +153,10 @@ impl TransViewer {
         {
             self.update_color_instance_data(sources)
         }
+    }
+
+    pub fn update_source_pos(&mut self, sources: &SoundSources) {
+        self.update_model_instance_data(sources);
     }
 
     pub fn render(
@@ -372,6 +376,25 @@ impl TransViewer {
                 .zip(sources.drives().zip(sources.visibilities()))
                 .for_each(|(d, (drive, &v))| {
                     d.color = (self.coloring_method)(drive.phase / (2.0 * PI), drive.amp, v);
+                });
+        }
+    }
+
+    fn update_model_instance_data(&mut self, sources: &SoundSources) {
+        if let Some(data) = &mut self.model_instance_data {
+            data.write()
+                .unwrap()
+                .iter_mut()
+                .zip(sources.positions().zip(sources.rotations()))
+                .for_each(|(d, (pos, rot))| {
+                    #[allow(clippy::unnecessary_cast)]
+                    let s = 0.5 * AUTD3::TRANS_SPACING as f32;
+                    let mut m = Matrix4::from_scale(s);
+                    m[3][0] = pos[0];
+                    m[3][1] = pos[1];
+                    m[3][2] = pos[2];
+                    let rotm = Matrix4::from(*rot);
+                    d.model = (m * rotm).into();
                 });
         }
     }

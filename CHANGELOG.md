@@ -1,3 +1,7 @@
+# 15.3.0
+
+- Fix [#197](https://github.com/shinolab/autd3/issues/197): Add ability to update Geometry in Simulator
+
 # 15.2.1
 
 - impl `IntoIterator` for `Geometry` and `Device`

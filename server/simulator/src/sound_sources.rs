@@ -4,7 +4,7 @@
  * Created Date: 22/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -102,6 +102,11 @@ impl SoundSources {
 
     pub fn visibilities_mut(&mut self) -> impl ExactSizeIterator<Item = &mut f32> {
         self.visibilities.iter_mut()
+    }
+
+    pub fn update_geometry(&mut self, i: usize, pos: Vector3, rot: Quaternion) {
+        self.pos[i] = pos.extend(0.);
+        self.rot[i] = rot;
     }
 }
 

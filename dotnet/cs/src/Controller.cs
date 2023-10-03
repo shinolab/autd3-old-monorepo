@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -353,6 +353,14 @@ namespace AUTD3Sharp
         }
 
         #endregion
+
+
+        public void NotifyLinkGeometryUpdated()
+        {
+            var err = new byte[256];
+            if (!Base.AUTDControllerNotifyLinkGeometryUpdated(Ptr, err))
+                throw new AUTDException(err);
+        }
 
         /// <summary>
         /// Send data to the devices
