@@ -1,6 +1,6 @@
 # pyautd3
 
-[autd3 library](https://github.com/shinolab/autd3) for python3.9+
+[autd3 library](https://github.com/shinolab/autd3) for python3.10+
 
 version: 15.2.1
 

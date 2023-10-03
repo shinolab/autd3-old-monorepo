@@ -1,3 +1,7 @@
+# 15.3.0
+
+- Raise minimum supported Python version to 3.10
+
 # 15.2.1
 
 - impl `IntoIterator` for `Geometry` and `Device`
