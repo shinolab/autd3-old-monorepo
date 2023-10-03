@@ -284,7 +284,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationWithBandStop(ModulationPtr m, uint nTaps, float fLow, float fHigh);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationFourier();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationFourier(ModulationPtr m);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier, ModulationPtr m);
 

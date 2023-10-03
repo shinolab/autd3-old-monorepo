@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,9 +29,9 @@ class Fourier(IModulation):
 
     _components: list[Sine]
 
-    def __init__(self):
+    def __init__(self, sine: Sine):
         super().__init__()
-        self._components = []
+        self._components = [sine]
 
     def add_component(self, component: Sine) -> "Fourier":
         """Add a sine wave component
@@ -66,6 +66,6 @@ class Fourier(IModulation):
             lambda acc, s: Base().modulation_fourier_add_component(
                 acc, s.modulation_ptr()
             ),
-            self._components,
-            Base().modulation_fourier(),
+            self._components[1:],
+            Base().modulation_fourier(self._components[0].modulation_ptr()),
         )
