@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 03/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,6 +83,7 @@ namespace AUTD3Sharp.Gain
             var values = new GainPtr[_map.Count];
             foreach (var (kv, i) in _map.Select((v, i) => (v, i)))
             {
+                if (!keymap.ContainsKey(kv.Key)) throw new AUTDException("Unknown group key");
                 keys[i] = keymap[kv.Key];
                 values[i] = kv.Value.GainPtr(geometry);
             }

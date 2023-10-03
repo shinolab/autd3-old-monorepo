@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 02/10/2023
+Last Modified: 03/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 from typing import Optional, Callable, TypeVar, Generic, Dict
 from ctypes import POINTER, c_int32, c_uint32
+from pyautd3.autd_error import AUTDError
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Transducer, Geometry, Device
@@ -74,6 +75,8 @@ class Group(IGain, Generic[K]):
         keys: np.ndarray = np.ndarray(len(self._map), dtype=np.int32)
         values: np.ndarray = np.ndarray(len(self._map), dtype=GainPtr)
         for i, (key, value) in enumerate(self._map.items()):
+            if key not in keymap:
+                raise AUTDError("Unknown group key")
             keys[i] = keymap[key]
             values[i]["_0"] = value.gain_ptr(geometry)._0
         return Base().gain_group(
