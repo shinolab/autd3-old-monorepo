@@ -1,3 +1,7 @@
+# 16.0.0
+
+- Fix [#201](https://github.com/shinolab/autd3/issues/201): The results of Device::translate_to and Device::rotate_to are wrong
+
 # 15.3.1
 
 - Fix [#199](https://github.com/shinolab/autd3/issues/199): Add Device::translate_to and Device::rotate_to

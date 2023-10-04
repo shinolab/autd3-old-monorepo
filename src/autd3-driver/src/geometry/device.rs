@@ -72,15 +72,15 @@ impl<T: Transducer> Device<T> {
     }
 
     /// Set positions of all transducers in the device
-    pub fn translate_to(&mut self, t: Vector3) {
-        self.transducers
-            .iter_mut()
-            .for_each(|tr| tr.translate_to(t));
+    pub fn translate_to(&mut self, t: &Vector3) {
+        let cur_pos = self.transducers[0].position();
+        self.translate(t - cur_pos);
     }
 
     /// Set rotation of all transducers in the device
-    pub fn rotate_to(&mut self, r: UnitQuaternion) {
-        self.transducers.iter_mut().for_each(|tr| tr.rotate_to(r));
+    pub fn rotate_to(&mut self, r: &UnitQuaternion) {
+        let cur_rot = self.transducers[0].rotation();
+        self.rotate(r * cur_rot.conjugate());
     }
 
     /// Translate all transducers in the device
@@ -310,6 +310,74 @@ pub mod tests {
     }
 
     #[test]
+    fn device_translate_to() {
+        let transducers = itertools::iproduct!((0..18), (0..14))
+            .enumerate()
+            .map(|(i, (y, x))| {
+                LegacyTransducer::new(
+                    i,
+                    10.16 * Vector3::new(x as float, y as float, 0.),
+                    UnitQuaternion::identity(),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        let mut device = Device::new(0, transducers);
+        device.translate(Vector3::new(10., 20., 30.));
+
+        let t = Vector3::new(40., 50., 60.);
+        device.translate_to(&t);
+
+        itertools::iproduct!((0..18), (0..14))
+            .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
+            .zip(device.iter())
+            .for_each(|(expect, tr)| {
+                assert_approx_eq_vec3!(expect, tr.position());
+            });
+    }
+
+    #[test]
+    fn device_rotate_to() {
+        let transducers = itertools::iproduct!((0..18), (0..14))
+            .enumerate()
+            .map(|(i, (y, x))| {
+                LegacyTransducer::new(
+                    i,
+                    10.16 * Vector3::new(x as float, y as float, 0.),
+                    UnitQuaternion::identity(),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        let mut device = Device::new(0, transducers);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI / 2.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), 0.);
+        device.rotate(rot);
+
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
+        device.rotate_to(&rot);
+
+        let expect_x = Vector3::new(0., 1., 0.);
+        let expect_y = Vector3::new(-1., 0., 0.);
+        let expect_z = Vector3::new(0., 0., 1.);
+        device.iter().for_each(|tr| {
+            assert_approx_eq_quat!(rot, tr.rotation());
+            assert_approx_eq_vec3!(expect_x, tr.x_direction());
+            assert_approx_eq_vec3!(expect_y, tr.y_direction());
+            assert_approx_eq_vec3!(expect_z, tr.z_direction());
+        });
+        itertools::iproduct!((0..18), (0..14))
+            .map(|(y, x)| 10.16 * Vector3::new(-y as float, x as float, 0.))
+            .zip(device.iter())
+            .for_each(|(expect, tr)| {
+                assert_approx_eq_vec3!(expect, tr.position());
+            });
+    }
+
+    #[test]
     fn device_translate() {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
@@ -363,6 +431,12 @@ pub mod tests {
             assert_approx_eq_vec3!(expect_y, tr.y_direction());
             assert_approx_eq_vec3!(expect_z, tr.z_direction());
         });
+        itertools::iproduct!((0..18), (0..14))
+            .map(|(y, x)| 10.16 * Vector3::new(-y as float, x as float, 0.))
+            .zip(device.iter())
+            .for_each(|(expect, tr)| {
+                assert_approx_eq_vec3!(expect, tr.position());
+            });
 
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI / 2.)
             * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
@@ -376,6 +450,12 @@ pub mod tests {
             assert_approx_eq_vec3!(expect_y, tr.y_direction());
             assert_approx_eq_vec3!(expect_z, tr.z_direction());
         });
+        itertools::iproduct!((0..18), (0..14))
+            .map(|(y, x)| 10.16 * Vector3::new(-y as float, 0., x as float))
+            .zip(device.iter())
+            .for_each(|(expect, tr)| {
+                assert_approx_eq_vec3!(expect, tr.position());
+            });
     }
 
     #[test]
