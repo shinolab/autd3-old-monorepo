@@ -9,12 +9,12 @@ You can install the library via Unity Package Manager.
 
 1. From the menu bar, select "Edit" > "Project settings" > "Package Manager".
 1. Add the following "Scoped registory".
-  - Name    : shinolab
-  - URL     : https://registry.npmjs.com
-  - Scope(s): com.shinolab
+    - Name    : shinolab
+    - URL     : https://registry.npmjs.com
+    - Scope(s): com.shinolab
 1. From the menu bar, select "Window" > "Package Manager".
 1. Select "My Registries" from the drop-down menu in the upper left corner.
 1. Install the following package depending on your OS.
-  1. For Windows, "autd3-unity"
-  1. For macOS, "autd3-unity-mac"
-  1. For Linux, "autd3-unity-linux"
+    - For Windows: `autd3-unity`
+    - For macOS: `autd3-unity-mac`
+    - For Linux: `autd3-unity-linux`
