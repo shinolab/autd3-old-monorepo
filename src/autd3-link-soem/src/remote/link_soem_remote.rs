@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{net::SocketAddr, time::Duration};
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -59,7 +59,7 @@ impl RemoteSOEM {
         Ok(self.runtime.block_on(self.client.send_data(tx.to_msg()))?)
     }
 
-    fn receive_impl(&mut self) -> Result<Response<RxMessage>, AUTDProtoBufError> {
+    fn receive_impl(&mut self) -> Result<Response<autd3_protobuf::RxMessage>, AUTDProtoBufError> {
         Ok(self
             .runtime
             .block_on(self.client.read_data(ReadRequest {}))?)
@@ -90,9 +90,11 @@ impl<T: Transducer> Link<T> for RemoteSOEM {
         }
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if <Self as Link<T>>::is_open(self) {
-            rx.copy_from(&RxDatagram::from_msg(&self.receive_impl()?.into_inner()));
+            rx.copy_from_slice(&Vec::<RxMessage>::from_msg(
+                &self.receive_impl()?.into_inner(),
+            ));
             Ok(true)
         } else {
             Err(AUTDInternalError::LinkClosed)

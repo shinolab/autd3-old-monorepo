@@ -27,7 +27,7 @@ use std::{marker::PhantomData, time::Duration};
 
 use autd3_driver::{
     acoustics::{propagate, Complex, Directivity, Sphere},
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     defined::{float, PI},
     error::AUTDInternalError,
     geometry::{Device, Geometry, Transducer, Vector3},
@@ -541,7 +541,7 @@ impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Visualizer<D, B> {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }

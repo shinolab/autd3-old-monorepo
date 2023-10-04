@@ -14,7 +14,7 @@
 use std::time::Duration;
 
 use crate::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
 };
@@ -28,7 +28,7 @@ pub trait Link<T: Transducer>: Send {
     /// Send data to devices
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
     /// Receive data from devices
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError>;
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError>;
     /// Check if link is open
     fn is_open(&self) -> bool;
     /// Get timeout
@@ -37,7 +37,7 @@ pub trait Link<T: Transducer>: Send {
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         if !self.send(tx)? {
@@ -57,7 +57,7 @@ pub trait Link<T: Transducer>: Send {
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
@@ -75,7 +75,7 @@ pub trait Link<T: Transducer>: Send {
         }
     }
 
-    fn check(&self, tx: &TxDatagram, rx: &mut RxDatagram) -> Vec<bool> {
+    fn check(&self, tx: &TxDatagram, rx: &mut [RxMessage]) -> Vec<bool> {
         tx.headers()
             .zip(rx.iter())
             .map(|(h, r)| h.msg_id == r.ack)
@@ -96,7 +96,7 @@ impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
         self.as_mut().send(tx)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         self.as_mut().receive(rx)
     }
 
@@ -115,7 +115,7 @@ impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         self.as_mut().send_receive(tx, rx, timeout)
@@ -124,13 +124,13 @@ impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         self.as_mut().wait_msg_processed(tx, rx, timeout)
     }
 
-    fn check(&self, tx: &TxDatagram, rx: &mut RxDatagram) -> Vec<bool> {
+    fn check(&self, tx: &TxDatagram, rx: &mut [RxMessage]) -> Vec<bool> {
         self.as_ref().check(tx, rx)
     }
 }

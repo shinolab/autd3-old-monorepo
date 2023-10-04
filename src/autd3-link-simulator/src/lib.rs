@@ -21,7 +21,7 @@ use std::{
 };
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -128,9 +128,9 @@ impl Simulator {
     fn receive_impl(
         client: &mut SimulatorClient<tonic::transport::Channel>,
         runtime: &Runtime,
-    ) -> Result<RxDatagram, AUTDProtoBufError> {
+    ) -> Result<Vec<RxMessage>, AUTDProtoBufError> {
         let res = runtime.block_on(client.read_data(ReadRequest {}))?;
-        Ok(RxDatagram::from_msg(&res.into_inner()))
+        Ok(Vec::<RxMessage>::from_msg(&res.into_inner()))
     }
 }
 
@@ -155,11 +155,11 @@ impl<T: Transducer> Link<T> for Simulator {
         }
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if let Some(client) = &mut self.client {
             let rx_ = Self::receive_impl(client, &self.runtime)?;
             if rx.len() == rx_.len() {
-                rx.copy_from(&rx_);
+                rx.copy_from_slice(&rx_);
             }
         } else {
             return Err(AUTDInternalError::LinkClosed);

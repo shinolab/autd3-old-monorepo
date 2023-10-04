@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -454,7 +454,7 @@ impl ToMessage for autd3_driver::datagram::Silencer {
     }
 }
 
-impl ToMessage for autd3_driver::cpu::RxDatagram {
+impl ToMessage for Vec<autd3_driver::cpu::RxMessage> {
     type Message = RxMessage;
 
     fn to_msg(&self) -> Self::Message {
@@ -518,11 +518,12 @@ impl ToMessage for autd3_driver::datagram::UpdateFlags {
     }
 }
 
-impl FromMessage<RxMessage> for autd3_driver::cpu::RxDatagram {
+impl FromMessage<RxMessage> for Vec<autd3_driver::cpu::RxMessage> {
     fn from_msg(msg: &RxMessage) -> Self {
-        let mut rx = autd3_driver::cpu::RxDatagram::new(
-            msg.data.len() / std::mem::size_of::<autd3_driver::cpu::RxMessage>(),
-        );
+        let mut rx = vec![
+            autd3_driver::cpu::RxMessage { ack: 0, data: 0 };
+            msg.data.len() / std::mem::size_of::<autd3_driver::cpu::RxMessage>()
+        ];
         unsafe {
             std::ptr::copy_nonoverlapping(msg.data.as_ptr(), rx.as_mut_ptr() as _, msg.data.len());
         }

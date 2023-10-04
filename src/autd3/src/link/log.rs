@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
 };
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -134,7 +134,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         debug!(logger: self.logger, "Receive data");
 
         if !self.is_open() {
@@ -152,7 +152,7 @@ impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         if !self.send(tx)? {

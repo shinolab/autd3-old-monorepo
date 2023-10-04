@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::time::Duration;
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     fpga::{FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV},
     geometry::{Device, Transducer},
@@ -255,7 +255,7 @@ impl<T: Transducer> Link<T> for Debug {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         debug!(logger: self.logger, "Receive data");
 
         if !self.is_open {
@@ -282,7 +282,7 @@ impl<T: Transducer> Link<T> for Debug {
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         debug!(logger: self.logger, "Send receive data with timeout ({timeout:?})");
@@ -298,7 +298,7 @@ impl<T: Transducer> Link<T> for Debug {
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
+        rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();

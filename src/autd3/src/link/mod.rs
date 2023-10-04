@@ -4,7 +4,7 @@
  * Created Date: 09/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ mod log;
 
 pub use audit::Audit;
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -54,7 +54,7 @@ impl<T: Transducer> Link<T> for NullLink {
         Ok(true)
     }
 
-    fn receive(&mut self, _rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, _rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         Ok(true)
     }
 
