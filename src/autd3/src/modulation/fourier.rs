@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,8 @@ pub struct Fourier {
 }
 
 impl Fourier {
+    #[deprecated(note = "Use `Fourier::from()` instead", since = "15.3.0")]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             components: Vec::new(),
@@ -81,6 +83,16 @@ impl Fourier {
     }
 }
 
+impl From<Sine> for Fourier {
+    fn from(sine: Sine) -> Self {
+        let freq_div = sine.sampling_frequency_division();
+        Self {
+            components: vec![sine],
+            freq_div,
+        }
+    }
+}
+
 impl Deref for Fourier {
     type Target = [Sine];
 
@@ -92,12 +104,6 @@ impl Deref for Fourier {
 impl DerefMut for Fourier {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.components
-    }
-}
-
-impl Default for Fourier {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -113,7 +119,7 @@ impl std::ops::Add<Sine> for Sine {
     type Output = Fourier;
 
     fn add(self, rhs: Sine) -> Self::Output {
-        Fourier::new().add_component(self).add_component(rhs)
+        Fourier::from(self).add_component(rhs)
     }
 }
 

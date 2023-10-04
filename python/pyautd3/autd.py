@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 import ctypes
 import numpy as np
-from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
@@ -298,9 +298,14 @@ class Controller:
             raise AUTDError(err)
         return list(map(lambda x: FPGAInfo(x), infos))
 
+    def notify_link_geometry_updated(self):
+        err = ctypes.create_string_buffer(256)
+        if not Base().controller_notify_link_geometry_updated(self._ptr, err):
+            raise AUTDError(err)
+
     def send(
         self,
-        d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
+        d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
         timeout: Optional[timedelta] = None,
     ) -> bool:
         """Send data
@@ -411,13 +416,11 @@ class Controller:
 
         def set(self,
                 key: K,
-                d: Union[SpecialDatagram, Datagram, Tuple[Datagram, Datagram]],
+                d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
                 timeout: Optional[timedelta] = None,
                 ) -> "Controller.GroupGuard":
             if key in self._keymap:
-                e = AUTDError()
-                e.msg = "Key is already exists"
-                raise e
+                raise AUTDError("Key is already exists")
 
             timeout_ns = (
                 -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)

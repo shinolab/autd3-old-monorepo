@@ -33,7 +33,7 @@ const auto g = autd3::gain::Group([](const autd3::Device& dev, const autd3::Tran
 ```
 
 ```cs
-var g = new Group<string>((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
+var g = new Group((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
           .Set("null", new Null())
           .Set("focus", new Focus(new Vector3d(x, y, z)));
 ```

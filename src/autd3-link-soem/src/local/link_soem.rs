@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -201,6 +201,13 @@ impl Default for SOEM {
 
 impl SOEM {
     pub fn open_impl(&mut self, num_devices: Option<usize>) -> Result<i32, AUTDInternalError> {
+        if self.ec_send_cycle.is_zero() {
+            return Err(SOEMError::InvalidSendCycleTime.into());
+        }
+        if self.ec_sync0_cycle.is_zero() {
+            return Err(SOEMError::InvalidSync0CycleTime.into());
+        }
+
         let ifname = if self.ifname.is_empty() {
             lookup_autd()?
         } else {

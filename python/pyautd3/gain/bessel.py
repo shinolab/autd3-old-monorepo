@@ -4,7 +4,7 @@ Project: gain
 Created Date: 14/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 02/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,9 @@ class Bessel(IGain):
         - `dir` - Direction of the beam
         - `theta_z` - Angle between the conical wavefront of the beam and the plane normal to `dir`
         """
+
+        assert len(pos) == 3
+        assert len(dir) == 3
 
         super().__init__()
         self._p = pos

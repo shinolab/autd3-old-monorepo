@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -161,6 +161,19 @@ pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(
     p_info_list: FirmwareInfoListPtr,
 ) {
     let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDControllerNotifyLinkGeometryUpdated(
+    cnt: ControllerPtr,
+    err: *mut c_char,
+) -> bool {
+    try_or_return!(
+        cast_mut!(cnt.0, Cnt).notify_link_geometry_updated(),
+        err,
+        false
+    );
+    true
 }
 
 #[no_mangle]

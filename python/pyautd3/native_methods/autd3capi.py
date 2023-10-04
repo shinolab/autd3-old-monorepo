@@ -237,6 +237,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [FirmwareInfoListPtr]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.restype = None
 
+        self.dll.AUTDControllerNotifyLinkGeometryUpdated.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerNotifyLinkGeometryUpdated.restype = ctypes.c_bool
+
         self.dll.AUTDFirmwareLatest.argtypes = [ctypes.c_char_p] 
         self.dll.AUTDFirmwareLatest.restype = None
 
@@ -450,7 +453,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWithBandStop.argtypes = [ModulationPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationWithBandStop.restype = ModulationPtr
 
-        self.dll.AUTDModulationFourier.argtypes = [] 
+        self.dll.AUTDModulationFourier.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationFourier.restype = ModulationPtr
 
         self.dll.AUTDModulationFourierAddComponent.argtypes = [ModulationPtr, ModulationPtr]  # type: ignore 
@@ -756,6 +759,9 @@ class NativeMethods(metaclass=Singleton):
     def controller_firmware_info_list_pointer_delete(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDControllerFirmwareInfoListPointerDelete(p_info_list)
 
+    def controller_notify_link_geometry_updated(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDControllerNotifyLinkGeometryUpdated(cnt, err)
+
     def firmware_latest(self, latest: ctypes.Array[ctypes.c_char]) -> None:
         return self.dll.AUTDFirmwareLatest(latest)
 
@@ -969,8 +975,8 @@ class NativeMethods(metaclass=Singleton):
     def modulation_with_band_stop(self, m: ModulationPtr, n_taps: int, f_low: float, f_high: float) -> ModulationPtr:
         return self.dll.AUTDModulationWithBandStop(m, n_taps, f_low, f_high)
 
-    def modulation_fourier(self) -> ModulationPtr:
-        return self.dll.AUTDModulationFourier()
+    def modulation_fourier(self, m: ModulationPtr) -> ModulationPtr:
+        return self.dll.AUTDModulationFourier(m)
 
     def modulation_fourier_add_component(self, fourier: ModulationPtr, m: ModulationPtr) -> ModulationPtr:
         return self.dll.AUTDModulationFourierAddComponent(fourier, m)

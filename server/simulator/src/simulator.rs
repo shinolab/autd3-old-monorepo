@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,6 +55,7 @@ use autd3_protobuf::*;
 
 enum Signal {
     ConfigGeometry(Geometry),
+    UpdateGeometry(Geometry),
     Send(TxRawData),
     Close,
 }
@@ -73,6 +74,20 @@ impl simulator_server::Simulator for SimulatorServer {
         if self
             .sender
             .send(Signal::ConfigGeometry(req.into_inner()))
+            .is_err()
+        {
+            return Err(Status::unavailable("Simulator is closed"));
+        }
+        Ok(Response::new(GeometryResponse {}))
+    }
+
+    async fn update_geomety(
+        &self,
+        req: Request<Geometry>,
+    ) -> Result<Response<GeometryResponse>, Status> {
+        if self
+            .sender
+            .send(Signal::UpdateGeometry(req.into_inner()))
             .is_err()
         {
             return Err(Status::unavailable("Simulator is closed"));
@@ -321,6 +336,27 @@ impl Simulator {
                     imgui.init(geometry.num_devices());
 
                     is_initialized = true;
+                }
+                Ok(Signal::UpdateGeometry(geometry)) => {
+                    let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
+                    geometry
+                        .iter()
+                        .flat_map(|dev| {
+                            dev.iter().map(|tr| {
+                                let p = tr.position();
+                                let r = tr.rotation();
+                                (
+                                    Vector3::new(p.x as _, p.y as _, p.z as _),
+                                    Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _),
+                                )
+                            })
+                        })
+                        .enumerate()
+                        .for_each(|(i, (p, r))| sources.update_geometry(i, p, r));
+
+                    device_viewer.init(&geometry);
+                    field_compute_pipeline.update_source_pos(&sources);
+                    trans_viewer.update_source_pos(&sources);
                 }
                 Ok(Signal::Send(raw)) => {
                     let tx = TxDatagram::from_msg(&raw);
