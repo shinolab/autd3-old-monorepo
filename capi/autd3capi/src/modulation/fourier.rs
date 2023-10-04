@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ use autd3capi_def::{
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationFourier() -> ModulationPtr {
-    ModulationPtr::new(Fourier::new())
+pub unsafe extern "C" fn AUTDModulationFourier(m: ModulationPtr) -> ModulationPtr {
+    ModulationPtr::new(Fourier::from(**take_mod!(m, Sine)))
 }
 
 #[no_mangle]
@@ -52,7 +52,7 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let m = AUTDModulationFourier();
+            let m = AUTDModulationFourier(AUTDModulationSine(150));
             let m = AUTDModulationFourierAddComponent(m, AUTDModulationSine(150));
 
             let m = AUTDModulationIntoDatagram(m);
