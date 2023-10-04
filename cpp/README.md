@@ -34,27 +34,14 @@ version: 15.2.1
 
 ## Build example
 
-- Windows
-
-    ```
-    git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp/examples
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . --config Release
-    ```
-
-- Linux/macOS
-
-    ```
-    git clone https://github.com/shinolab/autd3.git
-    cd autd3/cpp/examples
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . --config Release
-    ```
+```
+git clone https://github.com/shinolab/autd3.git
+cd autd3/cpp/examples
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
 
 ## LICENSE
 

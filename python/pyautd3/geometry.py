@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 05/06/2023
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 02/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,6 +46,12 @@ class AUTD3:
         - `pos` - Position of the device
         - `rot` - Rotation of the device in Euler ZYZ
         """
+
+        assert len(pos) == 3
+        if rot is not None:
+            assert len(rot) == 3
+        if quat is not None:
+            assert len(quat) == 4
 
         self._pos = pos
         self._rot = rot

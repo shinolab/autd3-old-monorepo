@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 28/05/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 '''
 
 import ctypes
-from typing import Optional
 
 
 class AUTDError(Exception):
     msg: str
 
-    def __init__(self, err: Optional[ctypes.Array[ctypes.c_char]] = None):
-        self.msg = err.value.decode("utf-8") if err is not None else ""
+    def __init__(self, err: ctypes.Array[ctypes.c_char] | str):
+        self.msg = err if isinstance(err, str) else err.value.decode("utf-8")
 
     def __str__(self):
         return self.msg

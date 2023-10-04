@@ -176,3 +176,4 @@ However, you can only group by device.
 
 > NOTE:
 > This sample uses a string as a key, but you can use anything that can be used as a key for HashMap.
+> However, in C#, the key must be a `class`.

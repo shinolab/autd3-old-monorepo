@@ -47,3 +47,4 @@ In the above case, transducers whose local indices are less or equal than 100 pr
 
 > NOTE:
 > In this sample, we use string as a key, but you can use any type that can be used as a key of HashMap.
+> However, in C#, the key must be a `class`.
