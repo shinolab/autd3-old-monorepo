@@ -25,7 +25,7 @@ let g1 = new Focus(autd.Geometry.Center + Vector3d(0., 0., 150.));
 let g2 = new Null();
 
 let grouping (dev: Device) (tr: Transducer) =
-    if (tr.Position.x < cx) then "focus" else "null"
+    if (tr.Position.x < cx) then "focus" :> obj else "null" :> obj
 let g = (new Group(grouping)).Set("focus", g1).Set("null", g2);
 let m = new Sine(150);
 
