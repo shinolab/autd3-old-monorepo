@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -69,6 +69,18 @@ impl<T: Transducer> Device<T> {
 
     pub fn to_local(&self, p: &Vector3) -> Vector3 {
         self.inv * (p - self.transducers[0].position())
+    }
+
+    /// Set positions of all transducers in the device
+    pub fn translate_to(&mut self, t: Vector3) {
+        self.transducers
+            .iter_mut()
+            .for_each(|tr| tr.translate_to(t));
+    }
+
+    /// Set rotation of all transducers in the device
+    pub fn rotate_to(&mut self, r: UnitQuaternion) {
+        self.transducers.iter_mut().for_each(|tr| tr.rotate_to(r));
     }
 
     /// Translate all transducers in the device
