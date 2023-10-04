@@ -1,10 +1,10 @@
 /*
- * File: filter.rs
- * Project: datagram
- * Created Date: 04/09/2023
+ * File: amp.rs
+ * Project: filter
+ * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,21 +32,24 @@ impl<T: Transducer> Datagram<T> for ConfigureAmpFilter {
     }
 }
 
-/// Datagram to set phase filter
-#[derive(Default)]
-pub struct ConfigurePhaseFilter {}
+#[cfg(test)]
+mod tests {
+    use crate::operation::{ConfigureAmpFilterOp, NullOp};
 
-impl ConfigurePhaseFilter {
-    pub const fn new() -> Self {
-        Self {}
+    use super::*;
+
+    #[test]
+    fn test_amp_filter_timeout() {
+        let filter = ConfigureAmpFilter::new();
+        let timeout = <ConfigureAmpFilter as Datagram<LegacyTransducer>>::timeout(&filter);
+        assert!(timeout.is_none());
     }
-}
 
-impl<T: Transducer> Datagram<T> for ConfigurePhaseFilter {
-    type O1 = crate::operation::ConfigurePhaseFilterOp;
-    type O2 = crate::operation::NullOp;
-
-    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        Ok((Self::O1::default(), Self::O2::default()))
+    #[test]
+    fn test_amp_filter_operation() {
+        let filter = ConfigureAmpFilter::default();
+        let r = <ConfigureAmpFilter as Datagram<LegacyTransducer>>::operation(filter);
+        assert!(r.is_ok());
+        let _: (ConfigureAmpFilterOp, NullOp) = r.unwrap();
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,5 +55,44 @@ impl<T: Transducer> Datagram<T> for Silencer {
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
         Ok((Self::O1::new(self.step), Self::O2::default()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_silencer() {
+        let silencer = Silencer::new(20);
+        assert_eq!(silencer.step(), 20);
+    }
+
+    #[test]
+    fn test_silencer_disable() {
+        let silencer = Silencer::disable();
+        assert_eq!(silencer.step(), 0xFFFF);
+    }
+
+    #[test]
+    fn test_silencer_default() {
+        let silencer = Silencer::default();
+        assert_eq!(silencer.step(), 10);
+    }
+
+    #[test]
+    fn test_silencer_timeout() {
+        let silencer = Silencer::new(10);
+        let timeout = <Silencer as Datagram<LegacyTransducer>>::timeout(&silencer);
+        assert!(timeout.is_some());
+        assert!(timeout.unwrap() > Duration::ZERO);
+    }
+
+    #[test]
+    fn test_silencer_operation() {
+        let silencer = Silencer::new(10);
+        let r = <Silencer as Datagram<LegacyTransducer>>::operation(silencer);
+        assert!(r.is_ok());
+        let _: (crate::operation::ConfigSilencerOp, crate::operation::NullOp) = r.unwrap();
     }
 }
