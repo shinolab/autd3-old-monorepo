@@ -67,6 +67,8 @@ void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr p_info_list, uint32_t idx
 
 void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr p_info_list);
 
+bool AUTDControllerNotifyLinkGeometryUpdated(ControllerPtr cnt, char *err);
+
 void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramSynchronize();

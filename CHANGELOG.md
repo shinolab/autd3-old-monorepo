@@ -3,6 +3,7 @@
 - Raise minimum supported Python version to 3.10
 - Fix [#195](https://github.com/shinolab/autd3/issues/195): missing setter for speed of sound in Geometry for C++/C#/Python
 - Fix [#196](https://github.com/shinolab/autd3/issues/196): modulation::Fourier must have one component at least
+- Fix [#197](https://github.com/shinolab/autd3/issues/197): Add ability to update Geometry in Simulator
 
 # 15.2.1
 
