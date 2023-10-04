@@ -42,14 +42,6 @@ impl Transducer for AdvancedPhaseTransducer {
         }
     }
 
-    fn translate_to(&mut self, pos: Vector3) {
-        self.pos = pos;
-    }
-
-    fn rotate_to(&mut self, rot: UnitQuaternion) {
-        self.rot = rot;
-    }
-
     fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
         let rot_mat: Matrix4 = From::from(r);
         let trans_mat = rot_mat.append_translation(&t);
