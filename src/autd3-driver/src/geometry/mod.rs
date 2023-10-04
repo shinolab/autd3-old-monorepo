@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 01/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -62,15 +62,27 @@ impl<T: Transducer> Geometry<T> {
         self.devices.iter().map(|d| d.center()).sum::<Vector3>() / self.devices.len() as float
     }
 
+    /// Enumerate enabled devices
     pub fn devices(&self) -> impl Iterator<Item = &Device<T>> {
         self.devices.iter().filter(|dev| dev.enable)
     }
 
+    /// Enumerate enabled devices mutably
     pub fn devices_mut(&mut self) -> impl Iterator<Item = &mut Device<T>> {
         self.devices.iter_mut().filter(|dev| dev.enable)
     }
 
-    /// Set speed of sound of all devices from temperature
+    /// Set speed of sound of all enabled devices
+    ///
+    /// # Arguments
+    ///
+    /// * `c` - Speed of sound
+    ///
+    pub fn set_sound_speed(&mut self, c: float) {
+        self.devices_mut().for_each(|dev| dev.sound_speed = c);
+    }
+
+    /// Set speed of sound of enabled devices from temperature
     /// This is equivalent to `set_sound_speed_from_temp_with(temp, 1.4, 8.314463, 28.9647e-3)`
     ///
     /// # Arguments
@@ -81,7 +93,7 @@ impl<T: Transducer> Geometry<T> {
         self.set_sound_speed_from_temp_with(temp, 1.4, 8.314_463, 28.9647e-3);
     }
 
-    /// Set speed of sound from temperature with air parameter
+    /// Set speed of sound of enabled devices from temperature with air parameter
     ///
     /// # Arguments
     ///
@@ -91,8 +103,7 @@ impl<T: Transducer> Geometry<T> {
     /// * `m` - Molar mass
     ///
     pub fn set_sound_speed_from_temp_with(&mut self, temp: float, k: float, r: float, m: float) {
-        self.devices
-            .iter_mut()
+        self.devices_mut()
             .for_each(|dev| dev.set_sound_speed_from_temp_with(temp, k, r, m));
     }
 }

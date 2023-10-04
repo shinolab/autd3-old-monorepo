@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 04/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -172,6 +172,10 @@ class Controller {
     }
     AUTDControllerFirmwareInfoListPointerDelete(handle);
     return ret;
+  }
+
+  void notify_link_geometry_updated() const {
+    if (char err[256]{}; !AUTDControllerNotifyLinkGeometryUpdated(_ptr, err)) throw AUTDException(err);
   }
 
   /**

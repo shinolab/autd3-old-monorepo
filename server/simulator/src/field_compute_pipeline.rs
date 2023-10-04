@@ -4,7 +4,7 @@
  * Created Date: 28/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/06/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -320,6 +320,18 @@ impl FieldComputePipeline {
                 .zip(sources.drives())
                 .for_each(|(d, &drive)| {
                     *d = drive;
+                });
+        }
+    }
+
+    pub fn update_source_pos(&mut self, sources: &SoundSources) {
+        if let Some(data) = &mut self.source_pos_buf {
+            data.write()
+                .unwrap()
+                .iter_mut()
+                .zip(sources.positions())
+                .for_each(|(d, &pos)| {
+                    *d = pos.into();
                 });
         }
     }

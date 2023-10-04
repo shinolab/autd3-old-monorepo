@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -288,8 +288,13 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     }
 
     /// get link mutably
-    pub fn link_mut(&self) -> &L {
-        &self.link
+    pub fn link_mut(&mut self) -> &mut L {
+        &mut self.link
+    }
+
+    pub fn notify_link_geometry_updated(&mut self) -> Result<(), AUTDError> {
+        self.link.update_geometry(&self.geometry)?;
+        Ok(())
     }
 
     /// Send data to the devices

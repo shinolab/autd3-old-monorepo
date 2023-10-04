@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 04/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ namespace autd3::modulation {
  */
 class Fourier final : public internal::Modulation {
  public:
-  Fourier() = default;
+  Fourier(Sine component) { _components.emplace_back(std::move(component)); }
 
   AUTD3_IMPL_WITH_CACHE_MODULATION
   AUTD3_IMPL_WITH_RADIATION_PRESSURE(Fourier)
@@ -72,14 +72,14 @@ class Fourier final : public internal::Modulation {
   }
 
   friend Fourier operator+(Sine&& lhs, const Sine& rhs) {
-    Fourier m;
-    m._components.emplace_back(lhs);
+    Fourier m(lhs);
     m._components.emplace_back(rhs);
     return m;
   }
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    return std::accumulate(_components.begin(), _components.end(), internal::native_methods::AUTDModulationFourier(),
+    return std::accumulate(_components.begin() + 1, _components.end(),
+                           internal::native_methods::AUTDModulationFourier(_components[0].modulation_ptr()),
                            [](const internal::native_methods::ModulationPtr ptr, const Sine& sine) {
                              return AUTDModulationFourierAddComponent(ptr, sine.modulation_ptr());
                            });
