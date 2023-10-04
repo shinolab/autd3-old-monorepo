@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 04/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ let g2 = new Null();
 
 let grouping (dev: Device) (tr: Transducer) =
     if (tr.Position.x < cx) then "focus" else "null"
-let g = (new Group<string>(grouping)).Set("focus", g1).Set("null", g2);
+let g = (new Group(grouping)).Set("focus", g1).Set("null", g2);
 let m = new Sine(150);
 
 (m, g) |> autd.Send |> ignore;
