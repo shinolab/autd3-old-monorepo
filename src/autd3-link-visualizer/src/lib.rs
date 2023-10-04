@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -372,13 +372,8 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                             |acc, (t, d)| {
                                 let amp = (PI * d.0 as float / t.cycle() as float).sin();
                                 let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                                acc + propagate::<D>(
-                                    t.position(),
-                                    &t.z_direction(),
-                                    0.0,
-                                    t.wavenumber(sound_speed),
-                                    &target,
-                                ) * Complex::from_polar(amp, phase)
+                                acc + propagate::<D, T>(t, 0.0, sound_speed, &target)
+                                    * Complex::from_polar(amp, phase)
                             },
                         )
                     })
