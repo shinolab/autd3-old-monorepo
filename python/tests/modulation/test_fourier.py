@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ import numpy as np
 def test_fourier():
     autd = create_controller()
 
-    m = Fourier().add_component(Sine(50)).add_components_from_iter(map(lambda x: Sine(x), [100, 150])) + Sine(200)
+    m = Fourier(Sine(50)).add_components_from_iter(map(lambda x: Sine(x), [100, 150])) + Sine(200)
     assert autd.send(m)
 
     for dev in autd.geometry:

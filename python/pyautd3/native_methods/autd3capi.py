@@ -450,7 +450,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWithBandStop.argtypes = [ModulationPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationWithBandStop.restype = ModulationPtr
 
-        self.dll.AUTDModulationFourier.argtypes = [] 
+        self.dll.AUTDModulationFourier.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationFourier.restype = ModulationPtr
 
         self.dll.AUTDModulationFourierAddComponent.argtypes = [ModulationPtr, ModulationPtr]  # type: ignore 
@@ -969,8 +969,8 @@ class NativeMethods(metaclass=Singleton):
     def modulation_with_band_stop(self, m: ModulationPtr, n_taps: int, f_low: float, f_high: float) -> ModulationPtr:
         return self.dll.AUTDModulationWithBandStop(m, n_taps, f_low, f_high)
 
-    def modulation_fourier(self) -> ModulationPtr:
-        return self.dll.AUTDModulationFourier()
+    def modulation_fourier(self, m: ModulationPtr) -> ModulationPtr:
+        return self.dll.AUTDModulationFourier(m)
 
     def modulation_fourier_add_component(self, fourier: ModulationPtr, m: ModulationPtr) -> ModulationPtr:
         return self.dll.AUTDModulationFourierAddComponent(fourier, m)
