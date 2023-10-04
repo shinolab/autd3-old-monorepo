@@ -1,10 +1,10 @@
 /*
  * File: modulation.rs
- * Project: src
- * Created Date: 01/09/2023
+ * Project: datagram
+ * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,8 +56,105 @@ impl Modulation for Box<dyn Modulation> {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         self.as_ref().calc()
     }
-    
+
     fn len(&self) -> Result<usize, AUTDInternalError> {
         self.as_ref().len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct NullModulation {
+        pub buf: Vec<float>,
+        pub freq_div: u32,
+    }
+
+    impl ModulationProperty for NullModulation {
+        fn sampling_frequency_division(&self) -> u32 {
+            self.freq_div
+        }
+    }
+
+    impl Modulation for NullModulation {
+        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+            Ok(self.buf.clone())
+        }
+    }
+
+    #[test]
+    fn test_modulation_property() {
+        let m = NullModulation {
+            freq_div: 512,
+            buf: vec![],
+        };
+        assert_eq!(m.sampling_frequency_division(), 512);
+        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 40e3);
+        assert_eq!(m.sampling_period(), std::time::Duration::from_micros(25));
+    }
+
+    #[test]
+    fn test_modulation_len() {
+        assert_eq!(
+            NullModulation {
+                freq_div: 512,
+                buf: vec![],
+            }
+            .len()
+            .unwrap(),
+            0
+        );
+
+        assert_eq!(
+            NullModulation {
+                freq_div: 512,
+                buf: vec![0.0; 100],
+            }
+            .len()
+            .unwrap(),
+            100
+        );
+    }
+
+    #[test]
+    fn test_modulation_boxed_property() {
+        let m: Box<dyn Modulation> = Box::new(NullModulation {
+            freq_div: 512,
+            buf: vec![],
+        });
+        assert_eq!(m.sampling_frequency_division(), 512);
+        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 40e3);
+        assert_eq!(m.sampling_period(), std::time::Duration::from_micros(25));
+    }
+
+    #[test]
+    fn test_modulation_boxed_len() {
+        let m: Box<dyn Modulation> = Box::new(NullModulation {
+            freq_div: 512,
+            buf: vec![],
+        });
+        assert_eq!(m.len().unwrap(), 0);
+
+        let m: Box<dyn Modulation> = Box::new(NullModulation {
+            freq_div: 512,
+            buf: vec![0.0; 100],
+        });
+        assert_eq!(m.len().unwrap(), 100);
+    }
+
+    #[test]
+    fn test_modulation_boxed_calc() {
+        let m: Box<dyn Modulation> = Box::new(NullModulation {
+            freq_div: 512,
+            buf: vec![1.0; 100],
+        });
+        let r = m.calc();
+        assert!(r.is_ok());
+        let r = r.unwrap();
+        assert_eq!(r.len(), 100);
+        r.iter().for_each(|v| {
+            assert_eq!(*v, 1.0);
+        });
     }
 }
