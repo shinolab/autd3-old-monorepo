@@ -142,6 +142,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr pInfoList);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDControllerNotifyLinkGeometryUpdated(ControllerPtr cnt, byte[] err);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDFirmwareLatest(byte[] latest);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern DatagramPtr AUTDDatagramSynchronize();

@@ -298,6 +298,11 @@ class Controller:
             raise AUTDError(err)
         return list(map(lambda x: FPGAInfo(x), infos))
 
+    def notify_link_geometry_updated(self):
+        err = ctypes.create_string_buffer(256)
+        if not Base().controller_notify_link_geometry_updated(self._ptr, err):
+            raise AUTDError(err)
+
     def send(
         self,
         d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],

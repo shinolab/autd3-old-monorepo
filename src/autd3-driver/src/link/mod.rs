@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -47,6 +47,10 @@ pub trait Link<T: Transducer>: Send {
             return self.receive(rx);
         }
         self.wait_msg_processed(tx, rx, timeout)
+    }
+
+    fn update_geometry(&mut self, _: &[Device<T>]) -> Result<(), AUTDInternalError> {
+        Ok(())
     }
 
     /// Wait until message is processed
@@ -102,6 +106,10 @@ impl<T: Transducer> Link<T> for Box<dyn Link<T>> {
 
     fn timeout(&self) -> Duration {
         self.as_ref().timeout()
+    }
+
+    fn update_geometry(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
+        self.as_mut().update_geometry(devices)
     }
 
     fn send_receive(
