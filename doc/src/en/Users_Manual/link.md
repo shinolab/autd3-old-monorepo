@@ -17,57 +17,50 @@ Set the default timeout with `with_timeout`.
 
 - The details of the timeout are described in [Controller#send#Timeout](./controller.md#timeout)
 
-```rust,should_panic,edition2021
+```rust,edition2021
 # extern crate autd3;
-# extern crate autd3_link_soem;
 # use autd3::prelude::*;
-# use autd3_link_soem::SOEM;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#            .open_with(
-# SOEM::new()
-.with_timeout(std::time::Duration::from_millis(20))
-# )?;
-# Ok(())
+# fn main() {
+# let link = autd3::link::NullLink {};
+// link is some Link
+# let link =
+link.with_timeout(std::time::Duration::from_millis(20));
 # }
 ```
 
 ```cpp
-.with_timeout(std::chrono::milliseconds(20))
+// link is some Link
+link.with_timeout(std::chrono::milliseconds(20));
 ```
 
 ```cs
-.WithTimeout(TimeSpan.FromMilliseconds(20))
+// link is some Link
+link.WithTimeout(TimeSpan.FromMilliseconds(20))
 ```
 
 ```python
 from datetime import timedelta
 
-.with_timeout(timedelta(milliseconds=20))
+# link is some Link
+link.with_timeout(timedelta(milliseconds=20))
 ```
 
 ### Log
 
 You can enable logging by `with_log`.
 
-```rust,should_panic,edition2021
+```rust,edition2021
 # extern crate autd3;
-# extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3::link::Log;
-use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#            .open_with(
-SOEM::new().with_log()
-# )?;
-# Ok(())
+# fn main() {
+# let link = autd3::link::NullLink {};
+// link is some Link
+# let link =
+link.with_log();
 # }
 ```
 
