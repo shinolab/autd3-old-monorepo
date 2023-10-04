@@ -2,7 +2,7 @@
     "name": "com.shinolab.autd3-mac",
     "displayName": "autd3-unity-mac",
     "description": "autd3 library wrapper for Unity",
-    "version": "15.3.0",
+    "version": "15.3.1",
     "author": "Shun Suzuki",
     "unity": "2021.3",
     "keywords": [

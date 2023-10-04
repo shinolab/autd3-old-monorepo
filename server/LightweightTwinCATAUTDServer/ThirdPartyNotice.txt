@@ -6,7 +6,7 @@ The license terms for each of these components are provided later in this notice
 
 ---------------------------------------------------------
 
-LightweightTwinCATAUTDServer 15.3.0 (MIT)
+LightweightTwinCATAUTDServer 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -86,27 +86,27 @@ atomic 0.5.3 (Apache-2.0 OR MIT)
 https://github.com/Amanieu/atomic-rs
 ---------------------------------------------------------
 
-autd3 15.3.0 (MIT)
+autd3 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 15.3.0 (MIT)
+autd3-derive 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 15.3.0 (MIT)
+autd3-driver 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 15.3.0 (MIT)
+autd3-firmware-emulator 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 15.3.0 (MIT)
+autd3-gain-holo 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-twincat 15.3.0
+autd3-link-twincat 15.3.1
 https://github.com/shinolab/autd3
 
 ---
@@ -158,7 +158,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-protobuf 15.3.0 (MIT)
+autd3-protobuf 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
