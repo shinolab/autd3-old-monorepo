@@ -180,13 +180,12 @@ impl<T: Transducer> Link<T> for Simulator {
         if let Some(client) = &mut self.client {
             if self
                 .runtime
-                .block_on(client.config_geomety(devices.to_msg()))
+                .block_on(client.update_geomety(devices.to_msg()))
                 .is_err()
             {
-                return Err(AUTDProtoBufError::SendError(
-                    "Failed to reconfigure geometry".to_string(),
-                )
-                .into());
+                return Err(
+                    AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
+                );
             }
             Ok(())
         } else {
