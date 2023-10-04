@@ -1,3 +1,7 @@
+# 15.3.0
+
+- Fix [#198](https://github.com/shinolab/autd3/issues/198): [C#] Make Controller::group and Gain::Group can use any type as key
+
 # 15.2.1
 
 - impl `IntoIterator` for `Geometry` and `Device`
