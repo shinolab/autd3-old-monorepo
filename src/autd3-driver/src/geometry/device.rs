@@ -228,6 +228,25 @@ pub mod tests {
     }
 
     #[test]
+    fn set_sound_speed_from_temp() {
+        let transducers = itertools::iproduct!((0..18), (0..14))
+            .enumerate()
+            .map(|(i, (y, x))| {
+                LegacyTransducer::new(
+                    i,
+                    10.16 * Vector3::new(x as float, y as float, 0.),
+                    UnitQuaternion::identity(),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        let mut device = Device::new(0, transducers);
+
+        device.set_sound_speed_from_temp(15.);
+        assert_approx_eq::assert_approx_eq!(device.sound_speed, 340.29527186788846e3);
+    }
+
+    #[test]
     fn device_to_local() {
         {
             let transducers = itertools::iproduct!((0..18), (0..14))
@@ -495,5 +514,45 @@ pub mod tests {
             .for_each(|(expect, tr)| {
                 assert_approx_eq_vec3!(expect, tr.position());
             });
+    }
+
+    #[test]
+    fn into_iter() {
+        let transducers = itertools::iproduct!((0..18), (0..14))
+            .enumerate()
+            .map(|(i, (y, x))| {
+                LegacyTransducer::new(
+                    i,
+                    10.16 * Vector3::new(x as float, y as float, 0.),
+                    UnitQuaternion::identity(),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        let device = Device::new(0, transducers);
+
+        for tr in &device {
+            let _ = tr.local_idx();
+        }
+    }
+
+    #[test]
+    fn into_iter_mut() {
+        let transducers = itertools::iproduct!((0..18), (0..14))
+            .enumerate()
+            .map(|(i, (y, x))| {
+                LegacyTransducer::new(
+                    i,
+                    10.16 * Vector3::new(x as float, y as float, 0.),
+                    UnitQuaternion::identity(),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        let mut device = Device::new(0, transducers);
+
+        for tr in &mut device {
+            tr.set_mod_delay(1);
+        }
     }
 }
