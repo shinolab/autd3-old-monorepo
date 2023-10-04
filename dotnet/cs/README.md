@@ -19,7 +19,7 @@ version: 15.3.0
 ## Unity
 
 * Please install via Unity Package Manager
- - See [document](https://shinolab.github.io/autd3/book/en/FFI/unity.html) for more details.
+ - See [document](https://shinolab.github.io/autd3/book/en/Users_Manual/getting_started/unity.html) for more details.
 
 ## LICENSE
 
