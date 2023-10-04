@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 05/06/2023
 Author: Shun Suzuki
 -----
-Last Modified: 02/10/2023
+Last Modified: 04/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -343,6 +343,10 @@ class Device:
 
     @property
     def sound_speed(self) -> float:
+        """Speed of sound [mm/s]
+
+        """
+
         return float(Base().device_get_sound_speed(self._ptr))
 
     @sound_speed.setter
@@ -505,6 +509,36 @@ class Geometry:
         """
 
         return filter(lambda x: x.enable, self._devices)
+
+    def set_sound_speed_from_temp(
+        self,
+        temp: float,
+        k: float = 1.4,
+        r: float = 8.31446261815324,
+        m: float = 28.9647e-3,
+    ):
+        """Set speed of sound of enabled devices from temperature
+
+        Arguments:
+        - `temp` - Temperature [K]
+        - `k` - Ratio of specific heats
+        - `r` - Specific gas constant
+        - `m` - Molecular mass
+        """
+        for d in self.devices():
+            d.set_sound_speed_from_temp(temp, k, r, m)
+
+    def set_sound_speed(
+        self,
+        c: float,
+    ):
+        """Set speed of sound of enabled devices
+
+        Arguments:
+        - `c` - Speed of sound [mm/s]
+        """
+        for d in self.devices():
+            d.sound_speed = c
 
     def ptr(self) -> GeometryPtr:
         return self._ptr
