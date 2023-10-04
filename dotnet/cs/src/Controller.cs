@@ -501,26 +501,25 @@ namespace AUTD3Sharp
             return new SoftwareSTMHandler(Ptr, new SoftwareSTMHandler.Context(this, callback));
         }
 
-        public sealed class GroupGuard<TK>
-            where TK : class
+        public sealed class GroupGuard
         {
 
             private Controller _controller;
-            private readonly Func<Device, TK?> _map;
+            private readonly Func<Device, object?> _map;
             private GroupKVMapPtr _kvMap;
-            private IDictionary<TK, int> _keymap;
+            private IDictionary<object, int> _keymap;
             private int _k;
 
-            internal GroupGuard(Func<Device, TK?> map, Controller controller)
+            internal GroupGuard(Func<Device, object?> map, Controller controller)
             {
                 _controller = controller;
                 _map = map;
                 _kvMap = Base.AUTDControllerGroupCreateKVMap();
-                _keymap = new Dictionary<TK, int>();
+                _keymap = new Dictionary<object, int>();
                 _k = 0;
             }
 
-            public GroupGuard<TK> Set(TK key, IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
+            public GroupGuard Set(object key, IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
             {
                 if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
                 if (data1 == null) throw new ArgumentNullException(nameof(data1));
@@ -536,17 +535,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public GroupGuard<TK> Set(TK key, IDatagram data, TimeSpan? timeout = null)
+            public GroupGuard Set(object key, IDatagram data, TimeSpan? timeout = null)
             {
                 return Set(key, data, new NullDatagram(), timeout);
             }
 
-            public GroupGuard<TK> Set(TK key, (IDatagram, IDatagram) data, TimeSpan? timeout = null)
+            public GroupGuard Set(object key, (IDatagram, IDatagram) data, TimeSpan? timeout = null)
             {
                 return Set(key, data.Item1, data.Item2, timeout);
             }
 
-            public GroupGuard<TK> Set(TK key, ISpecialDatagram data, TimeSpan? timeout = null)
+            public GroupGuard Set(object key, ISpecialDatagram data, TimeSpan? timeout = null)
             {
                 if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
                 if (data == null) throw new ArgumentNullException(nameof(data));
@@ -574,10 +573,9 @@ namespace AUTD3Sharp
             }
         }
 
-        public GroupGuard<TK> Group<TK>(Func<Device, TK?> map)
-            where TK : class
+        public GroupGuard Group(Func<Device, object?> map)
         {
-            return new GroupGuard<TK>(map, this);
+            return new GroupGuard(map, this);
         }
     }
 

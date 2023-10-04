@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/10/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,19 +39,18 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Gain
 {
-    public sealed class Group<TK> : Internal.Gain
-        where TK : class
+    public sealed class Group : Internal.Gain
     {
-        private readonly Func<Device, Transducer, TK?> _f;
-        private readonly Dictionary<TK, Internal.Gain> _map;
+        private readonly Func<Device, Transducer, object?> _f;
+        private readonly Dictionary<object, Internal.Gain> _map;
 
-        public Group(Func<Device, Transducer, TK?> f)
+        public Group(Func<Device, Transducer, object?> f)
         {
             _f = f;
-            _map = new Dictionary<TK, Internal.Gain>();
+            _map = new Dictionary<object, Internal.Gain>();
         }
 
-        public Group<TK> Set(TK key, Internal.Gain gain)
+        public Group Set(object key, Internal.Gain gain)
         {
             _map[key] = gain;
             return this;
@@ -59,7 +58,7 @@ namespace AUTD3Sharp.Gain
 
         public override GainPtr GainPtr(Geometry geometry)
         {
-            var keymap = new Dictionary<TK, int>();
+            var keymap = new Dictionary<object, int>();
             var deviceIndices = geometry.Devices().Select(dev => (uint)dev.Idx).ToArray();
             var map = Base.AUTDGainGroupCreateMap(deviceIndices, (uint)deviceIndices.Length);
             var k = 0;

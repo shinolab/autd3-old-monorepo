@@ -31,7 +31,7 @@ const auto g = autd3::gain::Group([](const autd3::Device& dev, const autd3::Tran
 ```
 
 ```cs
-var g = new Group<string>((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
+var g = new Group((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
           .Set("null", new Null())
           .Set("focus", new Focus(new Vector3d(x, y, z)));
 ```
@@ -47,4 +47,3 @@ In the above case, transducers whose local indices are less or equal than 100 pr
 
 > NOTE:
 > In this sample, we use string as a key, but you can use any type that can be used as a key of HashMap.
-> However, in C#, the key must be a `class`.
