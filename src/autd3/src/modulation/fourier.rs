@@ -85,9 +85,10 @@ impl Fourier {
 
 impl From<Sine> for Fourier {
     fn from(sine: Sine) -> Self {
+        let freq_div = sine.sampling_frequency_division();
         Self {
             components: vec![sine],
-            freq_div: u32::MAX,
+            freq_div,
         }
     }
 }
