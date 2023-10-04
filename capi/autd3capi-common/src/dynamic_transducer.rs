@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,6 +49,14 @@ impl Transducer for DynamicTransducer {
             amp_filter: 0.,
             phase_filter: 0.,
         }
+    }
+
+    fn translate_to(&mut self, pos: Vector3) {
+        self.pos = pos;
+    }
+
+    fn rotate_to(&mut self, rot: UnitQuaternion) {
+        self.rot = rot;
     }
 
     fn affine(&mut self, t: Vector3, r: UnitQuaternion) {

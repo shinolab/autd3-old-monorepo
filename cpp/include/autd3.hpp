@@ -52,7 +52,7 @@ constexpr double pi = internal::pi;
 /**
  * @brief AUTD3 software version
  */
-static inline std::string version = "15.3.0";
+static inline std::string version = "15.3.1";
 
 using internal::Device;
 using internal::Geometry;

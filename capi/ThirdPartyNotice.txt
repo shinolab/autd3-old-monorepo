@@ -70,35 +70,35 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 15.3.0 (MIT)
+autd3 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-backend-cuda 15.3.0 (MIT)
+autd3-backend-cuda 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 15.3.0 (MIT)
+autd3-derive 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 15.3.0 (MIT)
+autd3-driver 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 15.3.0 (MIT)
+autd3-firmware-emulator 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 15.3.0 (MIT)
+autd3-gain-holo 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 15.3.0 (MIT)
+autd3-link-simulator 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 15.3.0
+autd3-link-soem 15.3.1
 https://github.com/shinolab/autd3
 
 ---
@@ -164,7 +164,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 15.3.0
+autd3-link-twincat 15.3.1
 https://github.com/shinolab/autd3
 
 ---
@@ -216,39 +216,39 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 15.3.0 (MIT)
+autd3-modulation-audio-file 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 15.3.0 (MIT)
+autd3-protobuf 15.3.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 15.3.0 (MIT)
+autd3capi 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-backend-cuda 15.3.0 (MIT)
+autd3capi-backend-cuda 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-common 15.3.0 (MIT)
+autd3capi-common 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 15.3.0 (MIT)
+autd3capi-def 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-gain-holo 15.3.0 (MIT)
+autd3capi-gain-holo 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 15.3.0 (MIT)
+autd3capi-link-simulator 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 15.3.0 (MIT)
+autd3capi-link-soem 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 15.3.0 (MIT)
+autd3capi-link-twincat 15.3.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 15.3.0 (MIT)
+autd3capi-modulation-audio-file 15.3.1 (MIT)
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
@@ -1099,7 +1099,7 @@ windows_x86_64_msvc 0.48.5 (Apache-2.0 OR MIT)
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-wrapper-generator 15.3.0 (MIT)
+wrapper-generator 15.3.1 (MIT)
 ---------------------------------------------------------
 
 wyz 0.5.1 (MIT)

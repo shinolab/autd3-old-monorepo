@@ -1,3 +1,8 @@
+# 15.3.1
+
+- Fix [#199](https://github.com/shinolab/autd3/issues/199): Add Device::translate_to and Device::rotate_to
+- Fix [#200](https://github.com/shinolab/autd3/issues/200): Drive data also updated by notify_link_geometry_updated
+
 # 15.3.0
 
 - Raise minimum supported Python version to 3.10
