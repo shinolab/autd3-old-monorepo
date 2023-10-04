@@ -22,8 +22,6 @@ fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
 pub trait Transducer: Send + Sync {
     /// Create transducer
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
-    fn translate_to(&mut self, pos: Vector3);
-    fn rotate_to(&mut self, rot: UnitQuaternion);
     /// Affine transformation
     fn affine(&mut self, pos: Vector3, rot: UnitQuaternion);
     /// Calculate the phase of the transducer to align the phase at the specified position
