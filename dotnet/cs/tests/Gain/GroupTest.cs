@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/10/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ public class GroupTest
 
         var cx = autd.Geometry.Center.x;
 
-        Assert.True(autd.Send(new Group<string>((_, tr) => tr.Position.x switch
+        Assert.True(autd.Send(new Group((_, tr) => tr.Position.x switch
         {
             var x when x < cx => "uniform",
             _ => "null"
@@ -54,7 +54,7 @@ public class GroupTest
 
         var exception = Record.Exception(() =>
         {
-            autd.Send(new Group<string>((_, _) => "null").Set("uniform", new Uniform(0.5).WithPhase(Math.PI)).Set("null", new Null()));
+            autd.Send(new Group((_, _) => "null").Set("uniform", new Uniform(0.5).WithPhase(Math.PI)).Set("null", new Null()));
         });
 
         if (exception == null) Assert.Fail("Exception is expected");
@@ -69,7 +69,7 @@ public class GroupTest
 
         var exception = Record.Exception(() =>
         {
-            autd.Send(new Group<string>((_, _) => "null"));
+            autd.Send(new Group((_, _) => "null"));
         });
 
         if (exception == null) Assert.Fail("Exception is expected");
@@ -84,7 +84,7 @@ public class GroupTest
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(autd.Send(new Group<string>((dev, tr) =>
+        Assert.True(autd.Send(new Group((dev, tr) =>
         {
             check[dev.Idx] = true;
             return "uniform";
