@@ -14,7 +14,7 @@
 use std::{collections::HashMap, hash::Hash, time::Duration};
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     datagram::{Clear, Datagram, Stop, Synchronize, UpdateFlags},
     error::AUTDInternalError,
     firmware_version::FirmwareInfo,
@@ -113,7 +113,7 @@ pub struct Controller<T: Transducer, L: Link<T>> {
     link: L,
     geometry: Geometry<T>,
     tx_buf: TxDatagram,
-    rx_buf: RxDatagram,
+    rx_buf: Vec<RxMessage>,
 }
 
 impl Controller<LegacyTransducer, NullLink> {
@@ -264,7 +264,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             link,
             geometry,
             tx_buf,
-            rx_buf: RxDatagram::new(num_devices),
+            rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
         };
         cnt.send(UpdateFlags::new())?;
         cnt.send(Clear::new())?;

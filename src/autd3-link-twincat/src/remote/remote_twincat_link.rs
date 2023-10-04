@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use std::{
 use itertools::Itertools;
 
 use autd3_driver::{
-    cpu::{RxDatagram, RxMessage, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -184,7 +184,7 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
         Err(AdsError::SendData(res as _).into())
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         let addr = AmsAddr {
             net_id: self.net_id,
             port: PORT,
@@ -197,7 +197,7 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
                 &addr as _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE_READ,
-                (std::mem::size_of::<RxMessage>() * rx.len()) as _,
+                std::mem::size_of_val(rx) as _,
                 rx.as_mut_ptr() as _,
                 &mut receive_bytes as _,
             )

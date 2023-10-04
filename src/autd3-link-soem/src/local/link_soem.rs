@@ -26,7 +26,7 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use time::ext::NumericalDuration;
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC},
+    cpu::{RxMessage, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC},
     error::AUTDInternalError,
     geometry::{Device, Transducer},
     link::Link,
@@ -515,7 +515,7 @@ impl<T: Transducer> Link<T> for SOEM {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !<Self as Link<T>>::is_open(self) {
             return Err(AUTDInternalError::LinkClosed);
         }
