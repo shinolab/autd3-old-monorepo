@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -197,15 +197,58 @@ impl OperationHandler {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use std::collections::HashMap;
 
     use crate::{
         cpu::{Header, EC_OUTPUT_FRAME_SIZE},
-        geometry::{LegacyTransducer, UnitQuaternion, Vector3},
+        geometry::{LegacyTransducer, UnitQuaternion, Vector3}, derive::prelude::{Drive, GainAsAny, GainFilter, Gain},
     };
 
     use super::*;
+
+    #[derive(Clone)]
+    pub struct TestGain {
+        pub data: HashMap<usize, Vec<Drive>>,
+    }
+
+    impl GainAsAny for TestGain {
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
+
+    impl<T: Transducer> Gain<T> for TestGain {
+        fn calc(
+            &self,
+            _geometry: &Geometry<T>,
+            _filter: GainFilter,
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+            Ok(self.data.clone())
+        }
+    }
+
+    #[derive(Copy, Clone)]
+    pub struct NullGain {}
+
+    impl GainAsAny for NullGain {
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
+
+    impl<T: Transducer> Gain<T> for NullGain {
+        fn calc(
+            &self,
+            geometry: &Geometry<T>,
+            filter: GainFilter,
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+            Ok(Self::transform(geometry, filter, |_, _| Drive {
+                amp: 1.,
+                phase: 2.,
+            }))
+        }
+    }
 
     struct OperationMock {
         pub initialized: HashMap<usize, bool>,

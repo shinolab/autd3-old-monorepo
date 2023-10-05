@@ -53,8 +53,7 @@ pub trait Gain<T: Transducer>: GainAsAny {
             GainFilter::Filter(filter) => geometry
                 .devices()
                 .filter_map(|dev| {
-                    if let Some(filter) = filter.get(&dev.idx()) {
-                        Some((
+                    filter.get(&dev.idx()).map(|filter| (
                             dev.idx(),
                             dev.iter()
                                 .map(|tr| {
@@ -66,9 +65,6 @@ pub trait Gain<T: Transducer>: GainAsAny {
                                 })
                                 .collect(),
                         ))
-                    } else {
-                        None
-                    }
                 })
                 .collect(),
         }
@@ -93,31 +89,12 @@ impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::LegacyTransducer;
-
     use super::*;
-    use crate::geometry::tests::create_geometry;
 
-    struct NullGain {}
-
-    impl GainAsAny for NullGain {
-        fn as_any(&self) -> &dyn std::any::Any {
-            self
-        }
-    }
-
-    impl<T: Transducer> Gain<T> for NullGain {
-        fn calc(
-            &self,
-            geometry: &Geometry<T>,
-            filter: GainFilter,
-        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-            Ok(Self::transform(geometry, filter, |_, _| Drive {
-                amp: 1.,
-                phase: 2.,
-            }))
-        }
-    }
+    use crate::{
+        geometry::{tests::create_geometry, LegacyTransducer},
+        operation::tests::NullGain,
+    };
 
     #[test]
     fn test_gain_as_any() {
