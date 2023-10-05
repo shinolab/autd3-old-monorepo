@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -343,34 +343,13 @@ mod tests {
 
     use super::*;
     use crate::{
-        datagram::GainAsAny,
         defined::PI,
         geometry::{tests::create_geometry, LegacyTransducer},
+        operation::tests::TestGain,
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
-
-    #[derive(Clone)]
-    pub struct TestGain {
-        pub data: HashMap<usize, Vec<Drive>>,
-    }
-
-    impl GainAsAny for TestGain {
-        fn as_any(&self) -> &dyn std::any::Any {
-            self
-        }
-    }
-
-    impl<T: Transducer> Gain<T> for TestGain {
-        fn calc(
-            &self,
-            _geometry: &Geometry<T>,
-            _filter: GainFilter,
-        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-            Ok(self.data.clone())
-        }
-    }
 
     #[test]
     fn gain_legacy_op() {

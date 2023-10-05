@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -881,35 +881,14 @@ mod tests {
 
     use super::*;
     use crate::{
-        datagram::GainAsAny,
         defined::PI,
         fpga::{GAIN_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
         geometry::{tests::create_geometry, LegacyTransducer},
+        operation::tests::{NullGain, TestGain},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
-
-    #[derive(Clone)]
-    pub struct TestGain {
-        pub data: HashMap<usize, Vec<Drive>>,
-    }
-
-    impl GainAsAny for TestGain {
-        fn as_any(&self) -> &dyn std::any::Any {
-            self
-        }
-    }
-
-    impl<T: Transducer> Gain<T> for TestGain {
-        fn calc(
-            &self,
-            _geometry: &Geometry<T>,
-            _filter: GainFilter,
-        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-            Ok(self.data.clone())
-        }
-    }
 
     #[test]
     fn gain_stm_legacy_phase_duty_full_op() {
@@ -1617,34 +1596,12 @@ mod tests {
     fn gain_stm_legacy_op_buffer_out_of_range() {
         let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
+        let gains: Vec<NullGain> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX)
+            .map(|_| NullGain {})
             .collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -1652,32 +1609,12 @@ mod tests {
         );
         assert!(op.init(&geometry).is_ok());
 
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX + 1)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX + 1)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
+        let gains: Vec<NullGain> = (0..GAIN_STM_LEGACY_BUF_SIZE_MAX + 1)
+            .map(|_| NullGain {})
             .collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -1690,32 +1627,7 @@ mod tests {
     fn gain_stm_legacy_op_freq_div_out_of_range() {
         let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..2)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-
-        let gains: Vec<TestGain> = (0..2)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
-            .collect();
+        let gains: Vec<NullGain> = (0..2).map(|_| NullGain {}).collect();
 
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
@@ -2339,34 +2251,10 @@ mod tests {
     fn gain_stm_advanced_op_buffer_out_of_range() {
         let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_BUF_SIZE_MAX)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_BUF_SIZE_MAX)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
-            .collect();
+        let gains: Vec<NullGain> = (0..GAIN_STM_BUF_SIZE_MAX).map(|_| NullGain {}).collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -2374,32 +2262,12 @@ mod tests {
         );
         assert!(op.init(&geometry).is_ok());
 
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
+        let gains: Vec<NullGain> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
+            .map(|_| NullGain {})
             .collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -2412,32 +2280,7 @@ mod tests {
     fn gain_stm_advanced_op_freq_div_out_of_range() {
         let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..2)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-
-        let gains: Vec<TestGain> = (0..2)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
-            .collect();
+        let gains: Vec<NullGain> = (0..2).map(|_| NullGain {}).collect();
 
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
@@ -3023,34 +2866,10 @@ mod tests {
     fn gain_stm_advanced_phase_op_buffer_out_of_range() {
         let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_BUF_SIZE_MAX)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_BUF_SIZE_MAX)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
-            .collect();
+        let gains: Vec<NullGain> = (0..GAIN_STM_BUF_SIZE_MAX).map(|_| NullGain {}).collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -3058,32 +2877,12 @@ mod tests {
         );
         assert!(op.init(&geometry).is_ok());
 
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-        let gains: Vec<TestGain> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
+        let gains: Vec<NullGain> = (0..GAIN_STM_BUF_SIZE_MAX + 1)
+            .map(|_| NullGain {})
             .collect();
 
         let mut op = GainSTMOp::<_, _>::new(
-            gains.clone(),
+            gains,
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
@@ -3096,32 +2895,7 @@ mod tests {
     fn gain_stm_advanced_phase_op_freq_div_out_of_range() {
         let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
-
-        let gain_data: Vec<HashMap<usize, Vec<Drive>>> = (0..2)
-            .map(|_| {
-                geometry
-                    .devices()
-                    .map(|dev| {
-                        (
-                            dev.idx(),
-                            (0..dev.num_transducers())
-                                .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
-                                    phase: rng.gen_range(0.0..2.0 * PI),
-                                })
-                                .collect(),
-                        )
-                    })
-                    .collect()
-            })
-            .collect();
-
-        let gains: Vec<TestGain> = (0..2)
-            .map(|i| TestGain {
-                data: gain_data[i].clone(),
-            })
-            .collect();
+        let gains: Vec<NullGain> = (0..2).map(|_| NullGain {}).collect();
 
         let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
