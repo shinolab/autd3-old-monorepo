@@ -1,6 +1,7 @@
 # 16.0.0
 
 - Fix [#201](https://github.com/shinolab/autd3/issues/201): The results of Device::translate_to and Device::rotate_to are wrong
+- Fix [#202](https://github.com/shinolab/autd3/issues/202): Depending on the timing, Link::wait_msg_processed may fall into an infinite loop
 
 # 15.3.1
 

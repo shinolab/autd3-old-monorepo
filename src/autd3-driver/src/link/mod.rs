@@ -61,16 +61,20 @@ pub trait Link<T: Transducer>: Send {
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
+        let _ = self.receive(rx)?;
+        if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
+            return Ok(true);
+        }
         loop {
+            if start.elapsed() > timeout {
+                return Ok(false);
+            }
             std::thread::sleep(std::time::Duration::from_millis(1));
             if !self.receive(rx)? {
                 continue;
             }
             if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
                 return Ok(true);
-            }
-            if start.elapsed() > timeout {
-                return Ok(false);
             }
         }
     }
