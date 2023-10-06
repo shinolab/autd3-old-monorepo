@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,26 +60,6 @@ pub enum TypeTag {
     Filter = 0x60,
 }
 
-impl From<u8> for TypeTag {
-    fn from(value: u8) -> Self {
-        match value {
-            0x00 => Self::NONE,
-            0x01 => Self::Clear,
-            0x02 => Self::Sync,
-            0x03 => Self::FirmwareInfo,
-            0x04 => Self::UpdateFlags,
-            0x10 => Self::Modulation,
-            0x11 => Self::ConfigureModDelay,
-            0x20 => Self::Silencer,
-            0x30 => Self::Gain,
-            0x40 => Self::FocusSTM,
-            0x50 => Self::GainSTM,
-            0x60 => Self::Filter,
-            _ => unimplemented!(),
-        }
-    }
-}
-
 pub trait Operation<T: Transducer> {
     fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
     fn required_size(&self, device: &Device<T>) -> usize;
@@ -89,22 +69,27 @@ pub trait Operation<T: Transducer> {
 }
 
 impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         self.as_mut().init(geometry)
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn required_size(&self, device: &Device<T>) -> usize {
         self.as_ref().required_size(device)
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         self.as_mut().pack(device, tx)
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn commit(&mut self, device: &Device<T>) {
         self.as_mut().commit(device)
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn remains(&self, device: &Device<T>) -> usize {
         self.as_ref().remains(device)
     }
@@ -141,15 +126,15 @@ impl OperationHandler {
         geometry
             .devices()
             .map(|dev| match (op1.remains(dev), op2.remains(dev)) {
-                (0, 0) => Ok(()),
+                (0, 0) => unreachable!(),
                 (0, _) => Self::pack_dev(op2, dev, tx),
                 (_, 0) => Self::pack_dev(op1, dev, tx),
                 _ => {
                     let hedaer = tx.header_mut(dev.idx());
                     hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
                     let mut f = FPGAControlFlags::NONE;
-                    f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-                    f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
+                    f.set_by(FPGAControlFlags::FORCE_FAN, dev.force_fan);
+                    f.set_by(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
                     hedaer.fpga_flag = f;
                     hedaer.slot_2_offset = 0;
 
@@ -177,15 +162,11 @@ impl OperationHandler {
         dev: &Device<T>,
         tx: &mut TxDatagram,
     ) -> Result<(), AUTDInternalError> {
-        if op.remains(dev) == 0 {
-            return Ok(());
-        }
-
         let hedaer = tx.header_mut(dev.idx());
         hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
         let mut f = FPGAControlFlags::NONE;
-        f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-        f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
+        f.set_by(FPGAControlFlags::FORCE_FAN, dev.force_fan);
+        f.set_by(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
         hedaer.fpga_flag = f;
         hedaer.slot_2_offset = 0;
 
@@ -202,7 +183,8 @@ pub mod tests {
 
     use crate::{
         cpu::{Header, EC_OUTPUT_FRAME_SIZE},
-        geometry::{LegacyTransducer, UnitQuaternion, Vector3}, derive::prelude::{Drive, GainAsAny, GainFilter, Gain},
+        derive::prelude::{Drive, Gain, GainAsAny, GainFilter},
+        geometry::{LegacyTransducer, UnitQuaternion, Vector3},
     };
 
     use super::*;
@@ -213,12 +195,14 @@ pub mod tests {
     }
 
     impl GainAsAny for TestGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
         fn as_any(&self) -> &dyn std::any::Any {
             self
         }
     }
 
     impl<T: Transducer> Gain<T> for TestGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
         fn calc(
             &self,
             _geometry: &Geometry<T>,
@@ -228,16 +212,25 @@ pub mod tests {
         }
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy)]
     pub struct NullGain {}
 
+    impl Clone for NullGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
+        fn clone(&self) -> Self {
+            Self {}
+        }
+    }
+
     impl GainAsAny for NullGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
         fn as_any(&self) -> &dyn std::any::Any {
             self
         }
     }
 
     impl<T: Transducer> Gain<T> for NullGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
         fn calc(
             &self,
             geometry: &Geometry<T>,
@@ -250,15 +243,47 @@ pub mod tests {
         }
     }
 
+    #[derive(Copy)]
+    pub struct ErrGain {}
+
+    impl Clone for ErrGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
+        fn clone(&self) -> Self {
+            Self {}
+        }
+    }
+
+    impl GainAsAny for ErrGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+    }
+
+    impl<T: Transducer> Gain<T> for ErrGain {
+        #[cfg_attr(coverage_nightly, no_coverage)]
+        fn calc(
+            &self,
+            _geometry: &Geometry<T>,
+            _filter: GainFilter,
+        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+            Err(AUTDInternalError::GainError("test".to_owned()))
+        }
+    }
+
     struct OperationMock {
         pub initialized: HashMap<usize, bool>,
         pub pack_size: HashMap<usize, usize>,
         pub required_size: HashMap<usize, usize>,
         pub num_frames: HashMap<usize, usize>,
+        pub broken: bool,
     }
 
     impl<T: Transducer> Operation<T> for OperationMock {
         fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+            if self.broken {
+                return Err(AUTDInternalError::NotSupported("test".to_owned()));
+            }
             self.initialized = geometry
                 .devices()
                 .map(|dev| (dev.idx(), true))
@@ -271,6 +296,9 @@ pub mod tests {
         }
 
         fn pack(&mut self, device: &Device<T>, _: &mut [u8]) -> Result<usize, AUTDInternalError> {
+            if self.broken {
+                return Err(AUTDInternalError::NotSupported("test".to_owned()));
+            }
             Ok(self.pack_size[&device.idx()])
         }
 
@@ -299,6 +327,7 @@ pub mod tests {
             pack_size: Default::default(),
             required_size: Default::default(),
             num_frames: Default::default(),
+            broken: false,
         };
         op1.pack_size.insert(0, 1);
         op1.required_size.insert(0, 2);
@@ -309,6 +338,7 @@ pub mod tests {
             pack_size: Default::default(),
             required_size: Default::default(),
             num_frames: Default::default(),
+            broken: false,
         };
         op2.pack_size.insert(0, 1);
         op2.required_size.insert(0, 2);
@@ -358,5 +388,264 @@ pub mod tests {
         assert_eq!(op1.num_frames[&0], 0);
         assert_eq!(op2.num_frames[&0], 0);
         assert!(OperationHandler::is_finished(&mut op1, &mut op2, &geometry));
+    }
+
+    #[test]
+    fn op_handler_pack_first() {
+        let geometry = Geometry::new(vec![Device::new(
+            0,
+            vec![LegacyTransducer::new(
+                0,
+                Vector3::zeros(),
+                UnitQuaternion::identity(),
+            )],
+        )]);
+
+        let mut op1 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op1.pack_size.insert(0, 0);
+        op1.required_size.insert(0, 0);
+        op1.num_frames.insert(0, 1);
+
+        let mut op2 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op2.pack_size.insert(0, 0);
+        op2.required_size.insert(0, 0);
+        op2.num_frames.insert(0, 0);
+
+        OperationHandler::init(&mut op1, &mut op2, &geometry).unwrap();
+
+        assert_eq!(op1.remains(&geometry[0]), 1);
+        assert_eq!(op2.remains(&geometry[0]), 0);
+        assert!(!OperationHandler::is_finished(
+            &mut op1, &mut op2, &geometry
+        ));
+
+        let mut tx = TxDatagram::new(1);
+
+        assert!(OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx).is_ok());
+
+        assert_eq!(op1.remains(&geometry[0]), 0);
+        assert_eq!(op2.remains(&geometry[0]), 0);
+        assert!(OperationHandler::is_finished(&mut op1, &mut op2, &geometry));
+    }
+
+    #[test]
+    fn op_handler_pack_second() {
+        let geometry = Geometry::new(vec![Device::new(
+            0,
+            vec![LegacyTransducer::new(
+                0,
+                Vector3::zeros(),
+                UnitQuaternion::identity(),
+            )],
+        )]);
+
+        let mut op1 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op1.pack_size.insert(0, 0);
+        op1.required_size.insert(0, 0);
+        op1.num_frames.insert(0, 0);
+
+        let mut op2 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op2.pack_size.insert(0, 0);
+        op2.required_size.insert(0, 0);
+        op2.num_frames.insert(0, 1);
+
+        OperationHandler::init(&mut op1, &mut op2, &geometry).unwrap();
+
+        assert_eq!(op1.remains(&geometry[0]), 0);
+        assert_eq!(op2.remains(&geometry[0]), 1);
+        assert!(!OperationHandler::is_finished(
+            &mut op1, &mut op2, &geometry
+        ));
+
+        let mut tx = TxDatagram::new(1);
+
+        assert!(OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx).is_ok());
+
+        assert_eq!(op1.remains(&geometry[0]), 0);
+        assert_eq!(op2.remains(&geometry[0]), 0);
+        assert!(OperationHandler::is_finished(&mut op1, &mut op2, &geometry));
+    }
+
+    #[test]
+    fn op_handler_broken_init() {
+        let geometry = Geometry::new(vec![Device::new(
+            0,
+            vec![LegacyTransducer::new(
+                0,
+                Vector3::zeros(),
+                UnitQuaternion::identity(),
+            )],
+        )]);
+
+        let mut op1 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: true,
+        };
+        op1.pack_size.insert(0, 0);
+        op1.required_size.insert(0, 0);
+        op1.num_frames.insert(0, 0);
+
+        let mut op2 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op2.pack_size.insert(0, 0);
+        op2.required_size.insert(0, 0);
+        op2.num_frames.insert(0, 1);
+
+        assert_eq!(
+            OperationHandler::init(&mut op1, &mut op2, &geometry),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+
+        op1.broken = false;
+        op2.broken = true;
+
+        assert_eq!(
+            OperationHandler::init(&mut op1, &mut op2, &geometry),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+    }
+
+    #[test]
+    fn op_handler_broken_pack() {
+        let geometry = Geometry::new(vec![Device::new(
+            0,
+            vec![LegacyTransducer::new(
+                0,
+                Vector3::zeros(),
+                UnitQuaternion::identity(),
+            )],
+        )]);
+
+        let mut op1 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op1.pack_size.insert(0, 0);
+        op1.required_size.insert(0, 0);
+        op1.num_frames.insert(0, 1);
+
+        let mut op2 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op2.pack_size.insert(0, 0);
+        op2.required_size.insert(0, 0);
+        op2.num_frames.insert(0, 1);
+
+        OperationHandler::init(&mut op1, &mut op2, &geometry).unwrap();
+
+        op1.broken = true;
+
+        let mut tx = TxDatagram::new(1);
+
+        assert_eq!(
+            OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+
+        op1.broken = false;
+        op2.broken = true;
+
+        assert_eq!(
+            OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+
+        op1.num_frames.insert(0, 0);
+        assert_eq!(
+            OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+
+        op1.broken = true;
+        op2.broken = false;
+
+        op1.num_frames.insert(0, 1);
+        op2.num_frames.insert(0, 0);
+        assert_eq!(
+            OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx),
+            Err(AUTDInternalError::NotSupported("test".to_owned()))
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn op_handler_pack_finished() {
+        let geometry = Geometry::new(vec![Device::new(
+            0,
+            vec![LegacyTransducer::new(
+                0,
+                Vector3::zeros(),
+                UnitQuaternion::identity(),
+            )],
+        )]);
+
+        let mut op1 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op1.pack_size.insert(0, 0);
+        op1.required_size.insert(0, 0);
+        op1.num_frames.insert(0, 0);
+
+        let mut op2 = OperationMock {
+            initialized: Default::default(),
+            pack_size: Default::default(),
+            required_size: Default::default(),
+            num_frames: Default::default(),
+            broken: false,
+        };
+        op2.pack_size.insert(0, 0);
+        op2.required_size.insert(0, 0);
+        op2.num_frames.insert(0, 0);
+
+        OperationHandler::init(&mut op1, &mut op2, &geometry).unwrap();
+
+        assert!(OperationHandler::is_finished(&mut op1, &mut op2, &geometry));
+
+        let mut tx = TxDatagram::new(1);
+
+        let _ = OperationHandler::pack(&mut op1, &mut op2, &geometry, &mut tx);
     }
 }

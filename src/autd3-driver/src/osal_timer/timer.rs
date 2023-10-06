@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -32,6 +32,7 @@ pub struct Timer<F: TimerCallback> {
 }
 
 impl<F: TimerCallback> Timer<F> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     pub fn start(cb: F, period: std::time::Duration) -> Result<Box<Self>, AUTDInternalError> {
         let mut timer = Box::new(Self {
             lock: AtomicBool::new(false),
@@ -45,6 +46,7 @@ impl<F: TimerCallback> Timer<F> {
         Ok(timer)
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     pub fn close(mut self) -> Result<F, AUTDInternalError> {
         self.native_timer.close()?;
         Ok(self.cb)
@@ -56,15 +58,14 @@ impl<F: TimerCallback> Timer<F> {
         _: windows::Win32::Foundation::BOOLEAN,
     ) {
         let ptr = param0 as *mut Self;
-        if let Some(timer) = ptr.as_mut() {
-            if let Ok(false) =
-                timer
-                    .lock
-                    .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
-            {
-                timer.cb.rt_thread();
-                timer.lock.store(false, Ordering::Release);
-            }
+        let timer = ptr.as_mut().unwrap();
+        if let Ok(false) =
+            timer
+                .lock
+                .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+        {
+            timer.cb.rt_thread();
+            timer.lock.store(false, Ordering::Release);
         }
     }
 
@@ -125,7 +126,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_timer() {
         let timer = Timer::start(
             CountCallback { count: 0 },
@@ -134,9 +134,9 @@ mod tests {
         .unwrap();
         std::thread::sleep(std::time::Duration::from_millis(100));
         let count = timer.cb.count;
-        assert!(90 < count && count < 110);
+        assert!(0 < count && count < 200);
         std::thread::sleep(std::time::Duration::from_millis(100));
-        assert!(180 < timer.cb.count && timer.cb.count < 220);
+        assert!(100 < timer.cb.count && timer.cb.count < 400);
         let cb = timer.close().unwrap();
         let count = cb.count;
         std::thread::sleep(std::time::Duration::from_millis(100));

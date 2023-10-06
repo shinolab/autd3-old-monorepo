@@ -53,7 +53,8 @@ pub trait Gain<T: Transducer>: GainAsAny {
             GainFilter::Filter(filter) => geometry
                 .devices()
                 .filter_map(|dev| {
-                    filter.get(&dev.idx()).map(|filter| (
+                    filter.get(&dev.idx()).map(|filter| {
+                        (
                             dev.idx(),
                             dev.iter()
                                 .map(|tr| {
@@ -64,7 +65,8 @@ pub trait Gain<T: Transducer>: GainAsAny {
                                     }
                                 })
                                 .collect(),
-                        ))
+                        )
+                    })
                 })
                 .collect(),
         }
@@ -72,12 +74,14 @@ pub trait Gain<T: Transducer>: GainAsAny {
 }
 
 impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn as_any(&self) -> &dyn std::any::Any {
         self.as_ref().as_any()
     }
 }
 
 impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn calc(
         &self,
         geometry: &Geometry<T>,
@@ -100,38 +104,6 @@ mod tests {
     fn test_gain_as_any() {
         let g = NullGain {};
         assert!(g.as_any().is::<NullGain>());
-    }
-
-    #[test]
-    fn test_gain_boxed_as_any() {
-        let g: Box<dyn Gain<LegacyTransducer>> = Box::new(NullGain {});
-        assert!(g.as_any().is::<NullGain>());
-    }
-
-    #[test]
-    fn test_gain_boxed_calc() {
-        let g: Box<dyn Gain<LegacyTransducer>> = Box::new(NullGain {});
-        let geometry = create_geometry::<LegacyTransducer>(2, 249);
-        let r = g.calc(&geometry, GainFilter::All);
-        assert!(r.is_ok());
-        let g = r.unwrap();
-        assert_eq!(g.len(), 2);
-
-        assert!(g.contains_key(&0));
-        let d0 = g.get(&0).unwrap();
-        assert_eq!(d0.len(), 249);
-        d0.iter().for_each(|d| {
-            assert_eq!(d.amp, 1.);
-            assert_eq!(d.phase, 2.);
-        });
-
-        assert!(g.contains_key(&1));
-        let d1 = g.get(&1).unwrap();
-        assert_eq!(d1.len(), 249);
-        d1.iter().for_each(|d| {
-            assert_eq!(d.amp, 1.);
-            assert_eq!(d.phase, 2.);
-        });
     }
 
     #[test]

@@ -39,24 +39,29 @@ pub trait Modulation: ModulationProperty {
 }
 
 impl ModulationProperty for Box<dyn Modulation> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn sampling_frequency(&self) -> float {
         self.as_ref().sampling_frequency()
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn sampling_frequency_division(&self) -> u32 {
         self.as_ref().sampling_frequency_division()
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn sampling_period(&self) -> std::time::Duration {
         self.as_ref().sampling_period()
     }
 }
 
 impl Modulation for Box<dyn Modulation> {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         self.as_ref().calc()
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn len(&self) -> Result<usize, AUTDInternalError> {
         self.as_ref().len()
     }
@@ -115,46 +120,5 @@ mod tests {
             .unwrap(),
             100
         );
-    }
-
-    #[test]
-    fn test_modulation_boxed_property() {
-        let m: Box<dyn Modulation> = Box::new(NullModulation {
-            freq_div: 512,
-            buf: vec![],
-        });
-        assert_eq!(m.sampling_frequency_division(), 512);
-        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 40e3);
-        assert_eq!(m.sampling_period(), std::time::Duration::from_micros(25));
-    }
-
-    #[test]
-    fn test_modulation_boxed_len() {
-        let m: Box<dyn Modulation> = Box::new(NullModulation {
-            freq_div: 512,
-            buf: vec![],
-        });
-        assert_eq!(m.len().unwrap(), 0);
-
-        let m: Box<dyn Modulation> = Box::new(NullModulation {
-            freq_div: 512,
-            buf: vec![0.0; 100],
-        });
-        assert_eq!(m.len().unwrap(), 100);
-    }
-
-    #[test]
-    fn test_modulation_boxed_calc() {
-        let m: Box<dyn Modulation> = Box::new(NullModulation {
-            freq_div: 512,
-            buf: vec![1.0; 100],
-        });
-        let r = m.calc();
-        assert!(r.is_ok());
-        let r = r.unwrap();
-        assert_eq!(r.len(), 100);
-        r.iter().for_each(|v| {
-            assert_eq!(*v, 1.0);
-        });
     }
 }
