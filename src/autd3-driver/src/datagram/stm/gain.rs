@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -212,11 +212,42 @@ impl<T: Transducer + 'static> GainSTM<T, Box<dyn Gain<T>>> {
     }
 }
 
-impl<T: Transducer, G: Gain<T>> Datagram<T> for GainSTM<T, G>
-where
-    crate::operation::GainSTMOp<T, G>: crate::operation::Operation<T>,
+impl<G: Gain<LegacyTransducer>> Datagram<LegacyTransducer> for GainSTM<LegacyTransducer, G> {
+    type O1 = crate::operation::GainSTMLegacyOp<LegacyTransducer, G>;
+    type O2 = crate::operation::NullOp;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let freq_div = self.sampling_frequency_division();
+        let Self {
+            gains, mode, props, ..
+        } = self;
+        Ok((
+            Self::O1::new(gains, mode, freq_div, props.start_idx, props.finish_idx),
+            Self::O2::default(),
+        ))
+    }
+}
+
+impl<G: Gain<AdvancedTransducer>> Datagram<AdvancedTransducer> for GainSTM<AdvancedTransducer, G> {
+    type O1 = crate::operation::GainSTMAdvancedOp<AdvancedTransducer, G>;
+    type O2 = crate::operation::NullOp;
+
+    fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+        let freq_div = self.sampling_frequency_division();
+        let Self {
+            gains, mode, props, ..
+        } = self;
+        Ok((
+            Self::O1::new(gains, mode, freq_div, props.start_idx, props.finish_idx),
+            Self::O2::default(),
+        ))
+    }
+}
+
+impl<G: Gain<AdvancedPhaseTransducer>> Datagram<AdvancedPhaseTransducer>
+    for GainSTM<AdvancedPhaseTransducer, G>
 {
-    type O1 = crate::operation::GainSTMOp<T, G>;
+    type O1 = crate::operation::GainSTMAdvancedPhaseOp<AdvancedPhaseTransducer, G>;
     type O2 = crate::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -241,7 +272,9 @@ mod tests {
         datagram::{Gain, GainAsAny},
         defined::Drive,
         fpga::FPGA_SUB_CLK_FREQ,
-        operation::{tests::NullGain, GainSTMOp, NullOp},
+        operation::{
+            tests::NullGain, GainSTMAdvancedOp, GainSTMAdvancedPhaseOp, GainSTMLegacyOp, NullOp,
+        },
     };
 
     use assert_approx_eq::assert_approx_eq;
@@ -434,7 +467,7 @@ mod tests {
     }
 
     #[test]
-    fn gain_stm_operation() {
+    fn gain_stm_legacy_operation() {
         let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.);
 
         let r = <GainSTM<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>> as Datagram<
@@ -442,7 +475,36 @@ mod tests {
         >>::operation(stm);
         assert!(r.is_ok());
         let _: (
-            GainSTMOp<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>,
+            GainSTMLegacyOp<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>,
+            NullOp,
+        ) = r.unwrap();
+    }
+
+    #[test]
+    fn gain_stm_advanced_operation() {
+        let stm = GainSTM::<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>>::new(1.);
+
+        let r = <GainSTM<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>> as Datagram<
+            AdvancedTransducer,
+        >>::operation(stm);
+        assert!(r.is_ok());
+        let _: (
+            GainSTMAdvancedOp<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>>,
+            NullOp,
+        ) = r.unwrap();
+    }
+
+    #[test]
+    fn gain_stm_advanced_phase_operation() {
+        let stm =
+            GainSTM::<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>>::new(1.);
+
+        let r = <GainSTM<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>> as Datagram<
+        AdvancedPhaseTransducer,
+        >>::operation(stm);
+        assert!(r.is_ok());
+        let _: (
+            GainSTMAdvancedPhaseOp<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>>,
             NullOp,
         ) = r.unwrap();
     }
