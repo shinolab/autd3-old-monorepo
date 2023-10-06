@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkPtr, TransMode,
-    AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
+    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -44,7 +44,7 @@ unsafe impl Send for CallbackPtr {}
 #[allow(clippy::box_default)]
 pub unsafe extern "C" fn AUTDControllerBuilder() -> ControllerBuilderPtr {
     ControllerBuilderPtr(
-        Box::into_raw(Box::new(ControllerBuilder::<DynamicTransducer>::default())) as _,
+        Box::into_raw(Box::new(Controller::builder_with::<DynamicTransducer>())) as _,
     )
 }
 
@@ -59,9 +59,13 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDevice(
     rz2: float,
 ) -> ControllerBuilderPtr {
     ControllerBuilderPtr(Box::into_raw(Box::new(
-        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).add_device(
-            AUTD3::new(Vector3::new(x, y, z), Vector3::new(rz1, ry, rz2)),
-        ),
+        Box::from_raw(
+            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>,
+        )
+        .add_device(AUTD3::new(
+            Vector3::new(x, y, z),
+            Vector3::new(rz1, ry, rz2),
+        )),
     )) as _)
 }
 
@@ -77,12 +81,13 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
     qz: float,
 ) -> ControllerBuilderPtr {
     ControllerBuilderPtr(Box::into_raw(Box::new(
-        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).add_device(
-            AUTD3::with_quaternion(
-                Vector3::new(x, y, z),
-                UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
-            ),
-        ),
+        Box::from_raw(
+            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>,
+        )
+        .add_device(AUTD3::with_quaternion(
+            Vector3::new(x, y, z),
+            UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
+        )),
     )) as _)
 }
 
@@ -90,12 +95,16 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerOpenWith(
     builder: ControllerBuilderPtr,
-    link: LinkPtr,
+    link_builder: LinkBuilderPtr,
     err: *mut c_char,
 ) -> ControllerPtr {
-    let link: Box<Box<L>> = Box::from_raw(link.0 as *mut Box<L>);
+    let link_builder: Box<DynamicLinkBuilder> =
+        Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
     let cnt = try_or_return!(
-        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).open_with(*link),
+        Box::from_raw(
+            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>
+        )
+        .open_with(*link_builder),
         err,
         ControllerPtr(NULL)
     );
@@ -161,19 +170,6 @@ pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(
     p_info_list: FirmwareInfoListPtr,
 ) {
     let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDControllerNotifyLinkGeometryUpdated(
-    cnt: ControllerPtr,
-    err: *mut c_char,
-) -> bool {
-    try_or_return!(
-        cast_mut!(cnt.0, Cnt).notify_link_geometry_updated(),
-        err,
-        false
-    );
-    true
 }
 
 #[no_mangle]
@@ -474,18 +470,14 @@ pub unsafe extern "C" fn AUTDControllerSoftwareSTM(
 
 #[cfg(test)]
 mod tests {
-    use autd3capi_def::{DatagramPtr, Level};
+    use autd3capi_def::DatagramPtr;
 
     use super::*;
 
-    use crate::link::debug::*;
+    use crate::link::nop::*;
 
-    use std::ffi::CStr;
-
-    pub unsafe fn make_debug_link() -> LinkPtr {
-        let debug = AUTDLinkDebug();
-        let debug = AUTDLinkDebugWithLogLevel(debug, Level::Off);
-        AUTDLinkDebugWithTimeout(debug, 0)
+    pub unsafe fn make_nop_link() -> LinkBuilderPtr {
+        AUTDLinkNop()
     }
 
     pub unsafe fn create_controller() -> ControllerPtr {
@@ -494,7 +486,7 @@ mod tests {
         let builder =
             AUTDControllerBuilderAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
-        let link = make_debug_link();
+        let link = make_nop_link();
         let mut err = vec![c_char::default(); 256];
         let cnt = AUTDControllerOpenWith(builder, link, err.as_mut_ptr());
         assert_ne!(cnt.0, NULL);
@@ -529,7 +521,6 @@ mod tests {
             (0..2).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
                 AUTDControllerFirmwareInfoGet(firm_p, i as _, info.as_mut_ptr());
-                dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
             });
             AUTDControllerFirmwareInfoListPointerDelete(firm_p);
 

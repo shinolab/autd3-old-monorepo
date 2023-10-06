@@ -14,7 +14,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod device;
-pub mod transducer; 
+pub mod transducer;
 
 use autd3capi_def::{common::*, ControllerPtr, GeometryPtr};
 
