@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,9 @@ use std::collections::HashMap;
 use autd3_driver::{
     datagram::GainFilter,
     defined::Drive,
-    operation::{GainOp, GainSTMMode, GainSTMOp, Operation},
+    operation::{
+        GainOp, GainSTMAdvancedOp, GainSTMAdvancedPhaseOp, GainSTMLegacyOp, GainSTMMode, Operation,
+    },
 };
 
 use crate::{dynamic_transducer::TransMode, DynamicTransducer, G};
@@ -138,7 +140,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
         geometry: &autd3_driver::geometry::Geometry<DynamicTransducer>,
     ) -> Result<(), autd3_driver::error::AUTDInternalError> {
         match self.mode {
-            TransMode::Legacy => GainSTMOp::<DynamicTransducer, Box<G>>::init_legacy(
+            TransMode::Legacy => GainSTMLegacyOp::<DynamicTransducer, Box<G>>::init_impl(
                 &self.gains,
                 &mut self.drives,
                 &mut self.remains,
@@ -147,7 +149,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 self.freq_div,
                 geometry,
             ),
-            TransMode::Advanced => GainSTMOp::<DynamicTransducer, Box<G>>::init_advanced(
+            TransMode::Advanced => GainSTMAdvancedOp::<DynamicTransducer, Box<G>>::init_impl(
                 &self.gains,
                 &mut self.drives,
                 &mut self.remains,
@@ -157,7 +159,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 geometry,
             ),
             TransMode::AdvancedPhase => {
-                GainSTMOp::<DynamicTransducer, Box<G>>::init_advanced_phase(
+                GainSTMAdvancedPhaseOp::<DynamicTransducer, Box<G>>::init_impl(
                     &self.gains,
                     &mut self.drives,
                     &mut self.remains,
@@ -171,7 +173,21 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
     }
 
     fn required_size(&self, device: &autd3_driver::geometry::Device<DynamicTransducer>) -> usize {
-        GainSTMOp::<DynamicTransducer, Box<G>>::required_size_impl(&self.sent, device)
+        match self.mode {
+            TransMode::Legacy => {
+                GainSTMLegacyOp::<DynamicTransducer, Box<G>>::required_size_impl(&self.sent, device)
+            }
+            TransMode::Advanced => {
+                GainSTMAdvancedOp::<DynamicTransducer, Box<G>>::required_size_impl(
+                    &self.sent, device,
+                )
+            }
+            TransMode::AdvancedPhase => {
+                GainSTMAdvancedPhaseOp::<DynamicTransducer, Box<G>>::required_size_impl(
+                    &self.sent, device,
+                )
+            }
+        }
     }
 
     fn pack(
@@ -180,7 +196,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
         tx: &mut [u8],
     ) -> Result<usize, autd3_driver::error::AUTDInternalError> {
         match self.mode {
-            TransMode::Legacy => GainSTMOp::<DynamicTransducer, Box<G>>::pack_legacy(
+            TransMode::Legacy => GainSTMLegacyOp::<DynamicTransducer, Box<G>>::pack_impl(
                 &self.drives,
                 &self.remains,
                 &mut self.sent,
@@ -191,7 +207,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 device,
                 tx,
             ),
-            TransMode::Advanced => GainSTMOp::<DynamicTransducer, Box<G>>::pack_advanced(
+            TransMode::Advanced => GainSTMAdvancedOp::<DynamicTransducer, Box<G>>::pack_impl(
                 &self.drives,
                 &self.remains,
                 &mut self.sent,
@@ -203,7 +219,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 tx,
             ),
             TransMode::AdvancedPhase => {
-                GainSTMOp::<DynamicTransducer, Box<G>>::pack_advanced_phase(
+                GainSTMAdvancedPhaseOp::<DynamicTransducer, Box<G>>::pack_impl(
                     &self.drives,
                     &self.remains,
                     &mut self.sent,
@@ -220,14 +236,14 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
 
     fn commit(&mut self, device: &autd3_driver::geometry::Device<DynamicTransducer>) {
         match self.mode {
-            TransMode::Legacy => GainSTMOp::<DynamicTransducer, Box<G>>::commit_legacy(
+            TransMode::Legacy => GainSTMLegacyOp::<DynamicTransducer, Box<G>>::commit_impl(
                 &self.gains,
                 &mut self.remains,
                 &self.sent,
                 self.gain_stm_mode,
                 device,
             ),
-            TransMode::Advanced => GainSTMOp::<DynamicTransducer, Box<G>>::commit_advanced(
+            TransMode::Advanced => GainSTMAdvancedOp::<DynamicTransducer, Box<G>>::commit_impl(
                 &self.gains,
                 &mut self.remains,
                 &self.sent,
@@ -235,7 +251,7 @@ impl Operation<DynamicTransducer> for DynamicGainSTMOp {
                 device,
             ),
             TransMode::AdvancedPhase => {
-                GainSTMOp::<DynamicTransducer, Box<G>>::commit_advanced_phase(
+                GainSTMAdvancedPhaseOp::<DynamicTransducer, Box<G>>::commit_impl(
                     &self.gains,
                     &mut self.remains,
                     &self.sent,

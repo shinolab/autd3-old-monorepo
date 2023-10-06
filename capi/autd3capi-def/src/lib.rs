@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,8 @@ pub use autd3capi_common::holo;
 
 use autd3capi_common::float;
 use common::{
-    ConstPtr, DynamicDatagram, DynamicTransducer, Gain, Link, Modulation, STMProps, G, L, M,
+    driver::link::LinkBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder, DynamicTransducer,
+    Gain, Modulation, STMProps, G, M,
 };
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
@@ -67,43 +68,6 @@ impl From<TransMode> for common::TransMode {
 }
 
 #[repr(u8)]
-pub enum Level {
-    Critical = 0,
-    Error = 1,
-    Warn = 2,
-    Info = 3,
-    Debug = 4,
-    Trace = 5,
-    Off = 6,
-}
-
-impl From<Level> for common::autd3::prelude::LevelFilter {
-    fn from(level: Level) -> Self {
-        match level {
-            Level::Critical => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Critical,
-            ),
-            Level::Error => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Error,
-            ),
-            Level::Warn => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Warn,
-            ),
-            Level::Info => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Info,
-            ),
-            Level::Debug => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Debug,
-            ),
-            Level::Trace => common::autd3::prelude::LevelFilter::MoreSevereEqual(
-                common::autd3::prelude::Level::Trace,
-            ),
-            Level::Off => common::autd3::prelude::LevelFilter::Off,
-        }
-    }
-}
-
-#[repr(u8)]
 pub enum TimerStrategy {
     Sleep = 0,
     BusyWait = 1,
@@ -138,12 +102,11 @@ pub struct TransducerPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct LinkPtr(pub ConstPtr);
+pub struct LinkBuilderPtr(pub ConstPtr);
 
-impl LinkPtr {
-    pub fn new<T: Link<DynamicTransducer> + 'static>(link: T) -> Self {
-        let l: Box<Box<L>> = Box::new(Box::new(link));
-        Self(Box::into_raw(l) as _)
+impl LinkBuilderPtr {
+    pub fn new<B: LinkBuilder<DynamicTransducer> + 'static>(builder: B) -> LinkBuilderPtr {
+        Self(Box::into_raw(Box::new(DynamicLinkBuilder::new(builder))) as _)
     }
 }
 
