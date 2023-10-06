@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use nalgebra::ComplexField;
 use rand::Rng;
 
 use autd3_driver::{
-    acoustics::{propagate_tr, Sphere},
+    acoustics::{propagate, Sphere},
     datagram::GainFilter,
     defined::float,
 };
@@ -1840,7 +1840,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
                 .collect::<Vec<_>>();
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
-                    g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                    g[(i, j)] = propagate::<Sphere, autd3_driver::geometry::LegacyTransducer>(
                         transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,
@@ -1897,7 +1897,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let mut g = MatrixXc::zeros(foci.len(), transducers.len());
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
-                    g[(i, j)] = propagate_tr::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                    g[(i, j)] = propagate::<Sphere, autd3_driver::geometry::LegacyTransducer>(
                         transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,

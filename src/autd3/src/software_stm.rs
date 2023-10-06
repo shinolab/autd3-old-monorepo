@@ -4,7 +4,7 @@
  * Created Date: 23/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ use crate::{error::AUTDError, Controller};
 pub struct SoftwareSTM<
     'a,
     T: Transducer,
-    L: Link<T>,
+    L: Link,
     F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
 > {
     controller: &'a mut Controller<T, L>,
@@ -37,7 +37,7 @@ pub struct SoftwareSTM<
 impl<
         'a,
         T: Transducer,
-        L: Link<T>,
+        L: Link,
         F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
     > SoftwareSTM<'a, T, L, F>
 {
@@ -61,7 +61,7 @@ impl<
 struct SoftwareSTMCallback<
     'a,
     T: Transducer,
-    L: Link<T>,
+    L: Link,
     F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
 > {
     controller: &'a mut Controller<T, L>,
@@ -74,7 +74,7 @@ struct SoftwareSTMCallback<
 impl<
         'a,
         T: Transducer,
-        L: Link<T>,
+        L: Link,
         F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
     > TimerCallback for SoftwareSTMCallback<'a, T, L, F>
 {
@@ -91,7 +91,7 @@ impl<
 impl<
         'a,
         T: Transducer,
-        L: Link<T>,
+        L: Link,
         F: FnMut(&mut Controller<T, L>, usize, std::time::Duration) -> bool + Send + 'static,
     > SoftwareSTM<'a, T, L, F>
 {

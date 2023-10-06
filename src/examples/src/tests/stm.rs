@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use std::{
 
 use autd3::prelude::*;
 
-pub fn focus_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
+pub fn focus_stm<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(Silencer::disable())?;
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
@@ -41,9 +41,11 @@ pub fn focus_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyh
     Ok(true)
 }
 
-pub fn gain_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+pub fn gain_stm<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where
-    autd3_driver::operation::GainSTMOp<T, Focus>: autd3_driver::operation::Operation<T>,
+    GainSTM<T, Focus>: autd3_driver::datagram::Datagram<T, O2 = autd3_driver::operation::NullOp>,
+    <GainSTM<T, Focus> as autd3_driver::datagram::Datagram<T>>::O1:
+        autd3_driver::operation::Operation<T>,
 {
     autd.send(Silencer::disable())?;
 
@@ -65,7 +67,7 @@ where
     Ok(true)
 }
 
-pub fn software_stm<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+pub fn software_stm<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where
     autd3_driver::operation::GainOp<T, Focus>: autd3_driver::operation::Operation<T>,
 {

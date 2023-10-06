@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ impl CPUEmulator {
             cycles: vec![0x0000; num_transducers],
             synchronized: false,
             num_transducers,
-            fpga_flags: FPGAControlFlags::empty(),
+            fpga_flags: FPGAControlFlags::NONE,
             fpga_flags_internal: 0x0000,
         };
         s.init();
@@ -696,7 +696,7 @@ impl CPUEmulator {
         let freq_div_4k = 40960;
 
         self.fpga_flags_internal = 0x0000;
-        self.fpga_flags = FPGAControlFlags::empty();
+        self.fpga_flags = FPGAControlFlags::NONE;
         self.bram_write(
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_CTL_REG,

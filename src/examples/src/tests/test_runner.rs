@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,13 +27,15 @@ use super::{
     transtest::*,
 };
 
-pub fn run<T: Transducer + 'static, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Result<()>
+pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyhow::Result<()>
 where
     autd3_driver::operation::GainOp<T, Null>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, Bessel>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, Focus>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, Plane>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainSTMOp<T, Focus>: autd3_driver::operation::Operation<T>,
+    GainSTM<T, Focus>: autd3_driver::datagram::Datagram<T, O2 = autd3_driver::operation::NullOp>,
+    <GainSTM<T, Focus> as autd3_driver::datagram::Datagram<T>>::O1:
+        autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, SDP<Backend>>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, EVP<Backend>>: autd3_driver::operation::Operation<T>,
     autd3_driver::operation::GainOp<T, GS<Backend>>: autd3_driver::operation::Operation<T>,

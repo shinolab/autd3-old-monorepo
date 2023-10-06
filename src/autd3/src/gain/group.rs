@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -202,7 +202,7 @@ impl<
                 let filter = if let Some(f) = filters.get(&k) {
                     f
                 } else {
-                    return Err(AUTDInternalError::UnknownGroupKey);
+                    return Err(AUTDInternalError::GainError("Unknown group key".to_owned()));
                 };
                 let d = g.calc(geometry, GainFilter::Filter(filter))?;
                 Ok((k, d))
@@ -221,7 +221,9 @@ impl<
                         let g = if let Some(g) = drives_cache.get(&key) {
                             g
                         } else {
-                            return Err(AUTDInternalError::UnspecifiedGroupKey);
+                            return Err(AUTDInternalError::GainError(
+                                "Unspecified group key".to_owned(),
+                            ));
                         };
                         d[tr.local_idx()] = g[&dev.idx()][tr.local_idx()];
                     } else {
@@ -321,9 +323,13 @@ mod tests {
         })
         .set("plane2", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&geometry, GainFilter::All);
-        assert!(drives.is_err());
-        assert_eq!(drives.unwrap_err(), AUTDInternalError::UnknownGroupKey);
+        match gain.calc(&geometry, GainFilter::All) {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => assert_eq!(
+                e,
+                AUTDInternalError::GainError("Unknown group key".to_owned())
+            ),
+        }
     }
 
     #[test]
@@ -340,9 +346,13 @@ mod tests {
         })
         .set("plane", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&geometry, GainFilter::All);
-        assert!(drives.is_err());
-        assert_eq!(drives.unwrap_err(), AUTDInternalError::UnspecifiedGroupKey);
+        match gain.calc(&geometry, GainFilter::All) {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => assert_eq!(
+                e,
+                AUTDInternalError::GainError("Unspecified group key".to_owned())
+            ),
+        }
     }
 
     #[test]

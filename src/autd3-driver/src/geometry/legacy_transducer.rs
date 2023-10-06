@@ -36,14 +36,6 @@ impl Transducer for LegacyTransducer {
         }
     }
 
-    fn translate_to(&mut self, pos: Vector3) {
-        self.pos = pos;
-    }
-
-    fn rotate_to(&mut self, rot: UnitQuaternion) {
-        self.rot = rot;
-    }
-
     fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
         let rot_mat: Matrix4 = From::from(r);
         let trans_mat = rot_mat.append_translation(&t);
@@ -105,6 +97,8 @@ mod tests {
 
     use super::*;
 
+    use LegacyTransducer as T;
+
     macro_rules! assert_vec3_approx_eq {
         ($a:expr, $b:expr) => {
             assert_approx_eq!($a.x, $b.x, 1e-3);
@@ -114,8 +108,17 @@ mod tests {
     }
 
     #[test]
+    fn local_idx() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0, tr.local_idx());
+
+        let tr = T::new(1, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(1, tr.local_idx());
+    }
+
+    #[test]
     fn affine() {
-        let mut tr = LegacyTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let t = Vector3::new(40., 50., 60.);
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
@@ -136,13 +139,51 @@ mod tests {
 
     #[test]
     fn cycle() {
-        let tr = LegacyTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
         assert_eq!(4096, tr.cycle());
     }
 
     #[test]
+    fn mod_delay() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0, tr.mod_delay());
+        tr.set_mod_delay(1);
+        assert_eq!(1, tr.mod_delay());
+    }
+
+    #[test]
+    fn amp_filter() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0.0, tr.amp_filter());
+        tr.set_amp_filter(1.0);
+        assert_eq!(1.0, tr.amp_filter());
+    }
+
+    #[test]
+    fn phase_filter() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0.0, tr.phase_filter());
+        tr.set_phase_filter(1.0);
+        assert_eq!(1.0, tr.phase_filter());
+    }
+
+    #[test]
     fn freq() {
-        let tr = LegacyTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
         assert_approx_eq!(40e3, tr.frequency());
+    }
+
+    #[test]
+    fn wavelength() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let c = 340e3;
+        assert_approx_eq!(c / tr.frequency(), tr.wavelength(c));
+    }
+
+    #[test]
+    fn wavenumber() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let c = 340e3;
+        assert_approx_eq!(2. * PI * tr.frequency() / c, tr.wavenumber(c));
     }
 }

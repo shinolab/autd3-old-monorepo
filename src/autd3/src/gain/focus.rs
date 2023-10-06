@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -70,64 +70,5 @@ impl<T: Transducer> Gain<T> for Focus {
                 amp: self.amp,
             }
         }))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use autd3_driver::{
-        acoustics::{propagate, Complex, Sphere},
-        geometry::{IntoDevice, LegacyTransducer},
-    };
-
-    use super::*;
-
-    use crate::{autd3_device::AUTD3, tests::random_vector3};
-
-    #[test]
-    fn test_focus() {
-        let geometry: Geometry<LegacyTransducer> =
-            Geometry::new(vec![
-                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
-            ]);
-
-        let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
-        let d = Focus::new(f).calc(&geometry, GainFilter::All).unwrap();
-        assert_eq!(d[&0].len(), geometry.num_transducers());
-        d[&0].iter().for_each(|d| assert_eq!(d.amp, 1.0));
-        d[&0].iter().zip(geometry[0].iter()).for_each(|(d, tr)| {
-            assert_approx_eq::assert_approx_eq!(
-                (propagate::<Sphere>(
-                    tr.position(),
-                    &tr.z_direction(),
-                    0.,
-                    tr.wavenumber(geometry[0].sound_speed),
-                    &f,
-                ) * Complex::new(0., d.phase).exp())
-                .arg(),
-                0.
-            )
-        });
-
-        let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
-        let d = Focus::new(f)
-            .with_amp(0.5)
-            .calc(&geometry, GainFilter::All)
-            .unwrap();
-        assert_eq!(d[&0].len(), geometry.num_transducers());
-        d[&0].iter().for_each(|d| assert_eq!(d.amp, 0.5));
-        d[&0].iter().zip(geometry[0].iter()).for_each(|(d, tr)| {
-            assert_approx_eq::assert_approx_eq!(
-                (propagate::<Sphere>(
-                    tr.position(),
-                    &tr.z_direction(),
-                    0.,
-                    tr.wavenumber(geometry[0].sound_speed),
-                    &f,
-                ) * Complex::new(0., d.phase).exp())
-                .arg(),
-                0.
-            )
-        });
     }
 }
