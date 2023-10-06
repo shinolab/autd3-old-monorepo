@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,17 +19,15 @@ use tonic::{Request, Response, Status};
 
 #[doc(hidden)]
 pub struct LightweightServer<
-    L: autd3_driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+    L: autd3_driver::link::Link + Sync + 'static,
     F: Fn() -> L + Send + Sync + 'static,
 > {
     autd: RwLock<Option<autd3::Controller<autd3::prelude::LegacyTransducer, L>>>,
     link: F,
 }
 
-impl<
-        L: autd3_driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
-        F: Fn() -> L + Send + Sync + 'static,
-    > LightweightServer<L, F>
+impl<L: autd3_driver::link::Link + Sync + 'static, F: Fn() -> L + Send + Sync + 'static>
+    LightweightServer<L, F>
 {
     pub const fn new(f: F) -> Self {
         LightweightServer {
@@ -128,10 +126,8 @@ impl<
 }
 
 #[tonic::async_trait]
-impl<
-        L: autd3_driver::link::Link<autd3_driver::geometry::LegacyTransducer> + Sync + 'static,
-        F: Fn() -> L + Send + Sync + 'static,
-    > ecat_light_server::EcatLight for LightweightServer<L, F>
+impl<L: autd3_driver::link::Link + Sync + 'static, F: Fn() -> L + Send + Sync + 'static>
+    ecat_light_server::EcatLight for LightweightServer<L, F>
 {
     async fn config_geomety(
         &self,

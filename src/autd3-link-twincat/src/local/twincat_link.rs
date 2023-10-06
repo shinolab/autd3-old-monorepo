@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ use lib::Library;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
-    link::Link,
+    geometry::{Geometry, Transducer},
+    link::{Link, LinkBuilder},
 };
 
 #[repr(C)]
@@ -51,8 +51,21 @@ pub struct TwinCAT {
     dll: Library,
 }
 
-impl TwinCAT {
-    pub fn new() -> Result<Self, AUTDInternalError> {
+pub struct TwinCATBuilder {
+    timeout: Duration,
+}
+
+impl TwinCATBuilder {
+    /// Set timeout
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
+    }
+}
+
+impl<T: Transducer> LinkBuilder<T> for TwinCATBuilder {
+    type L = TwinCAT;
+
+    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {
@@ -62,36 +75,46 @@ impl TwinCAT {
             }
         };
 
-        Ok(Self {
-            port: 0,
+        let port = unsafe {
+            dll.get::<unsafe extern "C" fn() -> i32>(b"AdsPortOpenEx")
+                .unwrap()()
+        };
+        if port == 0 {
+            return Err(AdsError::OpenPort.into());
+        }
+
+        let mut ams_addr: AmsAddr = unsafe { std::mem::zeroed() };
+        let n_err = unsafe {
+            dll.get::<unsafe extern "C" fn(i32, *mut AmsAddr) -> i32>(b"AdsGetLocalAddressEx")
+                .unwrap()(port, &mut ams_addr as *mut _)
+        };
+        if n_err != 0 {
+            return Err(AdsError::GetLocalAddress(n_err).into());
+        }
+
+        Ok(Self::L {
+            port,
             send_addr: AmsAddr {
-                net_id: AmsNetId {
-                    b: [0, 0, 0, 0, 0, 0],
-                },
+                net_id: ams_addr.net_id,
                 port: PORT,
             },
-            timeout: Duration::ZERO,
+            timeout: self.timeout,
             dll,
         })
-    }
-
-    /// Set timeout
-    pub fn with_timeout(self, timeout: Duration) -> Self {
-        Self { timeout, ..self }
     }
 }
 
 impl TwinCAT {
-    fn port_open(&self) -> lib::Symbol<unsafe extern "C" fn() -> i32> {
-        unsafe { self.dll.get(b"AdsPortOpenEx").unwrap() }
+    pub fn builder() -> TwinCATBuilder {
+        TwinCATBuilder {
+            timeout: Duration::ZERO,
+        }
     }
+}
 
+impl TwinCAT {
     fn port_close(&self) -> lib::Symbol<unsafe extern "C" fn(i32) -> i32> {
         unsafe { self.dll.get(b"AdsPortCloseEx").unwrap() }
-    }
-
-    fn get_local_address(&self) -> lib::Symbol<unsafe extern "C" fn(i32, *mut AmsAddr) -> i32> {
-        unsafe { self.dll.get(b"AdsGetLocalAddressEx").unwrap() }
     }
 
     fn sync_write_req(
@@ -110,26 +133,7 @@ impl TwinCAT {
     }
 }
 
-impl<T: Transducer> Link<T> for TwinCAT {
-    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-        unsafe {
-            let port = self.port_open()();
-            if port == 0 {
-                return Err(AdsError::OpenPort.into());
-            }
-            self.port = port;
-
-            let mut ams_addr: AmsAddr = std::mem::zeroed();
-            let n_err = self.get_local_address()(port, &mut ams_addr as *mut _);
-            if n_err != 0 {
-                return Err(AdsError::GetLocalAddress(n_err).into());
-            }
-            self.send_addr.net_id = ams_addr.net_id;
-        }
-
-        Ok(())
-    }
-
+impl Link for TwinCAT {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             self.port_close()(self.port);

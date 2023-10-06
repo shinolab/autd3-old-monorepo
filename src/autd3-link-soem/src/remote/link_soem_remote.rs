@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@ use std::{net::SocketAddr, time::Duration};
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
-    link::Link,
+    geometry::Transducer,
+    link::{Link, LinkBuilder},
 };
 use tokio::runtime::{Builder, Runtime};
 
@@ -32,27 +32,45 @@ pub struct RemoteSOEM {
     is_open: bool,
 }
 
-impl RemoteSOEM {
-    /// Constructor
-    ///
-    /// # Arguments
-    ///
-    /// * `addr` - IP address and port of SOEMServer
-    ///
-    pub fn new(addr: SocketAddr) -> Result<Self, AUTDProtoBufError> {
-        let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
-        Ok(Self {
-            client: runtime
-                .block_on(ecat_client::EcatClient::connect(format!("http://{}", addr)))?,
-            runtime,
-            timeout: Duration::from_millis(200),
-            is_open: false,
-        })
-    }
+pub struct RemoteSOEMBuilder {
+    addr: SocketAddr,
+    timeout: Duration,
+}
 
+impl RemoteSOEMBuilder {
     /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
+    }
+}
+
+impl<T: Transducer> LinkBuilder<T> for RemoteSOEMBuilder {
+    type L = RemoteSOEM;
+
+    fn open(self, _: &autd3_driver::geometry::Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+        let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
+        let client = runtime
+            .block_on(ecat_client::EcatClient::connect(format!(
+                "http://{}",
+                self.addr
+            )))
+            .map_err(|e| AUTDInternalError::from(AUTDProtoBufError::from(e)))?;
+
+        Ok(Self::L {
+            client,
+            runtime,
+            timeout: self.timeout,
+            is_open: true,
+        })
+    }
+}
+
+impl RemoteSOEM {
+    pub fn builder(addr: SocketAddr) -> RemoteSOEMBuilder {
+        RemoteSOEMBuilder {
+            addr,
+            timeout: Duration::from_millis(200),
+        }
     }
 
     fn send_impl(&mut self, tx: &TxDatagram) -> Result<Response<SendResponse>, AUTDProtoBufError> {
@@ -70,12 +88,7 @@ impl RemoteSOEM {
     }
 }
 
-impl<T: Transducer> Link<T> for RemoteSOEM {
-    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-        self.is_open = true;
-        Ok(())
-    }
-
+impl Link for RemoteSOEM {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
         self.close_impl()?;
@@ -83,7 +96,7 @@ impl<T: Transducer> Link<T> for RemoteSOEM {
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if <Self as Link<T>>::is_open(self) {
+        if self.is_open() {
             Ok(self.send_impl(tx)?.into_inner().success)
         } else {
             Err(AUTDInternalError::LinkClosed)
@@ -91,7 +104,7 @@ impl<T: Transducer> Link<T> for RemoteSOEM {
     }
 
     fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
-        if <Self as Link<T>>::is_open(self) {
+        if self.is_open() {
             rx.copy_from_slice(&Vec::<RxMessage>::from_msg(
                 &self.receive_impl()?.into_inner(),
             ));
