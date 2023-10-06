@@ -91,7 +91,7 @@ mod tests {
 
         let flags = GainSTMControlFlags::LEGACY | GainSTMControlFlags::DUTY;
 
-        let flagsc = flags.clone();
+        let flagsc = flags;
         assert_eq!(flagsc.bits(), flags.bits());
     }
 
@@ -134,7 +134,7 @@ mod tests {
         assert_eq!(GainSTMMode::PhaseHalf as u16, 2);
 
         let mode = GainSTMMode::PhaseDutyFull;
-        let modec = mode.clone();
+        let modec = mode;
 
         assert_eq!(modec, mode);
 

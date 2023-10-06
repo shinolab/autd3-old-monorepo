@@ -50,7 +50,7 @@ mod tests {
             phase: 0x01,
             duty: 0x02,
         };
-        let dc = d.clone();
+        let dc = d;
         assert_eq!(d.phase, dc.phase);
         assert_eq!(d.duty, dc.duty);
 

@@ -35,7 +35,7 @@ mod tests {
             ack: 0x01,
             data: 0x02,
         };
-        let msg2 = msg.clone();
+        let msg2 = msg;
 
         assert_eq!(msg.ack, msg2.ack);
         assert_eq!(msg.data, msg2.data);

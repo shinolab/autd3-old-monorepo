@@ -58,7 +58,7 @@ mod tests {
 
         let flags = FPGAControlFlags::FORCE_FAN;
 
-        let flagsc = flags.clone();
+        let flagsc = flags;
         assert_eq!(flagsc.bits(), flags.bits());
     }
 

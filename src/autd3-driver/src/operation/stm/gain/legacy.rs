@@ -124,7 +124,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
         if gains.len() < 2 || gains.len() > GAIN_STM_LEGACY_BUF_SIZE_MAX {
             return Err(AUTDInternalError::GainSTMLegacySizeOutOfRange(gains.len()));
         }
-        if freq_div < SAMPLING_FREQ_DIV_MIN || freq_div > SAMPLING_FREQ_DIV_MAX {
+        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&freq_div) {
             return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(freq_div));
         }
 

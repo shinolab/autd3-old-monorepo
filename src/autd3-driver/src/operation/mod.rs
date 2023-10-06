@@ -218,7 +218,7 @@ pub mod tests {
     impl Clone for NullGain {
         #[cfg_attr(coverage_nightly, no_coverage)]
         fn clone(&self) -> Self {
-            Self {}
+            *self
         }
     }
 
@@ -249,7 +249,7 @@ pub mod tests {
     impl Clone for ErrGain {
         #[cfg_attr(coverage_nightly, no_coverage)]
         fn clone(&self) -> Self {
-            Self {}
+            *self
         }
     }
 

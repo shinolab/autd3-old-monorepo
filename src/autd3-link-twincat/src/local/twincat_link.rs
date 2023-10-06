@@ -58,7 +58,7 @@ pub struct TwinCATBuilder {
 impl TwinCATBuilder {
     /// Set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
-        Self { timeout, ..self }
+        Self { timeout }
     }
 }
 
