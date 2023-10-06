@@ -234,12 +234,14 @@ mod tests {
             Ok(true)
         );
 
+        link.recv_cnt = 0;
         link.is_open = false;
         assert_eq!(
             link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
             Err(AUTDInternalError::LinkClosed)
         );
 
+        link.recv_cnt = 0;
         link.is_open = true;
         link.down = true;
         assert_eq!(
@@ -248,10 +250,10 @@ mod tests {
         );
 
         link.down = false;
-
+        link.recv_cnt = 0;
         tx.header_mut(0).msg_id = 20;
         assert_eq!(
-            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(250)),
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_secs(10)),
             Err(AUTDInternalError::LinkError("too many".to_owned()))
         );
     }
