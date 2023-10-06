@@ -11,235 +11,97 @@
  *
  */
 
+use thiserror::Error;
+
 use crate::{defined::float, fpga::*, operation::GainSTMMode};
 
-#[derive(Debug, PartialEq)]
+#[derive(Error, Debug, PartialEq)]
 pub enum AUTDInternalError {
+    #[error(
+        "Modulation buffer size ({0}) is out of range ([{}, {}])",
+        MOD_BUF_SIZE_MIN,
+        MOD_BUF_SIZE_MAX
+    )]
     ModulationSizeOutOfRange(usize),
+    #[error(
+        "Frequency division ({0}) is out of range ([{}, {}])",
+        SAMPLING_FREQ_DIV_MIN,
+        SAMPLING_FREQ_DIV_MAX
+    )]
     ModFreqDivOutOfRange(u32),
+    #[error("STM index is out of range")]
     STMStartIndexOutOfRange,
+    #[error("STM finish is out of range")]
     STMFinishIndexOutOfRange,
+    #[error(
+        "FocusSTM size ({0}) is out of range ([{}, {}])",
+        STM_BUF_SIZE_MIN,
+        FOCUS_STM_BUF_SIZE_MAX
+    )]
     FocusSTMPointSizeOutOfRange(usize),
+    #[error(
+        "Frequency division ({0}) is out of range ([{}, {}])",
+        SAMPLING_FREQ_DIV_MIN,
+        SAMPLING_FREQ_DIV_MAX
+    )]
     FocusSTMFreqDivOutOfRange(u32),
+    #[error(
+        "Point ({0}, {1}, {2}) is out of range. Each parameter must be in [{}, {}].",
+        FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_LOWER as float,
+        FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_UPPER as float,
+    )]
     FocusSTMPointOutOfRange(float, float, float),
+    #[error(
+        "GainSTM size ({0}) is out of range ([{}, {}])",
+        STM_BUF_SIZE_MIN,
+        GAIN_STM_LEGACY_BUF_SIZE_MAX
+    )]
     GainSTMLegacySizeOutOfRange(usize),
+    #[error(
+        "GainSTM size ({0}) is out of range ([{}, {}])",
+        STM_BUF_SIZE_MIN,
+        GAIN_STM_BUF_SIZE_MAX
+    )]
     GainSTMSizeOutOfRange(usize),
+    #[error(
+        "Frequency division ({0}) is out of range ([{}, {}])",
+        SAMPLING_FREQ_DIV_MIN,
+        SAMPLING_FREQ_DIV_MAX
+    )]
+    GainSTMLegacyFreqDivOutOfRange(u32),
+    #[error(
+        "Frequency division ({0}) is out of range ([{}, {}])",
+        SAMPLING_FREQ_DIV_MIN,
+        SAMPLING_FREQ_DIV_MAX
+    )]
     GainSTMFreqDivOutOfRange(u32),
+    #[error("Cycle ({0}) is out of range ([{}, {}])", MIN_CYCLE, MAX_CYCLE)]
     CycleOutOfRange(u16),
+
+    #[error("GainSTMMode ({0:?}) is not supported")]
     GainSTMModeNotSupported(GainSTMMode),
+
+    #[error("{0}")]
     ModulationError(String),
+    #[error("{0}")]
     GainError(String),
+    #[error("{0}")]
     LinkError(String),
+
+    #[error("{0}")]
     NotSupported(String),
+
+    #[error("Link is closed")]
     LinkClosed,
+
+    #[error("Failed to create timer")]
     TimerCreationFailed,
+    #[error("Failed to delete timer")]
     TimerDeleteFailed,
 
     #[cfg(target_os = "windows")]
-    WindowsError(windows::core::Error),
-}
-
-impl std::fmt::Display for AUTDInternalError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            AUTDInternalError::ModulationSizeOutOfRange(size) => {
-                write!(
-                    f,
-                    "Modulation buffer size ({}) is out of range ([{}, {}])",
-                    size, MOD_BUF_SIZE_MIN, MOD_BUF_SIZE_MAX
-                )
-            }
-            AUTDInternalError::ModFreqDivOutOfRange(div) => {
-                write!(
-                    f,
-                    "Frequency division ({}) is out of range ([{}, {}])",
-                    div, SAMPLING_FREQ_DIV_MIN, SAMPLING_FREQ_DIV_MAX
-                )
-            }
-            AUTDInternalError::STMStartIndexOutOfRange => {
-                write!(f, "STM index is out of range")
-            }
-            AUTDInternalError::STMFinishIndexOutOfRange => {
-                write!(f, "STM finish is out of range")
-            }
-            AUTDInternalError::FocusSTMPointSizeOutOfRange(size) => {
-                write!(
-                    f,
-                    "FocusSTM size ({}) is out of range ([{}, {}])",
-                    size, STM_BUF_SIZE_MIN, FOCUS_STM_BUF_SIZE_MAX
-                )
-            }
-            AUTDInternalError::FocusSTMFreqDivOutOfRange(div) => {
-                write!(
-                    f,
-                    "Frequency division ({}) is out of range ([{}, {}])",
-                    div, SAMPLING_FREQ_DIV_MIN, SAMPLING_FREQ_DIV_MAX
-                )
-            }
-            AUTDInternalError::FocusSTMPointOutOfRange(x, y, z) => {
-                write!(
-                    f,
-                    "Point ({}, {}, {}) is out of range. Each parameter must be in [{}, {}].",
-                    x,
-                    y,
-                    z,
-                    FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_LOWER as float,
-                    FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_UPPER as float
-                )
-            }
-            AUTDInternalError::GainSTMLegacySizeOutOfRange(size) => {
-                write!(
-                    f,
-                    "GainSTM size ({}) is out of range ([{}, {}])",
-                    size, STM_BUF_SIZE_MIN, GAIN_STM_LEGACY_BUF_SIZE_MAX
-                )
-            }
-            AUTDInternalError::GainSTMSizeOutOfRange(size) => {
-                write!(
-                    f,
-                    "GainSTM size ({}) is out of range ([{}, {}])",
-                    size, STM_BUF_SIZE_MIN, GAIN_STM_BUF_SIZE_MAX
-                )
-            }
-            AUTDInternalError::GainSTMFreqDivOutOfRange(div) => {
-                write!(
-                    f,
-                    "Frequency division ({}) is out of range ([{}, {}])",
-                    div, SAMPLING_FREQ_DIV_MIN, SAMPLING_FREQ_DIV_MAX
-                )
-            }
-            AUTDInternalError::CycleOutOfRange(cycle) => {
-                write!(
-                    f,
-                    "Cycle ({}) is out of range ([{}, {}])",
-                    cycle, MIN_CYCLE, MAX_CYCLE
-                )
-            }
-            AUTDInternalError::GainSTMModeNotSupported(mode) => {
-                write!(f, "GainSTMMode ({:?}) is not supported", mode)
-            }
-            AUTDInternalError::ModulationError(message)
-            | AUTDInternalError::GainError(message)
-            | AUTDInternalError::LinkError(message)
-            | AUTDInternalError::NotSupported(message) => {
-                write!(f, "{}", message)
-            }
-            AUTDInternalError::LinkClosed => {
-                write!(f, "Link is closed")
-            }
-            AUTDInternalError::TimerCreationFailed => {
-                write!(f, "Failed to create timer")
-            }
-            AUTDInternalError::TimerDeleteFailed => {
-                write!(f, "Failed to delete timer")
-            }
-            #[cfg(target_os = "windows")]
-            AUTDInternalError::WindowsError(error) => {
-                write!(f, "{}", error)
-            }
-        }
-    }
-}
-
-impl std::error::Error for AUTDInternalError {
-    #[cfg(target_os = "windows")]
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            AUTDInternalError::WindowsError(e) => Some(e),
-            _ => None,
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-// #[derive(Error, Debug, PartialEq)]
-// pub enum AUTDInternalError {
-//     #[error(
-//         "Modulation buffer size ({0}) is out of range ([{}, {}])",
-//         MOD_BUF_SIZE_MIN,
-//         MOD_BUF_SIZE_MAX
-//     )]
-//     ModulationSizeOutOfRange(usize),
-//     #[error(
-//         "Frequency division ({0}) is out of range ([{}, {}])",
-//         SAMPLING_FREQ_DIV_MIN,
-//         SAMPLING_FREQ_DIV_MAX
-//     )]
-//     ModFreqDivOutOfRange(u32),
-//     #[error("STM index is out of range")]
-//     STMStartIndexOutOfRange,
-//     #[error("STM finish is out of range")]
-//     STMFinishIndexOutOfRange,
-//     #[error(
-//         "FocusSTM size ({0}) is out of range ([{}, {}])",
-//         STM_BUF_SIZE_MIN,
-//         FOCUS_STM_BUF_SIZE_MAX
-//     )]
-//     FocusSTMPointSizeOutOfRange(usize),
-//     #[error(
-//         "Frequency division ({0}) is out of range ([{}, {}])",
-//         SAMPLING_FREQ_DIV_MIN,
-//         SAMPLING_FREQ_DIV_MAX
-//     )]
-//     FocusSTMFreqDivOutOfRange(u32),
-//     #[error("Point ({0}, {1}, {2}) is out of range. Each parameter must be in [{}, {}].", FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_LOWER as float, FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_UPPER as float)]
-//     FocusSTMPointOutOfRange(float, float, float),
-//     #[error(
-//         "GainSTM size ({0}) is out of range ([{}, {}])",
-//         STM_BUF_SIZE_MIN,
-//         GAIN_STM_LEGACY_BUF_SIZE_MAX
-//     )]
-//     GainSTMLegacySizeOutOfRange(usize),
-//     #[error(
-//         "GainSTM size ({0}) is out of range ([{}, {}])",
-//         STM_BUF_SIZE_MIN,
-//         GAIN_STM_BUF_SIZE_MAX
-//     )]
-//     GainSTMSizeOutOfRange(usize),
-//     #[error(
-//         "Frequency division ({0}) is out of range ([{}, {}])",
-//         SAMPLING_FREQ_DIV_MIN,
-//         SAMPLING_FREQ_DIV_MAX
-//     )]
-//     GainSTMFreqDivOutOfRange(u32),
-//     #[error("Cycle ({0}) is out of range ([{}, {}])", MIN_CYCLE, MAX_CYCLE)]
-//     CycleOutOfRange(u16),
-
-//     #[error("GainSTMMode ({0:?}) is not supported")]
-//     GainSTMModeNotSupported(GainSTMMode),
-
-//     #[error("{0}")]
-//     ModulationError(String),
-//     #[error("{0}")]
-//     GainError(String),
-//     #[error("{0}")]
-//     LinkError(String),
-
-//     #[error("{0}")]
-//     NotSupported(String),
-
-//     #[error("Link is closed")]
-//     LinkClosed,
-
-//     #[error("Failed to create timer")]
-//     TimerCreationFailed(),
-//     #[error("Failed to delete timer")]
-//     TimerDeleteFailed(),
-
-//     #[cfg(target_os = "windows")]
-//     #[error("{0}")]
-//     WindowsError(windows::core::Error),
-// }
-
-#[cfg(target_os = "windows")]
-impl From<windows::core::Error> for AUTDInternalError {
-    fn from(e: windows::core::Error) -> Self {
-        AUTDInternalError::WindowsError(e)
-    }
+    #[error("{0}")]
+    WindowsError(#[from] windows::core::Error),
 }
 
 #[cfg(test)]

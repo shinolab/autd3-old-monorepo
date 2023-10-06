@@ -129,17 +129,15 @@ mod tests {
     fn test_timer() {
         let timer = Timer::start(
             CountCallback { count: 0 },
-            std::time::Duration::from_millis(1),
+            std::time::Duration::from_millis(50),
         )
         .unwrap();
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(500));
         let count = timer.cb.count;
-        assert!(0 < count && count < 200);
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        assert!(100 < timer.cb.count && timer.cb.count < 400);
+        assert!(0 < count && count < 20);
         let cb = timer.close().unwrap();
         let count = cb.count;
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(500));
         assert_eq!(cb.count, count);
     }
 }

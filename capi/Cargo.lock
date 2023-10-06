@@ -141,9 +141,11 @@ dependencies = [
 name = "autd3-driver"
 version = "15.3.1"
 dependencies = [
+ "bitflags 2.4.0",
  "bitvec",
  "libc",
  "nalgebra",
+ "thiserror",
  "windows",
 ]
 

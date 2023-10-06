@@ -16,6 +16,8 @@ single_float = []
 use_meter = []
 
 [dependencies]
+bitflags = "2.0.2"
+thiserror = "1.0.31"
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
 bitvec = "1.0.1"
 

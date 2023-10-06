@@ -11,58 +11,20 @@
  *
  */
 
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct FPGAControlFlags {
-    bits: u8,
-}
+use std::fmt;
 
-impl FPGAControlFlags {
-    pub const NONE: Self = Self { bits: 0 };
-    pub const FORCE_FAN: Self = Self { bits: 1 << 0 };
-    pub const READS_FPGA_INFO: Self = Self { bits: 1 << 1 };
-
-    pub fn contains(&self, other: Self) -> bool {
-        self.bits & other.bits != 0
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.bits == 0
-    }
-
-    pub fn bits(&self) -> u8 {
-        self.bits
-    }
-
-    pub fn set_by(&mut self, other: Self, value: bool) {
-        if value {
-            self.set(other)
-        } else {
-            self.clear(other)
-        }
-    }
-
-    pub fn set(&mut self, other: Self) {
-        self.bits |= other.bits
-    }
-
-    pub fn clear(&mut self, other: Self) {
-        self.bits &= !other.bits
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct FPGAControlFlags : u8 {
+        const NONE            = 0;
+        const FORCE_FAN       = 1 << 0;
+        const READS_FPGA_INFO = 1 << 1;
     }
 }
 
-impl std::ops::BitOr for FPGAControlFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self {
-            bits: self.bits | rhs.bits,
-        }
-    }
-}
-
-impl std::fmt::Display for FPGAControlFlags {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for FPGAControlFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut flags = Vec::new();
         if self.contains(FPGAControlFlags::FORCE_FAN) {
             flags.push("FORCE_FAN")
@@ -98,40 +60,6 @@ mod tests {
 
         let flagsc = flags.clone();
         assert_eq!(flagsc.bits(), flags.bits());
-    }
-
-    #[test]
-    fn contains() {
-        assert!(FPGAControlFlags::FORCE_FAN.contains(FPGAControlFlags::FORCE_FAN));
-        assert!(!FPGAControlFlags::FORCE_FAN.contains(FPGAControlFlags::READS_FPGA_INFO));
-    }
-
-    #[test]
-    fn set() {
-        let mut flags = FPGAControlFlags::NONE;
-        flags.set(FPGAControlFlags::FORCE_FAN);
-        assert!(flags.contains(FPGAControlFlags::FORCE_FAN));
-        assert!(!flags.contains(FPGAControlFlags::READS_FPGA_INFO));
-    }
-
-    #[test]
-    fn clear() {
-        let mut flags = FPGAControlFlags::FORCE_FAN;
-        flags.clear(FPGAControlFlags::FORCE_FAN);
-        assert!(!flags.contains(FPGAControlFlags::FORCE_FAN));
-        assert!(!flags.contains(FPGAControlFlags::READS_FPGA_INFO));
-    }
-
-    #[test]
-    fn set_by() {
-        let mut flags = FPGAControlFlags::NONE;
-        flags.set_by(FPGAControlFlags::FORCE_FAN, true);
-        assert!(flags.contains(FPGAControlFlags::FORCE_FAN));
-        assert!(!flags.contains(FPGAControlFlags::READS_FPGA_INFO));
-
-        flags.set_by(FPGAControlFlags::FORCE_FAN, false);
-        assert!(!flags.contains(FPGAControlFlags::FORCE_FAN));
-        assert!(!flags.contains(FPGAControlFlags::READS_FPGA_INFO));
     }
 
     #[test]

@@ -24,61 +24,13 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct GainControlFlags {
-    bits: u8,
-}
-
-impl GainControlFlags {
-    pub const NONE: Self = Self { bits: 0 };
-    pub const LEGACY: Self = Self { bits: 1 << 0 };
-    pub const DUTY: Self = Self { bits: 1 << 1 };
-
-    pub fn contains(&self, other: Self) -> bool {
-        self.bits & other.bits != 0
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.bits == 0
-    }
-
-    pub fn bits(&self) -> u8 {
-        self.bits
-    }
-
-    // pub fn set_by(&mut self, other: Self, value: bool) {
-    //     if value {
-    //         self.set(other)
-    //     } else {
-    //         self.clear(other)
-    //     }
-    // }
-
-    // pub fn set(&mut self, other: Self) {
-    //     self.bits |= other.bits
-    // }
-
-    // pub fn clear(&mut self, other: Self) {
-    //     self.bits &= !other.bits
-    // }
-
-    // pub fn all() -> Self {
-    //     Self { bits: 0xFF }
-    // }
-
-    // pub fn from_bits(bits: u8) -> Self {
-    //     Self { bits }
-    // }
-}
-
-impl std::ops::BitOr for GainControlFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self {
-            bits: self.bits | rhs.bits,
-        }
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct GainControlFlags : u8 {
+        const NONE    = 0;
+        const LEGACY  = 1 << 0;
+        const DUTY    = 1 << 1;
     }
 }
 

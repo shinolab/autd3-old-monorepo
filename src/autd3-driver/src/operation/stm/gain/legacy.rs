@@ -171,7 +171,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
         assert!(tx.len() >= offset + device.num_transducers() * std::mem::size_of::<LegacyDrive>());
 
         let mut f = GainSTMControlFlags::LEGACY;
-        f.set_by(GainSTMControlFlags::STM_BEGIN, sent == 0);
+        f.set(GainSTMControlFlags::STM_BEGIN, sent == 0);
 
         if sent == 0 {
             let mode = mode as u16;
@@ -184,12 +184,12 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
             tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
-            f.set_by(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
+            f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
             let start_idx = start_idx.unwrap_or(0);
             tx[8] = (start_idx & 0xFF) as u8;
             tx[9] = (start_idx >> 8) as u8;
 
-            f.set_by(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
+            f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
             let finish_idx = finish_idx.unwrap_or(0);
             tx[10] = (finish_idx & 0xFF) as u8;
             tx[11] = (finish_idx >> 8) as u8;
@@ -275,7 +275,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                 }
             }
         }
-        f.set_by(GainSTMControlFlags::STM_END, sent + send == drives.len());
+        f.set(GainSTMControlFlags::STM_END, sent + send == drives.len());
 
         sent_map.insert(device.idx(), sent + send);
 

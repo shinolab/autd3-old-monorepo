@@ -21,53 +21,13 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct ModulationControlFlags {
-    bits: u8,
-}
-
-impl ModulationControlFlags {
-    pub const NONE: Self = Self { bits: 0 };
-    pub const MOD_BEGIN: Self = Self { bits: 1 << 0 };
-    pub const MOD_END: Self = Self { bits: 1 << 1 };
-
-    pub fn contains(&self, other: Self) -> bool {
-        self.bits & other.bits != 0
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.bits == 0
-    }
-
-    pub fn bits(&self) -> u8 {
-        self.bits
-    }
-
-    pub fn set_by(&mut self, other: Self, value: bool) {
-        if value {
-            self.set(other)
-        } else {
-            self.clear(other)
-        }
-    }
-
-    pub fn set(&mut self, other: Self) {
-        self.bits |= other.bits
-    }
-
-    pub fn clear(&mut self, other: Self) {
-        self.bits &= !other.bits
-    }
-}
-
-impl std::ops::BitOr for ModulationControlFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self {
-            bits: self.bits | rhs.bits,
-        }
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct ModulationControlFlags : u8 {
+        const NONE      = 0;
+        const MOD_BEGIN = 1 << 0;
+        const MOD_END   = 1 << 1;
     }
 }
 
@@ -132,8 +92,8 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         assert!(mod_size > 0);
 
         let mut f = ModulationControlFlags::NONE;
-        f.set_by(ModulationControlFlags::MOD_BEGIN, sent == 0);
-        f.set_by(
+        f.set(ModulationControlFlags::MOD_BEGIN, sent == 0);
+        f.set(
             ModulationControlFlags::MOD_END,
             sent + mod_size == self.buf.len(),
         );

@@ -133,8 +133,8 @@ impl OperationHandler {
                     let hedaer = tx.header_mut(dev.idx());
                     hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
                     let mut f = FPGAControlFlags::NONE;
-                    f.set_by(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-                    f.set_by(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
+                    f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
+                    f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
                     hedaer.fpga_flag = f;
                     hedaer.slot_2_offset = 0;
 
@@ -165,8 +165,8 @@ impl OperationHandler {
         let hedaer = tx.header_mut(dev.idx());
         hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
         let mut f = FPGAControlFlags::NONE;
-        f.set_by(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-        f.set_by(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
+        f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
+        f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
         hedaer.fpga_flag = f;
         hedaer.slot_2_offset = 0;
 

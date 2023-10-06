@@ -88,8 +88,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedOp<T, G> {
         assert!(tx.len() >= offset + device.num_transducers() * 2);
 
         let mut f = GainSTMControlFlags::NONE;
-        f.set_by(GainSTMControlFlags::STM_BEGIN, sent == 0);
-        f.set_by(GainSTMControlFlags::STM_END, remains[&device.idx()] == 1);
+        f.set(GainSTMControlFlags::STM_BEGIN, sent == 0);
+        f.set(GainSTMControlFlags::STM_END, remains[&device.idx()] == 1);
 
         if sent == 0 {
             let mode = mode as u16;
@@ -102,12 +102,12 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedOp<T, G> {
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
             tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
-            f.set_by(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
+            f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
             let start_idx = start_idx.unwrap_or(0);
             tx[8] = (start_idx & 0xFF) as u8;
             tx[9] = (start_idx >> 8) as u8;
 
-            f.set_by(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
+            f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
             let finish_idx = finish_idx.unwrap_or(0);
             tx[10] = (finish_idx & 0xFF) as u8;
             tx[11] = (finish_idx >> 8) as u8;
@@ -129,7 +129,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedOp<T, G> {
                             .for_each(|((d, s), tr)| d.set(s, tr.cycle()));
                     }
                 } else {
-                    f.set_by(GainSTMControlFlags::DUTY, true);
+                    f.set(GainSTMControlFlags::DUTY, true);
 
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
