@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ use itertools::Itertools;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
-    link::Link,
+    geometry::{Geometry, Transducer},
+    link::{Link, LinkBuilder},
 };
 
 use crate::{error::AdsError, remote::native_methods::*};
@@ -35,52 +35,29 @@ const PORT: u16 = 301;
 /// Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
 pub struct RemoteTwinCAT {
     port: c_long,
-    server_ams_net_id: String,
-    server_ip: Option<String>,
-    client_ams_net_id: Option<String>,
     net_id: AmsNetId,
     timeout: Duration,
 }
 
-impl RemoteTwinCAT {
-    /// Construct
-    ///
-    /// # Arguments
-    ///
-    /// * `server_ams_net_id` - Server AMS Net ID
-    ///
-    pub fn new<S: Into<String>>(server_ams_net_id: S) -> Result<Self, AdsError> {
-        Ok(Self {
-            port: 0,
-            server_ams_net_id: server_ams_net_id.into(),
-            server_ip: None,
-            client_ams_net_id: None,
-            net_id: AmsNetId { b: [0; 6] },
-            timeout: Duration::from_millis(200),
-        })
-    }
-
-    /// Set server IP address
-    pub fn with_server_ip<S: Into<String>>(mut self, server_ip: S) -> Self {
-        self.server_ip = Some(server_ip.into());
-        self
-    }
-
-    /// Set client AMS Net ID
-    pub fn with_client_ams_net_id<S: Into<String>>(mut self, client_ams_net_id: S) -> Self {
-        self.client_ams_net_id = Some(client_ams_net_id.into());
-        self
-    }
-
-    pub fn with_timeout(self, timeout: Duration) -> Self {
-        Self { timeout, ..self }
-    }
+pub struct RemoteTwinCATBuilder {
+    server_ams_net_id: String,
+    server_ip: Option<String>,
+    client_ams_net_id: Option<String>,
+    timeout: Duration,
 }
 
-impl<T: Transducer> Link<T> for RemoteTwinCAT {
-    fn open(&mut self, _devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-        let octets = self
-            .server_ams_net_id
+impl<T: Transducer> LinkBuilder<T> for RemoteTwinCATBuilder {
+    type L = RemoteTwinCAT;
+
+    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+        let RemoteTwinCATBuilder {
+            server_ams_net_id,
+            mut server_ip,
+            mut client_ams_net_id,
+            timeout,
+        } = self;
+
+        let octets = server_ams_net_id
             .split('.')
             .map(|octet| octet.parse::<u8>().unwrap())
             .collect::<Vec<_>>();
@@ -89,13 +66,13 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
             return Err(AdsError::AmsNetIdParse.into());
         }
 
-        let ip = if let Some(server_ip) = self.server_ip.take() {
+        let ip = if let Some(server_ip) = server_ip.take() {
             server_ip
         } else {
             octets[0..4].iter().map(|v| v.to_string()).join(".")
         };
 
-        if let Some(client_ams_net_id) = self.client_ams_net_id.take() {
+        if let Some(client_ams_net_id) = client_ams_net_id.take() {
             let local_octets = client_ams_net_id
                 .split('.')
                 .map(|octet| octet.parse::<u8>().unwrap())
@@ -119,27 +96,62 @@ impl<T: Transducer> Link<T> for RemoteTwinCAT {
             }
         }
 
-        self.net_id = AmsNetId {
+        let net_id = AmsNetId {
             b: [
                 octets[0], octets[1], octets[2], octets[3], octets[4], octets[5],
             ],
         };
 
         let ip = CString::new(ip).unwrap();
-        let res = unsafe { AdsCAddRoute(self.net_id, ip.as_c_str().as_ptr()) };
+        let res = unsafe { AdsCAddRoute(net_id, ip.as_c_str().as_ptr()) };
         if res != 0 {
             return Err(AdsError::AmsAddRoute(res as _).into());
         }
 
-        self.port = unsafe { AdsCPortOpenEx() };
+        let port = unsafe { AdsCPortOpenEx() };
 
-        if self.port == 0 {
+        if port == 0 {
             return Err(AdsError::OpenPort.into());
         }
 
-        Ok(())
+        Ok(Self::L {
+            port,
+            net_id,
+            timeout,
+        })
+    }
+}
+
+impl RemoteTwinCATBuilder {
+    /// Set server IP address
+    pub fn with_server_ip<S: Into<String>>(mut self, server_ip: S) -> Self {
+        self.server_ip = Some(server_ip.into());
+        self
     }
 
+    /// Set client AMS Net ID
+    pub fn with_client_ams_net_id<S: Into<String>>(mut self, client_ams_net_id: S) -> Self {
+        self.client_ams_net_id = Some(client_ams_net_id.into());
+        self
+    }
+
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
+    }
+}
+
+impl RemoteTwinCAT {
+    pub fn builder<S: Into<String>>(server_ams_net_id: S) -> RemoteTwinCATBuilder {
+        RemoteTwinCATBuilder {
+            server_ams_net_id: server_ams_net_id.into(),
+            server_ip: None,
+            client_ams_net_id: None,
+            timeout: Duration::from_millis(200),
+        }
+    }
+}
+
+impl Link for RemoteTwinCAT {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         if self.port == 0 {
             return Ok(());
