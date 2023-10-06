@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn bessel<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
+pub fn bessel<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
 where
     autd3_driver::operation::GainOp<T, Bessel>: autd3_driver::operation::Operation<T>,
 {
