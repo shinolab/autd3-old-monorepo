@@ -31,7 +31,7 @@ mod tests {
         assert_eq!(std::mem::size_of::<SyncMode>(), 1);
 
         let s = SyncMode::DC;
-        let sc = s.clone();
+        let sc = s;
 
         assert_eq!(s as u8, sc as u8);
     }

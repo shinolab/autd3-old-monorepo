@@ -109,7 +109,7 @@ mod tests {
         assert_eq!(c.point().z, 3.);
         assert_eq!(c.shift(), 4);
 
-        let cc = c.clone();
+        let cc = c;
         assert_eq!(cc.point().x, 1.);
         assert_eq!(cc.point().y, 2.);
         assert_eq!(cc.point().z, 3.);

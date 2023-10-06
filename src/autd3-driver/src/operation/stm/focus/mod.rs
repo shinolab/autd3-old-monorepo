@@ -71,7 +71,7 @@ mod tests {
 
         let flags = FocusSTMControlFlags::STM_BEGIN | FocusSTMControlFlags::STM_END;
 
-        let flagsc = flags.clone();
+        let flagsc = flags;
 
         assert!(flagsc.contains(FocusSTMControlFlags::STM_BEGIN));
         assert!(flagsc.contains(FocusSTMControlFlags::STM_END));

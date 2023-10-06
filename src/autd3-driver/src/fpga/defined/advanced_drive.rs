@@ -57,7 +57,7 @@ mod tests {
         assert_eq!(size_of::<AdvancedDrivePhase>(), 2);
 
         let d = AdvancedDrivePhase { phase: 0x0001 };
-        let dc = d.clone();
+        let dc = d;
         assert_eq!(d.phase, dc.phase);
 
         let mut d = 0x0000u16;
@@ -144,7 +144,7 @@ mod tests {
         assert_eq!(size_of::<AdvancedDriveDuty>(), 2);
 
         let d = AdvancedDriveDuty { duty: 0x0001 };
-        let dc = d.clone();
+        let dc = d;
         assert_eq!(d.duty, dc.duty);
 
         let mut d = 0x0000u16;

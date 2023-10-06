@@ -187,7 +187,7 @@ mod tests {
 
         let flags = ModulationControlFlags::MOD_BEGIN;
 
-        let flagsc = flags.clone();
+        let flagsc = flags;
 
         assert!(flagsc.contains(ModulationControlFlags::MOD_BEGIN));
         assert!(!flagsc.contains(ModulationControlFlags::MOD_END));

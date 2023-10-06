@@ -32,7 +32,7 @@ mod tests {
         assert_eq!(std::mem::size_of::<TimerStrategy>(), 1);
 
         let s = TimerStrategy::Sleep;
-        let sc = s.clone();
+        let sc = s;
 
         assert_eq!(s as u8, sc as u8);
     }

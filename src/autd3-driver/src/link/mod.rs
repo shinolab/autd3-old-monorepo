@@ -23,13 +23,10 @@ use crate::{
 /// Link is a interface to the AUTD device
 pub trait Link: Send {
     /// Close link
-    #[must_use]
     fn close(&mut self) -> Result<(), AUTDInternalError>;
     /// Send data to devices
-    #[must_use]
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
     /// Receive data from devices
-    #[must_use]
     fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError>;
     /// Check if link is open
     #[must_use]
@@ -38,7 +35,6 @@ pub trait Link: Send {
     #[must_use]
     fn timeout(&self) -> Duration;
     /// Send and receive data
-    #[must_use]
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
@@ -56,7 +52,6 @@ pub trait Link: Send {
     }
 
     /// Wait until message is processed
-    #[must_use]
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,

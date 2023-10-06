@@ -41,7 +41,7 @@ pub struct AuditBuilder {
 impl AuditBuilder {
     /// set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
-        Self { timeout, ..self }
+        Self { timeout }
     }
 }
 
