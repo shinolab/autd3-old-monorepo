@@ -224,8 +224,9 @@ impl<T: Transducer> LinkBuilder<T> for SOEMBuilder {
                         if let Ok(name) = String::from_utf8(
                             ec_slave[i]
                                 .name
-                                .iter().copied()
-                                .take_while(|&c| c != 0)
+                                .iter()
+                                .take_while(|&&c| c != 0)
+                                .map(|&c| c as u8)
                                 .collect(),
                         ) {
                             if name.is_empty() {
@@ -435,7 +436,8 @@ fn lookup_autd() -> Result<String, SOEMError> {
                 ec_slave[i as usize]
                     .name
                     .iter()
-                    .take_while(|&&c| c != 0).copied()
+                    .take_while(|&&c| c != 0)
+                    .map(|&c| c as u8)
                     .collect(),
             )
             .unwrap();
