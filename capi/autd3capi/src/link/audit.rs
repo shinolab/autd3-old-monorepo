@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,21 +14,41 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{autd3::link::Audit, *},
-    take_link, ControllerPtr, LinkPtr,
+    common::{autd3::link::audit::*, *},
+    ControllerPtr, LinkBuilderPtr,
 };
 use std::time::Duration;
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkAudit() -> LinkPtr {
-    LinkPtr::new(Audit::new())
+#[repr(C)]
+pub struct LinkAuditBuilderPtr(pub ConstPtr);
+
+impl LinkAuditBuilderPtr {
+    pub fn new(builder: AuditBuilder) -> Self {
+        Self(Box::into_raw(Box::new(builder)) as _)
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkAuditWithTimeout(test: LinkPtr, timeout_ns: u64) -> LinkPtr {
-    LinkPtr::new(take_link!(test, Audit).with_timeout(Duration::from_nanos(timeout_ns)))
+pub unsafe extern "C" fn AUTDLinkAudit() -> LinkAuditBuilderPtr {
+    LinkAuditBuilderPtr::new(Audit::builder())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditWithTimeout(
+    audit: LinkAuditBuilderPtr,
+    timeout_ns: u64,
+) -> LinkAuditBuilderPtr {
+    LinkAuditBuilderPtr::new(
+        Box::from_raw(audit.0 as *mut AuditBuilder).with_timeout(Duration::from_nanos(timeout_ns)),
+    )
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditIntoBuilder(audit: LinkAuditBuilderPtr) -> LinkBuilderPtr {
+    LinkBuilderPtr::new(*Box::from_raw(audit.0 as *mut AuditBuilder))
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,15 +64,13 @@ pub unsafe extern "C" fn AUTDAuditLinkGet(cnt: ControllerPtr) -> AuditLinkPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditIsOpen(audit: AuditLinkPtr) -> bool {
-    cast!(audit.0, Box<dyn Link<DynamicTransducer>>).is_open()
+    cast!(audit.0, Box<dyn Link>).is_open()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditTimeoutNs(audit: AuditLinkPtr) -> u64 {
-    cast!(audit.0, Box<dyn Link<DynamicTransducer>>)
-        .timeout()
-        .as_nanos() as _
+    cast!(audit.0, Box<dyn Link>).timeout().as_nanos() as _
 }
 
 #[no_mangle]
@@ -344,7 +362,7 @@ mod tests {
     use crate::{
         gain::{null::AUTDGainNull, AUTDGainIntoDatagram},
         geometry::{
-            device::{AUTDDeviceSetForceFan, AUTDDevice},
+            device::{AUTDDevice, AUTDDeviceSetForceFan},
             AUTDGeometry,
         },
         *,
@@ -357,11 +375,12 @@ mod tests {
         let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-        let test = AUTDLinkAudit();
-        let test = AUTDLinkAuditWithTimeout(test, 0);
+        let audit = AUTDLinkAudit();
+        let audit = AUTDLinkAuditWithTimeout(audit, 0);
+        let audit = AUTDLinkAuditIntoBuilder(audit);
 
         let mut err = vec![c_char::default(); 256];
-        let cnt = AUTDControllerOpenWith(builder, test, err.as_mut_ptr());
+        let cnt = AUTDControllerOpenWith(builder, audit, err.as_mut_ptr());
         assert_ne!(cnt.0, NULL);
         cnt
     }

@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,9 +19,9 @@ use std::{
     time::Duration,
 };
 
-use autd3capi_def::{common::*, take_link, Level, LinkPtr, TimerStrategy};
+use autd3capi_def::{common::*, LinkBuilderPtr, TimerStrategy};
 
-use autd3_link_soem::{local::SOEM, remote::RemoteSOEM, EthernetAdapters};
+use autd3_link_soem::{local::link_soem::*, remote::link_soem_remote::*, EthernetAdapters};
 
 #[no_mangle]
 #[must_use]
@@ -55,37 +55,57 @@ pub unsafe extern "C" fn AUTDAdapterPointerDelete(adapters: ConstPtr) {
     let _ = Box::from_raw(adapters as *mut EthernetAdapters);
 }
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEM() -> LinkPtr {
-    LinkPtr::new(SOEM::new())
+#[repr(C)]
+pub struct LinkSOEMBuilderPtr(pub ConstPtr);
+
+impl LinkSOEMBuilderPtr {
+    pub fn new(builder: SOEMBuilder) -> Self {
+        Self(Box::into_raw(Box::new(builder)) as _)
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithSendCycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_send_cycle(cycle))
+pub unsafe extern "C" fn AUTDLinkSOEM() -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(SOEM::builder())
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithSync0Cycle(soem: LinkPtr, cycle: u16) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_sync0_cycle(cycle))
+pub unsafe extern "C" fn AUTDLinkSOEMWithSendCycle(
+    soem: LinkSOEMBuilderPtr,
+    cycle: u64,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_send_cycle(cycle))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithBufSize(soem: LinkPtr, buf_size: u32) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_buf_size(buf_size as _))
+pub unsafe extern "C" fn AUTDLinkSOEMWithSync0Cycle(
+    soem: LinkSOEMBuilderPtr,
+    cycle: u64,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_sync0_cycle(cycle))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkSOEMWithBufSize(
+    soem: LinkSOEMBuilderPtr,
+    buf_size: u32,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_buf_size(buf_size as _))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMWithTimerStrategy(
-    soem: LinkPtr,
+    soem: LinkSOEMBuilderPtr,
     timer_strategy: TimerStrategy,
-) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_timer_strategy(timer_strategy.into()))
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(
+        Box::from_raw(soem.0 as *mut SOEMBuilder).with_timer_strategy(timer_strategy.into()),
+    )
 }
 
 #[repr(u8)]
@@ -105,24 +125,34 @@ impl From<SyncMode> for autd3_link_soem::SyncMode {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithSyncMode(soem: LinkPtr, mode: SyncMode) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_sync_mode(mode.into()))
+pub unsafe extern "C" fn AUTDLinkSOEMWithSyncMode(
+    soem: LinkSOEMBuilderPtr,
+    mode: SyncMode,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_sync_mode(mode.into()))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithIfname(soem: LinkPtr, ifname: *const c_char) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_ifname(CStr::from_ptr(ifname).to_str().unwrap()))
+pub unsafe extern "C" fn AUTDLinkSOEMWithIfname(
+    soem: LinkSOEMBuilderPtr,
+    ifname: *const c_char,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(
+        Box::from_raw(soem.0 as *mut SOEMBuilder)
+            .with_ifname(CStr::from_ptr(ifname).to_str().unwrap()),
+    )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMWithStateCheckInterval(
-    soem: LinkPtr,
+    soem: LinkSOEMBuilderPtr,
     interval_ms: u32,
-) -> LinkPtr {
-    LinkPtr::new(
-        take_link!(soem, SOEM).with_state_check_interval(Duration::from_millis(interval_ms as _)),
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(
+        Box::from_raw(soem.0 as *mut SOEMBuilder)
+            .with_state_check_interval(Duration::from_millis(interval_ms as _)),
     )
 }
 
@@ -131,7 +161,10 @@ unsafe impl Send for SOEMCallbackPtr {}
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithOnLost(soem: LinkPtr, on_lost_func: ConstPtr) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkSOEMWithOnLost(
+    soem: LinkSOEMBuilderPtr,
+    on_lost_func: ConstPtr,
+) -> LinkSOEMBuilderPtr {
     if on_lost_func.is_null() {
         return soem;
     }
@@ -143,68 +176,89 @@ pub unsafe extern "C" fn AUTDLinkSOEMWithOnLost(soem: LinkPtr, on_lost_func: Con
             std::mem::transmute::<_, unsafe extern "C" fn(*const c_char)>(out_f.lock().unwrap().0);
         out_f(msg.as_ptr());
     };
-    LinkPtr::new(take_link!(soem, SOEM).with_on_lost(out_func))
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_on_lost(out_func))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithLogLevel(soem: LinkPtr, level: Level) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_log_level(level.into()))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithLogFunc(
-    soem: LinkPtr,
-    out_func: ConstPtr,
-    flush_func: ConstPtr,
-) -> LinkPtr {
-    if out_func.is_null() || flush_func.is_null() {
+pub unsafe extern "C" fn AUTDLinkSOEMWithOnErr(
+    soem: LinkSOEMBuilderPtr,
+    on_err_func: ConstPtr,
+) -> LinkSOEMBuilderPtr {
+    if on_err_func.is_null() {
         return soem;
     }
 
-    let out_f = Arc::new(Mutex::new(SOEMCallbackPtr(out_func)));
-    let out_func = move |msg: &str| -> spdlog::Result<()> {
+    let out_f = Arc::new(Mutex::new(SOEMCallbackPtr(on_err_func)));
+    let out_func = move |msg: &str| {
         let msg = std::ffi::CString::new(msg).unwrap();
         let out_f =
             std::mem::transmute::<_, unsafe extern "C" fn(*const c_char)>(out_f.lock().unwrap().0);
         out_f(msg.as_ptr());
-        Ok(())
     };
-    let flush_f = Arc::new(Mutex::new(SOEMCallbackPtr(flush_func)));
-    let flush_func = move || -> spdlog::Result<()> {
-        let flush_f = std::mem::transmute::<_, unsafe extern "C" fn()>(flush_f.lock().unwrap().0);
-        flush_f();
-        Ok(())
-    };
+    LinkSOEMBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).with_on_err(out_func))
+}
 
-    LinkPtr::new(
-        take_link!(soem, SOEM).with_logger(get_logger_with_custom_func(out_func, flush_func)),
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkSOEMWithTimeout(
+    soem: LinkSOEMBuilderPtr,
+    timeout_ns: u64,
+) -> LinkSOEMBuilderPtr {
+    LinkSOEMBuilderPtr::new(
+        Box::from_raw(soem.0 as *mut SOEMBuilder).with_timeout(Duration::from_nanos(timeout_ns)),
     )
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSOEMWithTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, SOEM).with_timeout(Duration::from_nanos(timeout_ns)))
+pub unsafe extern "C" fn AUTDLinkSOEMIntoBuilder(soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr {
+    LinkBuilderPtr::new(*Box::from_raw(soem.0 as *mut SOEMBuilder))
+}
+
+#[repr(C)]
+pub struct LinkRemoteSOEMBuilderPtr(pub ConstPtr);
+
+impl LinkRemoteSOEMBuilderPtr {
+    pub fn new(builder: RemoteSOEMBuilder) -> Self {
+        Self(Box::into_raw(Box::new(builder)) as _)
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char, err: *mut c_char) -> LinkPtr {
-    LinkPtr::new(try_or_return!(
-        RemoteSOEM::new(try_or_return!(
-            try_or_return!(CStr::from_ptr(addr).to_str(), err, LinkPtr(NULL)).parse(),
+pub unsafe extern "C" fn AUTDLinkRemoteSOEM(
+    addr: *const c_char,
+    err: *mut c_char,
+) -> LinkRemoteSOEMBuilderPtr {
+    LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(try_or_return!(
+        try_or_return!(
+            CStr::from_ptr(addr).to_str(),
             err,
-            LinkPtr(NULL)
-        )),
+            LinkRemoteSOEMBuilderPtr(NULL)
+        )
+        .parse(),
         err,
-        LinkPtr(NULL)
-    ))
+        LinkRemoteSOEMBuilderPtr(NULL)
+    )))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(soem: LinkPtr, timeout_ns: u64) -> LinkPtr {
-    LinkPtr::new(take_link!(soem, RemoteSOEM).with_timeout(Duration::from_nanos(timeout_ns)))
+pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(
+    soem: LinkRemoteSOEMBuilderPtr,
+    timeout_ns: u64,
+) -> LinkRemoteSOEMBuilderPtr {
+    LinkRemoteSOEMBuilderPtr::new(
+        Box::from_raw(soem.0 as *mut RemoteSOEMBuilder)
+            .with_timeout(Duration::from_nanos(timeout_ns)),
+    )
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkRemoteSOEMIntoBuilder(
+    soem: LinkRemoteSOEMBuilderPtr,
+) -> LinkBuilderPtr {
+    LinkBuilderPtr::new(*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder))
 }

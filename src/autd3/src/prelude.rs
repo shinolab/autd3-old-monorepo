@@ -4,14 +4,12 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
-
-pub use spdlog::{Level, LevelFilter};
 
 pub use crate::gain::IntoCache as IntoGainCache;
 pub use crate::gain::IntoTransform as IntoGainTransform;
@@ -23,7 +21,7 @@ pub use crate::{
     controller::Controller,
     error::AUTDError,
     gain::{Bessel, Focus, Group, Null, Plane, TransducerTest, Uniform},
-    link::{IntoLog, NullLink},
+    link::Nop,
     modulation::{IntoRadiationPressure, Sine, SineLegacy, Square, Static},
 };
 

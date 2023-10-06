@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 04/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::rc::Rc;
 use nalgebra::ComplexField;
 
 use autd3_driver::{
-    acoustics::{propagate_tr, Sphere},
+    acoustics::{propagate, Sphere},
     datagram::GainFilter,
     defined::float,
     geometry::Geometry,
@@ -54,7 +54,7 @@ impl LinAlgBackend for NalgebraBackend {
                 geometry.devices().flat_map(|dev| {
                     dev.iter().flat_map(move |tr| {
                         foci.iter().map(move |fp| {
-                            propagate_tr::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
+                            propagate::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
                         })
                     })
                 }),
@@ -67,7 +67,7 @@ impl LinAlgBackend for NalgebraBackend {
                             if let Some(filter) = filter.get(&dev.idx()) {
                                 if filter[tr.local_idx()] {
                                     Some(foci.iter().map(move |fp| {
-                                        propagate_tr::<Sphere, T>(
+                                        propagate::<Sphere, T>(
                                             tr,
                                             dev.attenuation,
                                             dev.sound_speed,

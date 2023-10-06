@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,10 +17,10 @@ use std::{
 };
 
 use autd3_driver::{
-    cpu::{RxDatagram, TxDatagram},
+    cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
-    link::Link,
+    geometry::Transducer,
+    link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -34,21 +34,48 @@ pub struct Audit {
     broken: bool,
 }
 
-impl Audit {
-    pub fn new() -> Self {
-        Self {
-            is_open: false,
-            timeout: Duration::ZERO,
-            last_timeout: Duration::ZERO,
-            cpus: Vec::new(),
-            down: false,
-            broken: false,
-        }
-    }
+pub struct AuditBuilder {
+    timeout: Duration,
+}
 
+impl AuditBuilder {
     /// set timeout
     pub fn with_timeout(self, timeout: Duration) -> Self {
         Self { timeout, ..self }
+    }
+}
+
+impl<T: Transducer> LinkBuilder<T> for AuditBuilder {
+    type L = Audit;
+
+    fn open(
+        self,
+        geometry: &autd3_driver::geometry::Geometry<T>,
+    ) -> Result<Self::L, AUTDInternalError> {
+        Ok(Audit {
+            is_open: true,
+            timeout: self.timeout,
+            last_timeout: Duration::ZERO,
+            cpus: geometry
+                .iter()
+                .enumerate()
+                .map(|(i, dev)| {
+                    let mut cpu = CPUEmulator::new(i, dev.num_transducers());
+                    cpu.init();
+                    cpu
+                })
+                .collect(),
+            down: false,
+            broken: false,
+        })
+    }
+}
+
+impl Audit {
+    pub fn builder() -> AuditBuilder {
+        AuditBuilder {
+            timeout: Duration::ZERO,
+        }
     }
 
     pub fn last_timeout(&self) -> Duration {
@@ -94,29 +121,7 @@ impl DerefMut for Audit {
     }
 }
 
-impl Default for Audit {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T: Transducer> Link<T> for Audit {
-    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-        self.cpus = devices
-            .iter()
-            .enumerate()
-            .map(|(i, dev)| {
-                let mut cpu = CPUEmulator::new(i, dev.num_transducers());
-                cpu.init();
-                cpu
-            })
-            .collect();
-
-        self.is_open = true;
-
-        Ok(())
-    }
-
+impl Link for Audit {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
         Ok(())
@@ -142,7 +147,7 @@ impl<T: Transducer> Link<T> for Audit {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -166,17 +171,18 @@ impl<T: Transducer> Link<T> for Audit {
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
-        rx: &mut RxDatagram,
-        timeout: Duration,
+        rx: &mut [RxMessage],
+        timeout: Option<Duration>,
     ) -> Result<bool, AUTDInternalError> {
+        let timeout = timeout.unwrap_or(self.timeout);
         self.last_timeout = timeout;
-        if !<Self as Link<T>>::send(self, tx)? {
+        if self.send(tx)? {
             return Ok(false);
         }
         if timeout.is_zero() {
-            return <Self as Link<T>>::receive(self, rx);
+            return self.receive(rx);
         }
-        <Self as Link<T>>::wait_msg_processed(self, tx, rx, timeout)
+        self.wait_msg_processed(tx, rx, timeout)
     }
 
     fn is_open(&self) -> bool {

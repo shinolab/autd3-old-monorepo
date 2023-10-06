@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ use crate::{
 pub struct NullOp {}
 
 impl<T: Transducer> Operation<T> for NullOp {
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn pack(&mut self, _: &Device<T>, _: &mut [u8]) -> Result<usize, AUTDInternalError> {
         unreachable!()
     }
@@ -37,6 +38,7 @@ impl<T: Transducer> Operation<T> for NullOp {
         0
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     fn commit(&mut self, _: &Device<T>) {
         unreachable!()
     }

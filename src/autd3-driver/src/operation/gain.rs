@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,13 +24,61 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct GainControlFlags : u8 {
-        const NONE    = 0;
-        const LEGACY  = 1 << 0;
-        const DUTY    = 1 << 1;
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct GainControlFlags {
+    bits: u8,
+}
+
+impl GainControlFlags {
+    pub const NONE: Self = Self { bits: 0 };
+    pub const LEGACY: Self = Self { bits: 1 << 0 };
+    pub const DUTY: Self = Self { bits: 1 << 1 };
+
+    pub fn contains(&self, other: Self) -> bool {
+        self.bits & other.bits != 0
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.bits == 0
+    }
+
+    pub fn bits(&self) -> u8 {
+        self.bits
+    }
+
+    // pub fn set_by(&mut self, other: Self, value: bool) {
+    //     if value {
+    //         self.set(other)
+    //     } else {
+    //         self.clear(other)
+    //     }
+    // }
+
+    // pub fn set(&mut self, other: Self) {
+    //     self.bits |= other.bits
+    // }
+
+    // pub fn clear(&mut self, other: Self) {
+    //     self.bits &= !other.bits
+    // }
+
+    // pub fn all() -> Self {
+    //     Self { bits: 0xFF }
+    // }
+
+    // pub fn from_bits(bits: u8) -> Self {
+    //     Self { bits }
+    // }
+}
+
+impl std::ops::BitOr for GainControlFlags {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self {
+            bits: self.bits | rhs.bits,
+        }
     }
 }
 
@@ -106,44 +154,46 @@ impl<T: Transducer, G: Gain<T>> GainOp<T, G> {
     ) -> Result<usize, AUTDInternalError> {
         tx[0] = TypeTag::Gain as u8;
 
-        if remains[&device.idx()] == 2 {
-            tx[1] = GainControlFlags::NONE.bits();
+        match remains[&device.idx()] {
+            2 => {
+                tx[1] = GainControlFlags::NONE.bits();
 
-            let d = &drives[&device.idx()];
-            assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
+                let d = &drives[&device.idx()];
+                assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
 
-            unsafe {
-                let dst = std::slice::from_raw_parts_mut(
-                    tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
-                    d.len(),
-                );
-                dst.iter_mut()
-                    .zip(d.iter())
-                    .zip(device.iter().map(|tr| tr.cycle()))
-                    .for_each(|((d, s), c)| d.set(s, c));
+                unsafe {
+                    let dst = std::slice::from_raw_parts_mut(
+                        tx[2..].as_mut_ptr() as *mut AdvancedDrivePhase,
+                        d.len(),
+                    );
+                    dst.iter_mut()
+                        .zip(d.iter())
+                        .zip(device.iter().map(|tr| tr.cycle()))
+                        .for_each(|((d, s), c)| d.set(s, c));
+                }
+
+                Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
             }
+            1 => {
+                tx[1] = GainControlFlags::DUTY.bits();
 
-            Ok(2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>())
-        } else if remains[&device.idx()] == 1 {
-            tx[1] = GainControlFlags::DUTY.bits();
+                let d = &drives[&device.idx()];
+                assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>());
 
-            let d = &drives[&device.idx()];
-            assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>());
+                unsafe {
+                    let dst = std::slice::from_raw_parts_mut(
+                        tx[2..].as_mut_ptr() as *mut AdvancedDriveDuty,
+                        d.len(),
+                    );
+                    dst.iter_mut()
+                        .zip(d.iter())
+                        .zip(device.iter().map(|tr| tr.cycle()))
+                        .for_each(|((d, s), c)| d.set(s, c));
+                }
 
-            unsafe {
-                let dst = std::slice::from_raw_parts_mut(
-                    tx[2..].as_mut_ptr() as *mut AdvancedDriveDuty,
-                    d.len(),
-                );
-                dst.iter_mut()
-                    .zip(d.iter())
-                    .zip(device.iter().map(|tr| tr.cycle()))
-                    .for_each(|((d, s), c)| d.set(s, c));
+                Ok(2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>())
             }
-
-            Ok(2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>())
-        } else {
-            unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -343,33 +393,36 @@ mod tests {
 
     use super::*;
     use crate::{
-        datagram::GainAsAny,
         defined::PI,
         geometry::{tests::create_geometry, LegacyTransducer},
+        operation::tests::{ErrGain, NullGain, TestGain},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
-    #[derive(Clone)]
-    pub struct TestGain {
-        pub data: HashMap<usize, Vec<Drive>>,
+    use std::mem::size_of;
+
+    #[test]
+    fn gain_control_flags() {
+        assert_eq!(size_of::<GainControlFlags>(), 1);
+        let flags = GainControlFlags::LEGACY;
+
+        let flagsc = flags.clone();
+
+        assert!(flagsc.contains(GainControlFlags::LEGACY));
+        assert!(!flagsc.contains(GainControlFlags::DUTY));
     }
 
-    impl GainAsAny for TestGain {
-        fn as_any(&self) -> &dyn std::any::Any {
-            self
-        }
-    }
-
-    impl<T: Transducer> Gain<T> for TestGain {
-        fn calc(
-            &self,
-            _geometry: &Geometry<T>,
-            _filter: GainFilter,
-        ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-            Ok(self.data.clone())
-        }
+    #[test]
+    fn gain_control_flags_fmt() {
+        assert_eq!(format!("{}", GainControlFlags::NONE), "NONE");
+        assert_eq!(format!("{}", GainControlFlags::LEGACY), "LEGACY");
+        assert_eq!(format!("{}", GainControlFlags::DUTY), "DUTY");
+        assert_eq!(
+            format!("{}", GainControlFlags::LEGACY | GainControlFlags::DUTY),
+            "LEGACY | DUTY"
+        );
     }
 
     #[test]
@@ -429,11 +482,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(flag.contains(GainControlFlags::LEGACY));
-            assert!(!flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_ne!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_eq!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
@@ -502,11 +553,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(!flag.contains(GainControlFlags::LEGACY));
-            assert!(!flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_eq!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_eq!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
@@ -545,11 +594,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(!flag.contains(GainControlFlags::LEGACY));
-            assert!(flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_eq!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_ne!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
@@ -620,11 +667,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(!flag.contains(GainControlFlags::LEGACY));
-            assert!(!flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_eq!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_eq!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
@@ -681,11 +726,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(!flag.contains(GainControlFlags::LEGACY));
-            assert!(flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_eq!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_ne!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
@@ -695,6 +738,86 @@ mod tests {
                     assert_eq!(d[0], (duty & 0xFF) as u8);
                     assert_eq!(d[1], (duty >> 8) as u8);
                 })
+        });
+    }
+
+    #[test]
+    fn error_gain_legacy() {
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let gain = ErrGain {};
+        let mut op = GainOp::<LegacyTransducer, ErrGain>::new(gain);
+
+        assert_eq!(
+            op.init(&geometry),
+            Err(AUTDInternalError::GainError("test".to_owned()))
+        );
+    }
+
+    #[test]
+    fn error_gain_advanced() {
+        let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let gain = ErrGain {};
+        let mut op = GainOp::<AdvancedTransducer, ErrGain>::new(gain);
+
+        assert_eq!(
+            op.init(&geometry),
+            Err(AUTDInternalError::GainError("test".to_owned()))
+        );
+    }
+
+    #[test]
+    fn error_gain_advanced_phase() {
+        let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let gain = ErrGain {};
+        let mut op = GainOp::<AdvancedPhaseTransducer, ErrGain>::new(gain);
+
+        assert_eq!(
+            op.init(&geometry),
+            Err(AUTDInternalError::GainError("test".to_owned()))
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn pack_advanced_panic() {
+        let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
+
+        let mut op = GainOp::<AdvancedTransducer, NullGain>::new(NullGain {});
+
+        assert!(op.init(&geometry).is_ok());
+
+        geometry.devices().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+        geometry.devices().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
+            op.commit(dev);
+        });
+
+        geometry.devices().for_each(|dev| {
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
         });
     }
 }
