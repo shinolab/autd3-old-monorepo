@@ -19,55 +19,15 @@ pub use focus_stm_op::FocusSTMOp;
 
 use std::fmt;
 
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct FocusSTMControlFlags {
-    bits: u8,
-}
-
-impl FocusSTMControlFlags {
-    pub const NONE: Self = Self { bits: 0 };
-    pub const STM_BEGIN: Self = Self { bits: 1 << 0 };
-    pub const STM_END: Self = Self { bits: 1 << 1 };
-    pub const USE_START_IDX: Self = Self { bits: 1 << 2 };
-    pub const USE_FINISH_IDX: Self = Self { bits: 1 << 3 };
-
-    pub fn contains(&self, other: Self) -> bool {
-        self.bits & other.bits != 0
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.bits == 0
-    }
-
-    pub fn bits(&self) -> u8 {
-        self.bits
-    }
-
-    pub fn set_by(&mut self, other: Self, value: bool) {
-        if value {
-            self.set(other)
-        } else {
-            self.clear(other)
-        }
-    }
-
-    pub fn set(&mut self, other: Self) {
-        self.bits |= other.bits
-    }
-
-    pub fn clear(&mut self, other: Self) {
-        self.bits &= !other.bits
-    }
-}
-
-impl std::ops::BitOr for FocusSTMControlFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self {
-            bits: self.bits | rhs.bits,
-        }
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct FocusSTMControlFlags : u8 {
+        const NONE            = 0;
+        const STM_BEGIN       = 1 << 0;
+        const STM_END         = 1 << 1;
+        const USE_START_IDX   = 1 << 2;
+        const USE_FINISH_IDX  = 1 << 3;
     }
 }
 

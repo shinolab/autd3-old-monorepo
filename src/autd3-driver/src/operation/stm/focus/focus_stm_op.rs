@@ -75,8 +75,8 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         assert!(send_num > 0);
 
         let mut f = FocusSTMControlFlags::NONE;
-        f.set_by(FocusSTMControlFlags::STM_BEGIN, sent == 0);
-        f.set_by(
+        f.set(FocusSTMControlFlags::STM_BEGIN, sent == 0);
+        f.set(
             FocusSTMControlFlags::STM_END,
             sent + send_num == self.points.len(),
         );
@@ -100,7 +100,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             let start_idx = self.start_idx.unwrap_or(0);
             tx[12] = (start_idx & 0xFF) as u8;
             tx[13] = (start_idx >> 8) as u8;
-            f.set_by(
+            f.set(
                 FocusSTMControlFlags::USE_START_IDX,
                 self.start_idx.is_some(),
             );
@@ -108,7 +108,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
             let finish_idx = self.finish_idx.unwrap_or(0);
             tx[14] = (finish_idx & 0xFF) as u8;
             tx[15] = (finish_idx >> 8) as u8;
-            f.set_by(
+            f.set(
                 FocusSTMControlFlags::USE_FINISH_IDX,
                 self.finish_idx.is_some(),
             );

@@ -21,57 +21,19 @@ pub use legacy::GainSTMLegacyOp;
 
 use std::fmt;
 
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct GainSTMControlFlags {
-    bits: u8,
-}
-
-impl GainSTMControlFlags {
-    pub const NONE: Self = Self { bits: 0 };
-    pub const LEGACY: Self = Self { bits: 1 << 0 };
-    pub const DUTY: Self = Self { bits: 1 << 1 };
-    pub const STM_BEGIN: Self = Self { bits: 1 << 2 };
-    pub const STM_END: Self = Self { bits: 1 << 3 };
-    pub const USE_START_IDX: Self = Self { bits: 1 << 4 };
-    pub const USE_FINISH_IDX: Self = Self { bits: 1 << 5 };
-
-    pub fn contains(&self, other: Self) -> bool {
-        self.bits & other.bits != 0
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.bits == 0
-    }
-
-    pub fn bits(&self) -> u8 {
-        self.bits
-    }
-
-    pub fn set_by(&mut self, other: Self, value: bool) {
-        if value {
-            self.set(other)
-        } else {
-            self.clear(other)
-        }
-    }
-
-    pub fn set(&mut self, other: Self) {
-        self.bits |= other.bits
-    }
-
-    pub fn clear(&mut self, other: Self) {
-        self.bits &= !other.bits
-    }
-}
-
-impl std::ops::BitOr for GainSTMControlFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self {
-            bits: self.bits | rhs.bits,
-        }
+bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    pub struct GainSTMControlFlags : u8 {
+        const NONE            = 0;
+        const LEGACY          = 1 << 0;
+        const DUTY            = 1 << 1;
+        const STM_BEGIN       = 1 << 2;
+        const STM_END         = 1 << 3;
+        const USE_START_IDX   = 1 << 4;
+        const USE_FINISH_IDX  = 1 << 5;
+        const _RESERVED_0     = 1 << 6;
+        const _RESERVED_1     = 1 << 7;
     }
 }
 
@@ -131,62 +93,6 @@ mod tests {
 
         let flagsc = flags.clone();
         assert_eq!(flagsc.bits(), flags.bits());
-    }
-
-    #[test]
-    fn gain_stm_controll_flag_contains() {
-        let flags = GainSTMControlFlags::LEGACY | GainSTMControlFlags::DUTY;
-
-        assert!(flags.contains(GainSTMControlFlags::LEGACY));
-        assert!(flags.contains(GainSTMControlFlags::DUTY));
-        assert!(!flags.contains(GainSTMControlFlags::STM_BEGIN));
-        assert!(!flags.contains(GainSTMControlFlags::STM_END));
-        assert!(!flags.contains(GainSTMControlFlags::USE_START_IDX));
-        assert!(!flags.contains(GainSTMControlFlags::USE_FINISH_IDX));
-    }
-
-    #[test]
-    fn gain_stm_controll_flag_set() {
-        let mut flags = GainSTMControlFlags::NONE;
-        flags.set(GainSTMControlFlags::LEGACY);
-        assert!(flags.contains(GainSTMControlFlags::LEGACY));
-        assert!(!flags.contains(GainSTMControlFlags::DUTY));
-        assert!(!flags.contains(GainSTMControlFlags::STM_BEGIN));
-        assert!(!flags.contains(GainSTMControlFlags::STM_END));
-        assert!(!flags.contains(GainSTMControlFlags::USE_START_IDX));
-        assert!(!flags.contains(GainSTMControlFlags::USE_FINISH_IDX));
-    }
-
-    #[test]
-    fn gain_stm_controll_flag_clear() {
-        let mut flags = GainSTMControlFlags::LEGACY | GainSTMControlFlags::DUTY;
-        flags.clear(GainSTMControlFlags::LEGACY);
-        assert!(!flags.contains(GainSTMControlFlags::LEGACY));
-        assert!(flags.contains(GainSTMControlFlags::DUTY));
-        assert!(!flags.contains(GainSTMControlFlags::STM_BEGIN));
-        assert!(!flags.contains(GainSTMControlFlags::STM_END));
-        assert!(!flags.contains(GainSTMControlFlags::USE_START_IDX));
-        assert!(!flags.contains(GainSTMControlFlags::USE_FINISH_IDX));
-    }
-
-    #[test]
-    fn gain_stm_controll_flag_set_by() {
-        let mut flags = GainSTMControlFlags::NONE;
-        flags.set_by(GainSTMControlFlags::LEGACY, true);
-        assert!(flags.contains(GainSTMControlFlags::LEGACY));
-        assert!(!flags.contains(GainSTMControlFlags::DUTY));
-        assert!(!flags.contains(GainSTMControlFlags::STM_BEGIN));
-        assert!(!flags.contains(GainSTMControlFlags::STM_END));
-        assert!(!flags.contains(GainSTMControlFlags::USE_START_IDX));
-        assert!(!flags.contains(GainSTMControlFlags::USE_FINISH_IDX));
-
-        flags.set_by(GainSTMControlFlags::LEGACY, false);
-        assert!(!flags.contains(GainSTMControlFlags::LEGACY));
-        assert!(!flags.contains(GainSTMControlFlags::DUTY));
-        assert!(!flags.contains(GainSTMControlFlags::STM_BEGIN));
-        assert!(!flags.contains(GainSTMControlFlags::STM_END));
-        assert!(!flags.contains(GainSTMControlFlags::USE_START_IDX));
-        assert!(!flags.contains(GainSTMControlFlags::USE_FINISH_IDX));
     }
 
     #[test]
