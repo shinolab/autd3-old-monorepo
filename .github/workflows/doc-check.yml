@@ -23,6 +23,10 @@ jobs:
           doc/**/*.cpp
           doc/**/*.cs
           doc/**/*.py
+          src/**/*.rs
+          src/*.toml
+          src/**/*.toml
+          src/**/*.proto
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
