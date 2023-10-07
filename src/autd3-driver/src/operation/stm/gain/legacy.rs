@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -111,55 +111,21 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
             phantom: Default::default(),
         }
     }
+}
 
-    pub fn init_impl(
-        gains: &Vec<G>,
-        drives: &mut Vec<HashMap<usize, Vec<Drive>>>,
-        remains: &mut HashMap<usize, usize>,
-        sent: &mut HashMap<usize, usize>,
-        _mode: GainSTMMode,
-        freq_div: u32,
-        geometry: &Geometry<T>,
-    ) -> Result<(), AUTDInternalError> {
-        if gains.len() < 2 || gains.len() > GAIN_STM_LEGACY_BUF_SIZE_MAX {
-            return Err(AUTDInternalError::GainSTMLegacySizeOutOfRange(gains.len()));
-        }
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&freq_div) {
-            return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(freq_div));
-        }
-
-        *drives = gains
-            .iter()
-            .map(|g| g.calc(geometry, GainFilter::All))
-            .collect::<Result<_, _>>()?;
-
-        *remains = geometry
-            .devices()
-            .map(|device| (device.idx(), gains.len()))
-            .collect();
-
-        *sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
-
-        Ok(())
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn pack_impl(
-        drives: &Vec<HashMap<usize, Vec<Drive>>>,
-        remains: &HashMap<usize, usize>,
-        sent_map: &mut HashMap<usize, usize>,
-        mode: GainSTMMode,
-        freq_div: u32,
-        start_idx: Option<u16>,
-        finish_idx: Option<u16>,
-        device: &Device<T>,
+impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer>
+    for GainSTMLegacyOp<LegacyTransducer, G>
+{
+    fn pack(
+        &mut self,
+        device: &Device<LegacyTransducer>,
         tx: &mut [u8],
     ) -> Result<usize, AUTDInternalError> {
-        assert!(remains[&device.idx()] > 0);
+        assert!(self.remains[&device.idx()] > 0);
 
         tx[0] = TypeTag::GainSTM as u8;
 
-        let sent = sent_map[&device.idx()];
+        let sent = self.sent[&device.idx()];
         let mut offset =
             std::mem::size_of::<TypeTag>() + std::mem::size_of::<GainSTMControlFlags>();
         if sent == 0 {
@@ -174,31 +140,34 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
         f.set(GainSTMControlFlags::STM_BEGIN, sent == 0);
 
         if sent == 0 {
-            let mode = mode as u16;
+            let mode = self.mode as u16;
             tx[2] = (mode & 0xFF) as u8;
             tx[3] = (mode >> 8) as u8;
 
-            let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
             tx[7] = ((freq_div >> 24) & 0xFF) as u8;
 
-            f.set(GainSTMControlFlags::USE_START_IDX, start_idx.is_some());
-            let start_idx = start_idx.unwrap_or(0);
+            f.set(GainSTMControlFlags::USE_START_IDX, self.start_idx.is_some());
+            let start_idx = self.start_idx.unwrap_or(0);
             tx[8] = (start_idx & 0xFF) as u8;
             tx[9] = (start_idx >> 8) as u8;
 
-            f.set(GainSTMControlFlags::USE_FINISH_IDX, finish_idx.is_some());
-            let finish_idx = finish_idx.unwrap_or(0);
+            f.set(
+                GainSTMControlFlags::USE_FINISH_IDX,
+                self.finish_idx.is_some(),
+            );
+            let finish_idx = self.finish_idx.unwrap_or(0);
             tx[10] = (finish_idx & 0xFF) as u8;
             tx[11] = (finish_idx >> 8) as u8;
         }
 
         let mut send = 0;
-        match mode {
+        match self.mode {
             GainSTMMode::PhaseDutyFull => {
-                let d = &drives[sent][&device.idx()];
+                let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
                         tx[offset..].as_mut_ptr() as *mut LegacyDrive,
@@ -209,7 +178,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                 send += 1;
             }
             GainSTMMode::PhaseFull => {
-                let d = &drives[sent][&device.idx()];
+                let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
                         tx[offset..].as_mut_ptr() as *mut LegacyPhaseFull<0>,
@@ -218,8 +187,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
                 }
                 send += 1;
-                if drives.len() > sent + 1 {
-                    let d = &drives[sent + 1][&device.idx()];
+                if self.drives.len() > sent + 1 {
+                    let d = &self.drives[sent + 1][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
                             tx[offset..].as_mut_ptr() as *mut LegacyPhaseFull<1>,
@@ -231,7 +200,7 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                 }
             }
             GainSTMMode::PhaseHalf => {
-                let d = &drives[sent][&device.idx()];
+                let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
                         tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<0>,
@@ -240,8 +209,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                     dst.iter_mut().zip(d.iter()).for_each(|(d, s)| d.set(s));
                 }
                 send += 1;
-                if drives.len() > sent + 1 {
-                    let d = &drives[sent + 1][&device.idx()];
+                if self.drives.len() > sent + 1 {
+                    let d = &self.drives[sent + 1][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
                             tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<1>,
@@ -251,8 +220,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                     }
                     send += 1;
                 }
-                if drives.len() > sent + 2 {
-                    let d = &drives[sent + 2][&device.idx()];
+                if self.drives.len() > sent + 2 {
+                    let d = &self.drives[sent + 2][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
                             tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<2>,
@@ -262,8 +231,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                     }
                     send += 1;
                 }
-                if drives.len() > sent + 3 {
-                    let d = &drives[sent + 3][&device.idx()];
+                if self.drives.len() > sent + 3 {
+                    let d = &self.drives[sent + 3][&device.idx()];
                     unsafe {
                         let dst = std::slice::from_raw_parts_mut(
                             tx[offset..].as_mut_ptr() as *mut LegacyPhaseHalf<3>,
@@ -275,9 +244,12 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                 }
             }
         }
-        f.set(GainSTMControlFlags::STM_END, sent + send == drives.len());
+        f.set(
+            GainSTMControlFlags::STM_END,
+            sent + send == self.drives.len(),
+        );
 
-        sent_map.insert(device.idx(), sent + send);
+        self.sent.insert(device.idx(), sent + send);
 
         tx[1] = f.bits() | ((send as u8 - 1) & 0x03) << 6;
 
@@ -296,18 +268,8 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
         }
     }
 
-    pub fn commit_impl(
-        gains: &Vec<G>,
-        remains: &mut HashMap<usize, usize>,
-        sent: &HashMap<usize, usize>,
-        _mode: GainSTMMode,
-        device: &Device<T>,
-    ) {
-        remains.insert(device.idx(), gains.len() - sent[&device.idx()]);
-    }
-
-    pub fn required_size_impl(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize {
-        if sent[&device.idx()] == 0 {
+    fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
+        if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                  + std::mem::size_of::<GainSTMControlFlags>()
                  + std::mem::size_of::<GainSTMMode>()
@@ -321,43 +283,31 @@ impl<T: Transducer, G: Gain<T>> GainSTMLegacyOp<T, G> {
                 + device.num_transducers() * std::mem::size_of::<LegacyDrive>()
         }
     }
-}
-
-impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer>
-    for GainSTMLegacyOp<LegacyTransducer, G>
-{
-    fn pack(
-        &mut self,
-        device: &Device<LegacyTransducer>,
-        tx: &mut [u8],
-    ) -> Result<usize, AUTDInternalError> {
-        Self::pack_impl(
-            &self.drives,
-            &self.remains,
-            &mut self.sent,
-            self.mode,
-            self.freq_div,
-            self.start_idx,
-            self.finish_idx,
-            device,
-            tx,
-        )
-    }
-
-    fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
-        Self::required_size_impl(&self.sent, device)
-    }
 
     fn init(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<(), AUTDInternalError> {
-        Self::init_impl(
-            &self.gains,
-            &mut self.drives,
-            &mut self.remains,
-            &mut self.sent,
-            self.mode,
-            self.freq_div,
-            geometry,
-        )
+        if self.gains.len() < 2 || self.gains.len() > GAIN_STM_LEGACY_BUF_SIZE_MAX {
+            return Err(AUTDInternalError::GainSTMLegacySizeOutOfRange(
+                self.gains.len(),
+            ));
+        }
+        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
+            return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
+        }
+
+        self.drives = self
+            .gains
+            .iter()
+            .map(|g| g.calc(geometry, GainFilter::All))
+            .collect::<Result<_, _>>()?;
+
+        self.remains = geometry
+            .devices()
+            .map(|device| (device.idx(), self.gains.len()))
+            .collect();
+
+        self.sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
+
+        Ok(())
     }
 
     fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
@@ -365,13 +315,8 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer>
     }
 
     fn commit(&mut self, device: &Device<LegacyTransducer>) {
-        Self::commit_impl(
-            &self.gains,
-            &mut self.remains,
-            &self.sent,
-            self.mode,
-            device,
-        );
+        self.remains
+            .insert(device.idx(), self.gains.len() - self.sent[&device.idx()]);
     }
 }
 
