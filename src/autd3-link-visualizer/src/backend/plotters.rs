@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -104,7 +104,7 @@ impl PlottersBackend {
     fn plot_1d_impl<B: plotters::backend::DrawingBackend>(
         root: &DrawingArea<B, Shift>,
         observe_points: &[float],
-        acoustic_pressures: &[autd3_driver::acoustics::Complex],
+        acoustic_pressures: &[autd3_driver::defined::Complex],
         x_label: &str,
         yrange: (float, float),
         config: &PlotConfig,
@@ -158,7 +158,7 @@ impl PlottersBackend {
         root: &DrawingArea<B, Shift>,
         observe_points_x: &[float],
         observe_points_y: &[float],
-        acoustic_pressures: &[autd3_driver::acoustics::Complex],
+        acoustic_pressures: &[autd3_driver::defined::Complex],
         x_label: &str,
         y_label: &str,
         zrange: (float, float),
@@ -460,7 +460,7 @@ impl Backend for PlottersBackend {
 
     fn plot_1d(
         observe_points: Vec<float>,
-        acoustic_pressures: Vec<autd3_driver::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3_driver::defined::Complex>,
         _resolution: float,
         x_label: &str,
         config: Self::PlotConfig,
@@ -500,7 +500,7 @@ impl Backend for PlottersBackend {
     fn plot_2d(
         observe_x: Vec<float>,
         observe_y: Vec<float>,
-        acoustic_pressures: Vec<autd3_driver::acoustics::Complex>,
+        acoustic_pressures: Vec<autd3_driver::defined::Complex>,
         resolution: float,
         x_label: &str,
         y_label: &str,

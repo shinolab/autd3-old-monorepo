@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,6 +34,8 @@ mod unit {
 }
 pub use unit::*;
 pub const MILLIMETER: float = METER / 1000.0;
+
+pub type Complex = nalgebra::Complex<float>;
 
 #[derive(Clone, Copy)]
 pub struct Drive {

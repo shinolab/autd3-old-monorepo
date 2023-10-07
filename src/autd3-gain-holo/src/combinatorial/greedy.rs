@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{constraint::Constraint, impl_holo, Complex};
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    acoustics::{propagate, Sphere},
+    acoustics::{directivity::Sphere, propagate},
     defined::PI,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
