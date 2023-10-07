@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,7 @@
 use std::sync::Arc;
 
 use autd3_driver::{
-    acoustics::Complex,
-    defined::float,
+    defined::{float, Complex},
     geometry::{Geometry, Transducer, Vector3},
 };
 use vulkano::{
@@ -130,7 +129,11 @@ impl FieldCompute {
         }
     }
 
-    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3_driver::acoustics::Directivity>(
+    pub(crate) fn calc_field_of<
+        'a,
+        T: Transducer,
+        D: autd3_driver::acoustics::directivity::Directivity,
+    >(
         &self,
         observe_points: Vec<Vector3>,
         geometry: &Geometry<T>,
