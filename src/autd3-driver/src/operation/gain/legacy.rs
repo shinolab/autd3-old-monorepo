@@ -11,25 +11,22 @@
  *
  */
 
-use super::{GainControlFlags, GainOp};
+use super::{GainControlFlags, GainOpDelegate};
 
-use crate::{
-    datagram::{Gain, GainFilter},
-    error::AUTDInternalError,
-    fpga::LegacyDrive,
-    geometry::{Device, Geometry, LegacyTransducer},
-    operation::{Operation, TypeTag},
-};
+use crate::{derive::prelude::Transducer, fpga::LegacyDrive, geometry::Device, operation::TypeTag};
 
-impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTransducer, G> {
+pub struct GainOpLegacy {}
+
+impl<T: Transducer> GainOpDelegate<T> for GainOpLegacy {
     fn pack(
-        &mut self,
-        device: &Device<LegacyTransducer>,
+        drives: &std::collections::HashMap<usize, Vec<crate::derive::prelude::Drive>>,
+        remains: &std::collections::HashMap<usize, usize>,
+        device: &Device<T>,
         tx: &mut [u8],
-    ) -> Result<usize, AUTDInternalError> {
-        assert_eq!(self.remains[&device.idx()], 1);
+    ) -> Result<usize, crate::derive::prelude::AUTDInternalError> {
+        assert_eq!(remains[&device.idx()], 1);
 
-        let d = &self.drives[&device.idx()];
+        let d = &drives[&device.idx()];
         assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<LegacyDrive>());
 
         tx[0] = TypeTag::Gain as u8;
@@ -44,23 +41,11 @@ impl<G: Gain<LegacyTransducer>> Operation<LegacyTransducer> for GainOp<LegacyTra
         Ok(2 + d.len() * std::mem::size_of::<LegacyDrive>())
     }
 
-    fn required_size(&self, device: &Device<LegacyTransducer>) -> usize {
-        2 + device.num_transducers() * std::mem::size_of::<u16>()
-    }
-
-    fn init(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(geometry, GainFilter::All)?;
-        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
-        Ok(())
-    }
-
-    fn remains(&self, device: &Device<LegacyTransducer>) -> usize {
-        self.remains[&device.idx()]
-    }
-
-    fn commit(&mut self, device: &Device<LegacyTransducer>) {
-        self.remains
-            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    fn init(
+        geometry: &crate::derive::prelude::Geometry<T>,
+    ) -> Result<std::collections::HashMap<usize, usize>, crate::derive::prelude::AUTDInternalError>
+    {
+        Ok(geometry.devices().map(|device| (device.idx(), 1)).collect())
     }
 }
 
@@ -71,7 +56,7 @@ mod tests {
     use super::*;
     use crate::{
         defined::PI,
-        derive::prelude::Drive,
+        derive::prelude::{AUTDInternalError, Drive, GainOp, Operation},
         geometry::{tests::create_geometry, LegacyTransducer},
         operation::tests::{ErrGain, TestGain},
     };

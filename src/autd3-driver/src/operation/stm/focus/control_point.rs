@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -109,7 +109,7 @@ mod tests {
         assert_eq!(c.point().z, 3.);
         assert_eq!(c.shift(), 4);
 
-        let cc = c;
+        let cc = Clone::clone(&c);
         assert_eq!(cc.point().x, 1.);
         assert_eq!(cc.point().y, 2.);
         assert_eq!(cc.point().z, 3.);

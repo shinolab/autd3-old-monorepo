@@ -58,7 +58,7 @@ mod tests {
         assert_eq!(size_of::<GainControlFlags>(), 1);
         let flags = GainControlFlags::LEGACY;
 
-        let flagsc = flags;
+        let flagsc = Clone::clone(&flags);
 
         assert!(flagsc.contains(GainControlFlags::LEGACY));
         assert!(!flagsc.contains(GainControlFlags::DUTY));

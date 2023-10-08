@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ mod tests {
         assert_eq!(size_of::<AdvancedDrivePhase>(), 2);
 
         let d = AdvancedDrivePhase { phase: 0x0001 };
-        let dc = d;
+        let dc = Clone::clone(&d);
         assert_eq!(d.phase, dc.phase);
 
         let mut d = 0x0000u16;
@@ -144,7 +144,7 @@ mod tests {
         assert_eq!(size_of::<AdvancedDriveDuty>(), 2);
 
         let d = AdvancedDriveDuty { duty: 0x0001 };
-        let dc = d;
+        let dc = Clone::clone(&d);
         assert_eq!(d.duty, dc.duty);
 
         let mut d = 0x0000u16;

@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ mod tests {
             phase: 0x01,
             duty: 0x02,
         };
-        let dc = d;
+        let dc = Clone::clone(&d);
         assert_eq!(d.phase, dc.phase);
         assert_eq!(d.duty, dc.duty);
 

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,16 +19,7 @@ use super::test_runner::Backend;
 use colored::*;
 use std::io::{self, Write};
 
-pub fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
-where
-    autd3_driver::operation::GainOp<T, SDP<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, EVP<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, GS<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, GSPAT<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Naive<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, LM<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Greedy>: autd3_driver::operation::Operation<T>,
-{
+pub fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default())?;
 
     let m = Sine::new(150);

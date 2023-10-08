@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,13 @@
 
 mod clear;
 mod filter;
-mod gain;
+pub mod gain;
 mod info;
 mod mod_delay;
 mod modulation;
 mod null;
 mod silencer;
-mod stm;
+pub mod stm;
 mod stop;
 mod sync;
 mod update_flag;
