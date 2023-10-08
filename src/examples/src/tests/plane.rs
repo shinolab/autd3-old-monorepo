@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn plane<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
-where
-    autd3_driver::operation::GainOp<T, Plane>: autd3_driver::operation::Operation<T>,
-{
+pub fn plane<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default())?;
 
     let dir = Vector3::z();

@@ -11,29 +11,30 @@
  *
  */
 
-use super::{GainControlFlags, GainOp};
+use super::{GainControlFlags, GainOpDelegate};
 
 use crate::{
-    datagram::{Gain, GainFilter},
-    error::AUTDInternalError,
     fpga::{AdvancedDriveDuty, AdvancedDrivePhase},
-    geometry::{AdvancedTransducer, Device, Geometry, Transducer},
-    operation::{Operation, TypeTag},
+    geometry::{Device, Transducer},
+    operation::TypeTag,
 };
 
-impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<AdvancedTransducer, G> {
+pub struct GainOpAdvanced {}
+
+impl<T: Transducer> GainOpDelegate<T> for GainOpAdvanced {
     fn pack(
-        &mut self,
-        device: &Device<AdvancedTransducer>,
+        drives: &std::collections::HashMap<usize, Vec<crate::derive::prelude::Drive>>,
+        remains: &std::collections::HashMap<usize, usize>,
+        device: &Device<T>,
         tx: &mut [u8],
-    ) -> Result<usize, AUTDInternalError> {
+    ) -> Result<usize, crate::derive::prelude::AUTDInternalError> {
         tx[0] = TypeTag::Gain as u8;
 
-        match self.remains[&device.idx()] {
+        match remains[&device.idx()] {
             2 => {
                 tx[1] = GainControlFlags::NONE.bits();
 
-                let d = &self.drives[&device.idx()];
+                let d = &drives[&device.idx()];
                 assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDrivePhase>());
 
                 unsafe {
@@ -52,7 +53,7 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
             1 => {
                 tx[1] = GainControlFlags::DUTY.bits();
 
-                let d = &self.drives[&device.idx()];
+                let d = &drives[&device.idx()];
                 assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<AdvancedDriveDuty>());
 
                 unsafe {
@@ -72,23 +73,11 @@ impl<G: Gain<AdvancedTransducer>> Operation<AdvancedTransducer> for GainOp<Advan
         }
     }
 
-    fn required_size(&self, device: &Device<AdvancedTransducer>) -> usize {
-        2 + device.num_transducers() * std::mem::size_of::<u16>()
-    }
-
-    fn init(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<(), AUTDInternalError> {
-        self.drives = self.gain.calc(geometry, GainFilter::All)?;
-        self.remains = geometry.devices().map(|device| (device.idx(), 2)).collect();
-        Ok(())
-    }
-
-    fn remains(&self, device: &Device<AdvancedTransducer>) -> usize {
-        self.remains[&device.idx()]
-    }
-
-    fn commit(&mut self, device: &Device<AdvancedTransducer>) {
-        self.remains
-            .insert(device.idx(), self.remains[&device.idx()] - 1);
+    fn init(
+        geometry: &crate::derive::prelude::Geometry<T>,
+    ) -> Result<std::collections::HashMap<usize, usize>, crate::derive::prelude::AUTDInternalError>
+    {
+        Ok(geometry.devices().map(|device| (device.idx(), 2)).collect())
     }
 }
 
@@ -99,8 +88,8 @@ mod tests {
     use super::*;
     use crate::{
         defined::PI,
-        derive::prelude::Drive,
-        geometry::tests::create_geometry,
+        derive::prelude::{AUTDInternalError, Drive, GainOp, Operation},
+        geometry::{tests::create_geometry, AdvancedTransducer},
         operation::tests::{ErrGain, NullGain, TestGain},
     };
 
