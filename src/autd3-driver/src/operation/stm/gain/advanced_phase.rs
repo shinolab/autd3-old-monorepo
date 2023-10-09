@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,54 +14,20 @@
 use std::collections::HashMap;
 
 use crate::{
-    datagram::{Gain, GainFilter},
     defined::Drive,
     error::AUTDInternalError,
-    fpga::{
-        AdvancedDrivePhase, LegacyDrive, FPGA_SUB_CLK_FREQ_DIV, GAIN_STM_BUF_SIZE_MAX,
-        SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN,
-    },
-    geometry::{AdvancedPhaseTransducer, Device, Geometry, Transducer},
-    operation::{Operation, TypeTag},
+    fpga::{AdvancedDrivePhase, LegacyDrive, FPGA_SUB_CLK_FREQ_DIV, GAIN_STM_BUF_SIZE_MAX},
+    geometry::{Device, Geometry, Transducer},
+    operation::TypeTag,
 };
 
-use super::{GainSTMControlFlags, GainSTMMode};
+use super::{gain_stm_control_flags::GainSTMControlFlags, GainSTMMode, GainSTMOpDelegate};
 
-pub struct GainSTMAdvancedPhaseOp<T: Transducer, G: Gain<T>> {
-    gains: Vec<G>,
-    drives: Vec<HashMap<usize, Vec<Drive>>>,
-    remains: HashMap<usize, usize>,
-    sent: HashMap<usize, usize>,
-    mode: GainSTMMode,
-    freq_div: u32,
-    start_idx: Option<u16>,
-    finish_idx: Option<u16>,
-    phantom: std::marker::PhantomData<T>,
-}
+pub struct GainSTMOpAdvancedPhase {}
 
-impl<T: Transducer, G: Gain<T>> GainSTMAdvancedPhaseOp<T, G> {
-    pub fn new(
-        gains: Vec<G>,
-        mode: GainSTMMode,
-        freq_div: u32,
-        start_idx: Option<u16>,
-        finish_idx: Option<u16>,
-    ) -> Self {
-        Self {
-            gains,
-            drives: Default::default(),
-            remains: Default::default(),
-            sent: Default::default(),
-            mode,
-            freq_div,
-            start_idx,
-            finish_idx,
-            phantom: Default::default(),
-        }
-    }
-
+impl<T: Transducer> GainSTMOpDelegate<T> for GainSTMOpAdvancedPhase {
     #[allow(clippy::too_many_arguments)]
-    pub fn pack_impl(
+    fn pack(
         drives: &[HashMap<usize, Vec<Drive>>],
         remains: &HashMap<usize, usize>,
         sent_map: &mut HashMap<usize, usize>,
@@ -72,8 +38,6 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedPhaseOp<T, G> {
         device: &Device<T>,
         tx: &mut [u8],
     ) -> Result<usize, AUTDInternalError> {
-        assert!(remains[&device.idx()] > 0);
-
         tx[0] = TypeTag::GainSTM as u8;
 
         let sent = sent_map[&device.idx()];
@@ -145,53 +109,34 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedPhaseOp<T, G> {
         }
     }
 
-    pub fn init_impl(
-        gains: &Vec<G>,
-        drives: &mut Vec<HashMap<usize, Vec<Drive>>>,
-        remains: &mut HashMap<usize, usize>,
-        sent: &mut HashMap<usize, usize>,
+    fn init(
+        n: usize,
         mode: GainSTMMode,
-        freq_div: u32,
         geometry: &Geometry<T>,
-    ) -> Result<(), AUTDInternalError> {
-        if gains.len() < 2 || gains.len() > GAIN_STM_BUF_SIZE_MAX {
-            return Err(AUTDInternalError::GainSTMSizeOutOfRange(gains.len()));
-        }
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&freq_div) {
-            return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(freq_div));
+    ) -> Result<HashMap<usize, usize>, AUTDInternalError> {
+        if !(2..=GAIN_STM_BUF_SIZE_MAX).contains(&n) {
+            return Err(AUTDInternalError::GainSTMSizeOutOfRange(n));
         }
 
         match mode {
             GainSTMMode::PhaseDutyFull | GainSTMMode::PhaseFull => {
-                *remains = geometry
-                    .devices()
-                    .map(|device| (device.idx(), gains.len()))
-                    .collect()
+                Ok(geometry.devices().map(|device| (device.idx(), n)).collect())
             }
-            GainSTMMode::PhaseHalf => return Err(AUTDInternalError::GainSTMModeNotSupported(mode)),
+            GainSTMMode::PhaseHalf => Err(AUTDInternalError::GainSTMModeNotSupported(mode)),
         }
-
-        *drives = gains
-            .iter()
-            .map(|g| g.calc(geometry, GainFilter::All))
-            .collect::<Result<_, _>>()?;
-
-        *sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
-
-        Ok(())
     }
 
-    pub fn commit_impl(
-        gains: &Vec<G>,
+    fn commit(
+        drives: &[HashMap<usize, Vec<Drive>>],
         remains: &mut HashMap<usize, usize>,
         sent: &HashMap<usize, usize>,
         _mode: GainSTMMode,
         device: &Device<T>,
     ) {
-        remains.insert(device.idx(), gains.len() - sent[&device.idx()]);
+        remains.insert(device.idx(), drives.len() - sent[&device.idx()]);
     }
 
-    pub fn required_size_impl(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize {
+    fn required_size(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize {
         if sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                  + std::mem::size_of::<GainSTMControlFlags>()
@@ -207,71 +152,17 @@ impl<T: Transducer, G: Gain<T>> GainSTMAdvancedPhaseOp<T, G> {
         }
     }
 }
-
-impl<G: Gain<AdvancedPhaseTransducer>> Operation<AdvancedPhaseTransducer>
-    for GainSTMAdvancedPhaseOp<AdvancedPhaseTransducer, G>
-{
-    fn pack(
-        &mut self,
-        device: &Device<AdvancedPhaseTransducer>,
-        tx: &mut [u8],
-    ) -> Result<usize, AUTDInternalError> {
-        Self::pack_impl(
-            &self.drives,
-            &self.remains,
-            &mut self.sent,
-            self.mode,
-            self.freq_div,
-            self.start_idx,
-            self.finish_idx,
-            device,
-            tx,
-        )
-    }
-
-    fn required_size(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
-        Self::required_size_impl(&self.sent, device)
-    }
-
-    fn init(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<(), AUTDInternalError> {
-        Self::init_impl(
-            &self.gains,
-            &mut self.drives,
-            &mut self.remains,
-            &mut self.sent,
-            self.mode,
-            self.freq_div,
-            geometry,
-        )
-    }
-
-    fn remains(&self, device: &Device<AdvancedPhaseTransducer>) -> usize {
-        self.remains[&device.idx()]
-    }
-
-    fn commit(&mut self, device: &Device<AdvancedPhaseTransducer>) {
-        Self::commit_impl(
-            &self.gains,
-            &mut self.remains,
-            &self.sent,
-            self.mode,
-            device,
-        );
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use rand::prelude::*;
 
-    use super::*;
+    use super::{super::GainSTMOp, *};
+
     use crate::{
         defined::PI,
+        derive::prelude::Operation,
         fpga::{GAIN_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
-        geometry::tests::create_geometry,
+        geometry::{tests::create_geometry, AdvancedPhaseTransducer},
         operation::tests::{ErrGain, NullGain, TestGain},
     };
 
@@ -314,13 +205,8 @@ mod tests {
             .collect();
 
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
-            gains,
-            GainSTMMode::PhaseDutyFull,
-            freq_div,
-            None,
-            None,
-        );
+        let mut op =
+            GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
@@ -508,13 +394,7 @@ mod tests {
             .collect();
 
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
-            gains,
-            GainSTMMode::PhaseFull,
-            freq_div,
-            None,
-            None,
-        );
+        let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseFull, freq_div, None, None);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
@@ -700,13 +580,7 @@ mod tests {
 
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
-            gains,
-            GainSTMMode::PhaseHalf,
-            freq_div,
-            None,
-            None,
-        );
+        let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseHalf, freq_div, None, None);
         assert_eq!(
             op.init(&geometry),
             Err(AUTDInternalError::GainSTMModeNotSupported(
@@ -719,7 +593,7 @@ mod tests {
     fn error_gain() {
         let geometry = create_geometry::<AdvancedPhaseTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
+        let mut op = GainSTMOp::<_, _>::new(
             (0..3).map(|_| ErrGain {}).collect(),
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
@@ -772,7 +646,7 @@ mod tests {
             })
             .collect();
 
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
+        let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
@@ -800,7 +674,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], (finish_idx >> 8) as u8);
         });
 
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
+        let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
@@ -828,7 +702,7 @@ mod tests {
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 11], 0x00);
         });
 
-        let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
+        let mut op = GainSTMOp::<_, _>::new(
             gains.clone(),
             GainSTMMode::PhaseDutyFull,
             SAMPLING_FREQ_DIV_MIN,
@@ -864,7 +738,7 @@ mod tests {
         let test = |n: usize| {
             let gains: Vec<NullGain> = (0..n).map(|_| NullGain {}).collect();
 
-            let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
+            let mut op = GainSTMOp::<_, _>::new(
                 gains,
                 GainSTMMode::PhaseDutyFull,
                 SAMPLING_FREQ_DIV_MIN,
@@ -892,13 +766,7 @@ mod tests {
         let test = |d: u32| {
             let gains: Vec<NullGain> = (0..2).map(|_| NullGain {}).collect();
 
-            let mut op = GainSTMAdvancedPhaseOp::<_, _>::new(
-                gains,
-                GainSTMMode::PhaseDutyFull,
-                d,
-                None,
-                None,
-            );
+            let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, d, None, None);
             op.init(&geometry)
         };
 

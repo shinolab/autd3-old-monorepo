@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,20 @@
  */
 
 use super::{Quaternion, UnitQuaternion, Vector3};
-use crate::defined::{float, PI};
+use crate::{
+    defined::{float, PI},
+    operation::{gain::GainOpDelegate, stm::gain::GainSTMOpDelegate},
+};
 
 fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
     let dir: UnitQuaternion = UnitQuaternion::from_quaternion(Quaternion::from_imag(dir));
     (rotation * dir * rotation.conjugate()).imag().normalize()
 }
 
-pub trait Transducer: Send + Sync {
+pub trait Transducer: Send + Sync + Sized {
+    type GainOp: GainOpDelegate<Self>;
+    type GainSTMOp: GainSTMOpDelegate<Self>;
+
     /// Create transducer
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
     /// Affine transformation

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 use crate::{
     defined::float,
     fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+    operation::{gain::advanced::GainOpAdvanced, stm::gain::advanced::GainSTMOpAdvanced},
 };
 
 use crate::error::AUTDInternalError;
@@ -31,6 +32,9 @@ pub struct AdvancedTransducer {
 }
 
 impl Transducer for AdvancedTransducer {
+    type GainOp = GainOpAdvanced;
+    type GainSTMOp = GainSTMOpAdvanced;
+
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             local_idx,

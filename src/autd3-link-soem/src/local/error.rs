@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -37,19 +37,11 @@ pub enum SOEMError {
 
     #[cfg(target_os = "windows")]
     #[error("{0}")]
-    WindowsError(windows::core::Error),
+    WindowsError(#[from] windows::core::Error),
 }
 
 impl From<SOEMError> for AUTDInternalError {
     fn from(val: SOEMError) -> AUTDInternalError {
         AUTDInternalError::LinkError(val.to_string())
-    }
-}
-
-#[cfg(target_os = "windows")]
-impl From<windows::core::Error> for SOEMError {
-    #[cfg_attr(coverage_nightly, no_coverage)]
-    fn from(e: windows::core::Error) -> Self {
-        SOEMError::WindowsError(e)
     }
 }

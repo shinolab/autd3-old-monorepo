@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
-use crate::defined::float;
+use crate::{
+    defined::float,
+    operation::{gain::legacy::GainOpLegacy, stm::gain::legacy::GainSTMOpLegacy},
+};
 
 pub struct LegacyTransducer {
     local_idx: usize,
@@ -25,6 +28,9 @@ pub struct LegacyTransducer {
 }
 
 impl Transducer for LegacyTransducer {
+    type GainOp = GainOpLegacy;
+    type GainSTMOp = GainSTMOpLegacy;
+
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             local_idx,

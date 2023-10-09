@@ -16,7 +16,6 @@
     - [SOEM](./Users_Manual/link/soem.md)
     - [Simulator](./Users_Manual/link/simulator.md)
     - [Visualize](./Users_Manual/link/visualize.md)
-    - [Bundle](./Users_Manual/link/bundle.md)
   - [Gain](./Users_Manual/gain.md)
     - [Null](./Users_Manual/gain/null.md)
     - [Focus](./Users_Manual/gain/focus.md)
