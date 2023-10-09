@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,15 +24,15 @@
 TEST(Internal, ControllerClose) {
   {
     const auto autd = create_controller();
-    ASSERT_TRUE(autd3::link::Audit::is_open(autd));
+    ASSERT_TRUE(autd.link<autd3::link::Audit>().is_open());
 
     autd.close();
-    ASSERT_FALSE(autd3::link::Audit::is_open(autd));
+    ASSERT_FALSE(autd.link<autd3::link::Audit>().is_open());
   }
 
   {
     const auto autd = create_controller();
-    autd3::link::Audit::break_down(autd);
+    autd.link<autd3::link::Audit>().break_down();
     ASSERT_THROW(autd.close(), autd3::internal::AUTDException);
   }
 }
@@ -42,38 +42,38 @@ TEST(Internal, ControllerSendTimeout) {
     auto autd = autd3::internal::Controller::builder()
                     .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                     .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                    .open_with(autd3::link::Audit().with_timeout(std::chrono::microseconds(0)));
+                    .open_with(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(0)));
 
     autd.send(autd3::internal::UpdateFlags());
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 0);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 0);
 
     autd.send(autd3::internal::UpdateFlags(), std::chrono::microseconds(1));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 1000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 1000);
 
     autd.send(autd3::internal::UpdateFlags(), autd3::internal::UpdateFlags(), std::chrono::microseconds(2));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 2000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 2000);
 
     autd.send(autd3::internal::Stop(), std::chrono::microseconds(1));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 1000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 1000);
   }
 
   {
     auto autd = autd3::internal::Controller::builder()
                     .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                     .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                    .open_with(autd3::link::Audit().with_timeout(std::chrono::microseconds(10)));
+                    .open_with(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(10)));
 
     autd.send(autd3::internal::UpdateFlags());
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 10000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 10000);
 
     autd.send(autd3::internal::UpdateFlags(), std::chrono::microseconds(1));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 1000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 1000);
 
     autd.send(autd3::internal::UpdateFlags(), autd3::internal::UpdateFlags(), std::chrono::microseconds(2));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 2000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 2000);
 
     autd.send(autd3::internal::Stop(), std::chrono::microseconds(1));
-    ASSERT_EQ(autd3::link::Audit::last_timeout_ns(autd), 1000);
+    ASSERT_EQ(autd.link<autd3::link::Audit>().last_timeout_ns(), 1000);
   }
 }
 
@@ -81,20 +81,20 @@ TEST(Internal, ControllerSendSingle) {
   auto autd = create_controller();
 
   for (auto& dev : autd.geometry()) {
-    auto m = autd3::link::Audit::modulation(autd, dev.idx());
+    auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));
   }
 
   ASSERT_TRUE(autd.send(autd3::modulation::Static()));
   for (auto& dev : autd.geometry()) {
-    auto m = autd3::link::Audit::modulation(autd, dev.idx());
+    auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
   }
 
-  autd3::link::Audit::down(autd);
+  autd.link<autd3::link::Audit>().down();
   ASSERT_FALSE(autd.send(autd3::modulation::Static()));
 
-  autd3::link::Audit::break_down(autd);
+  autd.link<autd3::link::Audit>().break_down();
   ASSERT_THROW(autd.send(autd3::modulation::Static()), autd3::internal::AUTDException);
 }
 
@@ -102,26 +102,26 @@ TEST(Internal, ControllerSendDouble) {
   auto autd = create_controller();
 
   for (auto& dev : autd.geometry()) {
-    auto m = autd3::link::Audit::modulation(autd, dev.idx());
+    auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
   ASSERT_TRUE(autd.send(autd3::modulation::Static(), autd3::gain::Uniform(1)));
   for (auto& dev : autd.geometry()) {
-    auto m = autd3::link::Audit::modulation(autd, dev.idx());
+    auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
-  autd3::link::Audit::down(autd);
+  autd.link<autd3::link::Audit>().down();
   ASSERT_FALSE(autd.send(autd3::modulation::Static(), autd3::gain::Uniform(1)));
 
-  autd3::link::Audit::break_down(autd);
+  autd.link<autd3::link::Audit>().break_down();
   ASSERT_THROW(autd.send(autd3::modulation::Static(), autd3::gain::Uniform(1)), autd3::internal::AUTDException);
 }
 
@@ -130,21 +130,21 @@ TEST(Internal, ControllerSendSpecial) {
 
   ASSERT_TRUE(autd.send(autd3::gain::Uniform(1)));
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
   ASSERT_TRUE(autd.send(autd3::internal::Stop()));
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
   }
 
-  autd3::link::Audit::down(autd);
+  autd.link<autd3::link::Audit>().down();
   ASSERT_FALSE(autd.send(autd3::internal::Stop()));
 
-  autd3::link::Audit::break_down(autd);
+  autd.link<autd3::link::Audit>().break_down();
   ASSERT_THROW(autd.send(autd3::internal::Stop()), autd3::internal::AUTDException);
 }
 
@@ -195,17 +195,17 @@ TEST(Internal, ControllerGroup) {
       .send();
 
   {
-    const auto m = autd3::link::Audit::modulation(autd, 0);
+    const auto m = autd.link<autd3::link::Audit>().modulation(0);
     ASSERT_EQ(2, m.size());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 8; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    const auto m = autd3::link::Audit::modulation(autd, 1);
+    const auto m = autd.link<autd3::link::Audit>().modulation(1);
     ASSERT_EQ(80, m.size());
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -216,14 +216,14 @@ TEST(Internal, ControllerGroup) {
       .send();
 
   {
-    const auto m = autd3::link::Audit::modulation(autd, 0);
+    const auto m = autd.link<autd3::link::Audit>().modulation(0);
     ASSERT_EQ(80, m.size());
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    auto [duties, _] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    auto [duties, _] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
   }
 }
@@ -244,14 +244,14 @@ TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
   ASSERT_TRUE(check[1]);
 
   {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    const auto m = autd3::link::Audit::modulation(autd, 1);
+    const auto m = autd.link<autd3::link::Audit>().modulation(1);
     ASSERT_EQ(80, m.size());
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
   }

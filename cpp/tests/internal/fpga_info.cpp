@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,9 +29,9 @@ TEST(Internal, FPGAInfo) {
   }
 
   {
-    autd3::link::Audit::assert_thermal_sensor(autd, 0);
-    autd3::link::Audit::update(autd, 0);
-    autd3::link::Audit::update(autd, 1);
+    autd.link<autd3::link::Audit>().assert_thermal_sensor(0);
+    autd.link<autd3::link::Audit>().update(0);
+    autd.link<autd3::link::Audit>().update(1);
 
     const auto infos = autd.fpga_info();
     ASSERT_TRUE(infos[0].is_thermal_assert());
@@ -39,10 +39,10 @@ TEST(Internal, FPGAInfo) {
   }
 
   {
-    autd3::link::Audit::deassert_thermal_sensor(autd, 0);
-    autd3::link::Audit::assert_thermal_sensor(autd, 1);
-    autd3::link::Audit::update(autd, 0);
-    autd3::link::Audit::update(autd, 1);
+    autd.link<autd3::link::Audit>().deassert_thermal_sensor(0);
+    autd.link<autd3::link::Audit>().assert_thermal_sensor(1);
+    autd.link<autd3::link::Audit>().update(0);
+    autd.link<autd3::link::Audit>().update(1);
 
     const auto infos = autd.fpga_info();
     ASSERT_FALSE(infos[0].is_thermal_assert());
@@ -50,7 +50,7 @@ TEST(Internal, FPGAInfo) {
   }
 
   {
-    autd3::link::Audit::break_down(autd);
+    autd.link<autd3::link::Audit>().break_down();
     ASSERT_THROW((void)autd.fpga_info(), autd3::internal::AUTDException);
   }
 }

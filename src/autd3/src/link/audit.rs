@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -176,7 +176,7 @@ impl Link for Audit {
     ) -> Result<bool, AUTDInternalError> {
         let timeout = timeout.unwrap_or(self.timeout);
         self.last_timeout = timeout;
-        if self.send(tx)? {
+        if !self.send(tx)? {
             return Ok(false);
         }
         if timeout.is_zero() {

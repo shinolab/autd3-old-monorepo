@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/10/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,10 +23,6 @@
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
-namespace autd3::link {
-class Audit;
-}
-
 namespace autd3::internal {
 
 /**
@@ -34,8 +30,6 @@ namespace autd3::internal {
  */
 class Controller {
  public:
-  friend class link::Audit;
-
   /**
    * @brief Builder for Controller
    */
@@ -79,13 +73,13 @@ class Controller {
     /**
      * @brief Open controller
      *
-     * @tparam L Link
-     * @param link link
+     * @tparam L LinkBuilder
+     * @param link link builder
      * @return Controller
      */
     template <class L>
     Controller open_with(L&& link) {
-      static_assert(std::is_base_of_v<Link, std::remove_reference_t<L>>, "This is not Link");
+      static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
       return Controller::open_impl(_ptr, _mode, link.ptr());
     }
 
@@ -132,6 +126,11 @@ class Controller {
   [[nodiscard]] const Geometry& geometry() const { return _geometry; }
   [[nodiscard]] Geometry& geometry() { return _geometry; }
 
+  template <typename L>
+  [[nodiscard]] L link() const {
+    return L(internal::native_methods::AUTDLinkGet(_ptr));
+  }
+
   /**
    * @brief Close connection
    */
@@ -172,10 +171,6 @@ class Controller {
     }
     AUTDControllerFirmwareInfoListPointerDelete(handle);
     return ret;
-  }
-
-  void notify_link_geometry_updated() const {
-    if (char err[256]{}; !AUTDControllerNotifyLinkGeometryUpdated(_ptr, err)) throw AUTDException(err);
   }
 
   /**
@@ -420,7 +415,7 @@ class Controller {
 
  private:
   static Controller open_impl(const native_methods::ControllerBuilderPtr builder, const native_methods::TransMode mode,
-                              const native_methods::LinkPtr link) {
+                              const native_methods::LinkBuilderPtr link) {
     char err[256]{};
 
     const auto ptr = AUTDControllerOpenWith(builder, link, err);

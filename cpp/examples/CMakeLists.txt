@@ -63,10 +63,6 @@ add_executable(simulator simulator.cpp)
 autd3_target_link_library(simulator PRIVATE)
 target_link_libraries(simulator PRIVATE autd3-example)
 
-add_executable(debug debug.cpp)
-autd3_target_link_library(debug PRIVATE)
-target_link_libraries(debug PRIVATE autd3-example)
-
 add_executable(freq_config freq_config.cpp)
 autd3_target_link_library(freq_config PRIVATE)
 target_link_libraries(freq_config PRIVATE autd3-example)

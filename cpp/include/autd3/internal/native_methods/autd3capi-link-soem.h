@@ -11,6 +11,14 @@ enum class SyncMode : uint8_t {
   DC = 1,
 };
 
+struct LinkSOEMBuilderPtr {
+  void* _0;
+};
+
+struct LinkRemoteSOEMBuilderPtr {
+  void* _0;
+};
+
 extern "C" {
 
 [[nodiscard]] void* AUTDAdapterPointer();
@@ -21,33 +29,51 @@ void AUTDAdapterGetAdapter(void* adapters, uint32_t idx, char *desc, char *name)
 
 void AUTDAdapterPointerDelete(void* adapters);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEM();
+[[nodiscard]] LinkSOEMBuilderPtr AUTDLinkSOEM();
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithSendCycle(LinkPtr soem, uint16_t cycle);
+[[nodiscard]] LinkSOEMBuilderPtr AUTDLinkSOEMWithSendCycle(LinkSOEMBuilderPtr soem, uint64_t cycle);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithSync0Cycle(LinkPtr soem, uint16_t cycle);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithSync0Cycle(LinkSOEMBuilderPtr soem,
+                                              uint64_t cycle);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithBufSize(LinkPtr soem, uint32_t buf_size);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithBufSize(LinkSOEMBuilderPtr soem,
+                                           uint32_t buf_size);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithTimerStrategy(LinkPtr soem, TimerStrategy timer_strategy);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithTimerStrategy(LinkSOEMBuilderPtr soem,
+                                                 TimerStrategy timer_strategy);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithSyncMode(LinkPtr soem, SyncMode mode);
+[[nodiscard]] LinkSOEMBuilderPtr AUTDLinkSOEMWithSyncMode(LinkSOEMBuilderPtr soem, SyncMode mode);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithIfname(LinkPtr soem, const char *ifname);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithIfname(LinkSOEMBuilderPtr soem,
+                                          const char *ifname);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithStateCheckInterval(LinkPtr soem, uint32_t interval_ms);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithStateCheckInterval(LinkSOEMBuilderPtr soem,
+                                                      uint32_t interval_ms);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithOnLost(LinkPtr soem, void* on_lost_func);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithOnLost(LinkSOEMBuilderPtr soem,
+                                          void* on_lost_func);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithLogLevel(LinkPtr soem, Level level);
+[[nodiscard]] LinkSOEMBuilderPtr AUTDLinkSOEMWithOnErr(LinkSOEMBuilderPtr soem, void* on_err_func);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithLogFunc(LinkPtr soem, void* out_func, void* flush_func);
+[[nodiscard]]
+LinkSOEMBuilderPtr AUTDLinkSOEMWithTimeout(LinkSOEMBuilderPtr soem,
+                                           uint64_t timeout_ns);
 
-[[nodiscard]] LinkPtr AUTDLinkSOEMWithTimeout(LinkPtr soem, uint64_t timeout_ns);
+[[nodiscard]] LinkBuilderPtr AUTDLinkSOEMIntoBuilder(LinkSOEMBuilderPtr soem);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteSOEM(const char *addr, char *err);
+[[nodiscard]] LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEM(const char *addr, char *err);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteSOEMWithTimeout(LinkPtr soem, uint64_t timeout_ns);
+[[nodiscard]]
+LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEMWithTimeout(LinkRemoteSOEMBuilderPtr soem,
+                                                       uint64_t timeout_ns);
+
+[[nodiscard]] LinkBuilderPtr AUTDLinkRemoteSOEMIntoBuilder(LinkRemoteSOEMBuilderPtr soem);
 
 } // extern "C"
 

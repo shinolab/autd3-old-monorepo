@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,6 +103,10 @@ pub struct TransducerPtr(pub ConstPtr);
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct LinkBuilderPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct LinkPtr(pub ConstPtr);
 
 impl LinkBuilderPtr {
     pub fn new<B: LinkBuilder<DynamicTransducer> + 'static>(builder: B) -> LinkBuilderPtr {
