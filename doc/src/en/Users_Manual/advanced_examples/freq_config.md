@@ -10,12 +10,11 @@ You can change to the Advanced mode by the following.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 #
 #    Ok(())
 # }
@@ -42,12 +41,11 @@ Note that you must send `Synchronize` after frequency configuration.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 for dev in autd.geometry_mut() {
     for tr in dev {
         tr.set_frequency(70e3)?;
@@ -90,12 +88,11 @@ In practice, amplitude data is not expected to be updated frequently, so the Adv
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced_phase()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 #
 #    Ok(())
 # }
@@ -118,13 +115,11 @@ All `Gain` amplitude parameters are ignored in this mode.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced_phase()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 let amp = Amplitudes::uniform(1.);
 autd.send(amp)?;
 #    Ok(())

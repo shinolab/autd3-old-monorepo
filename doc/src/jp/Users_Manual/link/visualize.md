@@ -19,7 +19,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Visualizer::default())?;
+    .open_with(Visualizer::builder())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let g = Focus::new(center);
@@ -55,7 +55,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Visualizer::default())?;
+    .open_with(Visualizer::builder())?;
 
 let m = Sine::new(150);
 autd.send(m)?;
@@ -89,7 +89,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Visualizer::default())?;
+    .open_with(Visualizer::builder())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
@@ -133,7 +133,7 @@ use std::path::Path;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .open_with(Visualizer::default())?;
+    .open_with(Visualizer::builder())?;
 
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 

@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         // SOEMリンクを使用してControllerをopenする
         // with_on_lostで指定したコールバックはSOEMがデバイスをロストしたときに呼ばれる 
-        .open_with(SOEM::new().with_on_lost(|msg| {
+        .open_with(SOEM::builder().with_on_lost(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
         }))?;
