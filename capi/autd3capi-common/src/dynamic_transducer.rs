@@ -4,17 +4,21 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use std::collections::HashMap;
+
 use autd3_driver::{
-    defined::float,
+    defined::{float, Drive},
     error::AUTDInternalError,
     fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+    geometry::{Device, Geometry},
+    operation::{stm::gain::GainSTMOpDelegate, GainOpDelegate, GainSTMMode},
 };
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
@@ -38,7 +42,65 @@ pub struct DynamicTransducer {
     phase_filter: float,
 }
 
+pub struct GainOpDynamic {}
+impl GainOpDelegate<DynamicTransducer> for GainOpDynamic {
+    fn init(_: &Geometry<DynamicTransducer>) -> Result<HashMap<usize, usize>, AUTDInternalError> {
+        unreachable!()
+    }
+
+    fn pack(
+        _: &HashMap<usize, Vec<Drive>>,
+        _: &HashMap<usize, usize>,
+        _: &Device<DynamicTransducer>,
+        _: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        unreachable!()
+    }
+}
+
+pub struct GainSTMOpDynamic {}
+impl GainSTMOpDelegate<DynamicTransducer> for GainSTMOpDynamic {
+    fn init(
+        _: usize,
+        _: GainSTMMode,
+        _: &Geometry<DynamicTransducer>,
+    ) -> Result<HashMap<usize, usize>, AUTDInternalError> {
+        unreachable!()
+    }
+
+    fn pack(
+        _: &[HashMap<usize, Vec<Drive>>],
+        _: &HashMap<usize, usize>,
+        _: &mut HashMap<usize, usize>,
+        _: GainSTMMode,
+        _: u32,
+        _: Option<u16>,
+        _: Option<u16>,
+        _: &Device<DynamicTransducer>,
+        _: &mut [u8],
+    ) -> Result<usize, AUTDInternalError> {
+        unreachable!()
+    }
+
+    fn commit(
+        _: &[HashMap<usize, Vec<Drive>>],
+        _: &mut HashMap<usize, usize>,
+        _: &HashMap<usize, usize>,
+        _: GainSTMMode,
+        _: &Device<DynamicTransducer>,
+    ) {
+        unreachable!()
+    }
+
+    fn required_size(_: &HashMap<usize, usize>, _: &Device<DynamicTransducer>) -> usize {
+        unreachable!()
+    }
+}
+
 impl Transducer for DynamicTransducer {
+    type GainOp = GainOpDynamic;
+    type GainSTMOp = GainSTMOpDynamic;
+
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             local_idx,
