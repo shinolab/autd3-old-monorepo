@@ -82,7 +82,6 @@ using internal::GainSTM;
 using internal::FirmwareInfo;
 using internal::FPGAInfo;
 using internal::native_methods::GainSTMMode;
-using LogLevel = internal::native_methods::Level;
 
 using internal::Quaternion;
 using internal::Vector3;

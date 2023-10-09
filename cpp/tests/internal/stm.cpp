@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ TEST(STMTest, FocusSTM) {
       }));
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_FALSE(autd3::link::Audit::is_stm_gain_mode(autd, dev.idx()));
+    ASSERT_FALSE(autd.link<autd3::link::Audit>().is_stm_gain_mode(dev.idx()));
   }
 
   ASSERT_EQ(1, stm.frequency());
@@ -39,14 +39,14 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(10240000u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(500000), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(81920000u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(81920000u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(0);
@@ -54,8 +54,8 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(0, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(0, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(std::nullopt);
@@ -64,8 +64,8 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(0, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm = autd3::internal::FocusSTM::with_sampling_frequency_division(512).add_focus(center).add_focus(center);
@@ -75,7 +75,7 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::FocusSTM::with_sampling_frequency(20e3).add_focus(center).add_focus(center);
@@ -85,7 +85,7 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(1024u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(50), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u * 2, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u * 2, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::FocusSTM::with_sampling_period(std::chrono::microseconds(25)).add_focus(center).add_focus(center);
@@ -95,16 +95,16 @@ TEST(STMTest, FocusSTM) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::any_of(duties, [](auto d) { return d != 0; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::any_of(duties, [](auto d) { return d != 0; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
@@ -114,7 +114,7 @@ TEST(STMTest, GainSTMLegacy) {
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                  .open_with(autd3::link::Audit());
+                  .open_with(autd3::link::Audit::builder());
 
   constexpr double radius = 30.0;
   constexpr int size = 2;
@@ -126,7 +126,7 @@ TEST(STMTest, GainSTMLegacy) {
                                                              }));
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_TRUE(autd3::link::Audit::is_stm_gain_mode(autd, dev.idx()));
+    ASSERT_TRUE(autd.link<autd3::link::Audit>().is_stm_gain_mode(dev.idx()));
   }
 
   ASSERT_EQ(1, stm.frequency());
@@ -134,14 +134,14 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(10240000u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(500000), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(81920000u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(81920000u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(0);
@@ -149,8 +149,8 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(0, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(0, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(std::nullopt);
@@ -159,8 +159,8 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(0, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency_division(512).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -170,7 +170,7 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency(20e3).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -180,7 +180,7 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(1024u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(50), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u * 2, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u * 2, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_period(std::chrono::microseconds(25))
@@ -192,16 +192,16 @@ TEST(STMTest, GainSTMLegacy) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -209,12 +209,12 @@ TEST(STMTest, GainSTMLegacy) {
   stm.with_mode(autd3::internal::native_methods::GainSTMMode::PhaseFull);
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -222,12 +222,12 @@ TEST(STMTest, GainSTMLegacy) {
   stm.with_mode(autd3::internal::native_methods::GainSTMMode::PhaseHalf);
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -238,7 +238,7 @@ TEST(STMTest, GainSTMAdvanced) {
                   .advanced()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                  .open_with(autd3::link::Audit());
+                  .open_with(autd3::link::Audit::builder());
 
   constexpr double radius = 30.0;
   constexpr int size = 2;
@@ -250,7 +250,7 @@ TEST(STMTest, GainSTMAdvanced) {
                                                              }));
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_TRUE(autd3::link::Audit::is_stm_gain_mode(autd, dev.idx()));
+    ASSERT_TRUE(autd.link<autd3::link::Audit>().is_stm_gain_mode(dev.idx()));
   }
 
   ASSERT_EQ(1, stm.frequency());
@@ -258,14 +258,14 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(10240000u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(500000), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(81920000u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(81920000u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(0);
@@ -273,8 +273,8 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(0, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(0, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(std::nullopt);
@@ -283,8 +283,8 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(0, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency_division(512).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -294,7 +294,7 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency(20e3).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -304,7 +304,7 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(1024u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(50), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u * 2, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u * 2, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_period(std::chrono::microseconds(25))
@@ -316,16 +316,16 @@ TEST(STMTest, GainSTMAdvanced) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 683; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -333,12 +333,12 @@ TEST(STMTest, GainSTMAdvanced) {
   stm.with_mode(autd3::internal::native_methods::GainSTMMode::PhaseFull);
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -352,7 +352,7 @@ TEST(STMTest, GainSTMAdvancedPhase) {
                   .advanced_phase()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                  .open_with(autd3::link::Audit());
+                  .open_with(autd3::link::Audit::builder());
 
   constexpr double radius = 30.0;
   constexpr int size = 2;
@@ -364,7 +364,7 @@ TEST(STMTest, GainSTMAdvancedPhase) {
                                                              }));
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_TRUE(autd3::link::Audit::is_stm_gain_mode(autd, dev.idx()));
+    ASSERT_TRUE(autd.link<autd3::link::Audit>().is_stm_gain_mode(dev.idx()));
   }
 
   ASSERT_EQ(1, stm.frequency());
@@ -372,14 +372,14 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(10240000u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(500000), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(81920000u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(81920000u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(0);
@@ -387,8 +387,8 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(0, stm.start_idx());
   ASSERT_EQ(std::nullopt, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(0, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(-1, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm.with_start_idx(std::nullopt);
@@ -397,8 +397,8 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(std::nullopt, stm.start_idx());
   ASSERT_EQ(0, stm.finish_idx());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(-1, autd3::link::Audit::stm_start_idx(autd, dev.idx()));
-    ASSERT_EQ(0, autd3::link::Audit::stm_finish_idx(autd, dev.idx()));
+    ASSERT_EQ(-1, autd.link<autd3::link::Audit>().stm_start_idx(dev.idx()));
+    ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency_division(512).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -408,7 +408,7 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_frequency(20e3).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
@@ -418,7 +418,7 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(1024u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(50), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u * 2, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u * 2, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   stm = autd3::internal::GainSTM::with_sampling_period(std::chrono::microseconds(25))
@@ -430,16 +430,16 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   ASSERT_EQ(512u, stm.sampling_frequency_division());
   ASSERT_EQ(std::chrono::microseconds(25), stm.sampling_period());
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(4096u, autd3::link::Audit::stm_frequency_division(autd, dev.idx()));
+    ASSERT_EQ(4096u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
@@ -447,12 +447,12 @@ TEST(STMTest, GainSTMAdvancedPhase) {
   stm.with_mode(autd3::internal::native_methods::GainSTMMode::PhaseFull);
   ASSERT_TRUE(autd.send(stm));
   for (const auto& dev : autd.geometry()) {
-    ASSERT_EQ(2u, autd3::link::Audit::stm_cycle(autd, dev.idx()));
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    ASSERT_EQ(2u, autd.link<autd3::link::Audit>().stm_cycle(dev.idx()));
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
 
-    std::tie(duties, phases) = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 1);
+    std::tie(duties, phases) = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 1);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }

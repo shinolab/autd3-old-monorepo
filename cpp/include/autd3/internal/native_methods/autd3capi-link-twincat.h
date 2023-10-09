@@ -6,19 +6,41 @@
 
 namespace autd3::internal::native_methods {
 
+struct LinkTwinCATBuilderPtr {
+  void* _0;
+};
+
+struct LinkRemoteTwinCATBuilderPtr {
+  void* _0;
+};
+
 extern "C" {
 
-[[nodiscard]] LinkPtr AUTDLinkTwinCAT(char *err);
+[[nodiscard]] LinkTwinCATBuilderPtr AUTDLinkTwinCAT();
 
-[[nodiscard]] LinkPtr AUTDLinkTwinCATWithTimeout(LinkPtr twincat, uint64_t timeout_ns);
+[[nodiscard]]
+LinkTwinCATBuilderPtr AUTDLinkTwinCATWithTimeout(LinkTwinCATBuilderPtr twincat,
+                                                 uint64_t timeout_ns);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCAT(const char *server_ams_net_id, char *err);
+[[nodiscard]] LinkBuilderPtr AUTDLinkTwinCATIntoBuilder(LinkTwinCATBuilderPtr twincat);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithServerIP(LinkPtr twincat, const char *addr);
+[[nodiscard]]
+LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCAT(const char *server_ams_net_id,
+                                                  char *err);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkPtr twincat, const char *id);
+[[nodiscard]]
+LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCATWithServerIP(LinkRemoteTwinCATBuilderPtr twincat,
+                                                              const char *addr);
 
-[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATWithTimeout(LinkPtr twincat, uint64_t timeout_ns);
+[[nodiscard]]
+LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCATWithClientAmsNetId(LinkRemoteTwinCATBuilderPtr twincat,
+                                                                    const char *id);
+
+[[nodiscard]]
+LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCATWithTimeout(LinkRemoteTwinCATBuilderPtr twincat,
+                                                             uint64_t timeout_ns);
+
+[[nodiscard]] LinkBuilderPtr AUTDLinkRemoteTwinCATIntoBuilder(LinkRemoteTwinCATBuilderPtr twincat);
 
 } // extern "C"
 
