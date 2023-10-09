@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use crate::{
 };
 
 /// Link is a interface to the AUTD device
-pub trait Link: Send {
+pub trait Link: Send + Sync {
     /// Close link
     fn close(&mut self) -> Result<(), AUTDInternalError>;
     /// Send data to devices

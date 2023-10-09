@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ use autd3_driver::{
 };
 
 /// Plotting backend
-pub trait Backend: Send {
+pub trait Backend: Send + Sync {
     type PlotConfig: Config;
 
     fn new() -> Self;

@@ -4,15 +4,17 @@
  * Created Date: 08/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use serde::{Deserialize, Serialize};
+
 /// Timer strategy
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum TimerStrategy {
     /// Use `std::thread::sleep`

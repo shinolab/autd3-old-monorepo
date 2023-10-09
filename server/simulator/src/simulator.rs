@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -61,7 +61,7 @@ enum Signal {
 }
 
 struct SimulatorServer {
-    rx_buf: Arc<RwLock<autd3_driver::cpu::RxDatagram>>,
+    rx_buf: Arc<RwLock<Vec<autd3_driver::cpu::RxMessage>>>,
     sender: Sender<Signal>,
 }
 
@@ -204,7 +204,7 @@ impl Simulator {
         let (tx_shutdown, rx_shutdown) = oneshot::channel::<()>();
         let port = self.port.unwrap_or(self.settings.port);
 
-        let rx_buf = Arc::new(RwLock::new(autd3_driver::cpu::RxDatagram::new(0)));
+        let rx_buf = Arc::new(RwLock::new(vec![]));
 
         let server_th = std::thread::spawn({
             let rx_buf = rx_buf.clone();
@@ -240,7 +240,7 @@ impl Simulator {
     fn run_simulator(
         &mut self,
         server_th: std::thread::JoinHandle<Result<(), tonic::transport::Error>>,
-        rx_buf: Arc<RwLock<autd3_driver::cpu::RxDatagram>>,
+        rx_buf: Arc<RwLock<Vec<autd3_driver::cpu::RxMessage>>>,
         receiver: Receiver<Signal>,
         shutdown: tokio::sync::oneshot::Sender<()>,
     ) -> anyhow::Result<i32> {
@@ -276,12 +276,15 @@ impl Simulator {
         let res = event_loop.run_return(move |event, _, control_flow| {
             cpus.iter_mut().for_each(CPUEmulator::update);
             if cpus.iter().any(CPUEmulator::should_update) {
-                rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                    autd3_driver::cpu::RxMessage {
-                        ack: c.ack(),
-                        data: c.rx_data(),
-                    }
-                }));
+                rx_buf
+                    .write()
+                    .unwrap()
+                    .iter_mut()
+                    .zip(cpus.iter())
+                    .for_each(|(d, s)| {
+                        d.ack = s.ack();
+                        d.data = s.rx_data();
+                    });
             }
 
             match receiver.try_recv() {
@@ -326,8 +329,10 @@ impl Simulator {
                         })
                         .collect::<Vec<_>>();
 
-                    *rx_buf.write().unwrap() =
-                        autd3_driver::cpu::RxDatagram::new(geometry.num_devices());
+                    *rx_buf.write().unwrap() = vec![
+                        autd3_driver::cpu::RxMessage { ack: 0, data: 0 };
+                        geometry.num_devices()
+                    ];
 
                     field_compute_pipeline.init(&render, &sources);
                     trans_viewer.init(&render, &sources);
@@ -363,12 +368,15 @@ impl Simulator {
                     cpus.iter_mut().for_each(|cpu| {
                         cpu.send(&tx);
                     });
-                    rx_buf.write().unwrap().copy_from_iter(cpus.iter().map(|c| {
-                        autd3_driver::cpu::RxMessage {
-                            ack: c.ack(),
-                            data: c.rx_data(),
-                        }
-                    }));
+                    rx_buf
+                        .write()
+                        .unwrap()
+                        .iter_mut()
+                        .zip(cpus.iter())
+                        .for_each(|(d, s)| {
+                            d.ack = s.ack();
+                            d.data = s.rx_data();
+                        });
 
                     is_source_update = true;
                 }
