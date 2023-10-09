@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,10 @@ use autd3_driver::{error::AUTDInternalError, geometry::Geometry, link::LinkBuild
 
 use crate::{DynamicTransducer, L};
 
+type LinkBuilderGen = dyn FnOnce(&Geometry<DynamicTransducer>) -> Result<Box<L>, AUTDInternalError>;
+
 pub struct DynamicLinkBuilder {
-    link_gen: Box<dyn FnOnce(&Geometry<DynamicTransducer>) -> Result<Box<L>, AUTDInternalError>>,
+    link_gen: Box<LinkBuilderGen>,
 }
 
 impl DynamicLinkBuilder {
