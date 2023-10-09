@@ -27,7 +27,7 @@ Silencerの設定には`Silencer`を送信する.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let config = Silencer::default();
 autd.send(config)?;
 # Ok(())
@@ -59,7 +59,7 @@ autd.send(config)
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 # let step = 10;
 let config = Silencer::new(step);
 # Ok(())
@@ -89,7 +89,7 @@ Silencerを無効化する場合は, 以下を送信する.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let config = Silencer::disable();
 # Ok(())
 # }

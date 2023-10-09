@@ -20,7 +20,7 @@ if __name__ == "__main__":
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(SOEM().with_on_lost(on_lost_func))
+        .open_with(SOEM.builder().with_on_lost(on_lost_func))
     )
 
     firm_info_list = autd.firmware_info_list()

@@ -8,12 +8,11 @@ AUTD3のSDKでは, 超音波の周波数を$\ufreq$から変更できる.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 #
 #    Ok(())
 # }
@@ -40,12 +39,11 @@ autd = Controller.builder().advanced()
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 for dev in autd.geometry_mut() {
     for tr in dev {
         tr.set_frequency(70e3)?;
@@ -88,12 +86,11 @@ Advancedモードは振幅/位相データをそれぞれ1フレームで送信�
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let mut autd = Controller::builder()
                   .advanced_phase()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 #
 #    Ok(())
 # }
@@ -116,13 +113,11 @@ autd = Controller.builder().advanced_phase()
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
-
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #                  .advanced_phase()
 #        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#        .open_with(Debug::new())?;
+#        .open_with(autd3::link::Nop::builder())?;
 let amp = Amplitudes::uniform(1.);
 autd.send(amp)?;
 #    Ok(())

@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use nalgebra::ComplexField;
 use rand::Rng;
 
 use autd3_driver::{
-    acoustics::{propagate, Sphere},
+    acoustics::{directivity::Sphere, propagate},
     datagram::GainFilter,
     defined::float,
 };

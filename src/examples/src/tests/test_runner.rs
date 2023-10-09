@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,25 +27,7 @@ use super::{
     transtest::*,
 };
 
-pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyhow::Result<()>
-where
-    autd3_driver::operation::GainOp<T, Null>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Bessel>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Focus>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Plane>: autd3_driver::operation::Operation<T>,
-    GainSTM<T, Focus>: autd3_driver::datagram::Datagram<T, O2 = autd3_driver::operation::NullOp>,
-    <GainSTM<T, Focus> as autd3_driver::datagram::Datagram<T>>::O1:
-        autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, SDP<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, EVP<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, GS<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, GSPAT<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Naive<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, LM<Backend>>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, Greedy>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, TransducerTest>: autd3_driver::operation::Operation<T>,
-    autd3_driver::operation::GainOp<T, MyUniform>: autd3_driver::operation::Operation<T>,
-{
+pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyhow::Result<()> {
     type Test<'a, T, L> = (
         &'static str,
         &'a dyn Fn(&mut Controller<T, L>) -> anyhow::Result<bool>,

@@ -31,7 +31,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_ifname("")
 # )?;
 # Ok(())
@@ -41,19 +41,19 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
 	.with_ifname("")
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithIfname("")
 ```
 
 ```python
 from pyautd3.link import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_ifname("")
 ```
 
@@ -75,7 +75,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_on_lost(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
@@ -94,7 +94,7 @@ void on_lost(const char* msg) {
   exit(-1);
 }
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_on_lost(&on_lost)
 ```
 
@@ -105,7 +105,7 @@ var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
     Environment.Exit(-1);
 });
 
-new SOEM()
+SOEM.Builder()
     .WithOnLost(onLost)
 ```
 
@@ -118,7 +118,7 @@ def on_lost(msg: ctypes.c_char_p):
 
 on_lost_func = OnLostFunc(on_lost)
 
-SOEM()\
+SOEM.builder()\
     .with_on_lost(on_lost_func)
 ```
 
@@ -139,7 +139,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
 # )?;
@@ -150,13 +150,13 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithSync0Cycle(2)
     .WithSendCycle(2)
 ```
@@ -164,7 +164,7 @@ new SOEM()
 ```python
 from pyautd3.link import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_sync0_cycle(2)\
     .with_send_cycle(2)
 ```
@@ -188,7 +188,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_timer_strategy(TimerStrategy::BusyWait)
 # )?;
 # Ok(())
@@ -198,12 +198,12 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_timer_strategy(autd3::TimerStrategy::BusyWait)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithTimerStrategy(TimerStrategy.BusyWait)
 ```
 
@@ -211,7 +211,7 @@ new SOEM()
 from pyautd3 import TimerStrategy
 from pyautd3.link import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_timer_strategy(TimerStrategy.BusyWait)
 ```
 
@@ -241,7 +241,7 @@ use autd3_link_soem::{SOEM, SyncMode};
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_sync_mode(SyncMode::DC)
 # )?;
 # Ok(())
@@ -251,19 +251,19 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_sync_mode(autd3::link::SyncMode::DC)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithSyncMode(SyncMode.Dc)
 ```
 
 ```python
 from pyautd3.link import SOEM, SyncMode
 
-SOEM()\
+SOEM.builder()\
     .with_sync_mode(SyncMode.DC)
 ```
 
@@ -315,7 +315,7 @@ use autd3_link_soem::RemoteSOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-RemoteSOEM::new("172.16.99.104:8080".parse()?)?
+RemoteSOEM::builder("172.16.99.104:8080".parse()?)
 # )?;
 # Ok(())
 # }

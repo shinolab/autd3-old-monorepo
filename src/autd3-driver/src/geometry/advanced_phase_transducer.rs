@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,10 @@ use crate::{
     defined::float,
     error::AUTDInternalError,
     fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+    operation::{
+        gain::advanced_phase::GainOpAdvancedPhase,
+        stm::gain::advanced_phase::GainSTMOpAdvancedPhase,
+    },
 };
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
@@ -30,6 +34,9 @@ pub struct AdvancedPhaseTransducer {
 }
 
 impl Transducer for AdvancedPhaseTransducer {
+    type GainOp = GainOpAdvancedPhase;
+    type GainSTMOp = GainSTMOpAdvancedPhase;
+
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             local_idx,

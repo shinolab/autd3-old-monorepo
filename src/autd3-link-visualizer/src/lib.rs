@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,9 +26,12 @@ pub mod colormap;
 use std::{marker::PhantomData, time::Duration};
 
 use autd3_driver::{
-    acoustics::{propagate, Complex, Directivity, Sphere},
+    acoustics::{
+        directivity::{Directivity, Sphere},
+        propagate,
+    },
     cpu::{RxMessage, TxDatagram},
-    defined::{float, PI},
+    defined::{float, Complex, PI},
     error::AUTDInternalError,
     geometry::{Geometry, Transducer, Vector3},
     link::{Link, LinkBuilder},
@@ -190,10 +193,10 @@ impl PlotRange {
     }
 }
 
-impl<B: Backend> Visualizer<Sphere, B> {
-    pub fn builder() -> VisualizerBuilder<Sphere, B> {
+impl Visualizer<Sphere, PlottersBackend> {
+    pub fn builder() -> VisualizerBuilder<Sphere, PlottersBackend> {
         VisualizerBuilder {
-            backend: B::new(),
+            backend: PlottersBackend::new(),
             timeout: Duration::ZERO,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
@@ -214,14 +217,26 @@ impl Visualizer<Sphere, PlottersBackend> {
 impl Visualizer<Sphere, PythonBackend> {
     /// Constructor with Python backend
     pub fn python() -> VisualizerBuilder<Sphere, PythonBackend> {
-        Self::builder()
+        VisualizerBuilder {
+            backend: PythonBackend::new(),
+            timeout: Duration::ZERO,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: None,
+        }
     }
 }
 
 impl Visualizer<Sphere, NullBackend> {
     /// Constructor with Null backend
     pub fn null() -> VisualizerBuilder<Sphere, NullBackend> {
-        Self::builder()
+        VisualizerBuilder {
+            backend: NullBackend::new(),
+            timeout: Duration::ZERO,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: None,
+        }
     }
 }
 
@@ -230,6 +245,17 @@ impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
     pub fn with_directivity<U: Directivity>(self) -> VisualizerBuilder<U, B> {
         VisualizerBuilder {
             backend: self.backend,
+            timeout: self.timeout,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: self.gpu_compute,
+        }
+    }
+
+    /// Set backend
+    pub fn with_backend<U: Backend>(self) -> VisualizerBuilder<D, U> {
+        VisualizerBuilder {
+            backend: U::new(),
             timeout: self.timeout,
             _d: PhantomData,
             #[cfg(feature = "gpu")]

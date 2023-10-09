@@ -4,142 +4,149 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-mod advanced;
-mod advanced_phase;
-mod legacy;
+pub mod advanced;
+pub mod advanced_phase;
+mod gain_stm_control_flags;
+mod gain_stm_mode;
+pub mod legacy;
 
-pub use advanced::GainSTMAdvancedOp;
-pub use advanced_phase::GainSTMAdvancedPhaseOp;
-pub use legacy::GainSTMLegacyOp;
+use std::collections::HashMap;
 
-use std::fmt;
+use crate::{
+    derive::prelude::{
+        AUTDInternalError, Drive, Gain, GainFilter, Geometry, Operation, Transducer,
+    },
+    fpga::{SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+    geometry::Device,
+};
 
-bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct GainSTMControlFlags : u8 {
-        const NONE            = 0;
-        const LEGACY          = 1 << 0;
-        const DUTY            = 1 << 1;
-        const STM_BEGIN       = 1 << 2;
-        const STM_END         = 1 << 3;
-        const USE_START_IDX   = 1 << 4;
-        const USE_FINISH_IDX  = 1 << 5;
-        const _RESERVED_0     = 1 << 6;
-        const _RESERVED_1     = 1 << 7;
+pub use gain_stm_mode::GainSTMMode;
+
+pub struct GainSTMOp<T: Transducer, G: Gain<T>> {
+    gains: Vec<G>,
+    drives: Vec<HashMap<usize, Vec<Drive>>>,
+    remains: HashMap<usize, usize>,
+    sent: HashMap<usize, usize>,
+    mode: GainSTMMode,
+    freq_div: u32,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
+    phantom: std::marker::PhantomData<T>,
+}
+
+pub trait GainSTMOpDelegate<T: Transducer> {
+    fn init(
+        n: usize,
+        mode: GainSTMMode,
+        geometry: &Geometry<T>,
+    ) -> Result<HashMap<usize, usize>, AUTDInternalError>;
+    #[allow(clippy::too_many_arguments)]
+    fn pack(
+        drives: &[HashMap<usize, Vec<Drive>>],
+        remains: &HashMap<usize, usize>,
+        sent_map: &mut HashMap<usize, usize>,
+        mode: GainSTMMode,
+        freq_div: u32,
+        start_idx: Option<u16>,
+        finish_idx: Option<u16>,
+        device: &Device<T>,
+        tx: &mut [u8],
+    ) -> Result<usize, AUTDInternalError>;
+    fn commit(
+        drives: &[HashMap<usize, Vec<Drive>>],
+        remains: &mut HashMap<usize, usize>,
+        sent: &HashMap<usize, usize>,
+        mode: GainSTMMode,
+        device: &Device<T>,
+    );
+    fn required_size(sent: &HashMap<usize, usize>, device: &Device<T>) -> usize;
+}
+
+impl<T: Transducer, G: Gain<T>> GainSTMOp<T, G> {
+    pub fn new(
+        gains: Vec<G>,
+        mode: GainSTMMode,
+        freq_div: u32,
+        start_idx: Option<u16>,
+        finish_idx: Option<u16>,
+    ) -> Self {
+        Self {
+            gains,
+            drives: Default::default(),
+            remains: Default::default(),
+            sent: Default::default(),
+            mode,
+            freq_div,
+            start_idx,
+            finish_idx,
+            phantom: Default::default(),
+        }
     }
 }
 
-impl fmt::Display for GainSTMControlFlags {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut flags = Vec::new();
-        if self.contains(GainSTMControlFlags::LEGACY) {
-            flags.push("LEGACY")
+impl<T: Transducer, G: Gain<T>> Operation<T> for GainSTMOp<T, G> {
+    fn init(
+        &mut self,
+        geometry: &crate::derive::prelude::Geometry<T>,
+    ) -> Result<(), crate::derive::prelude::AUTDInternalError> {
+        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
+            return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
         }
-        if self.contains(GainSTMControlFlags::DUTY) {
-            flags.push("DUTY")
-        }
-        if self.contains(GainSTMControlFlags::STM_BEGIN) {
-            flags.push("STM_BEGIN")
-        }
-        if self.contains(GainSTMControlFlags::STM_END) {
-            flags.push("STM_END")
-        }
-        if self.contains(GainSTMControlFlags::USE_START_IDX) {
-            flags.push("USE_START_IDX")
-        }
-        if self.contains(GainSTMControlFlags::USE_FINISH_IDX) {
-            flags.push("USE_FINISH_IDX")
-        }
-        if self.is_empty() {
-            flags.push("NONE")
-        }
-        write!(
-            f,
-            "{}",
-            flags
-                .iter()
-                .map(|s| s.to_string())
-                .collect::<Vec<_>>()
-                .join(" | ")
+
+        self.drives = self
+            .gains
+            .iter()
+            .map(|g| g.calc(geometry, GainFilter::All))
+            .collect::<Result<_, _>>()?;
+
+        self.remains = T::GainSTMOp::init(self.drives.len(), self.mode, geometry)?;
+
+        self.sent = geometry.devices().map(|device| (device.idx(), 0)).collect();
+
+        Ok(())
+    }
+
+    fn required_size(&self, device: &Device<T>) -> usize {
+        T::GainSTMOp::required_size(&self.sent, device)
+    }
+
+    fn pack(
+        &mut self,
+        device: &Device<T>,
+        tx: &mut [u8],
+    ) -> Result<usize, crate::derive::prelude::AUTDInternalError> {
+        assert!(self.remains[&device.idx()] > 0);
+        T::GainSTMOp::pack(
+            &self.drives,
+            &self.remains,
+            &mut self.sent,
+            self.mode,
+            self.freq_div,
+            self.start_idx,
+            self.finish_idx,
+            device,
+            tx,
         )
     }
-}
 
-#[repr(u16)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GainSTMMode {
-    PhaseDutyFull = 0,
-    PhaseFull = 1,
-    PhaseHalf = 2,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn gain_stm_controll_flag() {
-        assert_eq!(std::mem::size_of::<GainSTMControlFlags>(), 1);
-
-        let flags = GainSTMControlFlags::LEGACY | GainSTMControlFlags::DUTY;
-
-        let flagsc = flags;
-        assert_eq!(flagsc.bits(), flags.bits());
+    fn commit(&mut self, device: &Device<T>) {
+        T::GainSTMOp::commit(
+            &self.drives,
+            &mut self.remains,
+            &self.sent,
+            self.mode,
+            device,
+        )
     }
 
-    #[test]
-    fn gain_stm_controll_flag_fmt() {
-        assert_eq!(format!("{}", GainSTMControlFlags::NONE), "NONE");
-        assert_eq!(format!("{}", GainSTMControlFlags::LEGACY), "LEGACY");
-        assert_eq!(format!("{}", GainSTMControlFlags::DUTY), "DUTY");
-        assert_eq!(format!("{}", GainSTMControlFlags::STM_BEGIN), "STM_BEGIN");
-        assert_eq!(format!("{}", GainSTMControlFlags::STM_END), "STM_END");
-        assert_eq!(
-            format!("{}", GainSTMControlFlags::USE_START_IDX),
-            "USE_START_IDX"
-        );
-        assert_eq!(
-            format!("{}", GainSTMControlFlags::USE_FINISH_IDX),
-            "USE_FINISH_IDX"
-        );
-
-        assert_eq!(
-            format!(
-                "{}",
-                GainSTMControlFlags::LEGACY
-                    | GainSTMControlFlags::DUTY
-                    | GainSTMControlFlags::STM_BEGIN
-                    | GainSTMControlFlags::STM_END
-                    | GainSTMControlFlags::USE_START_IDX
-                    | GainSTMControlFlags::USE_FINISH_IDX
-            ),
-            "LEGACY | DUTY | STM_BEGIN | STM_END | USE_START_IDX | USE_FINISH_IDX"
-        );
-    }
-
-    #[test]
-    fn gain_stm_mode() {
-        assert_eq!(std::mem::size_of::<GainSTMMode>(), 2);
-
-        assert_eq!(GainSTMMode::PhaseDutyFull as u16, 0);
-        assert_eq!(GainSTMMode::PhaseFull as u16, 1);
-        assert_eq!(GainSTMMode::PhaseHalf as u16, 2);
-
-        let mode = GainSTMMode::PhaseDutyFull;
-        let modec = mode;
-
-        assert_eq!(modec, mode);
-
-        assert_eq!(format!("{:?}", GainSTMMode::PhaseDutyFull), "PhaseDutyFull");
-        assert_eq!(format!("{:?}", GainSTMMode::PhaseFull), "PhaseFull");
-        assert_eq!(format!("{:?}", GainSTMMode::PhaseHalf), "PhaseHalf");
+    fn remains(&self, device: &Device<T>) -> usize {
+        self.remains[&device.idx()]
     }
 }

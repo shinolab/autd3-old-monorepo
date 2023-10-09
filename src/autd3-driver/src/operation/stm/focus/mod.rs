@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,8 +71,7 @@ mod tests {
 
         let flags = FocusSTMControlFlags::STM_BEGIN | FocusSTMControlFlags::STM_END;
 
-        let flagsc = flags;
-
+        let flagsc = Clone::clone(&flags);
         assert!(flagsc.contains(FocusSTMControlFlags::STM_BEGIN));
         assert!(flagsc.contains(FocusSTMControlFlags::STM_END));
         assert!(!flagsc.contains(FocusSTMControlFlags::USE_START_IDX));

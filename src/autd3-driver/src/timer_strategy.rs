@@ -4,7 +4,7 @@
  * Created Date: 08/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@ mod tests {
         assert_eq!(std::mem::size_of::<TimerStrategy>(), 1);
 
         let s = TimerStrategy::Sleep;
-        let sc = s;
 
+        let sc = Clone::clone(&s);
         assert_eq!(s as u8, sc as u8);
     }
 }
