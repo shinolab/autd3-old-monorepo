@@ -27,7 +27,7 @@ struct LightweightTwinCATServer {
 impl Drop for LightweightTwinCATServer {
     fn drop(&mut self) {
         spdlog::info!("Shutting down server...");
-        let _ = Link::<autd3_driver::geometry::LegacyTransducer>::close(
+        let _ = Link::close(
             &mut *self.twincat.write().unwrap(),
         );
         spdlog::info!("Shutting down server...done");
@@ -41,9 +41,8 @@ fn main_() -> anyhow::Result<()> {
     let port = args.port;
     let timeout = std::time::Duration::from_millis(args.timeout);
 
-    let f = move || -> autd3_link_twincat::TwinCAT {
-        autd3_link_twincat::TwinCAT::new()
-            .expect("Failed to initialize TwinCAT")
+    let f = move || -> autd3_link_twincat::local::twincat_link::TwinCATBuilder {
+        autd3_link_twincat::TwinCAT::builder()
             .with_timeout(timeout)
     };
     let (tx, mut rx) = mpsc::channel(1);

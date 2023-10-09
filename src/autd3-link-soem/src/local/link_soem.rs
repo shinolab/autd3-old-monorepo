@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -406,9 +406,11 @@ impl SOEM {
             send_cycle: 2,
         }
     }
-}
 
-impl SOEM {
+    pub fn num_devices() -> usize {
+        unsafe { ec_slavecount as usize }
+    }
+
     pub fn clear_iomap(&mut self) {
         while !self.sender.is_empty() {
             std::thread::sleep(std::time::Duration::from_millis(100));

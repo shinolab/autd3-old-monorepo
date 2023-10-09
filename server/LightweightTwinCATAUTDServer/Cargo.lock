@@ -185,7 +185,6 @@ dependencies = [
  "autd3-firmware-emulator",
  "bitvec",
  "num",
- "spdlog-rs",
  "thiserror",
 ]
 
@@ -205,8 +204,6 @@ dependencies = [
  "bitvec",
  "libc",
  "nalgebra",
- "serde",
- "spdlog-rs",
  "thiserror",
  "windows 0.51.1",
 ]
