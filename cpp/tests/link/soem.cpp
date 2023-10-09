@@ -9,6 +9,8 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
+#ifndef WIN32
+
 #include <gtest/gtest.h>
 
 #include <autd3/internal/controller.hpp>
@@ -59,3 +61,4 @@ TEST(Link, RemoteSOEM) {
   (void)link;
 #endif
 }
+#endif
