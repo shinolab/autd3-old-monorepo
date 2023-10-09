@@ -29,13 +29,12 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を**接
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # Ok(())
 # }
 ```
@@ -73,13 +72,12 @@ auto = Controller.builder()\
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # Ok(())
 # }
 ```
@@ -112,13 +110,12 @@ auto = Controller.builder()\
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # Ok(())
 # }
 ```
@@ -168,13 +165,12 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 let num_dev = autd.geometry().num_devices();
 let num_tr = autd.geometry().num_transducers();
 # Ok(())
@@ -203,13 +199,12 @@ num_tr = autd.geometry.num_transducers
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 let center = autd.geometry().center();
 # Ok(())
 # }
@@ -242,13 +237,12 @@ center = autd.geometry.center
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 let dev = &autd.geometry()[0];
 # Ok(())
 # }
@@ -271,13 +265,12 @@ dev = autd.geometry[0]
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 for dev in autd.geometry() {
   // do something
 }
@@ -315,13 +308,12 @@ enableフラグをオフにすると, 以降, そのデバイスのデータは�
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 autd.geometry_mut()[0].enable = false;
 # Ok(())
 # }
@@ -350,13 +342,12 @@ autd.geometry[0].enable = False
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 autd.geometry_mut()[0].sound_speed = 340e3;
 # Ok(())
 # }
@@ -382,13 +373,12 @@ autd.geometry[0].sound_speed = 340e3
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 autd.geometry_mut()[0].set_sound_speed_from_temp(15.);
 # Ok(())
 # }
@@ -425,13 +415,12 @@ $$
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 autd.geometry_mut()[0].attenuation = 0.;
 # Ok(())
 # }
@@ -464,13 +453,12 @@ autd.geometry[0].attenuation = 0.0
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
 autd.geometry_mut()[0].translate(t);
@@ -525,7 +513,7 @@ Autoモードの場合は温度が高くなると自動的にファンが起動�
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
 autd.geometry_mut()[0].force_fan = true;
 # Ok(())
 # }
@@ -551,7 +539,7 @@ autd.geometry[0].force_fan = True
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
 autd.geometry_mut()[0].force_fan = true;
 autd.send(UpdateFlags::new())?;
 # Ok(())
@@ -589,13 +577,12 @@ FPGAの状態を取得するかどうか.
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 let tr = &autd.geometry()[0][0];
 # Ok(())
 # }
@@ -618,13 +605,12 @@ tr = autd.geometry[0][0]
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 for tr in &autd.geometry()[0] {
   // do something
 }
@@ -658,13 +644,12 @@ for tr in autd.geometry[0]:
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let tr = &autd.geometry()[0][0];
 let idx = tr.local_idx();
 # Ok(())
@@ -691,13 +676,12 @@ idx = tr.local_idx
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let tr = &autd.geometry()[0][0];
 let position = tr.position();
 let rotation = tr.rotation();
@@ -727,13 +711,12 @@ rotation = tr.rotation
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let tr = &autd.geometry()[0][0];
 let x_dir = tr.x_direction();
 let y_dir = tr.y_direction();
@@ -768,13 +751,12 @@ z_dir = tr.z_direction
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let mut tr = &mut autd.geometry_mut()[0][0];
 let delay = tr.mod_delay();
 tr.set_mod_delay(0);
@@ -805,13 +787,12 @@ tr.mod_delay = 0
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let mut tr = &mut autd.geometry_mut()[0][0];
 let amp_filter = tr.amp_filter();
 tr.set_amp_filter(-0.5);
@@ -852,14 +833,13 @@ tr.phase_filter = math.pi
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let mut tr = &mut autd.geometry_mut()[0][0];
 let cycle = tr.cycle();
 tr.set_cycle(4096)?;
@@ -896,14 +876,13 @@ tr.cycle = 4096
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let mut tr = &mut autd.geometry_mut()[0][0];
 let freq = tr.frequency();
 tr.set_frequency(40e3)?;
@@ -939,14 +918,13 @@ tr.frequency = 40e3
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
-# use autd3::link::Debug;
 # 
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .advanced()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(Debug::new())?;
+#    .open_with(autd3::link::Nop::builder())?;
 # let sound_speed = autd.geometry()[0].sound_speed;
 # let mut tr = &mut autd.geometry_mut()[0][0];
 let wavelen = tr.wavelength(sound_speed);

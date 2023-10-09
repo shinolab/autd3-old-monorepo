@@ -15,7 +15,7 @@ FPGAの状態を取得する.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {}).unwrap();
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
 autd.geometry_mut()[0].reads_fpga_info = true;
 autd.send(UpdateFlags::new())?;
 
@@ -66,7 +66,7 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 # let m = Static::new();
 # let g = Null::new();
 autd.send((m, g).with_timeout(std::time::Duration::from_millis(20)))?;
@@ -112,7 +112,7 @@ autd.send((m, g), timeout=timedelta(milliseconds=20))
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink{}).unwrap();
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;

@@ -99,7 +99,7 @@ use autd3_link_twincat::TwinCAT;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .open_with(
-TwinCAT::new()?
+TwinCAT::builder()
 # )?;
 # Ok(())
 # }
@@ -108,17 +108,17 @@ TwinCAT::new()?
 ```cpp
 #include "autd3/link/twincat.hpp"
 
-autd3::link::TwinCAT();
+autd3::link::TwinCAT::builder();
 ```
 
 ```cs
-new TwinCAT();
+TwinCAT.Builder()
 ```
 
 ```python
 from pyautd3.link import TwinCAT
 
-TwinCAT()
+TwinCAT.builder()
 ```
 
 ## トラブルシューティング
@@ -186,7 +186,7 @@ use autd3_link_twincat::RemoteTwinCAT;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #      .open_with(
-RemoteTwinCAT::new("172.16.99.111.1.1")?
+RemoteTwinCAT::builder("172.16.99.111.1.1")
             .with_server_ip("172.16.99.104")
             .with_client_ams_net_id("172.16.99.62.1.1")
 # )?;
@@ -197,13 +197,13 @@ RemoteTwinCAT::new("172.16.99.111.1.1")?
 ```cpp
 #include "autd3/link/twincat.hpp"
 
-autd3::link::RemoteTwinCAT("172.16.99.111.1.1")
+autd3::link::RemoteTwinCAT::builder("172.16.99.111.1.1")
 				.with_server_ip("172.16.99.104")
 				.with_client_ams_net_id("172.16.99.62.1.1");
 ```
 
 ```cs
-new RemoteTwinCAT("172.16.99.111.1.1")
+RemoteTwinCAT.Builder("172.16.99.111.1.1")
         .WithServerIp(IPAddress.Parse("172.16.99.104"))
         .WithClientAmsNetId("172.16.99.62.1.1");
 ```
@@ -211,7 +211,7 @@ new RemoteTwinCAT("172.16.99.111.1.1")
 ```python
 from pyautd3.link import RemoteTwinCAT
 
-RemoteTwinCAT("172.16.99.111.1.1")\
+RemoteTwinCAT.builder("172.16.99.111.1.1")\
     .with_server_ip("172.16.99.104")\
     .with_client_ams_net_id("172.16.99.62.1.1")
 ```

@@ -7,7 +7,6 @@ LinkはAUTD3デバイスとのインターフェースである.
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
 - [Visualizer](./link/visualize.md)
-- [Bundle](./link/bundle.md)
 
 ## Linkに共通のオプション
 
@@ -22,7 +21,7 @@ LinkはAUTD3デバイスとのインターフェースである.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
-# let link = autd3::link::NullLink {};
+# let link = autd3::link::Nop::builder();
 // linkは何らかのLink
 # let link =
 link.with_timeout(std::time::Duration::from_millis(20));
@@ -47,38 +46,3 @@ link.with_timeout(timedelta(milliseconds=20))
 ```
 
 デフォルトで各Linkに対して適当な値が設定されている.
-
-### Log
-
-`Log`リンクを使用すると, ロギングを有効にした`Link`を生成できる.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-use autd3::link::Log;
-
-# #[allow(unused_variables)]
-# fn main() {
-# let link = autd3::link::NullLink {};
-// linkは何らかのLink
-# let link: Log<LegacyTransducer, autd3::link::NullLink> =
-link.with_log();
-# }
-```
-
-```cpp
-#include "autd3/link/log.hpp"
-
-// linkは何らかのLink
-link.with_log()
-```
-
-```cs
-// linkは何らかのLink
-link.WithLog()
-```
-
-```python
-# linkは何らかのLink
-link.with_log()
-```

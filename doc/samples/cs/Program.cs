@@ -12,7 +12,7 @@ var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
 
 var autd = Controller.Builder()
         .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-        .OpenWith(new SOEM().WithOnLost(onLost));
+        .OpenWith(SOEM.Builder().WithOnLost(onLost));
 
 var firmList = autd.FirmwareInfoList().ToArray();
 foreach (var firm in firmList)
