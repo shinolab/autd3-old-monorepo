@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ def test_cache():
     assert autd.send(m)
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link().modulation(dev.idx)
         mod_expext = [
             85,
             107,
@@ -112,7 +112,7 @@ def test_cache():
             44,
             63]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link().modulation_frequency_division(dev.idx) == 40960
 
 
 class CacheTest(Modulation):
@@ -153,7 +153,7 @@ def test_transform():
     assert autd.send(m)
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link().modulation(dev.idx)
         mod_expext = [
             41,
             50,
@@ -236,7 +236,7 @@ def test_transform():
             22,
             31]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link().modulation_frequency_division(dev.idx) == 40960
 
 
 def test_radiation_pressure():
@@ -247,7 +247,7 @@ def test_radiation_pressure():
     assert autd.send(m)
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link().modulation(dev.idx)
         mod_expext = [
             127,
             146,
@@ -330,4 +330,4 @@ def test_radiation_pressure():
             89,
             108]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link().modulation_frequency_division(dev.idx) == 40960

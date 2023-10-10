@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 04/10/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi import ControllerBuilderPtr
 from .native_methods.autd3capi_def import (
     GroupKVMapPtr,
+    LinkBuilderPtr,
     TimerStrategy,
     TransMode,
     AUTD3_ERR,
@@ -31,9 +32,8 @@ from .native_methods.autd3capi_def import (
     DatagramPtr,
     DatagramSpecialPtr,
     ControllerPtr,
-    LinkPtr,
 )
-from .link.link import Link
+from .internal.link import LinkBuilder
 from .geometry import Device, Geometry, AUTD3
 
 K = TypeVar("K")
@@ -201,14 +201,16 @@ class Controller:
                 )
             return self
 
-        def open_with(self, link: Link) -> "Controller":
+        def open_with(self, link: LinkBuilder) -> "Controller":
             """Open controller
 
             Arguments:
-            - `link` - Link
+            - `link` - LinkBuilder
             """
 
-            return Controller._open_impl(self._ptr, self._mode, link.ptr())
+            cnt = Controller._open_impl(self._ptr, self._mode, link.ptr())
+            link.resolve_link(cnt)
+            return cnt
 
     _geometry: Geometry
     _ptr: ControllerPtr
@@ -245,7 +247,7 @@ class Controller:
 
     @staticmethod
     def _open_impl(
-        builder: ControllerBuilderPtr, mode: TransMode, link: LinkPtr
+        builder: ControllerBuilderPtr, mode: TransMode, link: LinkBuilderPtr
     ) -> "Controller":
         err = ctypes.create_string_buffer(256)
         ptr = Base().controller_open_with(builder, link, err)

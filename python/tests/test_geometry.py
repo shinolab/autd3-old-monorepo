@@ -4,7 +4,7 @@ Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 27/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 from pyautd3 import AUTD3, UpdateFlags
-from pyautd3.link import Audit
+from pyautd3.link.audit import Audit
 
 from .test_autd import create_controller
 
@@ -100,45 +100,45 @@ def test_device_center():
 def test_device_force_fan():
     autd = create_controller()
     for dev in autd.geometry:
-        assert Audit.fpga_flags(autd._ptr, dev.idx) == 0
+        assert autd.link().fpga_flags(dev.idx) == 0
 
     autd.geometry[0].force_fan = True
     autd.geometry[1].force_fan = False
 
     autd.send(UpdateFlags())
 
-    assert Audit.fpga_flags(autd._ptr, 0) == 1
-    assert Audit.fpga_flags(autd._ptr, 1) == 0
+    assert autd.link().fpga_flags(0) == 1
+    assert autd.link().fpga_flags(1) == 0
 
     autd.geometry[0].force_fan = False
     autd.geometry[1].force_fan = True
 
     autd.send(UpdateFlags())
 
-    assert Audit.fpga_flags(autd._ptr, 0) == 0
-    assert Audit.fpga_flags(autd._ptr, 1) == 1
+    assert autd.link().fpga_flags(0) == 0
+    assert autd.link().fpga_flags(1) == 1
 
 
 def test_device_reads_fpga_info():
     autd = create_controller()
     for dev in autd.geometry:
-        assert Audit.fpga_flags(autd._ptr, dev.idx) == 0
+        assert autd.link().fpga_flags(dev.idx) == 0
 
     autd.geometry[0].reads_fpga_info = True
     autd.geometry[1].reads_fpga_info = False
 
     autd.send(UpdateFlags())
 
-    assert Audit.fpga_flags(autd._ptr, 0) == 2
-    assert Audit.fpga_flags(autd._ptr, 1) == 0
+    assert autd.link().fpga_flags(0) == 2
+    assert autd.link().fpga_flags(1) == 0
 
     autd.geometry[0].reads_fpga_info = False
     autd.geometry[1].reads_fpga_info = True
 
     autd.send(UpdateFlags())
 
-    assert Audit.fpga_flags(autd._ptr, 0) == 0
-    assert Audit.fpga_flags(autd._ptr, 1) == 2
+    assert autd.link().fpga_flags(0) == 0
+    assert autd.link().fpga_flags(1) == 2
 
 
 def test_device_translate():

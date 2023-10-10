@@ -4,7 +4,7 @@ Project: link
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,130 +17,126 @@ from typing import Tuple
 
 import numpy as np
 
-from .link import Link
 
+from pyautd3.internal.link import LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as LinkAudit
-from pyautd3.native_methods.autd3capi_def import ControllerPtr
+from pyautd3.native_methods.autd3capi import LinkAuditBuilderPtr
+from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr, LinkPtr
 
 
-class Audit(Link):
-    def __init__(self):
-        super().__init__(LinkAudit().link_audit())
+class Audit:
+    _ptr: LinkPtr
 
-    def with_timeout(self, timeout: timedelta) -> "Audit":
-        self._ptr = LinkAudit().link_audit_with_timeout(
-            self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
-        )
-        return self
+    class _Builder(LinkBuilder):
+        _ptr: LinkAuditBuilderPtr
 
-    @staticmethod
-    def down(cnt_ptr: ControllerPtr):
-        return LinkAudit().link_audit_down(LinkAudit().audit_link_get(cnt_ptr))
+        def __init__(self):
+            self._ptr = LinkAudit().link_audit()
 
-    @staticmethod
-    def is_open(cnt_ptr: ControllerPtr) -> bool:
-        return bool(LinkAudit().link_audit_is_open(LinkAudit().audit_link_get(cnt_ptr)))
+        def with_timeout(self, timeout: timedelta) -> "Audit._Builder":
+            self._ptr = LinkAudit().link_audit_with_timeout(
+                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            )
+            return self
 
-    @staticmethod
-    def last_timeout_ns(cnt_ptr: ControllerPtr) -> int:
-        return int(LinkAudit().link_audit_last_timeout_ns(LinkAudit().audit_link_get(cnt_ptr)))
+        def ptr(self) -> LinkBuilderPtr:
+            return LinkAudit().link_audit_into_builder(self._ptr)
 
-    @staticmethod
-    def up(cnt_ptr: ControllerPtr):
-        return LinkAudit().link_audit_up(LinkAudit().audit_link_get(cnt_ptr))
+        def resolve_link(self, obj):
+            obj.link = lambda: Audit(LinkAudit().link_get(obj._ptr))
 
-    @staticmethod
-    def break_down(cnt_ptr: ControllerPtr):
-        return LinkAudit().link_audit_break_down(LinkAudit().audit_link_get(cnt_ptr))
+    def __init__(self, ptr: LinkPtr):
+        self._ptr = ptr
 
     @staticmethod
-    def update(cnt_ptr: ControllerPtr, idx: int):
-        LinkAudit().link_audit_cpu_update(LinkAudit().audit_link_get(cnt_ptr), idx)
+    def builder() -> _Builder:
+        return Audit._Builder()
 
-    @staticmethod
-    def fpga_flags(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_cpu_fpga_flags(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def down(self):
+        return LinkAudit().link_audit_down(self._ptr)
 
-    @staticmethod
-    def is_legacy(cnt_ptr: ControllerPtr, idx: int) -> bool:
-        return bool(LinkAudit().link_audit_fpga_is_legacy_mode(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def is_open(self) -> bool:
+        return bool(LinkAudit().link_audit_is_open(self._ptr))
 
-    @staticmethod
-    def silencer_step(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_silencer_step(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def last_timeout_ns(self) -> int:
+        return int(LinkAudit().link_audit_last_timeout_ns(self._ptr))
 
-    @staticmethod
-    def assert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int):
-        LinkAudit().link_audit_fpga_assert_thermal_sensor(LinkAudit().audit_link_get(cnt_ptr), idx)
+    def up(self):
+        return LinkAudit().link_audit_up(self._ptr)
 
-    @staticmethod
-    def deassert_thermal_sensor(cnt_ptr: ControllerPtr, idx: int):
-        LinkAudit().link_audit_fpga_deassert_thermal_sensor(LinkAudit().audit_link_get(cnt_ptr), idx)
+    def break_down(self):
+        return LinkAudit().link_audit_break_down(self._ptr)
 
-    @staticmethod
-    def modulation(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_fpga_modulation_cycle(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def update(self, idx: int):
+        LinkAudit().link_audit_cpu_update(self._ptr, idx)
+
+    def fpga_flags(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_cpu_fpga_flags(self._ptr, idx))
+
+    def is_legacy(self, idx: int) -> bool:
+        return bool(LinkAudit().link_audit_fpga_is_legacy_mode(self._ptr, idx))
+
+    def silencer_step(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_silencer_step(self._ptr, idx))
+
+    def assert_thermal_sensor(self, idx: int):
+        LinkAudit().link_audit_fpga_assert_thermal_sensor(self._ptr, idx)
+
+    def deassert_thermal_sensor(self, idx: int):
+        LinkAudit().link_audit_fpga_deassert_thermal_sensor(self._ptr, idx)
+
+    def modulation(self, idx: int) -> np.ndarray:
+        n = int(LinkAudit().link_audit_fpga_modulation_cycle(self._ptr, idx))
         buf = np.zeros([n]).astype(np.uint8)
-        LinkAudit().link_audit_fpga_modulation(LinkAudit().audit_link_get(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
+        LinkAudit().link_audit_fpga_modulation(self._ptr, idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
-    @staticmethod
-    def modulation_frequency_division(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_modulation_frequency_division(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def modulation_frequency_division(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_modulation_frequency_division(self._ptr, idx))
 
-    @staticmethod
-    def cycles(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def cycles(self, idx: int) -> np.ndarray:
+        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
         buf = np.zeros([n]).astype(np.uint16)
-        LinkAudit().link_audit_fpga_cycles(LinkAudit().audit_link_get(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
+        LinkAudit().link_audit_fpga_cycles(self._ptr, idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
-    @staticmethod
-    def mod_delays(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def mod_delays(self, idx: int) -> np.ndarray:
+        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
         buf = np.zeros([n]).astype(np.uint16)
-        LinkAudit().link_audit_fpga_mod_delays(LinkAudit().audit_link_get(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
+        LinkAudit().link_audit_fpga_mod_delays(self._ptr, idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
-    @staticmethod
-    def duty_filters(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def duty_filters(self, idx: int) -> np.ndarray:
+        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
         buf = np.zeros([n]).astype(np.int16)
-        LinkAudit().link_audit_fpga_duty_filters(LinkAudit().audit_link_get(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
+        LinkAudit().link_audit_fpga_duty_filters(self._ptr, idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
-    @staticmethod
-    def phase_filters(cnt_ptr: ControllerPtr, idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def phase_filters(self, idx: int) -> np.ndarray:
+        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
         buf = np.zeros([n]).astype(np.int16)
-        LinkAudit().link_audit_fpga_phase_filters(LinkAudit().audit_link_get(cnt_ptr), idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
+        LinkAudit().link_audit_fpga_phase_filters(self._ptr, idx, np.ctypeslib.as_ctypes(buf))  # type: ignore
         return buf
 
-    @staticmethod
-    def duties_and_phases(cnt_ptr: ControllerPtr, idx: int, stm_idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def duties_and_phases(self, idx: int, stm_idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
         duties = np.zeros([n]).astype(np.uint16)
         phases = np.zeros([n]).astype(np.uint16)
-        LinkAudit().link_audit_fpga_duties_and_phases(LinkAudit().audit_link_get(cnt_ptr),
+        LinkAudit().link_audit_fpga_duties_and_phases(self._ptr,
                                                       idx, stm_idx, np.ctypeslib.as_ctypes(duties), np.ctypeslib.as_ctypes(phases))  # type: ignore
         return (duties, phases)
 
-    @staticmethod
-    def stm_cycle(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_stm_cycle(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def stm_cycle(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_stm_cycle(self._ptr, idx))
 
-    @staticmethod
-    def is_stm_gain_mode(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_is_stm_gain_mode(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def is_stm_gain_mode(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_is_stm_gain_mode(self._ptr, idx))
 
-    @staticmethod
-    def stm_freqency_division(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_stm_frequency_division(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def stm_freqency_division(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_stm_frequency_division(self._ptr, idx))
 
-    @staticmethod
-    def stm_start_idx(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_stm_start_idx(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def stm_start_idx(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_stm_start_idx(self._ptr, idx))
 
-    @staticmethod
-    def stm_finish_idx(cnt_ptr: ControllerPtr, idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_stm_finish_idx(LinkAudit().audit_link_get(cnt_ptr), idx))
+    def stm_finish_idx(self, idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_stm_finish_idx(self._ptr, idx))
