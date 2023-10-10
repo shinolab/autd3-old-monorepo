@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ class Fourier;
 /**
  * @brief Sine wave modulation
  */
-class Sine final : public internal::Modulation {
+class Sine final : public internal::Modulation, public IntoCache<Sine>, public IntoTransform<Sine>, public IntoRadiationPressure<Sine> {
  public:
   /**
    * @brief Constructor.
@@ -36,10 +36,6 @@ class Sine final : public internal::Modulation {
    * @param freq Frequency of sine wave
    */
   explicit Sine(const int32_t freq) : _freq(freq) {}
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Sine)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Sine)
 
   AUTD3_DEF_PARAM(Sine, double, amp)
   AUTD3_DEF_PARAM(Sine, double, phase)

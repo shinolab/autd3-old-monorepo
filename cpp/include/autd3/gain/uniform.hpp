@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,12 +26,9 @@ namespace autd3::gain {
 /**
  * @brief Gain to set amp and phase uniformly
  */
-class Uniform final : public internal::Gain {
+class Uniform final : public internal::Gain, public IntoCache<Uniform>, public IntoTransform<Uniform> {
  public:
   explicit Uniform(const double amp) : _amp(amp) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Uniform)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Uniform)
 
   AUTD3_DEF_PARAM(Uniform, double, phase)
 

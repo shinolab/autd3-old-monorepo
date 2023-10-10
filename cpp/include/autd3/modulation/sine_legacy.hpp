@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,10 @@ namespace autd3::modulation {
 /**
  * @brief Sine wave modulation
  */
-class SineLegacy final : public internal::Modulation {
+class SineLegacy final : public internal::Modulation,
+                         public IntoCache<SineLegacy>,
+                         public IntoTransform<SineLegacy>,
+                         public IntoRadiationPressure<SineLegacy> {
  public:
   /**
    * @brief Constructor.
@@ -34,10 +37,6 @@ class SineLegacy final : public internal::Modulation {
    * @param freq Frequency of sine wave
    */
   explicit SineLegacy(const double freq) : _freq(freq) {}
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(SineLegacy)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(SineLegacy)
 
   AUTD3_DEF_PARAM(SineLegacy, double, amp)
   AUTD3_DEF_PARAM(SineLegacy, double, offset)

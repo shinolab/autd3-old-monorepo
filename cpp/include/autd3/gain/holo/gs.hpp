@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ namespace autd3::gain::holo {
  * @details Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
  */
 template <class B>
-class GS final : public internal::Gain {
+class GS final : public internal::Gain, public IntoCache<GS<B>>, public IntoTransform<GS<B>> {
  public:
   explicit GS(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
@@ -41,9 +41,6 @@ class GS final : public internal::Gain {
 
   AUTD3_HOLO_ADD_FOCUS(GS)
   AUTD3_HOLO_ADD_FOCI(GS)
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(GS)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(GS)
 
   AUTD3_DEF_PARAM(GS, uint32_t, repeat)
   AUTD3_DEF_PARAM(GS, AmplitudeConstraint, constraint)

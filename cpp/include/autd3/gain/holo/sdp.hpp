@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ namespace autd3::gain::holo {
  * World Haptics Conference (WHC). IEEE, 2015.
  */
 template <class B>
-class SDP final : public internal::Gain {
+class SDP final : public internal::Gain, public IntoCache<SDP<B>>, public IntoTransform<SDP<B>> {
  public:
   explicit SDP(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
@@ -42,9 +42,6 @@ class SDP final : public internal::Gain {
 
   AUTD3_HOLO_ADD_FOCUS(SDP)
   AUTD3_HOLO_ADD_FOCI(SDP)
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(SDP)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(SDP)
 
   AUTD3_DEF_PARAM(SDP, double, alpha)
   AUTD3_DEF_PARAM(SDP, uint32_t, repeat)

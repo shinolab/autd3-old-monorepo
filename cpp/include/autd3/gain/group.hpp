@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,14 +26,11 @@
 namespace autd3::gain {
 
 template <class F>
-class Group final : public internal::Gain {
+class Group final : public internal::Gain, public IntoCache<Group<F>>, public IntoTransform<Group<F>> {
  public:
   using key_type = typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
 
   explicit Group(const F& f) : _f(f) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Group)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Group)
 
   /**
    * @brief Set gain

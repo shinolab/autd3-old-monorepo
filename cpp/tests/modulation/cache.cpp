@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ TEST(Modulation, Cache) {
   }
 }
 
-class ForModulationCacheTest final : public autd3::modulation::Modulation {
+class ForModulationCacheTest final : public autd3::modulation::Modulation, public autd3::modulation::IntoCache<ForModulationCacheTest> {
  public:
   [[nodiscard]] std::vector<double> calc() const override {
     ++*_cnt;
@@ -40,8 +40,6 @@ class ForModulationCacheTest final : public autd3::modulation::Modulation {
   }
 
   explicit ForModulationCacheTest(size_t* cnt) noexcept : Modulation(5120), _cnt(cnt) {}
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
 
  private:
   size_t* _cnt;
