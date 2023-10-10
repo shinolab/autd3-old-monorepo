@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ public class NaiveTest
     [Fact]
     public void Naive()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(new Audit());
+        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -32,7 +32,7 @@ public class NaiveTest
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
             Assert.All(duties, d => Assert.Equal(680, d));
             Assert.Contains(phases, p => p != 0);
         }
@@ -41,7 +41,7 @@ public class NaiveTest
     [IgnoreIfCUDAIsNotFoundFact]
     public void NaiveWithCUDA()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(new Audit());
+        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
 
         var backend = new CUDABackend();
         var g = new Naive<CUDABackend>(backend)
@@ -53,7 +53,7 @@ public class NaiveTest
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
             Assert.All(duties, d => Assert.Equal(680, d));
             Assert.Contains(phases, p => p != 0);
         }

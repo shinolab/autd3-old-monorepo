@@ -52,17 +52,6 @@ namespace AUTD3Sharp
         AdvancedPhase = 2,
     }
 
-    public enum Level : byte
-    {
-        Critical = 0,
-        Error = 1,
-        Warn = 2,
-        Info = 3,
-        Debug = 4,
-        Trace = 5,
-        Off = 6,
-    }
-
     public enum TimerStrategy : byte
     {
         Sleep = 0,
@@ -90,6 +79,12 @@ namespace AUTD3Sharp
 
     [StructLayout(LayoutKind.Sequential)]
     public struct TransducerPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LinkBuilderPtr
     {
         public IntPtr _0;
     }

@@ -17,4 +17,4 @@ open Samples
 
 let serverAmsNetId = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99.2.1.1)"
  
-Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(RemoteTwinCAT serverAmsNetId) |> SampleRunner.Run
+Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(RemoteTwinCAT.Builder serverAmsNetId) |> SampleRunner.Run

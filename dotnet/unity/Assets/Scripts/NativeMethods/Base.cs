@@ -128,7 +128,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder, float x, float y, float z, float qw, float qx, float qy, float qz);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkPtr link, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkBuilderPtr linkBuilder, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDControllerClose(ControllerPtr cnt, byte[] err);
 
@@ -141,8 +141,6 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr pInfoList, uint idx, byte[] info);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr pInfoList);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDControllerNotifyLinkGeometryUpdated(ControllerPtr cnt, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDFirmwareLatest(byte[] latest);
 
@@ -178,93 +176,81 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSoftwareSTM(ControllerPtr cnt, IntPtr callback, IntPtr context, TimerStrategy timerStrategy, ulong intervalNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkAudit();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkAuditBuilderPtr AUTDLinkAudit();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkAuditWithTimeout(LinkPtr test, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkAuditBuilderPtr AUTDLinkAuditWithTimeout(LinkAuditBuilderPtr audit, ulong timeoutNs);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern AuditLinkPtr AUTDAuditLinkGet(ControllerPtr cnt);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkAuditIntoBuilder(LinkAuditBuilderPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditIsOpen(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditIsOpen(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ulong AUTDLinkAuditTimeoutNs(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ulong AUTDLinkAuditTimeoutNs(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ulong AUTDLinkAuditLastTimeoutNs(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ulong AUTDLinkAuditLastTimeoutNs(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditDown(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditDown(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditUp(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditUp(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditBreakDown(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditBreakDown(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditRepair(AuditLinkPtr audit);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditRepair(LinkPtr audit);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditCpuUpdate(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditCpuUpdate(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditCpuIdx(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditCpuIdx(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditCpuNumTransducers(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditCpuNumTransducers(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuAck(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuAck(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuRxData(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuRxData(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuFpgaFlags(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern byte AUTDLinkAuditCpuFpgaFlags(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaAssertThermalSensor(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaAssertThermalSensor(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDeassertThermalSensor(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsLegacyMode(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsLegacyMode(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsForceFan(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsForceFan(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmMode(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmMode(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmGainMode(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmGainMode(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ushort AUTDLinkAuditFpgaSilencerStep(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ushort AUTDLinkAuditFpgaSilencerStep(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaCycles(AuditLinkPtr audit, uint idx, ushort[] cycles);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaCycles(LinkPtr audit, uint idx, ushort[] cycles);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaModDelays(AuditLinkPtr audit, uint idx, ushort[] delay);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint idx, ushort[] delay);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDutyFilters(AuditLinkPtr audit, uint idx, short[] filters);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDutyFilters(LinkPtr audit, uint idx, short[] filters);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaPhaseFilters(AuditLinkPtr audit, uint idx, short[] filters);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaPhaseFilters(LinkPtr audit, uint idx, short[] filters);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaStmFrequencyDivision(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaStmFrequencyDivision(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaStmCycle(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaStmCycle(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaSoundSpeed(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaSoundSpeed(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkAuditFpgaStmStartIdx(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkAuditFpgaStmStartIdx(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkAuditFpgaStmFinishIdx(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkAuditFpgaStmFinishIdx(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaModulationFrequencyDivision(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaModulationFrequencyDivision(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaModulationCycle(AuditLinkPtr audit, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkAuditFpgaModulationCycle(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaModulation(AuditLinkPtr audit, uint idx, byte[] data);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaModulation(LinkPtr audit, uint idx, byte[] data);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDutiesAndPhases(AuditLinkPtr audit, uint idx, uint stmIdx, ushort[] duties, ushort[] phases);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDutiesAndPhases(LinkPtr audit, uint idx, uint stmIdx, ushort[] duties, ushort[] phases);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkBundle(LinkPtr main, LinkPtr sub);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkGet(ControllerPtr cnt);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkDebug();
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkDebugWithLogLevel(LinkPtr debug, Level level);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkDebugWithLogFunc(LinkPtr debug, IntPtr outFunc, IntPtr flushFunc);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkDebugWithTimeout(LinkPtr debug, ulong timeoutNs);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkLog(LinkPtr link);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkLogWithLogLevel(LinkPtr log, Level level);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkLogWithLogFunc(LinkPtr log, IntPtr outFunc, IntPtr flushFunc);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkNop();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationCachePtr AUTDModulationWithCache(ModulationPtr m, byte[] err);
 
@@ -377,7 +363,7 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct AuditLinkPtr
+    public struct LinkAuditBuilderPtr
     {
         public IntPtr _0;
     }

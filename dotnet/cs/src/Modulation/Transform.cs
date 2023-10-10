@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@
 #endif
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 #if UNITY_2020_2_OR_NEWER
@@ -36,7 +35,6 @@ using float_t = System.Double;
 namespace AUTD3Sharp.Modulation
 {
     using Base = NativeMethods.Base;
-    using Def = NativeMethods.Def;
 
     public class Transform : Internal.Modulation
     {
@@ -48,7 +46,7 @@ namespace AUTD3Sharp.Modulation
         public Transform(Internal.Modulation m, Func<int, float_t, float_t> f)
         {
             _m = m;
-            _f = new ModTransformDelegate((context, i, d) => f((int)i, d));
+            _f = (context, i, d) => f((int)i, d);
         }
 
         public override ModulationPtr ModulationPtr()

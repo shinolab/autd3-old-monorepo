@@ -8,7 +8,7 @@
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 using AUTD3Sharp;
@@ -19,7 +19,7 @@ using AUTD3Sharp.Utils;
 
 var autd = Controller.Builder()
     .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .OpenWith(new Debug());
+    .OpenWith(Nop.Builder());
 
 var cx = autd.Geometry.Center.x;
 var g1 = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));

@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
-using AUTD3Sharp.Internal;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -27,130 +26,123 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link using <see href="https://github.com/OpenEtherCATsociety/SOEM">SOEM</see>
     /// </summary>
-    public sealed class SOEM : Internal.Link
+    public sealed class SOEM
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
-        public SOEM() : base(NativeMethods.LinkSOEM.AUTDLinkSOEM())
+        public sealed class SOEMBuilder : Internal.ILinkBuilder
         {
+            private LinkSOEMBuilderPtr _ptr;
+
+            internal SOEMBuilder()
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEM();
+            }
+
+            /// <summary>
+            /// Set network interface name
+            /// </summary>
+            /// <param name="ifname">Interface name. If empty, this link will automatically find the network interface that is connected to AUTD3 devices.</param>
+            /// <returns></returns>
+            public SOEMBuilder WithIfname(string ifname)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithIfname(_ptr, ifname);
+                return this;
+            }
+
+            /// <summary>
+            /// Set buffer size
+            /// </summary>
+            /// <param name="size"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithBufSize(uint size)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithBufSize(_ptr, size);
+                return this;
+            }
+
+            /// <summary>
+            /// Set send cycle (the unit is 500us)
+            /// </summary>
+            /// <param name="sendCycle"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithSendCycle(ushort sendCycle)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSendCycle(_ptr, sendCycle);
+                return this;
+            }
+
+            /// <summary>
+            /// Set sync0 cycle (the unit is 500us)
+            /// </summary>
+            /// <param name="sync0Cycle"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithSync0Cycle(ushort sync0Cycle)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSync0Cycle(_ptr, sync0Cycle);
+                return this;
+            }
+
+            /// <summary>
+            /// Set sync mode
+            /// </summary>
+            /// <remarks>See <see href="https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html">Beckhoff's site</see> for more details.</remarks>
+            /// <param name="syncMode"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithSyncMode(SyncMode syncMode)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSyncMode(_ptr, syncMode);
+                return this;
+            }
+
+            /// <summary>
+            /// Set timer strategy
+            /// </summary>
+            /// <param name="timerStrategy"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithTimerStrategy(TimerStrategy timerStrategy)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimerStrategy(_ptr, timerStrategy);
+                return this;
+            }
+
+            /// <summary>
+            /// Set callback function when the link is lost
+            /// </summary>
+            /// <param name="onLost"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithOnLost(OnLostCallbackDelegate onLost)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithOnLost(_ptr, Marshal.GetFunctionPointerForDelegate(onLost));
+                return this;
+            }
+
+            /// <summary>
+            /// Set state check interval
+            /// </summary>
+            /// <param name="interval"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithStateCheckInterval(TimeSpan interval)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithStateCheckInterval(_ptr, (uint)interval.TotalMilliseconds);
+                return this;
+            }
+
+            public SOEMBuilder WithTimeout(TimeSpan timeout)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                return this;
+            }
+
+            public LinkBuilderPtr Ptr()
+            {
+                return NativeMethods.LinkSOEM.AUTDLinkSOEMIntoBuilder(_ptr);
+            }
         }
 
-        /// <summary>
-        /// Set network interface name
-        /// </summary>
-        /// <param name="ifname">Interface name. If empty, this link will automatically find the network interface that is connected to AUTD3 devices.</param>
-        /// <returns></returns>
-        public SOEM WithIfname(string ifname)
+        public static SOEMBuilder Builder()
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithIfname(Ptr, ifname);
-            return this;
-        }
-
-        /// <summary>
-        /// Set buffer size
-        /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        public SOEM WithBufSize(uint size)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithBufSize(Ptr, size);
-            return this;
-        }
-
-        /// <summary>
-        /// Set send cycle (the unit is 500us)
-        /// </summary>
-        /// <param name="sendCycle"></param>
-        /// <returns></returns>
-        public SOEM WithSendCycle(ushort sendCycle)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSendCycle(Ptr, sendCycle);
-            return this;
-        }
-
-        /// <summary>
-        /// Set sync0 cycle (the unit is 500us)
-        /// </summary>
-        /// <param name="sync0Cycle"></param>
-        /// <returns></returns>
-        public SOEM WithSync0Cycle(ushort sync0Cycle)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSync0Cycle(Ptr, sync0Cycle);
-            return this;
-        }
-
-        /// <summary>
-        /// Set sync mode
-        /// </summary>
-        /// <remarks>See <see href="https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html">Beckhoff's site</see> for more details.</remarks>
-        /// <param name="syncMode"></param>
-        /// <returns></returns>
-        public SOEM WithSyncMode(SyncMode syncMode)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithSyncMode(Ptr, syncMode);
-            return this;
-        }
-
-        /// <summary>
-        /// Set timer strategy
-        /// </summary>
-        /// <param name="timerStrategy"></param>
-        /// <returns></returns>
-        public SOEM WithTimerStrategy(TimerStrategy timerStrategy)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimerStrategy(Ptr, timerStrategy);
-            return this;
-        }
-
-        /// <summary>
-        /// Set callback function when the link is lost
-        /// </summary>
-        /// <param name="onLost"></param>
-        /// <returns></returns>
-        public SOEM WithOnLost(OnLostCallbackDelegate onLost)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithOnLost(Ptr, Marshal.GetFunctionPointerForDelegate(onLost));
-            return this;
-        }
-
-        /// <summary>
-        /// Set state check interval
-        /// </summary>
-        /// <param name="interval"></param>
-        /// <returns></returns>
-        public SOEM WithStateCheckInterval(TimeSpan interval)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithStateCheckInterval(Ptr, (uint)interval.TotalMilliseconds);
-            return this;
-        }
-
-        /// <summary>
-        /// Set log function
-        /// </summary>
-        /// <param name="output"></param>
-        /// <param name="flush"></param>
-        /// <returns></returns>
-        public SOEM WithLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithLogFunc(Ptr, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
-            return this;
-        }
-
-        /// <summary>
-        /// Set log level
-        /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
-        public SOEM WithLogLevel(Level level)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithLogLevel(Ptr, level);
-            return this;
-        }
-
-        public SOEM WithTimeout(TimeSpan timeout)
-        {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
-            return this;
+            return new SOEMBuilder();
         }
 
         public static IEnumerable<EtherCATAdapter> EnumerateAdapters()
@@ -171,27 +163,41 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link to connect to remote SOEMServer
     /// </summary>
-    public sealed class RemoteSOEM : Internal.Link
+    public sealed class RemoteSOEM
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="ip">IP address and port of SOEMServer (e.g., "127.0.0.1:8080")</param>
-        /// <exception cref="AUTDException"></exception>
-        public RemoteSOEM(IPEndPoint ip)
+        public sealed class RemoteSOEMBuilder : Internal.ILinkBuilder
         {
-            var err = new byte[256];
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEM(ip.ToString(), err);
-            if (Ptr._0 == IntPtr.Zero)
-                throw new AUTDException(err);
+            private LinkRemoteSOEMBuilderPtr _ptr;
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="ip">IP address and port of SOEMServer (e.g., "127.0.0.1:8080")</param>
+            /// <exception cref="AUTDException"></exception>
+            internal RemoteSOEMBuilder(IPEndPoint ip)
+            {
+                var err = new byte[256];
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEM(ip.ToString(), err);
+                if (_ptr._0 == IntPtr.Zero)
+                    throw new AUTDException(err);
+            }
+
+            public RemoteSOEMBuilder WithTimeout(TimeSpan timeout)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEMWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                return this;
+            }
+
+            public LinkBuilderPtr Ptr()
+            {
+                return NativeMethods.LinkSOEM.AUTDLinkRemoteSOEMIntoBuilder(_ptr);
+            }
         }
 
-        public RemoteSOEM WithTimeout(TimeSpan timeout)
+        public static RemoteSOEMBuilder Builder(IPEndPoint ip)
         {
-            Ptr = NativeMethods.LinkSOEM.AUTDLinkRemoteSOEMWithTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
-            return this;
+            return new RemoteSOEMBuilder(ip);
         }
-
     }
 
     public readonly struct EtherCATAdapter : IEquatable<EtherCATAdapter>

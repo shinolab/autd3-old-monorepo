@@ -21,6 +21,6 @@ let onLost (msg:string): unit =
 
 let autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith((new SOEM()).WithOnLost(new SOEM.OnLostCallbackDelegate(onLost)))
+            .OpenWith(SOEM.Builder().WithOnLost(new SOEM.OnLostCallbackDelegate(onLost)))
 
 SampleRunner.Run autd

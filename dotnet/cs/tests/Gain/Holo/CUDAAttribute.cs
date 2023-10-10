@@ -13,20 +13,19 @@
 
 using AUTD3Sharp.Gain.Holo;
 
-namespace tests.Gain.Holo
+namespace tests.Gain.Holo;
+
+public sealed class IgnoreIfCUDAIsNotFoundFactAttribute : FactAttribute
 {
-    public sealed class IgnoreIfCUDAIsNotFoundFactAttribute : FactAttribute
+    public IgnoreIfCUDAIsNotFoundFactAttribute()
     {
-        public IgnoreIfCUDAIsNotFoundFactAttribute()
+        try
         {
-            try
-            {
-                _ = new CUDABackend();
-            }
-            catch (Exception e)
-            {
-                Skip = e.Message;
-            }
+            _ = new CUDABackend();
+        }
+        catch (Exception e)
+        {
+            Skip = e.Message;
         }
     }
 }
