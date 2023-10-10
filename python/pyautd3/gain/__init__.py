@@ -35,5 +35,4 @@ __all__ = [
     "Uniform"
 ]
 
-_ = Cache
-_ = Transform
+_ = Cache, Transform

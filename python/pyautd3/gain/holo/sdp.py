@@ -58,6 +58,7 @@ class SDP(Holo):
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
+        assert self._backend is not None
         ptr = self._backend.sdp(foci_, amps, size)
         if self._alpha is not None:
             ptr = self._backend.sdp_with_alpha(ptr, self._alpha)

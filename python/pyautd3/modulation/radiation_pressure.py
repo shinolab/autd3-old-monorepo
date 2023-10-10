@@ -40,4 +40,4 @@ def __with_radiation_pressure(self):
     return RadiationPressure(self)
 
 
-IModulation.with_radiation_pressure = __with_radiation_pressure
+IModulation.with_radiation_pressure = __with_radiation_pressure  # type: ignore

@@ -16,7 +16,6 @@ from datetime import timedelta
 from ..test_autd import create_controller
 
 from pyautd3.modulation import Sine
-from pyautd3.link.audit import Audit
 
 import numpy as np
 

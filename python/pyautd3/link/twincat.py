@@ -29,10 +29,10 @@ class TwinCAT:
     """
 
     class _Builder(LinkBuilder):
-        _ptr: LinkTwinCATBuilderPtr
+        _builder: LinkTwinCATBuilderPtr
 
         def __init__(self):
-            self._ptr = LinkTwinCAT().link_twin_cat()
+            self._builder = LinkTwinCAT().link_twin_cat()
 
         def with_timeout(self, timeout: timedelta) -> "TwinCAT._Builder":
             """Set timeout
@@ -41,13 +41,13 @@ class TwinCAT:
             - `timeout` - Timeout
             """
 
-            self._ptr = LinkTwinCAT().link_twin_cat_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkTwinCAT().link_twin_cat_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkTwinCAT().link_twin_cat_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkTwinCAT().link_twin_cat_into_builder(self._builder)
 
     @staticmethod
     def builder() -> _Builder:
@@ -60,14 +60,14 @@ class RemoteTwinCAT:
     """
 
     class _Builder(LinkBuilder):
-        _ptr: LinkRemoteTwinCATBuilderPtr
+        _builder: LinkRemoteTwinCATBuilderPtr
 
         def __init__(self, server_ams_net_id: str):
             err = ctypes.create_string_buffer(256)
-            self._ptr = LinkTwinCAT().link_remote_twin_cat(
+            self._builder = LinkTwinCAT().link_remote_twin_cat(
                 server_ams_net_id.encode("utf-8"), err
             )
-            if self._ptr._0 is None:
+            if self._builder._0 is None:
                 raise AUTDError(err)
 
         def with_server_ip(self, ip: str) -> "RemoteTwinCAT._Builder":
@@ -77,8 +77,8 @@ class RemoteTwinCAT:
             - `ip` - Server IP address
             """
 
-            self._ptr = LinkTwinCAT().link_remote_twin_cat_with_server_ip(
-                self._ptr, ip.encode("utf-8")
+            self._builder = LinkTwinCAT().link_remote_twin_cat_with_server_ip(
+                self._builder, ip.encode("utf-8")
             )
             return self
 
@@ -89,8 +89,8 @@ class RemoteTwinCAT:
             - `id` - Client AMS Net ID
             """
 
-            self._ptr = LinkTwinCAT().link_remote_twin_cat_with_client_ams_net_id(
-                self._ptr, id.encode("utf-8")
+            self._builder = LinkTwinCAT().link_remote_twin_cat_with_client_ams_net_id(
+                self._builder, id.encode("utf-8")
             )
             return self
 
@@ -101,13 +101,13 @@ class RemoteTwinCAT:
             - `timeout` - Timeout
             """
 
-            self._ptr = LinkTwinCAT().link_remote_twin_cat_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkTwinCAT().link_remote_twin_cat_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkTwinCAT().link_remote_twin_cat_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkTwinCAT().link_remote_twin_cat_into_builder(self._builder)
 
     @staticmethod
     def builder(server_ams_net_id: str) -> _Builder:

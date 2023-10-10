@@ -75,4 +75,4 @@ def __with_transform(self, f: Callable[[Device, Transducer, Drive], Drive]):
     return Transform(self, f)
 
 
-IGain.with_transform = __with_transform
+IGain.with_transform = __with_transform  # type: ignore

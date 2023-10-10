@@ -47,7 +47,7 @@ class SpecialDatagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def ptr(self) -> DatagramSpecialPtr:
+    def _ptr(self) -> DatagramSpecialPtr:
         pass
 
 
@@ -56,7 +56,7 @@ class Datagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def ptr(self, geometry: Geometry) -> DatagramPtr:
+    def _ptr(self, geometry: Geometry) -> DatagramPtr:
         pass
 
 
@@ -85,7 +85,7 @@ class Silencer(Datagram):
 
         return Silencer(0xFFFF)
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_silencer(self._step)
 
 
@@ -208,8 +208,8 @@ class Controller:
             - `link` - LinkBuilder
             """
 
-            cnt = Controller._open_impl(self._ptr, self._mode, link.ptr())
-            link.resolve_link(cnt)
+            cnt = Controller._open_impl(self._ptr, self._mode, link._ptr())
+            link._resolve_link(cnt)
             return cnt
 
     _geometry: Geometry
@@ -300,11 +300,6 @@ class Controller:
             raise AUTDError(err)
         return list(map(lambda x: FPGAInfo(x), infos))
 
-    def notify_link_geometry_updated(self):
-        err = ctypes.create_string_buffer(256)
-        if not Base().controller_notify_link_geometry_updated(self._ptr, err):
-            raise AUTDError(err)
-
     def send(
         self,
         d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
@@ -330,10 +325,10 @@ class Controller:
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
         if isinstance(d, SpecialDatagram):
-            res = Base().controller_send_special(self._ptr, self._mode, d.ptr(), timeout_, err)
+            res = Base().controller_send_special(self._ptr, self._mode, d._ptr(), timeout_, err)
         if isinstance(d, Datagram):
             res = Base().controller_send(
-                self._ptr, self._mode, d.ptr(self.geometry), DatagramPtr(None), timeout_, err
+                self._ptr, self._mode, d._ptr(self.geometry), DatagramPtr(None), timeout_, err
             )
         if isinstance(d, tuple) and len(d) == 2:
             (d1, d2) = d
@@ -341,8 +336,8 @@ class Controller:
                 res = Base().controller_send(
                     self._ptr,
                     self._mode,
-                    d1.ptr(self.geometry),
-                    d2.ptr(self.geometry),
+                    d1._ptr(self.geometry),
+                    d2._ptr(self.geometry),
                     timeout_,
                     err,
                 )
@@ -431,13 +426,13 @@ class Controller:
             err = ctypes.create_string_buffer(256)
             if isinstance(d, SpecialDatagram):
                 self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set_special(self._kv_map, self._k, d.ptr(), self._controller._mode, timeout_ns, err)
+                self._kv_map = Base().controller_group_kv_map_set_special(self._kv_map, self._k, d._ptr(), self._controller._mode, timeout_ns, err)
                 self._k += 1
                 if self._kv_map._0 is None:
                     raise AUTDError(err)
             if isinstance(d, Datagram):
                 self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set(self._kv_map, self._k, d.ptr(
+                self._kv_map = Base().controller_group_kv_map_set(self._kv_map, self._k, d._ptr(
                     self._controller._geometry), DatagramPtr(None), self._controller._mode, timeout_ns, err)
                 self._k += 1
                 if self._kv_map._0 is None:
@@ -448,8 +443,8 @@ class Controller:
                 if isinstance(d1, Datagram) and isinstance(d2, Datagram):
                     self._keymap[key] = self._k
                     self._kv_map = Base().controller_group_kv_map_set(
-                        self._kv_map, self._k, d1.ptr(
-                            self._controller._geometry), d2.ptr(
+                        self._kv_map, self._k, d1._ptr(
+                            self._controller._geometry), d2._ptr(
                             self._controller._geometry), self._controller._mode, timeout_ns, err)
                     self._k += 1
                     if self._kv_map._0 is None:
@@ -485,7 +480,7 @@ class Amplitudes(Datagram):
         super().__init__()
         self._amp = amp
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_amplitudes(self._amp)
 
 
@@ -497,7 +492,7 @@ class Clear(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_clear()
 
 
@@ -509,7 +504,7 @@ class Stop(SpecialDatagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self) -> DatagramSpecialPtr:
+    def _ptr(self) -> DatagramSpecialPtr:
         return Base().datagram_stop()
 
 
@@ -521,7 +516,7 @@ class UpdateFlags(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_update_flags()
 
 
@@ -533,7 +528,7 @@ class Synchronize(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_synchronize()
 
 
@@ -545,7 +540,7 @@ class ConfigureModDelay(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_mod_delay()
 
 
@@ -557,7 +552,7 @@ class ConfigureAmpFilter(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_amp_filter()
 
 
@@ -569,5 +564,5 @@ class ConfigurePhaseFilter(Datagram):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_phase_filter()

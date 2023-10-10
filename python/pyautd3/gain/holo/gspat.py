@@ -46,6 +46,7 @@ class GSPAT(Holo):
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
+        assert self._backend is not None
         ptr = self._backend.gspat(foci_, amps, size)
         if self._repeat is not None:
             ptr = self._backend.gspat_with_repeat(ptr, self._repeat)

@@ -77,4 +77,4 @@ def __with_cache(self) -> Cache:
     return Cache(self)
 
 
-IGain.with_cache = __with_cache
+IGain.with_cache = __with_cache  # type: ignore

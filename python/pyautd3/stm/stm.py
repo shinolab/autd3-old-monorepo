@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 04/10/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -104,7 +104,7 @@ class STM(Datagram, metaclass=ABCMeta):
         return timedelta(microseconds=int(Base().stm_props_sampling_period(self._props(), size)) / 1000)
 
     @abstractmethod
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         pass
 
 
@@ -138,7 +138,7 @@ class FocusSTM(STM):
         self._points = []
         self._duty_shifts = []
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
         shifts = np.ctypeslib.as_ctypes(
             np.array(self._duty_shifts).astype(ctypes.c_uint8)
@@ -260,7 +260,7 @@ class GainSTM(STM):
         self._gains = []
         self._mode = GainSTMMode.PhaseDutyFull
 
-    def ptr(self, geometry: Geometry) -> DatagramPtr:
+    def _ptr(self, geometry: Geometry) -> DatagramPtr:
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
             gains[i]["_0"] = g.gain_ptr(geometry)._0
