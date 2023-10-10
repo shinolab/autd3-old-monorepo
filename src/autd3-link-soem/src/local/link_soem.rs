@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -363,7 +363,6 @@ impl<T: Transducer> LinkBuilder<T> for SOEMBuilder {
                 let is_open = is_open.clone();
                 let on_lost = on_lost.take();
                 let on_err = on_err.take();
-                let state_check_interval = state_check_interval;
                 move || {
                     let error_handler = EcatErrorHandler { on_lost, on_err };
                     while is_open.load(Ordering::Acquire) {

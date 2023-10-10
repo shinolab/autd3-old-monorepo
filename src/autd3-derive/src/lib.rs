@@ -26,10 +26,10 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
                 .as_ref()
                 .map(|ident| ident == "freq_div")
                 .unwrap_or(false);
-            let no_change = field.attrs.iter().any(|attr| match &attr.meta {
-                Meta::Path(path) if path.is_ident("no_change") => true,
-                _ => false,
-            });
+            let no_change = field
+                .attrs
+                .iter()
+                .any(|attr| matches!(&attr.meta, Meta::Path(path) if path.is_ident("no_change")));
             is_freq_div && no_change
         })
     } else {
