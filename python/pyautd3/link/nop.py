@@ -28,7 +28,7 @@ class Nop:
         def __init__(self):
             pass
 
-        def ptr(self) -> LinkBuilderPtr:
+        def _ptr(self) -> LinkBuilderPtr:
             return LinkNop().link_nop()
 
     @staticmethod

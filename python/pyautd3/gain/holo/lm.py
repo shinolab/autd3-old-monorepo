@@ -73,6 +73,7 @@ class LM(Holo):
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
+        assert self._backend is not None
         ptr = self._backend.lm(foci_, amps, size)
         if self._eps1 is not None:
             ptr = self._backend.lm_with_eps1(ptr, self._eps1)

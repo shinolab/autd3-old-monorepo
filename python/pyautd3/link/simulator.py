@@ -30,10 +30,10 @@ class Simulator:
     """
 
     class _Builder(LinkBuilder):
-        _ptr: LinkSimulatorBuilderPtr
+        _builder: LinkSimulatorBuilderPtr
 
         def __init__(self, port: int):
-            self._ptr = LinkSimulator().link_simulator(port)
+            self._builder = LinkSimulator().link_simulator(port)
 
         def with_server_ip(self, addr: str) -> "Simulator._Builder":
             """Set server IP address
@@ -43,10 +43,10 @@ class Simulator:
             """
 
             err = ctypes.create_string_buffer(256)
-            self._ptr = LinkSimulator().link_simulator_with_addr(
-                self._ptr, addr.encode("utf-8"), err
+            self._builder = LinkSimulator().link_simulator_with_addr(
+                self._builder, addr.encode("utf-8"), err
             )
-            if self._ptr._0 is None:
+            if self._builder._0 is None:
                 raise AUTDError(err)
             return self
 
@@ -57,13 +57,13 @@ class Simulator:
             - `timeout` - Timeout
             """
 
-            self._ptr = LinkSimulator().link_simulator_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkSimulator().link_simulator_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkSimulator().link_simulator_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkSimulator().link_simulator_into_builder(self._builder)
 
     @staticmethod
     def builder(port: int) -> _Builder:

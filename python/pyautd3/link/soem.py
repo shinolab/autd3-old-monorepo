@@ -46,10 +46,10 @@ class EtherCATAdapter:
 
 class SOEM:
     class _Builder(LinkBuilder):
-        _ptr: LinkSOEMBuilderPtr
+        _builder: LinkSOEMBuilderPtr
 
         def __init__(self):
-            self._ptr = LinkSOEM().link_soem()
+            self._builder = LinkSOEM().link_soem()
 
         def with_ifname(self, ifname: str) -> "SOEM._Builder":
             """Set network interface name
@@ -59,7 +59,7 @@ class SOEM:
             If empty, this link will automatically find the network interface that is connected to AUTD3 devices.
             """
 
-            self._ptr = LinkSOEM().link_soem_with_ifname(self._ptr, ifname.encode("utf-8"))
+            self._builder = LinkSOEM().link_soem_with_ifname(self._builder, ifname.encode("utf-8"))
             return self
 
         def with_buf_size(self, size: int) -> "SOEM._Builder":
@@ -69,7 +69,7 @@ class SOEM:
             - `size` - send buffer size
             """
 
-            self._ptr = LinkSOEM().link_soem_with_buf_size(self._ptr, size)
+            self._builder = LinkSOEM().link_soem_with_buf_size(self._builder, size)
             return self
 
         def with_send_cycle(self, cycle: int) -> "SOEM._Builder":
@@ -79,7 +79,7 @@ class SOEM:
             - `cycle` - send cycle  (the unit is 500us)
             """
 
-            self._ptr = LinkSOEM().link_soem_with_send_cycle(self._ptr, cycle)
+            self._builder = LinkSOEM().link_soem_with_send_cycle(self._builder, cycle)
             return self
 
         def with_sync0_cycle(self, cycle: int) -> "SOEM._Builder":
@@ -89,7 +89,7 @@ class SOEM:
             - `cycle` - Sync0 cycle  (the unit is 500us)
             """
 
-            self._ptr = LinkSOEM().link_soem_with_sync_0_cycle(self._ptr, cycle)
+            self._builder = LinkSOEM().link_soem_with_sync_0_cycle(self._builder, cycle)
             return self
 
         def with_on_lost(self, handle) -> "SOEM._Builder":
@@ -99,7 +99,7 @@ class SOEM:
             - `handle` - Callback function
             """
 
-            self._ptr = LinkSOEM().link_soem_with_on_lost(self._ptr, handle)
+            self._builder = LinkSOEM().link_soem_with_on_lost(self._builder, handle)
             return self
 
         def with_timer_strategy(self, strategy: TimerStrategy) -> "SOEM._Builder":
@@ -109,7 +109,7 @@ class SOEM:
             - `strategy` - Timer strategy
             """
 
-            self._ptr = LinkSOEM().link_soem_with_timer_strategy(self._ptr, strategy)
+            self._builder = LinkSOEM().link_soem_with_timer_strategy(self._builder, strategy)
             return self
 
         def with_sync_mode(self, mode: SyncMode) -> "SOEM._Builder":
@@ -118,7 +118,7 @@ class SOEM:
             See [Beckhoff's site](https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html) for more details.
             """
 
-            self._ptr = LinkSOEM().link_soem_with_sync_mode(self._ptr, mode)
+            self._builder = LinkSOEM().link_soem_with_sync_mode(self._builder, mode)
             return self
 
         def with_state_check_interval(self, interval: timedelta) -> "SOEM._Builder":
@@ -128,8 +128,8 @@ class SOEM:
             - `interval` - State check interval
             """
 
-            self._ptr = LinkSOEM().link_soem_with_state_check_interval(
-                self._ptr, int(interval.total_seconds() / 1000)
+            self._builder = LinkSOEM().link_soem_with_state_check_interval(
+                self._builder, int(interval.total_seconds() / 1000)
             )
             return self
 
@@ -140,13 +140,13 @@ class SOEM:
             - `timeout` - Timeout
             """
 
-            self._ptr = LinkSOEM().link_soem_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkSOEM().link_soem_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkSOEM().link_soem_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkSOEM().link_soem_into_builder(self._builder)
 
     @staticmethod
     def enumerate_adapters() -> List[EtherCATAdapter]:
@@ -182,12 +182,12 @@ class RemoteSOEM:
     """
 
     class _Builder(LinkBuilder):
-        _ptr: LinkRemoteSOEMBuilderPtr
+        _builder: LinkRemoteSOEMBuilderPtr
 
         def __init__(self, addr: str):
             err = ctypes.create_string_buffer(256)
-            self._ptr = LinkSOEM().link_remote_soem(addr.encode("utf-8"), err)
-            if self._ptr._0 is None:
+            self._builder = LinkSOEM().link_remote_soem(addr.encode("utf-8"), err)
+            if self._builder._0 is None:
                 raise RuntimeError(err.value.decode("utf-8"))
 
         def with_timeout(self, timeout: timedelta) -> "RemoteSOEM._Builder":
@@ -197,13 +197,13 @@ class RemoteSOEM:
             - `timeout` - Timeout
             """
 
-            self._ptr = LinkSOEM().link_remote_soem_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkSOEM().link_remote_soem_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkSOEM().link_remote_soem_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkSOEM().link_remote_soem_into_builder(self._builder)
 
     @staticmethod
     def builder(addr: str) -> _Builder:

@@ -28,21 +28,21 @@ class Audit:
     _ptr: LinkPtr
 
     class _Builder(LinkBuilder):
-        _ptr: LinkAuditBuilderPtr
+        _builder: LinkAuditBuilderPtr
 
         def __init__(self):
-            self._ptr = LinkAudit().link_audit()
+            self._builder = LinkAudit().link_audit()
 
         def with_timeout(self, timeout: timedelta) -> "Audit._Builder":
-            self._ptr = LinkAudit().link_audit_with_timeout(
-                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            self._builder = LinkAudit().link_audit_with_timeout(
+                self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
             )
             return self
 
-        def ptr(self) -> LinkBuilderPtr:
-            return LinkAudit().link_audit_into_builder(self._ptr)
+        def _ptr(self) -> LinkBuilderPtr:
+            return LinkAudit().link_audit_into_builder(self._builder)
 
-        def resolve_link(self, obj):
+        def _resolve_link(self, obj):
             obj.link = lambda: Audit(LinkAudit().link_get(obj._ptr))
 
     def __init__(self, ptr: LinkPtr):

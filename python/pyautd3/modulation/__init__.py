@@ -30,6 +30,4 @@ __all__ = [
     "Square",
 ]
 
-_ = Cache
-_ = Transform
-_ = RadiationPressure
+_ = Cache, Transform, RadiationPressure

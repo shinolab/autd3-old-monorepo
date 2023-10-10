@@ -72,4 +72,4 @@ def __with_cache(self):
     return Cache(self)
 
 
-IModulation.with_cache = __with_cache
+IModulation.with_cache = __with_cache  # type: ignore

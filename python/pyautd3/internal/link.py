@@ -18,8 +18,8 @@ from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr
 
 class LinkBuilder(metaclass=ABCMeta):
     @abstractmethod
-    def ptr(self) -> LinkBuilderPtr:
+    def _ptr(self) -> LinkBuilderPtr:
         pass
 
-    def resolve_link(self, obj):
+    def _resolve_link(self, obj):
         pass

@@ -29,7 +29,7 @@ class IModulation(Datagram, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
 
-    def ptr(self, _: Geometry) -> DatagramPtr:
+    def _ptr(self, _: Geometry) -> DatagramPtr:
         return Base().modulation_into_datagram(self.modulation_ptr())
 
     @property

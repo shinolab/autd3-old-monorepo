@@ -46,4 +46,4 @@ def __with_transform(self, f: Callable[[int, float], float]):
     return Transform(self, f)
 
 
-IModulation.with_transform = __with_transform
+IModulation.with_transform = __with_transform  # type: ignore
