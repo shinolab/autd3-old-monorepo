@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -59,8 +59,9 @@ impl<T: Transducer> LinkBuilder<T> for RemoteTwinCATBuilder {
 
         let octets = server_ams_net_id
             .split('.')
-            .map(|octet| octet.parse::<u8>().unwrap())
-            .collect::<Vec<_>>();
+            .map(|octet| octet.parse::<u8>())
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| AUTDInternalError::from(AdsError::AmsNetIdParse))?;
 
         if octets.len() != 6 {
             return Err(AdsError::AmsNetIdParse.into());
@@ -75,8 +76,9 @@ impl<T: Transducer> LinkBuilder<T> for RemoteTwinCATBuilder {
         if let Some(client_ams_net_id) = client_ams_net_id.take() {
             let local_octets = client_ams_net_id
                 .split('.')
-                .map(|octet| octet.parse::<u8>().unwrap())
-                .collect::<Vec<_>>();
+                .map(|octet| octet.parse::<u8>())
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| AUTDInternalError::from(AdsError::AmsNetIdParse))?;
             if local_octets.len() != 6 {
                 return Err(AdsError::AmsNetIdParse.into());
             }
