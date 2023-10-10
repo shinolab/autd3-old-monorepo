@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 02/10/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,22 +12,19 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 '''
 
 
-import functools
 import numpy as np
-from typing import Iterable, Optional, List, Tuple
+from typing import Optional, List
 import ctypes
 
 from pyautd3.geometry import Geometry
 
 from .backend import Backend
-from .constraint import AmplitudeConstraint
+from .holo import Holo
 
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
-from pyautd3.gain.gain import IGain
 
-
-class LM(IGain):
+class LM(Holo):
     """Gain to produce multiple foci with Levenberg-Marquardt algorithm
 
     - Reference
@@ -38,57 +35,19 @@ class LM(IGain):
         * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
     """
 
-    _foci: List[float]
-    _amps: List[float]
-    _backend: Backend
     _eps1: Optional[float]
     _eps2: Optional[float]
     _tau: Optional[float]
     _kmax: Optional[int]
     _initial: List[float]
-    _constraint: Optional[AmplitudeConstraint]
 
     def __init__(self, backend: Backend):
-        self._foci = []
-        self._amps = []
-        self._backend = backend
+        super().__init__(backend)
         self._eps1 = None
         self._eps2 = None
         self._tau = None
         self._kmax = None
         self._initial = []
-        self._constraint = None
-
-    def add_focus(self, focus: np.ndarray, amp: float) -> "LM":
-        """Add focus
-
-        Arguments:
-        - `focus` - Focus point
-        - `amp` - Focus amplitude
-        """
-
-        assert len(focus) == 3
-
-        self._foci.append(focus[0])
-        self._foci.append(focus[1])
-        self._foci.append(focus[2])
-        self._amps.append(amp)
-        return self
-
-    def add_foci_from_iter(
-        self, iterable: Iterable[Tuple[np.ndarray, float]]
-    ) -> "LM":
-        """Add foci from iterable
-
-        Arguments:
-        - `iterable` - Iterable of focus point and amplitude
-        """
-
-        return functools.reduce(
-            lambda acc, x: acc.add_focus(x[0], x[1]),
-            iterable,
-            self,
-        )
 
     def with_eps1(self, eps1: float) -> "LM":
         self._eps1 = eps1
@@ -108,16 +67,6 @@ class LM(IGain):
 
     def with_initial(self, initial: List[float]) -> "LM":
         self._initial = initial
-        return self
-
-    def with_constraint(self, constraint: AmplitudeConstraint) -> "LM":
-        """Set amplitude constraint
-
-        Arguments:
-        - `constraint` - Amplitude constraint
-        """
-
-        self._constraint = constraint
         return self
 
     def gain_ptr(self, _: Geometry) -> GainPtr:
