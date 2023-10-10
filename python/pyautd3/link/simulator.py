@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,45 +15,56 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from datetime import timedelta
 import ctypes
 
-from .link import Link
-
 from pyautd3.native_methods.autd3capi_link_simulator import (
+    LinkSimulatorBuilderPtr,
     NativeMethods as LinkSimulator,
 )
+from pyautd3.native_methods.autd3capi_link_simulator import LinkBuilderPtr
 from pyautd3.autd_error import AUTDError
+from pyautd3.internal.link import LinkBuilder
 
 
-class Simulator(Link):
+class Simulator:
     """Link for Simulator
 
     """
 
-    def __init__(self, port: int):
-        super().__init__(LinkSimulator().link_simulator(port))
+    class _Builder(LinkBuilder):
+        _ptr: LinkSimulatorBuilderPtr
 
-    def with_server_ip(self, addr: str) -> "Simulator":
-        """Set server IP address
+        def __init__(self, port: int):
+            self._ptr = LinkSimulator().link_simulator(port)
 
-        Arguments:
-        - `addr` - Server IP address
-        """
+        def with_server_ip(self, addr: str) -> "Simulator._Builder":
+            """Set server IP address
 
-        err = ctypes.create_string_buffer(256)
-        self._ptr = LinkSimulator().link_simulator_with_addr(
-            self._ptr, addr.encode("utf-8"), err
-        )
-        if self._ptr._0 is None:
-            raise AUTDError(err)
-        return self
+            Arguments:
+            - `addr` - Server IP address
+            """
 
-    def with_timeout(self, timeout: timedelta) -> "Simulator":
-        """Set timeout
+            err = ctypes.create_string_buffer(256)
+            self._ptr = LinkSimulator().link_simulator_with_addr(
+                self._ptr, addr.encode("utf-8"), err
+            )
+            if self._ptr._0 is None:
+                raise AUTDError(err)
+            return self
 
-        Arguments:
-        - `timeout` - Timeout
-        """
+        def with_timeout(self, timeout: timedelta) -> "Simulator._Builder":
+            """Set timeout
 
-        self._ptr = LinkSimulator().link_simulator_with_timeout(
-            self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
-        )
-        return self
+            Arguments:
+            - `timeout` - Timeout
+            """
+
+            self._ptr = LinkSimulator().link_simulator_with_timeout(
+                self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+            )
+            return self
+
+        def ptr(self) -> LinkBuilderPtr:
+            return LinkSimulator().link_simulator_into_builder(self._ptr)
+
+    @staticmethod
+    def builder(port: int) -> _Builder:
+        return Simulator._Builder(port)

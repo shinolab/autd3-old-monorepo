@@ -4,7 +4,7 @@ Project: audio_file
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 25/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ def test_rawpcm():
     assert autd.send(RawPCM(os.path.join(os.path.dirname(__file__), "sin150.dat"), 4000))
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link().modulation(dev.idx)
         mod_expext = [
             107,
             131,
@@ -110,16 +110,16 @@ def test_rawpcm():
             64,
             85]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link().modulation_frequency_division(dev.idx) == 40960
 
     assert autd.send(RawPCM(os.path.join(os.path.dirname(__file__), "sin150.dat"), 4000).with_sampling_frequency_division(4096 // 8))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 4096
+        assert autd.link().modulation_frequency_division(dev.idx) == 4096
 
     assert autd.send(RawPCM(os.path.join(os.path.dirname(__file__), "sin150.dat"), 4000).with_sampling_frequency(8e3))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 20480
+        assert autd.link().modulation_frequency_division(dev.idx) == 20480
 
     assert autd.send(RawPCM(os.path.join(os.path.dirname(__file__), "sin150.dat"), 4000).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 16384
+        assert autd.link().modulation_frequency_division(dev.idx) == 16384

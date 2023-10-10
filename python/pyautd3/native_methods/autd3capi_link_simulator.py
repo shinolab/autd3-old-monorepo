@@ -2,7 +2,11 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import LinkPtr
+from .autd3capi_def import LinkBuilderPtr
+
+
+class LinkSimulatorBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class Singleton(type):
@@ -26,19 +30,25 @@ class NativeMethods(metaclass=Singleton):
             return
 
         self.dll.AUTDLinkSimulator.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDLinkSimulator.restype = LinkPtr
+        self.dll.AUTDLinkSimulator.restype = LinkSimulatorBuilderPtr
 
-        self.dll.AUTDLinkSimulatorWithAddr.argtypes = [LinkPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkSimulatorWithAddr.restype = LinkPtr
+        self.dll.AUTDLinkSimulatorWithAddr.argtypes = [LinkSimulatorBuilderPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSimulatorWithAddr.restype = LinkSimulatorBuilderPtr
 
-        self.dll.AUTDLinkSimulatorWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkSimulatorWithTimeout.restype = LinkPtr
+        self.dll.AUTDLinkSimulatorWithTimeout.argtypes = [LinkSimulatorBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSimulatorWithTimeout.restype = LinkSimulatorBuilderPtr
 
-    def link_simulator(self, port: int) -> LinkPtr:
+        self.dll.AUTDLinkSimulatorIntoBuilder.argtypes = [LinkSimulatorBuilderPtr]  # type: ignore 
+        self.dll.AUTDLinkSimulatorIntoBuilder.restype = LinkBuilderPtr
+
+    def link_simulator(self, port: int) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulator(port)
 
-    def link_simulator_with_addr(self, simulator: LinkPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
+    def link_simulator_with_addr(self, simulator: LinkSimulatorBuilderPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulatorWithAddr(simulator, addr, err)
 
-    def link_simulator_with_timeout(self, simulator: LinkPtr, timeout_ns: int) -> LinkPtr:
+    def link_simulator_with_timeout(self, simulator: LinkSimulatorBuilderPtr, timeout_ns: int) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulatorWithTimeout(simulator, timeout_ns)
+
+    def link_simulator_into_builder(self, simulator: LinkSimulatorBuilderPtr) -> LinkBuilderPtr:
+        return self.dll.AUTDLinkSimulatorIntoBuilder(simulator)

@@ -52,7 +52,7 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
 SOEM.builder()\
     .with_ifname("")
@@ -111,7 +111,7 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnLostFunc
 
 def on_lost(msg: ctypes.c_char_p):
     print(msg.decode("utf-8"), end="")
@@ -162,7 +162,7 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
 SOEM.builder()\
     .with_sync0_cycle(2)\
@@ -208,7 +208,7 @@ SOEM.Builder()
 
 ```python
 from pyautd3 import TimerStrategy
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
 SOEM.builder()\
     .with_timer_strategy(TimerStrategy.BusyWait)
@@ -259,7 +259,7 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link import SOEM, SyncMode
+from pyautd3.link.soem import SOEM, SyncMode
 
 SOEM.builder()\
     .with_sync_mode(SyncMode.DC)
@@ -319,17 +319,17 @@ RemoteSOEM::builder("172.16.99.104:8080".parse()?)
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::RemoteSOEM("172.16.99.104:8080")
+autd3::link::RemoteSOEM::builder("172.16.99.104:8080")
 ```
 
 ```cs
-new RemoteSOEM(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
+RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
 ```
 
 ```python
-from pyautd3.link import RemoteSOEM
+from pyautd3.link.soem import RemoteSOEM
 
-RemoteSOEM("172.16.99.104:8080")
+RemoteSOEM.builder("172.16.99.104:8080")
 ```
 
 ## SOEMAUTDServer

@@ -1,5 +1,5 @@
 from pyautd3 import AUTD3, Controller, Silencer
-from pyautd3.link import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnLostFunc
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
 

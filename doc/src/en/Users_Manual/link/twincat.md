@@ -108,7 +108,7 @@ TwinCAT.Builder()
 ```
 
 ```python
-from pyautd3.link import TwinCAT
+from pyautd3.link.twincat import TwinCAT
 
 TwinCAT.builder()
 ```
@@ -197,7 +197,7 @@ RemoteTwinCAT.Builder("172.16.99.111.1.1")
 ```
 
 ```python
-from pyautd3.link import RemoteTwinCAT
+from pyautd3.link.twincat import RemoteTwinCAT
 
 RemoteTwinCAT.builder("172.16.99.111.1.1")\
     .with_server_ip("172.16.99.104")\

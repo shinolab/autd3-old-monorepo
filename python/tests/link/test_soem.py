@@ -4,7 +4,7 @@ Project: link
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,22 +17,13 @@ from datetime import timedelta
 import os
 import pytest
 
-from pyautd3 import Controller, AUTD3, Level, TimerStrategy
-from pyautd3.link import SOEM, RemoteSOEM, SyncMode
-from pyautd3.link import LogFlushFunc, LogOutputFunc, OnLostFunc
+from pyautd3 import Controller, AUTD3, TimerStrategy
+from pyautd3.link.soem import SOEM, RemoteSOEM, SyncMode, OnLostFunc
 
 
 def on_lost_f(msg: ctypes.c_char_p):
     print(msg.decode("utf-8"), end="")
     os._exit(-1)
-
-
-def on_out_f(msg: ctypes.c_char_p):
-    print(msg.decode("utf-8"), end="")
-
-
-def on_flush_f():
-    pass
 
 
 @pytest.mark.soem
@@ -41,23 +32,19 @@ def test_soem():
     print(list)
 
     on_lost = OnLostFunc(on_lost_f)
-    log_out = LogOutputFunc(on_out_f)
-    log_flush = LogFlushFunc(on_flush_f)
     autd = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
         .open_with(
-            SOEM()
-            .with_ifname("")
-            .with_buf_size(32)
-            .with_send_cycle(2)
-            .with_sync0_cycle(2)
-            .with_on_lost(on_lost)
-            .with_timer_strategy(TimerStrategy.Sleep)
-            .with_sync_mode(SyncMode.FreeRun)
-            .with_state_check_interval(timedelta(milliseconds=100))
-            .with_log_level(Level.Off)
-            .with_log_func(log_out, log_flush)
-            .with_timeout(timedelta(milliseconds=200))
+            SOEM.builder()
+                .with_ifname("")
+                .with_buf_size(32)
+                .with_send_cycle(2)
+                .with_sync0_cycle(2)
+                .with_on_lost(on_lost)
+                .with_timer_strategy(TimerStrategy.Sleep)
+                .with_sync_mode(SyncMode.FreeRun)
+                .with_state_check_interval(timedelta(milliseconds=100))
+                .with_timeout(timedelta(milliseconds=200))
     )
 
     autd.close()

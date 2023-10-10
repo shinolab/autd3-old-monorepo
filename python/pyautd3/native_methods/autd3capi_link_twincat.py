@@ -2,7 +2,15 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import LinkPtr
+from .autd3capi_def import LinkBuilderPtr
+
+
+class LinkTwinCATBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class LinkRemoteTwinCATBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class Singleton(type):
@@ -25,38 +33,50 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDLinkTwinCAT.argtypes = [ctypes.c_char_p] 
-        self.dll.AUTDLinkTwinCAT.restype = LinkPtr
+        self.dll.AUTDLinkTwinCAT.argtypes = [] 
+        self.dll.AUTDLinkTwinCAT.restype = LinkTwinCATBuilderPtr
 
-        self.dll.AUTDLinkTwinCATWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkTwinCATWithTimeout.restype = LinkPtr
+        self.dll.AUTDLinkTwinCATWithTimeout.argtypes = [LinkTwinCATBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkTwinCATWithTimeout.restype = LinkTwinCATBuilderPtr
+
+        self.dll.AUTDLinkTwinCATIntoBuilder.argtypes = [LinkTwinCATBuilderPtr]  # type: ignore 
+        self.dll.AUTDLinkTwinCATIntoBuilder.restype = LinkBuilderPtr
 
         self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteTwinCAT.restype = LinkPtr
+        self.dll.AUTDLinkRemoteTwinCAT.restype = LinkRemoteTwinCATBuilderPtr
 
-        self.dll.AUTDLinkRemoteTwinCATWithServerIP.argtypes = [LinkPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkRemoteTwinCATWithServerIP.restype = LinkPtr
+        self.dll.AUTDLinkRemoteTwinCATWithServerIP.argtypes = [LinkRemoteTwinCATBuilderPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkRemoteTwinCATWithServerIP.restype = LinkRemoteTwinCATBuilderPtr
 
-        self.dll.AUTDLinkRemoteTwinCATWithClientAmsNetId.argtypes = [LinkPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkRemoteTwinCATWithClientAmsNetId.restype = LinkPtr
+        self.dll.AUTDLinkRemoteTwinCATWithClientAmsNetId.argtypes = [LinkRemoteTwinCATBuilderPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkRemoteTwinCATWithClientAmsNetId.restype = LinkRemoteTwinCATBuilderPtr
 
-        self.dll.AUTDLinkRemoteTwinCATWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkRemoteTwinCATWithTimeout.restype = LinkPtr
+        self.dll.AUTDLinkRemoteTwinCATWithTimeout.argtypes = [LinkRemoteTwinCATBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkRemoteTwinCATWithTimeout.restype = LinkRemoteTwinCATBuilderPtr
 
-    def link_twin_cat(self, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
-        return self.dll.AUTDLinkTwinCAT(err)
+        self.dll.AUTDLinkRemoteTwinCATIntoBuilder.argtypes = [LinkRemoteTwinCATBuilderPtr]  # type: ignore 
+        self.dll.AUTDLinkRemoteTwinCATIntoBuilder.restype = LinkBuilderPtr
 
-    def link_twin_cat_with_timeout(self, twincat: LinkPtr, timeout_ns: int) -> LinkPtr:
+    def link_twin_cat(self) -> LinkTwinCATBuilderPtr:
+        return self.dll.AUTDLinkTwinCAT()
+
+    def link_twin_cat_with_timeout(self, twincat: LinkTwinCATBuilderPtr, timeout_ns: int) -> LinkTwinCATBuilderPtr:
         return self.dll.AUTDLinkTwinCATWithTimeout(twincat, timeout_ns)
 
-    def link_remote_twin_cat(self, server_ams_net_id: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
+    def link_twin_cat_into_builder(self, twincat: LinkTwinCATBuilderPtr) -> LinkBuilderPtr:
+        return self.dll.AUTDLinkTwinCATIntoBuilder(twincat)
+
+    def link_remote_twin_cat(self, server_ams_net_id: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCAT(server_ams_net_id, err)
 
-    def link_remote_twin_cat_with_server_ip(self, twincat: LinkPtr, addr: bytes) -> LinkPtr:
+    def link_remote_twin_cat_with_server_ip(self, twincat: LinkRemoteTwinCATBuilderPtr, addr: bytes) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCATWithServerIP(twincat, addr)
 
-    def link_remote_twin_cat_with_client_ams_net_id(self, twincat: LinkPtr, id: bytes) -> LinkPtr:
+    def link_remote_twin_cat_with_client_ams_net_id(self, twincat: LinkRemoteTwinCATBuilderPtr, id: bytes) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCATWithClientAmsNetId(twincat, id)
 
-    def link_remote_twin_cat_with_timeout(self, twincat: LinkPtr, timeout_ns: int) -> LinkPtr:
+    def link_remote_twin_cat_with_timeout(self, twincat: LinkRemoteTwinCATBuilderPtr, timeout_ns: int) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCATWithTimeout(twincat, timeout_ns)
+
+    def link_remote_twin_cat_into_builder(self, twincat: LinkRemoteTwinCATBuilderPtr) -> LinkBuilderPtr:
+        return self.dll.AUTDLinkRemoteTwinCATIntoBuilder(twincat)

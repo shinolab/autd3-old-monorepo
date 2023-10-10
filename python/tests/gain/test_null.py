@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,6 @@ def test_null():
     assert autd.send(Null())
 
     for dev in autd.geometry:
-        duties, phases = Audit.duties_and_phases(autd._ptr, dev.idx, 0)
+        duties, phases = autd.link().duties_and_phases(dev.idx, 0)
         assert np.all(duties == 8)
         assert np.all(phases == 0)
