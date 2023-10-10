@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -123,7 +123,6 @@ impl ToMessage for autd3::modulation::Static {
             datagram: Some(datagram::Datagram::Modulation(Modulation {
                 modulation: Some(modulation::Modulation::Static(Static {
                     amp: self.amp() as _,
-                    freq_div: self.sampling_frequency_division() as _,
                 })),
             })),
         }
@@ -550,9 +549,7 @@ impl FromMessage<Quaternion> for autd3_driver::geometry::UnitQuaternion {
 impl FromMessage<Static> for autd3::modulation::Static {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Static) -> Self {
-        Self::new()
-            .with_amp(msg.amp as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
+        Self::new().with_amp(msg.amp as _)
     }
 }
 

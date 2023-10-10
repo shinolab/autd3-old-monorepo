@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,24 +15,24 @@ use std::ops::{Deref, DerefMut};
 
 use super::sine::Sine;
 
+use autd3_derive::Modulation;
 use autd3_driver::derive::prelude::*;
 
 use num::integer::lcm;
 
 /// Multi-frequency sine wave modulation
-#[derive(Clone)]
+#[derive(Modulation, Clone)]
 pub struct Fourier {
+    #[no_change]
     freq_div: u32,
     components: Vec<Sine>,
 }
 
 impl Fourier {
-    #[deprecated(note = "Use `Fourier::from()` instead", since = "15.3.0")]
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
+    pub fn new(sine: Sine) -> Self {
         Self {
-            components: Vec::new(),
-            freq_div: u32::MAX,
+            freq_div: sine.sampling_frequency_division(),
+            components: vec![sine],
         }
     }
 
@@ -85,11 +85,7 @@ impl Fourier {
 
 impl From<Sine> for Fourier {
     fn from(sine: Sine) -> Self {
-        let freq_div = sine.sampling_frequency_division();
-        Self {
-            components: vec![sine],
-            freq_div,
-        }
+        Self::new(sine)
     }
 }
 
@@ -120,26 +116,6 @@ impl std::ops::Add<Sine> for Sine {
 
     fn add(self, rhs: Sine) -> Self::Output {
         Fourier::from(self).add_component(rhs)
-    }
-}
-
-impl ModulationProperty for Fourier {
-    fn sampling_frequency(&self) -> float {
-        FPGA_SUB_CLK_FREQ as float / self.freq_div as float
-    }
-
-    fn sampling_frequency_division(&self) -> u32 {
-        self.freq_div
-    }
-}
-
-impl<T: autd3_driver::geometry::Transducer> autd3_driver::datagram::Datagram<T> for Fourier {
-    type O1 = autd3_driver::operation::ModulationOp;
-    type O2 = autd3_driver::operation::NullOp;
-
-    fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
-        let freq_div = self.freq_div;
-        Ok((Self::O1::new(self.calc()?, freq_div), Self::O2::default()))
     }
 }
 
