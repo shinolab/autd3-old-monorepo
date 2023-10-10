@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 02/10/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,21 +12,19 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 '''
 
 
-import functools
 import numpy as np
-from typing import Iterable, Optional, List, Tuple
+from typing import Optional
 import ctypes
 
 from .backend import Backend
-from .constraint import AmplitudeConstraint
+from .holo import Holo
 
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
 from pyautd3.geometry import Geometry
-from pyautd3.gain.gain import IGain
 
 
-class GSPAT(IGain):
+class GSPAT(Holo):
     """Gain to produce multiple foci with GS-PAT algorithm
 
     - Reference
@@ -34,62 +32,14 @@ class GSPAT(IGain):
           ACM Transactions on Graphics (TOG) 39.4 (2020): 138-1.
     """
 
-    _foci: List[float]
-    _amps: List[float]
-    _backend: Backend
     _repeat: Optional[int]
-    _constraint: Optional[AmplitudeConstraint]
 
     def __init__(self, backend: Backend):
-        self._foci = []
-        self._amps = []
-        self._backend = backend
+        super().__init__(backend)
         self._repeat = None
-        self._constraint = None
-
-    def add_focus(self, focus: np.ndarray, amp: float) -> "GSPAT":
-        """Add focus
-
-        Arguments:
-        - `focus` - Focus point
-        - `amp` - Focus amplitude
-        """
-
-        assert len(focus) == 3
-
-        self._foci.append(focus[0])
-        self._foci.append(focus[1])
-        self._foci.append(focus[2])
-        self._amps.append(amp)
-        return self
-
-    def add_foci_from_iter(
-        self, iterable: Iterable[Tuple[np.ndarray, float]]
-    ) -> "GSPAT":
-        """Add foci from iterable
-
-        Arguments:
-        - `iterable` - Iterable of focus point and amplitude
-        """
-
-        return functools.reduce(
-            lambda acc, x: acc.add_focus(x[0], x[1]),
-            iterable,
-            self,
-        )
 
     def with_repeat(self, value: int) -> "GSPAT":
         self._repeat = value
-        return self
-
-    def with_constraint(self, constraint: AmplitudeConstraint) -> "GSPAT":
-        """Set amplitude constraint
-
-        Arguments:
-        - `constraint` - Amplitude constraint
-        """
-
-        self._constraint = constraint
         return self
 
     def gain_ptr(self, _: Geometry) -> GainPtr:

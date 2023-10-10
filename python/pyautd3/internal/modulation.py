@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 29/09/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,14 +13,12 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from abc import ABCMeta, abstractmethod
-import ctypes
-import numpy as np
 from ctypes import create_string_buffer
-from typing import Callable, Iterator
+from datetime import timedelta
+from typing import Optional
 
-from pyautd3.native_methods.autd3capi import ModulationCachePtr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import DatagramPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import FPGA_SUB_CLK_FREQ, DatagramPtr, ModulationPtr
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.autd import Datagram
@@ -53,94 +51,42 @@ class IModulation(Datagram, metaclass=ABCMeta):
     def modulation_ptr(self) -> ModulationPtr:
         pass
 
-    def with_cache(self):
-        """Cache the result of calculation
 
-        """
+class IModulationWithFreqDiv(IModulation):
+    _freq_div: Optional[int]
 
-        return Cache(self)
+    def __init__(self):
+        super().__init__()
+        self._freq_div = None
 
-    def with_radiation_pressure(self):
-        """Apply modulation to radiation pressure instead of amplitude
-
-        """
-
-        return RadiationPressure(self)
-
-    def with_transform(self, f: Callable[[int, float], float]):
-        """Transform modulation data
+    def with_sampling_frequency_division(self, div: int):
+        """Set sampling frequency division
 
         Arguments:
-        - `f` - Transform function. The first argument is the index of the modulation data, and the second is the original data.
+        - `div` - Sampling frequency division.
+                The sampling frequency will be `pyautd3.AUTD3.fpga_sub_clk_freq()` / `div`.
         """
 
-        return Transform(self, f)
+        self._freq_div = div
+        return self
 
+    def with_sampling_frequency(self, freq: float):
+        """Set sampling frequency
 
-class Cache(IModulation):
-    """Modulation to cache the result of calculation
-
-    """
-
-    _cache: ModulationCachePtr
-    _buffer: np.ndarray
-
-    def __init__(self, m: IModulation):
-        err = create_string_buffer(256)
-        cache = Base().modulation_with_cache(m.modulation_ptr(), err)
-        if cache._0 is None:
-            raise AUTDError(err)
-        self._cache = cache
-
-        n = int(Base().modulation_cache_get_buffer_size(self._cache))
-        self._buffer = np.zeros(n, dtype=float)
-        Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
-
-    @property
-    def buffer(self) -> np.ndarray:
-        """get cached modulation data
-
+        Arguments:
+        - `freq` - Sampling frequency.
+                The sampling frequency closest to `freq` from the possible sampling frequencies is set.
         """
 
-        return self._buffer
+        div = int(FPGA_SUB_CLK_FREQ / freq)
+        return self.with_sampling_frequency_division(div)
 
-    def __getitem__(self, key: int) -> float:
-        return self._buffer[key]
+    def with_sampling_period(self, period: timedelta):
+        """Set sampling period
 
-    def __iter__(self) -> Iterator[float]:
-        return iter(self._buffer)
+        Arguments:
+        - `period` - Sampling period.
+                The sampling period closest to `period` from the possible sampling periods is set.
+        """
 
-    def modulation_ptr(self) -> ModulationPtr:
-        return Base().modulation_cache_into_modulation(self._cache)
-
-    def __del__(self):
-        Base().modulation_cache_delete(self._cache)
-
-
-class Transform(IModulation):
-    """Modulation to transform modulation data
-
-    """
-
-    _m: IModulation
-
-    def __init__(self, m: IModulation, f: Callable[[int, float], float]):
-        self._m = m
-        self._f_native = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_double)(lambda _, i, d: f(int(i), float(d)))
-
-    def modulation_ptr(self) -> ModulationPtr:
-        return Base().modulation_with_transform(self._m.modulation_ptr(), self._f_native, None)  # type: ignore
-
-
-class RadiationPressure(IModulation):
-    """Modulation for modulating radiation pressure
-
-    """
-
-    _m: IModulation
-
-    def __init__(self, m: IModulation):
-        self._m = m
-
-    def modulation_ptr(self) -> ModulationPtr:
-        return Base().modulation_with_radiation_pressure(self._m.modulation_ptr())
+        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000. * (period.total_seconds() * 1000. * 1000. * 1000.)))
