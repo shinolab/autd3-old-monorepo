@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
@@ -26,7 +24,10 @@ class Fourier;
 /**
  * @brief Sine wave modulation
  */
-class Sine final : public internal::Modulation, public IntoCache<Sine>, public IntoTransform<Sine>, public IntoRadiationPressure<Sine> {
+class Sine final : public internal::ModulationWithFreqDiv<Sine>,
+                   public IntoCache<Sine>,
+                   public IntoTransform<Sine>,
+                   public IntoRadiationPressure<Sine> {
  public:
   /**
    * @brief Constructor.
@@ -40,8 +41,6 @@ class Sine final : public internal::Modulation, public IntoCache<Sine>, public I
   AUTD3_DEF_PARAM(Sine, double, amp)
   AUTD3_DEF_PARAM(Sine, double, phase)
   AUTD3_DEF_PARAM(Sine, double, offset)
-
-  AUTD3_IMPL_MOD_PROP(Sine)
 
   friend Fourier operator+(Sine&& lhs, const Sine& rhs);
 
@@ -59,7 +58,6 @@ class Sine final : public internal::Modulation, public IntoCache<Sine>, public I
   std::optional<double> _amp;
   std::optional<double> _phase;
   std::optional<double> _offset;
-  std::optional<uint32_t> _freq_div;
 };
 
 }  // namespace autd3::modulation

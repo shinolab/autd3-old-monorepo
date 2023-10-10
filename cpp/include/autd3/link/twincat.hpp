@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ class TwinCAT final {
     Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkTwinCAT()) {}
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkTwinCATIntoBuilder(_ptr); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkTwinCATIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
@@ -43,7 +43,7 @@ class TwinCAT final {
     }
   };
 
-  static Builder builder() { return Builder(); }
+  static Builder builder() { return {}; }
 
   TwinCAT() = delete;
 };
@@ -58,14 +58,14 @@ class RemoteTwinCAT final {
 
     internal::native_methods::LinkRemoteTwinCATBuilderPtr _ptr;
 
-    explicit Builder(const std::string& server_ams_net_id) : internal::LinkBuilder() {
+    explicit Builder(const std::string& server_ams_net_id) : LinkBuilder() {
       char err[256];
       _ptr = internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str(), err);
       if (_ptr._0 == nullptr) throw internal::AUTDException(err);
     }
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkRemoteTwinCATIntoBuilder(_ptr); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkRemoteTwinCATIntoBuilder(_ptr); }
 
     /**
      * @brief Set server IP address

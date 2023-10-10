@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iterator>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -63,9 +62,9 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
     std::unordered_map<key_type, int32_t> keymap;
 
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
-    std::vector<uint32_t> device_indices(view.begin(), view.end());
+    const std::vector<uint32_t> device_indices(view.begin(), view.end());
 
-    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));
+    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), device_indices.size());
     int32_t k = 0;
     for (const auto& dev : geometry.devices()) {
       std::vector<int32_t> m;
@@ -90,7 +89,7 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
       values.emplace_back(kv.second->gain_ptr(geometry));
     }
 
-    return AUTDGainGroup(map, keys.data(), values.data(), static_cast<uint32_t>(keys.size()));
+    return AUTDGainGroup(map, keys.data(), values.data(), keys.size());
   }
 
  private:

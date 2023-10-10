@@ -12,15 +12,11 @@
 #pragma once
 
 #include <memory>
-#include <ranges>
 #include <vector>
 
 #include "autd3/gain/cache.hpp"
-#include "autd3/gain/holo/backend.hpp"
-#include "autd3/gain/holo/constraint.hpp"
-#include "autd3/gain/holo/utils.hpp"
+#include "autd3/gain/holo/holo.hpp"
 #include "autd3/gain/transform.hpp"
-#include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
@@ -38,21 +34,14 @@ namespace autd3::gain::holo {
  * * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
 template <class B>
-class LM final : public internal::Gain, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
+class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
  public:
-  explicit LM(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-  }
-
-  AUTD3_HOLO_ADD_FOCUS(LM)
-  AUTD3_HOLO_ADD_FOCI(LM)
+  explicit LM(std::shared_ptr<B> backend) : Holo<LM, B>(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
   AUTD3_DEF_PARAM(LM, double, tau)
   AUTD3_DEF_PARAM(LM, uint32_t, k_max)
-
-  AUTD3_DEF_PARAM(LM, AmplitudeConstraint, constraint)
 
   void with_initial(std::vector<double> value) & { _initial = std::move(value); }
 
@@ -62,26 +51,22 @@ class LM final : public internal::Gain, public IntoCache<LM<B>>, public IntoTran
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = _backend->lm(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
-    if (_eps1.has_value()) ptr = _backend->lm_with_eps1(ptr, _eps1.value());
-    if (_eps2.has_value()) ptr = _backend->lm_with_eps2(ptr, _eps2.value());
-    if (_tau.has_value()) ptr = _backend->lm_with_tau(ptr, _tau.value());
-    if (_k_max.has_value()) ptr = _backend->lm_with_k_max(ptr, _k_max.value());
-    if (!_initial.empty()) ptr = _backend->lm_with_initial(ptr, _initial.data(), _initial.size());
-    if (_constraint.has_value()) ptr = _backend->lm_with_constraint(ptr, _constraint.value());
+    auto ptr = this->_backend->lm(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    if (_eps1.has_value()) ptr = this->_backend->lm_with_eps1(ptr, _eps1.value());
+    if (_eps2.has_value()) ptr = this->_backend->lm_with_eps2(ptr, _eps2.value());
+    if (_tau.has_value()) ptr = this->_backend->lm_with_tau(ptr, _tau.value());
+    if (_k_max.has_value()) ptr = this->_backend->lm_with_k_max(ptr, _k_max.value());
+    if (!_initial.empty()) ptr = this->_backend->lm_with_initial(ptr, _initial.data(), _initial.size());
+    if (this->_constraint.has_value()) ptr = this->_backend->lm_with_constraint(ptr, this->_constraint.value());
     return ptr;
   }
 
  private:
-  std::shared_ptr<B> _backend;
-  std::vector<internal::Vector3> _foci;
-  std::vector<double> _amps;
   std::optional<double> _eps1;
   std::optional<double> _eps2;
   std::optional<double> _tau;
   std::optional<uint32_t> _k_max;
   std::vector<double> _initial;
-  std::optional<AmplitudeConstraint> _constraint;
 };
 
 }  // namespace autd3::gain::holo

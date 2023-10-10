@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class Gain : public internal::Gain {
     return std::accumulate(
         drives.begin(), drives.end(), internal::native_methods::AUTDGainCustom(),
         [](const internal::native_methods::GainPtr acc, const std::pair<size_t, std::vector<internal::native_methods::Drive>>& kv) {
-          return AUTDGainCustomSet(acc, static_cast<uint32_t>(kv.first), kv.second.data(), static_cast<uint32_t>(kv.second.size()));
+          return AUTDGainCustomSet(acc, static_cast<uint32_t>(kv.first), kv.second.data(), kv.second.size());
         });
   }
 

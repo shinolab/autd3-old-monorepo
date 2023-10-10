@@ -3,7 +3,7 @@
 // Created Date: 09/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ class Nop {
     explicit Builder() : LinkBuilder() {}
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkNop(); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkNop(); }
   };
 
   static Builder builder() { return Builder(); }

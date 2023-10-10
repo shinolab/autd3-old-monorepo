@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
@@ -24,7 +22,10 @@ namespace autd3::modulation {
 /**
  * @brief Square wave modulation
  */
-class Square final : public internal::Modulation, public IntoCache<Square>, public IntoTransform<Square>, public IntoRadiationPressure<Square> {
+class Square final : public internal::ModulationWithFreqDiv<Square>,
+                     public IntoCache<Square>,
+                     public IntoTransform<Square>,
+                     public IntoRadiationPressure<Square> {
  public:
   /**
    * @brief Constructor
@@ -36,8 +37,6 @@ class Square final : public internal::Modulation, public IntoCache<Square>, publ
   AUTD3_DEF_PARAM(Square, double, low)
   AUTD3_DEF_PARAM(Square, double, high)
   AUTD3_DEF_PARAM(Square, double, duty)
-
-  AUTD3_IMPL_MOD_PROP(Square)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSquare(_freq);
@@ -53,7 +52,6 @@ class Square final : public internal::Modulation, public IntoCache<Square>, publ
   std::optional<double> _low;
   std::optional<double> _high;
   std::optional<double> _duty;
-  std::optional<uint32_t> _freq_div;
 };
 
 }  // namespace autd3::modulation
