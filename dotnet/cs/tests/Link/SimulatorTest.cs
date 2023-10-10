@@ -18,11 +18,11 @@ namespace tests.Link;
 public class SimulatorTest
 {
     [Fact(Skip = "Simulator is required")]
-    public void Simulator()
+    public void TestSimulator()
     {
         var autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new Simulator(8080)
+            .OpenWith(Simulator.Builder(8080)
                 .WithServerIp(IPAddress.Parse("127.0.0.1"))
                 .WithTimeout(TimeSpan.FromMilliseconds(200)));
 

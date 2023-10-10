@@ -16,7 +16,7 @@ open AUTD3Sharp.Link
 let autd = Controller.Builder()
             .Advanced()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith((new Debug()))
+            .OpenWith(Nop.Builder())
 
 autd.Geometry |> Seq.iter (fun dev -> dev |> Seq.iter (fun tr -> tr.Frequency <- 70e3))
 

@@ -24,7 +24,7 @@ var onLost = new SOEM.OnLostCallbackDelegate(msg =>
 
 var autd = Controller.Builder().
     AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .OpenWith(new SOEM()
+    .OpenWith(SOEM.Builder()
         .WithOnLost(onLost));
 
 SampleRunner.Run(autd);

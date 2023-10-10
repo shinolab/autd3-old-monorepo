@@ -48,8 +48,6 @@ public class SimpleAUTDController : MonoBehaviour
     }
 
     private readonly AUTD3Sharp.Link.SOEM.OnLostCallbackDelegate _onLost = new(OnLost);
-    private readonly AUTD3Sharp.Internal.OnLogOutputCallback _output = new(LogOutput);
-    private readonly AUTD3Sharp.Internal.OnLogFlushCallback _flush = new(LogFlush);
 
     private void Awake()
     {
@@ -57,9 +55,7 @@ public class SimpleAUTDController : MonoBehaviour
         {
             _autd = Controller.Builder()
                 .AddDevice(new AUTD3(gameObject.transform.position, gameObject.transform.rotation))
-                .OpenWith(new AUTD3Sharp.Link.SOEM()
-                    .WithOnLost(_onLost)
-                    .WithLogFunc(_output, _flush));
+                .OpenWith(AUTD3Sharp.Link.SOEM.Builder().WithOnLost(_onLost));
         }
         catch (Exception)
         {
@@ -70,10 +66,6 @@ public class SimpleAUTDController : MonoBehaviour
             UnityEngine.Application.Quit();
 #endif
         }
-
-        _autd!.Send(new Clear());
-
-        _autd!.Send(new Synchronize());
 
         _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 

@@ -18,7 +18,7 @@ open AUTD3Sharp.Modulation
 let autd = Controller.Builder()
             .Advanced()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith((new Debug()));
+            .OpenWith(Nop.Builder());
 
 let cx = autd.Geometry.Center.x;
 let g1 = new Focus(autd.Geometry.Center + Vector3d(0., 0., 150.));

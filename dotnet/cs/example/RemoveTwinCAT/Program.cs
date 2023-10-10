@@ -20,7 +20,7 @@ const string serverAmsNetId = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99
 
 var autd = Controller.Builder()
     .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .OpenWith(new RemoteTwinCAT(serverAmsNetId));
+    .OpenWith(RemoteTwinCAT.Builder(serverAmsNetId));
 
 
 SampleRunner.Run(autd);

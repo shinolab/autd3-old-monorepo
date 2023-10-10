@@ -21,7 +21,7 @@ var autd = Controller.Builder()
     .Advanced()
     .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
     .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
-    .OpenWith(new Simulator(8080));
+    .OpenWith(Simulator.Builder(8080));
 
 foreach (var dev in autd.Geometry)
     foreach (var tr in dev)

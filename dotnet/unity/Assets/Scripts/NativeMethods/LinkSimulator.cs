@@ -14,12 +14,20 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_link_simulator";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSimulator(ushort port);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSimulatorBuilderPtr AUTDLinkSimulator(ushort port);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSimulatorWithAddr(LinkPtr simulator, string addr, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSimulatorBuilderPtr AUTDLinkSimulatorWithAddr(LinkSimulatorBuilderPtr simulator, string addr, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSimulatorWithTimeout(LinkPtr simulator, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr simulator, ulong timeoutNs);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkSimulatorIntoBuilder(LinkSimulatorBuilderPtr simulator);
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LinkSimulatorBuilderPtr
+    {
+        public IntPtr _0;
     }
 
 }

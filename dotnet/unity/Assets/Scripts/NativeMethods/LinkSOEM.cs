@@ -22,33 +22,35 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDAdapterPointerDelete(IntPtr adapters);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEM();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEM();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithSendCycle(LinkPtr soem, ushort cycle);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithSendCycle(LinkSOEMBuilderPtr soem, ulong cycle);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithSync0Cycle(LinkPtr soem, ushort cycle);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithSync0Cycle(LinkSOEMBuilderPtr soem, ulong cycle);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithBufSize(LinkPtr soem, uint bufSize);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithBufSize(LinkSOEMBuilderPtr soem, uint bufSize);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithTimerStrategy(LinkPtr soem, TimerStrategy timerStrategy);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithTimerStrategy(LinkSOEMBuilderPtr soem, TimerStrategy timerStrategy);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithSyncMode(LinkPtr soem, SyncMode mode);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithSyncMode(LinkSOEMBuilderPtr soem, SyncMode mode);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithIfname(LinkPtr soem, string ifname);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithIfname(LinkSOEMBuilderPtr soem, string ifname);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithStateCheckInterval(LinkPtr soem, uint intervalMs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithStateCheckInterval(LinkSOEMBuilderPtr soem, uint intervalMs);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithOnLost(LinkPtr soem, IntPtr onLostFunc);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithOnLost(LinkSOEMBuilderPtr soem, IntPtr onLostFunc);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithLogLevel(LinkPtr soem, Level level);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithOnErr(LinkSOEMBuilderPtr soem, IntPtr onErrFunc);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithLogFunc(LinkPtr soem, IntPtr outFunc, IntPtr flushFunc);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSOEMBuilderPtr AUTDLinkSOEMWithTimeout(LinkSOEMBuilderPtr soem, ulong timeoutNs);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkSOEMWithTimeout(LinkPtr soem, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkSOEMIntoBuilder(LinkSOEMBuilderPtr soem);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteSOEM(string addr, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEM(string addr, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkPtr AUTDLinkRemoteSOEMWithTimeout(LinkPtr soem, ulong timeoutNs);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEMWithTimeout(LinkRemoteSOEMBuilderPtr soem, ulong timeoutNs);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkRemoteSOEMIntoBuilder(LinkRemoteSOEMBuilderPtr soem);
         }
     }
 
@@ -56,6 +58,18 @@ namespace AUTD3Sharp
     {
         FreeRun = 0,
         Dc = 1,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LinkSOEMBuilderPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LinkRemoteSOEMBuilderPtr
+    {
+        public IntPtr _0;
     }
 
 }

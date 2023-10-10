@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,6 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #endif
-
-using System;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -30,17 +28,15 @@ using float_t = System.Double;
 namespace AUTD3Sharp.Modulation
 {
     using Base = NativeMethods.Base;
-    using Def = NativeMethods.Def;
 
     /// <summary>
     /// Sine wave modulation
     /// </summary>
-    public sealed class SineLegacy : Internal.Modulation
+    public sealed class SineLegacy : Internal.ModulationWithFreqDiv<SineLegacy>
     {
         private readonly float_t _freq;
         private float_t? _amp;
         private float_t? _offset;
-        private uint? _freqDiv;
 
         /// <summary>
         /// Constructor
@@ -52,7 +48,6 @@ namespace AUTD3Sharp.Modulation
             _freq = freq;
             _amp = null;
             _offset = null;
-            _freqDiv = null;
         }
 
         /// <summary>
@@ -77,35 +72,6 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
-        /// <summary>
-        /// Set sampling frequency division
-        /// </summary>
-        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
-        /// <returns></returns>
-        public SineLegacy WithSamplingFrequencyDivision(uint div)
-        {
-            _freqDiv = div;
-            return this;
-        }
-
-        /// <summary>
-        /// Set sampling frequency
-        /// </summary>
-        /// <returns></returns>
-        public SineLegacy WithSamplingFrequency(float_t freq)
-        {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / freq));
-        }
-
-        /// <summary>
-        /// Set sampling period
-        /// </summary>
-        /// <returns></returns>
-        public SineLegacy WithSamplingPeriod(TimeSpan period)
-        {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
-        }
-
         public override ModulationPtr ModulationPtr()
         {
             var ptr = Base.AUTDModulationSineLegacy(_freq);
@@ -113,8 +79,8 @@ namespace AUTD3Sharp.Modulation
                 ptr = Base.AUTDModulationSineLegacyWithAmp(ptr, _amp.Value);
             if (_offset != null)
                 ptr = Base.AUTDModulationSineLegacyWithOffset(ptr, _offset.Value);
-            if (_freqDiv != null)
-                ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
+            if (FreqDiv != null)
+                ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
             return ptr;
         }
     }

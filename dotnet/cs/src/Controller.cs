@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,10 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #define DIMENSION_M
+#endif
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
 #endif
 
 using System;
@@ -241,9 +245,9 @@ namespace AUTD3Sharp
             /// </summary>
             /// <param name="link">link</param>
             /// <returns>Controller</returns>
-            public Controller OpenWith(Internal.Link link)
+            public Controller OpenWith(ILinkBuilder link)
             {
-                return OpenImpl(_ptr, _mode, link.Ptr);
+                return OpenImpl(_ptr, _mode, link.Ptr());
             }
 
             internal ControllerBuilder()
@@ -262,7 +266,7 @@ namespace AUTD3Sharp
             return new ControllerBuilder();
         }
 
-        internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkPtr link)
+        internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkBuilderPtr link)
         {
             var err = new byte[256];
             var ptr = Base.AUTDControllerOpenWith(builder, link, err);
@@ -289,7 +293,6 @@ namespace AUTD3Sharp
         {
             var err = new byte[256];
             var handle = Base.AUTDControllerFirmwareInfoListPointer(Ptr, err);
-            System.Diagnostics.Debug.WriteLine(handle._0);
             if (handle._0 == IntPtr.Zero)
                 throw new AUTDException(err);
 
@@ -352,15 +355,13 @@ namespace AUTD3Sharp
             }
         }
 
-        #endregion
-
-
-        public void NotifyLinkGeometryUpdated()
+        public T Link<T>()
+        where T : ILink<T>, new()
         {
-            var err = new byte[256];
-            if (!Base.AUTDControllerNotifyLinkGeometryUpdated(Ptr, err))
-                throw new AUTDException(err);
+            return new T().Create(Base.AUTDLinkGet(Ptr));
         }
+
+        #endregion
 
         /// <summary>
         /// Send data to the devices
@@ -441,7 +442,7 @@ namespace AUTD3Sharp
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool SoftwareSTMCallbackDelegate(IntPtr ptr, ulong i, ulong elapsed);
 
-            internal struct Context
+            internal readonly struct Context
             {
                 internal readonly Controller Controller;
                 internal readonly Func<Controller, int, TimeSpan, bool> Callback;
@@ -460,16 +461,10 @@ namespace AUTD3Sharp
             public void Start(TimeSpan interval)
             {
                 var intervalNs = (ulong)(interval.TotalMilliseconds * 1000 * 1000);
-                SoftwareSTMCallbackDelegate callbackNative = (ptr, i, elapsed) =>
-                {
-                    var gch = GCHandle.FromIntPtr(ptr);
-                    var context = (Context)gch.Target;
-                    return context.Callback(context.Controller, (int)i,
-                        TimeSpan.FromMilliseconds(elapsed / 1000.0 / 1000.0));
-                };
+
                 var err = new byte[256];
                 var gch = GCHandle.Alloc(_context);
-                if (Base.AUTDControllerSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate(callbackNative),
+                if (Base.AUTDControllerSoftwareSTM(_ptr, Marshal.GetFunctionPointerForDelegate((SoftwareSTMCallbackDelegate)CallbackNative),
                         GCHandle.ToIntPtr(gch), _strategy, intervalNs, err) == Def.Autd3Err)
                 {
                     gch.Free();
@@ -477,6 +472,14 @@ namespace AUTD3Sharp
                 }
 
                 gch.Free();
+                return;
+
+                static bool CallbackNative(IntPtr ptr, ulong i, ulong elapsed)
+                {
+                    var handle = GCHandle.FromIntPtr(ptr);
+                    var context = (Context)handle.Target;
+                    return context.Callback(context.Controller, (int)i, TimeSpan.FromMilliseconds(elapsed / 1000.0 / 1000.0));
+                }
             }
 
             public SoftwareSTMHandler WithTimerStrategy(TimerStrategy strategy)
@@ -504,10 +507,10 @@ namespace AUTD3Sharp
         public sealed class GroupGuard
         {
 
-            private Controller _controller;
+            private readonly Controller _controller;
             private readonly Func<Device, object?> _map;
             private GroupKVMapPtr _kvMap;
-            private IDictionary<object, int> _keymap;
+            private readonly IDictionary<object, int> _keymap;
             private int _k;
 
             internal GroupGuard(Func<Device, object?> map, Controller controller)
@@ -681,3 +684,7 @@ namespace AUTD3Sharp
         public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramAmplitudes(_amp);
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable restore
+#endif
