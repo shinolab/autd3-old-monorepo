@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ namespace autd3::gain::holo {
  * @brief Gain to produce multiple foci with naive linear synthesis
  */
 template <class B>
-class Naive final : public internal::Gain {
+class Naive final : public internal::Gain, public IntoCache<Naive<B>>, public IntoTransform<Naive<B>> {
  public:
   explicit Naive(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
@@ -39,9 +39,6 @@ class Naive final : public internal::Gain {
 
   AUTD3_HOLO_ADD_FOCUS(Naive)
   AUTD3_HOLO_ADD_FOCI(Naive)
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Naive)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Naive)
 
   AUTD3_DEF_PARAM(Naive, AmplitudeConstraint, constraint)
 

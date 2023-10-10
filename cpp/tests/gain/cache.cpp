@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include <autd3/gain/cache.hpp>
 #include <autd3/gain/gain.hpp>
 #include <autd3/gain/uniform.hpp>
 
@@ -28,7 +29,7 @@ TEST(Gain, Cache) {
   }
 }
 
-class ForCacheTest final : public autd3::gain::Gain {
+class ForCacheTest final : public autd3::gain::Gain, public autd3::gain::IntoCache<ForCacheTest> {
  public:
   explicit ForCacheTest(size_t* cnt) : _cnt(cnt) {}
 
@@ -37,8 +38,6 @@ class ForCacheTest final : public autd3::gain::Gain {
     ++*_cnt;
     return transform(geometry, [&](const auto&, const auto&) { return autd3::internal::native_methods::Drive{autd3::internal::pi, 0.5}; });
   }
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(ForCacheTest)
 
  private:
   size_t* _cnt;

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,13 +24,9 @@ namespace autd3::modulation {
 /**
  * @brief Multi-frequency sine wave modulation
  */
-class Fourier final : public internal::Modulation {
+class Fourier final : public internal::Modulation, public IntoCache<Fourier>, public IntoTransform<Fourier>, public IntoRadiationPressure<Fourier> {
  public:
   Fourier(Sine component) { _components.emplace_back(std::move(component)); }
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Fourier)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Fourier)
 
   void add_component(Sine component) & { _components.emplace_back(std::move(component)); }
 

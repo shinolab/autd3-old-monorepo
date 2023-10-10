@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,13 +22,9 @@ namespace autd3::modulation {
 /**
  * @brief Without modulation
  */
-class Static final : public internal::Modulation {
+class Static final : public internal::Modulation, public IntoCache<Static>, public IntoRadiationPressure<Static>, public IntoTransform<Static> {
  public:
   Static() = default;
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Static)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Static)
 
   AUTD3_DEF_PARAM(Static, double, amp)
 

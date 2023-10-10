@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,18 +31,14 @@ namespace autd3::gain::holo {
  * @details Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair
  * Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
  */
-class Greedy final : public internal::Gain {
+class Greedy final : public internal::Gain, public IntoCache<Greedy>, public IntoTransform<Greedy> {
  public:
   Greedy() = default;
 
   AUTD3_HOLO_ADD_FOCUS(Greedy)
   AUTD3_HOLO_ADD_FOCI(Greedy)
 
-  AUTD3_IMPL_WITH_CACHE_GAIN(Greedy)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Greedy)
-
   AUTD3_DEF_PARAM(Greedy, uint32_t, phase_div)
-
   AUTD3_DEF_PARAM(Greedy, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {

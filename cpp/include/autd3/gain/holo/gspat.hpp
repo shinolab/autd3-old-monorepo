@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ namespace autd3::gain::holo {
  * Graphics (TOG), 39(4):138–1, 2020.
  */
 template <class B>
-class GSPAT final : public internal::Gain {
+class GSPAT final : public internal::Gain, public IntoCache<GSPAT<B>>, public IntoTransform<GSPAT<B>> {
  public:
   explicit GSPAT(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
     static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
@@ -42,9 +42,6 @@ class GSPAT final : public internal::Gain {
 
   AUTD3_HOLO_ADD_FOCUS(GSPAT)
   AUTD3_HOLO_ADD_FOCI(GSPAT)
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(GSPAT)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(GSPAT)
 
   AUTD3_DEF_PARAM(GSPAT, uint32_t, repeat)
   AUTD3_DEF_PARAM(GSPAT, AmplitudeConstraint, constraint)

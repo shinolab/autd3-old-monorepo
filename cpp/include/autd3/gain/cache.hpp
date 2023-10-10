@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -65,6 +65,13 @@ class Cache final : public internal::Gain {
  private:
   G _g;
   mutable std::shared_ptr<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>> _cache;
+};
+
+template <typename G>
+class IntoCache {
+ public:
+  [[nodiscard]] Cache<G> with_cache() & { return Cache(*static_cast<G*>(this)); }
+  [[nodiscard]] Cache<G> with_cache() && { return Cache(std::move(*static_cast<G*>(this))); }
 };
 
 }  // namespace autd3::gain

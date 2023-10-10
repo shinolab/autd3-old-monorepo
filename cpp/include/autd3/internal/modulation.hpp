@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,26 +47,6 @@ class Modulation : public Datagram {
     return static_cast<size_t>(n);
   }
 };
-
-#define AUTD3_IMPL_WITH_CACHE_MODULATION                                                                       \
-  [[nodiscard]] autd3::modulation::Cache with_cache()&& { return autd3::modulation::Cache(std::move(*this)); } \
-  [[nodiscard]] autd3::modulation::Cache with_cache()& { return autd3::modulation::Cache(*this); }
-
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)                                     \
-  template <typename _F>                                                               \
-  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)&& { \
-    return autd3::modulation::Transform(std::move(*this), f);                          \
-  }                                                                                    \
-  template <typename _F>                                                               \
-  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)& {  \
-    return autd3::modulation::Transform(*this, f);                                     \
-  }
-
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                         \
-  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()&& { \
-    return autd3::modulation::RadiationPressure(std::move(*this));                       \
-  }                                                                                      \
-  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()& { return autd3::modulation::RadiationPressure(*this); }
 
 #define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
   void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \

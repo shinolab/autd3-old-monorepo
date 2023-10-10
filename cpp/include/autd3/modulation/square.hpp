@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace autd3::modulation {
 /**
  * @brief Square wave modulation
  */
-class Square final : public internal::Modulation {
+class Square final : public internal::Modulation, public IntoCache<Square>, public IntoTransform<Square>, public IntoRadiationPressure<Square> {
  public:
   /**
    * @brief Constructor
@@ -32,10 +32,6 @@ class Square final : public internal::Modulation {
    * @param freq Frequency of square wave
    */
   explicit Square(const int32_t freq) : _freq(freq) {}
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Square)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Square)
 
   AUTD3_DEF_PARAM(Square, double, low)
   AUTD3_DEF_PARAM(Square, double, high)

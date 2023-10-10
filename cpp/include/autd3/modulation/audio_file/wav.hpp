@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ namespace autd3::modulation::audio_file {
  * @brief Modulation constructed from wav file
  * @details The wav data is re-sampled to the sampling frequency of Modulation.
  */
-class Wav final : public internal::Modulation {
+class Wav final : public internal::Modulation, public IntoCache<Wav>, public IntoRadiationPressure<Wav>, public IntoTransform<Wav> {
  public:
   /**
    * @brief Constructor
@@ -33,10 +33,6 @@ class Wav final : public internal::Modulation {
    * @param path Path to wav file
    */
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
-
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Wav)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Wav)
 
   AUTD3_IMPL_MOD_PROP(Wav)
 
