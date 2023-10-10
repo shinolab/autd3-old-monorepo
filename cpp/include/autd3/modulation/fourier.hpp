@@ -26,7 +26,7 @@ namespace autd3::modulation {
  */
 class Fourier final : public internal::Modulation, public IntoCache<Fourier>, public IntoTransform<Fourier>, public IntoRadiationPressure<Fourier> {
  public:
-  Fourier(Sine component) { _components.emplace_back(std::move(component)); }
+  explicit Fourier(Sine component) { _components.emplace_back(std::move(component)); }
 
   void add_component(Sine component) & { _components.emplace_back(std::move(component)); }
 
@@ -45,6 +45,7 @@ class Fourier final : public internal::Modulation, public IntoCache<Fourier>, pu
   auto add_components_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Sine>>& {
     for (Sine e : iter) _components.emplace_back(std::move(e));
   }
+
   /**
    * @brief Add components from iterator
    *
@@ -74,8 +75,7 @@ class Fourier final : public internal::Modulation, public IntoCache<Fourier>, pu
   }
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    return std::accumulate(_components.begin() + 1, _components.end(),
-                           internal::native_methods::AUTDModulationFourier(_components[0].modulation_ptr()),
+    return std::accumulate(_components.begin() + 1, _components.end(), AUTDModulationFourier(_components[0].modulation_ptr()),
                            [](const internal::native_methods::ModulationPtr ptr, const Sine& sine) {
                              return AUTDModulationFourierAddComponent(ptr, sine.modulation_ptr());
                            });

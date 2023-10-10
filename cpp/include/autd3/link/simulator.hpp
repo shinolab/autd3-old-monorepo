@@ -34,7 +34,7 @@ class Simulator {
     explicit Builder(const uint16_t port) : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkSimulatorIntoBuilder(_ptr); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkSimulatorIntoBuilder(_ptr); }
 
     /**
      * @brief Set server IP address

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ class SOEM {
     Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkSOEM()) {}
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkSOEMIntoBuilder(_ptr); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkSOEMIntoBuilder(_ptr); }
 
     /**
      * @brief Set network interface name
@@ -89,7 +89,7 @@ class SOEM {
      * @param value
      * @return Builder
      */
-    Builder with_on_lost(const internal::LogOutCallback value) {
+    Builder with_on_lost(const internal::OnLostCallback value) {
       _ptr = AUTDLinkSOEMWithOnLost(_ptr, reinterpret_cast<void*>(value));
       return *this;
     }
@@ -138,7 +138,7 @@ class SOEM {
     }
   };
 
-  static Builder builder() { return Builder(); }
+  static Builder builder() { return {}; }
 
   SOEM() = delete;
 };
@@ -160,7 +160,7 @@ class RemoteSOEM final {
     }
 
    public:
-    internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkRemoteSOEMIntoBuilder(_ptr); }
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkRemoteSOEMIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {

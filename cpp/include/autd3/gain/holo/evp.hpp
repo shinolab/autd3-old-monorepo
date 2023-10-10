@@ -12,15 +12,10 @@
 #pragma once
 
 #include <memory>
-#include <ranges>
-#include <vector>
 
 #include "autd3/gain/cache.hpp"
-#include "autd3/gain/holo/backend.hpp"
-#include "autd3/gain/holo/constraint.hpp"
-#include "autd3/gain/holo/utils.hpp"
+#include "autd3/gain/holo/holo.hpp"
 #include "autd3/gain/transform.hpp"
-#include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
@@ -34,31 +29,21 @@ namespace autd3::gain::holo {
  * 1-10.
  */
 template <class B>
-class EVP final : public internal::Gain, public IntoCache<EVP<B>>, public IntoTransform<EVP<B>> {
+class EVP final : public Holo<EVP<B>, B>, public IntoCache<EVP<B>>, public IntoTransform<EVP<B>> {
  public:
-  explicit EVP(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-  }
-
-  AUTD3_HOLO_ADD_FOCUS(EVP)
-  AUTD3_HOLO_ADD_FOCI(EVP)
+  explicit EVP(std::shared_ptr<B> backend) : Holo<EVP, B>(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(EVP, double, gamma)
-  AUTD3_DEF_PARAM(EVP, AmplitudeConstraint, constraint)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = _backend->evp(reinterpret_cast<const double*>(_foci.data()), _amps.data(), _amps.size());
-    if (_gamma.has_value()) ptr = _backend->evp_with_gamma(ptr, _gamma.value());
-    if (_constraint.has_value()) ptr = _backend->evp_with_constraint(ptr, _constraint.value());
+    auto ptr = this->_backend->evp(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    if (_gamma.has_value()) ptr = this->_backend->evp_with_gamma(ptr, _gamma.value());
+    if (this->_constraint.has_value()) ptr = this->_backend->evp_with_constraint(ptr, this->_constraint.value());
     return ptr;
   }
 
  private:
-  std::shared_ptr<B> _backend;
-  std::vector<internal::Vector3> _foci;
-  std::vector<double> _amps;
   std::optional<double> _gamma;
-  std::optional<AmplitudeConstraint> _constraint;
 };
 
 }  // namespace autd3::gain::holo

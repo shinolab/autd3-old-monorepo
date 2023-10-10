@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iterator>
 #include <memory>
 #include <numeric>
 #include <unordered_map>
@@ -36,9 +35,9 @@ class Cache final : public internal::Gain {
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
-    std::vector<uint32_t> device_indices(view.begin(), view.end());
 
-    if (_cache->size() != device_indices.size() ||
+    if (std::vector<uint32_t> device_indices(view.begin(), view.end());
+        _cache->size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
       char err[256]{};
       auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
@@ -55,7 +54,7 @@ class Cache final : public internal::Gain {
     return std::accumulate(geometry.devices().begin(), geometry.devices().end(), internal::native_methods::AUTDGainCustom(),
                            [this](const internal::native_methods::GainPtr acc, const internal::Device& dev) {
                              return AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), _cache->at(dev.idx()).data(),
-                                                      static_cast<uint32_t>(_cache->at(dev.idx()).size()));
+                                                      _cache->at(dev.idx()).size());
                            });
   }
 

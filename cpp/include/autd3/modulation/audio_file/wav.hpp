@@ -25,7 +25,7 @@ namespace autd3::modulation::audio_file {
  * @brief Modulation constructed from wav file
  * @details The wav data is re-sampled to the sampling frequency of Modulation.
  */
-class Wav final : public internal::Modulation, public IntoCache<Wav>, public IntoRadiationPressure<Wav>, public IntoTransform<Wav> {
+class Wav final : public internal::ModulationWithFreqDiv<Wav>, public IntoCache<Wav>, public IntoRadiationPressure<Wav>, public IntoTransform<Wav> {
  public:
   /**
    * @brief Constructor
@@ -33,8 +33,6 @@ class Wav final : public internal::Modulation, public IntoCache<Wav>, public Int
    * @param path Path to wav file
    */
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
-
-  AUTD3_IMPL_MOD_PROP(Wav)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     char err[256]{};
@@ -46,7 +44,6 @@ class Wav final : public internal::Modulation, public IntoCache<Wav>, public Int
 
  private:
   std::filesystem::path _path;
-  std::optional<uint32_t> _freq_div;
 };
 
 }  // namespace autd3::modulation::audio_file

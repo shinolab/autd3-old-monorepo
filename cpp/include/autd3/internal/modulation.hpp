@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <chrono>
+
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -48,30 +50,36 @@ class Modulation : public Datagram {
   }
 };
 
-#define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
-  void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \
-  [[nodiscard]] TYPE&& with_sampling_frequency_division(const uint32_t div)&& {                                                       \
-    _freq_div = div;                                                                                                                  \
-    return std::move(*this);                                                                                                          \
-  }                                                                                                                                   \
-  void with_sampling_frequency(const double freq)& {                                                                                  \
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq)); \
-  }                                                                                                                                   \
-  [[nodiscard]] TYPE&& with_sampling_frequency(const double freq)&& {                                                                 \
-    return std::move(*this).with_sampling_frequency_division(                                                                         \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));                              \
-  }                                                                                                                                   \
-  template <typename Rep, typename Period>                                                                                            \
-  void with_sampling_period(const std::chrono::duration<Rep, Period> period)& {                                                       \
-    with_sampling_frequency_division(                                                                                                 \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
-                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
-  }                                                                                                                                   \
-  template <typename Rep, typename Period>                                                                                            \
-  [[nodiscard]] TYPE&& with_sampling_period(const std::chrono::duration<Rep, Period> period)&& {                                      \
-    return std::move(*this).with_sampling_frequency_division(                                                                         \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
-                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
+template <class M>
+class ModulationWithFreqDiv : public Modulation {
+ protected:
+  std::optional<uint32_t> _freq_div;
+
+ public:
+  void with_sampling_frequency_division(const uint32_t div) & { _freq_div = div; }
+  [[nodiscard]] M&& with_sampling_frequency_division(const uint32_t div) && {
+    _freq_div = div;
+    return std::move(*static_cast<M*>(this));
   }
+  void with_sampling_frequency(const double freq) & {
+    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+  [[nodiscard]] M&& with_sampling_frequency(const double freq) && {
+    return std::move(*this).with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+  template <typename Rep, typename Period>
+  void with_sampling_period(const std::chrono::duration<Rep, Period> period) & {
+    with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *
+                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
+  }
+  template <typename Rep, typename Period>
+  [[nodiscard]] M&& with_sampling_period(const std::chrono::duration<Rep, Period> period) && {
+    return std::move(*this).with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *
+                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
+  }
+};
 
 }  // namespace autd3::internal
