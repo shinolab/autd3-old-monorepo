@@ -3,7 +3,7 @@
 # Created Date: 28/05/2023
 # Author: Shun Suzuki
 # -----
-# Last Modified: 09/10/2023
+# Last Modified: 11/10/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,5 @@ foreach($dll in Get-ChildItem -Path capi/target/release | Where {$_.extension -l
     Copy-Item -Path $dll -Destination dotnet/cs/tests
 }
 Copy-Item -Path LICENSE -Destination dotnet/cs/src/LICENSE.txt -Force
-cd dotnet/cs/src
-dotnet build -c:Release
+
 popd
