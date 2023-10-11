@@ -171,7 +171,6 @@ dependencies = [
  "criterion",
  "nalgebra",
  "rand",
- "rayon",
  "thiserror",
 ]
 
