@@ -42,7 +42,6 @@ jobs:
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
       - name: Build src
         run: |
           cd ./src
@@ -63,7 +62,6 @@ jobs:
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
       - name: Build src
         run: |
           cd ./src
