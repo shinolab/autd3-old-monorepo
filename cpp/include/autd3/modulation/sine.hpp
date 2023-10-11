@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 12/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
+#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -27,7 +28,8 @@ class Fourier;
 class Sine final : public internal::ModulationWithFreqDiv<Sine>,
                    public IntoCache<Sine>,
                    public IntoTransform<Sine>,
-                   public IntoRadiationPressure<Sine> {
+                   public IntoRadiationPressure<Sine>,
+                   public IntoFIR<Sine> {
  public:
   /**
    * @brief Constructor.
