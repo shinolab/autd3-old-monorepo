@@ -15,7 +15,7 @@ cd ../..
 cd capi
 cargo build --release --all
 cd ..
-mkdir dotnet/cs/src/native/windows/x64 > NUL 2>&1
+mkdir dotnet/cs/src/native/windows/x64 -ErrorAction SilentlyContinue
 foreach($dll in Get-ChildItem -Path capi/target/release | Where {$_.extension -like ".dll"}){
     Copy-Item -Path $dll -Destination dotnet/cs/src/native/windows/x64
     Copy-Item -Path $dll -Destination dotnet/cs/tests
