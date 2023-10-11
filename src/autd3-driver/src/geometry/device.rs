@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -72,13 +72,13 @@ impl<T: Transducer> Device<T> {
     }
 
     /// Set positions of all transducers in the device
-    pub fn translate_to(&mut self, t: &Vector3) {
+    pub fn translate_to(&mut self, t: Vector3) {
         let cur_pos = self.transducers[0].position();
         self.translate(t - cur_pos);
     }
 
     /// Set rotation of all transducers in the device
-    pub fn rotate_to(&mut self, r: &UnitQuaternion) {
+    pub fn rotate_to(&mut self, r: UnitQuaternion) {
         let cur_rot = self.transducers[0].rotation();
         self.rotate(r * cur_rot.conjugate());
     }
@@ -264,7 +264,7 @@ pub mod tests {
 
             let p = Vector3::new(10., 20., 30.);
 
-            assert_approx_eq_vec3!(device.to_local(&p), p);
+            assert_approx_eq_vec3!(device.to_local(p), p);
         }
 
         {
@@ -283,7 +283,7 @@ pub mod tests {
 
             let device = Device::new(0, transducers);
 
-            assert_approx_eq_vec3!(device.to_local(&p), Vector3::zeros());
+            assert_approx_eq_vec3!(device.to_local(p), Vector3::zeros());
         }
 
         {
@@ -300,7 +300,7 @@ pub mod tests {
 
             let p = Vector3::new(10., 20., 30.);
 
-            assert_approx_eq_vec3!(device.to_local(&p), Vector3::new(p.y, -p.x, p.z));
+            assert_approx_eq_vec3!(device.to_local(p), Vector3::new(p.y, -p.x, p.z));
         }
 
         {
@@ -320,11 +320,11 @@ pub mod tests {
 
             let device = Device::new(0, transducers);
 
-            assert_approx_eq_vec3!(device.to_local(&p), Vector3::new(0., 0., 0.));
+            assert_approx_eq_vec3!(device.to_local(p), Vector3::new(0., 0., 0.));
 
             let d = Vector3::new(40., 50., 60.);
 
-            assert_approx_eq_vec3!(device.to_local(&(p + d)), Vector3::new(d.x, d.z, -d.y));
+            assert_approx_eq_vec3!(device.to_local(p + d), Vector3::new(d.x, d.z, -d.y));
         }
     }
 
@@ -345,7 +345,7 @@ pub mod tests {
         device.translate(Vector3::new(10., 20., 30.));
 
         let t = Vector3::new(40., 50., 60.);
-        device.translate_to(&t);
+        device.translate_to(t);
 
         itertools::iproduct!((0..18), (0..14))
             .map(|(y, x)| 10.16 * Vector3::new(x as float, y as float, 0.) + t)
@@ -377,7 +377,7 @@ pub mod tests {
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
             * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
             * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
-        device.rotate_to(&rot);
+        device.rotate_to(rot);
 
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
