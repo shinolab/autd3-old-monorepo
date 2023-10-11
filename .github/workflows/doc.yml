@@ -50,22 +50,25 @@ jobs:
     needs: [check-cs, check-cpp, check-python]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup mdbook
-      uses: ./.github/actions/setup-mdbook
-    - name: Build book
-      run: |
-        cd ./doc
-        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
-        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
-    - name: mv mdbook doc
-      run: |
-        mkdir -p doc_build/book
-        sudo mv ./doc/book/en ./doc_build/book/en
-        sudo mv ./doc/book/jp ./doc_build/book/jp
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./doc_build
-        force_orphan: true
+      - uses: actions/checkout@v3
+      - name: Setup mdbook
+        uses: ./.github/actions/setup-mdbook
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+      - name: Build book
+        run: |
+          cd ./doc
+          MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
+          MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
+      - name: mv mdbook doc
+        run: |
+          mkdir -p doc_build/book
+          sudo mv ./doc/book/en ./doc_build/book/en
+          sudo mv ./doc/book/jp ./doc_build/book/jp
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./doc_build
+          force_orphan: true
