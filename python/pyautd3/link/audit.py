@@ -4,7 +4,7 @@ Project: link
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ class Audit:
             return LinkAudit().link_audit_into_builder(self._builder)
 
         def _resolve_link(self, obj):
-            obj.link = lambda: Audit(LinkAudit().link_get(obj._ptr))
+            obj.link = Audit(LinkAudit().link_get(obj._ptr))
 
     def __init__(self, ptr: LinkPtr):
         self._ptr = ptr
