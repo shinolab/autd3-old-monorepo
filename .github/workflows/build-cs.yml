@@ -77,8 +77,9 @@ jobs:
         run: |
           cd dotnet/cs/src
           dotnet build -c:Release
-          dotnet nuget add source $pwd/dotnet/cs/src/bin/Release -n autd3sharp_local
-          cd ./dotnet/cs/example
+          cd ..
+          dotnet nuget add source ${{ github.workspace }}/dotnet/cs/src/bin/Release -n autd3sharp_local
+          cd example
           dotnet build -c:Release
           cd ../../fs/example
           dotnet build -c:Release
