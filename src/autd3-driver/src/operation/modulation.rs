@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -465,32 +465,29 @@ mod tests {
     fn modulation_op_buffer_out_of_range() {
         let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
+        let check = |n: usize| {
+            let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
+            let buf: Vec<float> = (0..n).map(|_| rng.gen()).collect();
+            let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
+            let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-        assert!(op.init(&geometry).is_ok());
+            op.init(&geometry)
+        };
 
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX + 1).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
-
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
-
-        assert!(op.init(&geometry).is_err());
-
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..1).map(|_| rng.gen()).collect();
-        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
-
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
-
-        assert!(op.init(&geometry).is_err());
+        assert_eq!(
+            check(1),
+            Err(AUTDInternalError::ModulationSizeOutOfRange(1))
+        );
+        assert_eq!(check(2), Ok(()));
+        assert_eq!(check(MOD_BUF_SIZE_MAX), Ok(()));
+        assert_eq!(
+            check(MOD_BUF_SIZE_MAX + 1),
+            Err(AUTDInternalError::ModulationSizeOutOfRange(
+                MOD_BUF_SIZE_MAX + 1
+            ))
+        );
     }
 
     #[test]
