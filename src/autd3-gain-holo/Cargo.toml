@@ -17,7 +17,6 @@ autd3-driver = { path = "../autd3-driver", version = "15.3.1" }
 autd3-derive = { path = "../autd3-derive", version = "15.3.1" }
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
 rand = "0.8.5"
-rayon = { version = "1.7.0", optional = true }
 thiserror = "1.0.31"
 criterion = { version = "0.5.1", features = ["html_reports"], optional = true }
 bitvec = { version = "1.0.1", optional = true }
@@ -26,7 +25,6 @@ bitvec = { version = "1.0.1", optional = true }
 default = ["test-utilities"]
 single_float = ["autd3-driver/single_float"]
 use_meter = ["autd3-driver/use_meter"]
-parallel = ["rayon"]
 test-utilities = ["autd3", "criterion", "assert_approx_eq", "bitvec"]
 
 [[bench]]

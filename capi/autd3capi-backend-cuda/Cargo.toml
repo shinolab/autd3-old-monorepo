@@ -17,4 +17,3 @@ wrapper-generator = { path = "../wrapper-generator" }
 
 [features]
 single_float = ["autd3capi-def/single_float", "autd3-backend-cuda/single_float"]
-parallel = ["autd3capi-def/parallel"]

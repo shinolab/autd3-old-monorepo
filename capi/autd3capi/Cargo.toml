@@ -17,7 +17,6 @@ wrapper-generator = { path = "../wrapper-generator" }
 [features]
 single_float = ["autd3capi-def/single_float", "autd3-driver/single_float"]
 use_meter = ["autd3capi-def/use_meter", "autd3-driver/use_meter"]
-parallel = ["autd3capi-def/parallel"]
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
