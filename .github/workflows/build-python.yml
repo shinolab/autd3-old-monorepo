@@ -48,8 +48,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - run: |
-          python3 -m pip install -U  mypy numpy
+      - name: Install tools
+        run: |
+          python3 -m pip install -U mypy numpy build wheel pytest
+
+      - name: Check types
+        run: |
           cd python
           python3 -m mypy pyautd3
 
@@ -79,6 +83,5 @@ jobs:
 
       - name: Build capi on ${{ matrix.os }}
         run: |
-          python3 -m pip install -U pytest
           cd python
           python3 -m pytest

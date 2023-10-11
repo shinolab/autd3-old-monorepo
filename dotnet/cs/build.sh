@@ -22,4 +22,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   done
 fi
 
+cp -f LICENSE ./dotnet/cs/src/LICENSE.txt
+
 popd

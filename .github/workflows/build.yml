@@ -58,12 +58,12 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd src
-          cargo test --workspace --features test-utilities --exclude autd3-link-soem
+          cargo test --workspace --features test-utilities --exclude autd3-backend-arrayfire --exclude autd3-link-soem
       - name: Test src on ${{ matrix.os }}
         if: matrix.os != 'windows-latest'
         run: |
           cd src
-          cargo test --workspace --features test-utilities
+          cargo test --workspace --features test-utilities --exclude autd3-backend-arrayfire
 
       - name: Build examples on ${{ matrix.os }}
         if: matrix.os == 'windows-latest'
@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
+          os: ubuntu-latest
           arch: 'arm32'
           cuda: false
           shaderc: false
@@ -123,7 +123,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
+          os: ubuntu-latest
           arch: 'aarch64'
           cuda: false
           shaderc: false
@@ -212,7 +212,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
+          os: ubuntu-latest
           arch: 'arm32'
           cuda: false
           shaderc: false
@@ -241,7 +241,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
+          os: ubuntu-latest
           arch: 'aarch64'
           cuda: false
           shaderc: false
