@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -105,6 +105,19 @@ impl<T: Transducer, G: Gain<T>> Operation<T> for GainSTMOp<T, G> {
             .iter()
             .map(|g| g.calc(geometry, GainFilter::All))
             .collect::<Result<_, _>>()?;
+
+        match self.start_idx {
+            Some(idx) if idx >= self.gains.len() as u16 => {
+                return Err(AUTDInternalError::STMStartIndexOutOfRange)
+            }
+            _ => {}
+        }
+        match self.finish_idx {
+            Some(idx) if idx >= self.gains.len() as u16 => {
+                return Err(AUTDInternalError::STMFinishIndexOutOfRange)
+            }
+            _ => {}
+        }
 
         self.remains = T::GainSTMOp::init(self.drives.len(), self.mode, geometry)?;
 
