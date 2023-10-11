@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 11/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/geometry/geometry.hpp"
 
 namespace autd3::link {
 
@@ -24,7 +25,9 @@ namespace autd3::link {
  * @brief Link for AUTD Simulator
  *
  */
-class Simulator {
+class Simulator final {
+  internal::native_methods::LinkPtr _ptr;
+
  public:
   class Builder final : public internal::LinkBuilder {
     friend class Simulator;
@@ -60,6 +63,13 @@ class Simulator {
   static Builder builder(const uint16_t port) { return Builder(port); }
 
   Simulator() = delete;
+
+  explicit Simulator(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+
+  void update_geometry(internal::Geometry& geometry) const {
+      if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
+  }
 };
 
 }  // namespace autd3::link
