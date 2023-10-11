@@ -91,7 +91,7 @@ class SOEM {
      * @param value
      * @return Builder
      */
-    Builder with_on_lost(const internal::OnErrCallback value) {
+    Builder with_on_lost(const OnErrCallback value) {
       _ptr = AUTDLinkSOEMWithOnLost(_ptr, reinterpret_cast<void*>(value));
       return *this;
     }
@@ -101,7 +101,7 @@ class SOEM {
      * @param value
      * @return Builder
      */
-    Builder with_on_err(const internal::OnErrCallback value) {
+    Builder with_on_err(const OnErrCallback value) {
       _ptr = AUTDLinkSOEMWithOnErr(_ptr, reinterpret_cast<void*>(value));
       return *this;
     }
