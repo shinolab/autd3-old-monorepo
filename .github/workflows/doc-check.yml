@@ -9,73 +9,60 @@ on:
 
 
 jobs:
-  build:
+  check:
+    runs-on: ubuntu-latest
+    name: check if files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v37
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-mdbook.yml
+            .github/workflows/doc-check.yml
+            doc/**/*.md
+            doc/**/*.cpp
+            doc/**/*.cs
+            doc/**/*.py
+            src/**/*.rs
+            src/*.toml
+            src/**/*.toml
+            src/**/*.proto
+
+  build-jp:
+    needs: check
+    if: needs.check.outputs.status
     name: doc-check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: tj-actions/changed-files@v37
-      id: changed-files
-      with:
-        files: |
-          .github/workflows/doc-check.yml
-          doc/**/*.md
-          doc/**/*.cpp
-          doc/**/*.cs
-          doc/**/*.py
-          src/**/*.rs
-          src/*.toml
-          src/**/*.toml
-          src/**/*.proto
-    - name: Install Protoc
-      uses: arduino/setup-protoc@v2
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-      if: steps.changed-files.outputs.modified_files
-    - name: install cuda
-      run: |
-        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-        sudo dpkg -i cuda-keyring_1.1-1_all.deb
-        sudo apt-get update
-        sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
-        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-      if: steps.changed-files.outputs.modified_files
+      - uses: actions/checkout@v3
+      - name: Setup mdbook
+        uses: ./.github/actions/setup-mdbook
+      - name: Build src
+        run: |
+          cd ./src
+          cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
+      - name: Build book jp
+        run: |
+          cd ./doc
+          MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
 
-    - name: Setup mdbook
-      uses: peaceiris/actions-mdbook@v1
-      with:
-        mdbook-version: '0.4.30'
-      if: steps.changed-files.outputs.modified_files
-    - name: Setup mdbook-toc
-      run: |
-        mkdir -p mdbook-toc
-        cd mdbook-toc
-        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.12.0/mdbook-toc-0.12.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
-        tar -xvf mdbook-toc.tar.gz
-        chmod +x mdbook-toc
-        sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
-      if: steps.changed-files.outputs.modified_files
-    - name: Setup mdbook-katex
-      run: |
-        mkdir -p mdbook-katex
-        cd mdbook-katex
-        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.5.3/mdbook-katex-v0.5.3-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
-        tar -xvf mdbook-katex.tar.gz
-        chmod +x mdbook-katex
-        sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
-      if: steps.changed-files.outputs.modified_files
-    - name: Build src
-      run: |
-        cd ./src
-        cargo build --all --features "remote"
-      if: steps.changed-files.outputs.modified_files
-    - name: Build book jp
-      run: |
-        cd ./doc
-        MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
-      if: steps.changed-files.outputs.modified_files
-    - name: Build book en
-      run: |
-        cd ./doc
-        MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps
-      if: steps.changed-files.outputs.modified_files
+  build-en:
+    needs: check
+    if: needs.check.outputs.status
+    name: doc-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup mdbook
+        uses: ./.github/actions/setup-mdbook
+      - name: Build src
+        run: |
+          cd ./src
+          cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
+      - name: Build book en
+        run: |
+          cd ./doc
+          MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps

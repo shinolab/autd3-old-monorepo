@@ -11,7 +11,27 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: check if files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v37
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/build-python.yml
+            python/pyautd3/*.py
+            python/pyautd3/**/*.py
+            python/tests/*.py
+            python/tests/**/*.py
+
   build:
+    needs: check
+    if: needs.check.outputs.status
     name: build-python-${{ matrix.python-version }}-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -21,75 +41,43 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: tj-actions/changed-files@v37
-      id: changed-files
-      with:
-        files: |
-          .github/workflows/build-python.yml
-          python/pyautd3/*.py
-          python/pyautd3/**/*.py
-          python/tests/*.py
-          python/tests/**/*.py
+      - uses: actions/checkout@v3
 
-    - name: install aarch64 target on macos
-      if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
-      run: |
-        rustup target add aarch64-apple-darwin
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install Protoc
-      uses: arduino/setup-protoc@v2
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-      if: steps.changed-files.outputs.modified_files
-      
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './capi -> target'
-      if: steps.changed-files.outputs.modified_files
+      - run: |
+          python3 -m pip install -U  mypy numpy
+          cd python
+          python3 -m mypy pyautd3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - run: |
-        python3 -m pip install -U  mypy numpy
-        cd python
-        python3 -m mypy pyautd3
-      if: steps.changed-files.outputs.modified_files
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
 
-    - run: |
-        python3 -m pip install -U pytest
-        cd capi
-        cargo build
-        cd ..
-        mkdir python/pyautd3/bin > NUL 2>&1
-        foreach($dll in Get-ChildItem -Path capi/target/debug | Where {$_.extension -like ".dll"}){
-          Copy-Item -Path $dll -Destination python/pyautd3/bin
-        }
-        cd python
-        python3 -m pytest
-      if: steps.changed-files.outputs.modified_files && matrix.os == 'windows-latest'
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          os: ${{ matrix.os }}
+          cuda: true
 
-    - run: |
-        python3 -m pip install -U pytest
-        cd capi
-        cargo build
-        cd ..
-        mkdir -p python/pyautd3/bin
-        cp ./capi/target/debug/*.so python/pyautd3/bin
-        cd python
-        python3 -m pytest
-      if: steps.changed-files.outputs.modified_files && matrix.os == 'ubuntu-latest'
+      - name: Build capi on ${{ matrix.os }}
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd python
+          ./build.ps1
+      - name: Build capi on ${{ matrix.os }}
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd python
+          chmod +x build.sh
+          ./build.sh
 
-    - run: |
-        python3 -m pip install -U pytest
-        cd capi
-        cargo build
-        cd ..
-        mkdir -p python/pyautd3/bin
-        cp ./capi/target/debug/*.dylib python/pyautd3/bin
-        cd python
-        python3 -m pytest
-      if: steps.changed-files.outputs.modified_files && matrix.os == 'macos-latest'
+      - name: Build capi on ${{ matrix.os }}
+        run: |
+          python3 -m pip install -U pytest
+          cd python
+          python3 -m pytest
