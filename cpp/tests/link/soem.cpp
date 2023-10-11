@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 11/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,8 @@
 #endif
 }
 
+void test_soem_on_err(const char* msg) { std::cerr << msg; }
+
 TEST(Link, SOEM) {
   auto link = autd3::link::SOEM::builder()
                   .with_ifname("")
@@ -32,6 +34,7 @@ TEST(Link, SOEM) {
                   .with_send_cycle(2)
                   .with_sync0_cycle(2)
                   .with_on_lost(&test_soem_on_lost)
+                  .with_on_err(&test_soem_on_err)
                   .with_timer_strategy(autd3::internal::native_methods::TimerStrategy::Sleep)
                   .with_sync_mode(autd3::internal::native_methods::SyncMode::FreeRun)
                   .with_state_check_interval(std::chrono::milliseconds(100))

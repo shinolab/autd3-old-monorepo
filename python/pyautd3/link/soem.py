@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr, TimerStrategy
 from pyautd3.native_methods.autd3capi_link_soem import SyncMode
 
 
-OnLostFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+OnErrFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 
 
 class EtherCATAdapter:
@@ -100,6 +100,16 @@ class SOEM:
             """
 
             self._builder = LinkSOEM().link_soem_with_on_lost(self._builder, handle)
+            return self
+
+        def with_on_err(self, handle) -> "SOEM._Builder":
+            """Set callback function when some error occurs
+
+            Arguments:
+            - `handle` - Callback function
+            """
+
+            self._builder = LinkSOEM().link_soem_with_on_err(self._builder, handle)
             return self
 
         def with_timer_strategy(self, strategy: TimerStrategy) -> "SOEM._Builder":

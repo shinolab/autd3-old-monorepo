@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ import os
 import ctypes
 
 from pyautd3 import Controller, AUTD3
-from pyautd3.link.soem import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnErrFunc
 
 from samples import runner
 
@@ -26,7 +26,7 @@ def on_lost(msg: ctypes.c_char_p):
 
 
 if __name__ == "__main__":
-    on_lost_func = OnLostFunc(on_lost)
+    on_lost_func = OnErrFunc(on_lost)
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))

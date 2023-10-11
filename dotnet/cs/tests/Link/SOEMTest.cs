@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,10 +28,14 @@ public class SOEMTest
     [Fact(Skip = "SOEM is required")]
     public void TestSOEM()
     {
-        var onLost = new SOEM.OnLostCallbackDelegate(msg =>
+        var onLost = new SOEM.OnErrCallbackDelegate(msg =>
         {
             _testOutputHelper.WriteLine(msg);
             Environment.Exit(-1);
+        });
+        var onErr = new SOEM.OnErrCallbackDelegate(msg =>
+        {
+            _testOutputHelper.WriteLine(msg);
         });
 
         var autd = Controller.Builder()
@@ -42,6 +46,7 @@ public class SOEMTest
                 .WithSendCycle(2)
                 .WithSync0Cycle(2)
                 .WithOnLost(onLost)
+                .WithOnErr(onErr)
                 .WithTimerStrategy(TimerStrategy.Sleep)
                 .WithSyncMode(SyncMode.FreeRun)
                 .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
