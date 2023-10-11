@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -197,7 +197,7 @@ impl Simulator {
     ///
     /// X11 / Wayland: This function returns 1 upon disconnection from the display server.
     pub fn run(&mut self) -> anyhow::Result<i32> {
-        spdlog::info!("Initializing window...");
+        tracing::info!("Initializing window...");
 
         let (tx, rx) = bounded(32);
 
@@ -209,7 +209,7 @@ impl Simulator {
         let server_th = std::thread::spawn({
             let rx_buf = rx_buf.clone();
             move || {
-                spdlog::info!("Waiting for client connection on http://0.0.0.0:{}", port);
+                tracing::info!("Waiting for client connection on http://0.0.0.0:{}", port);
                 let body = async {
                     Server::builder()
                         .add_service(simulator_server::SimulatorServer::new(SimulatorServer {
@@ -622,8 +622,6 @@ impl Simulator {
             }
 
             if server_th_ref.is_finished() || !is_running {
-                spdlog::default_logger().flush();
-
                 *control_flow = ControlFlow::Exit;
             }
         });
@@ -631,8 +629,8 @@ impl Simulator {
         let _ = shutdown.send(());
         if let Err(e) = server_th.join().unwrap() {
             match e.source() {
-                Some(e) => spdlog::error!("Server error: {}", e),
-                None => spdlog::error!("Server error: {}", e),
+                Some(e) => tracing::error!("Server error: {}", e),
+                None => tracing::error!("Server error: {}", e),
             }
         }
 

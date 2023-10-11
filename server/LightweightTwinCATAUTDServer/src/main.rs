@@ -26,12 +26,11 @@ struct LightweightTwinCATServer {
 
 impl Drop for LightweightTwinCATServer {
     fn drop(&mut self) {
-        spdlog::info!("Shutting down server...");
+        tracing::info!("Shutting down server...");
         let _ = Link::close(
             &mut *self.twincat.write().unwrap(),
         );
-        spdlog::info!("Shutting down server...done");
-        spdlog::default_logger().flush();
+        tracing::info!("Shutting down server...done");
     }
 }
 
@@ -53,7 +52,7 @@ fn main_() -> anyhow::Result<()> {
     .expect("Error setting Ctrl-C handler");
 
     let addr = format!("0.0.0.0:{}", port).parse()?;
-    spdlog::info!("Waiting for client connection on {}", addr);
+    tracing::info!("Waiting for client connection on {}", addr);
     let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
     let server = autd3_protobuf::LightweightServer::new(f);
@@ -68,10 +67,12 @@ fn main_() -> anyhow::Result<()> {
 }
 
 fn main() {
+    tracing_subscriber::fmt().init();
+
     match main_() {
         Ok(_) => {}
         Err(e) => {
-            spdlog::error!("{}", e);
+            tracing::error!("{}", e);
             std::process::exit(-1);
         }
     }
