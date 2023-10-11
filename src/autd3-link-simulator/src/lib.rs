@@ -135,7 +135,7 @@ impl Link for Simulator {
 
         self.runtime
             .block_on(self.client.write().unwrap().close(CloseRequest {}))
-            .map_err(|e| AUTDProtoBufError::from(e))?;
+            .map_err(AUTDProtoBufError::from)?;
 
         Ok(())
     }
@@ -148,7 +148,7 @@ impl Link for Simulator {
         let res = self
             .runtime
             .block_on(self.client.write().unwrap().send_data(tx.to_msg()))
-            .map_err(|e| AUTDProtoBufError::from(e))?;
+            .map_err(AUTDProtoBufError::from)?;
         Ok(res.into_inner().success)
     }
 
@@ -160,7 +160,7 @@ impl Link for Simulator {
         let res = self
             .runtime
             .block_on(self.client.write().unwrap().read_data(ReadRequest {}))
-            .map_err(|e| AUTDProtoBufError::from(e))?;
+            .map_err(AUTDProtoBufError::from)?;
         let rx_ = Vec::<RxMessage>::from_msg(&res.into_inner());
         if rx.len() == rx_.len() {
             rx.copy_from_slice(&rx_);
