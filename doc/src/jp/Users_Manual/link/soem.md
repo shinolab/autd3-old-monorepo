@@ -59,6 +59,71 @@ SOEM.builder()\
 
 デフォルトでは空白であり, 空白の場合はAUTD3デバイスが接続されているネットワークインタフェースを自動的に選択する.
 
+### エラー発生時のコールバック
+
+`with_on_err`関数で, 何らかのエラーが発生したときのコールバックを設定できる.
+コールバック関数はエラーメッセージを引数に取る.
+
+エラーが出ているかどうかを確認する間隔は, `with_state_check_interval`関数で指定する. (デフォルトは$\SI{100}{ms}$.)
+
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
+# use autd3::prelude::*;
+use autd3_link_soem::SOEM;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#            .open_with(
+SOEM::builder()
+    .with_state_check_interval(std::time::Duration::from_millis(100))
+    .with_on_err(|msg| {
+            eprintln!("Unrecoverable error occurred: {msg}");
+        })
+# )?;
+# Ok(())
+# }
+```
+
+```cpp
+#include "autd3/link/soem.hpp"
+
+void on_err(const char* msg) {
+  std::cerr << msg;
+}
+
+autd3::link::SOEM::builder()
+    .with_state_check_interval(std::chrono::milliseconds(100))
+    .with_on_err(&on_err)
+```
+
+```cs
+var onErr = new SOEM.OnErrCallbackDelegate((string msg) =>
+{
+    Console.WriteLine(msg);
+});
+
+SOEM.Builder()
+    .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
+    .WithOnErr(onErr)
+```
+
+```python
+from pyautd3.link.soem import SOEM, OnErrFunc
+from datetime import timedelta
+
+def on_err(msg: ctypes.c_char_p):
+    print(msg.decode("utf-8"), end="")
+
+on_err_func = OnErrFunc(on_err)
+
+SOEM.builder()\
+    .with_state_check_interval(timedelta(milliseconds=100))\
+    .with_on_err(on_err_func)
+```
+
 ### リンク切断時のコールバック
 
 `with_on_lost`関数で, 回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定できる[^fn_soem_err].
@@ -99,7 +164,7 @@ autd3::link::SOEM::builder()
 ```
 
 ```cs
-var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+var onLost = new SOEM.OnErrCallbackDelegate((string msg) =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);
@@ -110,13 +175,13 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link.soem import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnErrFunc
 
 def on_lost(msg: ctypes.c_char_p):
     print(msg.decode("utf-8"), end="")
     os._exit(-1)
 
-on_lost_func = OnLostFunc(on_lost)
+on_lost_func = OnErrFunc(on_lost)
 
 SOEM.builder()\
     .with_on_lost(on_lost_func)

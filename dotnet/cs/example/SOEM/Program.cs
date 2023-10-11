@@ -4,7 +4,7 @@
  * Created Date: 14/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Utils;
 using Samples;
 
-var onLost = new SOEM.OnLostCallbackDelegate(msg =>
+var onLost = new SOEM.OnErrCallbackDelegate(msg =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);

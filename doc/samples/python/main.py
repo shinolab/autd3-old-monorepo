@@ -1,5 +1,5 @@
 from pyautd3 import AUTD3, Controller, Silencer
-from pyautd3.link.soem import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnErrFunc
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
 
@@ -15,7 +15,7 @@ def on_lost(msg: ctypes.c_char_p):
 
 
 if __name__ == "__main__":
-    on_lost_func = OnLostFunc(on_lost)
+    on_lost_func = OnErrFunc(on_lost)
 
     autd = (
         Controller.builder()

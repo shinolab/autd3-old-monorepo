@@ -4,7 +4,7 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Gain;
 using AUTD3Sharp.Modulation;
 
-var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+var onLost = new SOEM.OnErrCallbackDelegate((string msg) =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);

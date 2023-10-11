@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 11/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,6 @@ let onLost (msg:string): unit =
 
 let autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(SOEM.Builder().WithOnLost(new SOEM.OnLostCallbackDelegate(onLost)))
+            .OpenWith(SOEM.Builder().WithOnLost(new SOEM.OnErrCallbackDelegate(onLost)))
 
 SampleRunner.Run autd

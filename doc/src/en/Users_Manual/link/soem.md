@@ -60,6 +60,70 @@ SOEM.builder()\
 
 By default, it is blank, and if it is blank, the network interface to which the AUTD3 device is connected is automatically selected.
 
+### Callback when error occurs
+
+You can set a callback with `with_on_err` function when an error occurs.
+
+The interval of error status check is specified by `with_state_check_interval` function. (Default is $\SI{100}{ms}$.)
+
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
+# use autd3::prelude::*;
+use autd3_link_soem::SOEM;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#            .open_with(
+SOEM::builder()
+    .with_state_check_interval(std::time::Duration::from_millis(100))
+    .with_on_err(|msg| {
+            eprintln!("Unrecoverable error occurred: {msg}");
+        })
+# )?;
+# Ok(())
+# }
+```
+
+```cpp
+#include "autd3/link/soem.hpp"
+
+void on_err(const char* msg) {
+  std::cerr << msg;
+}
+
+autd3::link::SOEM::builder()
+    .with_state_check_interval(std::chrono::milliseconds(100))
+    .with_on_err(&on_err)
+```
+
+```cs
+var onErr = new SOEM.OnErrCallbackDelegate((string msg) =>
+{
+    Console.WriteLine(msg);
+});
+
+SOEM.Builder()
+    .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
+    .WithOnErr(onErr)
+```
+
+```python
+from pyautd3.link.soem import SOEM, OnErrFunc
+from datetime import timedelta
+
+def on_err(msg: ctypes.c_char_p):
+    print(msg.decode("utf-8"), end="")
+
+on_err_func = OnErrFunc(on_err)
+
+SOEM.builder()\
+    .with_state_check_interval(timedelta(milliseconds=100))\
+    .with_on_err(on_err_func)
+```
+
 ### Callback when link is lost
 
 You can set a callback with `with_on_lost` function when an unrecoverable error (e.g., cable is unplugged) occurs[^fn_soem_err].
@@ -100,7 +164,7 @@ autd3::link::SOEM::builder()
 ```
 
 ```cs
-var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+var onLost = new SOEM.OnErrCallbackDelegate((string msg) =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);
@@ -111,13 +175,13 @@ SOEM.Builder()
 ```
 
 ```python
-from pyautd3.link.soem import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnErrFunc
 
 def on_lost(msg: ctypes.c_char_p):
     print(msg.decode("utf-8"), end="")
     os._exit(-1)
 
-on_lost_func = OnLostFunc(on_lost)
+on_lost_func = OnErrFunc(on_lost)
 
 SOEM.builder()\
     .with_on_lost(on_lost_func)

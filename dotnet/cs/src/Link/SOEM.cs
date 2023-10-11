@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class SOEM
     {
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnErrCallbackDelegate(string str);
 
         public sealed class SOEMBuilder : Internal.ILinkBuilder
         {
@@ -111,9 +111,21 @@ namespace AUTD3Sharp.Link
             /// </summary>
             /// <param name="onLost"></param>
             /// <returns></returns>
-            public SOEMBuilder WithOnLost(OnLostCallbackDelegate onLost)
+            public SOEMBuilder WithOnLost(OnErrCallbackDelegate onLost)
             {
                 _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithOnLost(_ptr, Marshal.GetFunctionPointerForDelegate(onLost));
+                return this;
+            }
+
+
+            /// <summary>
+            /// Set callback function when some error occurs
+            /// </summary>
+            /// <param name="onLost"></param>
+            /// <returns></returns>
+            public SOEMBuilder WithOnErr(OnErrCallbackDelegate onLost)
+            {
+                _ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMWithOnErr(_ptr, Marshal.GetFunctionPointerForDelegate(onLost));
                 return this;
             }
 

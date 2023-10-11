@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 11/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,8 @@
 namespace autd3::link {
 
 using internal::native_methods::SyncMode;
+
+using OnErrCallback = void (*)(const char* msg);
 
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATsociety/SOEM)
@@ -89,8 +91,18 @@ class SOEM {
      * @param value
      * @return Builder
      */
-    Builder with_on_lost(const internal::OnLostCallback value) {
+    Builder with_on_lost(const internal::OnErrCallback value) {
       _ptr = AUTDLinkSOEMWithOnLost(_ptr, reinterpret_cast<void*>(value));
+      return *this;
+    }
+    /**
+     * @brief Set callback function when some errors occur
+     *
+     * @param value
+     * @return Builder
+     */
+    Builder with_on_err(const internal::OnErrCallback value) {
+      _ptr = AUTDLinkSOEMWithOnErr(_ptr, reinterpret_cast<void*>(value));
       return *this;
     }
 
