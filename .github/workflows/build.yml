@@ -113,7 +113,7 @@ jobs:
       - name: Build examples
         run: |
           cd src/examples
-          cargo build --bins --features "soem async visualizer python lightweight remote_soem twincat remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
+          cargo build --bins --features "soem async lightweight remote_soem twincat remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
 
   build-linux-aarch64-src:
     needs: check-src
@@ -146,7 +146,7 @@ jobs:
       - name: Build examples
         run: |
           cd src/examples
-          cargo build --bins --features "soem async visualizer python lightweight remote_soem twincat remote_twincat simulator" --target=aarch64-unknown-linux-gnu
+          cargo build --bins --features "soem async lightweight remote_soem twincat remote_twincat simulator" --target=aarch64-unknown-linux-gnu
 
   check-capi:
     runs-on: ubuntu-latest
