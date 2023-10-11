@@ -58,12 +58,17 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd src
-          cargo test --workspace --features test-utilities --exclude autd3-backend-arrayfire --exclude autd3-link-soem
+          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-link-soem
       - name: Test src on ${{ matrix.os }}
-        if: matrix.os != 'windows-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           cd src
-          cargo test --workspace --features test-utilities --exclude autd3-backend-arrayfire
+          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire
+      - name: Test src on ${{ matrix.os }}
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd src
+          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
 
       - name: Build examples on ${{ matrix.os }}
         if: matrix.os == 'windows-latest'
