@@ -44,6 +44,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           cuda: true
           shaderc: true
@@ -88,6 +89,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           arch: 'arm32'
           cuda: false
@@ -120,6 +122,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           arch: 'aarch64'
           cuda: false
@@ -175,6 +178,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           cuda: true
 
@@ -207,6 +211,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           arch: 'arm32'
           cuda: false
@@ -235,6 +240,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           arch: 'aarch64'
           cuda: false
@@ -256,23 +262,24 @@ jobs:
     name: lint-src
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup
-      uses: ./.github/actions/setup-build
-      with:
-        os: ubuntu-latest
-        cuda: true
-        shaderc: true
+      - uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          cuda: true
+          shaderc: true
 
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './src -> target'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src -> target'
 
-    - name: lint src
-      run: |
-        cd src
-        cargo clippy --all --features all -- -D warnings
+      - name: lint src
+        run: |
+          cd src
+          cargo clippy --all --features all -- -D warnings
 
   lint-capi:
     needs: check-capi
@@ -280,23 +287,24 @@ jobs:
     name: lint-capi
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup
-      uses: ./.github/actions/setup-build
-      with:
-        os: ubuntu-latest
-        cuda: true
-        shaderc: true
+      - uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          cuda: true
+          shaderc: true
 
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: './capi -> target'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
 
-    - name: lint capi
-      run: |
-        cd capi
-        cargo clippy --all -- -D warnings
+      - name: lint capi
+        run: |
+          cd capi
+          cargo clippy --all -- -D warnings
 
   check-server:
     runs-on: ubuntu-latest
@@ -330,6 +338,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           cuda: false
           shaderc: true

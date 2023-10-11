@@ -1,5 +1,9 @@
 name: 'build tools setup action'
 inputs:
+  github-token:
+    description: 'GITHUB_TOKEN'
+    required: true
+    default: ''
   os:
     description: 'os'
     required: true
@@ -22,16 +26,17 @@ runs:
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ inputs.github-token }}
 
     - uses: Jimver/cuda-toolkit@v0.2.11
-      if: ${{ input.cuda }} && ${{ inputs.os }} == 'windows-latest'
+      if: inputs.cuda && inputs.os == 'windows-latest'
       with:
         cuda: '12.2.0'
         method: 'network'
         sub-packages: '["nvcc", "cudart", "cublas_dev", "cusolver_dev"]'
     - name: install cuda
-      if: ${{ input.cuda }} && ${{ inputs.os }} == 'ubuntu-latest'
+      shell: bash
+      if: inputs.cuda && inputs.os == 'ubuntu-latest'
       run: |
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
         sudo dpkg -i cuda-keyring_1.1-1_all.deb
@@ -40,14 +45,16 @@ runs:
         echo "/usr/local/cuda/bin" >> $GITHUB_PATH
 
     - name: install shaderc
-      if: ${{ input.shaderc }} && ${{ inputs.os }} == 'windows-latest'
+      shell: pwsh
+      if: inputs.shaderc && inputs.os == 'windows-latest'
       run: |
         Invoke-WebRequest -URI https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/windows/continuous_release_2019/10/20230531-104731/install.zip -OutFile shaderc.zip
         Expand-Archive -Path shaderc.zip -DestinationPath shaderc
         echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
         rm shaderc.zip
     - name: install shaderc
-      if: ${{ input.shaderc }} && ${{ inputs.os }} == 'ubuntu-latest'
+      shell: bash
+      if: inputs.shaderc && inputs.os == 'ubuntu-latest'
       run: |
         curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
         tar -xzf shaderc.tgz
@@ -55,7 +62,8 @@ runs:
         echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
         rm shaderc.tgz
     - name: install shaderc
-      if: ${{ input.shaderc }} && ${{ inputs.os }} == 'macos-latest'
+      shell: bash
+      if: inputs.shaderc && inputs.os == 'macos-latest'
       run: |
         curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
         tar -xzf shaderc.tgz
@@ -65,17 +73,21 @@ runs:
         rm shaderc.tgz
 
     - name: install aarch64 target on macos
-      if: ${{ inputs.os }} == 'macos-latest'
+      shell: bash
+      if: inputs.os == 'macos-latest'
       run: |
         rustup target add aarch64-apple-darwin
 
     - name: install arm32 target on linux
-      if : ${{ inputs.os }} == 'ubuntu-latest' && ${{ inputs.arch }} == 'arm32'
+      shell: bash
+      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'arm32'
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
         rustup target add armv7-unknown-linux-gnueabihf
     - name: setup linker for arm32 target
+      shell: bash
+      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'arm32'
       run: |
         cd src
         mkdir .cargo
@@ -90,12 +102,15 @@ runs:
         echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
 
     - name: install arm64 target on linux
-      if : ${{ inputs.os }} == 'ubuntu-latest' && ${{ inputs.arch }} == 'aarch64'
+      shell: bash
+      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'aarch64'
       run : |
         sudo apt-get update
         sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         rustup target add aarch64-unknown-linux-gnu
     - name: setup linker for arm64 target
+      shell: bash
+      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'aarch64'
       run: |
         cd src
         mkdir .cargo

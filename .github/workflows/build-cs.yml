@@ -42,6 +42,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           cuda: true
 
