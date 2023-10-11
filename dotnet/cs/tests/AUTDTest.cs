@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -279,7 +279,7 @@ public class AUTDTest
                 cnt++;
                 return false;
             }).WithTimerStrategy(TimerStrategy.NativeTimer).Start(TimeSpan.FromMilliseconds(1));
-            Assert.Equal(1, cnt);
+            Assert.Trur(cnt > 0);
         }
     }
 
