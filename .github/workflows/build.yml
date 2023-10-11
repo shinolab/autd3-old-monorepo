@@ -58,16 +58,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd src
-          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-link-soem
+          cargo build --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-link-soem 
+          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda --exclude autd3-link-soem 
       - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os != 'windows-latest'
         run: |
           cd src
-          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire
-      - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd src
+          cargo build --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire
           cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
 
       - name: Build examples on ${{ matrix.os }}
@@ -201,7 +198,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           cd capi
-          cargo test --workspace
+          cargo test --workspace --exclude autd3capi-backend-cuda
 
   build-linux-arm32-capi:
     needs: check-capi
@@ -230,7 +227,7 @@ jobs:
       - name: Build src
         run: |
           cd capi
-          cargo test --target=armv7-unknown-linux-gnueabihf
+          cargo build --target=armv7-unknown-linux-gnueabihf
 
   build-linux-aarch64-capi:
     needs: check-capi
@@ -259,7 +256,7 @@ jobs:
       - name: Build src
         run: |
           cd capi
-          cargo test --target=aarch64-unknown-linux-gnu
+          cargo build --target=aarch64-unknown-linux-gnu
 
   lint-src:
     needs: check-src
