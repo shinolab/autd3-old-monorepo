@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -108,8 +108,11 @@ fn main() -> anyhow::Result<()> {
             let debug = arg.debug;
 
             if debug {
-                spdlog::default_logger()
-                    .set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Debug));
+                tracing_subscriber::fmt()
+                    .with_max_level(tracing::Level::DEBUG)
+                    .init();
+            } else {
+                tracing_subscriber::fmt().init();
             }
 
             let settings: ViewerSettings = if settings_path.exists() {
