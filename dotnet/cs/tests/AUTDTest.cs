@@ -279,7 +279,7 @@ public class AUTDTest
                 cnt++;
                 return false;
             }).WithTimerStrategy(TimerStrategy.NativeTimer).Start(TimeSpan.FromMilliseconds(1));
-            Assert.Trur(cnt > 0);
+            Assert.True(cnt > 0);
         }
     }
 
