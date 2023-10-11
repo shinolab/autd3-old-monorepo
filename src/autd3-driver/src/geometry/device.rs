@@ -264,7 +264,7 @@ pub mod tests {
 
             let p = Vector3::new(10., 20., 30.);
 
-            assert_approx_eq_vec3!(device.to_local(p), p);
+            assert_approx_eq_vec3!(device.to_local(&p), p);
         }
 
         {
@@ -283,7 +283,7 @@ pub mod tests {
 
             let device = Device::new(0, transducers);
 
-            assert_approx_eq_vec3!(device.to_local(p), Vector3::zeros());
+            assert_approx_eq_vec3!(device.to_local(&p), Vector3::zeros());
         }
 
         {
@@ -300,7 +300,7 @@ pub mod tests {
 
             let p = Vector3::new(10., 20., 30.);
 
-            assert_approx_eq_vec3!(device.to_local(p), Vector3::new(p.y, -p.x, p.z));
+            assert_approx_eq_vec3!(device.to_local(&p), Vector3::new(p.y, -p.x, p.z));
         }
 
         {
@@ -320,11 +320,11 @@ pub mod tests {
 
             let device = Device::new(0, transducers);
 
-            assert_approx_eq_vec3!(device.to_local(p), Vector3::new(0., 0., 0.));
+            assert_approx_eq_vec3!(device.to_local(&p), Vector3::new(0., 0., 0.));
 
             let d = Vector3::new(40., 50., 60.);
 
-            assert_approx_eq_vec3!(device.to_local(p + d), Vector3::new(d.x, d.z, -d.y));
+            assert_approx_eq_vec3!(device.to_local(&(p + d)), Vector3::new(d.x, d.z, -d.y));
         }
     }
 
