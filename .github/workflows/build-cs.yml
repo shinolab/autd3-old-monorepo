@@ -68,6 +68,11 @@ jobs:
           ./build.sh
         if: matrix.os != 'windows-latest'
 
+      - name: Build library
+        run: |
+          cd dotnet/cs/src
+          dotnet build -c:Release
+
       - name: Test library
         run: |
           cd dotnet/cs/tests
@@ -75,11 +80,8 @@ jobs:
 
       - name: Build example
         run: |
-          cd dotnet/cs/src
-          dotnet build -c:Release
-          cd ..
           dotnet nuget add source ${{ github.workspace }}/dotnet/cs/src/bin/Release -n autd3sharp_local
-          cd example
+          cd dotnet/cs/example
           dotnet build -c:Release
           cd ../../fs/example
           dotnet build -c:Release
