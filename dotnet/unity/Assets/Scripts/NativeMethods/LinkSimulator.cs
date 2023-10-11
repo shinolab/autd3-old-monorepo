@@ -21,6 +21,8 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr simulator, ulong timeoutNs);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkBuilderPtr AUTDLinkSimulatorIntoBuilder(LinkSimulatorBuilderPtr simulator);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator, GeometryPtr geometry, byte[] err);
         }
     }
 

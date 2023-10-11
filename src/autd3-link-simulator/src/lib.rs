@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,11 @@
 
 use tokio::runtime::{Builder, Runtime};
 
-use autd3_protobuf::{simulator_client::SimulatorClient, *};
+use autd3_protobuf::*;
 
 use std::{
     net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    sync::RwLock,
     time::Duration,
 };
 
@@ -34,7 +35,7 @@ enum Either {
 
 /// Link for Simulator
 pub struct Simulator {
-    client: simulator_client::SimulatorClient<tonic::transport::Channel>,
+    client: RwLock<simulator_client::SimulatorClient<tonic::transport::Channel>>,
     runtime: Runtime,
     timeout: Duration,
     is_open: bool,
@@ -79,7 +80,7 @@ impl<T: Transducer> LinkBuilder<T> for SimulatorBuilder {
         }
 
         Ok(Self::L {
-            client,
+            client: RwLock::new(client),
             runtime,
             timeout: self.timeout,
             is_open: true,
@@ -123,31 +124,6 @@ impl Simulator {
             timeout: Duration::from_millis(200),
         }
     }
-
-    fn close_impl(
-        client: &mut SimulatorClient<tonic::transport::Channel>,
-        runtime: &Runtime,
-    ) -> Result<bool, AUTDProtoBufError> {
-        let res = runtime.block_on(client.close(CloseRequest {}))?;
-        Ok(res.into_inner().success)
-    }
-
-    fn send_impl(
-        client: &mut SimulatorClient<tonic::transport::Channel>,
-        runtime: &Runtime,
-        tx: &TxDatagram,
-    ) -> Result<bool, AUTDProtoBufError> {
-        let res = runtime.block_on(client.send_data(tx.to_msg()))?;
-        Ok(res.into_inner().success)
-    }
-
-    fn receive_impl(
-        client: &mut SimulatorClient<tonic::transport::Channel>,
-        runtime: &Runtime,
-    ) -> Result<Vec<RxMessage>, AUTDProtoBufError> {
-        let res = runtime.block_on(client.read_data(ReadRequest {}))?;
-        Ok(Vec::<RxMessage>::from_msg(&res.into_inner()))
-    }
 }
 
 impl Link for Simulator {
@@ -157,7 +133,9 @@ impl Link for Simulator {
         }
         self.is_open = false;
 
-        Self::close_impl(&mut self.client, &self.runtime)?;
+        self.runtime
+            .block_on(self.client.write().unwrap().close(CloseRequest {}))
+            .map_err(|e| AUTDProtoBufError::from(e))?;
 
         Ok(())
     }
@@ -167,7 +145,11 @@ impl Link for Simulator {
             return Err(AUTDInternalError::LinkClosed);
         }
 
-        Ok(Self::send_impl(&mut self.client, &self.runtime, tx)?)
+        let res = self
+            .runtime
+            .block_on(self.client.write().unwrap().send_data(tx.to_msg()))
+            .map_err(|e| AUTDProtoBufError::from(e))?;
+        Ok(res.into_inner().success)
     }
 
     fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
@@ -175,7 +157,11 @@ impl Link for Simulator {
             return Err(AUTDInternalError::LinkClosed);
         }
 
-        let rx_ = Self::receive_impl(&mut self.client, &self.runtime)?;
+        let res = self
+            .runtime
+            .block_on(self.client.write().unwrap().read_data(ReadRequest {}))
+            .map_err(|e| AUTDProtoBufError::from(e))?;
+        let rx_ = Vec::<RxMessage>::from_msg(&res.into_inner());
         if rx.len() == rx_.len() {
             rx.copy_from_slice(&rx_);
         }
@@ -190,21 +176,27 @@ impl Link for Simulator {
     fn timeout(&self) -> Duration {
         self.timeout
     }
+}
 
-    // fn update_geometry(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-    //     if let Some(client) = &mut self.client {
-    //         if self
-    //             .runtime
-    //             .block_on(client.update_geomety(devices.to_msg()))
-    //             .is_err()
-    //         {
-    //             return Err(
-    //                 AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
-    //             );
-    //         }
-    //         Ok(())
-    //     } else {
-    //         Err(AUTDInternalError::LinkClosed)
-    //     }
-    // }
+impl Simulator {
+    pub fn update_geometry<T: Transducer>(
+        &self,
+        geometry: &autd3_driver::geometry::Geometry<T>,
+    ) -> Result<(), AUTDInternalError> {
+        if self
+            .runtime
+            .block_on(
+                self.client
+                    .write()
+                    .unwrap()
+                    .update_geomety(geometry.to_msg()),
+            )
+            .is_err()
+        {
+            return Err(
+                AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
+            );
+        }
+        Ok(())
+    }
 }
