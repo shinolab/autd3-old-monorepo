@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -130,7 +130,6 @@ impl FieldCompute {
     }
 
     pub(crate) fn calc_field_of<
-        'a,
         T: Transducer,
         D: autd3_driver::acoustics::directivity::Directivity,
     >(
