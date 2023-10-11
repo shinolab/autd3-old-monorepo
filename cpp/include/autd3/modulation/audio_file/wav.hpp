@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 12/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/modulation/cache.hpp"
+#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -25,7 +26,11 @@ namespace autd3::modulation::audio_file {
  * @brief Modulation constructed from wav file
  * @details The wav data is re-sampled to the sampling frequency of Modulation.
  */
-class Wav final : public internal::ModulationWithFreqDiv<Wav>, public IntoCache<Wav>, public IntoRadiationPressure<Wav>, public IntoTransform<Wav> {
+class Wav final : public internal::ModulationWithFreqDiv<Wav>,
+                  public IntoCache<Wav>,
+                  public IntoRadiationPressure<Wav>,
+                  public IntoTransform<Wav>,
+                  public IntoFIR<Wav> {
  public:
   /**
    * @brief Constructor

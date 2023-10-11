@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 12/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ from .modulation import Modulation
 from .cache import Cache
 from .transform import Transform
 from .radiation_pressure import RadiationPressure
+from .fir import LPF, HPF, BPF, BSF
 
 __all__ = [
     "Static",
@@ -30,4 +31,4 @@ __all__ = [
     "Square",
 ]
 
-_ = Cache, Transform, RadiationPressure
+_ = Cache, Transform, RadiationPressure, LPF, HPF, BPF, BSF
