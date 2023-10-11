@@ -1,4 +1,4 @@
-# autd3-link-simulator
+# autd3-link-visualizer
 
 This crate provides a link for monitoring AUTD status and plotting acoustic fields.
 
@@ -9,7 +9,7 @@ This crate provides a link for monitoring AUTD status and plotting acoustic fiel
 For Linux, you must install the following packages.
 
 ```
-monitor link deps sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev
+sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev
 ```
 
 For Windows and macOS, no additional packages are required.
