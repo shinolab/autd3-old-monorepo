@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -165,13 +165,25 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
     }
 
     fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.points.len() < 2 || self.points.len() > FOCUS_STM_BUF_SIZE_MAX {
+        if !(2..=FOCUS_STM_BUF_SIZE_MAX).contains(&self.points.len()) {
             return Err(AUTDInternalError::FocusSTMPointSizeOutOfRange(
                 self.points.len(),
             ));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN || self.freq_div > SAMPLING_FREQ_DIV_MAX {
+        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
             return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
+        }
+        match self.start_idx {
+            Some(idx) if idx >= self.points.len() as u16 => {
+                return Err(AUTDInternalError::STMStartIndexOutOfRange)
+            }
+            _ => {}
+        }
+        match self.finish_idx {
+            Some(idx) if idx >= self.points.len() as u16 => {
+                return Err(AUTDInternalError::STMFinishIndexOutOfRange)
+            }
+            _ => {}
         }
 
         self.remains = geometry
@@ -780,5 +792,43 @@ mod tests {
                 Err(AUTDInternalError::FocusSTMPointOutOfRange(x, x, x))
             );
         });
+    }
+
+    #[test]
+    fn focus_stm_op_stm_idx_out_of_range() {
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let test = |n: usize, start_idx: Option<u16>, finish_idx: Option<u16>| {
+            let mut rng = rand::thread_rng();
+
+            let points: Vec<ControlPoint> = (0..n)
+                .map(|_| {
+                    ControlPoint::new(Vector3::new(
+                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
+                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
+                        rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
+                    ))
+                    .with_shift(rng.gen_range(0..0xFF))
+                })
+                .collect();
+
+            let mut op =
+                FocusSTMOp::new(points.clone(), SAMPLING_FREQ_DIV_MIN, start_idx, finish_idx);
+            op.init(&geometry)
+        };
+
+        assert_eq!(test(10, Some(0), Some(0)), Ok(()));
+        assert_eq!(test(10, Some(9), Some(0)), Ok(()));
+        assert_eq!(
+            test(10, Some(10), Some(0)),
+            Err(AUTDInternalError::STMStartIndexOutOfRange)
+        );
+
+        assert_eq!(test(10, Some(0), Some(0)), Ok(()));
+        assert_eq!(test(10, Some(0), Some(9)), Ok(()));
+        assert_eq!(
+            test(10, Some(0), Some(10)),
+            Err(AUTDInternalError::STMFinishIndexOutOfRange)
+        );
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -852,6 +852,36 @@ mod tests {
             Err(AUTDInternalError::GainSTMFreqDivOutOfRange(
                 SAMPLING_FREQ_DIV_MAX + 1
             ))
+        );
+    }
+
+    #[test]
+    fn gain_stm_advenced_op_stm_idx_out_of_range() {
+        let geometry = create_geometry::<AdvancedTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+
+        let test = |n: usize, start_idx: Option<u16>, finish_idx: Option<u16>| {
+            let mut op = GainSTMOp::new(
+                (0..n).map(|_| NullGain {}).collect(),
+                GainSTMMode::PhaseDutyFull,
+                SAMPLING_FREQ_DIV_MIN,
+                start_idx,
+                finish_idx,
+            );
+            op.init(&geometry)
+        };
+
+        assert_eq!(test(10, Some(0), Some(0)), Ok(()));
+        assert_eq!(test(10, Some(9), Some(0)), Ok(()));
+        assert_eq!(
+            test(10, Some(10), Some(0)),
+            Err(AUTDInternalError::STMStartIndexOutOfRange)
+        );
+
+        assert_eq!(test(10, Some(0), Some(0)), Ok(()));
+        assert_eq!(test(10, Some(0), Some(9)), Ok(()));
+        assert_eq!(
+            test(10, Some(0), Some(10)),
+            Err(AUTDInternalError::STMFinishIndexOutOfRange)
         );
     }
 }
