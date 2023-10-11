@@ -4,7 +4,7 @@ Project: gain
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@ from ..test_autd import create_controller
 
 from pyautd3 import Drive, Geometry
 from pyautd3.gain import Uniform, Gain
-from pyautd3.link.audit import Audit
 
 import numpy as np
 
@@ -28,7 +27,7 @@ def test_cache():
     assert autd.send(Uniform(0.5).with_phase(np.pi).with_cache())
 
     for dev in autd.geometry:
-        duties, phases = autd.link().duties_and_phases(dev.idx, 0)
+        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 680)
         assert np.all(phases == 2048)
 
@@ -78,11 +77,11 @@ def test_cache_check_only_for_enabled():
     assert 0 not in g_cached.drives()
     assert 1 in g_cached.drives()
 
-    duties, phases = autd.link().duties_and_phases(0, 0)
+    duties, phases = autd.link.duties_and_phases(0, 0)
     assert np.all(duties == 0)
     assert np.all(phases == 0)
 
-    duties, phases = autd.link().duties_and_phases(1, 0)
+    duties, phases = autd.link.duties_and_phases(1, 0)
     assert np.all(duties == 680)
     assert np.all(phases == 2048)
 
@@ -98,11 +97,11 @@ def test_transform():
 
     assert autd.send(Uniform(0.5).with_phase(np.pi).with_transform(transform))
 
-    duties, phases = autd.link().duties_and_phases(0, 0)
+    duties, phases = autd.link.duties_and_phases(0, 0)
     assert np.all(duties == 680)
     assert np.all(phases == 2048 + 512)
 
-    duties, phases = autd.link().duties_and_phases(1, 0)
+    duties, phases = autd.link.duties_and_phases(1, 0)
     assert np.all(duties == 680)
     assert np.all(phases == 2048 - 512)
 
@@ -122,10 +121,10 @@ def test_transform_check_only_for_enabled():
     assert not check[0]
     assert check[1]
 
-    duties, phases = autd.link().duties_and_phases(0, 0)
+    duties, phases = autd.link.duties_and_phases(0, 0)
     assert np.all(duties == 0)
     assert np.all(phases == 0)
 
-    duties, phases = autd.link().duties_and_phases(1, 0)
+    duties, phases = autd.link.duties_and_phases(1, 0)
     assert np.all(duties == 680)
     assert np.all(phases == 2048)

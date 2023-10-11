@@ -4,7 +4,7 @@ Project: holo
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ def test_gs():
     assert autd.send(g)
 
     for dev in autd.geometry:
-        duties, phases = autd.link().duties_and_phases(dev.idx, 0)
+        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 680)
         assert not np.all(phases == 0)
 
@@ -56,6 +56,6 @@ def test_gs_cuda():
     assert autd.send(g)
 
     for dev in autd.geometry:
-        duties, phases = autd.link().duties_and_phases(dev.idx, 0)
+        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 680)
         assert not np.all(phases == 0)
