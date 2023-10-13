@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{
     path::Path,
 };
 
-use simulator::{Simulator, ViewerSettings};
+use simulator::{LogFormatter, Simulator, ViewerSettings};
 
 use clap::{Args, Parser, Subcommand};
 
@@ -105,15 +105,12 @@ fn main() -> anyhow::Result<()> {
                 Path::new(&arg.setting).to_owned()
             };
             let vsync = arg.vsync;
-            let debug = arg.debug;
 
-            if debug {
-                tracing_subscriber::fmt()
-                    .with_max_level(tracing::Level::DEBUG)
-                    .init();
-            } else {
-                tracing_subscriber::fmt().init();
+            let mut fmt = tracing_subscriber::fmt();
+            if arg.debug {
+                fmt = fmt.with_max_level(tracing::Level::DEBUG);
             }
+            fmt.event_format(LogFormatter).init();
 
             let settings: ViewerSettings = if settings_path.exists() {
                 let file = File::open(&settings_path)?;

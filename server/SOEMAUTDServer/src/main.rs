@@ -1,4 +1,21 @@
+/*
+ * File: main.rs
+ * Project: autd-server
+ * Created Date: 27/09/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 14/10/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ * 
+ */
+
 #![allow(non_snake_case)]
+
+mod log_formatter;
+
+use log_formatter::LogFormatter;
 
 use autd3_driver::{
     cpu::TxDatagram,
@@ -217,7 +234,7 @@ fn main_() -> anyhow::Result<()> {
 }
 
 fn main() {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt().event_format(LogFormatter).init();
 
     match main_() {
         Ok(_) => {}
