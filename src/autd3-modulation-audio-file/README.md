@@ -1,6 +1,6 @@
-# autd3-link-twincat
+# autd3-modulation-audio-file
 
-This crate provides a Wav modulation.
+This crate provides a Wav/RawPCM modulation.
 
 # Author
 
