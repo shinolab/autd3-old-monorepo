@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(AUTD_LOCAL_TEST "For local test build" OFF)
+option(USE_PYTHON "Use python backend for visualizer" OFF)
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
   cmake_policy(SET CMP0135 NEW)
@@ -70,3 +71,10 @@ target_link_libraries(freq_config PRIVATE autd3-example)
 add_executable(group_gain group_gain.cpp)
 autd3_target_link_library(group_gain PRIVATE)
 target_link_libraries(group_gain PRIVATE autd3-example)
+
+add_executable(visualizer visualizer.cpp)
+autd3_target_link_library(visualizer PRIVATE)
+target_link_libraries(visualizer PRIVATE autd3-example)
+if(USE_PYTHON)
+  target_compile_definitions(visualizer PRIVATE USE_PYTHON)
+endif()

@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,10 @@
 
 using System;
 using System.Net;
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
 
 namespace AUTD3Sharp.Link
 {
@@ -72,7 +76,7 @@ namespace AUTD3Sharp.Link
                 throw new AUTDException(err);
         }
 
-        public Simulator Create(LinkPtr ptr)
+        public Simulator Create(LinkPtr ptr, object? _)
         {
             return new Simulator
             {
@@ -81,3 +85,7 @@ namespace AUTD3Sharp.Link
         }
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable restore
+#endif

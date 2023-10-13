@@ -1,9 +1,9 @@
-// File: twincat.hpp
+// File: simulator.hpp
 // Project: link
-// Created Date: 29/05/2023
+// Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/10/2023
+// Last Modified: 13/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,9 +15,9 @@
 #include <string>
 
 #include "autd3/internal/exception.hpp"
+#include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
-#include "autd3/internal/geometry/geometry.hpp"
 
 namespace autd3::link {
 
@@ -64,10 +64,10 @@ class Simulator final {
 
   Simulator() = delete;
 
-  explicit Simulator(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+  explicit Simulator(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
-  void update_geometry(internal::Geometry& geometry) const {
-      if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
+  void update_geometry(const internal::Geometry& geometry) const {
+    if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
       throw internal::AUTDException(err);
   }
 };

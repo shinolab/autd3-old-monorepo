@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -180,6 +180,7 @@ namespace AUTD3Sharp
         private bool _isDisposed;
         internal ControllerPtr Ptr;
         private readonly TransMode _mode;
+        private readonly object? _linkProps;
 
         #endregion
 
@@ -247,7 +248,14 @@ namespace AUTD3Sharp
             /// <returns>Controller</returns>
             public Controller OpenWith(ILinkBuilder link)
             {
-                return OpenImpl(_ptr, _mode, link.Ptr());
+                var err = new byte[256];
+                var ptr = Base.AUTDControllerOpenWith(_ptr, link.Ptr(), err);
+                if (ptr._0 == IntPtr.Zero)
+                    throw new AUTDException(err);
+
+                var geometry = new Geometry(Base.AUTDGeometry(ptr), _mode);
+
+                return new Controller(geometry, ptr, _mode, link.Props());
             }
 
             internal ControllerBuilder()
@@ -266,23 +274,12 @@ namespace AUTD3Sharp
             return new ControllerBuilder();
         }
 
-        internal static Controller OpenImpl(ControllerBuilderPtr builder, TransMode mode, LinkBuilderPtr link)
-        {
-            var err = new byte[256];
-            var ptr = Base.AUTDControllerOpenWith(builder, link, err);
-            if (ptr._0 == IntPtr.Zero)
-                throw new AUTDException(err);
-
-            var geometry = new Geometry(Base.AUTDGeometry(ptr), mode);
-
-            return new Controller(geometry, ptr, mode);
-        }
-
-        private Controller(Geometry geometry, ControllerPtr ptr, TransMode mode)
+        private Controller(Geometry geometry, ControllerPtr ptr, TransMode mode, object? linkProps)
         {
             Ptr = ptr;
             Geometry = geometry;
             _mode = mode;
+            _linkProps = linkProps;
         }
 
         /// <summary>
@@ -358,7 +355,7 @@ namespace AUTD3Sharp
         public T Link<T>()
         where T : ILink<T>, new()
         {
-            return new T().Create(Base.AUTDLinkGet(Ptr));
+            return new T().Create(Base.AUTDLinkGet(Ptr), _linkProps);
         }
 
         #endregion
