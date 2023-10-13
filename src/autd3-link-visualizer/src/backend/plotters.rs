@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 12/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::ffi::OsString;
 use plotters::{coord::Shift, prelude::*};
 use scarlet::colormap::{ColorMap, ListedColorMap};
 
-use crate::{colormap, error::VisualizerError, Backend, Config};
+use crate::{colormap, error::VisualizerError, Backend};
 
 use autd3::autd3_device::AUTD3;
 use autd3_driver::{defined::float, geometry::Geometry};
@@ -25,15 +25,12 @@ use autd3_driver::{defined::float, geometry::Geometry};
 pub struct PlotConfig {
     pub figsize: (u32, u32),
     pub cbar_size: float,
-    pub fontsize: u32,
+    pub font_size: u32,
     pub label_area_size: u32,
     pub margin: u32,
-    pub font_size: u32,
     pub ticks_step: float,
     pub cmap: ListedColorMap,
     pub fname: OsString,
-    pub interval: u32,
-    pub print_progress: bool,
 }
 
 impl Default for PlotConfig {
@@ -41,22 +38,13 @@ impl Default for PlotConfig {
         Self {
             figsize: (960, 640),
             cbar_size: 0.15,
-            fontsize: 12,
             ticks_step: 10.,
             label_area_size: 80,
             margin: 10,
             font_size: 24,
             cmap: colormap::jet(),
             fname: OsString::new(),
-            interval: 100,
-            print_progress: false,
         }
-    }
-}
-
-impl Config for PlotConfig {
-    fn print_progress(&self) -> bool {
-        self.print_progress
     }
 }
 

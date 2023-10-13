@@ -68,7 +68,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceSetAttenuation(DevicePtr dev, double value);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceCenter(DevicePtr dev, double[] center);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceCenter(DevicePtr dev, double[]? center);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDDeviceTranslate(DevicePtr dev, double x, double y, double z);
 
@@ -90,15 +90,15 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern TransducerPtr AUTDTransducer(DevicePtr dev, uint trIdx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerPosition(TransducerPtr tr, double[] pos);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerPosition(TransducerPtr tr, double[]? pos);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerRotation(TransducerPtr tr, double[] rot);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerRotation(TransducerPtr tr, double[]? rot);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionX(TransducerPtr tr, double[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionX(TransducerPtr tr, double[]? dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionY(TransducerPtr tr, double[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionY(TransducerPtr tr, double[]? dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionZ(TransducerPtr tr, double[] dir);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionZ(TransducerPtr tr, double[]? dir);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern double AUTDTransducerFrequencyGet(TransducerPtr tr);
 
@@ -256,7 +256,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDModulationCacheGetBufferSize(ModulationCachePtr m);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDModulationCacheGetBuffer(ModulationCachePtr m, double[] buf);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDModulationCacheGetBuffer(ModulationCachePtr m, double[]? buf);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ModulationPtr AUTDModulationCacheIntoModulation(ModulationCachePtr m);
 

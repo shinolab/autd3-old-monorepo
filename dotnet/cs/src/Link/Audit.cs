@@ -4,15 +4,18 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  * 
  */
 
-
 using System;
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
 
 namespace AUTD3Sharp.Link
 {
@@ -180,7 +183,7 @@ namespace AUTD3Sharp.Link
             return NativeMethods.Base.AUTDLinkAuditFpgaStmFinishIdx(_ptr, (uint)idx);
         }
 
-        public Audit Create(LinkPtr ptr)
+        public Audit Create(LinkPtr ptr, object? _)
         {
             return new Audit
             {
@@ -189,3 +192,7 @@ namespace AUTD3Sharp.Link
         }
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable restore
+#endif

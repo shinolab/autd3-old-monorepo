@@ -4,14 +4,14 @@
  * Created Date: 17/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 12/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{Backend, Config};
+use crate::Backend;
 
 use autd3_driver::defined::float;
 
@@ -19,12 +19,6 @@ use autd3_driver::defined::float;
 pub struct NullBackend {}
 
 pub struct NullPlotConfig {}
-
-impl Config for NullPlotConfig {
-    fn print_progress(&self) -> bool {
-        false
-    }
-}
 
 impl Backend for NullBackend {
     type PlotConfig = NullPlotConfig;

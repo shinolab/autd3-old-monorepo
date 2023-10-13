@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 13/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -80,7 +80,15 @@ class Controller {
     template <class L>
     Controller open_with(L&& link) {
       static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
-      return Controller::open_impl(_ptr, _mode, link.ptr());
+
+      char err[256]{};
+
+      const auto ptr = AUTDControllerOpenWith(_ptr, link.ptr(), err);
+      if (ptr._0 == nullptr) throw AUTDException(err);
+
+      Geometry geometry(AUTDGeometry(ptr), _mode);
+
+      return {std::move(geometry), ptr, _mode, link.props()};
     }
 
    private:
@@ -100,7 +108,10 @@ class Controller {
   Controller() = delete;
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _mode(obj._mode) { obj._ptr._0 = nullptr; }
+  Controller(Controller&& obj) noexcept
+      : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _mode(obj._mode), _link_props(std::move(obj._link_props)) {
+    obj._ptr._0 = nullptr;
+  }
   Controller& operator=(Controller&& obj) noexcept {
     if (this != &obj) {
       if (_ptr._0 != nullptr) AUTDControllerDelete(_ptr);
@@ -108,6 +119,8 @@ class Controller {
       _geometry = std::move(obj._geometry);
       _ptr = obj._ptr;
       _mode = obj._mode;
+      _link_props = std::move(obj._link_props);
+
       obj._ptr._0 = nullptr;
     }
     return *this;
@@ -128,7 +141,7 @@ class Controller {
 
   template <typename L>
   [[nodiscard]] L link() const {
-    return L(internal::native_methods::AUTDLinkGet(_ptr));
+    return L(internal::native_methods::AUTDLinkGet(_ptr), _link_props);
   }
 
   /**
@@ -414,20 +427,8 @@ class Controller {
   }
 
  private:
-  static Controller open_impl(const native_methods::ControllerBuilderPtr builder, const native_methods::TransMode mode,
-                              const native_methods::LinkBuilderPtr link) {
-    char err[256]{};
-
-    const auto ptr = AUTDControllerOpenWith(builder, link, err);
-    if (ptr._0 == nullptr) throw AUTDException(err);
-
-    Geometry geometry(AUTDGeometry(ptr), mode);
-
-    return {std::move(geometry), ptr, mode};
-  }
-
-  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, const native_methods::TransMode mode)
-      : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
+  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, const native_methods::TransMode mode, std::shared_ptr<void> link_props)
+      : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode), _link_props(std::move(link_props)) {}
 
   bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
     char err[256]{};
@@ -440,6 +441,7 @@ class Controller {
   Geometry _geometry;
   native_methods::ControllerPtr _ptr;
   native_methods::TransMode _mode;
+  std::shared_ptr<void> _link_props;
 };
 
 }  // namespace autd3::internal

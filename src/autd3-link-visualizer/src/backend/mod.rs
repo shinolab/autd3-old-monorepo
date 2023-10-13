@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 12/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ mod plotters;
 #[cfg(feature = "python")]
 mod python;
 
-use crate::{error::VisualizerError, Config};
+use crate::error::VisualizerError;
 
 use autd3_driver::{
     defined::{float, Complex},
@@ -26,7 +26,7 @@ use autd3_driver::{
 
 /// Plotting backend
 pub trait Backend: Send + Sync {
-    type PlotConfig: Config;
+    type PlotConfig;
 
     fn new() -> Self;
 

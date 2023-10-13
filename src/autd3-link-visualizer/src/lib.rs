@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -96,10 +96,6 @@ impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T> for VisualizerBui
             gpu_compute,
         })
     }
-}
-
-pub trait Config {
-    fn print_progress(&self) -> bool;
 }
 
 #[derive(Clone, Debug)]
@@ -351,7 +347,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `observe_points` - Observe points iterator
     /// * `geometry` - Geometry
     ///
-    pub fn calc_field<T: Transducer, I: IntoIterator<Item = Vector3>>(
+    pub fn calc_field<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
@@ -367,7 +363,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn calc_field_of<T: Transducer, I: IntoIterator<Item = Vector3>>(
+    pub fn calc_field_of<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
@@ -396,11 +392,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                             .collect::<Vec<_>>()
                     })
                     .collect::<Vec<_>>();
-                return gpu.calc_field_of::<T, D>(
-                    observe_points.into_iter().collect(),
-                    geometry,
-                    source_drive,
-                );
+                return gpu.calc_field_of::<T, D, I>(observe_points, geometry, source_drive);
             }
         }
         observe_points
@@ -417,7 +409,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                             |acc, (t, d)| {
                                 let amp = (PI * d.0 as float / t.cycle() as float).sin();
                                 let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                                acc + propagate::<D, T>(t, 0.0, sound_speed, &target)
+                                acc + propagate::<D, T>(t, 0.0, sound_speed, target)
                                     * Complex::from_polar(amp, phase)
                             },
                         )
@@ -436,31 +428,31 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     ///
     pub fn plot_field<T: Transducer>(
         &self,
-        range: PlotRange,
         config: B::PlotConfig,
+        range: PlotRange,
         geometry: &Geometry<T>,
     ) -> Result<(), VisualizerError> {
-        self.plot_field_of(range, config, geometry, 0)
+        self.plot_field_of(config, range, geometry, 0)
     }
 
     /// Plot acoustic field
     ///
     /// # Arguments
     ///
-    /// * `range` - Plot range
     /// * `config` - Plot configuration
+    /// * `range` - Plot range
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
     pub fn plot_field_of<T: Transducer>(
         &self,
-        range: PlotRange,
         config: B::PlotConfig,
+        range: PlotRange,
         geometry: &Geometry<T>,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
-        let acoustic_pressures = self.calc_field_of(observe_points, geometry, idx);
+        let acoustic_pressures = self.calc_field_of(&observe_points, geometry, idx);
         if range.is_1d() {
             let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, 1, 1) => (range.observe_x(), "x [mm]"),
