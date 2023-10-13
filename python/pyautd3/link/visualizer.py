@@ -319,7 +319,7 @@ class Visualizer:
             self._backend,
             self._directivity,
             idx,
-            np.ctypeslib.as_ctypes(phases))
+            np.ctypeslib.as_ctypes(phases))  # type: ignore
         return phases
 
     def phases(self) -> np.ndarray:
@@ -333,7 +333,7 @@ class Visualizer:
             self._backend,
             self._directivity,
             idx,
-            np.ctypeslib.as_ctypes(phases))
+            np.ctypeslib.as_ctypes(phases))  # type: ignore
         return phases
 
     def duties(self) -> np.ndarray:
@@ -372,7 +372,7 @@ class Visualizer:
             points_len,
             geometry.ptr(),
             idx,
-            np.ctypeslib.as_ctypes(buf))
+            np.ctypeslib.as_ctypes(buf))  # type: ignore
         return np.fromiter([buf[2 * i] + buf[2 * i + 1] * 1j for i in range(points_len)], dtype=np.complex128, count=points_len)
 
     def calc_field(self, points_iter: Iterable[np.ndarray], geometry: Geometry) -> np.ndarray:
