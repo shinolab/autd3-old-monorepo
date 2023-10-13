@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
