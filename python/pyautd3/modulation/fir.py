@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 12/10/2023
 Author: Shun Suzuki
 -----
-Last Modified: 12/10/2023
+Last Modified: 13/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,7 +62,7 @@ class BPF(IModulation):
         return Base().modulation_with_band_pass(self._m.modulation_ptr(), self._n_taps, self._f_low, self._f_high)
 
 
-class BSP(IModulation):
+class BSF(IModulation):
     _m: IModulation
     _n_taps: int
     _f_low: float
@@ -91,7 +91,7 @@ def __with_band_pass(self, n_taps: int, f_low: float, f_high: float):
 
 
 def __with_band_stop(self, n_taps: int, f_low: float, f_high: float):
-    return BSP(self, n_taps, f_low, f_high)
+    return BSF(self, n_taps, f_low, f_high)
 
 
 IModulation.with_low_pass = __with_low_pass  # type: ignore
