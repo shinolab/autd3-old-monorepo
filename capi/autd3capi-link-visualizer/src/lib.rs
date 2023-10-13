@@ -11,6 +11,8 @@
  *
  */
 
+#![allow(clippy::missing_safety_doc)]
+
 pub mod null;
 pub mod plotters;
 pub mod python;
@@ -120,7 +122,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPhasesOf(
     if !buf.is_null() {
         std::ptr::copy_nonoverlapping(m.as_ptr(), buf, m.len());
     }
-    return m.len() as _;
+    m.len() as _
 }
 
 #[no_mangle]
@@ -136,7 +138,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerDutiesOf(
     if !buf.is_null() {
         std::ptr::copy_nonoverlapping(m.as_ptr(), buf, m.len());
     }
-    return m.len() as _;
+    m.len() as _
 }
 
 #[no_mangle]
@@ -150,7 +152,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerModulationRaw(
     if !buf.is_null() {
         std::ptr::copy_nonoverlapping(m.as_ptr(), buf, m.len());
     }
-    return m.len() as _;
+    m.len() as _
 }
 
 #[no_mangle]
@@ -164,7 +166,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerModulation(
     if !buf.is_null() {
         std::ptr::copy_nonoverlapping(m.as_ptr(), buf, m.len());
     }
-    return m.len() as _;
+    m.len() as _
 }
 
 #[no_mangle]
@@ -186,7 +188,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerCalcFieldOf(
         directivity,
         visualizer,
         calc_field_of,
-        points.into_iter(),
+        points.iter(),
         cast!(geometry.0, Geo),
         idx
     );

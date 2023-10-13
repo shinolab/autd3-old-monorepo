@@ -58,6 +58,7 @@ pub struct PlotConfigPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
+#[allow(clippy::box_default)]
 pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigDefault() -> PlotConfigPtr {
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig::default())) as _)
 }
