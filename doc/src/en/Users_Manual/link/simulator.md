@@ -1,10 +1,10 @@
-[[_TOC_]]
-
 # Simulator
 
 Simulator link is a link used when using [AUTD simulator](../../Simulator/simulator.md).
 
 Before using this link, you need to start AUTD simulator.
+
+[[_TOC_]]
 
 ## Simulator link API
 

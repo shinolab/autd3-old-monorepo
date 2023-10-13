@@ -1,5 +1,3 @@
-[[_TOC_]]
-
 # SOEM
 
 [SOEM](https://github.com/OpenEtherCATsociety/SOEM)は有志が開発しているオープンソースのEherCAT Masterライブラリである.
@@ -13,6 +11,8 @@ Linux/macOSの場合は, 特に準備は必要ない.
 
 > NOTE: `SOEM`を使用する場合, `Controller`をopenしてから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
 > この期間, デバイス間の超音波の同期は保証されない.
+
+[[_TOC_]]
 
 ## SOEMリンクのAPI
 

@@ -1,5 +1,3 @@
-[[_TOC_]]
-
 # SOEM
 
 [SOEM](https://github.com/OpenEtherCATsociety/SOEM) is an open source EtherCAT master library developed by volunteers.
@@ -14,6 +12,8 @@ If you are using Linux/macOS, no special preparation is required.
 > NOTE: If you are using `SOEM`, be aware that it takes about 10-20 seconds after opening `Controller` for the EtherCAT slaves to synchronize with each other.
 > This period is subject to individual differences and changes depending on the synchronization signal/transmission cycle.
 > During this period, the ultrasound synchronization between devices is not guaranteed.
+
+[[_TOC_]]
 
 ## SOEM link API
 
