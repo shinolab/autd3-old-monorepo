@@ -34,10 +34,11 @@ tokio = { version = "1.0", features = ["rt-multi-thread"] }
 futures-util = "0.3.28"
 tonic = "0.10.0"
 anyhow = "1.0.72"
-chrono = "0.4.30"
+chrono = "0.4.31"
 gltf = "1.1.0"
 tracing-subscriber = "0.3.17"
 tracing = "0.1.37"
+tracing-core = "0.1.31"
 
 [features]
 default = []

@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 10/07/2023
+Last Modified: 14/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,6 +57,8 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
   textarea {
     resize: none;
+
+    font-size: small;
 
     display: flex;
     padding: 8px;
