@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    defined::Drive,
+    common::Drive,
     error::AUTDInternalError,
     fpga::{AdvancedDrivePhase, LegacyDrive, FPGA_SUB_CLK_FREQ_DIV, GAIN_STM_BUF_SIZE_MAX},
     geometry::{Device, Geometry, Transducer},
@@ -159,6 +159,7 @@ mod tests {
     use super::{super::GainSTMOp, *};
 
     use crate::{
+        common::Amplitude,
         defined::PI,
         derive::prelude::Operation,
         fpga::{GAIN_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
@@ -189,7 +190,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
+                                    amp: Amplitude::new_clamped(rng.gen_range(0.0..1.0)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -378,7 +379,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
+                                    amp: Amplitude::new_clamped(rng.gen_range(0.0..1.0)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -563,7 +564,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
+                                    amp: Amplitude::new_clamped(rng.gen_range(0.0..1.0)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -631,7 +632,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: rng.gen_range(0.0..1.0),
+                                    amp: Amplitude::new_clamped(rng.gen_range(0.0..1.0)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),

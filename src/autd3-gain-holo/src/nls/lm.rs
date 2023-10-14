@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use crate::{constraint::Constraint, impl_holo, Complex, HoloError, LinAlgBackend
 use autd3_derive::Gain;
 
 use autd3_driver::{
+    common::Amplitude,
     defined::PI,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
@@ -337,7 +338,12 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                     } else {
                         (
                             dev.idx(),
-                            dev.iter().map(|_| Drive { phase: 0., amp: 0. }).collect(),
+                            dev.iter()
+                                .map(|_| Drive {
+                                    phase: 0.,
+                                    amp: Amplitude::MIN,
+                                })
+                                .collect(),
                         )
                     }
                 })

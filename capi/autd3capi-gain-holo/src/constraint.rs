@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ pub unsafe extern "C" fn AUTDGainHoloConstraintNormalize() -> ConstraintPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloConstraintUniform(value: float) -> ConstraintPtr {
-    ConstraintPtr(Box::into_raw(Box::new(Constraint::Uniform(value))) as _)
+    ConstraintPtr(Box::into_raw(Box::new(Constraint::Uniform(Amplitude::new_clamped(value)))) as _)
 }
 
 #[no_mangle]

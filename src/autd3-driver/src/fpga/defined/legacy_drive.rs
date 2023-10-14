@@ -4,14 +4,14 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::defined::{Drive, PI};
+use crate::{common::Drive, defined::PI};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -26,7 +26,7 @@ impl LegacyDrive {
     }
 
     pub fn to_duty(d: &Drive) -> u8 {
-        (512.0 * d.amp.clamp(0.00613588464, 1.).asin() / PI - 1.0).round() as _
+        (512.0 * d.amp.value().clamp(0.00613588464, 1.).asin() / PI - 1.0).round() as _
     }
 
     pub fn set(&mut self, d: &Drive) {
@@ -40,7 +40,7 @@ mod tests {
     use std::mem::size_of;
 
     use super::*;
-    use crate::defined::PI;
+    use crate::{common::Amplitude, defined::PI};
 
     #[test]
     fn legacy_drive() {
@@ -59,7 +59,7 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -67,7 +67,7 @@ mod tests {
 
             let s = Drive {
                 phase: PI,
-                amp: 0.5,
+                amp: Amplitude::new_clamped(0.5),
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -75,7 +75,7 @@ mod tests {
 
             let s = Drive {
                 phase: 2.0 * PI,
-                amp: 1.0,
+                amp: Amplitude::MAX,
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -83,7 +83,7 @@ mod tests {
 
             let s = Drive {
                 phase: 3.0 * PI,
-                amp: 1.5,
+                amp: Amplitude::new_clamped(1.5),
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -91,7 +91,7 @@ mod tests {
 
             let s = Drive {
                 phase: -PI,
-                amp: -1.0,
+                amp: Amplitude::new_clamped(-1.0),
             };
             (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
             assert_eq!(d[0], 128);

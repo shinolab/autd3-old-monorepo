@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -496,15 +496,15 @@ mod tests {
     #[test]
     fn drive_test() {
         assert_eq!(
-            std::mem::size_of::<autd3_driver::defined::Drive>(),
+            std::mem::size_of::<autd3_driver::common::Drive>(),
             std::mem::size_of::<Drive>()
         );
         assert_eq!(
-            memoffset::offset_of!(autd3_driver::defined::Drive, phase),
+            memoffset::offset_of!(autd3_driver::common::Drive, phase),
             memoffset::offset_of!(Drive, phase)
         );
         assert_eq!(
-            memoffset::offset_of!(autd3_driver::defined::Drive, amp),
+            memoffset::offset_of!(autd3_driver::common::Drive, amp),
             memoffset::offset_of!(Drive, amp)
         );
     }
