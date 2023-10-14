@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/08/2023
+Last Modified: 14/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,12 +60,12 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       child = await command.spawn();
       command.stdout.on("data", (line) =>
         consoleOutputQueue.update((v) => {
-          return [...v, line];
+          return [...v, line.trimEnd()];
         })
       );
       command.stderr.on("data", (line) =>
         consoleOutputQueue.update((v) => {
-          return [...v, line];
+          return [...v, line.trimEnd()];
         })
       );
       command.on("error", (err) => {

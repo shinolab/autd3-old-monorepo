@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 use bitvec::prelude::*;
 
 use autd3_driver::{
+    common::Amplitude,
     derive::prelude::*,
     geometry::{Device, Geometry},
 };
@@ -202,7 +203,7 @@ impl<
                 let filter = if let Some(f) = filters.get(&k) {
                     f
                 } else {
-                    return Err(AUTDInternalError::UnknownGroupKey);
+                    return Err(AUTDInternalError::GainError("Unknown group key".to_owned()));
                 };
                 let d = g.calc(geometry, GainFilter::Filter(filter))?;
                 Ok((k, d))
@@ -221,12 +222,14 @@ impl<
                         let g = if let Some(g) = drives_cache.get(&key) {
                             g
                         } else {
-                            return Err(AUTDInternalError::UnspecifiedGroupKey);
+                            return Err(AUTDInternalError::GainError(
+                                "Unspecified group key".to_owned(),
+                            ));
                         };
                         d[tr.local_idx()] = g[&dev.idx()][tr.local_idx()];
                     } else {
                         d[tr.local_idx()] = Drive {
-                            amp: 0.0,
+                            amp: Amplitude::MIN,
                             phase: 0.0,
                         }
                     }
@@ -276,34 +279,34 @@ mod tests {
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 1.0);
+                assert_eq!(d.amp.value(), 1.0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.5);
+                assert_eq!(d.amp.value(), 0.5);
             }
         });
         drives[&2].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.amp.value(), 0.0);
         });
         drives[&3].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.amp.value(), 0.0);
         });
     }
 
@@ -321,9 +324,13 @@ mod tests {
         })
         .set("plane2", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&geometry, GainFilter::All);
-        assert!(drives.is_err());
-        assert_eq!(drives.unwrap_err(), AUTDInternalError::UnknownGroupKey);
+        match gain.calc(&geometry, GainFilter::All) {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => assert_eq!(
+                e,
+                AUTDInternalError::GainError("Unknown group key".to_owned())
+            ),
+        }
     }
 
     #[test]
@@ -340,9 +347,13 @@ mod tests {
         })
         .set("plane", Plane::new(Vector3::zeros()));
 
-        let drives = gain.calc(&geometry, GainFilter::All);
-        assert!(drives.is_err());
-        assert_eq!(drives.unwrap_err(), AUTDInternalError::UnspecifiedGroupKey);
+        match gain.calc(&geometry, GainFilter::All) {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => assert_eq!(
+                e,
+                AUTDInternalError::GainError("Unspecified group key".to_owned())
+            ),
+        }
     }
 
     #[test]
@@ -363,11 +374,11 @@ mod tests {
 
         assert!(gain.get::<Plane>("plane").is_some());
         assert!(gain.get::<Null>("plane").is_none());
-        assert_eq!(gain.get::<Plane>("plane").unwrap().amp(), 1.0);
+        assert_eq!(gain.get::<Plane>("plane").unwrap().amp().value(), 1.0);
 
         assert!(gain.get::<Plane>("plane2").is_some());
         assert!(gain.get::<Null>("plane2").is_none());
-        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp(), 0.5);
+        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp().value(), 0.5);
 
         assert!(gain.get::<Null>("focus").is_none());
         assert!(gain.get::<Focus>("focus").is_none());

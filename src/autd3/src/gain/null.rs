@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use autd3_driver::{derive::prelude::*, geometry::Geometry};
+use autd3_driver::{common::Amplitude, derive::prelude::*, geometry::Geometry};
 
 use autd3_derive::Gain;
 
@@ -36,7 +36,7 @@ impl<T: Transducer> Gain<T> for Null {
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_, _| Drive {
             phase: 0.,
-            amp: 0.,
+            amp: Amplitude::MIN,
         }))
     }
 }
@@ -63,7 +63,7 @@ mod tests {
         assert_eq!(drives.len(), 1);
         assert_eq!(drives[&0].len(), geometry.num_transducers());
         drives[&0].iter().for_each(|d| {
-            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.amp.value(), 0.0);
             assert_eq!(d.phase, 0.0);
         });
     }

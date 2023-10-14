@@ -24,20 +24,6 @@ class TransMode(IntEnum):
         return int(obj)
 
 
-class Level(IntEnum):
-    Critical = 0
-    Error = 1
-    Warn = 2
-    Info = 3
-    Debug = 4
-    Trace = 5
-    Off = 6
-
-    @classmethod
-    def from_param(cls, obj):
-        return int(obj)
-
-
 class TimerStrategy(IntEnum):
     Sleep = 0
     BusyWait = 1
@@ -61,6 +47,10 @@ class DevicePtr(ctypes.Structure):
 
 
 class TransducerPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class LinkBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 

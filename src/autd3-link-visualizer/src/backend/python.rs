@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 12/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,11 +15,10 @@ use std::ffi::OsString;
 
 use pyo3::prelude::*;
 
-use crate::{error::VisualizerError, Backend, Config};
+use crate::{error::VisualizerError, Backend};
 
 use autd3_driver::{
-    acoustics::Complex,
-    defined::float,
+    defined::{float, Complex},
     geometry::{Geometry, Transducer},
 };
 
@@ -46,10 +45,6 @@ pub struct PyPlotConfig {
     pub show: bool,
     #[pyo3(get)]
     pub fname: OsString,
-    #[pyo3(get)]
-    pub interval: i32,
-    #[pyo3(get)]
-    pub print_progress: bool,
 }
 
 impl Default for PyPlotConfig {
@@ -65,15 +60,7 @@ impl Default for PyPlotConfig {
             cmap: "jet".to_string(),
             show: false,
             fname: "fig.png".into(),
-            interval: 100,
-            print_progress: false,
         }
-    }
-}
-
-impl Config for PyPlotConfig {
-    fn print_progress(&self) -> bool {
-        self.print_progress
     }
 }
 

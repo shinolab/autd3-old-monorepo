@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -49,12 +49,33 @@ impl fmt::Display for FPGAControlFlags {
 
 #[cfg(test)]
 mod tests {
-    use std::mem::size_of;
 
     use super::*;
 
     #[test]
     fn fpga_info() {
-        assert_eq!(size_of::<FPGAControlFlags>(), 1);
+        assert_eq!(std::mem::size_of::<FPGAControlFlags>(), 1);
+
+        let flags = FPGAControlFlags::FORCE_FAN;
+
+        let flagsc = Clone::clone(&flags);
+        assert_eq!(flagsc.bits(), flags.bits());
+    }
+
+    #[test]
+    fn fmt() {
+        assert_eq!(format!("{}", FPGAControlFlags::NONE), "NONE");
+        assert_eq!(format!("{}", FPGAControlFlags::FORCE_FAN), "FORCE_FAN");
+        assert_eq!(
+            format!("{}", FPGAControlFlags::READS_FPGA_INFO),
+            "READS_FPGA_INFO"
+        );
+        assert_eq!(
+            format!(
+                "{}",
+                FPGAControlFlags::FORCE_FAN | FPGAControlFlags::READS_FPGA_INFO
+            ),
+            "FORCE_FAN | READS_FPGA_INFO"
+        );
     }
 }

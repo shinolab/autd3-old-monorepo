@@ -1,10 +1,10 @@
-[[_TOC_]]
-
 # Simulator
 
 Simulator linkは[AUTDシミュレータ](../../Simulator/simulator.md)を使用する際に使うLinkである.
 
 このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
+
+[[_TOC_]]
 
 ## SimulatorリンクのAPI
 
@@ -24,7 +24,7 @@ use autd3_link_simulator::Simulator;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-Simulator::new(8080)
+Simulator::builder(8080)
 # )?;
 # Ok(())
 # }
@@ -33,17 +33,17 @@ Simulator::new(8080)
 ```cpp
 #include "autd3/link/simulator.hpp"
 
-autd3::link::Simulator(8080)
+autd3::link::Simulator::builder(8080)
 ```
 
 ```cs
-new Simulator(8080)
+Simulator.Builder(8080)
 ```
 
 ```python
-from pyautd3.link import SOEM
+from pyautd3.link.simulator import Simulator
 
-Simulator(8080)
+Simulator.builder(8080)
 ```
 
 ### リモート接続
@@ -62,7 +62,7 @@ use autd3_link_simulator::Simulator;
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #            .open_with(
-Simulator::new(8080)
+Simulator::builder(8080)
     .with_server_ip("127.0.0.1".parse()?)
 # )?;
 # Ok(())
@@ -72,20 +72,54 @@ Simulator::new(8080)
 ```cpp
 #include "autd3/link/simulator.hpp"
 
-autd3::link::Simulator(8080)
+autd3::link::Simulator::builder(8080)
     .with_server_ip("127.0.0.1")
 ```
 
 ```cs
-new Simulator(8080)
+Simulator.Builder(8080)
     .WithServerIp(IPAddress.Parse("127.0.0.1"))
 ```
 
 ```python
-from pyautd3.link import Simulator
+from pyautd3.link.simulator import Simulator
 
-Simulator(8080)\
+Simulator.builder(8080)\
     .with_server_ip("127.0.0.1")
 ```
 
 デフォルトはローカルホスト ("127.0.0.1") である.
+
+### `Geometry`の更新
+
+`Geometry`を更新しても, Simulator側の表示は自動的には更新されない.
+`Geometry`を更新するには`update_geometry`関数を使用する.
+
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_simulator;
+# use autd3::prelude::*;
+use autd3_link_simulator::Simulator;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#            .open_with(Simulator::builder(8080))?;
+autd.link().update_geometry(autd.geometry())?;
+# Ok(())
+# }
+```
+
+```cpp
+autd.link<autd3::link::Simulator>().update_geometry(autd.geometry());
+```
+
+```cs
+autd.Link<Simulator>().UpdateGeometry(autd.Geometry);
+```
+
+```python
+autd.link.update_geometry(autd.geometry)
+```

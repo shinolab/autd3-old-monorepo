@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ public class GainSTMTest
         var autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new Audit());
+            .OpenWith(Audit.Builder());
 
         const double radius = 30.0;
         const int size = 2;
@@ -35,7 +35,7 @@ public class GainSTMTest
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.True(Audit.IsStmGainMode(autd, dev.Idx));
+            Assert.True(autd.Link<Audit>().IsStmGainMode(dev.Idx));
         }
 
         Assert.Equal(1, stm.Frequency);
@@ -44,15 +44,15 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(81920000u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(81920000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         Assert.Null(stm.StartIdx);
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(0);
@@ -61,8 +61,8 @@ public class GainSTMTest
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(null).WithFinishIdx(0);
@@ -71,8 +71,8 @@ public class GainSTMTest
         Assert.Equal((ushort)0, stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(0, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -83,7 +83,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -94,7 +94,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u * 2, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u * 2, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -105,19 +105,19 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(680, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -127,14 +127,14 @@ public class GainSTMTest
         Assert.True(autd.Send(stm));
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -144,14 +144,14 @@ public class GainSTMTest
         Assert.True(autd.Send(stm));
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -165,7 +165,7 @@ public class GainSTMTest
             .Advanced()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new Audit());
+            .OpenWith(Audit.Builder());
 
         const double radius = 30.0;
         const int size = 2;
@@ -177,7 +177,7 @@ public class GainSTMTest
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.True(Audit.IsStmGainMode(autd, dev.Idx));
+            Assert.True(autd.Link<Audit>().IsStmGainMode(dev.Idx));
         }
 
         Assert.Equal(1, stm.Frequency);
@@ -186,15 +186,15 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(81920000u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(81920000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         Assert.Null(stm.StartIdx);
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(0);
@@ -203,8 +203,8 @@ public class GainSTMTest
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(null).WithFinishIdx(0);
@@ -213,8 +213,8 @@ public class GainSTMTest
         Assert.Equal((ushort)0, stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(0, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -225,7 +225,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -236,7 +236,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u * 2, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u * 2, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -247,19 +247,19 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(683, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -269,14 +269,14 @@ public class GainSTMTest
         Assert.True(autd.Send(stm));
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -293,7 +293,7 @@ public class GainSTMTest
             .AdvancedPhase()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new Audit());
+            .OpenWith(Audit.Builder());
 
         const double radius = 30.0;
         const int size = 2;
@@ -305,7 +305,7 @@ public class GainSTMTest
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.True(Audit.IsStmGainMode(autd, dev.Idx));
+            Assert.True(autd.Link<Audit>().IsStmGainMode(dev.Idx));
         }
 
         Assert.Equal(1, stm.Frequency);
@@ -314,15 +314,15 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(81920000u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(81920000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         Assert.Null(stm.StartIdx);
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(0);
@@ -331,8 +331,8 @@ public class GainSTMTest
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(-1, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(null).WithFinishIdx(0);
@@ -341,8 +341,8 @@ public class GainSTMTest
         Assert.Equal((ushort)0, stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, Audit.StmStartIdx(autd, dev.Idx));
-            Assert.Equal(0, Audit.StmFinishIdx(autd, dev.Idx));
+            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -353,7 +353,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -364,7 +364,7 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u * 2, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u * 2, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
@@ -375,19 +375,19 @@ public class GainSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, Audit.StmFrequencyDivision(autd, dev.Idx));
+            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
@@ -397,14 +397,14 @@ public class GainSTMTest
         Assert.True(autd.Send(stm));
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, Audit.StmCycle(autd, dev.Idx));
+            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 1);
+                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
                 Assert.All(duties, d => Assert.Equal(2048, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }

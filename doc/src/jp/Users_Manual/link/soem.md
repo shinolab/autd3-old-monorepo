@@ -1,5 +1,3 @@
-[[_TOC_]]
-
 # SOEM
 
 [SOEM](https://github.com/OpenEtherCATsociety/SOEM)は有志が開発しているオープンソースのEherCAT Masterライブラリである.
@@ -13,6 +11,8 @@ Linux/macOSの場合は, 特に準備は必要ない.
 
 > NOTE: `SOEM`を使用する場合, `Controller`をopenしてから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
 > この期間, デバイス間の超音波の同期は保証されない.
+
+[[_TOC_]]
 
 ## SOEMリンクのAPI
 
@@ -31,7 +31,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_ifname("")
 # )?;
 # Ok(())
@@ -41,23 +41,88 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
 	.with_ifname("")
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithIfname("")
 ```
 
 ```python
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_ifname("")
 ```
 
 デフォルトでは空白であり, 空白の場合はAUTD3デバイスが接続されているネットワークインタフェースを自動的に選択する.
+
+### エラー発生時のコールバック
+
+`with_on_err`関数で, 何らかのエラーが発生したときのコールバックを設定できる.
+コールバック関数はエラーメッセージを引数に取る.
+
+エラーが出ているかどうかを確認する間隔は, `with_state_check_interval`関数で指定する. (デフォルトは$\SI{100}{ms}$.)
+
+```rust,should_panic,edition2021
+# extern crate autd3;
+# extern crate autd3_link_soem;
+# use autd3::prelude::*;
+use autd3_link_soem::SOEM;
+
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder()
+#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#            .open_with(
+SOEM::builder()
+    .with_state_check_interval(std::time::Duration::from_millis(100))
+    .with_on_err(|msg| {
+            eprintln!("Unrecoverable error occurred: {msg}");
+        })
+# )?;
+# Ok(())
+# }
+```
+
+```cpp
+#include "autd3/link/soem.hpp"
+
+void on_err(const char* msg) {
+  std::cerr << msg;
+}
+
+autd3::link::SOEM::builder()
+    .with_state_check_interval(std::chrono::milliseconds(100))
+    .with_on_err(&on_err)
+```
+
+```cs
+var onErr = new SOEM.OnErrCallbackDelegate((string msg) =>
+{
+    Console.WriteLine(msg);
+});
+
+SOEM.Builder()
+    .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
+    .WithOnErr(onErr)
+```
+
+```python
+from pyautd3.link.soem import SOEM, OnErrFunc
+from datetime import timedelta
+
+def on_err(msg: ctypes.c_char_p):
+    print(msg.decode("utf-8"), end="")
+
+on_err_func = OnErrFunc(on_err)
+
+SOEM.builder()\
+    .with_state_check_interval(timedelta(milliseconds=100))\
+    .with_on_err(on_err_func)
+```
 
 ### リンク切断時のコールバック
 
@@ -75,7 +140,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_on_lost(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
@@ -94,31 +159,31 @@ void on_lost(const char* msg) {
   exit(-1);
 }
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_on_lost(&on_lost)
 ```
 
 ```cs
-var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+var onLost = new SOEM.OnErrCallbackDelegate((string msg) =>
 {
     Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);
 });
 
-new SOEM()
+SOEM.Builder()
     .WithOnLost(onLost)
 ```
 
 ```python
-from pyautd3.link import SOEM, OnLostFunc
+from pyautd3.link.soem import SOEM, OnErrFunc
 
 def on_lost(msg: ctypes.c_char_p):
     print(msg.decode("utf-8"), end="")
     os._exit(-1)
 
-on_lost_func = OnLostFunc(on_lost)
+on_lost_func = OnErrFunc(on_lost)
 
-SOEM()\
+SOEM.builder()\
     .with_on_lost(on_lost_func)
 ```
 
@@ -139,7 +204,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
 # )?;
@@ -150,21 +215,21 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithSync0Cycle(2)
     .WithSendCycle(2)
 ```
 
 ```python
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_sync0_cycle(2)\
     .with_send_cycle(2)
 ```
@@ -188,7 +253,7 @@ use autd3_link_soem::SOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_timer_strategy(TimerStrategy::BusyWait)
 # )?;
 # Ok(())
@@ -198,20 +263,20 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_timer_strategy(autd3::TimerStrategy::BusyWait)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithTimerStrategy(TimerStrategy.BusyWait)
 ```
 
 ```python
 from pyautd3 import TimerStrategy
-from pyautd3.link import SOEM
+from pyautd3.link.soem import SOEM
 
-SOEM()\
+SOEM.builder()\
     .with_timer_strategy(TimerStrategy.BusyWait)
 ```
 
@@ -241,7 +306,7 @@ use autd3_link_soem::{SOEM, SyncMode};
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-SOEM::new()
+SOEM::builder()
     .with_sync_mode(SyncMode::DC)
 # )?;
 # Ok(())
@@ -251,19 +316,19 @@ SOEM::new()
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::SOEM()
+autd3::link::SOEM::builder()
     .with_sync_mode(autd3::link::SyncMode::DC)
 ```
 
 ```cs
-new SOEM()
+SOEM.Builder()
     .WithSyncMode(SyncMode.Dc)
 ```
 
 ```python
-from pyautd3.link import SOEM, SyncMode
+from pyautd3.link.soem import SOEM, SyncMode
 
-SOEM()\
+SOEM.builder()\
     .with_sync_mode(SyncMode.DC)
 ```
 
@@ -315,7 +380,7 @@ use autd3_link_soem::RemoteSOEM;
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
-RemoteSOEM::new("172.16.99.104:8080".parse()?)?
+RemoteSOEM::builder("172.16.99.104:8080".parse()?)
 # )?;
 # Ok(())
 # }
@@ -324,17 +389,17 @@ RemoteSOEM::new("172.16.99.104:8080".parse()?)?
 ```cpp
 #include "autd3/link/soem.hpp"
 
-autd3::link::RemoteSOEM("172.16.99.104:8080")
+autd3::link::RemoteSOEM::builder("172.16.99.104:8080")
 ```
 
 ```cs
-new RemoteSOEM(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
+RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
 ```
 
 ```python
-from pyautd3.link import RemoteSOEM
+from pyautd3.link.soem import RemoteSOEM
 
-RemoteSOEM("172.16.99.104:8080")
+RemoteSOEM.builder("172.16.99.104:8080")
 ```
 
 ## ファイアウォール

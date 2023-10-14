@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@
 namespace autd3::gain {
 
 template <class G, typename F>
-class Transform final : public internal::Gain {
+class Transform final : public internal::Gain, public IntoCache<Transform<G, F>> {
  public:
   Transform(G g, const F& f) : _g(std::move(g)), _f(f) { static_assert(std::is_base_of_v<Gain, G>, "This is not Gain"); }
 
@@ -54,6 +54,19 @@ class Transform final : public internal::Gain {
  private:
   G _g;
   const F& _f;
+};
+
+template <typename G>
+class IntoTransform {
+ public:
+  template <typename F>
+  [[nodiscard]] Transform<G, F> with_transform(const F& f) & {
+    return Transform(*static_cast<G*>(this), f);
+  }
+  template <typename F>
+  [[nodiscard]] Transform<G, F> with_transform(const F& f) && {
+    return Transform(std::move(*static_cast<G*>(this)), f);
+  }
 };
 
 }  // namespace autd3::gain

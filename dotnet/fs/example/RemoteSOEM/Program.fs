@@ -16,4 +16,4 @@ open Samples
 open System.Net
 
 let addr = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
-Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(RemoteSOEM addr) |> SampleRunner.Run
+Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(RemoteSOEM.Builder addr) |> SampleRunner.Run

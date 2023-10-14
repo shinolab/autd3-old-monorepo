@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::{collections::HashMap, fmt};
 use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
-    fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
     geometry::{Device, Geometry, Transducer},
     operation::{Operation, TypeTag},
 };
@@ -55,7 +55,6 @@ impl fmt::Display for ModulationControlFlags {
     }
 }
 
-#[derive(Default)]
 pub struct ModulationOp {
     buf: Vec<u8>,
     freq_div: u32,
@@ -146,9 +145,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN
-            || self.freq_div > u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32
-        {
+        if self.freq_div < SAMPLING_FREQ_DIV_MIN || self.freq_div > SAMPLING_FREQ_DIV_MAX {
             return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
         }
 
@@ -185,6 +182,34 @@ mod tests {
     const NUM_DEVICE: usize = 10;
 
     #[test]
+    fn mod_controll_flag() {
+        assert_eq!(std::mem::size_of::<ModulationControlFlags>(), 1);
+
+        let flags = ModulationControlFlags::MOD_BEGIN;
+
+        let flagsc = Clone::clone(&flags);
+        assert!(flagsc.contains(ModulationControlFlags::MOD_BEGIN));
+        assert!(!flagsc.contains(ModulationControlFlags::MOD_END));
+    }
+
+    #[test]
+    fn mod_controll_flag_fmt() {
+        assert_eq!(format!("{}", ModulationControlFlags::NONE), "NONE");
+        assert_eq!(
+            format!("{}", ModulationControlFlags::MOD_BEGIN),
+            "MOD_BEGIN"
+        );
+        assert_eq!(format!("{}", ModulationControlFlags::MOD_END), "MOD_END");
+        assert_eq!(
+            format!(
+                "{}",
+                ModulationControlFlags::MOD_BEGIN | ModulationControlFlags::MOD_END
+            ),
+            "MOD_BEGIN | MOD_END"
+        );
+    }
+
+    #[test]
     fn modulation_op() {
         const MOD_SIZE: usize = 100;
 
@@ -195,8 +220,7 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
-        let freq_div: u32 =
-            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
+        let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
         let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
@@ -228,11 +252,9 @@ mod tests {
                 tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE)],
                 TypeTag::Modulation as u8
             );
-            let flag = ModulationControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 1],
-            );
-            assert!(flag.contains(ModulationControlFlags::MOD_BEGIN));
-            assert!(flag.contains(ModulationControlFlags::MOD_END));
+            let flag = tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 1];
+            assert_ne!(flag & ModulationControlFlags::MOD_BEGIN.bits(), 0x00);
+            assert_ne!(flag & ModulationControlFlags::MOD_END.bits(), 0x00);
 
             assert_eq!(
                 tx[dev.idx() * (2 + 2 + 4 + MOD_SIZE) + 2],
@@ -317,11 +339,9 @@ mod tests {
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
             );
-            let flag = ModulationControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
-            );
-            assert!(flag.contains(ModulationControlFlags::MOD_BEGIN));
-            assert!(!flag.contains(ModulationControlFlags::MOD_END));
+            let flag = tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1];
+            assert_ne!(flag & ModulationControlFlags::MOD_BEGIN.bits(), 0x00);
+            assert_eq!(flag & ModulationControlFlags::MOD_END.bits(), 0x00);
 
             let mod_size = FRAME_SIZE - 4;
             assert_eq!(
@@ -368,11 +388,9 @@ mod tests {
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
             );
-            let flag = ModulationControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
-            );
-            assert!(!flag.contains(ModulationControlFlags::MOD_BEGIN));
-            assert!(!flag.contains(ModulationControlFlags::MOD_END));
+            let flag = tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1];
+            assert_eq!(flag & ModulationControlFlags::MOD_BEGIN.bits(), 0x00);
+            assert_eq!(flag & ModulationControlFlags::MOD_END.bits(), 0x00);
 
             let mod_size = FRAME_SIZE;
             assert_eq!(
@@ -419,11 +437,9 @@ mod tests {
                 tx[dev.idx() * (2 + 2 + FRAME_SIZE)],
                 TypeTag::Modulation as u8
             );
-            let flag = ModulationControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1],
-            );
-            assert!(!flag.contains(ModulationControlFlags::MOD_BEGIN));
-            assert!(flag.contains(ModulationControlFlags::MOD_END));
+            let flag = tx[dev.idx() * (2 + 2 + FRAME_SIZE) + 1];
+            assert_eq!(flag & ModulationControlFlags::MOD_BEGIN.bits(), 0x00);
+            assert_ne!(flag & ModulationControlFlags::MOD_END.bits(), 0x00);
 
             let mod_size = FRAME_SIZE;
             assert_eq!(
@@ -449,35 +465,29 @@ mod tests {
     fn modulation_op_buffer_out_of_range() {
         let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut rng = rand::thread_rng();
+        let check = |n: usize| {
+            let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
-        let freq_div: u32 =
-            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
+            let buf: Vec<float> = (0..n).map(|_| rng.gen()).collect();
+            let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
+            let mut op = ModulationOp::new(buf.clone(), freq_div);
 
-        assert!(op.init(&geometry).is_ok());
+            op.init(&geometry)
+        };
 
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX + 1).map(|_| rng.gen()).collect();
-        let freq_div: u32 =
-            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
-
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
-
-        assert!(op.init(&geometry).is_err());
-
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..1).map(|_| rng.gen()).collect();
-        let freq_div: u32 =
-            rng.gen_range(SAMPLING_FREQ_DIV_MIN..u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
-
-        let mut op = ModulationOp::new(buf.clone(), freq_div);
-
-        assert!(op.init(&geometry).is_err());
+        assert_eq!(
+            check(1),
+            Err(AUTDInternalError::ModulationSizeOutOfRange(1))
+        );
+        assert_eq!(check(2), Ok(()));
+        assert_eq!(check(MOD_BUF_SIZE_MAX), Ok(()));
+        assert_eq!(
+            check(MOD_BUF_SIZE_MAX + 1),
+            Err(AUTDInternalError::ModulationSizeOutOfRange(
+                MOD_BUF_SIZE_MAX + 1
+            ))
+        );
     }
 
     #[test]
@@ -494,10 +504,10 @@ mod tests {
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
         assert!(op.init(&geometry).is_err());
 
-        let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32);
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX);
         assert!(op.init(&geometry).is_ok());
 
-        let mut op = ModulationOp::new(buf.clone(), u32::MAX / FPGA_SUB_CLK_FREQ_DIV as u32 + 1);
+        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX + 1);
         assert!(op.init(&geometry).is_err());
     }
 }

@@ -7,7 +7,6 @@ You need to choose one of the following.
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
 - [Visualizer](./link/visualize.md)
-- [Bundle](./link/bundle.md)
 
 ## Link options
 
@@ -22,7 +21,7 @@ Set the default timeout with `with_timeout`.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
-# let link = autd3::link::NullLink {};
+# let link = autd3::link::Nop::builder();
 // link is some Link
 # let link =
 link.with_timeout(std::time::Duration::from_millis(20));
@@ -44,39 +43,4 @@ from datetime import timedelta
 
 # link is some Link
 link.with_timeout(timedelta(milliseconds=20))
-```
-
-### Log
-
-You can enable logging by `with_log`.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-use autd3::link::Log;
-
-# #[allow(unused_variables)]
-# fn main() {
-# let link = autd3::link::NullLink {};
-// link is some Link
-# let link =
-link.with_log();
-# }
-```
-
-```cpp
-#include "autd3/link/log.hpp"
-
-// link is some Link
-link.with_log()
-```
-
-```cs
-// link is some Link
-link.WithLog()
-```
-
-```python
-# link is some Link
-link.with_log()
 ```

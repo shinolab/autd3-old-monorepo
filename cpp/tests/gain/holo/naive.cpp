@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 TEST(Gain_Holo, Naive) {
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                  .open_with(autd3::link::Audit());
+                  .open_with(autd3::link::Audit::builder());
 
   auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
   std::vector<double> p{-30};
@@ -34,7 +34,7 @@ TEST(Gain_Holo, Naive) {
   ASSERT_TRUE(autd.send(g));
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
@@ -47,7 +47,7 @@ TEST(Gain_Holo, Naive) {
 TEST(Gain_Holo, NaiveWithCUDA) {
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                  .open_with(autd3::link::Audit());
+                  .open_with(autd3::link::Audit::builder());
 
   auto backend = std::make_shared<autd3::gain::holo::CUDABackend>();
   std::vector<double> p{-30};
@@ -62,7 +62,7 @@ TEST(Gain_Holo, NaiveWithCUDA) {
   ASSERT_TRUE(autd.send(g));
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }

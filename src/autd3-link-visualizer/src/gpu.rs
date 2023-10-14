@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,7 @@
 use std::sync::Arc;
 
 use autd3_driver::{
-    acoustics::Complex,
-    defined::float,
+    defined::{float, Complex},
     geometry::{Geometry, Transducer, Vector3},
 };
 use vulkano::{
@@ -130,15 +129,21 @@ impl FieldCompute {
         }
     }
 
-    pub(crate) fn calc_field_of<'a, T: Transducer, D: autd3_driver::acoustics::Directivity>(
+    pub(crate) fn calc_field_of<
+        'a,
+        T: Transducer,
+        D: autd3_driver::acoustics::directivity::Directivity,
+        I: IntoIterator<Item = &'a Vector3>,
+    >(
         &self,
-        observe_points: Vec<Vector3>,
+        observe_points: I,
         geometry: &Geometry<T>,
         source_drive: Vec<[f32; 4]>,
     ) -> Vec<Complex> {
         let pipeline_layout = self.pipeline.layout();
         let layout = pipeline_layout.set_layouts().get(0).unwrap();
 
+        let observe_points = observe_points.into_iter().collect::<Vec<_>>();
         let size = observe_points.len();
 
         let data_buffer = Buffer::from_iter(

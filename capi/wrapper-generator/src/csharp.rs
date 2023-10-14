@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -156,12 +156,12 @@ impl CSharpGenerator {
                 },
                 Type::Float32 => match arg.inout {
                     InOut::In => "float[]?".to_owned(),
-                    InOut::Out => "float[]".to_owned(),
+                    InOut::Out => "float[]?".to_owned(),
                     InOut::InOut => panic!("INOUT float is not supported."),
                 },
                 Type::Float64 => match arg.inout {
                     InOut::In => "double[]?".to_owned(),
-                    InOut::Out => "double[]".to_owned(),
+                    InOut::Out => "double[]?".to_owned(),
                     InOut::InOut => panic!("INOUT double is not supported."),
                 },
                 Type::Bool => match arg.inout {

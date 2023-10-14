@@ -1,2 +1,4 @@
 autd3*.dll
 autd3*.pdb
+libautd3*.dylib
+libautd3*.so

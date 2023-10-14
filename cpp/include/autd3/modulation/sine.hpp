@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 12/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,11 +11,10 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
+#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -26,7 +25,11 @@ class Fourier;
 /**
  * @brief Sine wave modulation
  */
-class Sine final : public internal::Modulation {
+class Sine final : public internal::ModulationWithFreqDiv<Sine>,
+                   public IntoCache<Sine>,
+                   public IntoTransform<Sine>,
+                   public IntoRadiationPressure<Sine>,
+                   public IntoFIR<Sine> {
  public:
   /**
    * @brief Constructor.
@@ -37,15 +40,9 @@ class Sine final : public internal::Modulation {
    */
   explicit Sine(const int32_t freq) : _freq(freq) {}
 
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Sine)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Sine)
-
   AUTD3_DEF_PARAM(Sine, double, amp)
   AUTD3_DEF_PARAM(Sine, double, phase)
   AUTD3_DEF_PARAM(Sine, double, offset)
-
-  AUTD3_IMPL_MOD_PROP(Sine)
 
   friend Fourier operator+(Sine&& lhs, const Sine& rhs);
 
@@ -63,7 +60,6 @@ class Sine final : public internal::Modulation {
   std::optional<double> _amp;
   std::optional<double> _phase;
   std::optional<double> _offset;
-  std::optional<uint32_t> _freq_div;
 };
 
 }  // namespace autd3::modulation

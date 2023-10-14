@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/09/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,12 +26,15 @@ pub mod colormap;
 use std::{marker::PhantomData, time::Duration};
 
 use autd3_driver::{
-    acoustics::{propagate, Complex, Directivity, Sphere},
-    cpu::{RxDatagram, TxDatagram},
-    defined::{float, PI},
+    acoustics::{
+        directivity::{Directivity, Sphere},
+        propagate,
+    },
+    cpu::{RxMessage, TxDatagram},
+    defined::{float, Complex, PI},
     error::AUTDInternalError,
-    geometry::{Device, Geometry, Transducer, Vector3},
-    link::Link,
+    geometry::{Geometry, Transducer, Vector3},
+    link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -42,17 +45,57 @@ use error::VisualizerError;
 
 /// Link to monitoring the status of AUTD and acoustic field
 pub struct Visualizer<D: Directivity, B: Backend> {
-    backend: B,
     is_open: bool,
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
+    _d: PhantomData<D>,
+    _b: PhantomData<B>,
+    #[cfg(feature = "gpu")]
+    gpu_compute: Option<gpu::FieldCompute>,
+}
+
+pub struct VisualizerBuilder<D: Directivity, B: Backend> {
+    backend: B,
+    timeout: Duration,
     _d: PhantomData<D>,
     #[cfg(feature = "gpu")]
     gpu_compute: Option<gpu::FieldCompute>,
 }
 
-pub trait Config {
-    fn print_progress(&self) -> bool;
+impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T> for VisualizerBuilder<D, B> {
+    type L = Visualizer<D, B>;
+
+    #[allow(unused_mut)]
+    fn open(mut self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+        #[cfg(feature = "gpu")]
+        let gpu_compute = self.gpu_compute.take();
+
+        let VisualizerBuilder {
+            mut backend,
+            timeout,
+            ..
+        } = self;
+
+        backend.initialize()?;
+
+        Ok(Self::L {
+            is_open: true,
+            timeout,
+            cpus: geometry
+                .iter()
+                .enumerate()
+                .map(|(i, dev)| {
+                    let mut cpu = CPUEmulator::new(i, dev.num_transducers());
+                    cpu.init();
+                    cpu
+                })
+                .collect(),
+            _d: PhantomData,
+            _b: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute,
+        })
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -146,13 +189,11 @@ impl PlotRange {
     }
 }
 
-impl<B: Backend> Visualizer<Sphere, B> {
-    pub fn new() -> Self {
-        Self {
-            backend: B::new(),
-            is_open: false,
+impl Visualizer<Sphere, PlottersBackend> {
+    pub fn builder() -> VisualizerBuilder<Sphere, PlottersBackend> {
+        VisualizerBuilder {
+            backend: PlottersBackend::new(),
             timeout: Duration::ZERO,
-            cpus: Vec::new(),
             _d: PhantomData,
             #[cfg(feature = "gpu")]
             gpu_compute: None,
@@ -163,34 +204,55 @@ impl<B: Backend> Visualizer<Sphere, B> {
 #[cfg(feature = "plotters")]
 impl Visualizer<Sphere, PlottersBackend> {
     /// Constructor with Plotters backend
-    pub fn plotters() -> Self {
-        Self::new()
+    pub fn plotters() -> VisualizerBuilder<Sphere, PlottersBackend> {
+        Self::builder()
     }
 }
 
 #[cfg(feature = "python")]
 impl Visualizer<Sphere, PythonBackend> {
     /// Constructor with Python backend
-    pub fn python() -> Self {
-        Self::new()
+    pub fn python() -> VisualizerBuilder<Sphere, PythonBackend> {
+        VisualizerBuilder {
+            backend: PythonBackend::new(),
+            timeout: Duration::ZERO,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: None,
+        }
     }
 }
 
 impl Visualizer<Sphere, NullBackend> {
     /// Constructor with Null backend
-    pub fn null() -> Self {
-        Self::new()
+    pub fn null() -> VisualizerBuilder<Sphere, NullBackend> {
+        VisualizerBuilder {
+            backend: NullBackend::new(),
+            timeout: Duration::ZERO,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: None,
+        }
     }
 }
 
-impl<D: Directivity, B: Backend> Visualizer<D, B> {
+impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
     /// Set directivity
-    pub fn with_directivity<U: Directivity>(self) -> Visualizer<U, B> {
-        Visualizer {
+    pub fn with_directivity<U: Directivity>(self) -> VisualizerBuilder<U, B> {
+        VisualizerBuilder {
             backend: self.backend,
-            is_open: self.is_open,
             timeout: self.timeout,
-            cpus: self.cpus,
+            _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: self.gpu_compute,
+        }
+    }
+
+    /// Set backend
+    pub fn with_backend<U: Backend>(self) -> VisualizerBuilder<D, U> {
+        VisualizerBuilder {
+            backend: U::new(),
+            timeout: self.timeout,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
             gpu_compute: self.gpu_compute,
@@ -199,34 +261,13 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
 }
 
 #[cfg(feature = "gpu")]
-impl<D: Directivity, B: Backend> Visualizer<D, B> {
+impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
     /// Enable GPU acceleration
-    pub fn with_gpu(self, gpu_idx: i32) -> Visualizer<D, B> {
+    pub fn with_gpu(self, gpu_idx: i32) -> VisualizerBuilder<D, B> {
         Self {
             gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
             ..self
         }
-    }
-}
-
-#[cfg(all(feature = "plotters", not(feature = "python")))]
-impl Default for Visualizer<Sphere, PlottersBackend> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[cfg(all(not(feature = "plotters"), feature = "python"))]
-impl Default for Visualizer<Sphere, PythonBackend> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[cfg(all(not(feature = "plotters"), not(feature = "python")))]
-impl Default for Visualizer<Sphere, NullBackend> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -306,7 +347,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `observe_points` - Observe points iterator
     /// * `geometry` - Geometry
     ///
-    pub fn calc_field<T: Transducer, I: IntoIterator<Item = Vector3>>(
+    pub fn calc_field<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
@@ -322,7 +363,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn calc_field_of<T: Transducer, I: IntoIterator<Item = Vector3>>(
+    pub fn calc_field_of<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
@@ -351,11 +392,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                             .collect::<Vec<_>>()
                     })
                     .collect::<Vec<_>>();
-                return gpu.calc_field_of::<T, D>(
-                    observe_points.into_iter().collect(),
-                    geometry,
-                    source_drive,
-                );
+                return gpu.calc_field_of::<T, D, I>(observe_points, geometry, source_drive);
             }
         }
         observe_points
@@ -372,13 +409,8 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                             |acc, (t, d)| {
                                 let amp = (PI * d.0 as float / t.cycle() as float).sin();
                                 let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                                acc + propagate::<D>(
-                                    t.position(),
-                                    &t.z_direction(),
-                                    0.0,
-                                    t.wavenumber(sound_speed),
-                                    &target,
-                                ) * Complex::from_polar(amp, phase)
+                                acc + propagate::<D, T>(t, 0.0, sound_speed, target)
+                                    * Complex::from_polar(amp, phase)
                             },
                         )
                     })
@@ -396,31 +428,31 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     ///
     pub fn plot_field<T: Transducer>(
         &self,
-        range: PlotRange,
         config: B::PlotConfig,
+        range: PlotRange,
         geometry: &Geometry<T>,
     ) -> Result<(), VisualizerError> {
-        self.plot_field_of(range, config, geometry, 0)
+        self.plot_field_of(config, range, geometry, 0)
     }
 
     /// Plot acoustic field
     ///
     /// # Arguments
     ///
-    /// * `range` - Plot range
     /// * `config` - Plot configuration
+    /// * `range` - Plot range
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
     pub fn plot_field_of<T: Transducer>(
         &self,
-        range: PlotRange,
         config: B::PlotConfig,
+        range: PlotRange,
         geometry: &Geometry<T>,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
-        let acoustic_pressures = self.calc_field_of(observe_points, geometry, idx);
+        let acoustic_pressures = self.calc_field_of(&observe_points, geometry, idx);
         if range.is_1d() {
             let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, 1, 1) => (range.observe_x(), "x [mm]"),
@@ -502,29 +534,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     }
 }
 
-impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Visualizer<D, B> {
-    fn open(&mut self, devices: &[Device<T>]) -> Result<(), AUTDInternalError> {
-        if self.is_open {
-            return Ok(());
-        }
-
-        self.cpus = devices
-            .iter()
-            .enumerate()
-            .map(|(i, dev)| {
-                let mut cpu = CPUEmulator::new(i, dev.num_transducers());
-                cpu.init();
-                cpu
-            })
-            .collect();
-
-        self.backend.initialize()?;
-
-        self.is_open = true;
-
-        Ok(())
-    }
-
+impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open {
             return Ok(());
@@ -546,7 +556,7 @@ impl<T: Transducer, D: Directivity, B: Backend> Link<T> for Visualizer<D, B> {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }

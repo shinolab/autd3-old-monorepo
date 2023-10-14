@@ -1,4 +1,21 @@
+/*
+ * File: main.rs
+ * Project: autd-server
+ * Created Date: 29/09/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 14/10/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(non_snake_case)]
+
+mod log_formatter;
+
+use log_formatter::LogFormatter;
 
 use autd3_driver::link::Link;
 use autd3_link_twincat::TwinCAT;
@@ -26,12 +43,9 @@ struct LightweightTwinCATServer {
 
 impl Drop for LightweightTwinCATServer {
     fn drop(&mut self) {
-        spdlog::info!("Shutting down server...");
-        let _ = Link::<autd3_driver::geometry::LegacyTransducer>::close(
-            &mut *self.twincat.write().unwrap(),
-        );
-        spdlog::info!("Shutting down server...done");
-        spdlog::default_logger().flush();
+        tracing::info!("Shutting down server...");
+        let _ = Link::close(&mut *self.twincat.write().unwrap());
+        tracing::info!("Shutting down server...done");
     }
 }
 
@@ -41,10 +55,8 @@ fn main_() -> anyhow::Result<()> {
     let port = args.port;
     let timeout = std::time::Duration::from_millis(args.timeout);
 
-    let f = move || -> autd3_link_twincat::TwinCAT {
-        autd3_link_twincat::TwinCAT::new()
-            .expect("Failed to initialize TwinCAT")
-            .with_timeout(timeout)
+    let f = move || -> autd3_link_twincat::local::twincat_link::TwinCATBuilder {
+        autd3_link_twincat::TwinCAT::builder().with_timeout(timeout)
     };
     let (tx, mut rx) = mpsc::channel(1);
     ctrlc::set_handler(move || {
@@ -54,7 +66,7 @@ fn main_() -> anyhow::Result<()> {
     .expect("Error setting Ctrl-C handler");
 
     let addr = format!("0.0.0.0:{}", port).parse()?;
-    spdlog::info!("Waiting for client connection on {}", addr);
+    tracing::info!("Waiting for client connection on {}", addr);
     let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
     let server = autd3_protobuf::LightweightServer::new(f);
@@ -69,10 +81,12 @@ fn main_() -> anyhow::Result<()> {
 }
 
 fn main() {
+    tracing_subscriber::fmt().event_format(LogFormatter).init();
+
     match main_() {
         Ok(_) => {}
         Err(e) => {
-            spdlog::error!("{}", e);
+            tracing::error!("{}", e);
             std::process::exit(-1);
         }
     }

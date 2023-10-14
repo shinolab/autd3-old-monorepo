@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 20/09/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ from datetime import timedelta
 from ..test_autd import create_controller
 
 from pyautd3.modulation import Sine
-from pyautd3.link.audit import Audit
 
 import numpy as np
 
@@ -27,7 +26,7 @@ def test_sine():
     assert autd.send(Sine(150).with_amp(0.5).with_offset(0.25).with_phase(np.pi / 2))
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link.modulation(dev.idx)
         mod_expext = [
             85,
             83,
@@ -110,16 +109,16 @@ def test_sine():
             79,
             83]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 40960
 
     assert autd.send(Sine(150).with_sampling_frequency_division(4096 // 8))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 4096
+        assert autd.link.modulation_frequency_division(dev.idx) == 4096
 
     assert autd.send(Sine(150).with_sampling_frequency(8e3))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 20480
+        assert autd.link.modulation_frequency_division(dev.idx) == 20480
 
     assert autd.send(Sine(150).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 16384
+        assert autd.link.modulation_frequency_division(dev.idx) == 16384

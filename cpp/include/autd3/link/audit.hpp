@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 13/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,125 +14,117 @@
 #include <chrono>
 #include <utility>
 
-#include "autd3/internal/controller.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::link {
 
-class Audit : public internal::Link {
+class Audit final {
+  internal::native_methods::LinkPtr _ptr;
+
  public:
-  Audit() : Link(internal::native_methods::AUTDLinkAudit()) {}
+  class Builder final : public internal::LinkBuilder {
+    friend class Audit;
 
-  template <typename Rep, typename Period>
-  Audit with_timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _ptr = AUTDLinkAuditWithTimeout(_ptr, static_cast<uint64_t>(ns));
-    return std::move(*this);
-  }
+    internal::native_methods::LinkAuditBuilderPtr _ptr;
 
-  static void down(const internal::Controller& cnt) { AUTDLinkAuditDown(AUTDAuditLinkGet(cnt._ptr)); }
+    Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkAudit()) {}
 
-  static bool is_open(const internal::Controller& cnt) { return AUTDLinkAuditIsOpen(AUTDAuditLinkGet(cnt._ptr)); }
+   public:
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkAuditIntoBuilder(_ptr); }
 
-  static std::uint64_t last_timeout_ns(const internal::Controller& cnt) { return AUTDLinkAuditLastTimeoutNs(AUTDAuditLinkGet(cnt._ptr)); }
+    template <typename Rep, typename Period>
+    Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
+      const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+      _ptr = AUTDLinkAuditWithTimeout(_ptr, static_cast<uint64_t>(ns));
+      return std::move(*this);
+    }
+  };
 
-  static void up(const internal::Controller& cnt) { AUTDLinkAuditUp(AUTDAuditLinkGet(cnt._ptr)); }
+  static Builder builder() { return {}; }
 
-  static void break_down(const internal::Controller& cnt) { AUTDLinkAuditBreakDown(AUTDAuditLinkGet(cnt._ptr)); }
+  explicit Audit(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
-  static void update(const internal::Controller& cnt, const size_t idx) {
-    AUTDLinkAuditCpuUpdate(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  void down() const { AUTDLinkAuditDown(_ptr); }
 
-  static int fpga_flags(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditCpuFpgaFlags(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  [[nodiscard]] bool is_open() const { return AUTDLinkAuditIsOpen(_ptr); }
 
-  static bool is_legacy(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaIsLegacyMode(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  [[nodiscard]] std::uint64_t last_timeout_ns() const { return AUTDLinkAuditLastTimeoutNs(_ptr); }
 
-  static int silencer_step(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaSilencerStep(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  void up() const { AUTDLinkAuditUp(_ptr); }
 
-  static void assert_thermal_sensor(const internal::Controller& cnt, const size_t idx) {
-    AUTDLinkAuditFpgaAssertThermalSensor(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  void break_down() const { AUTDLinkAuditBreakDown(_ptr); }
 
-  static void deassert_thermal_sensor(const internal::Controller& cnt, const size_t idx) {
-    AUTDLinkAuditFpgaDeassertThermalSensor(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  void update(const size_t idx) const { AUTDLinkAuditCpuUpdate(_ptr, static_cast<std::uint32_t>(idx)); }
 
-  static std::vector<std::uint8_t> modulation(const internal::Controller& cnt, const size_t idx) {
-    const auto n = AUTDLinkAuditFpgaModulationCycle(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] int fpga_flags(const size_t idx) const { return AUTDLinkAuditCpuFpgaFlags(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  [[nodiscard]] bool is_legacy(const size_t idx) const { return AUTDLinkAuditFpgaIsLegacyMode(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  [[nodiscard]] int silencer_step(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStep(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  void assert_thermal_sensor(const size_t idx) const { AUTDLinkAuditFpgaAssertThermalSensor(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  void deassert_thermal_sensor(const size_t idx) const { AUTDLinkAuditFpgaDeassertThermalSensor(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  [[nodiscard]] std::vector<std::uint8_t> modulation(const size_t idx) const {
+    const auto n = AUTDLinkAuditFpgaModulationCycle(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::uint8_t> buf(n);
-    AUTDLinkAuditFpgaModulation(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), buf.data());
+    AUTDLinkAuditFpgaModulation(_ptr, static_cast<std::uint32_t>(idx), buf.data());
     return buf;
   }
 
-  static std::uint32_t modulation_frequency_division(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaModulationFrequencyDivision(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::uint32_t modulation_frequency_division(const size_t idx) const {
+    return AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, static_cast<std::uint32_t>(idx));
   }
 
-  static std::vector<std::uint16_t> cycles(const internal::Controller& cnt, const size_t idx) {
-    const auto n = AUTDLinkAuditCpuNumTransducers(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::vector<std::uint16_t> cycles(const size_t idx) const {
+    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::uint16_t> buf(n);
-    AUTDLinkAuditFpgaCycles(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), buf.data());
+    AUTDLinkAuditFpgaCycles(_ptr, static_cast<std::uint32_t>(idx), buf.data());
     return buf;
   }
 
-  static std::vector<std::uint16_t> mod_delays(const internal::Controller& cnt, const size_t idx) {
-    const auto n = AUTDLinkAuditCpuNumTransducers(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::vector<std::uint16_t> mod_delays(const size_t idx) const {
+    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::uint16_t> buf(n);
-    AUTDLinkAuditFpgaModDelays(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), buf.data());
+    AUTDLinkAuditFpgaModDelays(_ptr, static_cast<std::uint32_t>(idx), buf.data());
     return buf;
   }
 
-  static std::vector<std::int16_t> duty_filters(const internal::Controller& cnt, const size_t idx) {
-    const auto n = AUTDLinkAuditCpuNumTransducers(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::vector<std::int16_t> duty_filters(const size_t idx) const {
+    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaDutyFilters(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), buf.data());
+    AUTDLinkAuditFpgaDutyFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
     return buf;
   }
 
-  static std::vector<std::int16_t> phase_filters(const internal::Controller& cnt, const size_t idx) {
-    const auto n = AUTDLinkAuditCpuNumTransducers(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::vector<std::int16_t> phase_filters(const size_t idx) const {
+    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaPhaseFilters(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), buf.data());
+    AUTDLinkAuditFpgaPhaseFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
     return buf;
   }
 
-  static std::pair<std::vector<std::uint16_t>, std::vector<std::uint16_t>> duties_and_phases(const internal::Controller& cnt, const size_t idx,
-                                                                                             const int stm_idx) {
-    const auto n = AUTDLinkAuditCpuNumTransducers(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::pair<std::vector<std::uint16_t>, std::vector<std::uint16_t>> duties_and_phases(const size_t idx, const int stm_idx) const {
+    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::uint16_t> duties(n);
     std::vector<std::uint16_t> phases(n);
-    AUTDLinkAuditFpgaDutiesAndPhases(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(),
-                                     phases.data());
+    AUTDLinkAuditFpgaDutiesAndPhases(_ptr, static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(), phases.data());
     return std::make_pair(duties, phases);
   }
 
-  static std::uint32_t stm_cycle(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaStmCycle(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
+  [[nodiscard]] std::uint32_t stm_cycle(const size_t idx) const { return AUTDLinkAuditFpgaStmCycle(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  [[nodiscard]] bool is_stm_gain_mode(const size_t idx) const { return AUTDLinkAuditFpgaIsStmGainMode(_ptr, static_cast<std::uint32_t>(idx)); }
+
+  [[nodiscard]] std::uint32_t stm_frequency_division(const size_t idx) const {
+    return AUTDLinkAuditFpgaStmFrequencyDivision(_ptr, static_cast<std::uint32_t>(idx));
   }
 
-  static bool is_stm_gain_mode(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaIsStmGainMode(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  [[nodiscard]] int stm_start_idx(const size_t idx) const { return AUTDLinkAuditFpgaStmStartIdx(_ptr, static_cast<std::uint32_t>(idx)); }
 
-  static std::uint32_t stm_frequency_division(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaStmFrequencyDivision(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
-
-  static int stm_start_idx(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaStmStartIdx(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
-
-  static int stm_finish_idx(const internal::Controller& cnt, const size_t idx) {
-    return AUTDLinkAuditFpgaStmFinishIdx(AUTDAuditLinkGet(cnt._ptr), static_cast<std::uint32_t>(idx));
-  }
+  [[nodiscard]] int stm_finish_idx(const size_t idx) const { return AUTDLinkAuditFpgaStmFinishIdx(_ptr, static_cast<std::uint32_t>(idx)); }
 };
 
 }  // namespace autd3::link

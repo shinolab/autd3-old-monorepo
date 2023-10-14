@@ -18,21 +18,21 @@ namespace tests.Link;
 public class TwinCATTest
 {
     [Fact(Skip = "TwinCAT is required")]
-    public void TwinCAT()
+    public void TestTwinCAT()
     {
         var autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new TwinCAT().WithTimeout(TimeSpan.FromMilliseconds(200)));
+            .OpenWith(TwinCAT.Builder().WithTimeout(TimeSpan.FromMilliseconds(200)));
 
         autd.Close();
     }
 
     [Fact(Skip = "TwinCAT is required")]
-    public void RemoteTwinCAT()
+    public void TestRemoteTwinCAT()
     {
         var autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(new RemoteTwinCAT("xxx.xxx.xxx.xxx.xxx.xxx")
+            .OpenWith(RemoteTwinCAT.Builder("xxx.xxx.xxx.xxx.xxx.xxx")
                 .WithServerIp(IPAddress.Parse("127.0.0.1"))
                 .WithClientAmsNetId("xxx.xxx.xxx.xxx.xxx.xxx")
                 .WithTimeout(TimeSpan.FromMilliseconds(200)));

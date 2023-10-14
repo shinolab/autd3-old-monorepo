@@ -1,0 +1,35 @@
+name: 'mdbook setup action'
+inputs:
+  github-token:
+    description: 'GITHUB_TOKEN'
+    required: true
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v2
+      with:
+        repo-token: ${{ inputs.github-token }}
+    - name: Setup mdbook
+      uses: peaceiris/actions-mdbook@v1
+      with:
+        mdbook-version: '0.4.35'
+    - name: Setup mdbook-toc
+      shell: bash
+      run: |
+        mkdir -p mdbook-toc
+        cd mdbook-toc
+        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.14.1/mdbook-toc-0.14.1-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
+        tar -xvf mdbook-toc.tar.gz
+        chmod +x mdbook-toc
+        sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
+    - name: Setup mdbook-katex
+      shell: bash
+      run: |
+        mkdir -p mdbook-katex
+        cd mdbook-katex
+        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.5.8pub/mdbook-katex-v0.5.8-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
+        tar -xvf mdbook-katex.tar.gz
+        chmod +x mdbook-katex
+        sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex

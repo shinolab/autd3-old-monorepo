@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -61,7 +61,7 @@ impl NativeTimerWrapper {
             sa.sa_sigaction = cb.unwrap() as usize;
             libc::sigemptyset(&mut sa.sa_mask);
             if sigaction(SIGRTMIN, &sa, ptr::null_mut()) < 0 {
-                return Err(AUTDInternalError::TimerCreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed);
             }
 
             let mut sev: sigevent = mem::zeroed();
@@ -76,7 +76,7 @@ impl NativeTimerWrapper {
 
             let mut timer = 0;
             if timer_create(CLOCK_REALTIME, &mut sev, &mut timer) < 0 {
-                return Err(AUTDInternalError::TimerCreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed);
             }
 
             let new_value = itimerspec {
@@ -91,7 +91,7 @@ impl NativeTimerWrapper {
             };
 
             if timer_settime(timer, 0, &new_value, ptr::null_mut()) < 0 {
-                return Err(AUTDInternalError::TimerCreationFailed());
+                return Err(AUTDInternalError::TimerCreationFailed);
             }
 
             self.timer_handle = Some(TimerHandle { timer });
@@ -103,7 +103,7 @@ impl NativeTimerWrapper {
         if let Some(handle) = self.timer_handle.take() {
             unsafe {
                 if timer_delete(handle.timer) < 0 {
-                    return Err(AUTDInternalError::TimerDeleteFailed());
+                    return Err(AUTDInternalError::TimerDeleteFailed);
                 }
             }
         }

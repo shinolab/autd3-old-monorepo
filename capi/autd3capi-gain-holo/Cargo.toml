@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-gain-holo"
-version = "15.3.1"
+version = "16.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -16,4 +16,3 @@ wrapper-generator = { path = "../wrapper-generator" }
 [features]
 single_float = ["autd3capi-def/single_float"]
 use_meter = ["autd3capi-def/use_meter"]
-parallel = ["autd3capi-def/parallel"]

@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 11/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -386,19 +386,6 @@ impl Renderer {
             })
             .collect::<Vec<_>>();
 
-        spdlog::debug!("Available GPUS:");
-        available_properties
-            .iter()
-            .enumerate()
-            .for_each(|(i, (p, _))| {
-                spdlog::debug!(
-                    "  [{}]: Available GPUS: {} (type: {:?})",
-                    i,
-                    p.properties().device_name,
-                    p.properties().device_type
-                );
-            });
-
         let (physical_device, queue_family) = match gpu_idx {
             idx if idx < 0 => available_properties
                 .into_iter()
@@ -415,7 +402,7 @@ impl Renderer {
                 available_properties[gpu_idx as usize].clone()
             }
             _ => {
-                spdlog::warn!("GPU {} not found. Using default GPU.", gpu_idx);
+                tracing::warn!("GPU {} not found. Using default GPU.", gpu_idx);
                 available_properties
                     .into_iter()
                     .min_by_key(|(p, _)| match p.properties().device_type {
@@ -430,7 +417,7 @@ impl Renderer {
             }
         };
 
-        spdlog::info!(
+        tracing::info!(
             "Using device: {} (type: {:?})",
             physical_device.properties().device_name,
             physical_device.properties().device_type,

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 08/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 use crate::{
     defined::float,
     fpga::{FPGA_CLK_FREQ, MAX_CYCLE},
+    operation::{gain::advanced::GainOpAdvanced, stm::gain::advanced::GainSTMOpAdvanced},
 };
 
 use crate::error::AUTDInternalError;
@@ -31,6 +32,9 @@ pub struct AdvancedTransducer {
 }
 
 impl Transducer for AdvancedTransducer {
+    type GainOp = GainOpAdvanced;
+    type GainSTMOp = GainSTMOpAdvanced;
+
     fn new(local_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             local_idx,
@@ -41,14 +45,6 @@ impl Transducer for AdvancedTransducer {
             amp_filter: 0.,
             phase_filter: 0.,
         }
-    }
-
-    fn translate_to(&mut self, pos: Vector3) {
-        self.pos = pos;
-    }
-
-    fn rotate_to(&mut self, rot: UnitQuaternion) {
-        self.rot = rot;
     }
 
     fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
@@ -140,6 +136,8 @@ mod tests {
 
     use super::*;
 
+    use AdvancedTransducer as T;
+
     macro_rules! assert_vec3_approx_eq {
         ($a:expr, $b:expr) => {
             assert_approx_eq!($a.x, $b.x, 1e-3);
@@ -149,8 +147,17 @@ mod tests {
     }
 
     #[test]
+    fn local_idx() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0, tr.local_idx());
+
+        let tr = T::new(1, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(1, tr.local_idx());
+    }
+
+    #[test]
     fn affine() {
-        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let t = Vector3::new(40., 50., 60.);
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
@@ -171,7 +178,7 @@ mod tests {
 
     #[test]
     fn cycle() {
-        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let cycle = 2000;
         let res = tr.set_cycle(cycle);
@@ -190,7 +197,7 @@ mod tests {
 
     #[test]
     fn freq() {
-        let mut tr = AdvancedTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let freq = 70e3;
         let res = tr.set_frequency(freq);
@@ -200,5 +207,42 @@ mod tests {
         let freq = 20e3;
         let res = tr.set_frequency(freq);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn mod_delay() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0, tr.mod_delay());
+        tr.set_mod_delay(1);
+        assert_eq!(1, tr.mod_delay());
+    }
+
+    #[test]
+    fn amp_filter() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0.0, tr.amp_filter());
+        tr.set_amp_filter(1.0);
+        assert_eq!(1.0, tr.amp_filter());
+    }
+
+    #[test]
+    fn phase_filter() {
+        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0.0, tr.phase_filter());
+        tr.set_phase_filter(1.0);
+        assert_eq!(1.0, tr.phase_filter());
+    }
+    #[test]
+    fn wavelength() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let c = 340e3;
+        assert_approx_eq!(c / tr.frequency(), tr.wavelength(c));
+    }
+
+    #[test]
+    fn wavenumber() {
+        let tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let c = 340e3;
+        assert_approx_eq!(2. * PI * tr.frequency() / c, tr.wavenumber(c));
     }
 }

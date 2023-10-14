@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         // Open controller with SOEM link
         // The callback specified by with_on_lost is called when SOEM loses the device
-        .open_with(SOEM::new().with_on_lost(|msg| {
+        .open_with(SOEM::builder().with_on_lost(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
         }))?;

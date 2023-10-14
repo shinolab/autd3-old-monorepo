@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    defined::Drive,
+    common::{Amplitude, Drive},
     error::AUTDInternalError,
     fpga::AdvancedDriveDuty,
     geometry::{Device, Geometry, Transducer},
@@ -44,7 +44,15 @@ impl<T: Transducer> Operation<T> for StopOp {
             );
             dst.iter_mut()
                 .zip(device.iter().map(|tr| tr.cycle()))
-                .for_each(|(d, c)| d.set(&Drive { amp: 0., phase: 0. }, c));
+                .for_each(|(d, c)| {
+                    d.set(
+                        &Drive {
+                            amp: Amplitude::MIN,
+                            phase: 0.,
+                        },
+                        c,
+                    )
+                });
         }
 
         Ok(2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>())
@@ -118,11 +126,9 @@ mod tests {
                 tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
                 TypeTag::Gain as u8
             );
-            let flag = GainControlFlags::from_bits_truncate(
-                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1],
-            );
-            assert!(!flag.contains(GainControlFlags::LEGACY));
-            assert!(flag.contains(GainControlFlags::DUTY));
+            let flag = tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) + 1];
+            assert_eq!(flag & GainControlFlags::LEGACY.bits(), 0x00);
+            assert_ne!(flag & GainControlFlags::DUTY.bits(), 0x00);
             tx.iter()
                 .skip((2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * dev.idx())
                 .skip(2)

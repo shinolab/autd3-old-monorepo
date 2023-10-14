@@ -13,7 +13,7 @@ This is a sample that rotates the focus on a circle with a radius of $\SI{30}{mm
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
@@ -75,7 +75,7 @@ You can specify the sampling frequency by `with_sampling_frequency` instead of f
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
 let stm = GainSTM::with_sampling_frequency(1.0);
 # let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
@@ -103,7 +103,7 @@ Also, you can specify the sampling frequency division ratio $N$ by `with_samplin
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::NullLink {})?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
 let stm = GainSTM::with_sampling_frequency_division(5120);
 # let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;
@@ -137,7 +137,7 @@ This mode can be switched with `with_mode`.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::NullLink {}).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let stm = GainSTM::new(1.0).with_mode(GainSTMMode::PhaseFull);
 # let stm = stm.add_gain(Null::default()).add_gain(Null::default());
 # autd.send(stm)?;

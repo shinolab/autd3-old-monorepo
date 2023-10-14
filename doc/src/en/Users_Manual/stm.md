@@ -31,7 +31,7 @@ To specify this, use `with_start_idx` as follows.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let stm = FocusSTM::new(1.0).with_start_idx(Some(0));
 # Ok(())
 # }

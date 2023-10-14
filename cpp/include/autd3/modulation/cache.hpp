@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,6 +55,13 @@ class Cache final : public internal::Modulation {
  private:
   std::shared_ptr<internal::native_methods::ModulationCachePtr> _cache;
   std::vector<double> _buffer;
+};
+
+template <typename M>
+class IntoCache {
+ public:
+  [[nodiscard]] Cache with_cache() & { return Cache(*static_cast<M*>(this)); }
+  [[nodiscard]] Cache with_cache() && { return Cache(std::move(*static_cast<M*>(this))); }
 };
 
 }  // namespace autd3::modulation

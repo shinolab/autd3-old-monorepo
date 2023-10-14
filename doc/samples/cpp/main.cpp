@@ -17,7 +17,7 @@ int main() try {
                   // The rotation is specified in ZYZ Euler angles or quaternions.
                   // Here, neither rotation nor translation is assumed.
                   .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                  .open_with(autd3::link::SOEM().with_on_lost(&on_lost));
+                  .open_with(autd3::link::SOEM::builder().with_on_lost(&on_lost));
 
   // check firmware version
   const auto firm_infos = autd.firmware_infos();

@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,12 +74,12 @@ impl<T: Transducer, G: Gain<T>> Cache<T, G> {
     }
 
     /// get cached drives
-    pub fn drives(&self) -> Ref<'_, HashMap<usize, Vec<autd3_driver::defined::Drive>>> {
+    pub fn drives(&self) -> Ref<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
         self.cache.borrow()
     }
 
     /// get cached drives mutably
-    pub fn drives_mut(&mut self) -> RefMut<'_, HashMap<usize, Vec<autd3_driver::defined::Drive>>> {
+    pub fn drives_mut(&mut self) -> RefMut<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
         self.cache.borrow_mut()
     }
 }
@@ -123,7 +123,10 @@ mod tests {
         Arc,
     };
 
-    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
+    use autd3_driver::{
+        common::Amplitude,
+        geometry::{IntoDevice, LegacyTransducer, Vector3},
+    };
 
     use super::*;
 
@@ -143,7 +146,7 @@ mod tests {
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
-            assert_eq!(drive.amp, 1.0);
+            assert_eq!(drive.amp.value(), 1.0);
         });
 
         gain.drives_mut()
@@ -152,13 +155,13 @@ mod tests {
             .iter_mut()
             .for_each(|drive| {
                 drive.phase = 1.0;
-                drive.amp = 0.5;
+                drive.amp = Amplitude::new_clamped(0.5);
             });
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 1.0);
-            assert_eq!(drive.amp, 0.5);
+            assert_eq!(drive.amp.value(), 0.5);
         });
     }
 
@@ -175,7 +178,7 @@ mod tests {
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
             Ok(Self::transform(geometry, filter, |_, _| Drive {
-                amp: 0.0,
+                amp: Amplitude::MIN,
                 phase: 0.0,
             }))
         }
