@@ -150,7 +150,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -162,7 +162,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-backend-cuda"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "autd3-gain-holo",
@@ -176,7 +176,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "quote",
  "syn 2.0.38",
@@ -184,7 +184,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "bitflags 2.4.0",
  "bitvec",
@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -206,7 +206,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "assert_approx_eq",
  "autd3",
@@ -221,7 +221,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-simulator"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "autd3-protobuf",
@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "autd3-protobuf",
@@ -248,7 +248,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "cc",
@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-visualizer"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3",
  "autd3-driver",
@@ -278,7 +278,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-modulation-audio-file"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -289,7 +289,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3",
  "autd3-driver",
@@ -304,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "assert_approx_eq",
  "autd3-driver",
@@ -315,7 +315,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-backend-cuda"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-backend-cuda",
  "autd3capi-def",
@@ -325,7 +325,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-common"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3",
  "autd3-derive",
@@ -336,7 +336,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-def"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3capi-common",
  "wrapper-generator",
@@ -344,7 +344,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-gain-holo"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3capi-def",
  "wrapper-generator",
@@ -352,7 +352,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-simulator"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-link-simulator",
  "autd3capi-def",
@@ -361,7 +361,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-soem"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-link-soem",
  "autd3capi-def",
@@ -370,7 +370,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-twincat"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-link-twincat",
  "autd3capi-def",
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-visualizer"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-link-visualizer",
  "autd3capi-def",
@@ -388,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-modulation-audio-file"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-modulation-audio-file",
  "autd3capi-def",
@@ -3151,7 +3151,7 @@ dependencies = [
 
 [[package]]
 name = "wrapper-generator"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "anyhow",
  "cbindgen",

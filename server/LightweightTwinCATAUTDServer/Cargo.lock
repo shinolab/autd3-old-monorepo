@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "LightweightTwinCATAUTDServer"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "anyhow",
  "autd3-driver",
@@ -169,7 +169,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "quote",
  "syn",
@@ -189,7 +189,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "bitflags 2.4.0",
  "bitvec",
@@ -202,7 +202,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "assert_approx_eq",
  "autd3",
@@ -226,7 +226,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3-driver",
  "libloading",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "15.3.1"
+version = "16.0.0"
 dependencies = [
  "autd3",
  "autd3-driver",
