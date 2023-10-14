@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,11 @@ use crate::{defined::float, fpga::*, operation::GainSTMMode};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum AUTDInternalError {
+    #[error("Amplitude ({0}) is out of range ([0, 1])")]
+    AmplitudeOutOfRange(float),
+    #[error("Duty ratio ({0}) is out of range ([0, 0.5])")]
+    DutyRatioOutOfRange(float),
+
     #[error(
         "Modulation buffer size ({0}) is out of range ([{}, {}])",
         MOD_BUF_SIZE_MIN,
@@ -108,6 +113,33 @@ pub enum AUTDInternalError {
 mod tests {
     use super::*;
     use std::error::Error;
+
+    #[test]
+    fn amplitude_out_of_range() {
+        let err = AUTDInternalError::AmplitudeOutOfRange(1.0);
+        assert!(err.source().is_none());
+        assert_eq!(format!("{}", err), "Amplitude (1) is out of range ([0, 1])");
+        assert_eq!(format!("{:?}", err), "AmplitudeOutOfRange(1.0)");
+
+        let err = AUTDInternalError::AmplitudeOutOfRange(1.0);
+        assert_eq!(err, AUTDInternalError::AmplitudeOutOfRange(1.0));
+        assert_ne!(err, AUTDInternalError::AmplitudeOutOfRange(2.0));
+    }
+
+    #[test]
+    fn duty_ratio_out_of_range() {
+        let err = AUTDInternalError::DutyRatioOutOfRange(1.0);
+        assert!(err.source().is_none());
+        assert_eq!(
+            format!("{}", err),
+            "Duty ratio (1) is out of range ([0, 0.5])"
+        );
+        assert_eq!(format!("{:?}", err), "DutyRatioOutOfRange(1.0)");
+
+        let err = AUTDInternalError::DutyRatioOutOfRange(1.0);
+        assert_eq!(err, AUTDInternalError::DutyRatioOutOfRange(1.0));
+        assert_ne!(err, AUTDInternalError::DutyRatioOutOfRange(2.0));
+    }
 
     #[test]
     fn modulation_size_out_of_range() {

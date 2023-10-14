@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3capi_def::{
-    common::{driver::defined::Drive, *},
+    common::{driver::common::Drive, *},
     take_gain, GainPtr,
 };
 
@@ -51,7 +51,7 @@ mod tests {
         *,
     };
 
-    use autd3capi_def::{common::driver::defined::Drive, DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{common::driver::common::Drive, DatagramPtr, TransMode, AUTD3_TRUE};
 
     #[test]
     fn test_custom_gain() {
@@ -64,11 +64,23 @@ mod tests {
             let g = AUTDGainCustom();
 
             let num_transducers = AUTDDeviceNumTransducers(dev0);
-            let drives = vec![Drive { amp: 1., phase: 0. }; num_transducers as _];
+            let drives = vec![
+                Drive {
+                    amp: Amplitude::MAX,
+                    phase: 0.
+                };
+                num_transducers as _
+            ];
             let g = AUTDGainCustomSet(g, 0, drives.as_ptr(), num_transducers);
 
             let num_transducers = AUTDDeviceNumTransducers(dev1);
-            let drives = vec![Drive { amp: 1., phase: 0. }; num_transducers as _];
+            let drives = vec![
+                Drive {
+                    amp: Amplitude::MAX,
+                    phase: 0.
+                };
+                num_transducers as _
+            ];
             let g = AUTDGainCustomSet(g, 1, drives.as_ptr(), num_transducers);
 
             let g = AUTDGainIntoDatagram(g);

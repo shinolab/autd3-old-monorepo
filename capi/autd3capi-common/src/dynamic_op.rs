@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,8 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
+    common::Drive,
     datagram::GainFilter,
-    defined::Drive,
     error::AUTDInternalError,
     fpga::{SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
     operation::{

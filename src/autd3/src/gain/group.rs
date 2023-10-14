@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 use bitvec::prelude::*;
 
 use autd3_driver::{
+    common::Amplitude,
     derive::prelude::*,
     geometry::{Device, Geometry},
 };
@@ -228,7 +229,7 @@ impl<
                         d[tr.local_idx()] = g[&dev.idx()][tr.local_idx()];
                     } else {
                         d[tr.local_idx()] = Drive {
-                            amp: 0.0,
+                            amp: Amplitude::MIN,
                             phase: 0.0,
                         }
                     }
@@ -278,34 +279,34 @@ mod tests {
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 1.0);
+                assert_eq!(d.amp.value(), 1.0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.0);
+                assert_eq!(d.amp.value(), 0.0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp, 0.5);
+                assert_eq!(d.amp.value(), 0.5);
             }
         });
         drives[&2].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.amp.value(), 0.0);
         });
         drives[&3].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp, 0.0);
+            assert_eq!(d.amp.value(), 0.0);
         });
     }
 
@@ -373,11 +374,11 @@ mod tests {
 
         assert!(gain.get::<Plane>("plane").is_some());
         assert!(gain.get::<Null>("plane").is_none());
-        assert_eq!(gain.get::<Plane>("plane").unwrap().amp(), 1.0);
+        assert_eq!(gain.get::<Plane>("plane").unwrap().amp().value(), 1.0);
 
         assert!(gain.get::<Plane>("plane2").is_some());
         assert!(gain.get::<Null>("plane2").is_none());
-        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp(), 0.5);
+        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp().value(), 0.5);
 
         assert!(gain.get::<Null>("focus").is_none());
         assert!(gain.get::<Focus>("focus").is_none());

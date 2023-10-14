@@ -4,14 +4,17 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::defined::{float, Drive, PI};
+use crate::{
+    common::{Drive, DutyRatio},
+    defined::{float, PI},
+};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -37,7 +40,7 @@ pub struct AdvancedDriveDuty {
 
 impl AdvancedDriveDuty {
     pub fn to_duty(d: &Drive, cycle: u16) -> u16 {
-        (cycle as float * d.amp.clamp(0., 1.).asin() / PI).round() as _
+        (cycle as float * DutyRatio::from(d.amp).value()).round() as _
     }
 
     pub fn set(&mut self, d: &Drive, cycle: u16) {
@@ -50,7 +53,7 @@ mod tests {
     use std::mem::size_of;
 
     use super::*;
-    use crate::defined::PI;
+    use crate::{common::Amplitude, defined::PI};
 
     #[test]
     fn phase() {
@@ -66,35 +69,35 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: PI,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 2048);
 
             let s = Drive {
                 phase: 2.0 * PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: 3.0 * PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 2048);
 
             let s = Drive {
                 phase: -PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 2048);
@@ -104,35 +107,35 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: PI,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 1000);
 
             let s = Drive {
                 phase: 2.0 * PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: 3.0 * PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 1000);
 
             let s = Drive {
                 phase: -PI,
-                amp: 0.,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDrivePhase)).set(&s, cycle);
             assert_eq!(d, 1000);
@@ -153,35 +156,35 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 0.5,
+                amp: Amplitude::new_clamped(0.5),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 683);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 1.0,
+                amp: Amplitude::MAX,
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 2048);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 1.5,
+                amp: Amplitude::new_clamped(1.5),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 2048);
 
             let s = Drive {
                 phase: 0.0,
-                amp: -1.0,
+                amp: Amplitude::new_clamped(-1.0),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 0);
@@ -191,35 +194,35 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: 0.0,
+                amp: Amplitude::MIN,
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 0);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 0.5,
+                amp: Amplitude::new_clamped(0.5),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 333);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 1.0,
+                amp: Amplitude::MAX,
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 1000);
 
             let s = Drive {
                 phase: 0.0,
-                amp: 1.5,
+                amp: Amplitude::new_clamped(1.5),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 1000);
 
             let s = Drive {
                 phase: 0.0,
-                amp: -1.0,
+                amp: Amplitude::new_clamped(-1.0),
             };
             (*(&mut d as *mut _ as *mut AdvancedDriveDuty)).set(&s, cycle);
             assert_eq!(d, 0);

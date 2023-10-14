@@ -8,8 +8,8 @@ use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let g = Uniform::new(1.0).with_transform(|dev, tr: &LegacyTransducer , d| Drive {
-    amp: d.amp - 0.5,
+let g = Uniform::new(1.0).with_transform(|dev, tr: &LegacyTransducer, d| Drive {
+    amp: Amplitude::new_clamped(d.amp.value() - 0.5),
     phase: d.phase + PI,
 });
 # }

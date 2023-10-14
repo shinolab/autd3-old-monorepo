@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ pub use super::GainControlFlags;
 use std::collections::HashMap;
 
 use crate::{
-    defined::{float, Drive},
+    common::{Amplitude, Drive},
     error::AUTDInternalError,
     fpga::AdvancedDriveDuty,
     geometry::{Device, Geometry, Transducer},
@@ -24,12 +24,12 @@ use crate::{
 };
 
 pub struct AmplitudeOp {
-    amp: float,
+    amp: Amplitude,
     remains: HashMap<usize, usize>,
 }
 
 impl AmplitudeOp {
-    pub fn new(amp: float) -> Self {
+    pub fn new(amp: Amplitude) -> Self {
         Self {
             amp,
             remains: Default::default(),
@@ -105,7 +105,7 @@ mod tests {
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
-        let amp: float = rng.gen_range(0.0..1.0);
+        let amp = Amplitude::new_clamped(rng.gen_range(0.0..1.0));
         let mut op = AmplitudeOp::new(amp);
 
         assert!(op.init(&geometry).is_ok());

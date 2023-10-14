@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    defined::Drive,
+    common::{Amplitude, Drive},
     error::AUTDInternalError,
     geometry::{Device, Geometry, Transducer},
 };
@@ -61,7 +61,10 @@ pub trait Gain<T: Transducer>: GainAsAny {
                                     if filter[tr.local_idx()] {
                                         f(dev, tr)
                                     } else {
-                                        Drive { phase: 0., amp: 0. }
+                                        Drive {
+                                            phase: 0.,
+                                            amp: Amplitude::MIN,
+                                        }
                                     }
                                 })
                                 .collect(),
@@ -118,7 +121,7 @@ mod tests {
         let d0 = g.get(&0).unwrap();
         assert_eq!(d0.len(), 249);
         d0.iter().for_each(|d| {
-            assert_eq!(d.amp, 1.);
+            assert_eq!(d.amp.value(), 1.);
             assert_eq!(d.phase, 2.);
         });
 
@@ -126,7 +129,7 @@ mod tests {
         let d1 = g.get(&1).unwrap();
         assert_eq!(d1.len(), 249);
         d1.iter().for_each(|d| {
-            assert_eq!(d.amp, 1.);
+            assert_eq!(d.amp.value(), 1.);
             assert_eq!(d.phase, 2.);
         });
     }
@@ -146,7 +149,7 @@ mod tests {
         let d1 = g.get(&1).unwrap();
         assert_eq!(d1.len(), 249);
         d1.iter().for_each(|d| {
-            assert_eq!(d.amp, 1.);
+            assert_eq!(d.amp.value(), 1.);
             assert_eq!(d.phase, 2.);
         });
     }
@@ -175,10 +178,10 @@ mod tests {
         assert_eq!(d0.len(), 249);
         d0.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp, 1.);
+                assert_eq!(d.amp.value(), 1.);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp, 0.);
+                assert_eq!(d.amp.value(), 0.);
                 assert_eq!(d.phase, 0.);
             }
         });
@@ -188,10 +191,10 @@ mod tests {
         assert_eq!(d1.len(), 249);
         d1.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp, 1.);
+                assert_eq!(d.amp.value(), 1.);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp, 0.);
+                assert_eq!(d.amp.value(), 0.);
                 assert_eq!(d.phase, 0.);
             }
         });
@@ -226,10 +229,10 @@ mod tests {
         assert_eq!(d1.len(), 249);
         d1.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp, 1.);
+                assert_eq!(d.amp.value(), 1.);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp, 0.);
+                assert_eq!(d.amp.value(), 0.);
                 assert_eq!(d.phase, 0.);
             }
         });

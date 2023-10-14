@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ use crate::{
 use autd3_derive::Gain;
 
 use autd3_driver::{
+    common::Amplitude,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -45,7 +46,7 @@ impl<B: LinAlgBackend + 'static> EVP<B> {
             amps: vec![],
             gamma: 1.0,
             backend,
-            constraint: Constraint::Uniform(1.),
+            constraint: Constraint::Uniform(Amplitude::MAX),
         }
     }
 

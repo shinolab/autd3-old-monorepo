@@ -29,7 +29,7 @@ impl<T: Transducer> Gain<T> for FocalPoint {
     fn calc(&self, geometry: &Geometry<T>, filter: GainFilter) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |dev, tr: &T| Drive {
             phase: (tr.position() - self.position).norm() * tr.wavelength(dev.sound_speed),
-            amp: 1.0,
+            amp: Amplitude::MAX,
         }))
     }
 }

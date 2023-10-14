@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
+    common::Amplitude,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -23,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Focus {
-    amp: float,
+    amp: Amplitude,
     pos: Vector3,
 }
 
@@ -35,20 +36,26 @@ impl Focus {
     /// * `pos` - position of the focal point
     ///
     pub fn new(pos: Vector3) -> Self {
-        Self { pos, amp: 1.0 }
+        Self {
+            pos,
+            amp: Amplitude::MAX,
+        }
     }
 
     /// set amplitude
     ///
     /// # Arguments
     ///
-    /// * `amp` - normalized amp (from 0 to 1)
+    /// * `amp` - amplitude
     ///
-    pub fn with_amp(self, amp: float) -> Self {
-        Self { amp, ..self }
+    pub fn with_amp<A: Into<Amplitude>>(self, amp: A) -> Self {
+        Self {
+            amp: amp.into(),
+            ..self
+        }
     }
 
-    pub fn amp(&self) -> float {
+    pub fn amp(&self) -> Amplitude {
         self.amp
     }
 

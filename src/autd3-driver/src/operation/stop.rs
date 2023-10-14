@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    defined::Drive,
+    common::{Amplitude, Drive},
     error::AUTDInternalError,
     fpga::AdvancedDriveDuty,
     geometry::{Device, Geometry, Transducer},
@@ -44,7 +44,15 @@ impl<T: Transducer> Operation<T> for StopOp {
             );
             dst.iter_mut()
                 .zip(device.iter().map(|tr| tr.cycle()))
-                .for_each(|(d, c)| d.set(&Drive { amp: 0., phase: 0. }, c));
+                .for_each(|(d, c)| {
+                    d.set(
+                        &Drive {
+                            amp: Amplitude::MIN,
+                            phase: 0.,
+                        },
+                        c,
+                    )
+                });
         }
 
         Ok(2 + device.num_transducers() * std::mem::size_of::<AdvancedDriveDuty>())
