@@ -4,7 +4,7 @@
  * Created Date: 12/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 /// Synchronization modes of an EtherCAT slave
 /// See [Beckhoff's document](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for more details.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[repr(u8)]
 pub enum SyncMode {
     /// DC sync mode
@@ -36,5 +36,22 @@ mod tests {
 
         let sc = Clone::clone(&s);
         assert_eq!(s as u8, sc as u8);
+    }
+
+    #[test]
+    fn debug() {
+        let s = SyncMode::DC;
+        assert_eq!(format!("{:?}", s), "DC");
+    }
+
+    #[test]
+    fn serde() {
+        let s = SyncMode::DC;
+
+        let serialized = serde_json::to_string(&s).unwrap();
+        assert_eq!(serialized, "\"DC\"");
+
+        let deserialized: SyncMode = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized, SyncMode::DC);
     }
 }
