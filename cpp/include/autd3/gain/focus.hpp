@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,12 +27,9 @@ namespace autd3::gain {
 /**
  * @brief Gain to produce single focal point
  */
-class Focus final : public internal::Gain {
+class Focus final : public internal::Gain, public IntoCache<Focus>, public IntoTransform<Focus> {
  public:
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Focus)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Focus)
 
   AUTD3_DEF_PARAM(Focus, double, amp)
 

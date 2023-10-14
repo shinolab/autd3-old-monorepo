@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/10/2023
+// Last Modified: 14/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ constexpr double pi = internal::pi;
 /**
  * @brief AUTD3 software version
  */
-static inline std::string version = "15.3.1";
+static inline std::string version = "16.0.0";
 
 using internal::Device;
 using internal::Geometry;
@@ -82,7 +82,6 @@ using internal::GainSTM;
 using internal::FirmwareInfo;
 using internal::FPGAInfo;
 using internal::native_methods::GainSTMMode;
-using LogLevel = internal::native_methods::Level;
 
 using internal::Quaternion;
 using internal::Vector3;

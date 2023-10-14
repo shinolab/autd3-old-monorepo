@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 02/10/2023
+Last Modified: 10/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,22 +12,18 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 '''
 
 
-import functools
 import numpy as np
-from typing import Iterable, Optional, List, Tuple
+from typing import Optional
 import ctypes
 
-from .constraint import AmplitudeConstraint
+from .holo import Holo
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.geometry import Geometry
 
 
-from pyautd3.gain.gain import IGain
-
-
-class Greedy(IGain):
+class Greedy(Holo):
     """Gain to produce multiple foci with greedy algorithm
 
     - Reference
@@ -35,60 +31,14 @@ class Greedy(IGain):
           IEEE Transactions on Haptics 14.4 (2021): 914-921.
     """
 
-    _foci: List[float]
-    _amps: List[float]
     _div: Optional[int]
-    _constraint: Optional[AmplitudeConstraint]
 
     def __init__(self):
-        self._foci = []
-        self._amps = []
+        super().__init__(None)
         self._div = None
-        self._constraint = None
-
-    def add_focus(self, focus: np.ndarray, amp: float) -> "Greedy":
-        """Add focus
-
-        Arguments:
-        - `focus` - Focus point
-        - `amp` - Focus amplitude
-        """
-
-        assert len(focus) == 3
-
-        self._foci.append(focus[0])
-        self._foci.append(focus[1])
-        self._foci.append(focus[2])
-        self._amps.append(amp)
-        return self
-
-    def add_foci_from_iter(
-        self, iterable: Iterable[Tuple[np.ndarray, float]]
-    ) -> "Greedy":
-        """Add foci from iterable
-
-        Arguments:
-        - `iterable` - Iterable of focus point and amplitude
-        """
-
-        return functools.reduce(
-            lambda acc, x: acc.add_focus(x[0], x[1]),
-            iterable,
-            self,
-        )
 
     def with_phase_div(self, div: int) -> "Greedy":
         self._div = div
-        return self
-
-    def with_constraint(self, constraint: AmplitudeConstraint) -> "Greedy":
-        """Set amplitude constraint
-
-        Arguments:
-        - `constraint` - Amplitude constraint
-        """
-
-        self._constraint = constraint
         return self
 
     def gain_ptr(self, _: Geometry) -> GainPtr:

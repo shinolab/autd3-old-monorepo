@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -16,6 +16,7 @@ mod common;
 mod device_viewer;
 mod field_compute_pipeline;
 mod imgui_renderer;
+mod log_formatter;
 mod patch;
 mod renderer;
 mod simulator;
@@ -25,6 +26,7 @@ mod trans_viewer;
 mod update_flag;
 mod viewer_settings;
 
+pub use log_formatter::LogFormatter;
 pub use simulator::Simulator;
 pub use viewer_settings::ViewerSettings;
 

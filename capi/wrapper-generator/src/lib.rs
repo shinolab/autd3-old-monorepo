@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -108,6 +108,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "GroupGainMapPtr".to_string(),
             "GroupKVMapPtr".to_string(),
             "GainCalcDrivesMapPtr".to_string(),
+            "LinkBuilderPtr".to_string(),
         ],
         rename: vec![
             ("float".to_string(), "double".to_string()),

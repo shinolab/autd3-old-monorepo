@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include <autd3/gain/cache.hpp>
 #include <autd3/gain/gain.hpp>
 #include <autd3/gain/uniform.hpp>
 
@@ -22,13 +23,13 @@ TEST(Gain, Cache) {
   ASSERT_TRUE(autd.send(autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi).with_cache()));
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, dev.idx(), 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
   }
 }
 
-class ForCacheTest final : public autd3::gain::Gain {
+class ForCacheTest final : public autd3::gain::Gain, public autd3::gain::IntoCache<ForCacheTest> {
  public:
   explicit ForCacheTest(size_t* cnt) : _cnt(cnt) {}
 
@@ -37,8 +38,6 @@ class ForCacheTest final : public autd3::gain::Gain {
     ++*_cnt;
     return transform(geometry, [&](const auto&, const auto&) { return autd3::internal::native_methods::Drive{autd3::internal::pi, 0.5}; });
   }
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(ForCacheTest)
 
  private:
   size_t* _cnt;
@@ -79,12 +78,12 @@ TEST(Gain, CacheCheckOnlyForEnabled) {
   ASSERT_TRUE(g.drives()->contains(1));
 
   {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 0, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    auto [duties, phases] = autd3::link::Audit::duties_and_phases(autd, 1, 0);
+    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
   }

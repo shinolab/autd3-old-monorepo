@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,20 +19,20 @@ public class GainTest
     {
         private readonly double _amp;
         private readonly double _phase;
-        public bool[] Chcek;
+        public bool[] Check;
 
-        public MyUniform(double amp, double phase, bool[] chcek)
+        public MyUniform(double amp, double phase, bool[] check)
         {
             _amp = amp;
             _phase = phase;
-            this.Chcek = chcek;
+            Check = check;
         }
 
         public override Dictionary<int, Drive[]> Calc(Geometry geometry)
         {
             return Transform(geometry, (dev, _) =>
             {
-                Chcek[dev.Idx] = true;
+                Check[dev.Idx] = true;
                 return new Drive { Phase = _phase, Amp = _amp };
             });
         }
@@ -48,7 +48,7 @@ public class GainTest
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, dev.Idx, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
             Assert.All(duties, d => Assert.Equal(680, d));
             Assert.All(phases, p => Assert.Equal(2048, p));
         }
@@ -67,12 +67,12 @@ public class GainTest
         Assert.True(check[1]);
 
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, 0, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
             Assert.All(duties, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, 1, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
             Assert.All(duties, d => Assert.Equal(680, d));
             Assert.All(phases, p => Assert.Equal(2048, p));
         }

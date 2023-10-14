@@ -1,13 +1,13 @@
 /*
  * File: clear.rs
- * Project: src
- * Created Date: 05/12/2022
+ * Project: datagram
+ * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -35,5 +35,28 @@ impl<T: Transducer> Datagram<T> for Clear {
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
         Ok((Self::O1::default(), Self::O2::default()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::operation::{ClearOp, NullOp};
+
+    use super::*;
+
+    #[test]
+    fn test_clear_timeout() {
+        let clear = Clear::new();
+        let timeout = <Clear as Datagram<LegacyTransducer>>::timeout(&clear);
+        assert!(timeout.is_some());
+        assert!(timeout.unwrap() > Duration::ZERO);
+    }
+
+    #[test]
+    fn test_clear_operation() {
+        let clear = Clear::default();
+        let r = <Clear as Datagram<LegacyTransducer>>::operation(clear);
+        assert!(r.is_ok());
+        let _: (ClearOp, NullOp) = r.unwrap();
     }
 }

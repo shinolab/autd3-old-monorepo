@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 12/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,11 +11,10 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
+#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -24,7 +23,11 @@ namespace autd3::modulation {
 /**
  * @brief Square wave modulation
  */
-class Square final : public internal::Modulation {
+class Square final : public internal::ModulationWithFreqDiv<Square>,
+                     public IntoCache<Square>,
+                     public IntoTransform<Square>,
+                     public IntoRadiationPressure<Square>,
+                     public IntoFIR<Square> {
  public:
   /**
    * @brief Constructor
@@ -33,15 +36,9 @@ class Square final : public internal::Modulation {
    */
   explicit Square(const int32_t freq) : _freq(freq) {}
 
-  AUTD3_IMPL_WITH_CACHE_MODULATION
-  AUTD3_IMPL_WITH_RADIATION_PRESSURE(Square)
-  AUTD3_IMPL_WITH_TRANSFORM_MODULATION(Square)
-
   AUTD3_DEF_PARAM(Square, double, low)
   AUTD3_DEF_PARAM(Square, double, high)
   AUTD3_DEF_PARAM(Square, double, duty)
-
-  AUTD3_IMPL_MOD_PROP(Square)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSquare(_freq);
@@ -57,7 +54,6 @@ class Square final : public internal::Modulation {
   std::optional<double> _low;
   std::optional<double> _high;
   std::optional<double> _duty;
-  std::optional<uint32_t> _freq_div;
 };
 
 }  // namespace autd3::modulation

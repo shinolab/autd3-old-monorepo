@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,6 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #endif
-
-using System;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -30,18 +28,16 @@ using float_t = System.Double;
 namespace AUTD3Sharp.Modulation
 {
     using Base = NativeMethods.Base;
-    using Def = NativeMethods.Def;
 
     /// <summary>
     /// Sine wave modulation
     /// </summary>
-    public sealed class Sine : Internal.Modulation
+    public sealed class Sine : Internal.ModulationWithFreqDiv<Sine>
     {
         private readonly int _freq;
         private float_t? _amp;
         private float_t? _offset;
         private float_t? _phase;
-        private uint? _freqDiv;
 
         /// <summary>
         /// Constructor
@@ -54,7 +50,6 @@ namespace AUTD3Sharp.Modulation
             _amp = null;
             _phase = null;
             _offset = null;
-            _freqDiv = null;
         }
 
         /// <summary>
@@ -90,34 +85,6 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
-        /// <summary>
-        /// Set sampling frequency division
-        /// </summary>
-        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FpgaSubClkFreq</see> / div.</param>
-        /// <returns></returns>
-        public Sine WithSamplingFrequencyDivision(uint div)
-        {
-            _freqDiv = div;
-            return this;
-        }
-
-        /// <summary>
-        /// Set sampling frequency
-        /// </summary>
-        /// <returns></returns>
-        public Sine WithSamplingFrequency(float_t freq)
-        {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / freq));
-        }
-
-        /// <summary>
-        /// Set sampling period
-        /// </summary>
-        /// <returns></returns>
-        public Sine WithSamplingPeriod(TimeSpan period)
-        {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
-        }
 
         public static Fourier operator +(Sine a, Sine b)
             => new Fourier(a).AddComponent(b);
@@ -131,8 +98,8 @@ namespace AUTD3Sharp.Modulation
                 ptr = Base.AUTDModulationSineWithOffset(ptr, _offset.Value);
             if (_phase != null)
                 ptr = Base.AUTDModulationSineWithPhase(ptr, _phase.Value);
-            if (_freqDiv != null)
-                ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freqDiv.Value);
+            if (FreqDiv != null)
+                ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
             return ptr;
         }
     }

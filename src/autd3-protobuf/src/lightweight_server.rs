@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 09/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,19 +15,20 @@ use std::sync::RwLock;
 
 use crate::{error::*, pb::*, traits::*};
 
+use autd3_driver::geometry::{LegacyTransducer, Transducer};
 use tonic::{Request, Response, Status};
 
 #[doc(hidden)]
 pub struct LightweightServer<
-    L: autd3_driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+    L: autd3_driver::link::LinkBuilder<LegacyTransducer> + Sync + 'static,
     F: Fn() -> L + Send + Sync + 'static,
 > {
-    autd: RwLock<Option<autd3::Controller<autd3::prelude::LegacyTransducer, L>>>,
+    autd: RwLock<Option<autd3::Controller<LegacyTransducer, L::L>>>,
     link: F,
 }
 
 impl<
-        L: autd3_driver::link::Link<autd3::prelude::LegacyTransducer> + Sync + 'static,
+        L: autd3_driver::link::LinkBuilder<LegacyTransducer> + Sync + 'static,
         F: Fn() -> L + Send + Sync + 'static,
     > LightweightServer<L, F>
 {
@@ -39,7 +40,7 @@ impl<
     }
 
     fn send_special(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         msg: &SpecialData,
     ) -> Result<bool, AUTDProtoBufError> {
         Ok(match msg.special {
@@ -56,7 +57,7 @@ impl<
     }
 
     fn send_modulation(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         modulation: &Modulation,
     ) -> Result<bool, AUTDProtoBufError> {
         Ok(match &modulation.modulation {
@@ -77,14 +78,14 @@ impl<
     }
 
     fn send_silencer(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         msg: &SilencerConfig,
     ) -> Result<bool, AUTDProtoBufError> {
         Ok(autd.send(autd3::prelude::Silencer::from_msg(msg))?)
     }
 
     fn send_gain(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         gain: &Gain,
     ) -> Result<bool, AUTDProtoBufError> {
         Ok(match &gain.gain {
@@ -107,7 +108,7 @@ impl<
     }
 
     fn send_focus_stm(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         msg: &FocusStm,
     ) -> Result<bool, AUTDProtoBufError> {
         if msg.control_points.is_empty() {
@@ -117,7 +118,7 @@ impl<
     }
 
     fn send_gain_stm(
-        autd: &mut autd3::Controller<autd3::prelude::LegacyTransducer, L>,
+        autd: &mut autd3::Controller<LegacyTransducer, L::L>,
         msg: &GainStm,
     ) -> Result<bool, AUTDProtoBufError> {
         if msg.gains.is_empty() {
@@ -129,7 +130,7 @@ impl<
 
 #[tonic::async_trait]
 impl<
-        L: autd3_driver::link::Link<autd3_driver::geometry::LegacyTransducer> + Sync + 'static,
+        L: autd3_driver::link::LinkBuilder<LegacyTransducer> + Sync + 'static,
         F: Fn() -> L + Send + Sync + 'static,
     > ecat_light_server::EcatLight for LightweightServer<L, F>
 {
@@ -148,18 +149,25 @@ impl<
                 }
             }
         }
-        *self.autd.write().unwrap() = match autd3::Controller::open_impl(
-            autd3_driver::geometry::Geometry::from_msg(&req.into_inner()),
-            (self.link)(),
-        ) {
-            Ok(autd) => Some(autd),
-            Err(e) => {
-                return Ok(Response::new(GeometryLightResponse {
-                    success: false,
-                    msg: format!("{}", e),
-                }))
-            }
-        };
+        *self.autd.write().unwrap() =
+            match autd3_driver::geometry::Geometry::from_msg(&req.into_inner())
+                .iter()
+                .fold(autd3::Controller::builder(), |acc, d| {
+                    acc.add_device(autd3::autd3_device::AUTD3::with_quaternion(
+                        *d[0].position(),
+                        *d[0].rotation(),
+                    ))
+                })
+                .open_with((self.link)())
+            {
+                Ok(autd) => Some(autd),
+                Err(e) => {
+                    return Ok(Response::new(GeometryLightResponse {
+                        success: false,
+                        msg: format!("{}", e),
+                    }))
+                }
+            };
 
         Ok(Response::new(GeometryLightResponse {
             success: true,

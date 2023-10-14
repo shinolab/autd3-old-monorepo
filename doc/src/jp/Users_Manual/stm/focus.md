@@ -11,7 +11,7 @@
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
 let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
@@ -80,7 +80,7 @@ autd.send(stm)
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
 let stm = FocusSTM::with_sampling_frequency(1.0);
 # Ok(())
 # }
@@ -106,7 +106,7 @@ stm = FocusSTM.with_sampling_frequency(1.0)
 # extern crate autd3;
 # use autd3::prelude::*;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Debug::new())?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
 let stm = FocusSTM::with_sampling_frequency_division(5120);
 # Ok(())
 # }

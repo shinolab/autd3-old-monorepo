@@ -24,7 +24,7 @@ To configure the silencer, send `Silencer` to the controller.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let config = Silencer::default();
 autd.send(config)?;
 # Ok(())
@@ -57,7 +57,7 @@ Roughly, the smaller the `step`, the quieter it becomes.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 # let step = 10;
 let config = Silencer::new(step);
 # Ok(())
@@ -86,7 +86,7 @@ To disable the silencer, do the following.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
 let config = Silencer::disable();
 # Ok(())
 # }

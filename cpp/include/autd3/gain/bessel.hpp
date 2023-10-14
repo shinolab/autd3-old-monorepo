@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,12 +28,9 @@ namespace autd3::gain {
 /**
  * @brief Gain to produce a Bessel beam
  */
-class Bessel final : public internal::Gain {
+class Bessel final : public internal::Gain, public IntoCache<Bessel>, public IntoTransform<Bessel> {
  public:
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Bessel)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Bessel)
 
   AUTD3_DEF_PARAM(Bessel, double, amp)
 

@@ -3,19 +3,20 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2023
+// Last Modified: 09/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #include "autd3.hpp"
-#include "autd3/link/debug.hpp"
+#include "autd3/link/nop.hpp"
 #include "runner.hpp"
 #include "util.hpp"
 
 int main() try {
-  auto autd = autd3::Controller::builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Debug());
+  auto autd =
+      autd3::Controller::builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Nop::builder());
 
   const auto cx = autd.geometry().center().x();
   autd3::gain::Focus g1(autd.geometry().center() + autd3::Vector3(0, 0, 150));

@@ -28,16 +28,6 @@ enum class GainSTMMode : uint8_t {
   PhaseHalf = 2,
 };
 
-enum class Level : uint8_t {
-  Critical = 0,
-  Error = 1,
-  Warn = 2,
-  Info = 3,
-  Debug = 4,
-  Trace = 5,
-  Off = 6,
-};
-
 enum class TimerStrategy : uint8_t {
   Sleep = 0,
   BusyWait = 1,
@@ -107,6 +97,10 @@ struct GroupKVMapPtr {
 };
 
 struct GainCalcDrivesMapPtr {
+  void* _0;
+};
+
+struct LinkBuilderPtr {
   void* _0;
 };
 

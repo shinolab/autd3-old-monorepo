@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+// #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum FirmwareInfoType {
     CPUVersionMajor = 0x01,
@@ -28,20 +28,6 @@ pub enum FirmwareInfoType {
     FPGAVersionMinor = 0x04,
     FPGAFunctions = 0x05,
     Clear = 0x06,
-}
-
-impl From<u8> for FirmwareInfoType {
-    fn from(value: u8) -> Self {
-        match value {
-            0x01 => Self::CPUVersionMajor,
-            0x02 => Self::CPUVersionMinor,
-            0x03 => Self::FPGAVersionMajor,
-            0x04 => Self::FPGAVersionMinor,
-            0x05 => Self::FPGAFunctions,
-            0x06 => Self::Clear,
-            _ => unreachable!(),
-        }
-    }
 }
 
 #[derive(Default)]
@@ -131,8 +117,8 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 5));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::CPUVersionMajor);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::CPUVersionMajor as u8);
         });
 
         geometry.devices().for_each(|dev| {
@@ -144,8 +130,8 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 4));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::CPUVersionMinor);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::CPUVersionMinor as u8);
         });
 
         geometry.devices().for_each(|dev| {
@@ -157,8 +143,8 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 3));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::FPGAVersionMajor);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::FPGAVersionMajor as u8);
         });
 
         geometry.devices().for_each(|dev| {
@@ -170,8 +156,8 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 2));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::FPGAVersionMinor);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::FPGAVersionMinor as u8);
         });
 
         geometry.devices().for_each(|dev| {
@@ -183,8 +169,8 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::FPGAFunctions);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::FPGAFunctions as u8);
         });
 
         geometry.devices().for_each(|dev| {
@@ -196,8 +182,26 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 2], TypeTag::FirmwareInfo as u8);
-            let flag = FirmwareInfoType::from(tx[dev.idx() * 2 + 1]);
-            assert_eq!(flag, FirmwareInfoType::Clear);
+            let flag = tx[dev.idx() * 2 + 1];
+            assert_eq!(flag, FirmwareInfoType::Clear as u8);
         });
+    }
+
+    #[test]
+    #[should_panic]
+    fn info_op_panic() {
+        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let mut tx = [0x00u8; 2 * NUM_DEVICE];
+
+        let mut op = FirmInfoOp::default();
+
+        assert!(op.init(&geometry).is_ok());
+
+        for _ in 0..7 {
+            geometry.devices().for_each(|dev| {
+                assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+                op.commit(dev);
+            });
+        }
     }
 }

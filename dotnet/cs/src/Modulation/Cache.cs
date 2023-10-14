@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,6 @@ using float_t = System.Double;
 namespace AUTD3Sharp.Modulation
 {
     using Base = NativeMethods.Base;
-    using Def = NativeMethods.Def;
 
     /// <summary>
     /// Modulation to cache the result of calculation
@@ -44,7 +43,7 @@ namespace AUTD3Sharp.Modulation
         {
             var err = new byte[256];
             _cache = Base.AUTDModulationWithCache(m.ModulationPtr(), err);
-            if (_cache._0 == System.IntPtr.Zero) throw new AUTDException(err);
+            if (_cache._0 == IntPtr.Zero) throw new AUTDException(err);
 
             var n = Base.AUTDModulationCacheGetBufferSize(_cache);
             _buffer = new float_t[n];
@@ -78,7 +77,7 @@ namespace AUTD3Sharp.Modulation
 
         public IEnumerator<float_t> GetEnumerator()
         {
-            foreach (var e in _buffer) yield return e;
+            return (IEnumerator<float_t>)_buffer.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();

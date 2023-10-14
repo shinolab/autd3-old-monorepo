@@ -18,5 +18,5 @@ static inline autd3::internal::Controller create_controller() {
   return autd3::internal::Controller::builder()
       .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
       .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-      .open_with(autd3::link::Audit());
+      .open_with(autd3::link::Audit::builder());
 }

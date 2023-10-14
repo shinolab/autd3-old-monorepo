@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 13/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,55 +48,55 @@ fn main() -> Result<()> {
         autd.geometry(),
     )?;
     autd.link().plot_field(
+        Config {
+            fname: Path::new("x.png").into(),
+            ..Config::default()
+        },
         PlotRange {
             x_range: center.x - 50.0..center.x + 50.0,
             y_range: center.y..center.y,
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        Config {
-            fname: Path::new("x.png").into(),
-            ..Config::default()
-        },
         autd.geometry(),
     )?;
     autd.link().plot_field(
+        Config {
+            fname: Path::new("xy.png").into(),
+            ..Config::default()
+        },
         PlotRange {
             x_range: center.x - 20.0..center.x + 20.0,
             y_range: center.y - 30.0..center.y + 30.0,
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        Config {
-            fname: Path::new("xy.png").into(),
-            ..Config::default()
-        },
         autd.geometry(),
     )?;
     autd.link().plot_field(
+        Config {
+            fname: Path::new("yz.png").into(),
+            ..Config::default()
+        },
         PlotRange {
             x_range: center.x..center.x,
             y_range: center.y - 30.0..center.y + 30.0,
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
         },
-        Config {
-            fname: Path::new("yz.png").into(),
-            ..Config::default()
-        },
         autd.geometry(),
     )?;
     autd.link().plot_field(
+        Config {
+            fname: Path::new("zx.png").into(),
+            ticks_step: 20.,
+            ..Config::default()
+        },
         PlotRange {
             x_range: center.x - 30.0..center.x + 30.0,
             y_range: center.y..center.y,
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
-        },
-        Config {
-            fname: Path::new("zx.png").into(),
-            ticks_step: 20.,
-            ..Config::default()
         },
         autd.geometry(),
     )?;
@@ -107,7 +107,7 @@ fn main() -> Result<()> {
     })?;
 
     // Calculate acoustic pressure without plotting
-    let p = autd.link().calc_field([center], autd.geometry());
+    let p = autd.link().calc_field(&[center], autd.geometry());
     println!(
         "Acoustic pressure at ({}, {}, {}) = {}",
         center.x, center.y, center.z, p[0]

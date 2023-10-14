@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ public class TransTestTest
         Assert.True(autd.Send(new TransducerTest().Set(0, 0, Math.PI, 0.5).Set(1, 248, Math.PI, 0.5)));
 
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, 0, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
             Assert.Equal(680, duties[0]);
             Assert.Equal(2048, phases[0]);
             Assert.All(duties.Skip(1), d => Assert.Equal(8, d));
@@ -31,7 +31,7 @@ public class TransTestTest
         }
 
         {
-            var (duties, phases) = Audit.DutiesAndPhases(autd, 1, 0);
+            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
             Assert.Equal(680, duties[autd.Geometry[1].NumTransducers - 1]);
             Assert.Equal(2048, phases[autd.Geometry[1].NumTransducers - 1]);
             Assert.All(duties.Take(autd.Geometry[1].NumTransducers - 1), d => Assert.Equal(8, d));

@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 #define USE_SINGLE
 #endif
 
+using System;
 using System.Runtime.InteropServices;
 using AUTD3Sharp.NativeMethods;
 
@@ -45,6 +46,41 @@ namespace AUTD3Sharp.Internal
                 if (n < 0) throw new AUTDException(err);
                 return n;
             }
+        }
+    }
+
+    public abstract class ModulationWithFreqDiv<T> : Modulation
+        where T : ModulationWithFreqDiv<T>
+    {
+        protected uint? FreqDiv;
+
+        /// <summary>
+        /// Set sampling frequency division
+        /// </summary>
+        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see> / div.</param>
+        /// <returns></returns>
+        public T WithSamplingFrequencyDivision(uint div)
+        {
+            FreqDiv = div;
+            return (T)this;
+        }
+
+        /// <summary>
+        /// Set sampling frequency
+        /// </summary>
+        /// <returns></returns>
+        public T WithSamplingFrequency(float_t freq)
+        {
+            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / freq));
+        }
+
+        /// <summary>
+        /// Set sampling period
+        /// </summary>
+        /// <returns></returns>
+        public T WithSamplingPeriod(TimeSpan period)
+        {
+            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
         }
     }
 }

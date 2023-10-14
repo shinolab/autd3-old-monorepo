@@ -1,12 +1,31 @@
+/*
+ * File: main.rs
+ * Project: autd-server
+ * Created Date: 27/09/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 14/10/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ * 
+ */
+
 #![allow(non_snake_case)]
 
-use autd3_driver::{cpu::TxDatagram, link::Link, timer_strategy::TimerStrategy};
+mod log_formatter;
+
+use log_formatter::LogFormatter;
+
+use autd3_driver::{
+    cpu::TxDatagram,
+    link::{Link, LinkBuilder},
+    timer_strategy::TimerStrategy,
+};
 use autd3_link_soem::{SyncMode, SOEM};
 use autd3_protobuf::*;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
-
-use spdlog::Level;
 
 use tokio::{runtime::Runtime, sync::mpsc};
 use tonic::{transport::Server, Request, Response, Status};
@@ -51,10 +70,10 @@ struct Arg {
     port: u16,
     /// Sync0 cycle time in units of 500us
     #[clap(short = 's', long = "sync0", default_value = "2")]
-    sync0: u16,
+    sync0: u64,
     /// Send cycle time in units of 500us
     #[clap(short = 'c', long = "send", default_value = "2")]
-    send: u16,
+    send: u64,
     /// Buffer size
     #[clap(short = 'b', long = "buffer_size", default_value = "32")]
     buf_size: usize,
@@ -70,9 +89,6 @@ struct Arg {
     /// Timeout in ms
     #[clap(short = 't', long = "timeout", default_value = "20")]
     timeout: u64,
-    /// Set debug mode
-    #[clap(short = 'd', long = "debug")]
-    debug: bool,
     /// Enable lightweight mode
     #[clap(short = 'l', long = "lightweight")]
     lightweight: bool,
@@ -98,21 +114,13 @@ impl ecat_server::Ecat for SOEMServer {
     ) -> Result<Response<SendResponse>, Status> {
         let tx = TxDatagram::from_msg(&request.into_inner());
         Ok(Response::new(SendResponse {
-            success: Link::<autd3_driver::geometry::LegacyTransducer>::send(
-                &mut *self.soem.write().unwrap(),
-                &tx,
-            )
-            .unwrap_or(false),
+            success: Link::send(&mut *self.soem.write().unwrap(), &tx).unwrap_or(false),
         }))
     }
 
     async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
-        let mut rx = autd3_driver::cpu::RxDatagram::new(self.num_dev);
-        Link::<autd3_driver::geometry::LegacyTransducer>::receive(
-            &mut *self.soem.write().unwrap(),
-            &mut rx,
-        )
-        .unwrap_or(false);
+        let mut rx = vec![autd3_driver::cpu::RxMessage { ack: 0, data: 0 }; self.num_dev];
+        Link::receive(&mut *self.soem.write().unwrap(), &mut rx).unwrap_or(false);
         Ok(Response::new(rx.to_msg()))
     }
 
@@ -124,12 +132,9 @@ impl ecat_server::Ecat for SOEMServer {
 
 impl Drop for SOEMServer {
     fn drop(&mut self) {
-        spdlog::info!("Shutting down server...");
-        let _ = Link::<autd3_driver::geometry::LegacyTransducer>::close(
-            &mut *self.soem.write().unwrap(),
-        );
-        spdlog::info!("Shutting down server...done");
-        spdlog::default_logger().flush();
+        tracing::info!("Shutting down server...");
+        let _ = Link::close(&mut *self.soem.write().unwrap());
+        tracing::info!("Shutting down server...done");
     }
 }
 
@@ -165,17 +170,11 @@ fn main_() -> anyhow::Result<()> {
                 TimerStrategyArg::BusyWait => TimerStrategy::BusyWait,
             };
             let buf_size = args.buf_size;
-            let level = if args.debug {
-                Level::Debug
-            } else {
-                Level::Info
-            };
             let timeout = args.timeout;
-            let f = move || -> autd3_link_soem::SOEM {
-                autd3_link_soem::SOEM::new()
+            let f = move || -> autd3_link_soem::local::link_soem::SOEMBuilder {
+                autd3_link_soem::SOEM::builder()
                     .with_buf_size(buf_size)
                     .with_ifname(ifname.clone())
-                    .with_log_level(spdlog::LevelFilter::MoreSevereEqual(level))
                     .with_send_cycle(send_cycle)
                     .with_state_check_interval(std::time::Duration::from_millis(
                         state_check_interval,
@@ -185,7 +184,7 @@ fn main_() -> anyhow::Result<()> {
                     .with_sync_mode(sync_mode)
                     .with_timeout(std::time::Duration::from_millis(timeout))
                     .with_on_lost(|msg| {
-                        spdlog::error!("{}", msg);
+                        tracing::error!("{}", msg);
                         std::process::exit(-1);
                     })
             };
@@ -197,7 +196,7 @@ fn main_() -> anyhow::Result<()> {
             .expect("Error setting Ctrl-C handler");
 
             let addr = format!("0.0.0.0:{}", port).parse()?;
-            spdlog::info!("Waiting for client connection on {}", addr);
+            tracing::info!("Waiting for client connection on {}", addr);
             let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
             if args.lightweight {
@@ -209,12 +208,14 @@ fn main_() -> anyhow::Result<()> {
                     });
                 rt.block_on(server_future)?;
             } else {
-                spdlog::info!("Starting SOEM server...");
+                tracing::info!("Starting SOEM server...");
 
-                let mut soem = f();
-                let num_dev = soem.open_impl(None)? as usize;
+                let soem = f().open(&autd3_driver::geometry::Geometry::<
+                    autd3_driver::geometry::LegacyTransducer,
+                >::new(vec![]))?;
+                let num_dev = SOEM::num_devices();
 
-                spdlog::info!("{} AUTDs found", num_dev);
+                tracing::info!("{} AUTDs found", num_dev);
 
                 let server_future = Server::builder()
                     .add_service(ecat_server::EcatServer::new(SOEMServer {
@@ -233,10 +234,12 @@ fn main_() -> anyhow::Result<()> {
 }
 
 fn main() {
+    tracing_subscriber::fmt().event_format(LogFormatter).init();
+
     match main_() {
         Ok(_) => {}
         Err(e) => {
-            spdlog::error!("{}", e);
+            tracing::error!("{}", e);
             std::process::exit(-1);
         }
     }

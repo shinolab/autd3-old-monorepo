@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-backend-cuda"
-version = "15.3.1"
+version = "16.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -17,4 +17,3 @@ wrapper-generator = { path = "../wrapper-generator" }
 
 [features]
 single_float = ["autd3capi-def/single_float", "autd3-backend-cuda/single_float"]
-parallel = ["autd3capi-def/parallel"]

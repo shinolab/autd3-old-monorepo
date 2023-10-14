@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -312,7 +312,7 @@ class GainSTM final : public STM {
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
     std::ranges::transform(_gains, std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
-    return AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode);
+    return AUTDSTMGain(props(), gains.data(), gains.size(), mode);
   }
 
   /**

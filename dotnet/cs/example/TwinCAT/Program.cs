@@ -17,6 +17,6 @@ using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using Samples;
 
-var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(new TwinCAT());
+var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(TwinCAT.Builder());
 
 SampleRunner.Run(autd);

@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import Level, LinkPtr, TimerStrategy
+from .autd3capi_def import LinkBuilderPtr, TimerStrategy
 
 from enum import IntEnum
 
@@ -13,6 +13,14 @@ class SyncMode(IntEnum):
     @classmethod
     def from_param(cls, obj):
         return int(obj)
+
+
+class LinkSOEMBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class LinkRemoteSOEMBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class Singleton(type):
@@ -48,46 +56,49 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDAdapterPointerDelete.restype = None
 
         self.dll.AUTDLinkSOEM.argtypes = [] 
-        self.dll.AUTDLinkSOEM.restype = LinkPtr
+        self.dll.AUTDLinkSOEM.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithSendCycle.argtypes = [LinkPtr, ctypes.c_uint16]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithSendCycle.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithSendCycle.argtypes = [LinkSOEMBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithSendCycle.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithSync0Cycle.argtypes = [LinkPtr, ctypes.c_uint16]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithSync0Cycle.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithSync0Cycle.argtypes = [LinkSOEMBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithSync0Cycle.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithBufSize.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithBufSize.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithBufSize.argtypes = [LinkSOEMBuilderPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithBufSize.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithTimerStrategy.argtypes = [LinkPtr, TimerStrategy]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithTimerStrategy.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithTimerStrategy.argtypes = [LinkSOEMBuilderPtr, TimerStrategy]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithTimerStrategy.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithSyncMode.argtypes = [LinkPtr, SyncMode]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithSyncMode.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithSyncMode.argtypes = [LinkSOEMBuilderPtr, SyncMode]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithSyncMode.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithIfname.argtypes = [LinkPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithIfname.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithIfname.argtypes = [LinkSOEMBuilderPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithIfname.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithStateCheckInterval.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithStateCheckInterval.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithStateCheckInterval.argtypes = [LinkSOEMBuilderPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithStateCheckInterval.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithOnLost.argtypes = [LinkPtr, ctypes.c_void_p]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithOnLost.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithOnLost.argtypes = [LinkSOEMBuilderPtr, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithOnLost.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithLogLevel.argtypes = [LinkPtr, Level]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithLogLevel.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithOnErr.argtypes = [LinkSOEMBuilderPtr, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithOnErr.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithLogFunc.argtypes = [LinkPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithLogFunc.restype = LinkPtr
+        self.dll.AUTDLinkSOEMWithTimeout.argtypes = [LinkSOEMBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSOEMWithTimeout.restype = LinkSOEMBuilderPtr
 
-        self.dll.AUTDLinkSOEMWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkSOEMWithTimeout.restype = LinkPtr
+        self.dll.AUTDLinkSOEMIntoBuilder.argtypes = [LinkSOEMBuilderPtr]  # type: ignore 
+        self.dll.AUTDLinkSOEMIntoBuilder.restype = LinkBuilderPtr
 
         self.dll.AUTDLinkRemoteSOEM.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteSOEM.restype = LinkPtr
+        self.dll.AUTDLinkRemoteSOEM.restype = LinkRemoteSOEMBuilderPtr
 
-        self.dll.AUTDLinkRemoteSOEMWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
-        self.dll.AUTDLinkRemoteSOEMWithTimeout.restype = LinkPtr
+        self.dll.AUTDLinkRemoteSOEMWithTimeout.argtypes = [LinkRemoteSOEMBuilderPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkRemoteSOEMWithTimeout.restype = LinkRemoteSOEMBuilderPtr
+
+        self.dll.AUTDLinkRemoteSOEMIntoBuilder.argtypes = [LinkRemoteSOEMBuilderPtr]  # type: ignore 
+        self.dll.AUTDLinkRemoteSOEMIntoBuilder.restype = LinkBuilderPtr
 
     def adapter_pointer(self) -> ctypes.c_void_p:
         return self.dll.AUTDAdapterPointer()
@@ -101,44 +112,47 @@ class NativeMethods(metaclass=Singleton):
     def adapter_pointer_delete(self, adapters: ctypes.c_void_p) -> None:
         return self.dll.AUTDAdapterPointerDelete(adapters)
 
-    def link_soem(self) -> LinkPtr:
+    def link_soem(self) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEM()
 
-    def link_soem_with_send_cycle(self, soem: LinkPtr, cycle: int) -> LinkPtr:
+    def link_soem_with_send_cycle(self, soem: LinkSOEMBuilderPtr, cycle: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithSendCycle(soem, cycle)
 
-    def link_soem_with_sync_0_cycle(self, soem: LinkPtr, cycle: int) -> LinkPtr:
+    def link_soem_with_sync_0_cycle(self, soem: LinkSOEMBuilderPtr, cycle: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithSync0Cycle(soem, cycle)
 
-    def link_soem_with_buf_size(self, soem: LinkPtr, buf_size: int) -> LinkPtr:
+    def link_soem_with_buf_size(self, soem: LinkSOEMBuilderPtr, buf_size: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithBufSize(soem, buf_size)
 
-    def link_soem_with_timer_strategy(self, soem: LinkPtr, timer_strategy: TimerStrategy) -> LinkPtr:
+    def link_soem_with_timer_strategy(self, soem: LinkSOEMBuilderPtr, timer_strategy: TimerStrategy) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithTimerStrategy(soem, timer_strategy)
 
-    def link_soem_with_sync_mode(self, soem: LinkPtr, mode: SyncMode) -> LinkPtr:
+    def link_soem_with_sync_mode(self, soem: LinkSOEMBuilderPtr, mode: SyncMode) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithSyncMode(soem, mode)
 
-    def link_soem_with_ifname(self, soem: LinkPtr, ifname: bytes) -> LinkPtr:
+    def link_soem_with_ifname(self, soem: LinkSOEMBuilderPtr, ifname: bytes) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithIfname(soem, ifname)
 
-    def link_soem_with_state_check_interval(self, soem: LinkPtr, interval_ms: int) -> LinkPtr:
+    def link_soem_with_state_check_interval(self, soem: LinkSOEMBuilderPtr, interval_ms: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithStateCheckInterval(soem, interval_ms)
 
-    def link_soem_with_on_lost(self, soem: LinkPtr, on_lost_func: ctypes.c_void_p) -> LinkPtr:
+    def link_soem_with_on_lost(self, soem: LinkSOEMBuilderPtr, on_lost_func: ctypes.c_void_p) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithOnLost(soem, on_lost_func)
 
-    def link_soem_with_log_level(self, soem: LinkPtr, level: Level) -> LinkPtr:
-        return self.dll.AUTDLinkSOEMWithLogLevel(soem, level)
+    def link_soem_with_on_err(self, soem: LinkSOEMBuilderPtr, on_err_func: ctypes.c_void_p) -> LinkSOEMBuilderPtr:
+        return self.dll.AUTDLinkSOEMWithOnErr(soem, on_err_func)
 
-    def link_soem_with_log_func(self, soem: LinkPtr, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> LinkPtr:
-        return self.dll.AUTDLinkSOEMWithLogFunc(soem, out_func, flush_func)
-
-    def link_soem_with_timeout(self, soem: LinkPtr, timeout_ns: int) -> LinkPtr:
+    def link_soem_with_timeout(self, soem: LinkSOEMBuilderPtr, timeout_ns: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithTimeout(soem, timeout_ns)
 
-    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
+    def link_soem_into_builder(self, soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr:
+        return self.dll.AUTDLinkSOEMIntoBuilder(soem)
+
+    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteSOEMBuilderPtr:
         return self.dll.AUTDLinkRemoteSOEM(addr, err)
 
-    def link_remote_soem_with_timeout(self, soem: LinkPtr, timeout_ns: int) -> LinkPtr:
+    def link_remote_soem_with_timeout(self, soem: LinkRemoteSOEMBuilderPtr, timeout_ns: int) -> LinkRemoteSOEMBuilderPtr:
         return self.dll.AUTDLinkRemoteSOEMWithTimeout(soem, timeout_ns)
+
+    def link_remote_soem_into_builder(self, soem: LinkRemoteSOEMBuilderPtr) -> LinkBuilderPtr:
+        return self.dll.AUTDLinkRemoteSOEMIntoBuilder(soem)

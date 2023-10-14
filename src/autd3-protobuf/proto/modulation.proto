@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/07/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,7 @@ syntax = "proto3";
 
 package autd3;
 
-message Static {
-  uint32 freq_div = 1;
-  float amp = 2;
-}
+message Static { float amp = 1; }
 
 message SineLegacy {
   uint32 freq_div = 1;

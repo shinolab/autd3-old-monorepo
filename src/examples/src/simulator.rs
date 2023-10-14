@@ -4,7 +4,7 @@
  * Created Date: 27/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ fn main() -> Result<()> {
             Vector3::new(AUTD3::DEVICE_WIDTH, 0.0, 0.0),
             Vector3::zeros(),
         ))
-        .open_with(Simulator::new(8080))?;
+        .open_with(Simulator::builder(8080))?;
 
     tests::run(autd)
 }

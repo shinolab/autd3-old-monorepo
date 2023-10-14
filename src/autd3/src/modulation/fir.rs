@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ use autd3_driver::derive::prelude::*;
 #[derive(Modulation)]
 pub struct FIRImpl<M: Modulation> {
     m: M,
+    #[no_change]
     freq_div: u32,
     fir: sdr_rs::fir::FIR<f32>,
 }

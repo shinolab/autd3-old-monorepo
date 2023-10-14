@@ -4,7 +4,7 @@ Project: modulation
 Created Date: 20/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 04/10/2023
+Last Modified: 11/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 from ..test_autd import create_controller
 
 from pyautd3.modulation import Sine, Fourier
-from pyautd3.link.audit import Audit
 
 import numpy as np
 
@@ -27,7 +26,7 @@ def test_fourier():
     assert autd.send(m)
 
     for dev in autd.geometry:
-        mod = Audit.modulation(autd._ptr, dev.idx)
+        mod = autd.link.modulation(dev.idx)
         mod_expext = [
             85,
             103,
@@ -111,4 +110,4 @@ def test_fourier():
             67,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert Audit.modulation_frequency_division(autd._ptr, dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 40960

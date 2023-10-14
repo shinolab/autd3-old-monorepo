@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iterator>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -26,14 +25,11 @@
 namespace autd3::gain {
 
 template <class F>
-class Group final : public internal::Gain {
+class Group final : public internal::Gain, public IntoCache<Group<F>>, public IntoTransform<Group<F>> {
  public:
   using key_type = typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
 
   explicit Group(const F& f) : _f(f) {}
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(Group)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(Group)
 
   /**
    * @brief Set gain
@@ -66,9 +62,9 @@ class Group final : public internal::Gain {
     std::unordered_map<key_type, int32_t> keymap;
 
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
-    std::vector<uint32_t> device_indices(view.begin(), view.end());
+    const std::vector<uint32_t> device_indices(view.begin(), view.end());
 
-    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));
+    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), device_indices.size());
     int32_t k = 0;
     for (const auto& dev : geometry.devices()) {
       std::vector<int32_t> m;
@@ -93,7 +89,7 @@ class Group final : public internal::Gain {
       values.emplace_back(kv.second->gain_ptr(geometry));
     }
 
-    return AUTDGainGroup(map, keys.data(), values.data(), static_cast<uint32_t>(keys.size()));
+    return AUTDGainGroup(map, keys.data(), values.data(), keys.size());
   }
 
  private:

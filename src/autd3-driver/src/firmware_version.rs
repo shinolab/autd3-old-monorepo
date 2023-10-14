@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,6 @@ use std::fmt;
 pub const LATEST_VERSION_NUM_MAJOR: u8 = 0x8A;
 pub const LATEST_VERSION_NUM_MINOR: u8 = 0x02;
 
-const ENABLED_STM_BIT: u8 = 1 << 0;
-const ENABLED_MODULATOR_BIT: u8 = 1 << 1;
-const ENABLED_SILENCER_BIT: u8 = 1 << 2;
-const ENABLED_MOD_DELAY_BIT: u8 = 1 << 3;
-const ENABLED_FILTER_BIT: u8 = 1 << 4;
 const ENABLED_EMULATOR_BIT: u8 = 1 << 7;
 
 /// Firmware information
@@ -62,26 +57,6 @@ impl FirmwareInfo {
             self.fpga_version_number_major,
             self.fpga_version_number_minor,
         )
-    }
-
-    pub const fn stm_enabled(&self) -> bool {
-        (self.fpga_function_bits & ENABLED_STM_BIT) == ENABLED_STM_BIT
-    }
-
-    pub const fn modulator_enabled(&self) -> bool {
-        (self.fpga_function_bits & ENABLED_MODULATOR_BIT) == ENABLED_MODULATOR_BIT
-    }
-
-    pub const fn silencer_enabled(&self) -> bool {
-        (self.fpga_function_bits & ENABLED_SILENCER_BIT) == ENABLED_SILENCER_BIT
-    }
-
-    pub const fn modulation_delay_enabled(&self) -> bool {
-        (self.fpga_function_bits & ENABLED_MOD_DELAY_BIT) == ENABLED_MOD_DELAY_BIT
-    }
-
-    pub const fn filter_enabled(&self) -> bool {
-        (self.fpga_function_bits & ENABLED_FILTER_BIT) == ENABLED_FILTER_BIT
     }
 
     pub const fn is_emulator(&self) -> bool {
@@ -136,7 +111,7 @@ impl fmt::Display for FirmwareInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            r"{}: CPU = {}, FPGA = {} {}",
+            r"{}: CPU = {}, FPGA = {}{}",
             self.idx,
             self.cpu_version(),
             self.fpga_version(),
@@ -294,5 +269,35 @@ mod tests {
         let info = FirmwareInfo::new(0, 139, 0, 139, 0, 0);
         assert_eq!("unknown (139)", info.cpu_version());
         assert_eq!("unknown (139)", info.fpga_version());
+    }
+
+    #[test]
+    fn latest_firmware_version() {
+        assert_eq!("v3.0.2", FirmwareInfo::latest_version());
+    }
+
+    #[test]
+    fn is_emulator() {
+        assert!(FirmwareInfo::new(0, 0, 0, 0, 0, ENABLED_EMULATOR_BIT).is_emulator());
+        assert!(!FirmwareInfo::new(0, 0, 0, 0, 0, 0).is_emulator());
+    }
+
+    #[test]
+    fn number() {
+        let info = FirmwareInfo::new(0, 1, 2, 3, 4, 5);
+        assert_eq!(info.cpu_version_number_major(), 1);
+        assert_eq!(info.cpu_version_number_minor(), 2);
+        assert_eq!(info.fpga_version_number_major(), 3);
+        assert_eq!(info.fpga_version_number_minor(), 4);
+        assert_eq!(info.fpga_function_bits(), 5);
+    }
+
+    #[test]
+    fn fmt() {
+        let info = FirmwareInfo::new(0, 1, 2, 3, 4, 0);
+        assert_eq!(format!("{}", info), "0: CPU = v0.4, FPGA = v0.6");
+
+        let info = FirmwareInfo::new(0, 1, 2, 3, 4, ENABLED_EMULATOR_BIT);
+        assert_eq!(format!("{}", info), "0: CPU = v0.4, FPGA = v0.6 [Emulator]");
     }
 }

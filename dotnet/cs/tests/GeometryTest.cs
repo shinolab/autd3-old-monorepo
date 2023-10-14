@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -130,7 +130,7 @@ public class GeometryTest
         var autd = AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, Audit.FpgaFlags(autd, dev.Idx));
+            Assert.Equal(0, autd.Link<Audit>().FpgaFlags(dev.Idx));
         }
 
         autd.Geometry[0].ForceFan = true;
@@ -138,16 +138,16 @@ public class GeometryTest
 
         autd.Send(new UpdateFlags());
 
-        Assert.Equal(1, Audit.FpgaFlags(autd, 0));
-        Assert.Equal(0, Audit.FpgaFlags(autd, 1));
+        Assert.Equal(1, autd.Link<Audit>().FpgaFlags(0));
+        Assert.Equal(0, autd.Link<Audit>().FpgaFlags(1));
 
         autd.Geometry[0].ForceFan = false;
         autd.Geometry[1].ForceFan = true;
 
         autd.Send(new UpdateFlags());
 
-        Assert.Equal(0, Audit.FpgaFlags(autd, 0));
-        Assert.Equal(1, Audit.FpgaFlags(autd, 1));
+        Assert.Equal(0, autd.Link<Audit>().FpgaFlags(0));
+        Assert.Equal(1, autd.Link<Audit>().FpgaFlags(1));
     }
 
     [Fact]

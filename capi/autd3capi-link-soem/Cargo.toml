@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-soem"
-version = "15.3.1"
+version = "16.0.0"
 edition = "2021"
 license = "MIT"
 

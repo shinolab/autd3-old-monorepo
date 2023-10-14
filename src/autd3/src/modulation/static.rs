@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ use autd3_driver::derive::prelude::*;
 #[derive(Modulation, Clone, Copy)]
 pub struct Static {
     amp: float,
+    #[no_change]
     freq_div: u32,
 }
 

@@ -4,7 +4,7 @@ Project: AUTD Server
 Created Date: 07/07/2023
 Author: Shun Suzuki
 -----
-Last Modified: 21/08/2023
+Last Modified: 09/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,6 +42,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       adapters = ifnames
         .split("\n")
         .slice(1)
+        .filter(s => s)
         .map((line) => line.trim().split("\t").join(","));
     } catch (err) {
       adapters = [];

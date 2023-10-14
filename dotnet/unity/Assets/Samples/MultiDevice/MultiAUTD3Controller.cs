@@ -4,7 +4,7 @@
  * Created Date: 27/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/08/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ public class MultiAUTD3Controller : MonoBehaviour
 
         try
         {
-            _autd = builder.OpenWith(new AUTD3Sharp.Link.Simulator(8080));
+            _autd = builder.OpenWith(AUTD3Sharp.Link.Simulator.Builder(8080));
         }
         catch (Exception)
         {
@@ -45,10 +45,6 @@ public class MultiAUTD3Controller : MonoBehaviour
             UnityEngine.Application.Quit();
 #endif
         }
-
-        _autd!.Send(new Clear());
-
-        _autd!.Send(new Synchronize());
 
         _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 

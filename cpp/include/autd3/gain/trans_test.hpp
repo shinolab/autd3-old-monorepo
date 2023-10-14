@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,12 +26,9 @@ namespace autd3::gain {
 /**
  * @brief Gain to test
  */
-class TransducerTest final : public internal::Gain {
+class TransducerTest final : public internal::Gain, public IntoCache<TransducerTest>, public IntoTransform<TransducerTest> {
  public:
   TransducerTest() = default;
-
-  AUTD3_IMPL_WITH_CACHE_GAIN(TransducerTest)
-  AUTD3_IMPL_WITH_TRANSFORM_GAIN(TransducerTest)
 
   void set(const size_t dev_idx, const size_t tr_idx, const double phase, const double amp) & {
     _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
@@ -44,8 +41,7 @@ class TransducerTest final : public internal::Gain {
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return std::accumulate(_props.cbegin(), _props.cend(), internal::native_methods::AUTDGainTransducerTest(),
                            [](const internal::native_methods::GainPtr acc, const Prop& p) {
-                             return AUTDGainTransducerTestSet(acc, static_cast<uint32_t>(p.dev_idx),
-                                                                                        static_cast<uint32_t>(p.tr_idx), p.phase, p.amp);
+                             return AUTDGainTransducerTestSet(acc, static_cast<uint32_t>(p.dev_idx), static_cast<uint32_t>(p.tr_idx), p.phase, p.amp);
                            });
   }
 

@@ -3,13 +3,15 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 10/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <chrono>
 
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -48,50 +50,36 @@ class Modulation : public Datagram {
   }
 };
 
-#define AUTD3_IMPL_WITH_CACHE_MODULATION                                                                       \
-  [[nodiscard]] autd3::modulation::Cache with_cache()&& { return autd3::modulation::Cache(std::move(*this)); } \
-  [[nodiscard]] autd3::modulation::Cache with_cache()& { return autd3::modulation::Cache(*this); }
+template <class M>
+class ModulationWithFreqDiv : public Modulation {
+ protected:
+  std::optional<uint32_t> _freq_div;
 
-#define AUTD3_IMPL_WITH_TRANSFORM_MODULATION(TYPE)                                     \
-  template <typename _F>                                                               \
-  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)&& { \
-    return autd3::modulation::Transform(std::move(*this), f);                          \
-  }                                                                                    \
-  template <typename _F>                                                               \
-  [[nodiscard]] autd3::modulation::Transform<TYPE, _F> with_transform(const _F& f)& {  \
-    return autd3::modulation::Transform(*this, f);                                     \
+ public:
+  void with_sampling_frequency_division(const uint32_t div) & { _freq_div = div; }
+  [[nodiscard]] M&& with_sampling_frequency_division(const uint32_t div) && {
+    _freq_div = div;
+    return std::move(*static_cast<M*>(this));
   }
-
-#define AUTD3_IMPL_WITH_RADIATION_PRESSURE(TYPE)                                         \
-  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()&& { \
-    return autd3::modulation::RadiationPressure(std::move(*this));                       \
-  }                                                                                      \
-  [[nodiscard]] autd3::modulation::RadiationPressure<TYPE> with_radiation_pressure()& { return autd3::modulation::RadiationPressure(*this); }
-
-#define AUTD3_IMPL_MOD_PROP(TYPE)                                                                                                     \
-  void with_sampling_frequency_division(const uint32_t div)& { _freq_div = div; }                                                     \
-  [[nodiscard]] TYPE&& with_sampling_frequency_division(const uint32_t div)&& {                                                       \
-    _freq_div = div;                                                                                                                  \
-    return std::move(*this);                                                                                                          \
-  }                                                                                                                                   \
-  void with_sampling_frequency(const double freq)& {                                                                                  \
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq)); \
-  }                                                                                                                                   \
-  [[nodiscard]] TYPE&& with_sampling_frequency(const double freq)&& {                                                                 \
-    return std::move(*this).with_sampling_frequency_division(                                                                         \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));                              \
-  }                                                                                                                                   \
-  template <typename Rep, typename Period>                                                                                            \
-  void with_sampling_period(const std::chrono::duration<Rep, Period> period)& {                                                       \
-    with_sampling_frequency_division(                                                                                                 \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
-                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
-  }                                                                                                                                   \
-  template <typename Rep, typename Period>                                                                                            \
-  [[nodiscard]] TYPE&& with_sampling_period(const std::chrono::duration<Rep, Period> period)&& {                                      \
-    return std::move(*this).with_sampling_frequency_division(                                                                         \
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *                       \
-                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));            \
+  void with_sampling_frequency(const double freq) & {
+    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
   }
+  [[nodiscard]] M&& with_sampling_frequency(const double freq) && {
+    return std::move(*this).with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+  template <typename Rep, typename Period>
+  void with_sampling_period(const std::chrono::duration<Rep, Period> period) & {
+    with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *
+                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
+  }
+  template <typename Rep, typename Period>
+  [[nodiscard]] M&& with_sampling_period(const std::chrono::duration<Rep, Period> period) && {
+    return std::move(*this).with_sampling_frequency_division(
+        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / 1000000000.0 *
+                              static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
+  }
+};
 
 }  // namespace autd3::internal

@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 05/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -277,7 +277,7 @@ impl DynamicDatagram for FocusSTM {
         let freq_div = self.sampling_frequency_division();
         Ok((
             Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(
-                self.take_control_points(),
+                self.clear(),
                 freq_div,
                 self.start_idx(),
                 self.finish_idx(),
@@ -306,7 +306,7 @@ impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
         Ok((
             Box::new(DynamicGainSTMOp::new(
                 mode,
-                self.take_gains(),
+                self.clear(),
                 self.mode(),
                 freq_div,
                 self.start_idx(),

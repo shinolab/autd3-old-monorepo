@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ impl<T: Transducer> Gain<T> for MyUniform {
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
             phase: 0.0,
-            amp: 1.0,
+            amp: Amplitude::MAX,
         }))
     }
 }
@@ -60,10 +60,7 @@ impl Modulation for Burst {
     }
 }
 
-pub fn custom<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> anyhow::Result<bool>
-where
-    autd3_driver::operation::GainOp<T, MyUniform>: autd3_driver::operation::Operation<T>,
-{
+pub fn custom<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
     autd.send(Silencer::disable())?;
 
     let g = MyUniform::new();

@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@ use autd3_driver::derive::prelude::*;
 #[derive(Modulation)]
 pub struct Transform<M: Modulation, F: Fn(usize, float) -> float> {
     m: M,
+    #[no_change]
     freq_div: u32,
     f: F,
 }

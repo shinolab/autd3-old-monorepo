@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -32,6 +32,7 @@ impl NativeTimerWrapper {
         }
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     pub fn start<P>(
         &mut self,
         cb: WAITORTIMERCALLBACK,
@@ -63,6 +64,7 @@ impl NativeTimerWrapper {
         }
     }
 
+    #[cfg_attr(coverage_nightly, no_coverage)]
     pub fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             if !self.h_timer.is_invalid() {

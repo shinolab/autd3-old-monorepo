@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 14/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,6 +49,17 @@ impl ToMessage for autd3_driver::geometry::Quaternion {
             x: self.coords.x as _,
             y: self.coords.y as _,
             z: self.coords.z as _,
+        }
+    }
+}
+
+impl ToMessage for autd3_driver::common::Amplitude {
+    type Message = Amplitude;
+
+    #[allow(clippy::unnecessary_cast)]
+    fn to_msg(&self) -> Self::Message {
+        Self::Message {
+            value: self.value() as _,
         }
     }
 }
@@ -123,7 +134,6 @@ impl ToMessage for autd3::modulation::Static {
             datagram: Some(datagram::Datagram::Modulation(Modulation {
                 modulation: Some(modulation::Modulation::Static(Static {
                     amp: self.amp() as _,
-                    freq_div: self.sampling_frequency_division() as _,
                 })),
             })),
         }
@@ -193,7 +203,7 @@ impl ToMessage for autd3::gain::Focus {
         Self::Message {
             datagram: Some(datagram::Datagram::Gain(Gain {
                 gain: Some(gain::Gain::Focus(Focus {
-                    amp: self.amp() as _,
+                    amp: Some(self.amp().to_msg()),
                     pos: Some(self.pos().to_msg()),
                 })),
             })),
@@ -209,7 +219,7 @@ impl ToMessage for autd3::gain::Bessel {
         Self::Message {
             datagram: Some(datagram::Datagram::Gain(Gain {
                 gain: Some(gain::Gain::Bessel(Bessel {
-                    amp: self.amp() as _,
+                    amp: Some(self.amp().to_msg()),
                     pos: Some(self.pos().to_msg()),
                     dir: Some(self.dir().to_msg()),
                     theta: self.theta() as _,
@@ -239,7 +249,7 @@ impl ToMessage for autd3::gain::Plane {
         Self::Message {
             datagram: Some(datagram::Datagram::Gain(Gain {
                 gain: Some(gain::Gain::Plane(Plane {
-                    amp: self.amp() as _,
+                    amp: Some(self.amp().to_msg()),
                     dir: Some(self.dir().to_msg()),
                 })),
             })),
@@ -263,7 +273,7 @@ impl ToMessage for autd3::gain::TransducerTest {
                                 dev_idx: dev_idx as _,
                                 tr_idx: tr_idx as _,
                                 phase: phase as _,
-                                amp: amp as _,
+                                amp: Some(amp.to_msg()),
                             },
                         )
                         .collect(),
@@ -287,7 +297,7 @@ impl ToMessage for autd3_gain_holo::Constraint {
             },
             autd3_gain_holo::Constraint::Uniform(value) => Constraint {
                 constraint: Some(constraint::Constraint::Uniform(Uniform {
-                    value: *value as _,
+                    value: Some(value.to_msg()),
                 })),
             },
             autd3_gain_holo::Constraint::Clamp(min, max) => Constraint {
@@ -454,7 +464,7 @@ impl ToMessage for autd3_driver::datagram::Silencer {
     }
 }
 
-impl ToMessage for autd3_driver::cpu::RxDatagram {
+impl ToMessage for Vec<autd3_driver::cpu::RxMessage> {
     type Message = RxMessage;
 
     fn to_msg(&self) -> Self::Message {
@@ -518,11 +528,12 @@ impl ToMessage for autd3_driver::datagram::UpdateFlags {
     }
 }
 
-impl FromMessage<RxMessage> for autd3_driver::cpu::RxDatagram {
+impl FromMessage<RxMessage> for Vec<autd3_driver::cpu::RxMessage> {
     fn from_msg(msg: &RxMessage) -> Self {
-        let mut rx = autd3_driver::cpu::RxDatagram::new(
-            msg.data.len() / std::mem::size_of::<autd3_driver::cpu::RxMessage>(),
-        );
+        let mut rx = vec![
+            autd3_driver::cpu::RxMessage { ack: 0, data: 0 };
+            msg.data.len() / std::mem::size_of::<autd3_driver::cpu::RxMessage>()
+        ];
         unsafe {
             std::ptr::copy_nonoverlapping(msg.data.as_ptr(), rx.as_mut_ptr() as _, msg.data.len());
         }
@@ -546,12 +557,17 @@ impl FromMessage<Quaternion> for autd3_driver::geometry::UnitQuaternion {
     }
 }
 
+impl FromMessage<Amplitude> for autd3_driver::common::Amplitude {
+    #[allow(clippy::unnecessary_cast)]
+    fn from_msg(msg: &Amplitude) -> Self {
+        Self::new_clamped(msg.value as _)
+    }
+}
+
 impl FromMessage<Static> for autd3::modulation::Static {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Static) -> Self {
-        Self::new()
-            .with_amp(msg.amp as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
+        Self::new().with_amp(msg.amp as _)
     }
 }
 
@@ -592,7 +608,9 @@ impl FromMessage<Focus> for autd3::gain::Focus {
         Self::new(autd3_driver::geometry::Vector3::from_msg(
             msg.pos.as_ref().unwrap(),
         ))
-        .with_amp(msg.amp as _)
+        .with_amp(autd3_driver::common::Amplitude::from_msg(
+            msg.amp.as_ref().unwrap(),
+        ))
     }
 }
 
@@ -604,7 +622,9 @@ impl FromMessage<Bessel> for autd3::gain::Bessel {
             autd3_driver::geometry::Vector3::from_msg(msg.dir.as_ref().unwrap()),
             msg.theta as _,
         )
-        .with_amp(msg.amp as _)
+        .with_amp(autd3_driver::common::Amplitude::from_msg(
+            msg.amp.as_ref().unwrap(),
+        ))
     }
 }
 
@@ -620,7 +640,9 @@ impl FromMessage<Plane> for autd3::gain::Plane {
         Self::new(autd3_driver::geometry::Vector3::from_msg(
             msg.dir.as_ref().unwrap(),
         ))
-        .with_amp(msg.amp as _)
+        .with_amp(autd3_driver::common::Amplitude::from_msg(
+            msg.amp.as_ref().unwrap(),
+        ))
     }
 }
 
@@ -628,7 +650,12 @@ impl FromMessage<TransducerTest> for autd3::gain::TransducerTest {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &TransducerTest) -> Self {
         msg.drives.iter().fold(Self::new(), |acc, v| {
-            acc.set(v.dev_idx as _, v.tr_idx as _, v.phase as _, v.amp as _)
+            acc.set(
+                v.dev_idx as _,
+                v.tr_idx as _,
+                v.phase as _,
+                autd3_driver::common::Amplitude::from_msg(v.amp.as_ref().unwrap()),
+            )
         })
     }
 }
@@ -638,7 +665,9 @@ impl FromMessage<Constraint> for autd3_gain_holo::Constraint {
         match &msg.constraint {
             Some(constraint::Constraint::DontCare(_)) => Self::DontCare,
             Some(constraint::Constraint::Normalize(_)) => Self::Normalize,
-            Some(constraint::Constraint::Uniform(uniform)) => Self::Uniform(uniform.value as _),
+            Some(constraint::Constraint::Uniform(uniform)) => Self::Uniform(
+                autd3_driver::common::Amplitude::from_msg(uniform.value.as_ref().unwrap()),
+            ),
             Some(constraint::Constraint::Clamp(clamp)) => {
                 Self::Clamp(clamp.min as _, clamp.max as _)
             }

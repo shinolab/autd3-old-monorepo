@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 10/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ namespace AUTD3Sharp.Modulation
         /// </summary>
         public Fourier(Sine sine)
         {
-            _components = new List<Sine>() { sine };
+            _components = new List<Sine> { sine };
         }
 
         public Fourier AddComponent(Sine sine)

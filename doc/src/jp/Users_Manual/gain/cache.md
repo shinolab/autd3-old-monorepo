@@ -9,7 +9,7 @@
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .open_with(autd3::link::NullLink {})?;
+#     .open_with(autd3::link::Nop::builder())?;
 # let g = Null::new();
 // gは何らかのGain
 let c = g.with_cache();

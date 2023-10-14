@@ -1,3 +1,15 @@
+# 16.0.0
+
+- Add `modulation::FIR` for C++/C#/Python
+- Add `link::Visualizer` for C++/C#/Python
+- Add `link::Simulator::update_geometry`
+- Add `Amplitude` and `DutyRatio` for more flexible amplitude specification
+- Remove `link::Debug`, `link::Log` and `link::Bundle`
+- Remove `link::SOEM::with_log*` methods, add `with_on_err` instead
+- Refactor internal code
+- Fix [#201](https://github.com/shinolab/autd3/issues/201): The results of Device::translate_to and Device::rotate_to are wrong
+- Fix [#202](https://github.com/shinolab/autd3/issues/202): Depending on the timing, Link::wait_msg_processed may fall into an infinite loop
+
 # 15.3.1
 
 - Fix [#199](https://github.com/shinolab/autd3/issues/199): Add Device::translate_to and Device::rotate_to

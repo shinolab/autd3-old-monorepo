@@ -4,7 +4,7 @@
  * Created Date: 02/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 06/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,12 @@
 
 use anyhow::Result;
 
-use autd3::link::Debug;
 use autd3::prelude::*;
 
 fn main() -> Result<()> {
     let mut autd = Controller::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Debug::new())?;
+        .open_with(Nop::builder())?;
 
     let cx = autd.geometry().center().x;
     let g1 = Focus::new(autd.geometry()[0].center() + Vector3::new(0., 0., 150.0 * MILLIMETER));

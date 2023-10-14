@@ -1,6 +1,6 @@
 [package]
 name = "autd3-driver"
-version = "15.3.1"
+version = "16.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -19,7 +19,6 @@ use_meter = []
 bitflags = "2.0.2"
 thiserror = "1.0.31"
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
-spdlog-rs = "0.3.10"
 bitvec = "1.0.1"
 serde = { version = "1.0.188", features = ["derive"] }
 
@@ -33,3 +32,5 @@ libc = "0.2.144"
 rand = "0.8.5"
 assert_approx_eq = "1.1.0"
 itertools = "0.11.0"
+memoffset = "0.9.0"
+serde_json = "1.0.107"
