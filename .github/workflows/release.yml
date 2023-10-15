@@ -542,7 +542,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
+          os: ${{ matrix.os }}
           cuda: false
           shaderc: true
 
