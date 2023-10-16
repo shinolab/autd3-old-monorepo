@@ -4,7 +4,7 @@
  * Created Date: 14/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 16/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,8 +46,8 @@ impl Amplitude {
     }
 }
 
-impl From<f64> for Amplitude {
-    fn from(value: f64) -> Self {
+impl From<float> for Amplitude {
+    fn from(value: float) -> Self {
         Amplitude::new_clamped(value)
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 16/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,18 +58,6 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
         &crate_path,
         true,
     )?;
-    gen::<CSharpGenerator, _, _>(
-        "../../dotnet/unity-linux/Assets/Scripts/NativeMethods",
-        &crate_path,
-        true,
-    )?;
-    if crate_path.as_ref().file_name().unwrap().to_str().unwrap() != "autd3capi-backend-cuda" {
-        gen::<CSharpGenerator, _, _>(
-            "../../dotnet/unity-mac/Assets/Scripts/NativeMethods",
-            &crate_path,
-            true,
-        )?;
-    }
 
     let out_file = Path::new("../../cpp/include/autd3/internal/native_methods").join(format!(
         "{}.h",

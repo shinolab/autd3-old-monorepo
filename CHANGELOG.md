@@ -1,3 +1,7 @@
+# 16.0.1
+
+- Fix [#204](https://github.com/shinolab/autd3/issues/204): no binary found in linux arm packages
+
 # 16.0.0
 
 - Add `modulation::FIR` for C++/C#/Python
