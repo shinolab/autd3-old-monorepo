@@ -32,7 +32,7 @@ jobs:
   build-src:
     needs: check-src
     if: needs.check-src.outputs.status
-    name: build-src-${{ matrix.os }}
+    name: build-src
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

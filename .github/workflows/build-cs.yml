@@ -30,7 +30,7 @@ jobs:
   build:
     needs: check
     if: needs.check.outputs.status
-    name: build-cs-${{ matrix.os }}
+    name: build-cs
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -71,7 +71,7 @@ jobs:
   build-unity:
     needs: check
     if: needs.check.outputs.status
-    name: build-unity-${{ matrix.os }}
+    name: build-unity
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
