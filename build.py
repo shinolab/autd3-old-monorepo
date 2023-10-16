@@ -204,7 +204,7 @@ def rust_test(args):
         commands.append('--release')
     if args.all:
         commands.append('--all')
-        if not args.cuda:
+        if not args.cuda or args.skip_cuda:
             commands.append('--exclude=autd3-backend-cuda')
         if not args.af:
             commands.append('--exclude=autd3-backend-arrayfire')
@@ -598,9 +598,11 @@ def unity_build(args):
             commands.append('--release')
         commands.append('--features')
         commands.append('left_handed use_meter')
+        subprocess.run(commands).check_returncode()
         os.chdir('../..')
 
-        shutil.copy('server/src-tauri/target/release/simulator.exe', f'{unity_dir}/Assets/Editor/autd_simulator.exe')
+        simulator_src = 'server/src-tauri/target/release/simulator.exe' if args.release else 'server/src-tauri/target/debug/simulator.exe'
+        shutil.copy(simulator_src, f'{unity_dir}/Assets/Editor/autd_simulator.exe')
         os.makedirs(f'{unity_dir}/Assets/Editor/assets', exist_ok=True)
         shutil.copy('server/simulator/assets/autd3.glb', f'{unity_dir}/Assets/Editor/assets/autd3.glb')
 
@@ -848,6 +850,7 @@ if __name__ == '__main__':
         # test (rust)
         parser_test = subparsers.add_parser('test', help='see `test -h`')
         parser_test.add_argument('--all', action='store_true', help='test all crates')
+        parser_test.add_argument('--skip-cuda', action='store_true', help='force skip cuda test')
         parser_test.add_argument('--release', action='store_true', help='release build')
         parser_test.set_defaults(handler=rust_test)
 
