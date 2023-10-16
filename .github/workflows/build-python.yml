@@ -52,11 +52,6 @@ jobs:
         run: |
           python3 -m pip install -U mypy numpy build wheel pytest
 
-      - name: Check types
-        run: |
-          cd python
-          python3 -m mypy pyautd3
-
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -69,19 +64,10 @@ jobs:
           os: ${{ matrix.os }}
           cuda: true
 
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
+      - name: Build python library on ${{ matrix.os }}
         run: |
-          cd python
-          ./build.ps1
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os != 'windows-latest'
-        run: |
-          cd python
-          chmod +x build.sh
-          ./build.sh
+          python3 build.py python build --no-install
 
-      - name: Build capi on ${{ matrix.os }}
+      - name: Test python library on ${{ matrix.os }}
         run: |
-          cd python
-          python3 -m pytest
+          python3 build.py python test

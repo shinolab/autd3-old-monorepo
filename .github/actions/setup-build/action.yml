@@ -92,21 +92,6 @@ runs:
         sudo apt-get update
         sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
         rustup target add armv7-unknown-linux-gnueabihf
-    - name: setup linker for arm32 target
-      shell: bash
-      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'arm32'
-      run: |
-        cd src
-        mkdir .cargo
-        touch .cargo/config
-        echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
-        echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
-
-        cd ../capi
-        mkdir .cargo
-        touch .cargo/config
-        echo "[target.armv7-unknown-linux-gnueabihf]" >> .cargo/config
-        echo "linker = \"arm-linux-gnueabihf-gcc\"" >> .cargo/config
 
     - name: install arm64 target on linux
       shell: bash
@@ -115,18 +100,3 @@ runs:
         sudo apt-get update
         sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         rustup target add aarch64-unknown-linux-gnu
-    - name: setup linker for arm64 target
-      shell: bash
-      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'aarch64'
-      run: |
-        cd src
-        mkdir .cargo
-        touch .cargo/config
-        echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
-        echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config
-
-        cd ../capi
-        mkdir .cargo
-        touch .cargo/config
-        echo "[target.aarch64-unknown-linux-gnu]" >> .cargo/config
-        echo "linker = \"aarch64-linux-gnu-gcc\"" >> .cargo/config

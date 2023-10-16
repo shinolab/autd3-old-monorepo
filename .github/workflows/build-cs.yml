@@ -56,32 +56,14 @@ jobs:
         with:
           workspaces: './capi -> target'
 
-      - name: Build capi
+      - name: Build cs library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs
-          ./build.ps1
-        if: matrix.os == 'windows-latest'
-      - name: Build capi
-        run: |
-          cd dotnet/cs
-          chmod +x build.sh
-          ./build.sh
-        if: matrix.os != 'windows-latest'
+          python3 build.py cs build
 
-      - name: Build library
+      - name: Test library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs/src
-          dotnet build -c:Release
+          python3 build.py cs test
 
-      - name: Test library
+      - name: Build fs library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs/tests
-          dotnet test
-
-      - name: Build example
-        run: |
-          dotnet nuget add source ${{ github.workspace }}/dotnet/cs/src/bin/Release -n autd3sharp_local
-          cd dotnet/cs/example
-          dotnet build -c:Release
-          cd ../../fs/example
-          dotnet build -c:Release
+          python3 build.py fs build

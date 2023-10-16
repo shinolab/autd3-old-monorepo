@@ -22,7 +22,7 @@ criterion = { version = "0.5.1", features = ["html_reports"], optional = true }
 bitvec = { version = "1.0.1", optional = true }
 
 [features]
-default = ["test-utilities"]
+default = []
 single_float = ["autd3-driver/single_float"]
 use_meter = ["autd3-driver/use_meter"]
 test-utilities = ["autd3", "criterion", "assert_approx_eq", "bitvec"]
