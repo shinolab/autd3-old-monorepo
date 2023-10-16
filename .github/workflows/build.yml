@@ -55,9 +55,8 @@ jobs:
           workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
         run: |
-          python build.py build --all
+          python3 build.py test --all --release
 
   build-linux-arm32-src:
     needs: check-src
@@ -85,7 +84,7 @@ jobs:
 
       - name: Test src on ${{ matrix.os }}
         run: |
-          python build.py build --all --arch arm32
+          python3 build.py build --all --arch arm32 --release
 
   build-linux-aarch64-src:
     needs: check-src
@@ -112,7 +111,7 @@ jobs:
 
       - name: Test src on ${{ matrix.os }}
         run: |
-          python build.py build --all --arch aarch64
+          python3 build.py build --all --arch aarch64 --release
 
   lint-src:
     needs: check-src
@@ -136,7 +135,7 @@ jobs:
 
       - name: lint src
         run: |
-          python build.py lint
+          python3 build.py lint --release
 
   check-server:
     runs-on: ubuntu-latest

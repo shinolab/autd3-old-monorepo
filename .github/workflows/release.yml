@@ -152,9 +152,7 @@ jobs:
 
       - name: Build project x64
         run: |
-          cd cpp
-          ./build.ps1
-          cd ..
+          python3 build.py cpp build --release --no-examples
           Compress-Archive -Path LICENSE, cpp/bin, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md, cpp/ThirdPartyNotice.txt -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
@@ -175,10 +173,17 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}-x64.zip
           asset_content_type: application/zip
 
+      - name: Publish pypi
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U twine wheel build
+          python3 build.py --release --no-install
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
+
       - name: Build project x64 for Unity
         run: |
-          cd dotnet/unity
-          ./build.ps1
+          python3 build.py unity build
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -194,6 +199,7 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
 
   publish_linux:
     needs: [release]
@@ -221,10 +227,7 @@ jobs:
 
       - name: Build project x64
         run: |
-          cp LICENSE cpp/
-          cd cpp
-          chmod +x build.sh
-          ./build.sh
+          python3 build.py cpp build --release --no-examples
           tar -zcvf assets_x64.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
         shell: bash
       - name: Load Release URL File from release job
@@ -246,11 +249,17 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}-x64.tar.gz
           asset_content_type: application/octet-stream
 
+      - name: Publish pypi
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U twine wheel build
+          python3 build.py --release --no-install
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
+
       - name: Build project for Unity
         run: |
-          cd dotnet/unity-linux
-          chmod +x ./build.sh
-          ./build.sh
+          python3 build.py unity build
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -292,10 +301,7 @@ jobs:
 
       - name: Build project arm32
         run: |
-          cp LICENSE cpp/
-          cd cpp
-          chmod +x build-arm32.sh
-          ./build-arm32.sh
+          python3 build.py cpp build --release --no-examples -arch arm32
           tar -zcvf assets_arm32.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
         shell: bash
       - name: Load Release URL File from release job
@@ -316,6 +322,14 @@ jobs:
           asset_path: ./cpp/assets_arm32.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}-armv7.tar.gz
           asset_content_type: application/octet-stream
+    
+      - name: Publish pypi
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U twine wheel build
+          python3 build.py --release --no-install -arch arm32
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
   
   publish_linux-aarch64:
     needs: [release]
@@ -342,10 +356,7 @@ jobs:
 
       - name: Build project aarch64
         run: |
-          cp LICENSE cpp/
-          cd cpp
-          chmod +x build-aarch64.sh
-          ./build-aarch64.sh
+          python3 build.py cpp build --release --no-examples -arch aarch64
           tar -zcvf assets_aarch64.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
         shell: bash
       - name: Load Release URL File from release job
@@ -366,6 +377,14 @@ jobs:
           asset_path: ./cpp/assets_aarch64.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}-aarch64.tar.gz
           asset_content_type: application/octet-stream
+    
+      - name: Publish pypi
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U twine wheel build
+          python3 build.py --release --no-install -arch aarch64
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
   
   publish_mac:
     needs: [release]
@@ -392,10 +411,7 @@ jobs:
 
       - name: Build project
         run: |
-          cp LICENSE cpp/
-          cd cpp
-          chmod +x build.sh
-          ./build.sh
+          python3 build.py cpp build --release --no-examples --universal
           tar -zcvf assets.tar.gz bin include CMakeLists.txt LICENSE README.md ThirdPartyNotice.txt
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
@@ -416,11 +432,17 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}
           asset_content_type: application/octet-stream
 
+      - name: Publish pypi
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U twine wheel build
+          python3 build.py --release --no-install --universal
+          cd python
+          twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
+
       - name: Build project for Unity
         run: |
-          cd dotnet/unity-mac
-          chmod +x ./build.sh
-          ./build.sh
+          python3 build.py unity build
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -436,55 +458,6 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish_pypi:
-    name: publish-python-${{ matrix.os }}
-    needs: [build, publish_win, publish_linux, publish_mac]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.12
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -U  twine wheel build
-        cd python
-        python download_bin.py
-    - name: Build whl
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cd python
-        cp -f setup.cfg.linux-x86_64 setup.cfg
-        python -m build -w
-        cp -f setup.cfg.linux-armv7 setup.cfg
-        python -m build -w
-        cp -f setup.cfg.linux-aarch64 setup.cfg
-        python -m build -w
-    - name: Build whl
-      if: matrix.os == 'windows-latest'
-      run: |
-        cd python
-        cp setup.cfg.win-amd64 setup.cfg -Force
-        python -m build -w
-    - name: Build whl
-      if: matrix.os == 'macos-latest'
-      run: |
-        cd python
-        cp -f setup.cfg.mac-x86_64 setup.cfg
-        python -m build -w
-        cp -f setup.cfg.mac-aarch64 setup.cfg
-        python -m build -w
-    - name: Publish
-      run: |
-        cd python
-        twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_nuget:
     name: publish-nuget
