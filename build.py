@@ -370,6 +370,8 @@ def cpp_build(args):
         for lib in glob.glob(f'{target}/*.so'):
             shutil.copy(lib, 'cpp/bin')
 
+    shutil.copyfile('LICENSE', 'cpp/LICENSE')
+    shutil.copyfile('README.md', 'cpp/README.md')
     shutil.copyfile('capi/ThirdPartyNotice.txt', 'cpp/ThirdPartyNotice.txt')
 
     if not args.no_examples:
