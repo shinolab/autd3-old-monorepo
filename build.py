@@ -204,7 +204,7 @@ def rust_test(args):
         commands.append('--release')
     if args.all:
         commands.append('--all')
-        if not args.cuda and not args.skip_cuda:
+        if not args.cuda or args.skip_cuda:
             commands.append('--exclude=autd3-backend-cuda')
         if not args.af:
             commands.append('--exclude=autd3-backend-arrayfire')
