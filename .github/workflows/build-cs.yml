@@ -30,7 +30,7 @@ jobs:
   build:
     needs: check
     if: needs.check.outputs.status
-    name: build-cs-${{ matrix.os }}
+    name: build-cs
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -56,32 +56,47 @@ jobs:
         with:
           workspaces: './capi -> target'
 
-      - name: Build capi
+      - name: Build cs library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs
-          ./build.ps1
-        if: matrix.os == 'windows-latest'
-      - name: Build capi
-        run: |
-          cd dotnet/cs
-          chmod +x build.sh
-          ./build.sh
-        if: matrix.os != 'windows-latest'
+          python3 build.py cs build --release
 
-      - name: Build library
+      - name: Test library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs/src
-          dotnet build -c:Release
+          python3 build.py cs test
 
-      - name: Test library
+      - name: Build fs library on ${{ matrix.os }}
         run: |
-          cd dotnet/cs/tests
-          dotnet test
+          python3 build.py fs build --release
 
-      - name: Build example
+  build-unity:
+    needs: check
+    if: needs.check.outputs.status
+    name: build-unity
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ${{ matrix.os }}
+          cuda: true
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Build unity library on ${{ matrix.os }}
         run: |
-          dotnet nuget add source ${{ github.workspace }}/dotnet/cs/src/bin/Release -n autd3sharp_local
-          cd dotnet/cs/example
-          dotnet build -c:Release
-          cd ../../fs/example
-          dotnet build -c:Release
+          python3 build.py unity build --release

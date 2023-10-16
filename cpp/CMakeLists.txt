@@ -4,7 +4,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
 endif()
 
-project(autd3 VERSION 16.0.0)
+project(autd3 VERSION 16.0.1)
 
 message(STATUS "Build AUTD3: ${PROJECT_VERSION}")
 
@@ -16,6 +16,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 option(USE_SYSTEM_EIGEN OFF)
 option(ENABLE_BACKEND_CUDA ON)
+option(ENABLE_LINK_VISUALIZER ON)
 
 if(USE_SYSTEM_EIGEN)
   find_package(Eigen REQUIRED)
@@ -89,7 +90,9 @@ else()
   target_link_libraries(autd3 INTERFACE autd3capi_link_soem)
   target_link_libraries(autd3 INTERFACE autd3capi_link_twincat)
   target_link_libraries(autd3 INTERFACE autd3capi_link_simulator)
-  target_link_libraries(autd3 INTERFACE autd3capi_link_visualizer)
+  if(ENABLE_LINK_VISUALIZER)
+    target_link_libraries(autd3 INTERFACE autd3capi_link_visualizer)
+  endif()
   if(APPLE)
   else()
     if(ENABLE_BACKEND_CUDA)
