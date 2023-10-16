@@ -12,20 +12,20 @@ author_email = suzuki@hapis.k.u-tokyo.ac.jp
 url = https://github.com/shinolab/autd3
 classifiers =
     Programming Language :: Python :: 3
-    Operating System :: MacOS :: MacOS X
+    ${classifiers_os}
     License :: OSI Approved :: MIT License
 
 [options]
 packages = 
     pyautd3
     pyautd3.bin
-    pyautd3.native_methods
-    pyautd3.internal
     pyautd3.gain
     pyautd3.gain.holo
+    pyautd3.internal
+    pyautd3.link
     pyautd3.modulation
     pyautd3.modulation.audio_file
-    pyautd3.link
+    pyautd3.native_methods
     pyautd3.stm
 python_requires = >=3.10
 include_package_data = True
@@ -33,4 +33,4 @@ install_requires =
     numpy
 
 [bdist_wheel]
-plat_name = macosx-10-13-x86_64
+plat_name = ${plat_name}

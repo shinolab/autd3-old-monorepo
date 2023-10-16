@@ -51,51 +51,72 @@ jobs:
         with:
           workspaces: './capi -> target'
 
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
+      - name: Build C++ library on ${{ matrix.os }}
         run: |
-          cd cpp
-          ./build.ps1
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os != 'windows-latest'
-        run: |
-          cd cpp
-          chmod +x build.sh
-          ./build.sh
-
-      - name: Build C++ example on ${{ matrix.os }}
-        run: |
-          cd cpp/examples
-          mkdir build
-          cd build
-          cmake .. -DAUTD_LOCAL_TEST=ON -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12
-          cmake --build . --config Release
+          python3 build.py cpp build --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
         if: matrix.os == 'macos-latest'
-      - name: Build C++ example on ${{ matrix.os }}
+      - name: Build C++ library on ${{ matrix.os }}
         run: |
-          cd cpp/examples
-          mkdir build
-          cd build
-          cmake .. -DAUTD_LOCAL_TEST=ON
-          cmake --build . --config Release
+          python3 build.py cpp build
         if: matrix.os != 'macos-latest'
 
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          cd cpp/tests
-          mkdir build
-          cd build
-          cmake .. -DENABLE_BACKEND_CUDA=OFF
-          cmake --build . --config Release
-          ./Release/test_autd3.exe
-        if: matrix.os == 'windows-latest'
-
+          python3 build.py cpp test --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+        if: matrix.os == 'macos-latest'
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          cd cpp/tests
-          mkdir build
-          cd build
-          cmake .. -DENABLE_BACKEND_CUDA=OFF -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12
-          cmake --build . --config Release
-          ./test_autd3
-        if: matrix.os != 'windows-latest'
+          python3 build.py cpp test
+        if: matrix.os != 'macos-latest'
+
+
+  build-linux-arm32:
+    needs: check
+    if: needs.check.outputs.status
+    name: build-cpp-linux-arm32
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: 'ubuntu-latest'
+          arch: 'arm32'
+          cuda: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Build C++ library on ${{ matrix.os }}
+        run: |
+          python3 build.py cpp build --arch arm32
+
+
+  build-linux-aarch64:
+    needs: check
+    if: needs.check.outputs.status
+    name: build-cpp-linux-aarch64
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: 'ubuntu-latest'
+          arch: 'aarch64'
+          cuda: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Build C++ library on ${{ matrix.os }}
+        run: |
+          python3 build.py cpp build --arch aarch64
