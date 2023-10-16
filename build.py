@@ -598,9 +598,11 @@ def unity_build(args):
             commands.append('--release')
         commands.append('--features')
         commands.append('left_handed use_meter')
+        subprocess.run(commands).check_returncode()
         os.chdir('../..')
 
-        shutil.copy('server/src-tauri/target/release/simulator.exe', f'{unity_dir}/Assets/Editor/autd_simulator.exe')
+        simulator_src = 'server/src-tauri/target/release/simulator.exe' if args.release else 'server/src-tauri/target/debug/simulator.exe'
+        shutil.copy(simulator_src, f'{unity_dir}/Assets/Editor/autd_simulator.exe')
         os.makedirs(f'{unity_dir}/Assets/Editor/assets', exist_ok=True)
         shutil.copy('server/simulator/assets/autd3.glb', f'{unity_dir}/Assets/Editor/assets/autd3.glb')
 
