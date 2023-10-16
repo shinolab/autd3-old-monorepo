@@ -6,7 +6,7 @@ The license terms for each of these components are provided later in this notice
 
 ---------------------------------------------------------
 
-SOEMAUTDServer 16.0.0 (MIT)
+SOEMAUTDServer 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -28,10 +28,6 @@ https://github.com/RumovZ/android-tzdata
 
 android_system_properties 0.1.5 (Apache-2.0 OR MIT)
 https://github.com/nical/android_system_properties
----------------------------------------------------------
-
-anes 0.1.6 (Apache-2.0 OR MIT)
-https://github.com/zrzka/anes-rs
 ---------------------------------------------------------
 
 anstream 0.6.4 (Apache-2.0 OR MIT)
@@ -62,10 +58,6 @@ approx 0.5.1 (Apache-2.0)
 https://github.com/brendanzab/approx
 ---------------------------------------------------------
 
-assert_approx_eq 1.1.0 (Apache-2.0 OR MIT)
-https://github.com/ashleygwilliams/assert_approx_eq.git
----------------------------------------------------------
-
 async-stream 0.3.5 (MIT)
 https://github.com/tokio-rs/async-stream
 ---------------------------------------------------------
@@ -78,27 +70,27 @@ async-trait 0.1.73 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/async-trait
 ---------------------------------------------------------
 
-autd3 16.0.0 (MIT)
+autd3 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 16.0.0 (MIT)
+autd3-derive 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 16.0.0 (MIT)
+autd3-driver 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 16.0.0 (MIT)
+autd3-firmware-emulator 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 16.0.0 (MIT)
+autd3-gain-holo 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 16.0.0
+autd3-link-soem 16.0.1
 https://github.com/shinolab/autd3
 
 ---
@@ -164,7 +156,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-protobuf 16.0.0 (MIT)
+autd3-protobuf 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -212,10 +204,6 @@ bytes 1.5.0 (MIT)
 https://github.com/tokio-rs/bytes
 ---------------------------------------------------------
 
-cast 0.3.0 (Apache-2.0 OR MIT)
-https://github.com/japaric/cast.rs
----------------------------------------------------------
-
 cc 1.0.83 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/cc-rs
 ---------------------------------------------------------
@@ -226,18 +214,6 @@ https://github.com/alexcrichton/cfg-if
 
 chrono 0.4.31 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
----------------------------------------------------------
-
-ciborium 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-io 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-ll 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
 ---------------------------------------------------------
 
 clap 4.4.6 (Apache-2.0 OR MIT)
@@ -264,23 +240,7 @@ core-foundation-sys 0.8.4 (Apache-2.0 OR MIT)
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-criterion 0.5.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
-criterion-plot 0.5.0 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
 crossbeam-channel 0.5.8 (Apache-2.0 OR MIT)
-https://github.com/crossbeam-rs/crossbeam
----------------------------------------------------------
-
-crossbeam-deque 0.8.3 (Apache-2.0 OR MIT)
-https://github.com/crossbeam-rs/crossbeam
----------------------------------------------------------
-
-crossbeam-epoch 0.9.15 (Apache-2.0 OR MIT)
 https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
@@ -360,10 +320,6 @@ h2 0.3.21 (MIT)
 https://github.com/hyperium/h2
 ---------------------------------------------------------
 
-half 1.8.2 (Apache-2.0 OR MIT)
-https://github.com/starkat99/half-rs
----------------------------------------------------------
-
 hashbrown 0.12.3 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/hashbrown
 ---------------------------------------------------------
@@ -424,14 +380,6 @@ indexmap 2.0.2 (Apache-2.0 OR MIT)
 https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
-is-terminal 0.4.9 (MIT)
-https://github.com/sunfishcode/is-terminal
----------------------------------------------------------
-
-itertools 0.10.5 (Apache-2.0 OR MIT)
-https://github.com/rust-itertools/itertools
----------------------------------------------------------
-
 itertools 0.11.0 (Apache-2.0 OR MIT)
 https://github.com/rust-itertools/itertools
 ---------------------------------------------------------
@@ -474,10 +422,6 @@ https://github.com/bluss/matrixmultiply/
 
 memchr 2.6.4 (MIT OR Unlicense)
 https://github.com/BurntSushi/memchr
----------------------------------------------------------
-
-memoffset 0.9.0 (MIT)
-https://github.com/Gilnaa/memoffset
 ---------------------------------------------------------
 
 mime 0.3.17 (Apache-2.0 OR MIT)
@@ -548,10 +492,6 @@ once_cell 1.18.0 (Apache-2.0 OR MIT)
 https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
-oorandom 11.1.3 (MIT)
-https://sr.ht/~icefox/oorandom/
----------------------------------------------------------
-
 overload 0.1.1 (MIT)
 https://github.com/danaugrs/overload
 ---------------------------------------------------------
@@ -582,18 +522,6 @@ https://github.com/taiki-e/pin-project-lite
 
 pin-utils 0.1.0 (Apache-2.0 OR MIT)
 https://github.com/rust-lang-nursery/pin-utils
----------------------------------------------------------
-
-plotters 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters
----------------------------------------------------------
-
-plotters-backend 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters
----------------------------------------------------------
-
-plotters-svg 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters.git
 ---------------------------------------------------------
 
 ppv-lite86 0.2.17 (Apache-2.0 OR MIT)
@@ -648,14 +576,6 @@ rawpointer 0.2.1 (Apache-2.0 OR MIT)
 https://github.com/bluss/rawpointer/
 ---------------------------------------------------------
 
-rayon 1.8.0 (Apache-2.0 OR MIT)
-https://github.com/rayon-rs/rayon
----------------------------------------------------------
-
-rayon-core 1.12.0 (Apache-2.0 OR MIT)
-https://github.com/rayon-rs/rayon
----------------------------------------------------------
-
 redox_syscall 0.3.5 (MIT)
 https://gitlab.redox-os.org/redox-os/syscall
 ---------------------------------------------------------
@@ -684,20 +604,8 @@ rustversion 1.0.14 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/rustversion
 ---------------------------------------------------------
 
-ryu 1.0.15 (Apache-2.0 OR BSL-1.0)
-https://github.com/dtolnay/ryu
----------------------------------------------------------
-
 safe_arch 0.7.1 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Lokathor/safe_arch
----------------------------------------------------------
-
-same-file 1.0.6 (MIT OR Unlicense)
-https://github.com/BurntSushi/same-file
----------------------------------------------------------
-
-scopeguard 1.2.0 (Apache-2.0 OR MIT)
-https://github.com/bluss/scopeguard
 ---------------------------------------------------------
 
 serde 1.0.189 (Apache-2.0 OR MIT)
@@ -706,10 +614,6 @@ https://github.com/serde-rs/serde
 
 serde_derive 1.0.189 (Apache-2.0 OR MIT)
 https://github.com/serde-rs/serde
----------------------------------------------------------
-
-serde_json 1.0.107 (Apache-2.0 OR MIT)
-https://github.com/serde-rs/json
 ---------------------------------------------------------
 
 sharded-slab 0.1.7 (MIT)
@@ -774,10 +678,6 @@ https://github.com/time-rs/time
 
 time-core 0.1.2 (Apache-2.0 OR MIT)
 https://github.com/time-rs/time
----------------------------------------------------------
-
-tinytemplate 1.2.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/TinyTemplate
 ---------------------------------------------------------
 
 tokio 1.33.0 (MIT)
@@ -860,10 +760,6 @@ valuable 0.1.0 (MIT)
 https://github.com/tokio-rs/valuable
 ---------------------------------------------------------
 
-walkdir 2.4.0 (MIT OR Unlicense)
-https://github.com/BurntSushi/walkdir
----------------------------------------------------------
-
 want 0.3.1 (MIT)
 https://github.com/seanmonstar/want
 ---------------------------------------------------------
@@ -892,10 +788,6 @@ wasm-bindgen-shared 0.2.87 (Apache-2.0 OR MIT)
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/shared
 ---------------------------------------------------------
 
-web-sys 0.3.64 (Apache-2.0 OR MIT)
-https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys
----------------------------------------------------------
-
 which 4.4.2 (MIT)
 https://github.com/harryfei/which-rs.git
 ---------------------------------------------------------
@@ -910,10 +802,6 @@ https://github.com/retep998/winapi-rs
 
 winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
 https://github.com/retep998/winapi-rs
----------------------------------------------------------
-
-winapi-util 0.1.6 (MIT OR Unlicense)
-https://github.com/BurntSushi/winapi-util
 ---------------------------------------------------------
 
 winapi-x86_64-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
@@ -1214,17 +1102,6 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
----------------------------------------------------------
-
-BSL-1.0
-
----
-
-Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the "Software") to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:
-
-The copyright notices in the Software and this entire statement, including the above license grant, this restriction and the following disclaimer, must be included in all copies of the Software, in whole or in part, and all derivative works of the Software, unless such copies or derivative works are solely in the form of machine-executable object code generated by a source language processor.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ---------------------------------------------------------
 
 LLVM-exception

@@ -32,7 +32,7 @@ jobs:
   build:
     needs: check
     if: needs.check.outputs.status
-    name: build-python-${{ matrix.python-version }}-${{ matrix.os }}
+    name: build-python
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
