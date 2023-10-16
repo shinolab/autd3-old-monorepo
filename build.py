@@ -382,7 +382,6 @@ def cpp_build(args):
 
 def cpp_test(args):
     args.release = True
-    args.universal = None
     args.arch = None
     args.no_examples = True
     cpp_build(args)
@@ -876,6 +875,7 @@ if __name__ == '__main__':
         # cpp test
         parser_cpp_test = subparsers_cpp.add_parser('test', help='see `cpp test -h`')
         parser_cpp_test.add_argument('--skip-cuda', action='store_true', help='force skip cuda test')
+        parser_cpp_test.add_argument('--universal', action='store_true', help='build universal binary (for macOS)')
         parser_cpp_test.add_argument('--cmake-extra', help='cmake extra args')
         parser_cpp_test.set_defaults(handler=cpp_test)
 
