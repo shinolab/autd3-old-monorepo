@@ -64,7 +64,7 @@ jobs:
 
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          python3 build.py cpp test --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+          python3 build.py cpp test --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
         if: matrix.os == 'macos-latest'
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
