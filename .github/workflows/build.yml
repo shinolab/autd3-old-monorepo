@@ -32,7 +32,7 @@ jobs:
   build-src:
     needs: check-src
     if: needs.check-src.outputs.status
-    name: build-src-${{ matrix.os }}
+    name: build-src
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -55,34 +55,9 @@ jobs:
           workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
         run: |
-          cd src
-          cargo build --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-link-soem 
-          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda --exclude autd3-link-soem 
-      - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cd src
-          cargo build --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire
-          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
-      - name: Test src on ${{ matrix.os }}
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd src
-          cargo build --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
-          cargo test --workspace --features "all test-utilities" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
-
-      - name: Build examples on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd src/examples
-          cargo build --bins --features "async visualizer gpu python lightweight remote_soem twincat remote_twincat simulator" 
-      - name: Build examples on ${{ matrix.os }}
-        if: matrix.os != 'windows-latest'
-        run: |
-          cd src/examples
-          cargo build --bins --features "soem async visualizer gpu python lightweight remote_soem twincat remote_twincat simulator"
+          python3 build.py build --all --release
+          python3 build.py test --all --release --skip-cuda
 
   build-linux-arm32-src:
     needs: check-src
@@ -108,15 +83,9 @@ jobs:
         with:
           workspaces: './src -> target'
 
-      - name: Build src
+      - name: Test src on ${{ matrix.os }}
         run: |
-          cd src
-          cargo build --target=armv7-unknown-linux-gnueabihf
-      
-      - name: Build examples
-        run: |
-          cd src/examples
-          cargo build --bins --features "soem async lightweight remote_soem twincat remote_twincat simulator" --target=armv7-unknown-linux-gnueabihf
+          python3 build.py build --all --arch arm32 --release
 
   build-linux-aarch64-src:
     needs: check-src
@@ -141,128 +110,9 @@ jobs:
         with:
           workspaces: './src -> target'
 
-      - name: Build src
+      - name: Test src on ${{ matrix.os }}
         run: |
-          cd src
-          cargo build --target=aarch64-unknown-linux-gnu
-      
-      - name: Build examples
-        run: |
-          cd src/examples
-          cargo build --bins --features "soem async lightweight remote_soem twincat remote_twincat simulator" --target=aarch64-unknown-linux-gnu
-
-  check-capi:
-    runs-on: ubuntu-latest
-    name: check if capi files changed
-    outputs:
-      status: ${{ steps.changed-files.outputs.modified_files }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v37
-        id: changed-files
-        with:
-          files: |
-            .github/actions/setup-build/action.yml
-            .github/workflows/build.yml
-            src/**/*.rs
-            src/*.toml
-            src/**/*.toml
-            src/**/*.proto
-            capi/**/*.rs
-            capi/*.toml
-
-  build-capi:
-    needs: check-capi
-    if: needs.check-capi.outputs.status
-    name: build-capi-${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
-          cuda: true
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './capi -> target'
-
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd capi
-          cargo test --workspace --exclude autd3capi-link-soem
-      - name: Build capi on ${{ matrix.os }}
-        if: matrix.os != 'windows-latest'
-        run: |
-          cd capi
-          cargo test --workspace --exclude autd3capi-backend-cuda
-
-  build-linux-arm32-capi:
-    needs: check-capi
-    if: needs.check-capi.outputs.status
-    name: build-capi-linux-arm32
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
-          arch: 'arm32'
-          cuda: false
-          shaderc: false
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './capi -> target'
-
-      - name: Build src
-        run: |
-          cd capi
-          cargo build --target=armv7-unknown-linux-gnueabihf
-
-  build-linux-aarch64-capi:
-    needs: check-capi
-    if: needs.check-capi.outputs.status
-    name: build-capi-linux-aarch64
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
-          arch: 'aarch64'
-          cuda: false
-          shaderc: false
-            
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './capi -> target'
-
-      - name: Build src
-        run: |
-          cd capi
-          cargo build --target=aarch64-unknown-linux-gnu
+          python3 build.py build --all --arch aarch64 --release
 
   lint-src:
     needs: check-src
@@ -286,33 +136,7 @@ jobs:
 
       - name: lint src
         run: |
-          cd src
-          cargo clippy --all --features all -- -D warnings
-
-  lint-capi:
-    needs: check-capi
-    if: needs.check-capi.outputs.status
-    name: lint-capi
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ubuntu-latest
-          cuda: true
-          shaderc: true
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './capi -> target'
-
-      - name: lint capi
-        run: |
-          cd capi
-          cargo clippy --all -- -D warnings
+          python3 build.py lint --release
 
   check-server:
     runs-on: ubuntu-latest

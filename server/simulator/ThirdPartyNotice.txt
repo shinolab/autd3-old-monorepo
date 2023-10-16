@@ -46,10 +46,6 @@ android_system_properties 0.1.5 (Apache-2.0 OR MIT)
 https://github.com/nical/android_system_properties
 ---------------------------------------------------------
 
-anes 0.1.6 (Apache-2.0 OR MIT)
-https://github.com/zrzka/anes-rs
----------------------------------------------------------
-
 anstream 0.6.4 (Apache-2.0 OR MIT)
 https://github.com/rust-cli/anstyle.git
 ---------------------------------------------------------
@@ -94,10 +90,6 @@ ash 0.37.3+1.3.251 (Apache-2.0 OR MIT)
 https://github.com/MaikKlein/ash
 ---------------------------------------------------------
 
-assert_approx_eq 1.1.0 (Apache-2.0 OR MIT)
-https://github.com/ashleygwilliams/assert_approx_eq.git
----------------------------------------------------------
-
 async-stream 0.3.5 (MIT)
 https://github.com/tokio-rs/async-stream
 ---------------------------------------------------------
@@ -114,27 +106,27 @@ atomic-polyfill 0.1.11 (Apache-2.0 OR MIT)
 https://github.com/embassy-rs/atomic-polyfill
 ---------------------------------------------------------
 
-autd3 16.0.0 (MIT)
+autd3 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 16.0.0 (MIT)
+autd3-derive 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 16.0.0 (MIT)
+autd3-driver 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 16.0.0 (MIT)
+autd3-firmware-emulator 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 16.0.0 (MIT)
+autd3-gain-holo 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 16.0.0 (MIT)
+autd3-protobuf 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -214,10 +206,6 @@ camera_controllers 0.34.0 (MIT)
 https://github.com/PistonDevelopers/camera_controllers.git
 ---------------------------------------------------------
 
-cast 0.3.0 (Apache-2.0 OR MIT)
-https://github.com/japaric/cast.rs
----------------------------------------------------------
-
 cc 1.0.83 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/cc-rs
 ---------------------------------------------------------
@@ -240,18 +228,6 @@ https://github.com/Lokathor/chlorine
 
 chrono 0.4.31 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
----------------------------------------------------------
-
-ciborium 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-io 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-ll 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
 ---------------------------------------------------------
 
 clap 4.4.6 (Apache-2.0 OR MIT)
@@ -300,14 +276,6 @@ https://github.com/servo/core-foundation-rs
 
 crc32fast 1.3.2 (Apache-2.0 OR MIT)
 https://github.com/srijs/rust-crc32fast
----------------------------------------------------------
-
-criterion 0.5.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
-criterion-plot 0.5.0 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
 ---------------------------------------------------------
 
 critical-section 1.1.2 (Apache-2.0 OR MIT)
@@ -485,10 +453,6 @@ h2 0.3.21 (MIT)
 https://github.com/hyperium/h2
 ---------------------------------------------------------
 
-half 1.8.2 (Apache-2.0 OR MIT)
-https://github.com/starkat99/half-rs
----------------------------------------------------------
-
 half 2.3.1 (Apache-2.0 OR MIT)
 https://github.com/starkat99/half-rs
 ---------------------------------------------------------
@@ -579,10 +543,6 @@ https://docs.rs/inflections
 
 instant 0.1.12 (BSD-3-Clause)
 https://github.com/sebcrozet/instant
----------------------------------------------------------
-
-is-terminal 0.4.9 (MIT)
-https://github.com/sunfishcode/is-terminal
 ---------------------------------------------------------
 
 itertools 0.10.5 (Apache-2.0 OR MIT)
@@ -817,10 +777,6 @@ once_cell 1.18.0 (Apache-2.0 OR MIT)
 https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
-oorandom 11.1.3 (MIT)
-https://sr.ht/~icefox/oorandom/
----------------------------------------------------------
-
 orbclient 0.3.46 (MIT)
 https://gitlab.redox-os.org/redox-os/orbclient
 ---------------------------------------------------------
@@ -887,18 +843,6 @@ https://github.com/PistonDevelopers/piston.git
 
 pkg-config 0.3.27 (Apache-2.0 OR MIT)
 https://github.com/rust-lang/pkg-config-rs
----------------------------------------------------------
-
-plotters 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters
----------------------------------------------------------
-
-plotters-backend 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters
----------------------------------------------------------
-
-plotters-svg 0.3.5 (MIT)
-https://github.com/plotters-rs/plotters.git
 ---------------------------------------------------------
 
 png 0.17.10 (Apache-2.0 OR MIT)
@@ -1032,10 +976,6 @@ safe_arch 0.7.1 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Lokathor/safe_arch
 ---------------------------------------------------------
 
-same-file 1.0.6 (MIT OR Unlicense)
-https://github.com/BurntSushi/same-file
----------------------------------------------------------
-
 scarlet 1.2.0 (Apache-2.0)
 https://github.com/nicholas-miklaucic/scarlet
 ---------------------------------------------------------
@@ -1088,7 +1028,7 @@ simd-adler32 0.3.7 (MIT)
 https://github.com/mcountryman/simd-adler32
 ---------------------------------------------------------
 
-simulator 16.0.0 (MIT)
+simulator 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -1174,10 +1114,6 @@ https://github.com/RazrFalcon/tiny-skia
 
 tiny-skia-path 0.8.4 (BSD-3-Clause)
 https://github.com/RazrFalcon/tiny-skia/path
----------------------------------------------------------
-
-tinytemplate 1.2.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/TinyTemplate
 ---------------------------------------------------------
 
 tokio 1.33.0 (MIT)
@@ -1304,10 +1240,6 @@ vulkano-win 0.33.0 (Apache-2.0 OR MIT)
 https://github.com/vulkano-rs/vulkano
 ---------------------------------------------------------
 
-walkdir 2.4.0 (MIT OR Unlicense)
-https://github.com/BurntSushi/walkdir
----------------------------------------------------------
-
 want 0.3.1 (MIT)
 https://github.com/seanmonstar/want
 ---------------------------------------------------------
@@ -1382,10 +1314,6 @@ https://github.com/retep998/winapi-rs
 
 winapi-i686-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)
 https://github.com/retep998/winapi-rs
----------------------------------------------------------
-
-winapi-util 0.1.6 (MIT OR Unlicense)
-https://github.com/BurntSushi/winapi-util
 ---------------------------------------------------------
 
 winapi-x86_64-pc-windows-gnu 0.4.0 (Apache-2.0 OR MIT)

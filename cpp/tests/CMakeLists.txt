@@ -31,6 +31,9 @@ FetchContent_Declare(
   autd3
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/..
 )
+if(APPLE)
+  set(ENABLE_LINK_VISUALIZER=OFF)
+endif()
 FetchContent_MakeAvailable(autd3)
 
 add_executable(test_autd3 main.cpp)

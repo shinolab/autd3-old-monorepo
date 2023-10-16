@@ -26,18 +26,21 @@ if(AUTD_LOCAL_TEST)
 elseif(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v16.0.0/autd3-v16.0.0-win-x64.zip
+    URL https://github.com/shinolab/autd3/releases/download/v16.0.1/autd3-v16.0.1-win-x64.zip
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v16.0.0/autd3-v16.0.0-macos-universal.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v16.0.1/autd3-v16.0.1-macos-universal.tar.gz
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v16.0.0/autd3-v16.0.0-linux-x64.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v16.0.1/autd3-v16.0.1-linux-x64.tar.gz
   )
+endif()
+if(APPLE)
+  set(ENABLE_LINK_VISUALIZER=OFF)
 endif()
 FetchContent_MakeAvailable(autd3)
 
@@ -72,9 +75,11 @@ add_executable(group_gain group_gain.cpp)
 autd3_target_link_library(group_gain PRIVATE)
 target_link_libraries(group_gain PRIVATE autd3-example)
 
-add_executable(visualizer visualizer.cpp)
-autd3_target_link_library(visualizer PRIVATE)
-target_link_libraries(visualizer PRIVATE autd3-example)
-if(USE_PYTHON)
-  target_compile_definitions(visualizer PRIVATE USE_PYTHON)
+if(ENABLE_LINK_VISUALIZER)
+  add_executable(visualizer visualizer.cpp)
+  autd3_target_link_library(visualizer PRIVATE)
+  target_link_libraries(visualizer PRIVATE autd3-example)
+  if(USE_PYTHON)
+    target_compile_definitions(visualizer PRIVATE USE_PYTHON)
+  endif()
 endif()
