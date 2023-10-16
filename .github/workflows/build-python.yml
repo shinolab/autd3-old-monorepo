@@ -66,8 +66,8 @@ jobs:
 
       - name: Build python library on ${{ matrix.os }}
         run: |
-          python3 build.py python build --no-install
+          python3 build.py python build --no-install --release --universal
 
       - name: Test python library on ${{ matrix.os }}
         run: |
-          python3 build.py python test
+          python3 build.py python test --release --skip-cuda

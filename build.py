@@ -289,6 +289,7 @@ def build_capi(args, features=None):
             commands.append('--exclude=autd3capi-backend-cuda')
 
         if is_macos and args.universal:
+            commands.append('--exclude=autd3capi-link-visualizer')
             commands_x86 = commands.copy()
             commands_x86.append('--target=x86_64-apple-darwin')
             subprocess.run(commands_x86).check_returncode()
@@ -390,7 +391,7 @@ def cpp_test(args):
     os.makedirs('build', exist_ok=True)
     os.chdir('build')
     command = ['cmake', '..']
-    if args.cuda:
+    if args.cuda and not args.skip_cuda:
         command.append('-DENABLE_BACKEND_CUDA=ON')
     if args.cmake_extra is not None:
         for cmd in args.cmake_extra.split(' '):
@@ -426,12 +427,13 @@ def cs_build(args):
             shutil.copy(dll, 'dotnet/cs/src/native/windows/x64')
     elif is_macos:
         target = 'capi/target/x86_64-apple-darwin/release' if args.release else 'capi/target/x86_64-apple-darwin/debug'
+        target_aarch64 = 'capi/target/aarch64-apple-darwin/release' if args.release else 'capi/target/aarch64-apple-darwin/debug'
         for x64_lib in glob.glob(f'{target}/*.dylib'):
             base_name = os.path.basename(x64_lib)
             subprocess.run(['lipo',
                             '-create',
                             x64_lib,
-                            f'./capi/target/aarch64-apple-darwin/release/{base_name}',
+                            f'{target_aarch64}/{base_name}',
                             '-output',
                             f'./dotnet/cs/src/native/osx/universal/{base_name}']).check_returncode()
     elif is_linux:
@@ -477,6 +479,7 @@ def cs_build(args):
 def cs_test(args):
     args.universal = True
     args.release = True
+    args.arch = None
     build_capi(args)
 
     if is_windows:
@@ -550,6 +553,7 @@ def unity_build(args):
             dirs_exist_ok=True)
 
     args.universal = True
+    args.arch = None
     build_capi(args, 'single_float use_meter')
 
     unity_dir = ''
@@ -566,12 +570,13 @@ def unity_build(args):
             shutil.copy(dll, f'{unity_dir}/Assets/Plugins/x86_64')
     elif is_macos:
         target = 'capi/target/x86_64-apple-darwin/release' if args.release else 'capi/target/x86_64-apple-darwin/debug'
+        target_aarch64 = 'capi/target/aarch64-apple-darwin/release' if args.release else 'capi/target/aarch64-apple-darwin/debug'
         for x64_lib in glob.glob(f'{target}/*.dylib'):
             base_name = os.path.basename(x64_lib)
             subprocess.run(['lipo',
                             '-create',
                             x64_lib,
-                            f'./capi/target/aarch64-apple-darwin/release/{base_name}',
+                            f'{target_aarch64}/{base_name}',
                             '-output',
                             f'./{unity_dir}/Assets/Plugins/x86_64/{base_name}']).check_returncode()
     elif is_linux:
@@ -808,7 +813,7 @@ def py_test(args):
         command.append('python3')
     command.append('-m')
     command.append('pytest')
-    if is_cuda_available():
+    if is_cuda_available() and not args.skip_cuda:
         command.append('--test_cuda')
     subprocess.run(command).check_returncode()
 
@@ -867,6 +872,7 @@ if __name__ == '__main__':
 
         # cpp test
         parser_cpp_test = subparsers_cpp.add_parser('test', help='see `cpp test -h`')
+        parser_cpp_test.add_argument('--skip-cuda', action='store_true', help='force skip cuda test')
         parser_cpp_test.add_argument('--cmake-extra', help='cmake extra args')
         parser_cpp_test.set_defaults(handler=cpp_test)
 
@@ -899,7 +905,6 @@ if __name__ == '__main__':
 
         # unity
         parser_unity = subparsers.add_parser('unity', help='see `unity -h`')
-        parser_unity.add_argument('--release', action='store_true', help='release build')
         subparsers_unity = parser_unity.add_subparsers()
 
         # unity build
@@ -939,6 +944,7 @@ if __name__ == '__main__':
         # python test
         parser_py_test = subparsers_py.add_parser('test', help='see `python test -h`')
         parser_py_test.add_argument('--release', action='store_true', help='release build')
+        parser_py_test.add_argument('--skip-cuda', action='store_true', help='force skip cuda test')
         parser_py_test.set_defaults(handler=py_test)
 
         # help
