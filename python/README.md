@@ -10,12 +10,6 @@ version: 16.0.0
 pip install pyautd3
 ```
 
-or from this repository
-
-```
-pip install git+https://github.com/shinolab/autd3.git#subdirectory=python
-```
-
 ## Example
 
 see [example](./example)

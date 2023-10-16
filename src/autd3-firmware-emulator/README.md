@@ -4,4 +4,4 @@ This crate provides firmware emulator of AUTD3.
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023
