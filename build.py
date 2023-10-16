@@ -6,7 +6,7 @@ Project: autd3
 Created Date: 16/10/2023
 Author: Shun Suzuki
 -----
-Last Modified: 16/10/2023
+Last Modified: 17/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,6 +66,15 @@ def setup_aarch64_linker():
     with open('.cargo/config', 'w') as f:
         f.write('[target.aarch64-unknown-linux-gnu]\n')
         f.write('linker = "aarch64-linux-gnu-gcc"\n')
+
+
+def fetch_submodule():
+    path = os.getcwd()
+    try:
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        subprocess.run(['git', 'submodule', 'update', '--init', '--recursive']).check_returncode()
+    finally:
+        os.chdir(path)
 
 
 def rust_build(args):
@@ -824,6 +833,8 @@ def command_help(args):
 
 
 if __name__ == '__main__':
+    fetch_submodule()
+
     path = os.getcwd()
 
     try:
