@@ -30,14 +30,6 @@ android_system_properties 0.1.5 (Apache-2.0 OR MIT)
 https://github.com/nical/android_system_properties
 ---------------------------------------------------------
 
-anes 0.1.6 (Apache-2.0 OR MIT)
-https://github.com/zrzka/anes-rs
----------------------------------------------------------
-
-anstyle 1.0.4 (Apache-2.0 OR MIT)
-https://github.com/rust-cli/anstyle.git
----------------------------------------------------------
-
 anyhow 1.0.75 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/anyhow
 ---------------------------------------------------------
@@ -74,35 +66,35 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 16.0.0 (MIT)
+autd3 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-backend-cuda 16.0.0 (MIT)
+autd3-backend-cuda 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 16.0.0 (MIT)
+autd3-derive 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 16.0.0 (MIT)
+autd3-driver 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 16.0.0 (MIT)
+autd3-firmware-emulator 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 16.0.0 (MIT)
+autd3-gain-holo 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 16.0.0 (MIT)
+autd3-link-simulator 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 16.0.0
+autd3-link-soem 16.0.1
 https://github.com/shinolab/autd3
 
 ---
@@ -168,7 +160,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 16.0.0
+autd3-link-twincat 16.0.1
 https://github.com/shinolab/autd3
 
 ---
@@ -220,46 +212,46 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-link-visualizer 16.0.0 (MIT)
+autd3-link-visualizer 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 16.0.0 (MIT)
+autd3-modulation-audio-file 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 16.0.0 (MIT)
+autd3-protobuf 16.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 16.0.0 (MIT)
+autd3capi 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-backend-cuda 16.0.0 (MIT)
+autd3capi-backend-cuda 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-common 16.0.0 (MIT)
+autd3capi-common 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 16.0.0 (MIT)
+autd3capi-def 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-gain-holo 16.0.0 (MIT)
+autd3capi-gain-holo 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 16.0.0 (MIT)
+autd3capi-link-simulator 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 16.0.0 (MIT)
+autd3capi-link-soem 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 16.0.0 (MIT)
+autd3capi-link-twincat 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-visualizer 16.0.0 (MIT)
+autd3capi-link-visualizer 16.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 16.0.0 (MIT)
+autd3capi-modulation-audio-file 16.0.1 (MIT)
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
@@ -314,10 +306,6 @@ bytes 1.5.0 (MIT)
 https://github.com/tokio-rs/bytes
 ---------------------------------------------------------
 
-cast 0.3.0 (Apache-2.0 OR MIT)
-https://github.com/japaric/cast.rs
----------------------------------------------------------
-
 cbindgen 0.26.0 (MPL-2.0)
 https://github.com/mozilla/cbindgen
 ---------------------------------------------------------
@@ -334,35 +322,11 @@ chrono 0.4.31 (Apache-2.0 OR MIT)
 https://github.com/chronotope/chrono
 ---------------------------------------------------------
 
-ciborium 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-io 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
-ciborium-ll 0.2.1 (Apache-2.0)
-https://github.com/enarx/ciborium
----------------------------------------------------------
-
 clap 3.2.25 (Apache-2.0 OR MIT)
 https://github.com/clap-rs/clap
 ---------------------------------------------------------
 
-clap 4.4.6 (Apache-2.0 OR MIT)
-https://github.com/clap-rs/clap
----------------------------------------------------------
-
-clap_builder 4.4.6 (Apache-2.0 OR MIT)
-https://github.com/clap-rs/clap
----------------------------------------------------------
-
 clap_lex 0.2.4 (Apache-2.0 OR MIT)
-https://github.com/clap-rs/clap/tree/master/clap_lex
----------------------------------------------------------
-
-clap_lex 0.5.1 (Apache-2.0 OR MIT)
 https://github.com/clap-rs/clap/tree/master/clap_lex
 ---------------------------------------------------------
 
@@ -406,27 +370,11 @@ crc32fast 1.3.2 (Apache-2.0 OR MIT)
 https://github.com/srijs/rust-crc32fast
 ---------------------------------------------------------
 
-criterion 0.5.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
-criterion-plot 0.5.0 (Apache-2.0 OR MIT)
-https://github.com/bheisler/criterion.rs
----------------------------------------------------------
-
 critical-section 1.1.2 (Apache-2.0 OR MIT)
 https://github.com/rust-embedded/critical-section
 ---------------------------------------------------------
 
 crossbeam-channel 0.5.8 (Apache-2.0 OR MIT)
-https://github.com/crossbeam-rs/crossbeam
----------------------------------------------------------
-
-crossbeam-deque 0.8.3 (Apache-2.0 OR MIT)
-https://github.com/crossbeam-rs/crossbeam
----------------------------------------------------------
-
-crossbeam-epoch 0.9.15 (Apache-2.0 OR MIT)
 https://github.com/crossbeam-rs/crossbeam
 ---------------------------------------------------------
 
@@ -601,10 +549,6 @@ h2 0.3.21 (MIT)
 https://github.com/hyperium/h2
 ---------------------------------------------------------
 
-half 1.8.2 (Apache-2.0 OR MIT)
-https://github.com/starkat99/half-rs
----------------------------------------------------------
-
 half 2.3.1 (Apache-2.0 OR MIT)
 https://github.com/starkat99/half-rs
 ---------------------------------------------------------
@@ -691,10 +635,6 @@ https://github.com/bluss/indexmap
 
 indoc 2.0.4 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/indoc
----------------------------------------------------------
-
-is-terminal 0.4.9 (MIT)
-https://github.com/sunfishcode/is-terminal
 ---------------------------------------------------------
 
 itertools 0.10.5 (Apache-2.0 OR MIT)
@@ -845,10 +785,6 @@ once_cell 1.18.0 (Apache-2.0 OR MIT)
 https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
-oorandom 11.1.3 (MIT)
-https://sr.ht/~icefox/oorandom/
----------------------------------------------------------
-
 os_str_bytes 6.5.1 (Apache-2.0 OR MIT)
 https://github.com/dylni/os_str_bytes
 ---------------------------------------------------------
@@ -995,14 +931,6 @@ https://github.com/rust-random/rand
 
 rawpointer 0.2.1 (Apache-2.0 OR MIT)
 https://github.com/bluss/rawpointer/
----------------------------------------------------------
-
-rayon 1.8.0 (Apache-2.0 OR MIT)
-https://github.com/rayon-rs/rayon
----------------------------------------------------------
-
-rayon-core 1.12.0 (Apache-2.0 OR MIT)
-https://github.com/rayon-rs/rayon
 ---------------------------------------------------------
 
 redox_syscall 0.2.16 (MIT)
@@ -1186,10 +1114,6 @@ https://github.com/time-rs/time
 
 time-core 0.1.2 (Apache-2.0 OR MIT)
 https://github.com/time-rs/time
----------------------------------------------------------
-
-tinytemplate 1.2.1 (Apache-2.0 OR MIT)
-https://github.com/bheisler/TinyTemplate
 ---------------------------------------------------------
 
 tokio 1.33.0 (MIT)
@@ -1420,7 +1344,7 @@ wio 0.2.2 (Apache-2.0 OR MIT)
 https://github.com/retep998/wio-rs
 ---------------------------------------------------------
 
-wrapper-generator 16.0.0 (MIT)
+wrapper-generator 16.0.1 (MIT)
 ---------------------------------------------------------
 
 wyz 0.5.1 (MIT)
