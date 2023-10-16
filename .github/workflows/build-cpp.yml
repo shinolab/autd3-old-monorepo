@@ -24,6 +24,8 @@ jobs:
           files: |
             .github/actions/setup-build/action.yml
             .github/workflows/build-cpp.yml
+            cpp/CMakeLists.txt
+            cpp/**/CMakeLists.txt
             cpp/**/*.hpp
             cpp/**/*.cpp
 

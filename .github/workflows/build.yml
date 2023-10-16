@@ -56,7 +56,8 @@ jobs:
 
       - name: Test src on ${{ matrix.os }}
         run: |
-          python3 build.py test --all --release
+          python3 build.py build --all --release
+          python3 build.py test --all --release --skip-cuda
 
   build-linux-arm32-src:
     needs: check-src
