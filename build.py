@@ -740,7 +740,7 @@ def build_wheel(args):
                 if args.arch == 'arm32':
                     plat_name = 'linux_armv7l'
                 elif args.arch == 'aarch64':
-                    plat_name = 'linux_armv7l'
+                    plat_name = 'manylinux2014_aarch64'
                 else:
                     err(f'arch "{args.arch}" is not supported.')
                     sys.exit(-1)
@@ -833,7 +833,10 @@ def py_test(args):
 def server_build(args):
     os.chdir('server')
 
-    subprocess.run(['npm', 'i'], shell=True).check_returncode()
+    if is_windows:
+        subprocess.run(['npm', 'install'], shell=True).check_returncode()
+    else:
+        subprocess.run(['npm', 'install']).check_returncode()
 
     if is_macos:
         command_x86 = ['cargo', 'build', '--target=x86_64-apple-darwin']
@@ -858,7 +861,7 @@ def server_build(args):
         os.chdir('..')
 
         if not args.external_only:
-            subprocess.run(['npm', 'run', 'tauri', 'build', '--', '--target', 'universal-apple-darwin'], shell=True).check_returncode()
+            subprocess.run(['npm', 'run', 'tauri', 'build', '--', '--target', 'universal-apple-darwin']).check_returncode()
     else:
         command = ['cargo', 'build']
         if args.release:
@@ -877,7 +880,10 @@ def server_build(args):
         os.chdir('..')
 
         if not args.external_only:
-            subprocess.run(['npm', 'run', 'tauri', 'build'], shell=True).check_returncode()
+            if is_windows:
+                subprocess.run(['npm', 'run', 'tauri', 'build'], shell=True).check_returncode()
+            else:
+                subprocess.run(['npm', 'run', 'tauri', 'build']).check_returncode()
 
 
 def command_help(args):
