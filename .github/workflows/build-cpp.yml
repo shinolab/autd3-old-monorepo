@@ -31,8 +31,7 @@ jobs:
 
   build:
     needs: check
-    if: needs.check.outputs.status
-    name: build-cpp
+    name: build-cpp-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -42,6 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,6 +49,7 @@ jobs:
           cuda: true
 
       - name: Rust cache
+        if: needs.check.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
@@ -56,31 +57,31 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         run: |
           python3 build.py cpp build --release --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
-        if: matrix.os == 'macos-latest'
+        if: needs.check.outputs.status && matrix.os == 'macos-latest'
       - name: Build C++ library on ${{ matrix.os }}
         run: |
           python3 build.py cpp build --release
-        if: matrix.os != 'macos-latest'
+        if: needs.check.outputs.status && matrix.os != 'macos-latest'
 
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
           python3 build.py cpp test --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
-        if: matrix.os == 'macos-latest'
+        if: needs.check.outputs.status && matrix.os == 'macos-latest'
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
           python3 build.py cpp test --skip-cuda
-        if: matrix.os != 'macos-latest'
+        if: needs.check.outputs.status && matrix.os != 'macos-latest'
 
 
   build-linux-arm32:
     needs: check
-    if: needs.check.outputs.status
     name: build-cpp-linux-arm32
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -89,24 +90,26 @@ jobs:
           cuda: false
 
       - name: Rust cache
+        if: needs.check.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
 
       - name: Build C++ library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py cpp build --arch arm32 --release
 
 
   build-linux-aarch64:
     needs: check
-    if: needs.check.outputs.status
     name: build-cpp-linux-aarch64
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -115,10 +118,12 @@ jobs:
           cuda: false
 
       - name: Rust cache
+        if: needs.check.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
 
       - name: Build C++ library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py cpp build --arch aarch64 --release

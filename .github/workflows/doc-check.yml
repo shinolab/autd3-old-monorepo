@@ -33,20 +33,22 @@ jobs:
 
   build-jp:
     needs: check
-    if: needs.check.outputs.status
-    name: doc-check
+    name: doc-check-jp
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup mdbook
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build src
+        if: needs.check-src.outputs.status
         run: |
           cd ./src
           cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
       - name: Build book jp
+        if: needs.check-src.outputs.status
         run: |
           cd ./doc
           MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
@@ -54,19 +56,22 @@ jobs:
   build-en:
     needs: check
     if: needs.check.outputs.status
-    name: doc-check
+    name: doc-check-en
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup mdbook
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build src
+        if: needs.check-src.outputs.status
         run: |
           cd ./src
           cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
       - name: Build book en
+        if: needs.check-src.outputs.status
         run: |
           cd ./doc
           MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps

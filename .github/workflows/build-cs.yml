@@ -29,8 +29,7 @@ jobs:
 
   build:
     needs: check
-    if: needs.check.outputs.status
-    name: build-cs
+    name: build-cs-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -40,6 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -47,31 +47,35 @@ jobs:
           cuda: true
 
       - name: Setup .NET Core
+        if: needs.check.outputs.status
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
 
       - name: Rust cache
+        if: needs.check.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
 
       - name: Build cs library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py cs build --release
 
       - name: Test library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py cs test
 
       - name: Build fs library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py fs build --release
 
   build-unity:
     needs: check
-    if: needs.check.outputs.status
-    name: build-unity
+    name: build-unity-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -81,6 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -88,15 +93,18 @@ jobs:
           cuda: true
 
       - name: Setup .NET Core
+        if: needs.check.outputs.status
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
 
       - name: Rust cache
+        if: needs.check.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
 
       - name: Build unity library on ${{ matrix.os }}
+        if: needs.check.outputs.status
         run: |
           python3 build.py unity build --release
