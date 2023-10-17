@@ -66,35 +66,35 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 16.0.1 (MIT)
+autd3 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-backend-cuda 16.0.1 (MIT)
+autd3-backend-cuda 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 16.0.1 (MIT)
+autd3-derive 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 16.0.1 (MIT)
+autd3-driver 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 16.0.1 (MIT)
+autd3-firmware-emulator 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 16.0.1 (MIT)
+autd3-gain-holo 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 16.0.1 (MIT)
+autd3-link-simulator 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 16.0.1
+autd3-link-soem 16.0.2
 https://github.com/shinolab/autd3
 
 ---
@@ -160,7 +160,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 16.0.1
+autd3-link-twincat 16.0.2
 https://github.com/shinolab/autd3
 
 ---
@@ -212,46 +212,46 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-link-visualizer 16.0.1 (MIT)
+autd3-link-visualizer 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 16.0.1 (MIT)
+autd3-modulation-audio-file 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 16.0.1 (MIT)
+autd3-protobuf 16.0.2 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 16.0.1 (MIT)
+autd3capi 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-backend-cuda 16.0.1 (MIT)
+autd3capi-backend-cuda 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-common 16.0.1 (MIT)
+autd3capi-common 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 16.0.1 (MIT)
+autd3capi-def 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-gain-holo 16.0.1 (MIT)
+autd3capi-gain-holo 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 16.0.1 (MIT)
+autd3capi-link-simulator 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 16.0.1 (MIT)
+autd3capi-link-soem 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 16.0.1 (MIT)
+autd3capi-link-twincat 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-visualizer 16.0.1 (MIT)
+autd3capi-link-visualizer 16.0.2 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 16.0.1 (MIT)
+autd3capi-modulation-audio-file 16.0.2 (MIT)
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
@@ -1344,7 +1344,7 @@ wio 0.2.2 (Apache-2.0 OR MIT)
 https://github.com/retep998/wio-rs
 ---------------------------------------------------------
 
-wrapper-generator 16.0.1 (MIT)
+wrapper-generator 16.0.2 (MIT)
 ---------------------------------------------------------
 
 wyz 0.5.1 (MIT)

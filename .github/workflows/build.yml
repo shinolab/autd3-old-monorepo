@@ -31,8 +31,7 @@ jobs:
 
   build-src:
     needs: check-src
-    if: needs.check-src.outputs.status
-    name: build-src
+    name: build-src-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -42,6 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -50,18 +50,19 @@ jobs:
           shaderc: true
         
       - name: Rust cache
+        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
+        if: needs.check-src.outputs.status
         run: |
           python3 build.py build --all --release
           python3 build.py test --all --release --skip-cuda
 
   build-linux-arm32-src:
     needs: check-src
-    if: needs.check-src.outputs.status
     name: build-src-linux-arm32
     runs-on: ubuntu-latest
     strategy:
@@ -70,6 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -79,17 +81,18 @@ jobs:
           shaderc: false
 
       - name: Rust cache
+        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
+        if: needs.check-src.outputs.status
         run: |
           python3 build.py build --all --arch arm32 --release
 
   build-linux-aarch64-src:
     needs: check-src
-    if: needs.check-src.outputs.status
     name: build-src-linux-aarch64
     runs-on: ubuntu-latest
     strategy:
@@ -97,6 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -106,22 +110,24 @@ jobs:
           shaderc: false
 
       - name: Rust cache
+        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
+        if: needs.check-src.outputs.status
         run: |
           python3 build.py build --all --arch aarch64 --release
 
   lint-src:
     needs: check-src
-    if: needs.check-src.outputs.status
     name: lint-src
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -130,11 +136,13 @@ jobs:
           shaderc: true
 
       - name: Rust cache
+        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
 
       - name: lint src
+        if: needs.check-src.outputs.status
         run: |
           python3 build.py lint --release
 
@@ -157,7 +165,6 @@ jobs:
 
   build-server:
     needs: check-server
-    if: needs.check-server.outputs.status
     name: build-server
     strategy:
       fail-fast: false
@@ -168,6 +175,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
+        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -176,56 +184,26 @@ jobs:
           shaderc: true
 
       - name: Rust cache
+        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './server/src-tauri -> target'
 
       - name: install dependencies (ubuntu only)
-        if: matrix.os == 'ubuntu-latest'
+        if: needs.check-src.outputs.status && matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev librsvg2-dev
 
       - name: Sync node version and setup cache
+        if: needs.check-src.outputs.status
         uses: actions/setup-node@v3
         with:
           node-version: 'lts/*'
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
   
-      - name: install frontend dependencies
+      - name: build server
+        if: needs.check-src.outputs.status
         run: |
-          cd server 
-          npm install
-  
-      - name: build
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd server
-          cd simulator
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          cd SOEMAUTDServer
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          cd LightweightTwinCATAUTDServer
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          npm run tauri build -- --target universal-apple-darwin
-      - name: build
-        if: matrix.os != 'macos-latest'
-        run: |
-          cd server
-          cd simulator
-          cargo build --release
-          cd ..
-          cd SOEMAUTDServer
-          cargo build --release
-          cd ..
-          cd LightweightTwinCATAUTDServer
-          cargo build --release
-          cd ..
-          npm run tauri build
+          python3 build.py server build

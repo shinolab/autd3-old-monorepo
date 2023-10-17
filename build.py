@@ -751,7 +751,7 @@ def build_wheel(args):
                     plat_name = 'linux_armv7l'
                 elif platform.machine() in ['aarch64']:
                     plat_name = 'manylinux2014_aarch64'
-                content = content.replace(r'${plat_name}', plat_name)
+            content = content.replace(r'${plat_name}', plat_name)
             with open('python/setup.cfg', 'w') as f:
                 f.write(content)
         os.chdir('python')
@@ -828,6 +828,56 @@ def py_test(args):
     if is_cuda_available() and not args.skip_cuda:
         command.append('--test_cuda')
     subprocess.run(command).check_returncode()
+
+
+def server_build(args):
+    os.chdir('server')
+
+    subprocess.run(['npm', 'i'], shell=True).check_returncode()
+
+    if is_macos:
+        command_x86 = ['cargo', 'build', '--target=x86_64-apple-darwin']
+        command_aarch64 = ['cargo', 'build', '--target=aarch64-apple-darwin']
+        if args.release:
+            command_x86.append('--release')
+            command_aarch64.append('--release')
+
+        os.chdir('simulator')
+        subprocess.run(command_x86).check_returncode()
+        subprocess.run(command_aarch64).check_returncode()
+        os.chdir('..')
+
+        os.chdir('SOEMAUTDServer')
+        subprocess.run(command_x86).check_returncode()
+        subprocess.run(command_aarch64).check_returncode()
+        os.chdir('..')
+
+        os.chdir('LightweightTwinCATAUTDServer')
+        subprocess.run(command_x86).check_returncode()
+        subprocess.run(command_aarch64).check_returncode()
+        os.chdir('..')
+
+        if not args.external_only:
+            subprocess.run(['npm', 'run', 'tauri', 'build', '--', '--target', 'universal-apple-darwin'], shell=True).check_returncode()
+    else:
+        command = ['cargo', 'build']
+        if args.release:
+            command.append('--release')
+
+        os.chdir('simulator')
+        subprocess.run(command).check_returncode()
+        os.chdir('..')
+
+        os.chdir('SOEMAUTDServer')
+        subprocess.run(command).check_returncode()
+        os.chdir('..')
+
+        os.chdir('LightweightTwinCATAUTDServer')
+        subprocess.run(command).check_returncode()
+        os.chdir('..')
+
+        if not args.external_only:
+            subprocess.run(['npm', 'run', 'tauri', 'build'], shell=True).check_returncode()
 
 
 def command_help(args):
@@ -962,6 +1012,16 @@ if __name__ == '__main__':
         parser_py_test.add_argument('--release', action='store_true', help='release build')
         parser_py_test.add_argument('--skip-cuda', action='store_true', help='force skip cuda test')
         parser_py_test.set_defaults(handler=py_test)
+
+        # server
+        parser_server = subparsers.add_parser('server', help='see `server -h`')
+        subparsers_server = parser_server.add_subparsers()
+
+        # server build
+        parser_server_build = subparsers_server.add_parser('build', help='see `server build -h`')
+        parser_server_build.add_argument('--release', action='store_true', help='release build')
+        parser_server_build.add_argument('--external-only', action='store_true', help='build external dependencies only')
+        parser_server_build.set_defaults(handler=server_build)
 
         # help
         parser_help = subparsers.add_parser('help', help='see `help -h`')
