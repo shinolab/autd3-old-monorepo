@@ -1,6 +1,7 @@
 # 16.0.3
 
 - Fix [#208](https://github.com/shinolab/autd3/issues/208): pyautd3-16.0.2-py3-none-linux_armv7l.whl contains aarch64 binary
+- Fix [#209](https://github.com/shinolab/autd3/issues/209): cannot launch simulator from unity
 
 # 16.0.2
 
