@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,12 @@
 
 use std::fmt;
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct FPGAControlFlags(u8);
+
 bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct FPGAControlFlags : u8 {
+    impl FPGAControlFlags : u8 {
         const NONE            = 0;
         const FORCE_FAN       = 1 << 0;
         const READS_FPGA_INFO = 1 << 1;

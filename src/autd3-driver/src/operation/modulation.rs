@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,10 +21,12 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct ModulationControlFlags(u8);
+
 bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct ModulationControlFlags : u8 {
+    impl ModulationControlFlags : u8 {
         const NONE      = 0;
         const MOD_BEGIN = 1 << 0;
         const MOD_END   = 1 << 1;
