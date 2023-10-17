@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,12 @@
 
 use std::fmt;
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct GainSTMControlFlags(u8);
+
 bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct GainSTMControlFlags : u8 {
+    impl GainSTMControlFlags : u8 {
         const NONE            = 0;
         const LEGACY          = 1 << 0;
         const DUTY            = 1 << 1;
