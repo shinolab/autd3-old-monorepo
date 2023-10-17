@@ -539,17 +539,23 @@ def cs_run(args):
 def unity_build(args):
     ignore = shutil.ignore_patterns('NativeMethods')
     shutil.copytree('dotnet/cs/src', 'dotnet/unity/Assets/Scripts', dirs_exist_ok=True, ignore=ignore)
+    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
+    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
     try:
-        os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
-        os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
         os.remove('dotnet/unity/Assets/Scripts/LICENSE.txt')
-        os.remove('dotnet/unity/Assets/Scripts/.gitignore')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/obj')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/bin')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/native')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/Utils')
     except FileNotFoundError:
         pass
+    os.remove('dotnet/unity/Assets/Scripts/.gitignore')
+    try:
+        shutil.rmtree('dotnet/unity/Assets/Scripts/obj')
+    except FileNotFoundError:
+        pass
+    try:
+        shutil.rmtree('dotnet/unity/Assets/Scripts/bin')
+    except FileNotFoundError:
+        pass
+    shutil.rmtree('dotnet/unity/Assets/Scripts/native')
+    shutil.rmtree('dotnet/unity/Assets/Scripts/Utils')
 
     if is_macos:
         shutil.copytree(
