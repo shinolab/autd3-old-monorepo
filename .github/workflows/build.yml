@@ -203,40 +203,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
   
-      - name: install frontend dependencies
+      - name: build server
         if: needs.check-src.outputs.status
         run: |
-          cd server 
-          npm install
-  
-      - name: build
-        if: needs.check-src.outputs.status && matrix.os == 'macos-latest'
-        run: |
-          cd server
-          cd simulator
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          cd SOEMAUTDServer
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          cd LightweightTwinCATAUTDServer
-          cargo build --release --target=x86_64-apple-darwin
-          cargo build --release --target=aarch64-apple-darwin
-          cd ..
-          npm run tauri build -- --target universal-apple-darwin
-      - name: build
-        if: needs.check-src.outputs.status && matrix.os != 'macos-latest'
-        run: |
-          cd server
-          cd simulator
-          cargo build --release
-          cd ..
-          cd SOEMAUTDServer
-          cargo build --release
-          cd ..
-          cd LightweightTwinCATAUTDServer
-          cargo build --release
-          cd ..
-          npm run tauri build
+          python3 build.py server build
