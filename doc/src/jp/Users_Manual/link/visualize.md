@@ -2,6 +2,10 @@
 
 `Visualizer`リンクは位相パターンや音場を可視化するための`Link`である.
 
+> NOTE:
+> 現在, このLinkは配布されているmacOS, linux-armv7, linux-aarch64用のC++/C#/Unity/Pythonライブラリには含まれていない. 
+> 使用したい場合は, 自分でビルドする必要がある.
+
 [[_TOC_]]
 
 ## 位相パターンの可視化
