@@ -1,6 +1,6 @@
 [package]
 name = "LightweightTwinCATAUTDServer"
-version = "16.0.2"
+version = "16.0.3"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"

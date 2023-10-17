@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-modulation-audio-file"
-version = "16.0.2"
+version = "16.0.3"
 edition = "2021"
 license = "MIT"
 
