@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,32 +13,6 @@
 
 #[cfg(feature = "remote")]
 fn main() {
-    match std::process::Command::new("git")
-        .args([
-            "submodule",
-            "update",
-            "--init",
-            "--recursive",
-            "--",
-            "./3rdparty/ADS",
-        ])
-        .output()
-    {
-        Ok(r) => {
-            if !r.status.success() {
-                eprintln!(
-                    "Failed to update submodule: {}",
-                    String::from_utf8_lossy(&r.stderr)
-                );
-            } else {
-                println!("Submodule updated");
-            }
-        }
-        Err(e) => {
-            eprintln!("Failed to update submodule: {}", e);
-        }
-    }
-
     if cfg!(target_os = "windows") {
         println!("cargo:rustc-link-lib=wsock32");
         println!("cargo:rustc-link-lib=ws2_32");
