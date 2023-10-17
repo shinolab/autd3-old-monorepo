@@ -751,7 +751,7 @@ def build_wheel(args):
                     plat_name = 'linux_armv7l'
                 elif platform.machine() in ['aarch64']:
                     plat_name = 'manylinux2014_aarch64'
-                content = content.replace(r'${plat_name}', plat_name)
+            content = content.replace(r'${plat_name}', plat_name)
             with open('python/setup.cfg', 'w') as f:
                 f.write(content)
         os.chdir('python')
