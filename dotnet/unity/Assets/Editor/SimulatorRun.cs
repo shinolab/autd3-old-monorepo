@@ -33,6 +33,7 @@ public class SimualtorWindow : EditorWindow
         if (!GUILayout.Button("Run")) return;
         var path = System.IO.Path.GetFullPath("Packages/com.shinolab.autd3/Editor/autd_simulator.exe");
         var p = new System.Diagnostics.Process();
+        p.StartInfo.WorkingDirectory = System.IO.Path.GetFullPath("Packages/com.shinolab.autd3/Editor");
         p.StartInfo.FileName = path;
         p.StartInfo.Arguments = "run";
         p.Start();

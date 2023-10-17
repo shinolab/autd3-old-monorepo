@@ -539,17 +539,23 @@ def cs_run(args):
 def unity_build(args):
     ignore = shutil.ignore_patterns('NativeMethods')
     shutil.copytree('dotnet/cs/src', 'dotnet/unity/Assets/Scripts', dirs_exist_ok=True, ignore=ignore)
+    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
+    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
     try:
-        os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
-        os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
         os.remove('dotnet/unity/Assets/Scripts/LICENSE.txt')
-        os.remove('dotnet/unity/Assets/Scripts/.gitignore')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/obj')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/bin')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/native')
-        shutil.rmtree('dotnet/unity/Assets/Scripts/Utils')
     except FileNotFoundError:
         pass
+    os.remove('dotnet/unity/Assets/Scripts/.gitignore')
+    try:
+        shutil.rmtree('dotnet/unity/Assets/Scripts/obj')
+    except FileNotFoundError:
+        pass
+    try:
+        shutil.rmtree('dotnet/unity/Assets/Scripts/bin')
+    except FileNotFoundError:
+        pass
+    shutil.rmtree('dotnet/unity/Assets/Scripts/native')
+    shutil.rmtree('dotnet/unity/Assets/Scripts/Utils')
 
     if is_macos:
         shutil.copytree(
@@ -740,7 +746,7 @@ def build_wheel(args):
                 if args.arch == 'arm32':
                     plat_name = 'linux_armv7l'
                 elif args.arch == 'aarch64':
-                    plat_name = 'linux_armv7l'
+                    plat_name = 'manylinux2014_aarch64'
                 else:
                     err(f'arch "{args.arch}" is not supported.')
                     sys.exit(-1)
@@ -833,7 +839,10 @@ def py_test(args):
 def server_build(args):
     os.chdir('server')
 
-    subprocess.run(['npm', 'i'], shell=True).check_returncode()
+    if is_windows:
+        subprocess.run(['npm', 'install'], shell=True).check_returncode()
+    else:
+        subprocess.run(['npm', 'install']).check_returncode()
 
     if is_macos:
         command_x86 = ['cargo', 'build', '--target=x86_64-apple-darwin']
@@ -858,7 +867,7 @@ def server_build(args):
         os.chdir('..')
 
         if not args.external_only:
-            subprocess.run(['npm', 'run', 'tauri', 'build', '--', '--target', 'universal-apple-darwin'], shell=True).check_returncode()
+            subprocess.run(['npm', 'run', 'tauri', 'build', '--', '--target', 'universal-apple-darwin']).check_returncode()
     else:
         command = ['cargo', 'build']
         if args.release:
@@ -877,7 +886,10 @@ def server_build(args):
         os.chdir('..')
 
         if not args.external_only:
-            subprocess.run(['npm', 'run', 'tauri', 'build'], shell=True).check_returncode()
+            if is_windows:
+                subprocess.run(['npm', 'run', 'tauri', 'build'], shell=True).check_returncode()
+            else:
+                subprocess.run(['npm', 'run', 'tauri', 'build']).check_returncode()
 
 
 def command_help(args):

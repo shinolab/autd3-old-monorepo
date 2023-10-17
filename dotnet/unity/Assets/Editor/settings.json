@@ -37,5 +37,12 @@
   "auto_play": false,
   "image_save_path": "image.png",
   "port": 8080,
-  "camera_move_speed": 0.010000001
+  "camera_move_speed": 0.010000001,
+  "view_device": false,
+  "ambient": 60.0,
+  "specular": 80.0,
+  "light_pos_x": 0.0866252,
+  "light_pos_y": -0.5332867,
+  "light_pos_z": -0.15,
+  "light_power": 5.0
 }

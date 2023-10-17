@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,10 +19,12 @@ pub use focus_stm_op::FocusSTMOp;
 
 use std::fmt;
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct FocusSTMControlFlags(u8);
+
 bitflags::bitflags! {
-    #[derive(Clone, Copy)]
-    #[repr(C)]
-    pub struct FocusSTMControlFlags : u8 {
+    impl FocusSTMControlFlags : u8 {
         const NONE            = 0;
         const STM_BEGIN       = 1 << 0;
         const STM_END         = 1 << 1;

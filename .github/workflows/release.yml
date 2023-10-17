@@ -176,7 +176,7 @@ jobs:
       - name: Publish pypi
         run: |
           python3 -m pip install --upgrade pip
-          pip install -U twine wheel build
+          python3 -m pip install -U twine wheel build
           python3 build.py python build --release --no-install
           cd python
           twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
@@ -253,7 +253,7 @@ jobs:
       - name: Publish pypi
         run: |
           python3 -m pip install --upgrade pip
-          pip install -U twine wheel build
+          python3 -m pip install -U twine wheel build
           python3 build.py python build --release --no-install
           cd python
           twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
@@ -328,7 +328,7 @@ jobs:
       - name: Publish pypi
         run: |
           python3 -m pip install --upgrade pip
-          pip install -U twine wheel build
+          python3 -m pip install -U twine wheel build
           python3 build.py python build --release --no-install --arch arm32
           cd python
           twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
@@ -384,7 +384,7 @@ jobs:
       - name: Publish pypi
         run: |
           python3 -m pip install --upgrade pip
-          pip install -U twine wheel build
+          python3 -m pip install -U twine wheel build
           python3 build.py python build --release --no-install --arch aarch64
           cd python
           twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
@@ -439,7 +439,7 @@ jobs:
       - name: Publish pypi
         run: |
           python3 -m pip install --upgrade pip
-          pip install -U twine wheel build
+          python3 -m pip install -U twine wheel build
           python3 build.py python build --release --no-install --universal
           cd python
           twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
