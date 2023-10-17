@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/07/2023
+ * Last Modified: 17/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,32 +27,6 @@ macro_rules! add {
 
 #[cfg(feature = "local")]
 fn main() {
-    match std::process::Command::new("git")
-        .args([
-            "submodule",
-            "update",
-            "--init",
-            "--recursive",
-            "--",
-            "./3rdparty/SOEM",
-        ])
-        .output()
-    {
-        Ok(r) => {
-            if !r.status.success() {
-                eprintln!(
-                    "Failed to update submodule: {}",
-                    String::from_utf8_lossy(&r.stderr)
-                );
-            } else {
-                println!("Submodule updated");
-            }
-        }
-        Err(e) => {
-            eprintln!("Failed to update submodule: {}", e);
-        }
-    }
-
     let os = if cfg!(target_os = "windows") {
         "win32"
     } else if cfg!(target_os = "macos") {
