@@ -1,4 +1,4 @@
-# 16.0.1
+# 16.0.2
 
 - Fix [#203](https://github.com/shinolab/autd3/issues/203): missing autd-server installer for windows and macos
 - Fix [#204](https://github.com/shinolab/autd3/issues/204): no binary found in linux arm packages
