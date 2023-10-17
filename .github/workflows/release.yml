@@ -175,7 +175,7 @@ jobs:
 
       - name: Publish pypi
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -U twine wheel build
           python3 build.py python build --release --no-install
           cd python
@@ -252,7 +252,7 @@ jobs:
 
       - name: Publish pypi
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -U twine wheel build
           python3 build.py python build --release --no-install
           cd python
@@ -327,7 +327,7 @@ jobs:
     
       - name: Publish pypi
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -U twine wheel build
           python3 build.py python build --release --no-install --arch arm32
           cd python
@@ -383,7 +383,7 @@ jobs:
     
       - name: Publish pypi
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -U twine wheel build
           python3 build.py python build --release --no-install --arch aarch64
           cd python
@@ -438,7 +438,7 @@ jobs:
 
       - name: Publish pypi
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -U twine wheel build
           python3 build.py python build --release --no-install --universal
           cd python
