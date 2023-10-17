@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "SOEMAUTDServer"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "anyhow",
  "autd3-driver",
@@ -157,7 +157,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -169,7 +169,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "quote",
  "syn",
@@ -177,7 +177,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "bitflags 2.4.0",
  "bitvec",
@@ -190,7 +190,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -199,7 +199,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -210,7 +210,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "autd3-driver",
  "cc",
@@ -223,7 +223,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "16.0.2"
+version = "16.0.3"
 dependencies = [
  "autd3",
  "autd3-driver",

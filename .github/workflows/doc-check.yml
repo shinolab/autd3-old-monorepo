@@ -22,6 +22,7 @@ jobs:
           files: |
             .github/actions/setup-mdbook.yml
             .github/workflows/doc-check.yml
+            doc/book.toml
             doc/**/*.md
             doc/**/*.cpp
             doc/**/*.cs
