@@ -1,3 +1,7 @@
+# 16.0.3
+
+- Fix [#208](https://github.com/shinolab/autd3/issues/208): pyautd3-16.0.2-py3-none-linux_armv7l.whl contains aarch64 binary
+
 # 16.0.2
 
 - Fix [#203](https://github.com/shinolab/autd3/issues/203): missing autd-server installer for windows and macos
