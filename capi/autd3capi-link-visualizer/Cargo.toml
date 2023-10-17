@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-visualizer"
-version = "16.0.1"
+version = "16.0.2"
 edition = "2021"
 license = "MIT"
 
