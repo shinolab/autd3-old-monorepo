@@ -4,19 +4,16 @@
  * Created Date: 14/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{
-    defined::{float, PI},
-    derive::prelude::AUTDInternalError,
-};
+use crate::{defined::float, derive::prelude::AUTDInternalError};
 
-use super::DutyRatio;
+use super::CorrectedAmplitude;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Amplitude {
@@ -44,19 +41,15 @@ impl Amplitude {
     pub const fn value(&self) -> float {
         self.value
     }
+
+    pub fn with_correction(self) -> CorrectedAmplitude {
+        CorrectedAmplitude::new_clamped(self.value)
+    }
 }
 
 impl From<float> for Amplitude {
     fn from(value: float) -> Self {
         Amplitude::new_clamped(value)
-    }
-}
-
-impl From<DutyRatio> for Amplitude {
-    fn from(f: DutyRatio) -> Self {
-        Self {
-            value: (f.value() * PI).sin(),
-        }
     }
 }
 
@@ -112,15 +105,10 @@ mod tests {
     }
 
     #[test]
-    fn amplitude_from_duty_ratio() {
-        let amp = Amplitude::from(DutyRatio::MIN);
-        assert_eq!(amp, Amplitude::MIN);
-
-        let amp = Amplitude::from(DutyRatio::MAX);
-        assert_eq!(amp, Amplitude::MAX);
-
-        let amp = Amplitude::from(DutyRatio::new_clamped(0.1));
-        assert_approx_eq::assert_approx_eq!(amp.value(), 0.3090169943749474);
+    fn amplitude_with_correction() {
+        let amp = Amplitude::new_clamped(0.5).with_correction();
+        assert_eq!(amp.value(), 0.5);
+        assert_eq!(amp.alpha(), CorrectedAmplitude::DEFAULT_ALPHA);
     }
 
     #[test]

@@ -4,7 +4,7 @@
  * Created Date: 14/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,6 +51,12 @@ impl From<Amplitude> for DutyRatio {
         Self {
             value: f.value().asin() / PI,
         }
+    }
+}
+
+impl From<DutyRatio> for Amplitude {
+    fn from(f: DutyRatio) -> Self {
+        Self::new_clamped((f.value() * PI).sin())
     }
 }
 
@@ -101,6 +107,18 @@ mod tests {
         let amp = Amplitude::new_clamped(0.3090169943749474);
         let duty = DutyRatio::from(amp);
         assert_approx_eq::assert_approx_eq!(duty.value(), 0.1);
+    }
+
+    #[test]
+    fn amplitude_from_duty_ratio() {
+        let amp = Amplitude::from(DutyRatio::MIN);
+        assert_eq!(amp, Amplitude::MIN);
+
+        let amp = Amplitude::from(DutyRatio::MAX);
+        assert_eq!(amp, Amplitude::MAX);
+
+        let amp = Amplitude::from(DutyRatio::new_clamped(0.1));
+        assert_approx_eq::assert_approx_eq!(amp.value(), 0.3090169943749474);
     }
 
     #[test]
