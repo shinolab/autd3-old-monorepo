@@ -57,7 +57,7 @@ jobs:
       - name: Generate code coverage
         run: |
           cd src
-          cargo +nightly llvm-cov --features "remote test-utilities python gpu" --workspace --exclude=autd3-backend-arrayfire --lcov --output-path lcov.info
+          cargo +nightly llvm-cov --features "remote test-utilities python gpu" --workspace --exclude=autd3-backend-arrayfire --exclude=autd3-backend-cuda --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
