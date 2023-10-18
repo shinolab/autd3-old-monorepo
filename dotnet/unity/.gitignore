@@ -4,3 +4,7 @@ Packages/
 ProjectSettings/
 Temp/
 UserSettings/
+.vsconfig
+autd3.csproj
+unity.sln
+obj/
