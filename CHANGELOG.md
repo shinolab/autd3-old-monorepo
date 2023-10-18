@@ -1,3 +1,7 @@
+# 16.1.0
+
+- `modulation::Square` with out of range duty ratio now return Err
+
 # 16.0.3
 
 - Fix [#208](https://github.com/shinolab/autd3/issues/208): pyautd3-16.0.2-py3-none-linux_armv7l.whl contains aarch64 binary
