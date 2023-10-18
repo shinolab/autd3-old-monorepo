@@ -6,19 +6,58 @@ on:
       - 'develop'
 
 jobs:
+  check-src:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v37
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            src/**/*.rs
+            src/*.toml
+            src/**/*.toml
+            src/**/*.proto
+
   coverage:
+    needs: check-src
+    if: needs.check-src.outputs.status
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v4
+      - name: submodules
+        run: |
+          git submodule update --init --recursive
+
+      - name: Setup
+        if: needs.check-src.outputs.status
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          cuda: true
+          shaderc: true
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Rust cache
+        if: needs.check-src.outputs.status
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src -> target'
+
       - name: Generate code coverage
         run: |
           cd src
-          cargo +nightly llvm-cov --features "remote test-utilities" --workspace --lcov --output-path lcov.info
+          cargo +nightly llvm-cov --features "remote test-utilities python gpu" --workspace --exclude=autd3-backend-arrayfire --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
