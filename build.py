@@ -643,10 +643,6 @@ def unity_build(args):
     else:
         rm_f(f'{unity_dir}/Assets/Editor/assets.meta')
         rm_f(f'{unity_dir}/Assets/Editor/autd_simulator.exe.meta')
-        rm_f(f'{unity_dir}/Assets/Editor/imgui.ini')
-        rm_f(f'{unity_dir}/Assets/Editor/imgui.ini.meta')
-        rm_f(f'{unity_dir}/Assets/Editor/settings.json')
-        rm_f(f'{unity_dir}/Assets/Editor/settings.json.meta')
         rm_f(f'{unity_dir}/Assets/Editor/SimulatorRun.cs')
         rm_f(f'{unity_dir}/Assets/Editor/SimulatorRun.cs.meta')
 
