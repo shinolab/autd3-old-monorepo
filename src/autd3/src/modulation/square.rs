@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -92,6 +92,12 @@ impl Square {
 
 impl Modulation for Square {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+        if !(0.0..=1.0).contains(&self.duty) {
+            return Err(AUTDInternalError::ModulationError(
+                "duty must be in range from 0 to 1".to_string(),
+            ));
+        }
+
         let sf = self.sampling_frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let k = gcd(sf, freq);
@@ -160,5 +166,30 @@ mod tests {
         m.calc().unwrap().iter().for_each(|a| {
             assert_approx_eq::assert_approx_eq!(a, 1.0);
         });
+    }
+
+    #[test]
+    fn test_square_with_duty_out_of_range() {
+        let m = Square::new(150).with_duty(-0.1);
+        assert_eq!(
+            m.calc(),
+            Err(AUTDInternalError::ModulationError(
+                "duty must be in range from 0 to 1".to_string()
+            ))
+        );
+
+        let m = Square::new(150).with_duty(0.0);
+        assert!(m.calc().is_ok());
+
+        let m = Square::new(150).with_duty(1.0);
+        assert!(m.calc().is_ok());
+
+        let m = Square::new(150).with_duty(1.1);
+        assert_eq!(
+            m.calc(),
+            Err(AUTDInternalError::ModulationError(
+                "duty must be in range from 0 to 1".to_string()
+            ))
+        );
     }
 }
