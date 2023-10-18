@@ -6,7 +6,7 @@ Project: autd3
 Created Date: 16/10/2023
 Author: Shun Suzuki
 -----
-Last Modified: 17/10/2023
+Last Modified: 18/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,6 +34,20 @@ def warn(msg: str):
 
 def info(msg: str):
     print('\033[92mINFO\033[0m: ' + msg)
+
+
+def rm_f(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
+
+def rmtree_f(path):
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError:
+        pass
 
 
 is_windows = platform.system() == 'Windows'
@@ -539,38 +553,14 @@ def cs_run(args):
 def unity_build(args):
     ignore = shutil.ignore_patterns('NativeMethods')
     shutil.copytree('dotnet/cs/src', 'dotnet/unity/Assets/Scripts', dirs_exist_ok=True, ignore=ignore)
-    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
-    os.remove('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
-    try:
-        os.remove('dotnet/unity/Assets/Scripts/LICENSE.txt')
-    except FileNotFoundError:
-        pass
-    os.remove('dotnet/unity/Assets/Scripts/.gitignore')
-    try:
-        shutil.rmtree('dotnet/unity/Assets/Scripts/obj')
-    except FileNotFoundError:
-        pass
-    try:
-        shutil.rmtree('dotnet/unity/Assets/Scripts/bin')
-    except FileNotFoundError:
-        pass
-    shutil.rmtree('dotnet/unity/Assets/Scripts/native')
-    shutil.rmtree('dotnet/unity/Assets/Scripts/Utils')
-
-    if is_macos:
-        shutil.copytree(
-            'dotnet/unity/Assets/Scripts/NativeMethods',
-            'dotnet/unity-mac/Assets/Scripts/NativeMethods',
-            dirs_exist_ok=True)
-    if is_linux:
-        shutil.copytree(
-            'dotnet/unity/Assets/Scripts/NativeMethods',
-            'dotnet/unity-linux/Assets/Scripts/NativeMethods',
-            dirs_exist_ok=True)
-
-    args.universal = True
-    args.arch = None
-    build_capi(args, 'single_float use_meter')
+    rm_f('dotnet/unity/Assets/Scripts/AUTD3Sharp.csproj')
+    rm_f('dotnet/unity/Assets/Scripts/AUTD3Sharp.nuspec')
+    rm_f('dotnet/unity/Assets/Scripts/LICENSE.txt')
+    rm_f('dotnet/unity/Assets/Scripts/.gitignore')
+    rmtree_f('dotnet/unity/Assets/Scripts/obj')
+    rmtree_f('dotnet/unity/Assets/Scripts/bin')
+    rmtree_f('dotnet/unity/Assets/Scripts/native')
+    rmtree_f('dotnet/unity/Assets/Scripts/Utils')
 
     unity_dir = ''
     if is_windows:
@@ -579,6 +569,28 @@ def unity_build(args):
         unity_dir = 'dotnet/unity-mac'
     elif is_linux:
         unity_dir = 'dotnet/unity-linux'
+
+    if not is_windows:
+        shutil.copytree(
+            'dotnet/unity/Assets/Scripts',
+            f'{unity_dir}/Assets/Scripts',
+            dirs_exist_ok=True)
+        shutil.copytree(
+            'dotnet/unity/Assets/Models',
+            f'{unity_dir}/Assets/Models',
+            dirs_exist_ok=True)
+        shutil.copytree(
+            'dotnet/unity/Assets/Samples',
+            f'{unity_dir}/Assets/Samples',
+            dirs_exist_ok=True)
+        shutil.copytree(
+            'dotnet/unity/Assets/Editor',
+            f'{unity_dir}/Assets/Editor',
+            dirs_exist_ok=True)
+
+    args.universal = True
+    args.arch = None
+    build_capi(args, 'single_float use_meter')
 
     if is_windows:
         target = 'capi/target/release' if args.release else 'capi/target/debug'
@@ -595,6 +607,7 @@ def unity_build(args):
                             f'{target_aarch64}/{base_name}',
                             '-output',
                             f'./{unity_dir}/Assets/Plugins/x86_64/{base_name}']).check_returncode()
+            shutil.copy(f'./{unity_dir}/Assets/Plugins/x86_64/{base_name}', f'./{unity_dir}/Assets/Plugins/aarch64/{base_name}')
     elif is_linux:
         target = 'capi/target/release' if args.release else 'capi/target/debug'
         for lib in glob.glob(f'{target}/*.so'):
@@ -627,6 +640,15 @@ def unity_build(args):
                 f.write('\n=========================================================\n')
                 f.write('AUTD SIMULATOR ')
                 f.write(notice.read())
+    else:
+        rm_f(f'{unity_dir}/Assets/Editor/assets.meta')
+        rm_f(f'{unity_dir}/Assets/Editor/autd_simulator.exe.meta')
+        rm_f(f'{unity_dir}/Assets/Editor/imgui.ini')
+        rm_f(f'{unity_dir}/Assets/Editor/imgui.ini.meta')
+        rm_f(f'{unity_dir}/Assets/Editor/settings.json')
+        rm_f(f'{unity_dir}/Assets/Editor/settings.json.meta')
+        rm_f(f'{unity_dir}/Assets/Editor/SimulatorRun.cs')
+        rm_f(f'{unity_dir}/Assets/Editor/SimulatorRun.cs.meta')
 
 
 def fs_build(args):
