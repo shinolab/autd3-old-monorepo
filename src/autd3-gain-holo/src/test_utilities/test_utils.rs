@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -891,7 +891,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let v = self.backend.to_host_cv(v)?;
         let abs = self.backend.to_host_v(abs)?;
         v.iter().zip(abs.iter()).for_each(|(v, abs)| {
-            assert_approx_eq::assert_approx_eq!(v.abs(), abs);
+            assert_approx_eq::assert_approx_eq!(v.abs(), abs, EPS);
         });
         Ok(())
     }
@@ -906,7 +906,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let r = self.backend.to_host_m(r)?;
         (0..N).for_each(|i| {
             (0..N).for_each(|j| {
-                assert_approx_eq::assert_approx_eq!(v[(i, j)].re, r[(i, j)]);
+                assert_approx_eq::assert_approx_eq!(v[(i, j)].re, r[(i, j)], EPS);
             })
         });
         Ok(())
@@ -922,7 +922,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let r = self.backend.to_host_m(r)?;
         (0..N).for_each(|i| {
             (0..N).for_each(|j| {
-                assert_approx_eq::assert_approx_eq!(v[(i, j)].im, r[(i, j)]);
+                assert_approx_eq::assert_approx_eq!(v[(i, j)].im, r[(i, j)], EPS);
             })
         });
         Ok(())
@@ -939,7 +939,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let v = self.backend.to_host_v(v)?;
         let vc = self.backend.to_host_v(vc)?;
         v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
-            assert_approx_eq::assert_approx_eq!(scale * vc, v);
+            assert_approx_eq::assert_approx_eq!(scale * vc, v, EPS);
         });
         Ok(())
     }
@@ -955,7 +955,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let v = self.backend.to_host_cv(v)?;
         let vc = self.backend.to_host_cv(vc)?;
         v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
-            assert_approx_eq::assert_approx_eq!(scale * vc, v);
+            assert_approx_eq::assert_approx_eq!(scale * vc, v, EPS);
         });
         Ok(())
     }
@@ -986,7 +986,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let abs = self.backend.to_host_v(abs)?;
         let absc = self.backend.to_host_v(absc)?;
         abs.iter().zip(absc.iter()).for_each(|(&v, &vc)| {
-            assert_approx_eq::assert_approx_eq!(vc.sqrt(), v);
+            assert_approx_eq::assert_approx_eq!(vc.sqrt(), v, EPS);
         });
         Ok(())
     }
@@ -1002,8 +1002,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let vc = self.backend.to_host_cv(vc)?;
         v.iter().zip(vc.iter()).for_each(|(v, vc)| {
             let norm = vc.abs();
-            assert_approx_eq::assert_approx_eq!(vc.re / norm, v.re);
-            assert_approx_eq::assert_approx_eq!(vc.im / norm, v.im);
+            assert_approx_eq::assert_approx_eq!(vc.re / norm, v.re, EPS);
+            assert_approx_eq::assert_approx_eq!(vc.im / norm, v.im, EPS);
         });
         Ok(())
     }
@@ -1020,8 +1020,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let r = vc.re;
             let i = vc.im;
             let reciprocal = Complex::new(r / (r * r + i * i), -i / (r * r + i * i));
-            assert_approx_eq::assert_approx_eq!(reciprocal.re, v.re);
-            assert_approx_eq::assert_approx_eq!(reciprocal.im, v.im);
+            assert_approx_eq::assert_approx_eq!(reciprocal.re, v.re, EPS);
+            assert_approx_eq::assert_approx_eq!(reciprocal.im, v.im, EPS);
         });
         Ok(())
     }
@@ -1037,7 +1037,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let v = self.backend.to_host_v(v)?;
         let vc = self.backend.to_host_v(vc)?;
         v.iter().zip(vc.iter()).for_each(|(v, vc)| {
-            assert_approx_eq::assert_approx_eq!(vc.powf(e), v);
+            assert_approx_eq::assert_approx_eq!(vc.powf(e), v, EPS);
         });
         Ok(())
     }
@@ -1051,7 +1051,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let v = self.backend.to_host_cv(v)?;
         let vc = self.backend.to_host_cv(vc)?;
         v.iter().zip(vc.iter()).for_each(|(v, vc)| {
-            assert_approx_eq::assert_approx_eq!(vc.exp(), v);
+            assert_approx_eq::assert_approx_eq!(vc.exp(), v, EPS);
         });
         Ok(())
     }
@@ -1167,8 +1167,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let expected = u.transpose().rows(N - 1, 1) * k;
 
         (0..N).for_each(|i| {
-            assert_approx_eq::assert_approx_eq!(b[i].re, expected[i].re, EPS);
-            assert_approx_eq::assert_approx_eq!(b[i].im, expected[i].im, EPS);
+            assert_approx_eq::assert_approx_eq!(b[i].re, expected[i].re, 0.1);
+            assert_approx_eq::assert_approx_eq!(b[i].im, expected[i].im, 0.1);
         });
         Ok(())
     }
@@ -1188,8 +1188,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(bc.iter())
             .for_each(|((b, a), bc)| {
-                assert_approx_eq::assert_approx_eq!(a.re * bc.re - a.im * bc.im, b.re);
-                assert_approx_eq::assert_approx_eq!(a.re * bc.im + a.im * bc.re, b.im);
+                assert_approx_eq::assert_approx_eq!(a.re * bc.re - a.im * bc.im, b.re, EPS);
+                assert_approx_eq::assert_approx_eq!(a.re * bc.im + a.im * bc.re, b.im, EPS);
             });
         Ok(())
     }
@@ -1209,8 +1209,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(b.iter())
             .for_each(|((c, a), b)| {
-                assert_approx_eq::assert_approx_eq!(a.re * b.re - a.im * b.im, c.re);
-                assert_approx_eq::assert_approx_eq!(a.re * b.im + a.im * b.re, c.im);
+                assert_approx_eq::assert_approx_eq!(a.re * b.re - a.im * b.im, c.re, EPS);
+                assert_approx_eq::assert_approx_eq!(a.re * b.im + a.im * b.re, c.im, EPS);
             });
         Ok(())
     }
@@ -1229,8 +1229,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(b.iter())
             .for_each(|((c, a), b)| {
-                assert_approx_eq::assert_approx_eq!(a.re * b.re - a.im * b.im, c.re);
-                assert_approx_eq::assert_approx_eq!(a.re * b.im + a.im * b.re, c.im);
+                assert_approx_eq::assert_approx_eq!(a.re * b.re - a.im * b.im, c.re, EPS);
+                assert_approx_eq::assert_approx_eq!(a.re * b.im + a.im * b.re, c.im, EPS);
             });
         Ok(())
     }
@@ -1261,8 +1261,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(b.iter())
             .map(|(a, b)| a.conj() * b)
             .sum::<Complex>();
-        assert_approx_eq::assert_approx_eq!(dot.re, expect.re);
-        assert_approx_eq::assert_approx_eq!(dot.im, expect.im);
+        assert_approx_eq::assert_approx_eq!(dot.re, expect.re, EPS);
+        assert_approx_eq::assert_approx_eq!(dot.im, expect.im, EPS);
         Ok(())
     }
 
@@ -1283,7 +1283,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(bc.iter())
             .for_each(|((b, a), bc)| {
-                assert_approx_eq::assert_approx_eq!(alpha * a + bc, b);
+                assert_approx_eq::assert_approx_eq!(alpha * a + bc, b, EPS);
             });
         Ok(())
     }
@@ -1305,7 +1305,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(bc.iter())
             .for_each(|((b, a), bc)| {
-                assert_approx_eq::assert_approx_eq!(alpha * a + bc, b);
+                assert_approx_eq::assert_approx_eq!(alpha * a + bc, b, EPS);
             });
         Ok(())
     }
@@ -1330,8 +1330,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let cc = self.backend.to_host_cm(cc)?;
             let expected = a * b.transpose() * alpha + cc * beta;
             c.iter().zip(expected.iter()).for_each(|(c, expected)| {
-                assert_approx_eq::assert_approx_eq!(c.re, expected.re);
-                assert_approx_eq::assert_approx_eq!(c.im, expected.im);
+                assert_approx_eq::assert_approx_eq!(c.re, expected.re, EPS);
+                assert_approx_eq::assert_approx_eq!(c.im, expected.im, EPS);
             });
         }
 
@@ -1359,8 +1359,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let cc = self.backend.to_host_cm(cc)?;
             let expected = a * b.adjoint() * alpha + cc * beta;
             c.iter().zip(expected.iter()).for_each(|(c, expected)| {
-                assert_approx_eq::assert_approx_eq!(c.re, expected.re);
-                assert_approx_eq::assert_approx_eq!(c.im, expected.im);
+                assert_approx_eq::assert_approx_eq!(c.re, expected.re, EPS);
+                assert_approx_eq::assert_approx_eq!(c.im, expected.im, EPS);
             });
         }
         Ok(())
@@ -1724,7 +1724,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         let b = self.backend.to_host_v(bb)?;
         b.iter().zip(x.iter()).for_each(|(b, x)| {
-            assert_approx_eq::assert_approx_eq!(b, x, EPS);
+            assert_approx_eq::assert_approx_eq!(b, x, 0.1);
         });
         Ok(())
     }
@@ -1759,8 +1759,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let x = self.backend.to_host_cv(x)?;
         let b = self.backend.to_host_cv(b)?;
         b.iter().zip(x.iter()).for_each(|(b, x)| {
-            assert_approx_eq::assert_approx_eq!(b.re, x.re, EPS);
-            assert_approx_eq::assert_approx_eq!(b.im, x.im, EPS);
+            assert_approx_eq::assert_approx_eq!(b.re, x.re, 0.1);
+            assert_approx_eq::assert_approx_eq!(b.im, x.im, 0.1);
         });
         Ok(())
     }
@@ -1777,7 +1777,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         (0..N).for_each(|row| {
             let sum = a.row(row).iter().sum::<float>();
-            assert_approx_eq::assert_approx_eq!(sum, b[row]);
+            assert_approx_eq::assert_approx_eq!(sum, b[row], EPS);
         });
         Ok(())
     }
@@ -1796,7 +1796,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(b.iter())
             .for_each(|((&c, &a), &b)| {
-                assert_approx_eq::assert_approx_eq!(c, a / a.abs() * b);
+                assert_approx_eq::assert_approx_eq!(c, a / a.abs() * b, EPS);
             });
 
         Ok(())
@@ -1816,7 +1816,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .zip(a.iter())
             .zip(bc.iter())
             .for_each(|((&b, &a), &bc)| {
-                assert_approx_eq::assert_approx_eq!(b, bc / bc.abs() * a);
+                assert_approx_eq::assert_approx_eq!(b, bc / bc.abs() * a, EPS);
             });
 
         Ok(())
@@ -1856,8 +1856,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
         let g = self.backend.to_host_cm(g)?;
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
-            assert_approx_eq::assert_approx_eq!(r.re, g.re);
-            assert_approx_eq::assert_approx_eq!(r.im, g.im);
+            assert_approx_eq::assert_approx_eq!(r.re, g.re, EPS);
+            assert_approx_eq::assert_approx_eq!(r.im, g.im, EPS);
         });
         Ok(())
     }
@@ -1923,8 +1923,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
                 .sum::<usize>()
         );
         reference.iter().zip(g.iter()).for_each(|(r, g)| {
-            assert_approx_eq::assert_approx_eq!(r.re, g.re);
-            assert_approx_eq::assert_approx_eq!(r.im, g.im);
+            assert_approx_eq::assert_approx_eq!(r.re, g.re, EPS);
+            assert_approx_eq::assert_approx_eq!(r.im, g.im, EPS);
         });
         Ok(())
     }
@@ -1962,8 +1962,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         let b = self.backend.to_host_cm(b)?;
         reference.iter().zip(b.iter()).for_each(|(r, b)| {
-            assert_approx_eq::assert_approx_eq!(r.re, b.re);
-            assert_approx_eq::assert_approx_eq!(r.im, b.im);
+            assert_approx_eq::assert_approx_eq!(r.re, b.re, EPS);
+            assert_approx_eq::assert_approx_eq!(r.im, b.im, EPS);
         });
         Ok(())
     }

@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -137,7 +137,7 @@ mod tests {
         b[&0].iter().for_each(|d| assert_eq!(d.amp.value(), 1.0));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
-                let dir = d;
+                let dir = d.normalize();
                 let v = Vector3::new(dir.y, -dir.x, 0.);
                 let theta_v = v.norm().asin();
                 let rot = if let Some(v) = v.try_normalize(1.0e-6) {
@@ -165,7 +165,7 @@ mod tests {
         b[&0].iter().for_each(|b| assert_eq!(b.amp.value(), 0.5));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
-                let dir = d;
+                let dir = d.normalize();
                 let v = Vector3::new(dir.y, -dir.x, 0.);
                 let theta_v = v.norm().asin();
                 let rot = if let Some(v) = v.try_normalize(1.0e-6) {
