@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -77,14 +77,14 @@ pub trait Gain<T: Transducer>: GainAsAny {
 }
 
 impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn as_any(&self) -> &dyn std::any::Any {
         self.as_ref().as_any()
     }
 }
 
 impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn calc(
         &self,
         geometry: &Geometry<T>,

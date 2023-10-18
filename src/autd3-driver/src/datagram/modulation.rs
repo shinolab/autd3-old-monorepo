@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,29 +39,29 @@ pub trait Modulation: ModulationProperty {
 }
 
 impl ModulationProperty for Box<dyn Modulation> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn sampling_frequency(&self) -> float {
         self.as_ref().sampling_frequency()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn sampling_frequency_division(&self) -> u32 {
         self.as_ref().sampling_frequency_division()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn sampling_period(&self) -> std::time::Duration {
         self.as_ref().sampling_period()
     }
 }
 
 impl Modulation for Box<dyn Modulation> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
         self.as_ref().calc()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn len(&self) -> Result<usize, AUTDInternalError> {
         self.as_ref().len()
     }

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,27 +69,27 @@ pub trait Operation<T: Transducer> {
 }
 
 impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         self.as_mut().init(geometry)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn required_size(&self, device: &Device<T>) -> usize {
         self.as_ref().required_size(device)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         self.as_mut().pack(device, tx)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn commit(&mut self, device: &Device<T>) {
         self.as_mut().commit(device)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn remains(&self, device: &Device<T>) -> usize {
         self.as_ref().remains(device)
     }
@@ -196,14 +196,14 @@ pub mod tests {
     }
 
     impl GainAsAny for TestGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn as_any(&self) -> &dyn std::any::Any {
             self
         }
     }
 
     impl<T: Transducer> Gain<T> for TestGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
             _geometry: &Geometry<T>,
@@ -217,21 +217,21 @@ pub mod tests {
     pub struct NullGain {}
 
     impl Clone for NullGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn clone(&self) -> Self {
             *self
         }
     }
 
     impl GainAsAny for NullGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn as_any(&self) -> &dyn std::any::Any {
             self
         }
     }
 
     impl<T: Transducer> Gain<T> for NullGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
             geometry: &Geometry<T>,
@@ -248,21 +248,21 @@ pub mod tests {
     pub struct ErrGain {}
 
     impl Clone for ErrGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn clone(&self) -> Self {
             *self
         }
     }
 
     impl GainAsAny for ErrGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn as_any(&self) -> &dyn std::any::Any {
             self
         }
     }
 
     impl<T: Transducer> Gain<T> for ErrGain {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
             _geometry: &Geometry<T>,
