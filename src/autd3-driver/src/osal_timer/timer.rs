@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -32,7 +32,7 @@ pub struct Timer<F: TimerCallback> {
 }
 
 impl<F: TimerCallback> Timer<F> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     pub fn start(cb: F, period: std::time::Duration) -> Result<Box<Self>, AUTDInternalError> {
         let mut timer = Box::new(Self {
             lock: AtomicBool::new(false),
@@ -46,7 +46,7 @@ impl<F: TimerCallback> Timer<F> {
         Ok(timer)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     pub fn close(mut self) -> Result<F, AUTDInternalError> {
         self.native_timer.close()?;
         Ok(self.cb)

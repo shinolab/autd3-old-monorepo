@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 18/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -86,32 +86,32 @@ pub trait LinkBuilder<T: Transducer> {
 }
 
 impl Link for Box<dyn Link> {
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.as_mut().close()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         self.as_mut().send(tx)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         self.as_mut().receive(rx)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn is_open(&self) -> bool {
         self.as_ref().is_open()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn timeout(&self) -> Duration {
         self.as_ref().timeout()
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn send_receive(
         &mut self,
         tx: &TxDatagram,
@@ -121,7 +121,7 @@ impl Link for Box<dyn Link> {
         self.as_mut().send_receive(tx, rx, timeout)
     }
 
-    #[cfg_attr(coverage_nightly, no_coverage)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
@@ -145,7 +145,7 @@ mod tests {
     }
 
     impl Link for MockLink {
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn close(&mut self) -> Result<(), AUTDInternalError> {
             self.is_open = false;
             Ok(())
@@ -175,7 +175,7 @@ mod tests {
             Ok(!self.down)
         }
 
-        #[cfg_attr(coverage_nightly, no_coverage)]
+        #[cfg_attr(coverage_nightly, coverage(off))]
         fn is_open(&self) -> bool {
             self.is_open
         }
