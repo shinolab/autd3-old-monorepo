@@ -1,6 +1,7 @@
 # 16.1.0
 
 - `modulation::Square` with out of range duty ratio now return Err
+- Fix [#212](https://github.com/shinolab/autd3/issues/212): unity-linux and unity-mac packages are not published
 
 # 16.0.3
 
