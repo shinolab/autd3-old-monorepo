@@ -32,10 +32,7 @@ jobs:
       CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v4
-      - name: submodules
-        run: |
-          git submodule update --init --recursive
-
+      
       - name: Setup
         if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
@@ -56,8 +53,7 @@ jobs:
 
       - name: Generate code coverage
         run: |
-          cd src
-          cargo +nightly llvm-cov --features "remote test-utilities python gpu" --workspace --exclude=autd3-backend-arrayfire --exclude=autd3-backend-cuda --lcov --output-path lcov.info
+          python build.py cov --skip-cuda
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
