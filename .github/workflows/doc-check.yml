@@ -43,16 +43,10 @@ jobs:
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build src
+      - name: Test book jp
         if: needs.check-src.outputs.status
         run: |
-          cd ./src
-          cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
-      - name: Build book jp
-        if: needs.check-src.outputs.status
-        run: |
-          cd ./doc
-          MDBOOK_BOOK__src=src/jp mdbook test --dest-dir book/jp -L ./../src/target/debug/deps
+          python3 build.py doc test jp
 
   build-en:
     needs: check
@@ -66,13 +60,7 @@ jobs:
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build src
+      - name: Test book en
         if: needs.check-src.outputs.status
         run: |
-          cd ./src
-          cargo build --all --features "remote" --exclude autd3-backend-arrayfire --exclude autd3-backend-cuda
-      - name: Build book en
-        if: needs.check-src.outputs.status
-        run: |
-          cd ./doc
-          MDBOOK_BOOK__src=src/en mdbook test --dest-dir book/en -L ./../src/target/debug/deps
+          python3 build.py doc test en

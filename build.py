@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 import argparse
+import contextlib
 import glob
 import re
 import shutil
@@ -78,6 +79,27 @@ def rmtree_glob_f(path):
         rmtree_f(f)
 
 
+@contextlib.contextmanager
+def set_env(key, value):
+    env = os.environ.copy()
+    os.environ[key] = value
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(env)
+
+
+@contextlib.contextmanager
+def working_dir(path):
+    cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(cwd)
+
+
 is_windows = platform.system() == "Windows"
 is_macos = platform.system() == "Darwin"
 is_linux = platform.system() == "Linux"
@@ -111,12 +133,8 @@ def setup_aarch64_linker():
 
 
 def fetch_submodule():
-    path = os.getcwd()
-    try:
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    with working_dir(os.path.dirname(os.path.abspath(__file__))):
         subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
-    finally:
-        os.chdir(path)
 
 
 def rust_build(args):
@@ -136,51 +154,50 @@ def rust_build(args):
             warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
             args.af = False
 
-    os.chdir("src")
+    with working_dir("src"):
+        commands = ["cargo", "build"]
+        if args.release:
+            commands.append("--release")
+        if args.all:
+            commands.append("--all")
+            if not args.cuda:
+                commands.append("--exclude=autd3-backend-cuda")
+            if not args.af:
+                commands.append("--exclude=autd3-backend-arrayfire")
 
-    commands = ["cargo", "build"]
-    if args.release:
-        commands.append("--release")
-    if args.all:
-        commands.append("--all")
-        if not args.cuda:
-            commands.append("--exclude=autd3-backend-cuda")
-        if not args.af:
-            commands.append("--exclude=autd3-backend-arrayfire")
+        if is_linux and args.arch is not None:
+            info("Skip build examples because cross compilation is not supported.")
+            args.no_examples = True
+            if args.arch == "arm32":
+                setup_arm32_linker()
+                commands.append("--exclude=autd3-backend-cuda")
+                commands.append("--exclude=autd3-backend-arrayfire")
+                commands.append("--exclude=autd3-link-visualizer")
+                commands.append("--target=armv7-unknown-linux-gnueabihf")
+            elif args.arch == "aarch64":
+                setup_aarch64_linker()
+                commands.append("--exclude=autd3-backend-cuda")
+                commands.append("--exclude=autd3-backend-arrayfire")
+                commands.append("--exclude=autd3-link-visualizer")
+                commands.append("--target=aarch64-unknown-linux-gnu")
+            else:
+                err(f'arch "{args.arch}" is not supported.')
+                sys.exit(-1)
 
-    if is_linux and args.arch is not None:
-        info("Skip build examples because cross compilation is not supported.")
-        args.no_examples = True
-        if args.arch == "arm32":
-            setup_arm32_linker()
-            commands.append("--exclude=autd3-backend-cuda")
-            commands.append("--exclude=autd3-backend-arrayfire")
-            commands.append("--exclude=autd3-link-visualizer")
-            commands.append("--target=armv7-unknown-linux-gnueabihf")
-        elif args.arch == "aarch64":
-            setup_aarch64_linker()
-            commands.append("--exclude=autd3-backend-cuda")
-            commands.append("--exclude=autd3-backend-arrayfire")
-            commands.append("--exclude=autd3-link-visualizer")
-            commands.append("--target=aarch64-unknown-linux-gnu")
-        else:
-            err(f'arch "{args.arch}" is not supported.')
-            sys.exit(-1)
-
-    subprocess.run(commands).check_returncode()
+        subprocess.run(commands).check_returncode()
 
     if not args.no_examples:
         info("Building examples...")
-        os.chdir("examples")
-        command = ["cargo", "build", "--bins"]
-        if args.release:
-            command.append("--release")
-        features = "async soem twincat"
-        if args.all:
-            features += " simulator remote_soem remote_twincat visualizer gpu python lightweight"
-        command.append("--features")
-        command.append(features)
-        subprocess.run(command).check_returncode()
+        with working_dir("src/examples"):
+            command = ["cargo", "build", "--bins"]
+            if args.release:
+                command.append("--release")
+            features = "async soem twincat"
+            if args.all:
+                features += " simulator remote_soem remote_twincat visualizer gpu python lightweight"
+            command.append("--features")
+            command.append(features)
+            subprocess.run(command).check_returncode()
 
 
 def rust_lint(args):
@@ -200,35 +217,34 @@ def rust_lint(args):
             warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
             args.af = False
 
-    os.chdir("src")
-    commands = ["cargo", "clippy"]
-    if args.release:
-        commands.append("--release")
-    if args.all:
-        commands.append("--all")
-        if not args.cuda:
-            commands.append("--exclude=autd3-backend-cuda")
-        if not args.af:
-            commands.append("--exclude=autd3-backend-arrayfire")
-    commands.append("--")
-    commands.append("-D")
-    commands.append("warnings")
-    subprocess.run(commands).check_returncode()
-    os.chdir("..")
+    with working_dir("src"):
+        commands = ["cargo", "clippy"]
+        if args.release:
+            commands.append("--release")
+        if args.all:
+            commands.append("--all")
+            if not args.cuda:
+                commands.append("--exclude=autd3-backend-cuda")
+            if not args.af:
+                commands.append("--exclude=autd3-backend-arrayfire")
+        commands.append("--")
+        commands.append("-D")
+        commands.append("warnings")
+        subprocess.run(commands).check_returncode()
 
-    os.chdir("capi")
-    commands = ["cargo", "clippy"]
-    if args.release:
-        commands.append("--release")
-    if args.all:
-        commands.append("--all")
-        if not args.cuda:
-            commands.append("--exclude=autd3capi-backend-cuda")
-    commands.append("--")
-    commands.append("-D")
-    commands.append("warnings")
+    with working_dir("capi"):
+        commands = ["cargo", "clippy"]
+        if args.release:
+            commands.append("--release")
+        if args.all:
+            commands.append("--all")
+            if not args.cuda:
+                commands.append("--exclude=autd3capi-backend-cuda")
+        commands.append("--")
+        commands.append("-D")
+        commands.append("warnings")
 
-    subprocess.run(commands).check_returncode()
+        subprocess.run(commands).check_returncode()
 
 
 def rust_test(args):
@@ -248,21 +264,20 @@ def rust_test(args):
             warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
             args.af = False
 
-    os.chdir("src")
+    with working_dir("src"):
+        commands = ["cargo", "test"]
+        if args.release:
+            commands.append("--release")
+        if args.all:
+            commands.append("--all")
+            if not args.cuda or args.skip_cuda:
+                commands.append("--exclude=autd3-backend-cuda")
+            if not args.af:
+                commands.append("--exclude=autd3-backend-arrayfire")
+        commands.append("--features")
+        commands.append("test-utilities")
 
-    commands = ["cargo", "test"]
-    if args.release:
-        commands.append("--release")
-    if args.all:
-        commands.append("--all")
-        if not args.cuda or args.skip_cuda:
-            commands.append("--exclude=autd3-backend-cuda")
-        if not args.af:
-            commands.append("--exclude=autd3-backend-arrayfire")
-    commands.append("--features")
-    commands.append("test-utilities")
-
-    subprocess.run(commands).check_returncode()
+        subprocess.run(commands).check_returncode()
 
 
 def rust_run(args):
@@ -301,23 +316,22 @@ def rust_run(args):
     if args.target == "lightweight":
         args.features = "lightweight"
 
-    os.chdir("src/examples")
+    with working_dir("src/examples"):
+        commands = ["cargo", "run"]
+        if args.release:
+            commands.append("--release")
+        commands.append("--bin")
+        commands.append(args.target)
+        if hasattr(args, "features"):
+            commands.append("--features")
+            commands.append(args.features)
 
-    commands = ["cargo", "run"]
-    if args.release:
-        commands.append("--release")
-    commands.append("--bin")
-    commands.append(args.target)
-    if hasattr(args, "features"):
-        commands.append("--features")
-        commands.append(args.features)
-
-    subprocess.run(commands).check_returncode()
+        subprocess.run(commands).check_returncode()
 
 
 def rust_clear(_):
-    os.chdir("src")
-    subprocess.run(["cargo", "clean"]).check_returncode()
+    with working_dir("src"):
+        subprocess.run(["cargo", "clean"]).check_returncode()
 
 
 def rust_coverage(args):
@@ -336,38 +350,35 @@ def rust_coverage(args):
         warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
         args.af = False
 
-    os.chdir("src")
+    with working_dir("src"):
+        commands = [
+            "cargo",
+            "+nightly",
+            "llvm-cov",
+            "--features",
+            "remote test-utilities python gpu",
+            "--workspace",
+            "--lcov",
+            "--output-path",
+            "lcov.info",
+        ]
+        if args.release:
+            commands.append("--release")
+        if not args.cuda or args.skip_cuda:
+            commands.append("--exclude=autd3-backend-cuda")
+        if not args.af:
+            commands.append("--exclude=autd3-backend-arrayfire")
 
-    commands = [
-        "cargo",
-        "+nightly",
-        "llvm-cov",
-        "--features",
-        "remote test-utilities python gpu",
-        "--workspace",
-        "--lcov",
-        "--output-path",
-        "lcov.info",
-    ]
-    if args.release:
-        commands.append("--release")
-    if not args.cuda or args.skip_cuda:
-        commands.append("--exclude=autd3-backend-cuda")
-    if not args.af:
-        commands.append("--exclude=autd3-backend-arrayfire")
-
-    subprocess.run(commands).check_returncode()
+        subprocess.run(commands).check_returncode()
 
 
 def capi_clear(_):
-    os.chdir("capi")
-    subprocess.run(["cargo", "clean"]).check_returncode()
+    with working_dir("capi"):
+        subprocess.run(["cargo", "clean"]).check_returncode()
 
 
 def build_capi(args, features=None):
-    try:
-        os.chdir("capi")
-
+    with working_dir("capi"):
         if is_macos:
             args.cuda = False
         else:
@@ -412,10 +423,6 @@ def build_capi(args, features=None):
                     err(f'arch "{args.arch}" is not supported.')
                     sys.exit(-1)
             subprocess.run(commands).check_returncode()
-    except Exception as e:
-        raise e
-    finally:
-        os.chdir("..")
 
 
 def cpp_build(args):
@@ -471,19 +478,19 @@ def cpp_build(args):
 
     if not args.no_examples:
         info("Building examples...")
-        os.chdir("cpp/examples")
-        os.makedirs("build", exist_ok=True)
-        os.chdir("build")
-        command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
-        if args.cmake_extra is not None:
-            for cmd in args.cmake_extra.split(" "):
-                command.append(cmd)
-        subprocess.run(command).check_returncode()
-        command = ["cmake", "--build", "."]
-        if args.release:
-            command.append("--config")
-            command.append("Release")
-        subprocess.run(command).check_returncode()
+        with working_dir("cpp/examples"):
+            os.makedirs("build", exist_ok=True)
+            with working_dir("build"):
+                command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
+                if args.cmake_extra is not None:
+                    for cmd in args.cmake_extra.split(" "):
+                        command.append(cmd)
+                subprocess.run(command).check_returncode()
+                command = ["cmake", "--build", "."]
+                if args.release:
+                    command.append("--config")
+                    command.append("Release")
+                subprocess.run(command).check_returncode()
 
 
 def cpp_test(args):
@@ -492,26 +499,27 @@ def cpp_test(args):
     args.no_examples = True
     cpp_build(args)
 
-    os.chdir("cpp/tests")
-    os.makedirs("build", exist_ok=True)
-    os.chdir("build")
-    command = ["cmake", ".."]
-    if args.cuda and not args.skip_cuda:
-        command.append("-DENABLE_BACKEND_CUDA=ON")
-    if args.cmake_extra is not None:
-        for cmd in args.cmake_extra.split(" "):
-            command.append(cmd)
-    subprocess.run(command).check_returncode()
-    subprocess.run(["cmake", "--build", ".", "--config", "Release"]).check_returncode()
+    with working_dir("cpp/tests"):
+        os.makedirs("build", exist_ok=True)
+        with working_dir("build"):
+            command = ["cmake", ".."]
+            if args.cuda and not args.skip_cuda:
+                command.append("-DENABLE_BACKEND_CUDA=ON")
+            if args.cmake_extra is not None:
+                for cmd in args.cmake_extra.split(" "):
+                    command.append(cmd)
+            subprocess.run(command).check_returncode()
+            subprocess.run(["cmake", "--build", ".", "--config", "Release"]).check_returncode()
 
-    target_dir = "Release" if is_windows else "."
-    subprocess.run([f"{target_dir}/test_autd3{exe_ext}"]).check_returncode()
+            target_dir = "Release" if is_windows else "."
+            subprocess.run([f"{target_dir}/test_autd3{exe_ext}"]).check_returncode()
 
 
 def cpp_run(args):
     args.universal = None
     args.arch = None
     args.no_examples = False
+    args.cmake_extra = None
     cpp_build(args)
 
     if is_windows:
@@ -519,15 +527,15 @@ def cpp_run(args):
     else:
         target_dir = "."
 
-    subprocess.run([f"{target_dir}/{args.target}{exe_ext}"]).check_returncode()
+    subprocess.run([f"cpp/examples/build/{target_dir}/{args.target}{exe_ext}"]).check_returncode()
 
 
 def cpp_clear(_):
-    os.chdir("cpp")
-    rmtree_f("lib")
-    rmtree_f("bin")
-    rmtree_f("examples/build")
-    rmtree_f("tests/build")
+    with working_dir("cpp"):
+        rmtree_f("lib")
+        rmtree_f("bin")
+        rmtree_f("examples/build")
+        rmtree_f("tests/build")
 
 
 def cs_build(args):
@@ -574,37 +582,37 @@ def cs_build(args):
             f.write("\n=========================================================\n")
             f.write(notice.read())
 
-    os.chdir("dotnet/cs/src")
-    command = ["dotnet", "build"]
-    if args.release:
-        command.append("-c:Release")
-    subprocess.run(command).check_returncode()
-
-    _ = subprocess.run(
-        ["dotnet", "nuget", "remove", "source", "autd3sharp_local"],
-        check=False,
-        capture_output=True,
-    )
-    bin_dir = "Release" if args.release else "Debug"
-    subprocess.run(
-        [
-            "dotnet",
-            "nuget",
-            "add",
-            "source",
-            f"{os.getcwd()}/bin/{bin_dir}",
-            "-n",
-            "autd3sharp_local",
-        ]
-    )
-
-    if not args.no_examples:
-        info("Building examples...")
-        os.chdir("../example")
+    with working_dir("dotnet/cs/src"):
         command = ["dotnet", "build"]
         if args.release:
             command.append("-c:Release")
         subprocess.run(command).check_returncode()
+
+        _ = subprocess.run(
+            ["dotnet", "nuget", "remove", "source", "autd3sharp_local"],
+            check=False,
+            capture_output=True,
+        )
+        bin_dir = "Release" if args.release else "Debug"
+        subprocess.run(
+            [
+                "dotnet",
+                "nuget",
+                "add",
+                "source",
+                f"{os.getcwd()}/bin/{bin_dir}",
+                "-n",
+                "autd3sharp_local",
+            ]
+        )
+
+    if not args.no_examples:
+        info("Building examples...")
+        with working_dir("dotnet/cs/example"):
+            command = ["dotnet", "build"]
+            if args.release:
+                command.append("-c:Release")
+            subprocess.run(command).check_returncode()
 
 
 def cs_test(args):
@@ -638,14 +646,14 @@ def cs_test(args):
 
     shutil.copyfile("LICENSE", "dotnet/cs/src/LICENSE.txt")
 
-    os.chdir("dotnet/cs/src")
-    command = ["dotnet", "build"]
-    command.append("-c:Release")
-    subprocess.run(command).check_returncode()
+    with working_dir("dotnet/cs/src"):
+        command = ["dotnet", "build"]
+        command.append("-c:Release")
+        subprocess.run(command).check_returncode()
 
-    os.chdir("../tests")
-    command = ["dotnet", "test"]
-    subprocess.run(command).check_returncode()
+    with working_dir("dotnet/cs/tests"):
+        command = ["dotnet", "test"]
+        subprocess.run(command).check_returncode()
 
 
 def cs_run(args):
@@ -653,28 +661,29 @@ def cs_run(args):
     args.no_examples = False
     cs_build(args)
 
-    command = ["dotnet", "run"]
-    command.append("--project")
-    command.append(args.target)
-    if args.release:
-        command.append("-c:Release")
-    subprocess.run(command).check_returncode()
+    with working_dir("dotnet/cs/example"):
+        command = ["dotnet", "run"]
+        command.append("--project")
+        command.append(args.target)
+        if args.release:
+            command.append("-c:Release")
+        subprocess.run(command).check_returncode()
 
 
 def cs_clear(_):
-    os.chdir("dotnet/cs")
-    rmtree_f("src/bin")
-    rmtree_f("src/obj")
-    rm_f("src/LICENSE.txt")
+    with working_dir("dotnet/cs"):
+        rmtree_f("src/bin")
+        rmtree_f("src/obj")
+        rm_f("src/LICENSE.txt")
 
-    rmtree_f("tests/bin")
-    rmtree_f("tests/obj")
-    rm_glob_f("tests/*.dll")
-    rm_glob_f("tests/*.dylib")
-    rm_glob_f("tests/*.so")
+        rmtree_f("tests/bin")
+        rmtree_f("tests/obj")
+        rm_glob_f("tests/*.dll")
+        rm_glob_f("tests/*.dylib")
+        rm_glob_f("tests/*.so")
 
-    rmtree_glob_f("example/**/bin")
-    rmtree_glob_f("example/**/obj")
+        rmtree_glob_f("example/**/bin")
+        rmtree_glob_f("example/**/obj")
 
 
 def unity_build(args):
@@ -764,14 +773,13 @@ def unity_build(args):
     shutil.copy("CHANGELOG.md", f"{unity_dir}/Assets/CHANGELOG.md")
 
     if is_windows:
-        os.chdir("server/simulator")
-        commands = ["cargo", "build"]
-        if args.release:
-            commands.append("--release")
-        commands.append("--features")
-        commands.append("left_handed use_meter")
-        subprocess.run(commands).check_returncode()
-        os.chdir("../..")
+        with working_dir("server/simulator"):
+            commands = ["cargo", "build"]
+            if args.release:
+                commands.append("--release")
+            commands.append("--features")
+            commands.append("left_handed use_meter")
+            subprocess.run(commands).check_returncode()
 
         simulator_src = "server/src-tauri/target/release/simulator.exe" if args.release else "server/src-tauri/target/debug/simulator.exe"
         shutil.copy(simulator_src, f"{unity_dir}/Assets/Editor/autd_simulator.exe")
@@ -794,27 +802,25 @@ def unity_build(args):
 
 
 def unity_clear(_):
-    os.chdir("dotnet")
+    with working_dir("dotnet"):
+        for unity_dir in ["unity", "unity-mac", "unity-linux"]:
+            with working_dir(unity_dir):
+                rmtree_f(".vs")
+                rmtree_f("Library")
+                rmtree_f("Logs")
+                rmtree_f("obj")
+                rmtree_f("Packages")
+                rmtree_f("ProjectSettings")
+                rmtree_f("UserSettings")
+                rm_glob_f("Assets/Scripts/**/*.cs", exclude="Assets/Scripts/NativeMethods/*.cs")
 
-    for unity_dir in ["unity", "unity-mac", "unity-linux"]:
-        os.chdir(unity_dir)
-        rmtree_f(".vs")
-        rmtree_f("Library")
-        rmtree_f("Logs")
-        rmtree_f("obj")
-        rmtree_f("Packages")
-        rmtree_f("ProjectSettings")
-        rmtree_f("UserSettings")
-        rm_glob_f("Assets/Scripts/**/*.cs", exclude="Assets/Scripts/NativeMethods/*.cs")
-        os.chdir("..")
+        rm_glob_f("unity/Assets/Plugins/x86_64/*.dll")
+        rm_glob_f("unity-mac/Assets/Plugins/aarch64/*.dylib")
+        rm_glob_f("unity-mac/Assets/Plugins/x86_64/*.dylib")
+        rm_glob_f("unity-linux/Assets/Plugins/x86_64/*.so")
 
-    rm_glob_f("unity/Assets/Plugins/x86_64/*.dll")
-    rm_glob_f("unity-mac/Assets/Plugins/aarch64/*.dylib")
-    rm_glob_f("unity-mac/Assets/Plugins/x86_64/*.dylib")
-    rm_glob_f("unity-linux/Assets/Plugins/x86_64/*.so")
-
-    rm_f("unity/Assets/Editor/assets/autd3.glb")
-    rm_f("unity/Assets/Editor/autd_simulator.exe")
+        rm_f("unity/Assets/Editor/assets/autd3.glb")
+        rm_f("unity/Assets/Editor/autd_simulator.exe")
 
 
 def fs_build(args):
@@ -824,11 +830,11 @@ def fs_build(args):
 
     if not no_examples:
         info("Building examples...")
-        os.chdir("../../fs/example")
-        command = ["dotnet", "build"]
-        if args.release:
-            command.append("-c:Release")
-        subprocess.run(command).check_returncode()
+        with working_dir("dotnet/fs/example"):
+            command = ["dotnet", "build"]
+            if args.release:
+                command.append("-c:Release")
+            subprocess.run(command).check_returncode()
 
 
 def fs_run(args):
@@ -836,18 +842,19 @@ def fs_run(args):
     args.no_examples = False
     fs_build(args)
 
-    command = ["dotnet", "run"]
-    command.append("--project")
-    command.append(args.target)
-    if args.release:
-        command.append("-c:Release")
-    subprocess.run(command).check_returncode()
+    with working_dir("dotnet/fs/example"):
+        command = ["dotnet", "run"]
+        command.append("--project")
+        command.append(args.target)
+        if args.release:
+            command.append("-c:Release")
+        subprocess.run(command).check_returncode()
 
 
 def fs_clear(_):
-    os.chdir("dotnet/fs")
-    rmtree_glob_f("example/**/bin")
-    rmtree_glob_f("example/**/obj")
+    with working_dir("dotnet/fs"):
+        rmtree_glob_f("example/**/bin")
+        rmtree_glob_f("example/**/obj")
 
 
 def copy_py_bin(args):
@@ -894,72 +901,68 @@ def copy_py_bin(args):
 
 
 def build_wheel(args):
-    if is_windows:
-        with open("python/setup.cfg.template", "r") as setup:
-            content = setup.read()
-            content = content.replace(r"${classifiers_os}", "Operating System :: Microsoft :: Windows")
-            content = content.replace(r"${plat_name}", "win-amd64")
-            with open("python/setup.cfg", "w") as f:
-                f.write(content)
-        os.chdir("python")
-        subprocess.run(["python", "-m", "build", "-w"]).check_returncode()
-    elif is_macos:
-        if args.universal:
-            os.chdir("python")
+    with working_dir("python"):
+        if is_windows:
             with open("setup.cfg.template", "r") as setup:
                 content = setup.read()
-                content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
-                content = content.replace(r"${plat_name}", "macosx-10-13-x86_64")
+                content = content.replace(r"${classifiers_os}", "Operating System :: Microsoft :: Windows")
+                content = content.replace(r"${plat_name}", "win-amd64")
                 with open("setup.cfg", "w") as f:
                     f.write(content)
-            subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
-            with open("setup.cfg.template", "r") as setup:
-                content = setup.read()
-                content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
-                content = content.replace(r"${plat_name}", "macosx-11-0-arm64")
-                with open("setup.cfg", "w") as f:
-                    f.write(content)
-            subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
-        else:
-            with open("python/setup.cfg.template", "r") as setup:
-                content = setup.read()
-                content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
-                plat_name = ""
-                if platform.machine() in ["ADM64", "x86_64"]:
-                    plat_name = "macosx-10-13-x86_64"
-                else:
-                    plat_name = "macosx-11-0-arm64"
-                content = content.replace(r"${plat_name}", plat_name)
-                with open("python/setup.cfg", "w") as f:
-                    f.write(content)
-            os.chdir("python")
-            subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
-
-    elif is_linux:
-        with open("python/setup.cfg.template", "r") as setup:
-            content = setup.read()
-            content = content.replace(r"${classifiers_os}", "Operating System :: POSIX")
-            plat_name = ""
-            if args.arch is not None:
-                if args.arch == "arm32":
-                    plat_name = "linux_armv7l"
-                elif args.arch == "aarch64":
-                    plat_name = "manylinux2014_aarch64"
-                else:
-                    err(f'arch "{args.arch}" is not supported.')
-                    sys.exit(-1)
+            subprocess.run(["python", "-m", "build", "-w"]).check_returncode()
+        elif is_macos:
+            if args.universal:
+                with open("setup.cfg.template", "r") as setup:
+                    content = setup.read()
+                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    content = content.replace(r"${plat_name}", "macosx-10-13-x86_64")
+                    with open("setup.cfg", "w") as f:
+                        f.write(content)
+                subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
+                with open("setup.cfg.template", "r") as setup:
+                    content = setup.read()
+                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    content = content.replace(r"${plat_name}", "macosx-11-0-arm64")
+                    with open("setup.cfg", "w") as f:
+                        f.write(content)
+                subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
             else:
-                if platform.machine() in ["ADM64", "x86_64"]:
-                    plat_name = "manylinux1-x86_64"
-                elif platform.machine() in ["armv7l"]:
-                    plat_name = "linux_armv7l"
-                elif platform.machine() in ["aarch64"]:
-                    plat_name = "manylinux2014_aarch64"
-            content = content.replace(r"${plat_name}", plat_name)
-            with open("python/setup.cfg", "w") as f:
-                f.write(content)
-        os.chdir("python")
-        subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
+                with open("setup.cfg.template", "r") as setup:
+                    content = setup.read()
+                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    plat_name = ""
+                    if platform.machine() in ["ADM64", "x86_64"]:
+                        plat_name = "macosx-10-13-x86_64"
+                    else:
+                        plat_name = "macosx-11-0-arm64"
+                    content = content.replace(r"${plat_name}", plat_name)
+                    with open("setup.cfg", "w") as f:
+                        f.write(content)
+                subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
+        elif is_linux:
+            with open("setup.cfg.template", "r") as setup:
+                content = setup.read()
+                content = content.replace(r"${classifiers_os}", "Operating System :: POSIX")
+                plat_name = ""
+                if args.arch is not None:
+                    if args.arch == "arm32":
+                        plat_name = "linux_armv7l"
+                    elif args.arch == "aarch64":
+                        plat_name = "manylinux2014_aarch64"
+                    else:
+                        err(f'arch "{args.arch}" is not supported.')
+                        sys.exit(-1)
+                else:
+                    if platform.machine() in ["ADM64", "x86_64"]:
+                        plat_name = "manylinux1-x86_64"
+                    elif platform.machine() in ["armv7l"]:
+                        plat_name = "linux_armv7l"
+                    elif platform.machine() in ["aarch64"]:
+                        plat_name = "manylinux2014_aarch64"
+                content = content.replace(r"${plat_name}", plat_name)
+                with open("setup.cfg", "w") as f:
+                    f.write(content)
+            subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
 
 
 def py_build(args):
@@ -968,10 +971,12 @@ def py_build(args):
     build_wheel(args)
 
     if not args.no_install:
-        with open("setup.cfg.template", "r") as setup:
-            content = setup.read()
-            m = re.search("version = (.*)", content)
-            version = m.group(1)
+        with working_dir("python"):
+            version = ""
+            with open("setup.cfg.template", "r") as setup:
+                content = setup.read()
+                m = re.search("version = (.*)", content)
+                version = m.group(1)
             command = []
             if is_windows:
                 command.append("python")
@@ -1010,128 +1015,138 @@ def py_test(args):
     build_capi(args)
     copy_py_bin(args)
 
-    os.chdir("python")
+    with working_dir("python"):
+        command = []
+        if is_windows:
+            command.append("python")
+        else:
+            command.append("python3")
+        command.append("-m")
+        command.append("mypy")
+        command.append("pyautd3")
+        subprocess.run(command).check_returncode()
 
-    command = []
-    if is_windows:
-        command.append("python")
-    else:
-        command.append("python3")
-    command.append("-m")
-    command.append("mypy")
-    command.append("pyautd3")
-    subprocess.run(command).check_returncode()
-
-    command = []
-    if is_windows:
-        command.append("python")
-    else:
-        command.append("python3")
-    command.append("-m")
-    command.append("pytest")
-    if is_cuda_available() and not args.skip_cuda:
-        command.append("--test_cuda")
-    subprocess.run(command).check_returncode()
+        command = []
+        if is_windows:
+            command.append("python")
+        else:
+            command.append("python3")
+        command.append("-m")
+        command.append("pytest")
+        if is_cuda_available() and not args.skip_cuda:
+            command.append("--test_cuda")
+        subprocess.run(command).check_returncode()
 
 
 def py_clear(_):
-    os.chdir("python")
-    rm_f("setup.cfg")
-    rmtree_f("dist")
-    rmtree_f("build")
-    rmtree_f("pyautd3.egg-info")
-    rmtree_f("pyautd3/bin")
-    rmtree_f(".mypy_cache")
-    rmtree_f(".pytest_cache")
-    rmtree_f("pyautd3/__pycache__")
-    rmtree_f("tests/__pycache__")
-    rm_f("pyautd3/LICENSE.txt")
-    rm_f("pyautd3/ThirdPartyNotice.txt")
+    with working_dir("python"):
+        rm_f("setup.cfg")
+        rmtree_f("dist")
+        rmtree_f("build")
+        rmtree_f("pyautd3.egg-info")
+        rmtree_f("pyautd3/bin")
+        rmtree_f(".mypy_cache")
+        rmtree_f(".pytest_cache")
+        rmtree_f("pyautd3/__pycache__")
+        rmtree_f("tests/__pycache__")
+        rm_f("pyautd3/LICENSE.txt")
+        rm_f("pyautd3/ThirdPartyNotice.txt")
 
 
 def server_build(args):
-    os.chdir("server")
+    with working_dir("server"):
+        if is_windows:
+            subprocess.run(["npm", "install"], shell=True).check_returncode()
+        else:
+            subprocess.run(["npm", "install"]).check_returncode()
 
-    if is_windows:
-        subprocess.run(["npm", "install"], shell=True).check_returncode()
-    else:
-        subprocess.run(["npm", "install"]).check_returncode()
+        if is_macos:
+            command_x86 = ["cargo", "build", "--release", "--target=x86_64-apple-darwin"]
+            command_aarch64 = ["cargo", "build", "--release", "--target=aarch64-apple-darwin"]
 
-    if is_macos:
-        command_x86 = ["cargo", "build", "--target=x86_64-apple-darwin"]
-        command_aarch64 = ["cargo", "build", "--target=aarch64-apple-darwin"]
-        if args.release:
-            command_x86.append("--release")
-            command_aarch64.append("--release")
+            with working_dir("simulator"):
+                subprocess.run(command_x86).check_returncode()
+                subprocess.run(command_aarch64).check_returncode()
 
-        os.chdir("simulator")
-        subprocess.run(command_x86).check_returncode()
-        subprocess.run(command_aarch64).check_returncode()
-        os.chdir("..")
+            with working_dir("SOEMAUTDServer"):
+                subprocess.run(command_x86).check_returncode()
+                subprocess.run(command_aarch64).check_returncode()
 
-        os.chdir("SOEMAUTDServer")
-        subprocess.run(command_x86).check_returncode()
-        subprocess.run(command_aarch64).check_returncode()
-        os.chdir("..")
+            with working_dir("LightweightTwinCATAUTDServer"):
+                subprocess.run(command_x86).check_returncode()
+                subprocess.run(command_aarch64).check_returncode()
 
-        os.chdir("LightweightTwinCATAUTDServer")
-        subprocess.run(command_x86).check_returncode()
-        subprocess.run(command_aarch64).check_returncode()
-        os.chdir("..")
+            if not args.external_only:
+                subprocess.run(
+                    [
+                        "npm",
+                        "run",
+                        "tauri",
+                        "build",
+                        "--",
+                        "--target",
+                        "universal-apple-darwin",
+                    ]
+                ).check_returncode()
+        else:
+            command = ["cargo", "build", "--release"]
 
-        if not args.external_only:
-            subprocess.run(
-                [
-                    "npm",
-                    "run",
-                    "tauri",
-                    "build",
-                    "--",
-                    "--target",
-                    "universal-apple-darwin",
-                ]
-            ).check_returncode()
-    else:
-        command = ["cargo", "build"]
-        if args.release:
-            command.append("--release")
+            with working_dir("simulator"):
+                subprocess.run(command).check_returncode()
 
-        os.chdir("simulator")
-        subprocess.run(command).check_returncode()
-        os.chdir("..")
+            with working_dir("SOEMAUTDServer"):
+                subprocess.run(command).check_returncode()
 
-        os.chdir("SOEMAUTDServer")
-        subprocess.run(command).check_returncode()
-        os.chdir("..")
+            with working_dir("LightweightTwinCATAUTDServer"):
+                subprocess.run(command).check_returncode()
 
-        os.chdir("LightweightTwinCATAUTDServer")
-        subprocess.run(command).check_returncode()
-        os.chdir("..")
-
-        if not args.external_only:
-            if is_windows:
-                subprocess.run(["npm", "run", "tauri", "build"], shell=True).check_returncode()
-            else:
-                subprocess.run(["npm", "run", "tauri", "build"]).check_returncode()
+            if not args.external_only:
+                if is_windows:
+                    subprocess.run(["npm", "run", "tauri", "build"], shell=True).check_returncode()
+                else:
+                    subprocess.run(["npm", "run", "tauri", "build"]).check_returncode()
 
 
 def server_clear(_):
-    os.chdir("server")
-    if is_windows:
-        subprocess.run(["npm", "cache", "clean", "--force"], shell=True).check_returncode()
-    else:
-        subprocess.run(["npm", "cache", "clean", "--force"]).check_returncode()
-    rmtree_f("node_modules")
-    rmtree_f("dist")
+    with working_dir("server"):
+        if is_windows:
+            subprocess.run(["npm", "cache", "clean", "--force"], shell=True).check_returncode()
+        else:
+            subprocess.run(["npm", "cache", "clean", "--force"]).check_returncode()
+        rmtree_f("node_modules")
+        rmtree_f("dist")
 
-    os.chdir("src-tauri")
-    rmtree_f("assets")
-    rm_f("NOTICE")
-    rm_glob_f("LICENSE*")
-    rm_glob_f("LightweightTwinCATAUTDServer*")
-    rm_glob_f("simulator*")
-    rm_glob_f("SOEMAUTDServer*")
-    subprocess.run(["cargo", "clean"]).check_returncode()
+        with working_dir("src-tauri"):
+            rmtree_f("assets")
+            rm_f("NOTICE")
+            rm_glob_f("LICENSE*")
+            rm_glob_f("LightweightTwinCATAUTDServer*")
+            rm_glob_f("simulator*")
+            rm_glob_f("SOEMAUTDServer*")
+            subprocess.run(["cargo", "clean"]).check_returncode()
+
+
+def doc_build(args):
+    with working_dir("doc"):
+        command = ["mdbook", "build", "--dest-dir", f"book/{args.target}"]
+        if args.open:
+            command.append("--open")
+        with set_env("MDBOOK_BOOK__src", f"src/{args.target}"):
+            subprocess.run(command).check_returncode()
+
+
+def doc_test(args):
+    rust_clear(args)
+
+    with working_dir("src"):
+        command = ["cargo", "build", "--all", "--features", "remote", "--exclude", "autd3-backend-arrayfire", "--exclude", "autd3-backend-cuda"]
+        subprocess.run(command).check_returncode()
+
+    with working_dir("doc"):
+        for t in args.target.split(","):
+            command = ["mdbook", "test", "--dest-dir", f"book/{t}", "-L", "./../src/target/debug/deps"]
+            with set_env("MDBOOK_BOOK__src", f"src/{t}"):
+                subprocess.run(command).check_returncode()
 
 
 def command_help(args):
@@ -1141,11 +1156,7 @@ def command_help(args):
 if __name__ == "__main__":
     fetch_submodule()
 
-    path = os.getcwd()
-
-    try:
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
+    with working_dir(os.path.dirname(os.path.abspath(__file__))):
         parser = argparse.ArgumentParser(description="autd3 library build script")
         subparsers = parser.add_subparsers()
 
@@ -1323,7 +1334,6 @@ if __name__ == "__main__":
 
         # server build
         parser_server_build = subparsers_server.add_parser("build", help="see `server build -h`")
-        parser_server_build.add_argument("--release", action="store_true", help="release build")
         parser_server_build.add_argument(
             "--external-only",
             action="store_true",
@@ -1335,6 +1345,21 @@ if __name__ == "__main__":
         parser_server_clear = subparsers_server.add_parser("clear", help="see `server clear -h`")
         parser_server_clear.set_defaults(handler=server_clear)
 
+        # doc
+        parser_doc = subparsers.add_parser("doc", help="see `doc -h`")
+        subparsers_doc = parser_doc.add_subparsers()
+
+        # doc build
+        parser_doc_build = subparsers_doc.add_parser("build", help="see `doc build -h`")
+        parser_doc_build.add_argument("target", help="build target [jp|en]")
+        parser_doc_build.add_argument("--open", help="open browser after build", action="store_true")
+        parser_doc_build.set_defaults(handler=doc_build)
+
+        # doc test
+        parser_doc_test = subparsers_doc.add_parser("test", help="see `doc test -h`")
+        parser_doc_test.add_argument("target", help="test target [jp|en]")
+        parser_doc_test.set_defaults(handler=doc_test)
+
         # help
         parser_help = subparsers.add_parser("help", help="see `help -h`")
         parser_help.add_argument("command", help="command name which help is shown")
@@ -1345,8 +1370,3 @@ if __name__ == "__main__":
             args.handler(args)
         else:
             parser.print_help()
-    except Exception as e:
-        err(str(e))
-        sys.exit(-1)
-    finally:
-        os.chdir(path)
