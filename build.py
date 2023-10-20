@@ -43,11 +43,39 @@ def rm_f(path):
         pass
 
 
+def onexc(func, path, exeption):
+    import stat
+
+    if not os.access(path, os.W_OK):
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
+
+
 def rmtree_f(path):
     try:
-        shutil.rmtree(path)
+        shutil.rmtree(path, onexc=onexc)
     except FileNotFoundError:
         pass
+
+
+def glob_norm(path, recursive):
+    return list(map(lambda p: os.path.normpath(p), glob.glob(path, recursive=recursive)))
+
+
+def rm_glob_f(path, exclude=None, recursive=True):
+    if exclude is not None:
+        for f in list(set(glob_norm(path, recursive=recursive)) - set(glob_norm(exclude, recursive=recursive))):
+            rm_f(f)
+    else:
+        for f in glob.glob(path, recursive=recursive):
+            rm_f(f)
+
+
+def rmtree_glob_f(path):
+    for f in glob.glob(path):
+        rmtree_f(f)
 
 
 is_windows = platform.system() == "Windows"
@@ -287,6 +315,11 @@ def rust_run(args):
     subprocess.run(commands).check_returncode()
 
 
+def rust_clear(_):
+    os.chdir("src")
+    subprocess.run(["cargo", "clean"]).check_returncode()
+
+
 def rust_coverage(args):
     if is_macos:
         args.cuda = False
@@ -324,6 +357,11 @@ def rust_coverage(args):
         commands.append("--exclude=autd3-backend-arrayfire")
 
     subprocess.run(commands).check_returncode()
+
+
+def capi_clear(_):
+    os.chdir("capi")
+    subprocess.run(["cargo", "clean"]).check_returncode()
 
 
 def build_capi(args, features=None):
@@ -484,6 +522,14 @@ def cpp_run(args):
     subprocess.run([f"{target_dir}/{args.target}{exe_ext}"]).check_returncode()
 
 
+def cpp_clear(_):
+    os.chdir("cpp")
+    rmtree_f("lib")
+    rmtree_f("bin")
+    rmtree_f("examples/build")
+    rmtree_f("tests/build")
+
+
 def cs_build(args):
     args.universal = True
     build_capi(args)
@@ -615,6 +661,22 @@ def cs_run(args):
     subprocess.run(command).check_returncode()
 
 
+def cs_clear(_):
+    os.chdir("dotnet/cs")
+    rmtree_f("src/bin")
+    rmtree_f("src/obj")
+    rm_f("src/LICENSE.txt")
+
+    rmtree_f("tests/bin")
+    rmtree_f("tests/obj")
+    rm_glob_f("tests/*.dll")
+    rm_glob_f("tests/*.dylib")
+    rm_glob_f("tests/*.so")
+
+    rmtree_glob_f("example/**/bin")
+    rmtree_glob_f("example/**/obj")
+
+
 def unity_build(args):
     ignore = shutil.ignore_patterns("NativeMethods")
     shutil.copytree(
@@ -731,6 +793,30 @@ def unity_build(args):
         rm_f(f"{unity_dir}/Assets/Editor/SimulatorRun.cs.meta")
 
 
+def unity_clear(_):
+    os.chdir("dotnet")
+
+    for unity_dir in ["unity", "unity-mac", "unity-linux"]:
+        os.chdir(unity_dir)
+        rmtree_f(".vs")
+        rmtree_f("Library")
+        rmtree_f("Logs")
+        rmtree_f("obj")
+        rmtree_f("Packages")
+        rmtree_f("ProjectSettings")
+        rmtree_f("UserSettings")
+        rm_glob_f("Assets/Scripts/**/*.cs", exclude="Assets/Scripts/NativeMethods/*.cs")
+        os.chdir("..")
+
+    rm_glob_f("unity/Assets/Plugins/x86_64/*.dll")
+    rm_glob_f("unity-mac/Assets/Plugins/aarch64/*.dylib")
+    rm_glob_f("unity-mac/Assets/Plugins/x86_64/*.dylib")
+    rm_glob_f("unity-linux/Assets/Plugins/x86_64/*.so")
+
+    rm_f("unity/Assets/Editor/assets/autd3.glb")
+    rm_f("unity/Assets/Editor/autd_simulator.exe")
+
+
 def fs_build(args):
     no_examples = args.no_examples
     args.no_examples = True
@@ -756,6 +842,12 @@ def fs_run(args):
     if args.release:
         command.append("-c:Release")
     subprocess.run(command).check_returncode()
+
+
+def fs_clear(_):
+    os.chdir("dotnet/fs")
+    rmtree_glob_f("example/**/bin")
+    rmtree_glob_f("example/**/obj")
 
 
 def copy_py_bin(args):
@@ -942,6 +1034,21 @@ def py_test(args):
     subprocess.run(command).check_returncode()
 
 
+def py_clear(_):
+    os.chdir("python")
+    rm_f("setup.cfg")
+    rmtree_f("dist")
+    rmtree_f("build")
+    rmtree_f("pyautd3.egg-info")
+    rmtree_f("pyautd3/bin")
+    rmtree_f(".mypy_cache")
+    rmtree_f(".pytest_cache")
+    rmtree_f("pyautd3/__pycache__")
+    rmtree_f("tests/__pycache__")
+    rm_f("pyautd3/LICENSE.txt")
+    rm_f("pyautd3/ThirdPartyNotice.txt")
+
+
 def server_build(args):
     os.chdir("server")
 
@@ -1008,6 +1115,25 @@ def server_build(args):
                 subprocess.run(["npm", "run", "tauri", "build"]).check_returncode()
 
 
+def server_clear(_):
+    os.chdir("server")
+    if is_windows:
+        subprocess.run(["npm", "cache", "clean", "--force"], shell=True).check_returncode()
+    else:
+        subprocess.run(["npm", "cache", "clean", "--force"]).check_returncode()
+    rmtree_f("node_modules")
+    rmtree_f("dist")
+
+    os.chdir("src-tauri")
+    rmtree_f("assets")
+    rm_f("NOTICE")
+    rm_glob_f("LICENSE*")
+    rm_glob_f("LightweightTwinCATAUTDServer*")
+    rm_glob_f("simulator*")
+    rm_glob_f("SOEMAUTDServer*")
+    subprocess.run(["cargo", "clean"]).check_returncode()
+
+
 def command_help(args):
     print(parser.parse_args([args.command, "--help"]))
 
@@ -1050,11 +1176,23 @@ if __name__ == "__main__":
         parser_run.add_argument("--release", action="store_true", help="release build")
         parser_run.set_defaults(handler=rust_run)
 
+        # clear (rust)
+        parser_clear = subparsers.add_parser("clear", help="see `clear -h`")
+        parser_clear.set_defaults(handler=rust_clear)
+
         # coverage (rust)
         parser_cov = subparsers.add_parser("cov", help="see `cov -h`")
         parser_cov.add_argument("--release", action="store_true", help="release build")
         parser_cov.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
         parser_cov.set_defaults(handler=rust_coverage)
+
+        # capi
+        parser_capi = subparsers.add_parser("capi", help="see `capi -h`")
+        subparsers_capi = parser_capi.add_subparsers()
+
+        # capi clear
+        parser_capi_clear = subparsers_capi.add_parser("clear", help="see `capi clear -h`")
+        parser_capi_clear.set_defaults(handler=capi_clear)
 
         # cpp
         parser_cpp = subparsers.add_parser("cpp", help="see `cpp -h`")
@@ -1090,6 +1228,10 @@ if __name__ == "__main__":
         parser_cpp_run.add_argument("--release", action="store_true", help="release build")
         parser_cpp_run.set_defaults(handler=cpp_run)
 
+        # cpp clear
+        parser_cpp_clear = subparsers_cpp.add_parser("clear", help="see `cpp clear -h`")
+        parser_cpp_clear.set_defaults(handler=cpp_clear)
+
         # cs
         parser_cs = subparsers.add_parser("cs", help="see `cs -h`")
         subparsers_cs = parser_cs.add_subparsers()
@@ -1111,6 +1253,10 @@ if __name__ == "__main__":
         parser_cs_run.add_argument("--release", action="store_true", help="release build")
         parser_cs_run.set_defaults(handler=cs_run)
 
+        # cs clear
+        parser_cs_clear = subparsers_cs.add_parser("clear", help="see `cs clear -h`")
+        parser_cs_clear.set_defaults(handler=cs_clear)
+
         # unity
         parser_unity = subparsers.add_parser("unity", help="see `unity -h`")
         subparsers_unity = parser_unity.add_subparsers()
@@ -1119,6 +1265,10 @@ if __name__ == "__main__":
         parser_unity_build = subparsers_unity.add_parser("build", help="see `unity build -h`")
         parser_unity_build.add_argument("--release", action="store_true", help="release build")
         parser_unity_build.set_defaults(handler=unity_build)
+
+        # unity clear
+        parser_unity_clear = subparsers_unity.add_parser("clear", help="see `unity clear -h`")
+        parser_unity_clear.set_defaults(handler=unity_clear)
 
         # fs
         parser_fs = subparsers.add_parser("fs", help="see `fs -h`")
@@ -1136,6 +1286,10 @@ if __name__ == "__main__":
         parser_fs_run.add_argument("target", help="binary target")
         parser_fs_run.add_argument("--release", action="store_true", help="release build")
         parser_fs_run.set_defaults(handler=fs_run)
+
+        # fs clear
+        parser_fs_clear = subparsers_fs.add_parser("clear", help="see `fs clear -h`")
+        parser_fs_clear.set_defaults(handler=fs_clear)
 
         # python
         parser_py = subparsers.add_parser("python", help="see `python -h`")
@@ -1159,6 +1313,10 @@ if __name__ == "__main__":
         parser_py_test.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
         parser_py_test.set_defaults(handler=py_test)
 
+        # python clear
+        parser_py_clear = subparsers_py.add_parser("clear", help="see `python clear -h`")
+        parser_py_clear.set_defaults(handler=py_clear)
+
         # server
         parser_server = subparsers.add_parser("server", help="see `server -h`")
         subparsers_server = parser_server.add_subparsers()
@@ -1172,6 +1330,10 @@ if __name__ == "__main__":
             help="build external dependencies only",
         )
         parser_server_build.set_defaults(handler=server_build)
+
+        # server clear
+        parser_server_clear = subparsers_server.add_parser("clear", help="see `server clear -h`")
+        parser_server_clear.set_defaults(handler=server_clear)
 
         # help
         parser_help = subparsers.add_parser("help", help="see `help -h`")
