@@ -1,5 +1,5 @@
 {
-  "name": "autd-server",
+  "name": "autd3-server",
   "type": "module",
   "version": "16.0.3",
   "scripts": {
