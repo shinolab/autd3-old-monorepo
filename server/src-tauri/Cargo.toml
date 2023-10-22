@@ -1,5 +1,5 @@
 [package]
-name = "autd-server"
+name = "autd3-server"
 version = "16.0.3"
 description = "AUTD Server app"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
@@ -8,7 +8,7 @@ repository = "https://github.com/shinolab/autd3"
 keywords = ["autd"]
 
 license = "MIT"
-default-run = "autd-server"
+default-run = "autd3-server"
 
 rust-version = "1.60"
 

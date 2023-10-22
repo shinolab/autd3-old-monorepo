@@ -98,7 +98,7 @@ atomic-waker 1.1.2 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/atomic-waker
 ---------------------------------------------------------
 
-autd-server 16.0.3 (MIT)
+autd3-server 16.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 

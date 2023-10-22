@@ -65,7 +65,7 @@
         "deb",
         "dmg"
       ],
-      "identifier": "com.shinolab.autd-server",
+      "identifier": "com.shinolab.autd3-server",
       "publisher": "Shun Suzuki",
       "icon": [
         "icons/32x32.png",
