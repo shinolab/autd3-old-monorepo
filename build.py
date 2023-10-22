@@ -15,6 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import argparse
 import contextlib
+import datetime
 import glob
 import re
 import shutil
@@ -1149,6 +1150,216 @@ def doc_test(args):
                 subprocess.run(command).check_returncode()
 
 
+def util_update_ver(args):
+    version = args.version
+
+    with working_dir("src"):
+        for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
+            with open(toml, "r") as f:
+                content = f.read()
+                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(r'^autd3(.*)version = "(.*)"', f'autd3\\1version = "{version}"', content, flags=re.MULTILINE)
+            with open(toml, "w") as f:
+                f.write(content)
+
+    with working_dir("capi"):
+        for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
+            with open(toml, "r") as f:
+                content = f.read()
+                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
+            with open(toml, "w") as f:
+                f.write(content)
+
+        with open("ThirdPartyNotice.txt", "r") as f:
+            content = f.read()
+            content = re.sub(r"^autd3(.*) (.*) \((.*)\)", f"autd3\\1 {version} (MIT)", content, flags=re.MULTILINE)
+            content = re.sub(r"^autd3-link-soem (.*)", f"autd3-link-soem {version}", content, flags=re.MULTILINE)
+            content = re.sub(r"^autd3-link-twincat (.*)", f"autd3-link-twincat {version}", content, flags=re.MULTILINE)
+            content = re.sub(r"^wrapper-generator (.*) \(MIT\)", f"wrapper-generator {version} (MIT)", content, flags=re.MULTILINE)
+        with open("ThirdPartyNotice.txt", "w") as f:
+            f.write(content)
+
+        subprocess.run(["cargo", "update"]).check_returncode()
+
+    with working_dir("cpp"):
+        with open("CMakeLists.txt", "r") as f:
+            content = f.read()
+            content = re.sub(r"^project\(autd3 VERSION (.*)\)", f"project(autd3 VERSION {version})", content, flags=re.MULTILINE)
+        with open("CMakeLists.txt", "w") as f:
+            f.write(content)
+
+        with open("include/autd3.hpp", "r") as f:
+            content = f.read()
+            content = re.sub(
+                r'^static inline std::string version = "(.*)";', f'static inline std::string version = "{version}";', content, flags=re.MULTILINE
+            )
+        with open("include/autd3.hpp", "w") as f:
+            f.write(content)
+
+        with open("examples/CMakeLists.txt", "r") as f:
+            content = f.read()
+            content = re.sub(r"v(.*)/autd3-v(.*)", f"v{version}/autd3-v{version}", content, flags=re.MULTILINE)
+        with open("examples/CMakeLists.txt", "w") as f:
+            f.write(content)
+
+    with working_dir("doc"):
+        with open("samples/cpp/CMakeLists.txt", "r") as f:
+            content = f.read()
+            content = re.sub(r"v(.*)/autd3-v(.*)", f"v{version}/autd3-v{version}", content, flags=re.MULTILINE)
+        with open("samples/cpp/CMakeLists.txt", "w") as f:
+            f.write(content)
+
+        now = datetime.datetime.now().strftime("%Y/%m/%d")
+
+        with open("src/en/Users_Manual/release_notes.md", "r") as f:
+            content = f.read().rstrip()
+            content += f"\n| {now} | {version} |\n"
+        with open("src/en/Users_Manual/release_notes.md", "w") as f:
+            f.write(content)
+
+        with open("src/jp/Users_Manual/release_notes.md", "r") as f:
+            content = f.read().rstrip()
+            content += f"\n| {now} | {version} |\n"
+        with open("src/jp/Users_Manual/release_notes.md", "w") as f:
+            f.write(content)
+
+        with open("src/en/document_history.md", "r") as f:
+            content = f.read().rstrip()
+            content += f"\n| {now} | Version {version} Initial release |\n"
+        with open("src/en/document_history.md", "w") as f:
+            f.write(content)
+
+        with open("src/jp/document_history.md", "r", encoding="utf-8") as f:
+            content = f.read().rstrip()
+            content += f"\n| {now} | Version {version} 初版 |\n"
+        with open("src/jp/document_history.md", "w", encoding="utf-8") as f:
+            f.write(content)
+
+        with open("samples/cs/cs.csproj", "r") as f:
+            content = f.read()
+            content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+        with open("samples/cs/cs.csproj", "w") as f:
+            f.write(content)
+
+        with open("book.toml", "r") as f:
+            content = f.read()
+            content = re.sub(
+                r'^title = "AUTD3 Developers Manual v(.*)"', f'title = "AUTD3 Developers Manual v{version}"', content, flags=re.MULTILINE
+            )
+        with open("book.toml", "w") as f:
+            f.write(content)
+
+    with working_dir("dotnet"):
+        with working_dir("cs"):
+            for proj in glob.glob("example/**/*.csproj", recursive=True):
+                with open(proj, "r") as f:
+                    content = f.read()
+                    content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+                with open(proj, "w") as f:
+                    f.write(content)
+
+            with open("src/AUTD3Sharp.csproj", "r") as f:
+                content = f.read()
+                content = re.sub(r"<Version>(.*)</Version>", f"<Version>{version}</Version>", content, flags=re.MULTILINE)
+            with open("src/AUTD3Sharp.csproj", "w") as f:
+                f.write(content)
+
+        with working_dir("fs"):
+            for proj in glob.glob("example/**/*.fsproj", recursive=True):
+                with open(proj, "r") as f:
+                    content = f.read()
+                    content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+                with open(proj, "w") as f:
+                    f.write(content)
+
+        with working_dir("unity"):
+            with open("Assets/package.json", "r") as f:
+                content = f.read()
+                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+            with open("Assets/package.json", "w") as f:
+                f.write(content)
+
+        with working_dir("unity-mac"):
+            with open("Assets/package.json", "r") as f:
+                content = f.read()
+                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+            with open("Assets/package.json", "w") as f:
+                f.write(content)
+
+        with working_dir("unity-linux"):
+            with open("Assets/package.json", "r") as f:
+                content = f.read()
+                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+            with open("Assets/package.json", "w") as f:
+                f.write(content)
+
+    with working_dir("python"):
+        with open("pyautd3/__init__.py", "r") as f:
+            content = f.read()
+            content = re.sub(r'__version__ = "(.*)"', f'__version__ = "{version}"', content, flags=re.MULTILINE)
+        with open("pyautd3/__init__.py", "w") as f:
+            f.write(content)
+
+        with open("setup.cfg.template", "r") as f:
+            content = f.read()
+            content = re.sub(r"version = (.*)", f"version = {version}", content, flags=re.MULTILINE)
+        with open("setup.cfg.template", "w") as f:
+            f.write(content)
+
+    with working_dir("server"):
+        for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
+            with open(toml, "r") as f:
+                content = f.read()
+                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(r'^autd3(.*)version = "(.*)"', f'autd3\\1version = "{version}"', content, flags=re.MULTILINE)
+            with open(toml, "w") as f:
+                f.write(content)
+
+        for notice in glob.glob("./**/*/ThirdPartyNotice.txt", recursive=True):
+            with open(notice, "r") as f:
+                content = f.read()
+                content = re.sub(r"^autd3(.*) (.*) \((.*)\)", f"autd3\\1 {version} (MIT)", content, flags=re.MULTILINE)
+                content = re.sub(r"^autd3-link-soem (.*)", f"autd3-link-soem {version}", content, flags=re.MULTILINE)
+                content = re.sub(r"^autd3-link-twincat (.*)", f"autd3-link-twincat {version}", content, flags=re.MULTILINE)
+                content = re.sub(
+                    r"^LightweightTwinCATAUTDServer (.*) \(MIT\)", f"LightweightTwinCATAUTDServer {version} (MIT)", content, flags=re.MULTILINE
+                )
+                content = re.sub(r"^SOEMAUTDServer (.*) \(MIT\)", f"SOEMAUTDServer {version} (MIT)", content, flags=re.MULTILINE)
+                content = re.sub(r"^simulator (.*) \(MIT\)", f"simulator {version} (MIT)", content, flags=re.MULTILINE)
+            with open(notice, "w") as f:
+                f.write(content)
+
+        with open("package.json", "r") as f:
+            content = f.read()
+            content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+        with open("package.json", "w") as f:
+            f.write(content)
+
+        with open("src-tauri/tauri.conf.json", "r") as f:
+            content = f.read()
+            content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+            content = re.sub(r'"title": "AUTD Server v(.*)"', f'"title": "AUTD Server v{version}"', content, flags=re.MULTILINE)
+        with open("src-tauri/tauri.conf.json", "w") as f:
+            f.write(content)
+
+        with working_dir("LightweightTwinCATAUTDServer"):
+            subprocess.run(["cargo", "update"]).check_returncode()
+
+        with working_dir("SOEMAUTDServer"):
+            subprocess.run(["cargo", "update"]).check_returncode()
+
+        with working_dir("simulator"):
+            subprocess.run(["cargo", "update"]).check_returncode()
+
+        with working_dir("src-tauri"):
+            subprocess.run(["cargo", "update"]).check_returncode()
+
+        if is_windows:
+            subprocess.run(["npm", "i"], shell=True).check_returncode()
+        else:
+            subprocess.run(["npm", "i"]).check_returncode()
+
+
 def command_help(args):
     print(parser.parse_args([args.command, "--help"]))
 
@@ -1359,6 +1570,15 @@ if __name__ == "__main__":
         parser_doc_test = subparsers_doc.add_parser("test", help="see `doc test -h`")
         parser_doc_test.add_argument("target", help="test target [jp|en]")
         parser_doc_test.set_defaults(handler=doc_test)
+
+        # util
+        parser_util = subparsers.add_parser("util", help="see `util -h`")
+        subparsers_util = parser_util.add_subparsers()
+
+        # util update version
+        parser_util_upver = subparsers_util.add_parser("upver", help="see `util upver -h`")
+        parser_util_upver.add_argument("version", help="version")
+        parser_util_upver.set_defaults(handler=util_update_ver)
 
         # help
         parser_help = subparsers.add_parser("help", help="see `help -h`")
