@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 23/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ fn check<P>(
     filename: &str,
     license_file_map: &[Package],
     additional_deps: &[(&str, &str)],
-) -> anyhow::Result<()>
+) -> anyhow::Result<bool>
 where
     P: Into<PathBuf>,
 {
@@ -168,7 +168,7 @@ where
 
     writer.flush()?;
 
-    if old.exists() {
+    let changed = if old.exists() {
         let mut old_license = String::new();
         fs::File::open(&old)
             .map(BufReader::new)?
@@ -181,22 +181,18 @@ where
             .read_to_string(&mut new_license)?;
         let new_license = new_license.replace("\r", "");
 
-        if diff::show_diff(&old_license, &new_license) {
-            return Err(anyhow::anyhow!(
-                "ThirdPartyNotice.txt is not up to date. Please check {} manually.",
-                new.canonicalize().unwrap().to_str().unwrap()
-            ));
-        }
+        diff::show_diff(&old_license, &new_license)
+    } else {
+        false
+    };
 
-        fs::remove_file(&old)?;
-    }
-
+    std::fs::remove_file(&old)?;
     std::fs::rename(new, old)?;
 
-    Ok(())
+    Ok(changed)
 }
 
-fn check_npm<P>(path: P, filename: &str) -> anyhow::Result<()>
+fn check_npm<P>(path: P, filename: &str) -> anyhow::Result<bool>
 where
     P: Into<PathBuf>,
 {
@@ -276,7 +272,7 @@ where
 
     writer.flush()?;
 
-    if old.exists() {
+    let changed = if old.exists() {
         let mut old_license = String::new();
         fs::File::open(&old)
             .map(BufReader::new)?
@@ -289,19 +285,15 @@ where
             .read_to_string(&mut new_license)?;
         let new_license = new_license.replace("\r", "");
 
-        if diff::show_diff(&old_license, &new_license) {
-            return Err(anyhow::anyhow!(
-                "ThirdPartyNotice.txt is not up to date. Please check {} manually.",
-                new.canonicalize().unwrap().to_str().unwrap()
-            ));
-        }
+        diff::show_diff(&old_license, &new_license)
+    } else {
+        false
+    };
 
-        fs::remove_file(&old)?;
-    }
+    fs::remove_file(&old)?;
+    fs::rename(new, old)?;
 
-    std::fs::rename(new, old)?;
-
-    Ok(())
+    Ok(changed)
 }
 
 fn main() -> anyhow::Result<()> {
@@ -326,7 +318,7 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
     );
     let notofont_dep = ("OFL", "Noto Sans v2.012 (OFL)");
 
-    check(
+    let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../capi/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
@@ -338,7 +330,7 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
         ],
     )?;
 
-    check(
+    let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/simulator/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
@@ -348,34 +340,40 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
             sdr_rs_dep,
             notofont_dep,
         ],
-    )?;
+    )? || changed;
 
-    check(
+    let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/SOEMAUTDServer/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
         &[sdr_rs_dep],
-    )?;
+    )? || changed;
 
-    check(
+    let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../server/LightweightTwinCATAUTDServer/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
         &[sdr_rs_dep],
-    )?;
+    )? || changed;
 
-    check(
+    let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/src-tauri/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
         &[sdr_rs_dep],
-    )?;
+    )? || changed;
 
-    check_npm(
+    let changed = check_npm(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/node_modules"),
         "ThirdPartyNotice",
-    )?;
+    )? || changed;
+
+    if changed {
+        return Err(anyhow::anyhow!(
+            "Some ThirdPartyNotice.txt files have been updated. Manually check is required.",
+        ));
+    }
 
     Ok(())
 }
