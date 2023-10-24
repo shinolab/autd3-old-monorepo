@@ -374,9 +374,9 @@ impl<T: Transducer, L: Link> Controller<T, L> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{autd3_device::AUTD3, link::Audit};
+    use crate::link::Audit;
 
-    use autd3_driver::geometry::Vector3;
+    use autd3_driver::{autd3_device::AUTD3, geometry::Vector3};
 
     use super::*;
 

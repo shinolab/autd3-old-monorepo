@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@ pub use crate::modulation::IntoCache as IntoModulationCache;
 pub use crate::modulation::IntoTransform as IntoModulationTransform;
 
 pub use crate::{
-    autd3_device::AUTD3,
     controller::Controller,
     error::AUTDError,
     gain::{Bessel, Focus, Group, Null, Plane, TransducerTest, Uniform},
@@ -26,6 +25,7 @@ pub use crate::{
 };
 
 pub use autd3_driver::{
+    autd3_device::AUTD3,
     common::{Amplitude, Drive, DutyRatio},
     datagram::{
         Amplitudes, Clear, ConfigureAmpFilter, ConfigureModDelay, ConfigurePhaseFilter, DatagramT,
