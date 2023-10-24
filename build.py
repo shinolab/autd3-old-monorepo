@@ -101,6 +101,10 @@ def working_dir(path):
         os.chdir(cwd)
 
 
+def env_exists(value):
+    return value in os.environ and os.environ[value] != ""
+
+
 is_windows = platform.system() == "Windows"
 is_macos = platform.system() == "Darwin"
 is_linux = platform.system() == "Linux"
@@ -115,8 +119,27 @@ def is_cuda_available():
     return which("nvcc") is not None
 
 
+def is_cmake_available():
+    return which("cmake") is not None
+
+
+def is_git_available():
+    return which("git") is not None
+
+
 def is_arrayfire_available():
-    return "AF_PATH" in os.environ
+    return env_exists("AF_PATH")
+
+
+def is_shaderc_available():
+    shaderc_lib_name = "shaderc_combined.lib" if is_windows else "libshaderc_combined.a"
+    if env_exists("SHADERC_LIB_DIR"):
+        if os.path.isfile(f"{os.environ['SHADERC_LIB_DIR']}/{shaderc_lib_name}"):
+            return True
+    if env_exists("VULKAN_SDK"):
+        if os.path.isfile(f"{os.environ['VULKAN_SDK']}/lib/{shaderc_lib_name}"):
+            return True
+    return False
 
 
 def setup_arm32_linker():
@@ -134,11 +157,14 @@ def setup_aarch64_linker():
 
 
 def fetch_submodule():
-    with working_dir(os.path.dirname(os.path.abspath(__file__))):
-        subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
+    if is_git_available():
+        with working_dir(os.path.dirname(os.path.abspath(__file__))):
+            subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
+    else:
+        err("git is not installed. Skip fetching submodules.")
 
 
-def rust_build(args):
+def check_ext_libs(args):
     if args.all:
         if is_macos:
             args.cuda = False
@@ -155,16 +181,31 @@ def rust_build(args):
             warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
             args.af = False
 
+        if is_shaderc_available():
+            args.gpu = True
+        else:
+            args.gpu = False
+            warn("shaderc is not installed. Skip building crates using Vulkano.")
+
+
+def rust_build(args):
+    check_ext_libs(args)
+
     with working_dir("src"):
         commands = ["cargo", "build"]
         if args.release:
             commands.append("--release")
+        features = "remote python"
         if args.all:
             commands.append("--all")
             if not args.cuda:
                 commands.append("--exclude=autd3-backend-cuda")
             if not args.af:
                 commands.append("--exclude=autd3-backend-arrayfire")
+            if args.gpu:
+                features += " gpu"
+        commands.append("--features")
+        commands.append(features)
 
         if is_linux and args.arch is not None:
             info("Skip build examples because cross compilation is not supported.")
@@ -195,31 +236,20 @@ def rust_build(args):
                 command.append("--release")
             features = "async soem twincat"
             if args.all:
-                features += " simulator remote_soem remote_twincat visualizer gpu python lightweight"
+                features += " simulator remote_soem remote_twincat visualizer python lightweight"
+            if is_shaderc_available():
+                features += " gpu"
             command.append("--features")
             command.append(features)
             subprocess.run(command).check_returncode()
 
 
 def rust_lint(args):
-    if args.all:
-        if is_macos:
-            args.cuda = False
-        else:
-            if not is_cuda_available():
-                warn("CUDA is not installed. Skip building crates using CUDA.")
-                args.cuda = False
-            else:
-                args.cuda = True
-
-        if is_arrayfire_available():
-            args.af = True
-        else:
-            warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
-            args.af = False
+    check_ext_libs(args)
 
     with working_dir("src"):
         commands = ["cargo", "clippy"]
+        features = "remote python"
         if args.release:
             commands.append("--release")
         if args.all:
@@ -228,6 +258,10 @@ def rust_lint(args):
                 commands.append("--exclude=autd3-backend-cuda")
             if not args.af:
                 commands.append("--exclude=autd3-backend-arrayfire")
+            if args.gpu:
+                features += " gpu"
+        commands.append("--features")
+        commands.append(features)
         commands.append("--")
         commands.append("-D")
         commands.append("warnings")
@@ -241,6 +275,8 @@ def rust_lint(args):
             commands.append("--all")
             if not args.cuda:
                 commands.append("--exclude=autd3capi-backend-cuda")
+            if not args.gpu:
+                commands.append("--exclude=autd3capi-link-visualizer")
         commands.append("--")
         commands.append("-D")
         commands.append("warnings")
@@ -249,24 +285,11 @@ def rust_lint(args):
 
 
 def rust_test(args):
-    if args.all:
-        if is_macos:
-            args.cuda = False
-        else:
-            if not is_cuda_available():
-                warn("CUDA is not installed. Skip building crates using CUDA.")
-                args.cuda = False
-            else:
-                args.cuda = True
-
-        if is_arrayfire_available():
-            args.af = True
-        else:
-            warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
-            args.af = False
+    check_ext_libs(args)
 
     with working_dir("src"):
         commands = ["cargo", "test"]
+        features = "test-utilities remote python"
         if args.release:
             commands.append("--release")
         if args.all:
@@ -275,8 +298,10 @@ def rust_test(args):
                 commands.append("--exclude=autd3-backend-cuda")
             if not args.af:
                 commands.append("--exclude=autd3-backend-arrayfire")
+            if args.gpu:
+                features += " gpu"
         commands.append("--features")
-        commands.append("test-utilities")
+        commands.append(features)
 
         subprocess.run(commands).check_returncode()
 
@@ -336,28 +361,19 @@ def rust_clear(_):
 
 
 def rust_coverage(args):
-    if is_macos:
-        args.cuda = False
-    else:
-        if not is_cuda_available():
-            warn("CUDA is not installed. Skip building crates using CUDA.")
-            args.cuda = False
-        else:
-            args.cuda = True
-
-    if is_arrayfire_available():
-        args.af = True
-    else:
-        warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
-        args.af = False
+    args.all = True
+    check_ext_libs(args)
 
     with working_dir("src"):
+        features = "remote test-utilities python"
+        if args.gpu:
+            features += " gpu"
         commands = [
             "cargo",
             "+nightly",
             "llvm-cov",
             "--features",
-            "remote test-utilities python gpu",
+            features,
             "--workspace",
             "--lcov",
             "--output-path",
@@ -380,14 +396,8 @@ def capi_clear(_):
 
 def build_capi(args, features=None):
     with working_dir("capi"):
-        if is_macos:
-            args.cuda = False
-        else:
-            if not is_cuda_available():
-                warn("CUDA is not installed. Skip building crates using CUDA.")
-                args.cuda = False
-            else:
-                args.cuda = True
+        args.all = True
+        check_ext_libs(args)
 
         commands = ["cargo", "build"]
         if args.release:
@@ -399,6 +409,8 @@ def build_capi(args, features=None):
 
         if not args.cuda:
             commands.append("--exclude=autd3capi-backend-cuda")
+        if not args.gpu:
+            commands.append("--exclude=autd3capi-link-visualizer")
 
         if is_macos and args.universal:
             commands.append("--exclude=autd3capi-link-visualizer")
@@ -483,6 +495,8 @@ def cpp_build(args):
             os.makedirs("build", exist_ok=True)
             with working_dir("build"):
                 command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
+                if not args.gpu:
+                    command.append("-DENABLE_LINK_VISUALIZER=OFF")
                 if args.cmake_extra is not None:
                     for cmd in args.cmake_extra.split(" "):
                         command.append(cmd)
@@ -774,27 +788,34 @@ def unity_build(args):
     shutil.copy("CHANGELOG.md", f"{unity_dir}/Assets/CHANGELOG.md")
 
     if is_windows:
-        with working_dir("server/simulator"):
-            commands = ["cargo", "build"]
-            if args.release:
-                commands.append("--release")
-            commands.append("--features")
-            commands.append("left_handed use_meter")
-            subprocess.run(commands).check_returncode()
+        if is_shaderc_available():
+            with working_dir("server/simulator"):
+                commands = ["cargo", "build"]
+                if args.release:
+                    commands.append("--release")
+                commands.append("--features")
+                commands.append("left_handed use_meter")
+                subprocess.run(commands).check_returncode()
 
-        simulator_src = "server/src-tauri/target/release/simulator.exe" if args.release else "server/src-tauri/target/debug/simulator.exe"
-        shutil.copy(simulator_src, f"{unity_dir}/Assets/Editor/autd_simulator.exe")
-        os.makedirs(f"{unity_dir}/Assets/Editor/assets", exist_ok=True)
-        shutil.copy(
-            "server/simulator/assets/autd3.glb",
-            f"{unity_dir}/Assets/Editor/assets/autd3.glb",
-        )
+            simulator_src = "server/src-tauri/target/release/simulator.exe" if args.release else "server/src-tauri/target/debug/simulator.exe"
+            shutil.copy(simulator_src, f"{unity_dir}/Assets/Editor/autd_simulator.exe")
+            os.makedirs(f"{unity_dir}/Assets/Editor/assets", exist_ok=True)
+            shutil.copy(
+                "server/simulator/assets/autd3.glb",
+                f"{unity_dir}/Assets/Editor/assets/autd3.glb",
+            )
 
-        with open("server/simulator/ThirdPartyNotice.txt", "r") as notice:
-            with open(f"{unity_dir}/Assets/LICENSE.md", "a") as f:
-                f.write("\n=========================================================\n")
-                f.write("AUTD SIMULATOR ")
-                f.write(notice.read())
+            with open("server/simulator/ThirdPartyNotice.txt", "r") as notice:
+                with open(f"{unity_dir}/Assets/LICENSE.md", "a") as f:
+                    f.write("\n=========================================================\n")
+                    f.write("AUTD SIMULATOR ")
+                    f.write(notice.read())
+        else:
+            warn("shaderc is not installed. Skip building simulator.")
+            rm_f(f"{unity_dir}/Assets/Editor/assets.meta")
+            rm_f(f"{unity_dir}/Assets/Editor/autd_simulator.exe.meta")
+            rm_f(f"{unity_dir}/Assets/Editor/SimulatorRun.cs")
+            rm_f(f"{unity_dir}/Assets/Editor/SimulatorRun.cs.meta")
     else:
         rm_f(f"{unity_dir}/Assets/Editor/assets.meta")
         rm_f(f"{unity_dir}/Assets/Editor/autd_simulator.exe.meta")
@@ -1055,6 +1076,10 @@ def py_clear(_):
 
 
 def server_build(args):
+    if not is_shaderc_available():
+        err("shaderc is not installed. Cannot build simulator.")
+        sys.exit(-1)
+
     with working_dir("server"):
         if is_windows:
             subprocess.run(["npm", "install"], shell=True).check_returncode()
