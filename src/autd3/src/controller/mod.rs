@@ -40,6 +40,8 @@ pub struct Controller<T: Transducer, L: Link> {
     geometry: Geometry<T>,
     tx_buf: TxDatagram,
     rx_buf: Vec<RxMessage>,
+    #[cfg(not(feature = "async"))]
+    runtime: tokio::runtime::Runtime,
 }
 
 impl Controller<LegacyTransducer, Nop> {
@@ -55,22 +57,6 @@ impl Controller<LegacyTransducer, Nop> {
 }
 
 impl<T: Transducer, L: Link> Controller<T, L> {
-    #[doc(hidden)]
-    pub async fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
-        let num_devices = geometry.num_devices();
-        let tx_buf = TxDatagram::new(num_devices);
-        let mut cnt = Controller {
-            link,
-            geometry,
-            tx_buf,
-            rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
-        };
-        cnt.send(UpdateFlags::new()).await?;
-        cnt.send(Clear::new()).await?;
-        cnt.send(Synchronize::new()).await?;
-        Ok(cnt)
-    }
-
     /// get geometry
     pub const fn geometry(&self) -> &Geometry<T> {
         &self.geometry
@@ -91,43 +77,6 @@ impl<T: Transducer, L: Link> Controller<T, L> {
         &mut self.link
     }
 
-    /// Send data to the devices
-    ///
-    /// # Arguments
-    ///
-    /// * `s` - Datagram
-    ///
-    /// # Returns
-    ///
-    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
-    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent or not
-    ///
-    pub async fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
-        let timeout = s.timeout();
-
-        let (mut op1, mut op2) = s.operation()?;
-        OperationHandler::init(&mut op1, &mut op2, &self.geometry)?;
-        loop {
-            let start = std::time::Instant::now();
-            OperationHandler::pack(&mut op1, &mut op2, &self.geometry, &mut self.tx_buf)?;
-
-            if !self
-                .link
-                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)
-                .await?
-            {
-                return Ok(false);
-            }
-            if OperationHandler::is_finished(&mut op1, &mut op2, &self.geometry) {
-                break;
-            }
-            if start.elapsed() < std::time::Duration::from_millis(1) {
-                std::thread::sleep(Duration::from_millis(1));
-            }
-        }
-        Ok(true)
-    }
-
     #[must_use]
     pub fn group<K: Hash + Eq + Clone, F: Fn(&Device<T>) -> Option<K>>(
         &mut self,
@@ -140,123 +89,169 @@ impl<T: Transducer, L: Link> Controller<T, L> {
             op: HashMap::new(),
         }
     }
+}
 
-    // Close connection
-    pub async fn close(&mut self) -> Result<bool, AUTDError> {
-        if !self.link.is_open() {
+#[cfg(feature = "async")]
+impl<T: Transducer, L: Link> Controller<T, L> {
+    #[doc(hidden)]
+    pub async fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+        let num_devices = geometry.num_devices();
+        let tx_buf = TxDatagram::new(num_devices);
+        let mut cnt = Controller {
+            link,
+            geometry,
+            tx_buf,
+            rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
+        };
+        cnt.send(UpdateFlags::new()).await?;
+        cnt.send(Clear::new()).await?;
+        cnt.send(Synchronize::new()).await?;
+        Ok(cnt)
+    }
+}
+
+#[cfg(not(feature = "async"))]
+impl<T: Transducer, L: Link> Controller<T, L> {
+    #[doc(hidden)]
+    pub fn open_impl(
+        runtime: tokio::runtime::Runtime,
+        geometry: Geometry<T>,
+        link: L,
+    ) -> Result<Controller<T, L>, AUTDError> {
+        let num_devices = geometry.num_devices();
+        let tx_buf = TxDatagram::new(num_devices);
+        let mut cnt = Controller {
+            link,
+            geometry,
+            tx_buf,
+            rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
+            runtime,
+        };
+        cnt.send(UpdateFlags::new())?;
+        cnt.send(Clear::new())?;
+        cnt.send(Synchronize::new())?;
+        Ok(cnt)
+    }
+}
+
+impl<T: Transducer, L: Link> Controller<T, L> {
+    pub async fn send_impl<S: Datagram<T>>(
+        link: &mut L,
+        geometry: &Geometry<T>,
+        tx_buf: &mut TxDatagram,
+        rx_buf: &mut [RxMessage],
+        s: S,
+    ) -> Result<bool, AUTDError> {
+        let timeout = s.timeout();
+
+        let (mut op1, mut op2) = s.operation()?;
+        OperationHandler::init(&mut op1, &mut op2, geometry)?;
+        loop {
+            let start = std::time::Instant::now();
+            OperationHandler::pack(&mut op1, &mut op2, geometry, tx_buf)?;
+
+            if !link.send_receive(tx_buf, rx_buf, timeout).await? {
+                return Ok(false);
+            }
+            if OperationHandler::is_finished(&mut op1, &mut op2, geometry) {
+                break;
+            }
+            if start.elapsed() < std::time::Duration::from_millis(1) {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+        Ok(true)
+    }
+
+    pub async fn close_impl(
+        link: &mut L,
+        geometry: &mut Geometry<T>,
+        tx_buf: &mut TxDatagram,
+        rx_buf: &mut [RxMessage],
+    ) -> Result<bool, AUTDError> {
+        if !link.is_open() {
             return Ok(false);
         }
-        for dev in self.geometry_mut() {
+        for dev in geometry.iter_mut() {
             dev.enable = true;
         }
-        let res = self.send(Stop::new()).await?;
-        let res = res & self.send(Clear::new()).await?;
-        self.link.close().await?;
+        let res = Self::send_impl(link, geometry, tx_buf, rx_buf, Stop::new()).await?;
+        let res = res & Self::send_impl(link, geometry, tx_buf, rx_buf, Clear::new()).await?;
+        link.close().await?;
         Ok(res)
     }
 
-    /// Get firmware information
-    ///
-    /// # Returns
-    ///
-    /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
-    ///
-    pub async fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
+    pub async fn firmware_infos_impl(
+        link: &mut L,
+        geometry: &Geometry<T>,
+        tx_buf: &mut TxDatagram,
+        rx_buf: &mut [RxMessage],
+    ) -> Result<Vec<FirmwareInfo>, AUTDError> {
         let mut op = autd3_driver::operation::FirmInfoOp::default();
         let mut null_op = autd3_driver::operation::NullOp::default();
 
-        OperationHandler::init(&mut op, &mut null_op, &self.geometry)?;
+        OperationHandler::init(&mut op, &mut null_op, geometry)?;
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        if !self
-            .link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        if !link
+            .send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?
         {
             return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
-                autd3_driver::cpu::check_if_msg_is_processed(&self.tx_buf, &mut self.rx_buf),
+                autd3_driver::cpu::check_if_msg_is_processed(tx_buf, rx_buf),
             )));
         }
-        let cpu_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
+        let cpu_versions = rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        if !self
-            .link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        if !link
+            .send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?
         {
             return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
-                autd3_driver::cpu::check_if_msg_is_processed(&self.tx_buf, &mut self.rx_buf),
+                autd3_driver::cpu::check_if_msg_is_processed(tx_buf, rx_buf),
             )));
         }
-        let cpu_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
+        let cpu_versions_minor = rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        if !self
-            .link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        if !link
+            .send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?
         {
             return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
-                autd3_driver::cpu::check_if_msg_is_processed(&self.tx_buf, &mut self.rx_buf),
+                autd3_driver::cpu::check_if_msg_is_processed(tx_buf, rx_buf),
             )));
         }
-        let fpga_versions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
+        let fpga_versions = rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        if !self
-            .link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        if !link
+            .send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?
         {
             return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
-                autd3_driver::cpu::check_if_msg_is_processed(&self.tx_buf, &mut self.rx_buf),
+                autd3_driver::cpu::check_if_msg_is_processed(tx_buf, rx_buf),
             )));
         }
-        let fpga_versions_minor = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
+        let fpga_versions_minor = rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        if !self
-            .link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        if !link
+            .send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?
         {
             return Err(AUTDError::ReadFirmwareInfoFailed(ReadFirmwareInfoState(
-                autd3_driver::cpu::check_if_msg_is_processed(&self.tx_buf, &mut self.rx_buf),
+                autd3_driver::cpu::check_if_msg_is_processed(tx_buf, rx_buf),
             )));
         }
-        let fpga_functions = self.rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
+        let fpga_functions = rx_buf.iter().map(|rx| rx.data).collect::<Vec<_>>();
 
-        OperationHandler::pack(&mut op, &mut null_op, &self.geometry, &mut self.tx_buf)?;
-        self.link
-            .send_receive(
-                &self.tx_buf,
-                &mut self.rx_buf,
-                Some(Duration::from_millis(200)),
-            )
+        OperationHandler::pack(&mut op, &mut null_op, geometry, tx_buf)?;
+        link.send_receive(tx_buf, rx_buf, Some(Duration::from_millis(200)))
             .await?;
 
-        Ok((0..self.geometry.num_devices())
+        Ok((0..geometry.num_devices())
             .map(|i| {
                 FirmwareInfo::new(
                     i,
@@ -270,6 +265,66 @@ impl<T: Transducer, L: Link> Controller<T, L> {
             .collect())
     }
 
+    pub async fn fpga_info_impl(
+        link: &mut L,
+        rx_buf: &mut [RxMessage],
+    ) -> Result<Vec<FPGAInfo>, AUTDError> {
+        link.receive(rx_buf).await?;
+        Ok(rx_buf.iter().map(FPGAInfo::from).collect())
+    }
+}
+
+#[cfg(feature = "async")]
+impl<T: Transducer, L: Link> Controller<T, L> {
+    /// Send data to the devices
+    ///
+    /// # Arguments
+    ///
+    /// * `s` - Datagram
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
+    /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent or not
+    ///
+    pub async fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+        Self::send_impl(
+            &mut self.link,
+            &self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+            s,
+        )
+        .await
+    }
+
+    // Close connection
+    pub async fn close(&mut self) -> Result<bool, AUTDError> {
+        Self::close_impl(
+            &mut self.link,
+            &mut self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+        )
+        .await
+    }
+
+    /// Get firmware information
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<FirmwareInfo>)` - List of firmware information
+    ///
+    pub async fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
+        Self::firmware_infos_impl(
+            &mut self.link,
+            &self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+        )
+        .await
+    }
+
     /// Get FPGA information
     ///
     /// # Returns
@@ -277,8 +332,43 @@ impl<T: Transducer, L: Link> Controller<T, L> {
     /// * `Ok(Vec<FPGAInfo>)` - List of FPGA information
     ///
     pub async fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
-        self.link.receive(&mut self.rx_buf).await?;
-        Ok(self.rx_buf.iter().map(FPGAInfo::from).collect())
+        Self::fpga_info_impl(&mut self.link, &mut self.rx_buf).await
+    }
+}
+
+#[cfg(not(feature = "async"))]
+impl<T: Transducer, L: Link> Controller<T, L> {
+    pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+        self.runtime.block_on(Self::send_impl(
+            &mut self.link,
+            &self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+            s,
+        ))
+    }
+
+    pub fn close(&mut self) -> Result<bool, AUTDError> {
+        self.runtime.block_on(Self::close_impl(
+            &mut self.link,
+            &mut self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+        ))
+    }
+
+    pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
+        self.runtime.block_on(Self::firmware_infos_impl(
+            &mut self.link,
+            &self.geometry,
+            &mut self.tx_buf,
+            &mut self.rx_buf,
+        ))
+    }
+
+    pub fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
+        self.runtime
+            .block_on(Self::fpga_info_impl(&mut self.link, &mut self.rx_buf))
     }
 }
 
