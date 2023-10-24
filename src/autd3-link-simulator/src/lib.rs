@@ -4,20 +4,17 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use tokio::runtime::{Builder, Runtime};
-
 use autd3_protobuf::*;
 
 use std::{
     net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
-    sync::RwLock,
     time::Duration,
 };
 
@@ -35,8 +32,7 @@ enum Either {
 
 /// Link for Simulator
 pub struct Simulator {
-    client: RwLock<simulator_client::SimulatorClient<tonic::transport::Channel>>,
-    runtime: Runtime,
+    client: simulator_client::SimulatorClient<tonic::transport::Channel>,
     timeout: Duration,
     is_open: bool,
 }
@@ -47,41 +43,32 @@ pub struct SimulatorBuilder {
     timeout: Duration,
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for SimulatorBuilder {
     type L = Simulator;
 
-    fn open(
+    async fn open(
         self,
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<Self::L, AUTDInternalError> {
-        let runtime = Builder::new_multi_thread()
-            .worker_threads(1)
-            .enable_all()
-            .build()
-            .unwrap();
+        let mut client = simulator_client::SimulatorClient::connect(format!(
+            "http://{}",
+            match self.addr {
+                Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
+                Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
+            }
+        ))
+        .await
+        .map_err(|e| AUTDInternalError::from(AUTDProtoBufError::from(e)))?;
 
-        let mut client = runtime
-            .block_on(simulator_client::SimulatorClient::connect(format!(
-                "http://{}",
-                match self.addr {
-                    Either::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, self.port)),
-                    Either::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, self.port, 0, 0)),
-                }
-            )))
-            .map_err(|e| AUTDInternalError::from(AUTDProtoBufError::from(e)))?;
-
-        if runtime
-            .block_on(client.config_geomety(geometry.to_msg()))
-            .is_err()
-        {
+        if client.config_geomety(geometry.to_msg()).await.is_err() {
             return Err(
                 AUTDProtoBufError::SendError("Failed to initialize simulator".to_string()).into(),
             );
         }
 
         Ok(Self::L {
-            client: RwLock::new(client),
-            runtime,
+            client,
             timeout: self.timeout,
             is_open: true,
         })
@@ -126,40 +113,45 @@ impl Simulator {
     }
 }
 
+#[async_trait::async_trait]
 impl Link for Simulator {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open {
             return Ok(());
         }
         self.is_open = false;
 
-        self.runtime
-            .block_on(self.client.write().unwrap().close(CloseRequest {}))
+        self.client
+            .close(CloseRequest {})
+            .await
             .map_err(AUTDProtoBufError::from)?;
 
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }
 
         let res = self
-            .runtime
-            .block_on(self.client.write().unwrap().send_data(tx.to_msg()))
+            .client
+            .send_data(tx.to_msg())
+            .await
             .map_err(AUTDProtoBufError::from)?;
+
         Ok(res.into_inner().success)
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }
 
         let res = self
-            .runtime
-            .block_on(self.client.write().unwrap().read_data(ReadRequest {}))
+            .client
+            .read_data(ReadRequest {})
+            .await
             .map_err(AUTDProtoBufError::from)?;
         let rx_ = Vec::<RxMessage>::from_msg(&res.into_inner());
         if rx.len() == rx_.len() {
@@ -179,20 +171,11 @@ impl Link for Simulator {
 }
 
 impl Simulator {
-    pub fn update_geometry<T: Transducer>(
-        &self,
+    pub async fn update_geometry<T: Transducer>(
+        &mut self,
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<(), AUTDInternalError> {
-        if self
-            .runtime
-            .block_on(
-                self.client
-                    .write()
-                    .unwrap()
-                    .update_geomety(geometry.to_msg()),
-            )
-            .is_err()
-        {
+        if self.client.update_geomety(geometry.to_msg()).await.is_err() {
             return Err(
                 AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
             );

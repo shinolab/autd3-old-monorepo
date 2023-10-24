@@ -10,11 +10,6 @@ name = "group_gain"
 path = "src/group_gain.rs"
 
 [[bin]]
-name = "async"
-path = "src/async.rs"
-required-features = ["async"]
-
-[[bin]]
 name = "soem"
 path = "src/soem.rs"
 required-features = ["soem"]
@@ -48,11 +43,6 @@ required-features = ["visualizer"]
 name = "freq_config"
 path = "src/freq_config.rs"
 
-[[bin]]
-name = "lightweight"
-path = "src/lightweight.rs"
-required-features = ["lightweight"]
-
 [dependencies]
 anyhow = "1.0.72"
 autd3 = { path = "../autd3" }
@@ -66,11 +56,11 @@ autd3-link-visualizer = { path = "../autd3-link-visualizer", optional = true }
 autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
 autd3-protobuf = { path = "../autd3-protobuf", optional = true }
 colored = "2.0.0"
-tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"], optional = true }
+tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"] }
+async-std = "1.12.0"
 
 [features]
 default = []
-async = ["tokio"]
 simulator = ["autd3-link-simulator"]
 soem = ["autd3-link-soem/local"]
 remote_soem = ["autd3-link-soem/remote"]
@@ -79,8 +69,7 @@ remote_twincat = ["autd3-link-twincat/remote"]
 visualizer = ["autd3-link-visualizer"]
 gpu = ["autd3-link-visualizer/gpu"]
 python = ["autd3-link-visualizer/python"]
-lightweight = ["autd3-protobuf", "tokio"]
-all = ["twincat", "remote_twincat", "soem", "remote_soem", "async", "lightweight", "simulator", "visualizer"]
+all = ["twincat", "remote_twincat", "soem", "remote_soem", "simulator", "visualizer"]
 
 cuda = ["autd3-backend-cuda"]
 single_float = ["autd3/single_float"]

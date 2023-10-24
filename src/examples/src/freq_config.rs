@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,11 +15,13 @@ use anyhow::Result;
 
 use autd3::prelude::*;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mut autd = Controller::builder()
         .advanced()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Nop::builder())?;
+        .open_with(Nop::builder())
+        .await?;
 
     for dev in autd.geometry_mut() {
         for tr in dev {
@@ -27,7 +29,7 @@ fn main() -> Result<()> {
         }
     }
 
-    autd.send(Synchronize::new())?;
+    autd.send(Synchronize::new()).await?;
 
     Ok(())
 }

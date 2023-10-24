@@ -17,6 +17,7 @@ autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "16.0
 num = "0.4.0"
 thiserror = "1.0.31"
 bitvec = "1.0.1"
+async-trait = "0.1.74"
 
 [features]
 default = []
@@ -28,6 +29,7 @@ assert_approx_eq = "1.1.0"
 rand = "0.8.5"
 criterion = { version = "0.5.1", features = ["html_reports"] }
 itertools = "0.11.0"
+tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
 
 [[bench]]
 name = "gain"

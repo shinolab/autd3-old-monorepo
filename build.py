@@ -234,9 +234,9 @@ def rust_build(args):
             command = ["cargo", "build", "--bins"]
             if args.release:
                 command.append("--release")
-            features = "async soem twincat"
+            features = "soem twincat"
             if args.all:
-                features += " simulator remote_soem remote_twincat visualizer python lightweight"
+                features += " simulator remote_soem remote_twincat visualizer python"
             if is_shaderc_available():
                 features += " gpu"
             command.append("--features")
@@ -316,8 +316,6 @@ def rust_run(args):
         "simulator",
         "visualizer",
         "freq_config",
-        "async",
-        "lightweight",
     ]
 
     if args.target not in examples:
@@ -325,8 +323,6 @@ def rust_run(args):
         info(f"Available examples: {examples}")
         return -1
 
-    if args.target == "async":
-        args.features = "async"
     if args.target == "soem":
         args.features = "soem"
     if args.target == "remote_soem":
@@ -339,8 +335,6 @@ def rust_run(args):
         args.features = "simulator"
     if args.target == "visualizer":
         args.features = "visualizer"
-    if args.target == "lightweight":
-        args.features = "lightweight"
 
     with working_dir("src/examples"):
         commands = ["cargo", "run"]

@@ -4,7 +4,7 @@
  * Created Date: 02/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,12 @@ use anyhow::Result;
 
 use autd3::prelude::*;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mut autd = Controller::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .open_with(Nop::builder())?;
+        .open_with(Nop::builder())
+        .await?;
 
     let cx = autd.geometry().center().x;
     let g1 = Focus::new(autd.geometry()[0].center() + Vector3::new(0., 0., 150.0 * MILLIMETER));
@@ -34,9 +36,9 @@ fn main() -> Result<()> {
     .set("null", g2);
 
     let m = Sine::new(150);
-    autd.send((m, g))?;
+    autd.send((m, g)).await?;
 
-    autd.close()?;
+    autd.close().await?;
 
     Ok(())
 }

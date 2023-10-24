@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@ use super::test_runner::Backend;
 use colored::*;
 use std::io::{self, Write};
 
-pub fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.send(Silencer::default())?;
+pub async fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
+    autd.send(Silencer::default()).await?;
 
     let m = Sine::new(150);
 
@@ -48,51 +48,51 @@ pub fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Resu
             let g = SDP::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(1) => {
             let g = EVP::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(2) => {
             let g = GS::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(3) => {
             let g = GSPAT::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(4) => {
             let g = LSS::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(5) => {
             let g = LM::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         Ok(6) => {
             let g = Greedy::new()
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
         _ => {
             let g = GSPAT::new(backend)
                 .add_focus(center + p, 1.)
                 .add_focus(center - p, 1.);
-            autd.send((m, g))
+            autd.send((m, g)).await?
         }
-    }?;
+    };
 
     Ok(true)
 }

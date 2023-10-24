@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,13 +45,13 @@ impl<T: Transducer> ControllerBuilder<T> {
     }
 
     /// Open controller
-    pub fn open_with<B: LinkBuilder<T>>(
+    pub async fn open_with<B: LinkBuilder<T>>(
         self,
         link_builder: B,
     ) -> Result<Controller<T, B::L>, AUTDError> {
         let geometry = Geometry::<T>::new(self.devices);
-        let link = link_builder.open(&geometry)?;
-        Controller::open_impl(geometry, link)
+        let link = link_builder.open(&geometry).await?;
+        Controller::open_impl(geometry, link).await
     }
 
     fn convert<T2: Transducer>(self) -> ControllerBuilder<T2> {
