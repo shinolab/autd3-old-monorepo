@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,15 +19,12 @@ use autd3_driver::{
     geometry::Transducer,
     link::{Link, LinkBuilder},
 };
-use tokio::runtime::{Builder, Runtime};
 
 use autd3_protobuf::*;
-use tonic::Response;
 
 /// Link to connect to remote SOEMServer
 pub struct RemoteSOEM {
     client: ecat_client::EcatClient<tonic::transport::Channel>,
-    runtime: Runtime,
     timeout: Duration,
     is_open: bool,
 }
@@ -44,21 +41,18 @@ impl RemoteSOEMBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for RemoteSOEMBuilder {
     type L = RemoteSOEM;
 
-    fn open(self, _: &autd3_driver::geometry::Geometry<T>) -> Result<Self::L, AUTDInternalError> {
-        let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
-        let client = runtime
-            .block_on(ecat_client::EcatClient::connect(format!(
-                "http://{}",
-                self.addr
-            )))
-            .map_err(|e| AUTDInternalError::from(AUTDProtoBufError::from(e)))?;
-
+    async fn open(
+        self,
+        _: &autd3_driver::geometry::Geometry<T>,
+    ) -> Result<Self::L, AUTDInternalError> {
         Ok(Self::L {
-            client,
-            runtime,
+            client: ecat_client::EcatClient::connect(format!("http://{}", self.addr))
+                .await
+                .map_err(|e| AUTDInternalError::from(AUTDProtoBufError::from(e)))?,
             timeout: self.timeout,
             is_open: true,
         })
@@ -72,46 +66,47 @@ impl RemoteSOEM {
             timeout: Duration::from_millis(200),
         }
     }
-
-    fn send_impl(&mut self, tx: &TxDatagram) -> Result<Response<SendResponse>, AUTDProtoBufError> {
-        Ok(self.runtime.block_on(self.client.send_data(tx.to_msg()))?)
-    }
-
-    fn receive_impl(&mut self) -> Result<Response<autd3_protobuf::RxMessage>, AUTDProtoBufError> {
-        Ok(self
-            .runtime
-            .block_on(self.client.read_data(ReadRequest {}))?)
-    }
-
-    fn close_impl(&mut self) -> Result<Response<CloseResponse>, AUTDProtoBufError> {
-        Ok(self.runtime.block_on(self.client.close(CloseRequest {}))?)
-    }
 }
 
+#[async_trait::async_trait]
 impl Link for RemoteSOEM {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
-        self.close_impl()?;
+        self.client
+            .close(CloseRequest {})
+            .await
+            .map_err(AUTDProtoBufError::from)?;
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if self.is_open() {
-            Ok(self.send_impl(tx)?.into_inner().success)
-        } else {
-            Err(AUTDInternalError::LinkClosed)
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+        if !self.is_open() {
+            return Err(AUTDInternalError::LinkClosed);
         }
+
+        Ok(self
+            .client
+            .send_data(tx.to_msg())
+            .await
+            .map_err(AUTDProtoBufError::from)?
+            .into_inner()
+            .success)
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
-        if self.is_open() {
-            rx.copy_from_slice(&Vec::<RxMessage>::from_msg(
-                &self.receive_impl()?.into_inner(),
-            ));
-            Ok(true)
-        } else {
-            Err(AUTDInternalError::LinkClosed)
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+        if !self.is_open() {
+            return Err(AUTDInternalError::LinkClosed);
         }
+
+        rx.copy_from_slice(&Vec::<RxMessage>::from_msg(
+            &self
+                .client
+                .read_data(ReadRequest {})
+                .await
+                .map_err(AUTDProtoBufError::from)?
+                .into_inner(),
+        ));
+        Ok(true)
     }
 
     fn is_open(&self) -> bool {

@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,10 +45,11 @@ impl AuditBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for AuditBuilder {
     type L = Audit;
 
-    fn open(
+    async fn open(
         self,
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<Self::L, AUTDInternalError> {
@@ -121,13 +122,14 @@ impl DerefMut for Audit {
     }
 }
 
+#[async_trait::async_trait]
 impl Link for Audit {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -147,7 +149,7 @@ impl Link for Audit {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -168,7 +170,7 @@ impl Link for Audit {
         Ok(true)
     }
 
-    fn send_receive(
+    async fn send_receive(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
@@ -176,13 +178,13 @@ impl Link for Audit {
     ) -> Result<bool, AUTDInternalError> {
         let timeout = timeout.unwrap_or(self.timeout);
         self.last_timeout = timeout;
-        if !self.send(tx)? {
+        if !self.send(tx).await? {
             return Ok(false);
         }
         if timeout.is_zero() {
-            return self.receive(rx);
+            return self.receive(rx).await;
         }
-        self.wait_msg_processed(tx, rx, timeout)
+        self.wait_msg_processed(tx, rx, timeout).await
     }
 
     fn is_open(&self) -> bool {

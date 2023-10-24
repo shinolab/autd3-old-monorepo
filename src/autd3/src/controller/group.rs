@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,7 +74,7 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
         Ok(self)
     }
 
-    pub fn send(mut self) -> Result<bool, AUTDInternalError> {
+    pub async fn send(mut self) -> Result<bool, AUTDInternalError> {
         let timeout = self.timeout;
 
         let enable_flags_store = self
@@ -127,7 +127,8 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
             if !self
                 .cnt
                 .link
-                .send_receive(&self.cnt.tx_buf, &mut self.cnt.rx_buf, timeout)?
+                .send_receive(&self.cnt.tx_buf, &mut self.cnt.rx_buf, timeout)
+                .await?
             {
                 break false;
             }

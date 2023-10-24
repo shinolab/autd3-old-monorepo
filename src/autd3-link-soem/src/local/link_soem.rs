@@ -4,13 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use crossbeam_channel::{bounded, Receiver, Sender, TrySendError};
 use std::{
     ffi::c_void,
     sync::{
@@ -21,8 +22,6 @@ use std::{
     time::Duration,
     usize,
 };
-
-use crossbeam_channel::{bounded, Receiver, Sender};
 use time::ext::NumericalDuration;
 
 use autd3_driver::{
@@ -166,10 +165,11 @@ impl SOEMBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for SOEMBuilder {
     type L = SOEM;
 
-    fn open(
+    async fn open(
         self,
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<Self::L, AUTDInternalError> {
@@ -459,8 +459,9 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
+#[async_trait::async_trait]
 impl Link for SOEM {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open() {
             return Ok(());
         }
@@ -497,17 +498,19 @@ impl Link for SOEM {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed);
         }
 
-        self.sender.send(tx.clone()).unwrap();
-
-        Ok(true)
+        match self.sender.try_send(tx.clone()) {
+            Err(TrySendError::Full(_)) => return Ok(false),
+            Err(TrySendError::Disconnected(_)) => return Err(AUTDInternalError::LinkClosed),
+            _ => Ok(true),
+        }
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed);
         }

@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -46,10 +46,11 @@ pub struct RemoteTwinCATBuilder {
     timeout: Duration,
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for RemoteTwinCATBuilder {
     type L = RemoteTwinCAT;
 
-    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         let RemoteTwinCATBuilder {
             server_ams_net_id,
             mut server_ip,
@@ -153,8 +154,9 @@ impl RemoteTwinCAT {
     }
 }
 
+#[async_trait::async_trait]
 impl Link for RemoteTwinCAT {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         if self.port == 0 {
             return Ok(());
         }
@@ -170,7 +172,7 @@ impl Link for RemoteTwinCAT {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         let addr = AmsAddr {
             net_id: self.net_id,
             port: PORT,
@@ -198,7 +200,7 @@ impl Link for RemoteTwinCAT {
         Err(AdsError::SendData(res as _).into())
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         let addr = AmsAddr {
             net_id: self.net_id,
             port: PORT,
