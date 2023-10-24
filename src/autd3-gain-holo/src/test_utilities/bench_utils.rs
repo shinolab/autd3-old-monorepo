@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 use criterion::{black_box, AxisScale, BenchmarkId, Criterion, PlotConfiguration};
 
-use autd3::autd3_device::AUTD3;
 use autd3_driver::{
+    autd3_device::AUTD3,
     datagram::{Gain, GainFilter},
     defined::{float, PI},
     geometry::{Geometry, IntoDevice, LegacyTransducer, Transducer, Vector3},

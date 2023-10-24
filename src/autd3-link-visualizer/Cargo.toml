@@ -12,7 +12,6 @@ keywords = ["autd"]
 
 [dependencies]
 autd3-firmware-emulator = { path = "../autd3-firmware-emulator", version = "16.0.3" }
-autd3 = { path = "../autd3", version = "16.0.3" }
 autd3-driver = { path = "../autd3-driver", version = "16.0.3" }
 thiserror = "1.0.30"
 pyo3 = { version = "0.20.0", features = ["auto-initialize"], optional = true }
@@ -31,5 +30,5 @@ default = ["plotters"]
 plotters = ["dep:plotters", "plotters-bitmap", "scarlet"]
 python = ["pyo3", "which"]
 gpu = ["vulkano", "vulkano-shaders"]
-single_float = ["autd3/single_float"]
+single_float = ["autd3-driver/single_float"]
 all = ["plotters", "python", "gpu"]
