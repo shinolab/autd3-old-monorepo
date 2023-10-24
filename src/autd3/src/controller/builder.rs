@@ -57,7 +57,7 @@ impl<T: Transducer> ControllerBuilder<T> {
 
     /// Open controller
     #[cfg(not(feature = "async"))]
-    pub async fn open_with<B: LinkBuilder<T>>(
+    pub fn open_with<B: LinkBuilder<T>>(
         self,
         link_builder: B,
     ) -> Result<Controller<T, B::L>, AUTDError> {
