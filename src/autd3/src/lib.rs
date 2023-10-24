@@ -11,6 +11,11 @@
  *
  */
 
+#[cfg(all(feature = "async", feature = "sync"))]
+compile_error!("`async` feature and `sync` feature are mutually exclusive");
+#[cfg(not(any(feature = "async", feature = "sync")))]
+compile_error!("Either `async` feature or `sync` feature is required");
+
 pub mod autd3_device;
 pub mod controller;
 pub mod error;

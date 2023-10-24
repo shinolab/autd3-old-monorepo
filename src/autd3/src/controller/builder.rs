@@ -45,6 +45,7 @@ impl<T: Transducer> ControllerBuilder<T> {
     }
 
     /// Open controller
+    #[cfg(feature = "async")]
     pub async fn open_with<B: LinkBuilder<T>>(
         self,
         link_builder: B,
@@ -52,6 +53,21 @@ impl<T: Transducer> ControllerBuilder<T> {
         let geometry = Geometry::<T>::new(self.devices);
         let link = link_builder.open(&geometry).await?;
         Controller::open_impl(geometry, link).await
+    }
+
+    /// Open controller
+    #[cfg(not(feature = "async"))]
+    pub async fn open_with<B: LinkBuilder<T>>(
+        self,
+        link_builder: B,
+    ) -> Result<Controller<T, B::L>, AUTDError> {
+        let geometry = Geometry::<T>::new(self.devices);
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let link = runtime.block_on(link_builder.open(&geometry))?;
+        Controller::open_impl(runtime, geometry, link)
     }
 
     fn convert<T2: Transducer>(self) -> ControllerBuilder<T2> {
