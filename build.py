@@ -24,6 +24,7 @@ import os
 import sys
 import platform
 from shutil import which
+from packaging import version
 
 
 def err(msg: str):
@@ -57,7 +58,10 @@ def onexc(func, path, exeption):
 
 def rmtree_f(path):
     try:
-        shutil.rmtree(path, onexc=onexc)
+        if version.parse(platform.python_version()) >= version.parse("3.12"):
+            shutil.rmtree(path, onexc=onexc)
+        else:
+            shutil.rmtree(path, onerror=onexc)
     except FileNotFoundError:
         pass
 
