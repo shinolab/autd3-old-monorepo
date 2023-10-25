@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,33 +27,39 @@ use super::{
     transtest::*,
 };
 
-pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyhow::Result<()> {
-    type Test<'a, T, L> = (
+pub async fn run<T: Transducer + 'static, L: Link>(
+    mut autd: Controller<T, L>,
+) -> anyhow::Result<()> {
+    type Test<T, L> = (
         &'static str,
-        &'a dyn Fn(&mut Controller<T, L>) -> anyhow::Result<bool>,
+        fn(
+            &'_ mut Controller<T, L>,
+        )
+            -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<bool>> + '_>>,
     );
 
     println!("======== AUTD3 firmware information ========");
-    autd.firmware_infos()?.iter().for_each(|firm_info| {
+    autd.firmware_infos().await?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });
     println!("============================================");
 
     let mut examples: Vec<Test<_, _>> = vec![
-        ("Single focus test", &focus),
-        ("Bessel beam test", &bessel),
-        ("Plane wave test", &plane),
-        ("Wav modulation test", &audio_file),
-        ("FocusSTM test", &focus_stm),
-        ("GainSTM test", &gain_stm),
-        ("SoftwareSTM test", &software_stm),
-        ("Multiple foci test", &holo),
-        ("Custom Gain & Modulation test", &custom),
-        ("Flag test", &flag),
-        ("TransducerTest test", &transtest),
+        ("Single focus test", |autd| Box::pin(focus(autd))),
+        ("Bessel beam test", |autd| Box::pin(bessel(autd))),
+        ("Plane wave test", |autd| Box::pin(plane(autd))),
+        ("Wav modulation test", |autd| Box::pin(audio_file(autd))),
+        ("FocusSTM test", |autd| Box::pin(focus_stm(autd))),
+        ("GainSTM test", |autd| Box::pin(gain_stm(autd))),
+        ("Multiple foci test", |autd| Box::pin(holo(autd))),
+        ("Custom Gain & Modulation test", |autd| {
+            Box::pin(custom(autd))
+        }),
+        ("Flag test", |autd| Box::pin(flag(autd))),
+        ("TransducerTest test", |autd| Box::pin(transtest(autd))),
     ];
-    if autd.geometry().num_devices() >= 2 {
-        examples.push(("Group test", &group));
+    if autd.geometry.num_devices() >= 2 {
+        examples.push(("Group test", |autd| Box::pin(group(autd))));
     }
 
     loop {
@@ -68,7 +74,7 @@ pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyh
         io::stdin().read_line(&mut s)?;
         match s.trim().parse::<usize>() {
             Ok(i) if i < examples.len() => {
-                if !(examples[i].1)(&mut autd)? {
+                if !(examples[i].1)(&mut autd).await? {
                     eprintln!("Failed to send data");
                 }
             }
@@ -79,12 +85,12 @@ pub fn run<T: Transducer + 'static, L: Link>(mut autd: Controller<T, L>) -> anyh
         let mut _s = String::new();
         io::stdin().read_line(&mut _s)?;
 
-        if !autd.send(Stop::new())? {
+        if !autd.send(Stop::new()).await? {
             eprintln!("Failed to stop");
         }
     }
 
-    if !autd.close()? {
+    if !autd.close().await? {
         println!("Failed to close");
     }
 

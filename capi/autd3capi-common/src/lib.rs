@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ pub use autd3_driver::{
 
 pub use custom::{CustomGain, CustomModulation};
 pub use dynamic_datagram::DynamicDatagram;
-pub use dynamic_link::DynamicLinkBuilder;
+pub use dynamic_link::{DynamicLinkBuilder, DynamicLinkBuilderWrapper};
 pub use dynamic_transducer::{DynamicTransducer, TransMode};
 
 pub use libc::c_void;

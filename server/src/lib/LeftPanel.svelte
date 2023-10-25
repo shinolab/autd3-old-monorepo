@@ -75,7 +75,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
         <TabPanel>
           <TwinCAT
             twincatOptions={options.twincat}
-            lightweightTwincatOptions={options.lightweight_twincat}
           />
         </TabPanel>
       {/if}

@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,10 +40,11 @@ impl Nop {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for NopBuilder {
     type L = Nop;
 
-    fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         Ok(Nop {
             is_open: true,
             cpus: geometry
@@ -59,12 +60,13 @@ impl<T: Transducer> LinkBuilder<T> for NopBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl Link for Nop {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }
@@ -76,7 +78,7 @@ impl Link for Nop {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }

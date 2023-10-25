@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -364,7 +364,7 @@ def plot(trans_x, trans_y, trans_phase, config, trans_size):
                 trans_y,
                 phases,
                 config,
-                autd3::autd3_device::AUTD3::TRANS_SPACING,
+                autd3_driver::autd3_device::AUTD3::TRANS_SPACING,
             ))?;
             Ok(())
         })?;

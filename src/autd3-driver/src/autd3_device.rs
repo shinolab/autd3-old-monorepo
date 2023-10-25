@@ -4,14 +4,14 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/09/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{
+use crate::{
     defined::{float, MILLIMETER},
     geometry::{Device, IntoDevice, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4},
 };
@@ -98,7 +98,7 @@ impl AUTD3 {
     /// # Examples
     ///
     /// ```
-    /// use autd3::autd3_device::AUTD3;
+    /// use autd3_driver::autd3_device::AUTD3;
     ///
     /// let (x, y) = AUTD3::grid_id(0);
     /// assert_eq!(x, 0);
@@ -151,20 +151,6 @@ impl<T: Transducer> IntoDevice<T> for AUTD3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // #[test]
-    // fn autd3_device() {
-    //     let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
-    //     let transducers = Device::get_transducers(&dev, 0);
-    //     assert_eq!(transducers.len(), 249);
-
-    //     assert_approx_eq::assert_approx_eq!(transducers[0].1.x, 0.);
-    //     assert_approx_eq::assert_approx_eq!(transducers[0].1.y, 0.);
-    //     assert_approx_eq::assert_approx_eq!(transducers[1].1.x, AUTD3::TRANS_SPACING);
-    //     assert_approx_eq::assert_approx_eq!(transducers[1].1.y, 0.);
-    //     assert_approx_eq::assert_approx_eq!(transducers[18].1.x, 0.);
-    //     assert_approx_eq::assert_approx_eq!(transducers[18].1.y, AUTD3::TRANS_SPACING);
-    // }
 
     #[test]
     fn autd3_is_missing_transducer() {

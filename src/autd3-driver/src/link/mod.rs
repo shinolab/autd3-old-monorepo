@@ -4,13 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use async_trait::async_trait;
 use std::time::Duration;
 
 use crate::{
@@ -21,13 +22,14 @@ use crate::{
 };
 
 /// Link is a interface to the AUTD device
+#[async_trait]
 pub trait Link: Send + Sync {
     /// Close link
-    fn close(&mut self) -> Result<(), AUTDInternalError>;
+    async fn close(&mut self) -> Result<(), AUTDInternalError>;
     /// Send data to devices
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
     /// Receive data from devices
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError>;
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError>;
     /// Check if link is open
     #[must_use]
     fn is_open(&self) -> bool;
@@ -35,31 +37,31 @@ pub trait Link: Send + Sync {
     #[must_use]
     fn timeout(&self) -> Duration;
     /// Send and receive data
-    fn send_receive(
+    async fn send_receive(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Option<Duration>,
     ) -> Result<bool, AUTDInternalError> {
         let timeout = timeout.unwrap_or(self.timeout());
-        if !self.send(tx)? {
+        if !self.send(tx).await? {
             return Ok(false);
         }
         if timeout.is_zero() {
-            return self.receive(rx);
+            return self.receive(rx).await;
         }
-        self.wait_msg_processed(tx, rx, timeout)
+        self.wait_msg_processed(tx, rx, timeout).await
     }
 
     /// Wait until message is processed
-    fn wait_msg_processed(
+    async fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
         let start = std::time::Instant::now();
-        let _ = self.receive(rx)?;
+        let _ = self.receive(rx).await?;
         if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
             return Ok(true);
         }
@@ -68,7 +70,7 @@ pub trait Link: Send + Sync {
                 return Ok(false);
             }
             std::thread::sleep(std::time::Duration::from_millis(1));
-            if !self.receive(rx)? {
+            if !self.receive(rx).await? {
                 continue;
             }
             if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
@@ -78,27 +80,29 @@ pub trait Link: Send + Sync {
     }
 }
 
+#[async_trait]
 pub trait LinkBuilder<T: Transducer> {
     type L: Link;
 
     /// Open link
-    fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
+    async fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
 }
 
+#[async_trait]
 impl Link for Box<dyn Link> {
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
-        self.as_mut().close()
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+        self.as_mut().close().await
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        self.as_mut().send(tx)
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+        self.as_mut().send(tx).await
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
-        self.as_mut().receive(rx)
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+        self.as_mut().receive(rx).await
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
@@ -112,23 +116,23 @@ impl Link for Box<dyn Link> {
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn send_receive(
+    async fn send_receive(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Option<Duration>,
     ) -> Result<bool, AUTDInternalError> {
-        self.as_mut().send_receive(tx, rx, timeout)
+        self.as_mut().send_receive(tx, rx, timeout).await
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn wait_msg_processed(
+    async fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
-        self.as_mut().wait_msg_processed(tx, rx, timeout)
+        self.as_mut().wait_msg_processed(tx, rx, timeout).await
     }
 }
 
@@ -144,14 +148,15 @@ mod tests {
         pub down: bool,
     }
 
+    #[async_trait]
     impl Link for MockLink {
         #[cfg_attr(coverage_nightly, coverage(off))]
-        fn close(&mut self) -> Result<(), AUTDInternalError> {
+        async fn close(&mut self) -> Result<(), AUTDInternalError> {
             self.is_open = false;
             Ok(())
         }
 
-        fn send(&mut self, _: &TxDatagram) -> Result<bool, AUTDInternalError> {
+        async fn send(&mut self, _: &TxDatagram) -> Result<bool, AUTDInternalError> {
             if !self.is_open {
                 return Err(AUTDInternalError::LinkClosed);
             }
@@ -160,7 +165,7 @@ mod tests {
             Ok(!self.down)
         }
 
-        fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+        async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
             if !self.is_open {
                 return Err(AUTDInternalError::LinkClosed);
             }
@@ -185,8 +190,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn send_receive() {
+    #[tokio::test]
+    async fn send_receive() {
         let mut link = MockLink {
             is_open: true,
             timeout: Duration::from_millis(0),
@@ -197,27 +202,28 @@ mod tests {
 
         let tx = TxDatagram::new(0);
         let mut rx = Vec::new();
-        assert_eq!(link.send_receive(&tx, &mut rx, None), Ok(true));
+        assert_eq!(link.send_receive(&tx, &mut rx, None).await, Ok(true));
 
         link.is_open = false;
         assert_eq!(
-            link.send_receive(&tx, &mut rx, None),
+            link.send_receive(&tx, &mut rx, None).await,
             Err(AUTDInternalError::LinkClosed)
         );
 
         link.is_open = true;
         link.down = true;
-        assert_eq!(link.send_receive(&tx, &mut rx, None), Ok(false));
+        assert_eq!(link.send_receive(&tx, &mut rx, None).await, Ok(false));
 
         link.down = false;
         assert_eq!(
-            link.send_receive(&tx, &mut rx, Some(Duration::from_millis(1))),
+            link.send_receive(&tx, &mut rx, Some(Duration::from_millis(1)))
+                .await,
             Ok(true)
         );
     }
 
-    #[test]
-    fn wait_msg_processed() {
+    #[tokio::test]
+    async fn wait_msg_processed() {
         let mut link = MockLink {
             is_open: true,
             timeout: Duration::from_millis(0),
@@ -230,14 +236,16 @@ mod tests {
         tx.header_mut(0).msg_id = 2;
         let mut rx = vec![RxMessage { ack: 0, data: 0 }];
         assert_eq!(
-            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10))
+                .await,
             Ok(true)
         );
 
         link.recv_cnt = 0;
         link.is_open = false;
         assert_eq!(
-            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10))
+                .await,
             Err(AUTDInternalError::LinkClosed)
         );
 
@@ -245,7 +253,8 @@ mod tests {
         link.is_open = true;
         link.down = true;
         assert_eq!(
-            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10))
+                .await,
             Ok(false)
         );
 
@@ -253,7 +262,8 @@ mod tests {
         link.recv_cnt = 0;
         tx.header_mut(0).msg_id = 20;
         assert_eq!(
-            link.wait_msg_processed(&tx, &mut rx, Duration::from_secs(10)),
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_secs(10))
+                .await,
             Err(AUTDInternalError::LinkError("too many".to_owned()))
         );
     }

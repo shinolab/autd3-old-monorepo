@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::rc::Rc;
 
 use crate::pb::*;
-use autd3_driver::{datagram::ModulationProperty, geometry::LegacyTransducer};
+use autd3_driver::geometry::LegacyTransducer;
 
 pub trait ToMessage {
     type Message: prost::Message;
@@ -121,164 +121,6 @@ impl ToMessage for autd3_driver::cpu::TxDatagram {
         Self::Message {
             data: self.all_data().to_vec(),
             num_devices: self.num_devices() as _,
-        }
-    }
-}
-
-impl ToMessage for autd3::modulation::Static {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Modulation(Modulation {
-                modulation: Some(modulation::Modulation::Static(Static {
-                    amp: self.amp() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::modulation::SineLegacy {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Modulation(Modulation {
-                modulation: Some(modulation::Modulation::SineLegacy(SineLegacy {
-                    freq_div: self.sampling_frequency_division() as _,
-                    freq: self.freq() as _,
-                    amp: self.amp() as _,
-                    offset: self.offset() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::modulation::Sine {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Modulation(Modulation {
-                modulation: Some(modulation::Modulation::Sine(Sine {
-                    freq_div: self.sampling_frequency_division() as _,
-                    freq: self.freq() as _,
-                    amp: self.amp() as _,
-                    offset: self.offset() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::modulation::Square {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Modulation(Modulation {
-                modulation: Some(modulation::Modulation::Square(Square {
-                    freq_div: self.sampling_frequency_division() as _,
-                    freq: self.freq() as _,
-                    low: self.low() as _,
-                    high: self.high() as _,
-                    duty: self.duty() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::gain::Focus {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Gain(Gain {
-                gain: Some(gain::Gain::Focus(Focus {
-                    amp: Some(self.amp().to_msg()),
-                    pos: Some(self.pos().to_msg()),
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::gain::Bessel {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Gain(Gain {
-                gain: Some(gain::Gain::Bessel(Bessel {
-                    amp: Some(self.amp().to_msg()),
-                    pos: Some(self.pos().to_msg()),
-                    dir: Some(self.dir().to_msg()),
-                    theta: self.theta() as _,
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::gain::Null {
-    type Message = Datagram;
-
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Gain(Gain {
-                gain: Some(gain::Gain::Null(Null {})),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::gain::Plane {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Gain(Gain {
-                gain: Some(gain::Gain::Plane(Plane {
-                    amp: Some(self.amp().to_msg()),
-                    dir: Some(self.dir().to_msg()),
-                })),
-            })),
-        }
-    }
-}
-
-impl ToMessage for autd3::gain::TransducerTest {
-    type Message = Datagram;
-
-    #[allow(clippy::unnecessary_cast)]
-    fn to_msg(&self) -> Self::Message {
-        Self::Message {
-            datagram: Some(datagram::Datagram::Gain(Gain {
-                gain: Some(gain::Gain::TransTest(TransducerTest {
-                    drives: self
-                        .test_drive()
-                        .iter()
-                        .map(
-                            |(&(dev_idx, tr_idx), &(phase, amp))| transducer_test::TestDrive {
-                                dev_idx: dev_idx as _,
-                                tr_idx: tr_idx as _,
-                                phase: phase as _,
-                                amp: Some(amp.to_msg()),
-                            },
-                        )
-                        .collect(),
-                })),
-            })),
         }
     }
 }
@@ -564,102 +406,6 @@ impl FromMessage<Amplitude> for autd3_driver::common::Amplitude {
     }
 }
 
-impl FromMessage<Static> for autd3::modulation::Static {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Static) -> Self {
-        Self::new().with_amp(msg.amp as _)
-    }
-}
-
-impl FromMessage<SineLegacy> for autd3::modulation::SineLegacy {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &SineLegacy) -> Self {
-        Self::new(msg.freq as _)
-            .with_amp(msg.amp as _)
-            .with_offset(msg.offset as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
-    }
-}
-
-impl FromMessage<Sine> for autd3::modulation::Sine {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Sine) -> Self {
-        Self::new(msg.freq as _)
-            .with_amp(msg.amp as _)
-            .with_offset(msg.offset as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
-    }
-}
-
-impl FromMessage<Square> for autd3::modulation::Square {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Square) -> Self {
-        Self::new(msg.freq as _)
-            .with_low(msg.low as _)
-            .with_high(msg.high as _)
-            .with_duty(msg.duty as _)
-            .with_sampling_frequency_division(msg.freq_div as _)
-    }
-}
-
-impl FromMessage<Focus> for autd3::gain::Focus {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Focus) -> Self {
-        Self::new(autd3_driver::geometry::Vector3::from_msg(
-            msg.pos.as_ref().unwrap(),
-        ))
-        .with_amp(autd3_driver::common::Amplitude::from_msg(
-            msg.amp.as_ref().unwrap(),
-        ))
-    }
-}
-
-impl FromMessage<Bessel> for autd3::gain::Bessel {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Bessel) -> Self {
-        Self::new(
-            autd3_driver::geometry::Vector3::from_msg(msg.pos.as_ref().unwrap()),
-            autd3_driver::geometry::Vector3::from_msg(msg.dir.as_ref().unwrap()),
-            msg.theta as _,
-        )
-        .with_amp(autd3_driver::common::Amplitude::from_msg(
-            msg.amp.as_ref().unwrap(),
-        ))
-    }
-}
-
-impl FromMessage<Null> for autd3::gain::Null {
-    fn from_msg(_msg: &Null) -> Self {
-        Self::new()
-    }
-}
-
-impl FromMessage<Plane> for autd3::gain::Plane {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Plane) -> Self {
-        Self::new(autd3_driver::geometry::Vector3::from_msg(
-            msg.dir.as_ref().unwrap(),
-        ))
-        .with_amp(autd3_driver::common::Amplitude::from_msg(
-            msg.amp.as_ref().unwrap(),
-        ))
-    }
-}
-
-impl FromMessage<TransducerTest> for autd3::gain::TransducerTest {
-    #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &TransducerTest) -> Self {
-        msg.drives.iter().fold(Self::new(), |acc, v| {
-            acc.set(
-                v.dev_idx as _,
-                v.tr_idx as _,
-                v.phase as _,
-                autd3_driver::common::Amplitude::from_msg(v.amp.as_ref().unwrap()),
-            )
-        })
-    }
-}
-
 impl FromMessage<Constraint> for autd3_gain_holo::Constraint {
     fn from_msg(msg: &Constraint) -> Self {
         match &msg.constraint {
@@ -887,52 +633,6 @@ impl FromMessage<FocusStm> for autd3_driver::datagram::FocusSTM {
                     autd3_driver::geometry::Vector3::from_msg(p.pos.as_ref().unwrap()),
                 )
                 .with_shift(p.shift as _)
-            }))
-            .with_start_idx(if msg.start_idx < 0 {
-                None
-            } else {
-                Some(msg.start_idx as _)
-            })
-            .with_finish_idx(if msg.finish_idx < 0 {
-                None
-            } else {
-                Some(msg.finish_idx as _)
-            })
-    }
-}
-
-impl<'a, T: autd3_driver::geometry::Transducer + 'a + 'static> FromMessage<GainStm>
-    for autd3_driver::datagram::GainSTM<T, Box<dyn autd3_driver::datagram::Gain<T>>>
-{
-    fn from_msg(msg: &GainStm) -> Self {
-        autd3_driver::datagram::GainSTM::with_sampling_frequency_division(msg.freq_div)
-            .add_gains_from_iter(msg.gains.iter().map(|p| match p.gain.as_ref().unwrap() {
-                gain::Gain::Focus(msg) => Box::new(autd3::prelude::Focus::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Bessel(msg) => Box::new(autd3::prelude::Bessel::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Null(msg) => Box::new(autd3::prelude::Null::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Plane(msg) => Box::new(autd3::prelude::Plane::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::TransTest(msg) => {
-                    Box::new(autd3::prelude::TransducerTest::from_msg(msg))
-                        as Box<dyn autd3_driver::datagram::Gain<T>>
-                }
-                gain::Gain::Sdp(msg) => Box::new(autd3_gain_holo::SDP::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Evp(msg) => Box::new(autd3_gain_holo::EVP::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Naive(msg) => Box::new(autd3_gain_holo::Naive::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Gs(msg) => Box::new(autd3_gain_holo::GS::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Gspat(msg) => Box::new(autd3_gain_holo::GSPAT::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Lm(msg) => Box::new(autd3_gain_holo::LM::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
-                gain::Gain::Greedy(msg) => Box::new(autd3_gain_holo::Greedy::from_msg(msg))
-                    as Box<dyn autd3_driver::datagram::Gain<T>>,
             }))
             .with_start_idx(if msg.start_idx < 0 {
                 None

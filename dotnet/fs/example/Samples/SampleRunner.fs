@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 25/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@ module SampleRunner =
                 (WavTest.Test, "Wav modulation test");
                 (STMTest.FocusSTMTest, "FocusSTM test");
                 (STMTest.GainSTMTest, "GainSTM test");
-                (STMTest.SoftwareSTMTest, "SoftwareSTM test");
                 (GainHoloTest.Test, "Multiple foci test");
                 (CustomTest.Test, "Custom Gain & Modulation test");
                 (FlagTest.Test, "Flag test");

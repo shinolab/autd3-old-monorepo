@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,7 +48,9 @@ pub unsafe extern "C" fn AUTDLinkAuditWithTimeout(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditIntoBuilder(audit: LinkAuditBuilderPtr) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(*Box::from_raw(audit.0 as *mut AuditBuilder))
+    LinkBuilderPtr::new(DynamicLinkBuilderWrapper::new(*Box::from_raw(
+        audit.0 as *mut AuditBuilder,
+    )))
 }
 
 #[no_mangle]

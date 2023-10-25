@@ -13,12 +13,12 @@ Filter data is set to each transducer as follows, and it is reflected to the dev
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let amp_filter = tr.amp_filter();
 tr.set_amp_filter(-0.5);
 autd.send(ConfigureAmpFilter::new())?;
 
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let phase_filter = tr.phase_filter();
 tr.set_phase_filter(PI);
 autd.send(ConfigurePhaseFilter::new())?;

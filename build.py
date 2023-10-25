@@ -139,6 +139,9 @@ def is_shaderc_available():
     if env_exists("VULKAN_SDK"):
         if os.path.isfile(f"{os.environ['VULKAN_SDK']}/lib/{shaderc_lib_name}"):
             return True
+    if not is_windows:
+        if os.path.isfile(f"/usr/local/lib/{shaderc_lib_name}"):
+            return True
     return False
 
 
@@ -234,9 +237,9 @@ def rust_build(args):
             command = ["cargo", "build", "--bins"]
             if args.release:
                 command.append("--release")
-            features = "async soem twincat"
+            features = "soem twincat"
             if args.all:
-                features += " simulator remote_soem remote_twincat visualizer python lightweight"
+                features += " simulator remote_soem remote_twincat visualizer python"
             if is_shaderc_available():
                 features += " gpu"
             command.append("--features")
@@ -316,8 +319,6 @@ def rust_run(args):
         "simulator",
         "visualizer",
         "freq_config",
-        "async",
-        "lightweight",
     ]
 
     if args.target not in examples:
@@ -325,8 +326,6 @@ def rust_run(args):
         info(f"Available examples: {examples}")
         return -1
 
-    if args.target == "async":
-        args.features = "async"
     if args.target == "soem":
         args.features = "soem"
     if args.target == "remote_soem":
@@ -339,8 +338,6 @@ def rust_run(args):
         args.features = "simulator"
     if args.target == "visualizer":
         args.features = "visualizer"
-    if args.target == "lightweight":
-        args.features = "lightweight"
 
     with working_dir("src/examples"):
         commands = ["cargo", "run"]
@@ -1098,10 +1095,6 @@ def server_build(args):
                 subprocess.run(command_x86).check_returncode()
                 subprocess.run(command_aarch64).check_returncode()
 
-            with working_dir("LightweightTwinCATAUTDServer"):
-                subprocess.run(command_x86).check_returncode()
-                subprocess.run(command_aarch64).check_returncode()
-
             if not args.external_only:
                 subprocess.run(
                     [
@@ -1121,9 +1114,6 @@ def server_build(args):
                 subprocess.run(command).check_returncode()
 
             with working_dir("SOEMAUTDServer"):
-                subprocess.run(command).check_returncode()
-
-            with working_dir("LightweightTwinCATAUTDServer"):
                 subprocess.run(command).check_returncode()
 
             if not args.external_only:
@@ -1146,7 +1136,6 @@ def server_clear(_):
             rmtree_f("assets")
             rm_f("NOTICE")
             rm_glob_f("LICENSE*")
-            rm_glob_f("LightweightTwinCATAUTDServer*")
             rm_glob_f("simulator*")
             rm_glob_f("SOEMAUTDServer*")
             subprocess.run(["cargo", "clean"]).check_returncode()
@@ -1346,9 +1335,6 @@ def util_update_ver(args):
                 content = re.sub(r"^autd3(.*) (.*) \((.*)\)", f"autd3\\1 {version} (MIT)", content, flags=re.MULTILINE)
                 content = re.sub(r"^autd3-link-soem (.*)", f"autd3-link-soem {version}", content, flags=re.MULTILINE)
                 content = re.sub(r"^autd3-link-twincat (.*)", f"autd3-link-twincat {version}", content, flags=re.MULTILINE)
-                content = re.sub(
-                    r"^LightweightTwinCATAUTDServer (.*) \(MIT\)", f"LightweightTwinCATAUTDServer {version} (MIT)", content, flags=re.MULTILINE
-                )
                 content = re.sub(r"^SOEMAUTDServer (.*) \(MIT\)", f"SOEMAUTDServer {version} (MIT)", content, flags=re.MULTILINE)
                 content = re.sub(r"^simulator (.*) \(MIT\)", f"simulator {version} (MIT)", content, flags=re.MULTILINE)
             with open(notice, "w") as f:
@@ -1366,9 +1352,6 @@ def util_update_ver(args):
             content = re.sub(r'"title": "AUTD Server v(.*)"', f'"title": "AUTD Server v{version}"', content, flags=re.MULTILINE)
         with open("src-tauri/tauri.conf.json", "w") as f:
             f.write(content)
-
-        with working_dir("LightweightTwinCATAUTDServer"):
-            subprocess.run(["cargo", "update"]).check_returncode()
 
         with working_dir("SOEMAUTDServer"):
             subprocess.run(["cargo", "update"]).check_returncode()

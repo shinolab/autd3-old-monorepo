@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -244,43 +244,6 @@ public class AUTDTest
 
         autd.Link<Audit>().BreakDown();
         Assert.Throws<AUTDException>(() => autd.Send(new Stop()));
-    }
-
-    [Fact]
-    public void TestSoftwareSTM()
-    {
-        {
-            var autd = CreateController();
-            var cnt = 0;
-            autd.SoftwareSTM((_, _, _) =>
-            {
-                cnt++;
-                return false;
-            }).WithTimerStrategy(TimerStrategy.Sleep).Start(TimeSpan.FromMilliseconds(1));
-            Assert.Equal(1, cnt);
-        }
-
-        {
-            var autd = CreateController();
-            var cnt = 0;
-            autd.SoftwareSTM((_, _, _) =>
-            {
-                cnt++;
-                return false;
-            }).WithTimerStrategy(TimerStrategy.BusyWait).Start(TimeSpan.FromMilliseconds(1));
-            Assert.Equal(1, cnt);
-        }
-
-        {
-            var autd = CreateController();
-            var cnt = 0;
-            autd.SoftwareSTM((_, _, _) =>
-            {
-                cnt++;
-                return false;
-            }).WithTimerStrategy(TimerStrategy.NativeTimer).Start(TimeSpan.FromMilliseconds(1));
-            Assert.True(cnt > 0);
-        }
     }
 
     [Fact]

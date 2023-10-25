@@ -4,13 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use crossbeam_channel::{bounded, Receiver, Sender, TrySendError};
 use std::{
     ffi::c_void,
     sync::{
@@ -21,8 +22,6 @@ use std::{
     time::Duration,
     usize,
 };
-
-use crossbeam_channel::{bounded, Receiver, Sender};
 use time::ext::NumericalDuration;
 
 use autd3_driver::{
@@ -166,10 +165,11 @@ impl SOEMBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for SOEMBuilder {
     type L = SOEM;
 
-    fn open(
+    async fn open(
         self,
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<Self::L, AUTDInternalError> {
@@ -416,6 +416,43 @@ impl SOEM {
         }
         self.io_map.lock().unwrap().clear();
     }
+
+    fn close_impl(&mut self) -> Result<(), AUTDInternalError> {
+        if !self.is_open() {
+            return Ok(());
+        }
+        self.is_open.store(false, Ordering::Release);
+
+        while !self.sender.is_empty() {
+            std::thread::sleep(self.ec_sync0_cycle);
+        }
+
+        if let Some(timer) = self.ecatth_handle.take() {
+            let _ = timer.join();
+        }
+        if let Some(timer) = self.timer_handle.take() {
+            timer.close()?;
+        }
+        if let Some(th) = self.ecat_check_th.take() {
+            let _ = th.join();
+        }
+
+        unsafe {
+            let cyc_time = *(ecx_context.userdata as *mut u32);
+            (1..=ec_slavecount as u16).for_each(|i| {
+                ec_dcsync0(i, 0, cyc_time, 0);
+            });
+
+            ec_slave[0].state = ec_state_EC_STATE_INIT as _;
+            ec_writestate(0);
+
+            ec_close();
+
+            let _ = Box::from_raw(ecx_context.userdata as *mut std::time::Duration);
+        }
+
+        Ok(())
+    }
 }
 
 fn lookup_autd() -> Result<String, SOEMError> {
@@ -459,55 +496,25 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
+#[async_trait::async_trait]
 impl Link for SOEM {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
-        if !self.is_open() {
-            return Ok(());
-        }
-
-        while !self.sender.is_empty() {
-            std::thread::sleep(self.ec_sync0_cycle);
-        }
-
-        self.is_open.store(false, Ordering::Release);
-        if let Some(timer) = self.ecatth_handle.take() {
-            let _ = timer.join();
-        }
-        if let Some(timer) = self.timer_handle.take() {
-            timer.close()?;
-        }
-        if let Some(th) = self.ecat_check_th.take() {
-            let _ = th.join();
-        }
-
-        unsafe {
-            let cyc_time = *(ecx_context.userdata as *mut u32);
-            (1..=ec_slavecount as u16).for_each(|i| {
-                ec_dcsync0(i, 0, cyc_time, 0);
-            });
-
-            ec_slave[0].state = ec_state_EC_STATE_INIT as _;
-            ec_writestate(0);
-
-            ec_close();
-
-            let _ = Box::from_raw(ecx_context.userdata as *mut std::time::Duration);
-        }
-
-        Ok(())
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+        self.close_impl()
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed);
         }
 
-        self.sender.send(tx.clone()).unwrap();
-
-        Ok(true)
+        match self.sender.try_send(tx.clone()) {
+            Err(TrySendError::Full(_)) => return Ok(false),
+            Err(TrySendError::Disconnected(_)) => return Err(AUTDInternalError::LinkClosed),
+            _ => Ok(true),
+        }
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed);
         }
@@ -527,6 +534,12 @@ impl Link for SOEM {
 
     fn timeout(&self) -> Duration {
         self.timeout
+    }
+}
+
+impl Drop for SOEM {
+    fn drop(&mut self) {
+        let _ = self.close_impl();
     }
 }
 
