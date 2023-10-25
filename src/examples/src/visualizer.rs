@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
             fname: Path::new("phase.png").into(),
             ..Config::default()
         },
-        autd.geometry,
+        &autd.geometry,
     )?;
     autd.link.plot_field(
         Config {
@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        autd.geometry,
+        &autd.geometry,
     )?;
     autd.link.plot_field(
         Config {
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
             z_range: center.z..center.z,
             resolution: 1.,
         },
-        autd.geometry,
+        &autd.geometry,
     )?;
     autd.link.plot_field(
         Config {
@@ -86,7 +86,7 @@ async fn main() -> Result<()> {
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
         },
-        autd.geometry,
+        &autd.geometry,
     )?;
     autd.link.plot_field(
         Config {
@@ -100,7 +100,7 @@ async fn main() -> Result<()> {
             z_range: 0.0..center.z + 50.0,
             resolution: 2.,
         },
-        autd.geometry,
+        &autd.geometry,
     )?;
 
     autd.link.plot_modulation(Config {
@@ -109,7 +109,7 @@ async fn main() -> Result<()> {
     })?;
 
     // Calculate acoustic pressure without plotting
-    let p = autd.link.calc_field(&[center], autd.geometry);
+    let p = autd.link.calc_field(&[center], &autd.geometry);
     println!(
         "Acoustic pressure at ({}, {}, {}) = {}",
         center.x, center.y, center.z, p[0]
