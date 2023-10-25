@@ -32,7 +32,7 @@ FetchContent_Declare(
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/..
 )
 if(APPLE)
-  set(ENABLE_LINK_VISUALIZER=OFF)
+  set(ENABLE_LINK_VISUALIZER OFF)
 endif()
 FetchContent_MakeAvailable(autd3)
 

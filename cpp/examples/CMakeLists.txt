@@ -41,7 +41,7 @@ else()
   )
 endif()
 if(APPLE)
-  set(ENABLE_LINK_VISUALIZER=OFF)
+  set(ENABLE_LINK_VISUALIZER OFF)
 endif()
 FetchContent_MakeAvailable(autd3)
 
