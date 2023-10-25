@@ -197,41 +197,45 @@ def check_ext_libs(args):
 
 def rust_build(args):
     check_ext_libs(args)
-
     with working_dir("src"):
+        target = None
+        if is_linux and args.arch is not None:
+            info("Skip build examples because cross compilation is not supported.")
+            args.no_examples = True
+            args.cuda = False
+            args.af = False
+            args.visualizer = False
+            if args.arch == "arm32":
+                setup_arm32_linker()
+                target = "armv7-unknown-linux-gnueabihf"
+            elif args.arch == "aarch64":
+                setup_aarch64_linker()
+                target = "aarch64-unknown-linux-gnu"
+            else:
+                err(f'arch "{args.arch}" is not supported.')
+                sys.exit(-1)
+
         commands = ["cargo", "build"]
         if args.release:
             commands.append("--release")
-        features = "remote python"
+        features = "remote"
         if args.all:
             commands.append("--all")
             if not args.cuda:
                 commands.append("--exclude=autd3-backend-cuda")
             if not args.af:
                 commands.append("--exclude=autd3-backend-arrayfire")
-            if args.gpu:
-                features += " gpu"
+            if args.visualizer:
+                features += " python"
+                if args.gpu:
+                    features += " gpu"
+            else:
+                commands.append("--exclude=autd3-link-visualizer")
         commands.append("--features")
         commands.append(features)
 
-        if is_linux and args.arch is not None:
-            info("Skip build examples because cross compilation is not supported.")
-            args.no_examples = True
-            if args.arch == "arm32":
-                setup_arm32_linker()
-                commands.append("--exclude=autd3-backend-cuda")
-                commands.append("--exclude=autd3-backend-arrayfire")
-                commands.append("--exclude=autd3-link-visualizer")
-                commands.append("--target=armv7-unknown-linux-gnueabihf")
-            elif args.arch == "aarch64":
-                setup_aarch64_linker()
-                commands.append("--exclude=autd3-backend-cuda")
-                commands.append("--exclude=autd3-backend-arrayfire")
-                commands.append("--exclude=autd3-link-visualizer")
-                commands.append("--target=aarch64-unknown-linux-gnu")
-            else:
-                err(f'arch "{args.arch}" is not supported.')
-                sys.exit(-1)
+        if target is not None:
+            commands.append(f"--target={target}")
 
         subprocess.run(commands).check_returncode()
 
@@ -243,9 +247,11 @@ def rust_build(args):
                 command.append("--release")
             features = "soem twincat"
             if args.all:
-                features += " simulator remote_soem remote_twincat visualizer python"
-            if is_shaderc_available():
-                features += " gpu"
+                features += " simulator remote_soem remote_twincat"
+                if args.visualizer:
+                    features += " visualizer python"
+                    if args.gpu:
+                        features += " gpu"
             command.append("--features")
             command.append(features)
             subprocess.run(command).check_returncode()
