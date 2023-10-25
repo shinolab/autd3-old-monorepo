@@ -24,6 +24,8 @@ runs:
   using: "composite"
   steps:
     - name: Install packaging
+      shell: bash
+      if: inputs.os == 'macos-latest'
       run: |
         python3 -m pip install -U packaging
 
