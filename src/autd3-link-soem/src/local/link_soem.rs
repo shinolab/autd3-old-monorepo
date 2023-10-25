@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -416,6 +416,43 @@ impl SOEM {
         }
         self.io_map.lock().unwrap().clear();
     }
+
+    fn close_impl(&mut self) -> Result<(), AUTDInternalError> {
+        if !self.is_open() {
+            return Ok(());
+        }
+        self.is_open.store(false, Ordering::Release);
+
+        while !self.sender.is_empty() {
+            std::thread::sleep(self.ec_sync0_cycle);
+        }
+
+        if let Some(timer) = self.ecatth_handle.take() {
+            let _ = timer.join();
+        }
+        if let Some(timer) = self.timer_handle.take() {
+            timer.close()?;
+        }
+        if let Some(th) = self.ecat_check_th.take() {
+            let _ = th.join();
+        }
+
+        unsafe {
+            let cyc_time = *(ecx_context.userdata as *mut u32);
+            (1..=ec_slavecount as u16).for_each(|i| {
+                ec_dcsync0(i, 0, cyc_time, 0);
+            });
+
+            ec_slave[0].state = ec_state_EC_STATE_INIT as _;
+            ec_writestate(0);
+
+            ec_close();
+
+            let _ = Box::from_raw(ecx_context.userdata as *mut std::time::Duration);
+        }
+
+        Ok(())
+    }
 }
 
 fn lookup_autd() -> Result<String, SOEMError> {
@@ -462,40 +499,7 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
 #[async_trait::async_trait]
 impl Link for SOEM {
     async fn close(&mut self) -> Result<(), AUTDInternalError> {
-        if !self.is_open() {
-            return Ok(());
-        }
-
-        while !self.sender.is_empty() {
-            std::thread::sleep(self.ec_sync0_cycle);
-        }
-
-        self.is_open.store(false, Ordering::Release);
-        if let Some(timer) = self.ecatth_handle.take() {
-            let _ = timer.join();
-        }
-        if let Some(timer) = self.timer_handle.take() {
-            timer.close()?;
-        }
-        if let Some(th) = self.ecat_check_th.take() {
-            let _ = th.join();
-        }
-
-        unsafe {
-            let cyc_time = *(ecx_context.userdata as *mut u32);
-            (1..=ec_slavecount as u16).for_each(|i| {
-                ec_dcsync0(i, 0, cyc_time, 0);
-            });
-
-            ec_slave[0].state = ec_state_EC_STATE_INIT as _;
-            ec_writestate(0);
-
-            ec_close();
-
-            let _ = Box::from_raw(ecx_context.userdata as *mut std::time::Duration);
-        }
-
-        Ok(())
+        self.close_impl()
     }
 
     async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
@@ -530,6 +534,12 @@ impl Link for SOEM {
 
     fn timeout(&self) -> Duration {
         self.timeout
+    }
+}
+
+impl Drop for SOEM {
+    fn drop(&mut self) {
+        let _ = self.close_impl();
     }
 }
 
