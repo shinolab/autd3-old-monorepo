@@ -66,12 +66,8 @@ async-stream-impl 0.3.5 (MIT)
 https://github.com/tokio-rs/async-stream
 ---------------------------------------------------------
 
-async-trait 0.1.73 (Apache-2.0 OR MIT)
+async-trait 0.1.74 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/async-trait
----------------------------------------------------------
-
-autd3 16.0.3 (MIT)
-https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autd3-derive 16.0.3 (MIT)
@@ -79,10 +75,6 @@ https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
 autd3-driver 16.0.3 (MIT)
-https://github.com/shinolab/autd3
----------------------------------------------------------
-
-autd3-firmware-emulator 16.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -452,24 +444,12 @@ nu-ansi-term 0.46.0 (MIT)
 https://github.com/nushell/nu-ansi-term
 ---------------------------------------------------------
 
-num 0.4.1 (Apache-2.0 OR MIT)
-https://github.com/rust-num/num
----------------------------------------------------------
-
-num-bigint 0.4.4 (Apache-2.0 OR MIT)
-https://github.com/rust-num/num-bigint
----------------------------------------------------------
-
 num-complex 0.4.4 (Apache-2.0 OR MIT)
 https://github.com/rust-num/num-complex
 ---------------------------------------------------------
 
 num-integer 0.1.45 (Apache-2.0 OR MIT)
 https://github.com/rust-num/num-integer
----------------------------------------------------------
-
-num-iter 0.1.43 (Apache-2.0 OR MIT)
-https://github.com/rust-num/num-iter
 ---------------------------------------------------------
 
 num-rational 0.4.1 (Apache-2.0 OR MIT)
