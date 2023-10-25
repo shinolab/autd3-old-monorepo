@@ -4,7 +4,7 @@
  * Created Date: 13/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -430,7 +430,7 @@ namespace AUTD3Sharp.Link
                 throw new AUTDException(err);
         }
 
-        public Visualizer Create(LinkPtr ptr, object? props)
+        public Visualizer Create(LinkPtr ptr, RuntimePtr _, object? props)
         {
             var p = (Props)props!;
             return new Visualizer

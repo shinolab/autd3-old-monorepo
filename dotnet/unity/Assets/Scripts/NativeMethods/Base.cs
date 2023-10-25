@@ -130,6 +130,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkBuilderPtr linkBuilder, byte[] err);
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern RuntimePtr AUTDControllerGetRuntime(ControllerPtr cnt);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDControllerClose(ControllerPtr cnt, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDControllerDelete(ControllerPtr cnt);

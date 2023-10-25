@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ pub async fn run<T: Transducer + 'static, L: Link>(
         ("Flag test", |autd| Box::pin(flag(autd))),
         ("TransducerTest test", |autd| Box::pin(transtest(autd))),
     ];
-    if autd.geometry().num_devices() >= 2 {
+    if autd.geometry.num_devices() >= 2 {
         examples.push(("Group test", |autd| Box::pin(group(autd))));
     }
 

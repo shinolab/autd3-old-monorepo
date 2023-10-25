@@ -68,19 +68,21 @@ namespace AUTD3Sharp.Link
         }
 
         private LinkPtr _ptr = new LinkPtr { _0 = IntPtr.Zero };
+        private RuntimePtr _runtimePtr = new RuntimePtr { _0 = IntPtr.Zero };
 
-        // public void UpdateGeometry(Geometry geometry)
-        // {
-        //     var err = new byte[256];
-        //     if (NativeMethods.LinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, err) == NativeMethods.Def.Autd3Err)
-        //         throw new AUTDException(err);
-        // }
+        public void UpdateGeometry(Geometry geometry)
+        {
+            var err = new byte[256];
+            if (NativeMethods.LinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, _runtimePtr, geometry.Ptr, err) == NativeMethods.Def.Autd3Err)
+                throw new AUTDException(err);
+        }
 
-        public Simulator Create(LinkPtr ptr, object? _)
+        public Simulator Create(LinkPtr ptr, RuntimePtr runtimePtr, object? _)
         {
             return new Simulator
             {
-                _ptr = ptr
+                _ptr = ptr,
+                _runtimePtr = runtimePtr
             };
         }
     }

@@ -27,7 +27,7 @@ let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER)
 let g = Focus::new(center);
 autd.send(g)?;
 
-autd.link().plot_phase(
+autd.link.plot_phase(
     PlotConfig {
         fname: Path::new("phase.png").into(),
         ..PlotConfig::default()
@@ -109,7 +109,7 @@ let mut autd = Controller::builder()
 let m = Sine::new(150);
 autd.send(m)?;
 
-autd.link().plot_modulation(
+autd.link.plot_modulation(
     PlotConfig {
         fname: Path::new("mod.png").into(),
         ..PlotConfig::default()
@@ -188,7 +188,7 @@ let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER)
 
 autd.send(Focus::new(center))?;
 
-autd.link().plot_field(
+autd.link.plot_field(
     PlotConfig {
         fname: Path::new("xy.png").into(),
         ..PlotConfig::default()
@@ -305,7 +305,7 @@ let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER)
 
 autd.send(Focus::new(center))?;
 
-let p = autd.link().calc_field(&[center], autd.geometry());
+let p = autd.link.calc_field(&[center], autd.geometry());
 println!(
     "Acoustic pressure at ({}, {}, {}) = {}",
     center.x, center.y, center.z, p[0]

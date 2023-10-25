@@ -15,7 +15,7 @@ Before using this, you need to set the `reads_fpga_info` flag in `Device`.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
-autd.geometry_mut()[0].reads_fpga_info = true;
+autd.geometry[0].reads_fpga_info = true;
 autd.send(UpdateFlags::new())?;
 
 let info = autd.fpga_info();

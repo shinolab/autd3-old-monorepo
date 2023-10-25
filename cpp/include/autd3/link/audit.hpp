@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 25/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ class Audit final {
 
   static Builder builder() { return {}; }
 
-  explicit Audit(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
+  explicit Audit(const internal::native_methods::LinkPtr ptr, const internal::native_methods::RuntimePtr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
   void down() const { AUTDLinkAuditDown(_ptr); }
 

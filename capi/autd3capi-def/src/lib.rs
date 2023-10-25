@@ -94,6 +94,10 @@ pub struct GeometryPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
+pub struct RuntimePtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
 pub struct DevicePtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]

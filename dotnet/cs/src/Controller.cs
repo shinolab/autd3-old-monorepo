@@ -355,7 +355,7 @@ namespace AUTD3Sharp
         public T Link<T>()
         where T : ILink<T>, new()
         {
-            return new T().Create(Base.AUTDLinkGet(Ptr), _linkProps);
+            return new T().Create(Base.AUTDLinkGet(Ptr), Base.AUTDControllerGetRuntime(Ptr), _linkProps);
         }
 
         #endregion

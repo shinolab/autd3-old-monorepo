@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,12 +36,12 @@ use group::GroupGuard;
 
 /// Controller for AUTD
 pub struct Controller<T: Transducer, L: Link> {
-    link: L,
-    geometry: Geometry<T>,
+    pub link: L,
+    pub geometry: Geometry<T>,
     tx_buf: TxDatagram,
     rx_buf: Vec<RxMessage>,
     #[cfg(not(feature = "async"))]
-    runtime: tokio::runtime::Runtime,
+    pub runtime: tokio::runtime::Runtime,
 }
 
 impl Controller<LegacyTransducer, Nop> {
@@ -57,26 +57,6 @@ impl Controller<LegacyTransducer, Nop> {
 }
 
 impl<T: Transducer, L: Link> Controller<T, L> {
-    /// get geometry
-    pub const fn geometry(&self) -> &Geometry<T> {
-        &self.geometry
-    }
-
-    /// get geometry mutably
-    pub fn geometry_mut(&mut self) -> &mut Geometry<T> {
-        &mut self.geometry
-    }
-
-    /// get link
-    pub const fn link(&self) -> &L {
-        &self.link
-    }
-
-    /// get link mutably
-    pub fn link_mut(&mut self) -> &mut L {
-        &mut self.link
-    }
-
     #[must_use]
     pub fn group<K: Hash + Eq + Clone, F: Fn(&Device<T>) -> Option<K>>(
         &mut self,
@@ -390,7 +370,7 @@ mod tests {
             .await
             .unwrap();
 
-        for dev in autd.geometry_mut() {
+        for dev in &mut autd.geometry {
             dev.force_fan = true;
         }
 
@@ -405,8 +385,8 @@ mod tests {
         .await
         .unwrap();
 
-        assert!(autd.link().emulators()[0].fpga().is_force_fan());
-        assert!(!autd.link().emulators()[1].fpga().is_force_fan());
-        assert!(!autd.link().emulators()[2].fpga().is_force_fan());
+        assert!(autd.link.emulators()[0].fpga().is_force_fan());
+        assert!(!autd.link.emulators()[1].fpga().is_force_fan());
+        assert!(!autd.link.emulators()[2].fpga().is_force_fan());
     }
 }
