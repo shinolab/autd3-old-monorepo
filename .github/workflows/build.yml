@@ -60,6 +60,7 @@ jobs:
         run: |
           python3 build.py build --all --release
           python3 build.py test --all --release --skip-cuda
+        shell: bash
 
   build-linux-arm32-src:
     needs: check-src

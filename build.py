@@ -197,6 +197,8 @@ def check_ext_libs(args):
 
 def rust_build(args):
     check_ext_libs(args)
+    if args.all:
+        args.visualizer = True
     with working_dir("src"):
         target = None
         if is_linux and args.arch is not None:
