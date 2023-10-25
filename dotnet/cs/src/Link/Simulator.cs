@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,12 +69,12 @@ namespace AUTD3Sharp.Link
 
         private LinkPtr _ptr = new LinkPtr { _0 = IntPtr.Zero };
 
-        public void UpdateGeometry(Geometry geometry)
-        {
-            var err = new byte[256];
-            if (NativeMethods.LinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, err) == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
-        }
+        // public void UpdateGeometry(Geometry geometry)
+        // {
+        //     var err = new byte[256];
+        //     if (NativeMethods.LinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, err) == NativeMethods.Def.Autd3Err)
+        //         throw new AUTDException(err);
+        // }
 
         public Simulator Create(LinkPtr ptr, object? _)
         {

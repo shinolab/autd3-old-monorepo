@@ -174,8 +174,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerGroup(ControllerPtr cnt, int[]? map, GroupKVMapPtr kvMap, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSoftwareSTM(ControllerPtr cnt, IntPtr callback, IntPtr context, TimerStrategy timerStrategy, ulong intervalNs, byte[] err);
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkAuditBuilderPtr AUTDLinkAudit();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern LinkAuditBuilderPtr AUTDLinkAuditWithTimeout(LinkAuditBuilderPtr audit, ulong timeoutNs);
