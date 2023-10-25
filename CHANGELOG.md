@@ -1,5 +1,8 @@
-# 16.1.0
+# 17.0.0
 
+- Make functions of `Link` async
+- Remove `Controller::software_stm`
+- Remove `Lightweight` options
 - `modulation::Square` with out of range duty ratio now return Err
 - Fix [#212](https://github.com/shinolab/autd3/issues/212): unity-linux and unity-mac packages are not published
 - Fix [#213](https://github.com/shinolab/autd3/issues/213): simulator settings file can not be saved on unity

@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi"
-version = "16.0.3"
+version = "17.0.0"
 edition = "2021"
 license = "MIT"
 
