@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,8 @@ use autd3_driver::{
 
 use super::Controller;
 
+type OpMap<K, T> = HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>;
+
 #[allow(clippy::type_complexity)]
 pub struct GroupGuard<
     'a,
@@ -35,7 +37,7 @@ pub struct GroupGuard<
     pub(crate) cnt: &'a mut Controller<T, L>,
     pub(crate) f: F,
     pub(crate) timeout: Option<Duration>,
-    pub(crate) op: HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>,
+    pub(crate) op: OpMap<K, T>,
 }
 
 impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Option<K>>
@@ -82,10 +84,8 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
         rx_buf: &'a mut [RxMessage],
         f: F,
         timeout: Option<Duration>,
-        mut op: HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>,
+        mut op: OpMap<K, T>,
     ) -> Result<bool, AUTDInternalError> {
-        let timeout = timeout;
-
         let enable_flags_store = geometry.iter().map(|dev| dev.enable).collect::<Vec<_>>();
 
         let enable_flags_map: HashMap<K, Vec<bool>> = op
