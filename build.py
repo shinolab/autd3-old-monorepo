@@ -139,6 +139,9 @@ def is_shaderc_available():
     if env_exists("VULKAN_SDK"):
         if os.path.isfile(f"{os.environ['VULKAN_SDK']}/lib/{shaderc_lib_name}"):
             return True
+    if not is_windows:
+        if os.path.isfile(f"/usr/local/lib/{shaderc_lib_name}"):
+            return True
     return False
 
 
