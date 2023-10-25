@@ -127,13 +127,6 @@ int32_t AUTDControllerGroup(ControllerPtr cnt,
                             GroupKVMapPtr kv_map,
                             char *err);
 
-int32_t AUTDControllerSoftwareSTM(ControllerPtr cnt,
-                                  void* callback,
-                                  void* context,
-                                  TimerStrategy timer_strategy,
-                                  uint64_t interval_ns,
-                                  char *err);
-
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
 [[nodiscard]] GainCalcDrivesMapPtr AUTDGainCalc(GainPtr gain, GeometryPtr geometry, char *err);

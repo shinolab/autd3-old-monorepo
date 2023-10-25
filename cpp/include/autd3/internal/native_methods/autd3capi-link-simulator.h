@@ -25,11 +25,6 @@ LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr sim
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkSimulatorIntoBuilder(LinkSimulatorBuilderPtr simulator);
 
-[[nodiscard]]
-int32_t AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator,
-                                        GeometryPtr geometry,
-                                        char *err);
-
 } // extern "C"
 
 } // namespace autd3::internal::native_methods
