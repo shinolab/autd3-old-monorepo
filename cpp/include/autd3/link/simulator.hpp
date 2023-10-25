@@ -3,7 +3,7 @@
 // Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 24/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,10 +66,10 @@ class Simulator final {
 
   explicit Simulator(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
-  void update_geometry(const internal::Geometry& geometry) const {
-    if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
-  }
+  // void update_geometry(const internal::Geometry& geometry) const {
+  //   if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
+  //     throw internal::AUTDException(err);
+  // }
 };
 
 }  // namespace autd3::link

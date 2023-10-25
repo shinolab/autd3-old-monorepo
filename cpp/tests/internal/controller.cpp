@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 25/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -146,44 +146,6 @@ TEST(Internal, ControllerSendSpecial) {
 
   autd.link<autd3::link::Audit>().break_down();
   ASSERT_THROW(autd.send(autd3::internal::Stop()), autd3::internal::AUTDException);
-}
-
-TEST(Internal, ControllerSoftwareSTM) {
-  {
-    auto autd = create_controller();
-    auto cnt = 0;
-    autd.software_stm([&cnt](auto&, auto, auto) {
-          cnt++;
-          return false;
-        })
-        .with_timer_strategy(autd3::internal::native_methods::TimerStrategy::Sleep)
-        .start(std::chrono::milliseconds(1));
-    ASSERT_EQ(1, cnt);
-  }
-
-  {
-    auto autd = create_controller();
-    auto cnt = 0;
-    autd.software_stm([&cnt](auto&, auto, auto) {
-          cnt++;
-          return false;
-        })
-        .with_timer_strategy(autd3::internal::native_methods::TimerStrategy::BusyWait)
-        .start(std::chrono::milliseconds(1));
-    ASSERT_EQ(1, cnt);
-  }
-
-  {
-    auto autd = create_controller();
-    auto cnt = 0;
-    autd.software_stm([&cnt](auto&, auto, auto) {
-          cnt++;
-          return false;
-        })
-        .with_timer_strategy(autd3::internal::native_methods::TimerStrategy::NativeTimer)
-        .start(std::chrono::milliseconds(1));
-    ASSERT_EQ(1, cnt);
-  }
 }
 
 TEST(Internal, ControllerGroup) {
