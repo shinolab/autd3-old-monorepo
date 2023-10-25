@@ -146,25 +146,13 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.73"
+version = "0.1.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc00ceb34980c03614e35a3a4e218276a0a824e911d07651cd0d858a51e8c0f0"
+checksum = "a66537f1bb974b254c98ed142ff995236e81b9d0fe4db0575f46612cb15eb0f9"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "autd3"
-version = "16.0.3"
-dependencies = [
- "autd3-derive",
- "autd3-driver",
- "autd3-firmware-emulator",
- "bitvec",
- "num",
- "thiserror",
 ]
 
 [[package]]
@@ -179,6 +167,7 @@ dependencies = [
 name = "autd3-driver"
 version = "16.0.3"
 dependencies = [
+ "async-trait",
  "bitflags 2.4.0",
  "bitvec",
  "libc",
@@ -186,15 +175,6 @@ dependencies = [
  "serde",
  "thiserror",
  "windows 0.51.1",
-]
-
-[[package]]
-name = "autd3-firmware-emulator"
-version = "16.0.3"
-dependencies = [
- "autd3-driver",
- "num-integer",
- "thiserror",
 ]
 
 [[package]]
@@ -212,6 +192,7 @@ dependencies = [
 name = "autd3-link-soem"
 version = "16.0.3"
 dependencies = [
+ "async-trait",
  "autd3-driver",
  "cc",
  "crossbeam-channel",
@@ -225,7 +206,6 @@ dependencies = [
 name = "autd3-protobuf"
 version = "16.0.3"
 dependencies = [
- "autd3",
  "autd3-driver",
  "autd3-gain-holo",
  "h2",
@@ -888,31 +868,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b05180d69e3da0e530ba2a1dae5110317e49e3b7f3d41be227dc5f92e49ee7af"
-dependencies = [
- "num-bigint",
- "num-complex",
- "num-integer",
- "num-iter",
- "num-rational",
- "num-traits",
-]
-
-[[package]]
-name = "num-bigint"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
-dependencies = [
- "autocfg",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
 name = "num-complex"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -932,24 +887,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "num-iter"
-version = "0.1.43"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
-dependencies = [
- "autocfg",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
 name = "num-rational"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0638a1c9d0a3c0914158145bc76cff373a75a627e6ecbfb71cbe6f453a5a19b0"
 dependencies = [
  "autocfg",
- "num-bigint",
  "num-integer",
  "num-traits",
 ]

@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 -->
 
 <script lang="ts">
-  import type { TwinCATOptions, LightweightTwinCATOptions } from "./options.ts";
+  import type { TwinCATOptions } from "./options.ts";
   import { SyncModeValues } from "./options.ts";
 
   import { Command, Child } from "@tauri-apps/api/shell";
@@ -29,7 +29,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   import IpInput from "./utils/IpInput.svelte";
 
   export let twincatOptions: TwinCATOptions;
-  export let lightweightTwincatOptions: LightweightTwinCATOptions;
 
   let command;
   let child: null | Child = null;
@@ -49,38 +48,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       }
     }
 
-    if (lightweightTwincatOptions.enable) {
-      const args: string[] = [
-        "-p",
-        lightweightTwincatOptions.port.toString(),
-        "-t",
-        timeoutMs.toString(),
-      ];
-      command = Command.sidecar("LightweightTwinCATAUTDServer", args);
-      child = await command.spawn();
-      command.stdout.on("data", (line) =>
-        consoleOutputQueue.update((v) => {
-          return [...v, line.trimEnd()];
-        })
-      );
-      command.stderr.on("data", (line) =>
-        consoleOutputQueue.update((v) => {
-          return [...v, line.trimEnd()];
-        })
-      );
-      command.on("error", (err) => {
-        alert(err);
-        handleCloseClick();
-      });
-      command.on("close", async (data) => {
-        if (data.code < -1) {
-          alert(`LightweightTwinCATAUTDServer exited with code ${data.code}`);
-        }
-        handleCloseClick();
-      });
-    } else {
-      running = false;
-    }
+    running = false;
   };
 
   let handleCloseClick = async () => {
@@ -106,11 +74,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
       alert(err);
     }
   };
-
-  let timeoutMs = msFromDuration(lightweightTwincatOptions.timeout);
-  $: {
-    lightweightTwincatOptions.timeout = msToDuration(timeoutMs);
-  }
 </script>
 
 <div class="ui">
@@ -132,26 +95,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
   <label for="keep">Keep XAE Shell open:</label>
   <CheckBox id="keep" bind:checked={twincatOptions.keep} />
 
-  <label for="lightweight">Enable lightweight:</label>
-  <CheckBox id="lightweight" bind:checked={lightweightTwincatOptions.enable} />
-  {#if lightweightTwincatOptions.enable}
-    <label for="port">Port:</label>
-    <NumberInput
-      id="port"
-      bind:value={lightweightTwincatOptions.port}
-      min="0"
-      max="65535"
-      step="1"
-    />
-
-    <label for="timeoutMs">Timeout [ms]:</label>
-    <NumberInput id="timeoutMs" bind:value={timeoutMs} min="1" step="1" />
-  {/if}
-
   <Button label="Run" click={handleRunClick} disabled={running} />
-  {#if lightweightTwincatOptions.enable}
-    <Button label="Close" click={handleCloseClick} disabled={!child} />
-  {/if}
   <Button label="Open XAE Shell" click={handleOpenXaeShellClick} />
   <Button label="Copy AUTD.xml" click={handleCopyAUTDXmlClick} />
 </div>
