@@ -23,6 +23,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install packaging
+      run: |
+        python3 -m pip install -U packaging
+
     - name: Install Protoc
       uses: arduino/setup-protoc@v2
       with:
