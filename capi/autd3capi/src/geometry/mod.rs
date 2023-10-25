@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3capi_def::{common::*, ControllerPtr, GeometryPtr};
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGeometry(cnt: ControllerPtr) -> GeometryPtr {
-    GeometryPtr(cast!(cnt.0, Cnt).geometry() as *const _ as _)
+    GeometryPtr(&cast!(cnt.0, Cnt).geometry as *const _ as _)
 }
 
 #[no_mangle]

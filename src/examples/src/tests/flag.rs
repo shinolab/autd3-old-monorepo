@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use std::{
 use autd3::prelude::*;
 
 pub async fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.geometry_mut()
+    autd.geometry
         .iter_mut()
         .for_each(|dev| dev.reads_fpga_info = true);
 
@@ -30,7 +30,7 @@ pub async fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow
     let mut _s = String::new();
     io::stdin().read_line(&mut _s).unwrap();
 
-    autd.geometry_mut()
+    autd.geometry
         .iter_mut()
         .for_each(|dev| dev.force_fan = true);
     autd.send(UpdateFlags::default()).await?;
@@ -62,7 +62,7 @@ pub async fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow
     )
     .1?;
 
-    autd.geometry_mut().iter_mut().for_each(|dev| {
+    autd.geometry.iter_mut().for_each(|dev| {
         dev.reads_fpga_info = false;
         dev.force_fan = false;
     });

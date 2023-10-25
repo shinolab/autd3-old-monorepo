@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ pub mod stm;
 
 use autd3capi_def::{
     common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
-    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    RuntimePtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -109,6 +109,12 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
         ControllerPtr(NULL)
     );
     ControllerPtr(Box::into_raw(Box::new(cnt)) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDControllerGetRuntime(cnt: ControllerPtr) -> RuntimePtr {
+    RuntimePtr(&cast!(cnt.0, Cnt).runtime as *const _ as _)
 }
 
 #[no_mangle]

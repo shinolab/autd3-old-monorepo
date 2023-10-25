@@ -18,7 +18,9 @@ use std::{
     time::Duration,
 };
 
-use autd3capi_def::{common::*, LinkBuilderPtr};
+use autd3capi_def::{
+    common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, RuntimePtr, AUTD3_ERR, AUTD3_TRUE,
+};
 
 use autd3_link_simulator::*;
 
@@ -80,17 +82,21 @@ pub unsafe extern "C" fn AUTDLinkSimulatorIntoBuilder(
     )))
 }
 
-// #[no_mangle]
-// #[must_use]
-// pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometry(
-//     simulator: LinkPtr,
-//     geometry: GeometryPtr,
-//     err: *mut c_char,
-// ) -> i32 {
-//     try_or_return!(
-//         cast_mut!(simulator.0, Box<Simulator>).update_geometry(cast!(geometry.0, Geo)),
-//         err,
-//         AUTD3_ERR
-//     );
-//     AUTD3_TRUE
-// }
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometry(
+    simulator: LinkPtr,
+    runtime: RuntimePtr,
+    geometry: GeometryPtr,
+    err: *mut c_char,
+) -> i32 {
+    let runtime = cast!(runtime.0, tokio::runtime::Runtime);
+    try_or_return!(
+        runtime.block_on(
+            cast_mut!(simulator.0, Box<Simulator>).update_geometry(cast!(geometry.0, Geo))
+        ),
+        err,
+        AUTD3_ERR
+    );
+    AUTD3_TRUE
+}

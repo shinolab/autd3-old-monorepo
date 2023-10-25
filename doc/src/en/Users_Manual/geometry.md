@@ -297,7 +297,7 @@ If the flag is off, the device data will not be updated.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-autd.geometry_mut()[0].enable = false;
+autd.geometry[0].enable = false;
 # Ok(())
 # }
 ```
@@ -331,7 +331,7 @@ The `sound_speed` member of `Geometry` represents this sound speed $v$.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-autd.geometry_mut()[0].sound_speed = 340e3;
+autd.geometry[0].sound_speed = 340e3;
 # Ok(())
 # }
 ```
@@ -361,7 +361,7 @@ You can also set the sound speed from the temperature.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-autd.geometry_mut()[0].set_sound_speed_from_temp(15.);
+autd.geometry[0].set_sound_speed_from_temp(15.);
 # Ok(())
 # }
 ```
@@ -398,7 +398,7 @@ where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, a
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-autd.geometry_mut()[0].attenuation = 0.;
+autd.geometry[0].attenuation = 0.;
 # Ok(())
 # }
 ```
@@ -437,9 +437,9 @@ To modify the position of the device added to `Geometry`, use the following func
 #    .open_with(autd3::link::Nop::builder())?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
-autd.geometry_mut()[0].translate(t);
-autd.geometry_mut()[0].rotate(r);
-autd.geometry_mut()[0].affine(t, r);
+autd.geometry[0].translate(t);
+autd.geometry[0].rotate(r);
+autd.geometry[0].affine(t, r);
 # Ok(())
 # }
 ```
@@ -490,7 +490,7 @@ As shown in the figure below, the fan side is shorted to switch to Auto, the cen
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
-autd.geometry_mut()[0].force_fan = true;
+autd.geometry[0].force_fan = true;
 # Ok(())
 # }
 ```
@@ -516,7 +516,7 @@ If you want to update only the flag, send `UpdateFlags`.
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
-autd.geometry_mut()[0].force_fan = true;
+autd.geometry[0].force_fan = true;
 autd.send(UpdateFlags::new())?;
 # Ok(())
 # }
@@ -733,7 +733,7 @@ See [Modulation](./modulation.md) for more details.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let delay = tr.mod_delay();
 tr.set_mod_delay(0);
 # Ok(())
@@ -769,7 +769,7 @@ See [Filter](./filter.md) for details.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let amp_filter = tr.amp_filter();
 tr.set_amp_filter(-0.5);
 let phase_filter = tr.phase_filter();
@@ -815,7 +815,7 @@ Set/get the cycle of the transducer.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let cycle = tr.cycle();
 tr.set_cycle(4096)?;
 # Ok(())
@@ -858,7 +858,7 @@ When setting the frequency $f$, the closest period $N$ to $\clkf/f$ is selected.
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let freq = tr.frequency();
 tr.set_frequency(40e3)?;
 # Ok(())
@@ -901,7 +901,7 @@ You need to pass the speed of sound as an argument to `wavelength` and `wavenumb
 #     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
 #    .open_with(autd3::link::Nop::builder())?;
 # let sound_speed = autd.geometry()[0].sound_speed;
-# let mut tr = &mut autd.geometry_mut()[0][0];
+# let mut tr = &mut autd.geometry[0][0];
 let wavelen = tr.wavelength(sound_speed);
 let wavenum = tr.wavenumber(sound_speed);
 # Ok(())

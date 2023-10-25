@@ -179,7 +179,7 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
-autd.geometry_mut()[0][0].set_mod_delay(1);
+autd.geometry[0][0].set_mod_delay(1);
 autd.send(ConfigureModDelay::new())?;
 # Ok(())
 # }

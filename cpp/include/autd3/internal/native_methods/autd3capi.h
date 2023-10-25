@@ -53,6 +53,8 @@ ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder,
                                      LinkBuilderPtr link_builder,
                                      char *err);
 
+[[nodiscard]] RuntimePtr AUTDControllerGetRuntime(ControllerPtr cnt);
+
 [[nodiscard]] bool AUTDControllerClose(ControllerPtr cnt, char *err);
 
 void AUTDControllerDelete(ControllerPtr cnt);
