@@ -46,11 +46,6 @@
             "name": "SOEMAUTDServer",
             "sidecar": true,
             "args": true
-          },
-          {
-            "name": "LightweightTwinCATAUTDServer",
-            "sidecar": true,
-            "args": true
           }
         ]
       },
@@ -110,8 +105,7 @@
       },
       "externalBin": [
         "simulator",
-        "SOEMAUTDServer",
-        "LightweightTwinCATAUTDServer"
+        "SOEMAUTDServer"
       ],
       "windows": {
         "certificateThumbprint": null,
