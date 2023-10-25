@@ -1,15 +1,15 @@
-'''
+"""
 File: test_autd.py
 Project: tests
 Created Date: 18/09/2023
 Author: Shun Suzuki
 -----
-Last Modified: 11/10/2023
+Last Modified: 25/10/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 from datetime import timedelta
 import numpy as np
@@ -24,10 +24,12 @@ import pytest
 
 
 def create_controller():
-    return Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    return (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
 
 def test_silencer():
@@ -119,10 +121,12 @@ def test_close():
 
 
 def test_send_timeout():
-    autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=0)))
+    )
 
     autd.send(UpdateFlags())
 
@@ -140,10 +144,12 @@ def test_send_timeout():
 
     assert autd.link.last_timeout_ns() == 3000
 
-    autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=10)))
+    )
 
     autd.send(UpdateFlags())
 
@@ -233,35 +239,10 @@ def test_send_special():
     assert str(e.value) == "broken"
 
 
-def test_software_stm():
-    autd = create_controller()
-
-    cnt = 0
-
-    def callback(autd: Controller, i: int, elapsed: timedelta):
-        nonlocal cnt
-        cnt += 1
-        return False
-
-    autd.software_stm(callback).with_timer_strategy(TimerStrategy.Sleep).start(timedelta(milliseconds=1.0))
-    assert cnt == 1
-
-    cnt = 0
-    autd.software_stm(callback).with_timer_strategy(TimerStrategy.BusyWait).start(timedelta(milliseconds=1.0))
-    assert cnt == 1
-
-    cnt = 0
-    autd.software_stm(callback).with_timer_strategy(TimerStrategy.NativeTimer).start(timedelta(milliseconds=1.0))
-    assert cnt == 1
-
-
 def test_group():
     autd = create_controller()
 
-    autd.group(lambda dev: dev.idx)\
-        .set(0, (Static(), Null()))\
-        .set(1, (Sine(150), Uniform(1.0)))\
-        .send()
+    autd.group(lambda dev: dev.idx).set(0, (Static(), Null())).set(1, (Sine(150), Uniform(1.0))).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 2
@@ -276,10 +257,7 @@ def test_group():
     assert np.all(duties == 2048)
     assert np.all(phases == 0)
 
-    autd.group(lambda dev: dev.idx)\
-        .set(1, Stop())\
-        .set(0, (Sine(150), Uniform(1.0)))\
-        .send()
+    autd.group(lambda dev: dev.idx).set(1, Stop()).set(0, (Sine(150), Uniform(1.0))).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 80
@@ -301,9 +279,8 @@ def test_group_check_only_for_enabled():
     def f(dev):
         check[dev.idx] = True
         return 0
-    autd.group(f)\
-        .set(0, (Sine(150), Uniform(0.5).with_phase(np.pi)))\
-        .send()
+
+    autd.group(f).set(0, (Sine(150), Uniform(0.5).with_phase(np.pi))).send()
 
     assert not check[0]
     assert check[1]
@@ -321,11 +298,13 @@ def test_group_check_only_for_enabled():
 
 
 def test_amplitudes():
-    autd = Controller.builder()\
-        .advanced_phase()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced_phase()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0)
@@ -403,11 +382,13 @@ def test_update_flags():
 
 
 def test_synchronize():
-    autd = Controller.builder()\
-        .advanced()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     for dev in autd.geometry:
         assert np.all(autd.link.cycles(dev.idx) == 4096)
@@ -471,10 +452,12 @@ def test_configure_phase_filter():
 
 
 def test_legacy():
-    autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     assert autd.send(Uniform(1.0))
 
@@ -483,11 +466,13 @@ def test_legacy():
 
 
 def test_advanced():
-    autd = Controller.builder()\
-        .advanced()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     assert autd.send(Uniform(1.0))
 
@@ -496,11 +481,13 @@ def test_advanced():
 
 
 def test_advanced_phase():
-    autd = Controller.builder()\
-        .advanced_phase()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced_phase()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     assert autd.send(Uniform(1.0))
 

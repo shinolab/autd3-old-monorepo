@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr
+from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr, RuntimePtr
 
 
 class LinkSimulatorBuilderPtr(ctypes.Structure):
@@ -41,7 +41,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkSimulatorIntoBuilder.argtypes = [LinkSimulatorBuilderPtr]  # type: ignore 
         self.dll.AUTDLinkSimulatorIntoBuilder.restype = LinkBuilderPtr
 
-        self.dll.AUTDLinkSimulatorUpdateGeometry.argtypes = [LinkPtr, GeometryPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSimulatorUpdateGeometry.argtypes = [LinkPtr, RuntimePtr, GeometryPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDLinkSimulatorUpdateGeometry.restype = ctypes.c_int32
 
     def link_simulator(self, port: int) -> LinkSimulatorBuilderPtr:
@@ -56,5 +56,5 @@ class NativeMethods(metaclass=Singleton):
     def link_simulator_into_builder(self, simulator: LinkSimulatorBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSimulatorIntoBuilder(simulator)
 
-    def link_simulator_update_geometry(self, simulator: LinkPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDLinkSimulatorUpdateGeometry(simulator, geometry, err)
+    def link_simulator_update_geometry(self, simulator: LinkPtr, runtime: RuntimePtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+        return self.dll.AUTDLinkSimulatorUpdateGeometry(simulator, runtime, geometry, err)

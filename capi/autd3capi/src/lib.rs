@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ pub mod stm;
 
 use autd3capi_def::{
     common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
-    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    RuntimePtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -98,8 +98,8 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
     link_builder: LinkBuilderPtr,
     err: *mut c_char,
 ) -> ControllerPtr {
-    let link_builder: Box<DynamicLinkBuilder> =
-        Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
+    let link_builder: Box<Box<dyn DynamicLinkBuilder>> =
+        Box::from_raw(link_builder.0 as *mut Box<dyn DynamicLinkBuilder>);
     let cnt = try_or_return!(
         Box::from_raw(
             builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>
@@ -109,6 +109,12 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
         ControllerPtr(NULL)
     );
     ControllerPtr(Box::into_raw(Box::new(cnt)) as _)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDControllerGetRuntime(cnt: ControllerPtr) -> RuntimePtr {
+    RuntimePtr(&cast!(cnt.0, Cnt).runtime as *const _ as _)
 }
 
 #[no_mangle]
@@ -428,44 +434,6 @@ pub unsafe extern "C" fn AUTDControllerGroup(
     );
 
     AUTD3_TRUE
-}
-
-struct SoftwareSTMCallbackPtr(ConstPtr);
-unsafe impl Send for SoftwareSTMCallbackPtr {}
-
-struct SoftwareSTMContextPtr(ConstPtr);
-unsafe impl Send for SoftwareSTMContextPtr {}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDControllerSoftwareSTM(
-    cnt: ControllerPtr,
-    callback: ConstPtr,
-    context: ConstPtr,
-    timer_strategy: TimerStrategy,
-    interval_ns: u64,
-    err: *mut c_char,
-) -> i32 {
-    let callback = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMCallbackPtr(callback)));
-    let context = std::sync::Arc::new(std::sync::Mutex::new(SoftwareSTMContextPtr(context)));
-    try_or_return!(
-        cast_mut!(cnt.0, Cnt)
-            .software_stm(move |_cnt: &mut Cnt, i: usize, elapsed: Duration| -> bool {
-                let f = std::mem::transmute::<
-                    _,
-                    unsafe extern "C" fn(SoftwareSTMContextPtr, u64, u64) -> bool,
-                >(callback.lock().unwrap().0);
-                f(
-                    SoftwareSTMContextPtr(context.lock().unwrap().0),
-                    i as u64,
-                    elapsed.as_nanos() as u64,
-                )
-            })
-            .with_timer_strategy(timer_strategy)
-            .start(Duration::from_nanos(interval_ns))
-            .map(|_| AUTD3_TRUE),
-        err,
-        AUTD3_ERR
-    )
 }
 
 #[cfg(test)]

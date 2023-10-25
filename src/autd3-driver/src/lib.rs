@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ pub mod operation;
 pub mod osal_timer;
 pub mod sync_mode;
 pub mod timer_strategy;
+pub mod autd3_device;
 
 pub mod derive {
     pub mod prelude {

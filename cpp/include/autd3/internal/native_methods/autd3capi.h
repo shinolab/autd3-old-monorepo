@@ -53,6 +53,8 @@ ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder,
                                      LinkBuilderPtr link_builder,
                                      char *err);
 
+[[nodiscard]] RuntimePtr AUTDControllerGetRuntime(ControllerPtr cnt);
+
 [[nodiscard]] bool AUTDControllerClose(ControllerPtr cnt, char *err);
 
 void AUTDControllerDelete(ControllerPtr cnt);
@@ -126,13 +128,6 @@ int32_t AUTDControllerGroup(ControllerPtr cnt,
                             const int32_t *map,
                             GroupKVMapPtr kv_map,
                             char *err);
-
-int32_t AUTDControllerSoftwareSTM(ControllerPtr cnt,
-                                  void* callback,
-                                  void* context,
-                                  TimerStrategy timer_strategy,
-                                  uint64_t interval_ns,
-                                  char *err);
 
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 

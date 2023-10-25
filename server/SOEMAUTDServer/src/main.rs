@@ -4,11 +4,11 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 #![allow(non_snake_case)]
@@ -27,10 +27,11 @@ use autd3_protobuf::*;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
-use tokio::{runtime::Runtime, sync::mpsc};
+use tokio::{
+    runtime::Runtime,
+    sync::{mpsc, RwLock},
+};
 use tonic::{transport::Server, Request, Response, Status};
-
-use std::sync::RwLock;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum SyncModeArg {
@@ -89,9 +90,6 @@ struct Arg {
     /// Timeout in ms
     #[clap(short = 't', long = "timeout", default_value = "20")]
     timeout: u64,
-    /// Enable lightweight mode
-    #[clap(short = 'l', long = "lightweight")]
-    lightweight: bool,
 }
 
 #[derive(Subcommand)]
@@ -114,31 +112,27 @@ impl ecat_server::Ecat for SOEMServer {
     ) -> Result<Response<SendResponse>, Status> {
         let tx = TxDatagram::from_msg(&request.into_inner());
         Ok(Response::new(SendResponse {
-            success: Link::send(&mut *self.soem.write().unwrap(), &tx).unwrap_or(false),
+            success: Link::send(&mut *self.soem.write().await, &tx)
+                .await
+                .unwrap_or(false),
         }))
     }
 
     async fn read_data(&self, _: Request<ReadRequest>) -> Result<Response<RxMessage>, Status> {
         let mut rx = vec![autd3_driver::cpu::RxMessage { ack: 0, data: 0 }; self.num_dev];
-        Link::receive(&mut *self.soem.write().unwrap(), &mut rx).unwrap_or(false);
+        Link::receive(&mut *self.soem.write().await, &mut rx)
+            .await
+            .unwrap_or(false);
         Ok(Response::new(rx.to_msg()))
     }
 
     async fn close(&self, _: Request<CloseRequest>) -> Result<Response<CloseResponse>, Status> {
-        self.soem.write().unwrap().clear_iomap();
+        self.soem.write().await.clear_iomap();
         Ok(Response::new(CloseResponse { success: true }))
     }
 }
 
-impl Drop for SOEMServer {
-    fn drop(&mut self) {
-        tracing::info!("Shutting down server...");
-        let _ = Link::close(&mut *self.soem.write().unwrap());
-        tracing::info!("Shutting down server...done");
-    }
-}
-
-fn main_() -> anyhow::Result<()> {
+async fn main_() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
@@ -199,44 +193,37 @@ fn main_() -> anyhow::Result<()> {
             tracing::info!("Waiting for client connection on {}", addr);
             let rt = Runtime::new().expect("failed to obtain a new Runtime object");
 
-            if args.lightweight {
-                let server = autd3_protobuf::LightweightServer::new(f);
-                let server_future = Server::builder()
-                    .add_service(ecat_light_server::EcatLightServer::new(server))
-                    .serve_with_shutdown(addr, async {
-                        let _ = rx.recv().await;
-                    });
-                rt.block_on(server_future)?;
-            } else {
-                tracing::info!("Starting SOEM server...");
+            tracing::info!("Starting SOEM server...");
 
-                let soem = f().open(&autd3_driver::geometry::Geometry::<
+            let soem = f()
+                .open(&autd3_driver::geometry::Geometry::<
                     autd3_driver::geometry::LegacyTransducer,
-                >::new(vec![]))?;
-                let num_dev = SOEM::num_devices();
+                >::new(vec![]))
+                .await?;
+            let num_dev = SOEM::num_devices();
 
-                tracing::info!("{} AUTDs found", num_dev);
+            tracing::info!("{} AUTDs found", num_dev);
 
-                let server_future = Server::builder()
-                    .add_service(ecat_server::EcatServer::new(SOEMServer {
-                        num_dev,
-                        soem: RwLock::new(soem),
-                    }))
-                    .serve_with_shutdown(addr, async {
-                        let _ = rx.recv().await;
-                    });
-                rt.block_on(server_future)?;
-            }
+            let server_future = Server::builder()
+                .add_service(ecat_server::EcatServer::new(SOEMServer {
+                    num_dev,
+                    soem: RwLock::new(soem),
+                }))
+                .serve_with_shutdown(addr, async {
+                    let _ = rx.recv().await;
+                });
+            rt.block_on(server_future)?;
         }
     }
 
     Ok(())
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tracing_subscriber::fmt().event_format(LogFormatter).init();
 
-    match main_() {
+    match main_().await {
         Ok(_) => {}
         Err(e) => {
             tracing::error!("{}", e);

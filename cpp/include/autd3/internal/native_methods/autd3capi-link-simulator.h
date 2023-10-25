@@ -27,6 +27,7 @@ LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr sim
 
 [[nodiscard]]
 int32_t AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator,
+                                        RuntimePtr runtime,
                                         GeometryPtr geometry,
                                         char *err);
 

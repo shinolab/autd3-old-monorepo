@@ -103,9 +103,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
     if (soemOptions.debug) {
       args.push("-d");
     }
-    if (soemOptions.lightweight) {
-      args.push("-l");
-    }
 
     command = Command.sidecar("SOEMAUTDServer", args);
     child = await command.spawn();
@@ -195,9 +192,6 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
   <label for="debug">Enable debug:</label>
   <CheckBox id="debug" bind:checked={soemOptions.debug} />
-
-  <label for="lightweight">Enable lightweight:</label>
-  <CheckBox id="lightweight" bind:checked={soemOptions.lightweight} />
 
   <Button label="Run" click={handleRunClick} disabled={!!child} />
   <Button label="Close" click={handleCloseClick} disabled={!child} />

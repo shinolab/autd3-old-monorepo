@@ -3,7 +3,7 @@
 // Created Date: 12/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 25/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -225,7 +225,8 @@ class Visualizer final {
 
   Visualizer() = delete;
 
-  explicit Visualizer(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>& props) : _ptr(ptr) {
+  explicit Visualizer(const internal::native_methods::LinkPtr ptr, const internal::native_methods::RuntimePtr, const std::shared_ptr<void>& props)
+      : _ptr(ptr) {
     const auto* p = static_cast<const Props*>(props.get());
     _backend = p->backend;
     _directivity = p->directivity;

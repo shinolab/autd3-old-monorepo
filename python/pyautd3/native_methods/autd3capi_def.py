@@ -42,6 +42,10 @@ class GeometryPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class RuntimePtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class DevicePtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 

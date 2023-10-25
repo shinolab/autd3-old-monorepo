@@ -13,9 +13,9 @@ keywords = ["autd"]
 [dependencies]
 autd3-protobuf = { path = "../autd3-protobuf", version = "16.0.3" }
 autd3-driver = { path = "../autd3-driver", version = "16.0.3" }
-tokio = { version = "1.0", features = ["rt-multi-thread"] }
 thiserror = "1.0.30"
 tonic = "0.10.0"
+async-trait = "0.1.74"
 
 [features]
 default = []

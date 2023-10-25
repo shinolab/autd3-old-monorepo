@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -62,10 +62,11 @@ impl TwinCATBuilder {
     }
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer> LinkBuilder<T> for TwinCATBuilder {
     type L = TwinCAT;
 
-    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {
@@ -133,8 +134,9 @@ impl TwinCAT {
     }
 }
 
+#[async_trait::async_trait]
 impl Link for TwinCAT {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             self.port_close()(self.port);
         }
@@ -142,7 +144,7 @@ impl Link for TwinCAT {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         unsafe {
             let n_err = self.sync_write_req()(
                 self.port,
@@ -161,7 +163,7 @@ impl Link for TwinCAT {
         }
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         let mut read_bytes: u32 = 0;
         unsafe {
             let n_err = self.sync_read_req()(

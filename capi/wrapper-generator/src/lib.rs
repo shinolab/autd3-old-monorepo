@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/10/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,6 +86,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "DevicePtr".to_string(),
             "TransducerPtr".to_string(),
             "GeometryPtr".to_string(),
+            "RuntimePtr".to_string(),
             "ModulationPtr".to_string(),
             "GainPtr".to_string(),
             "LinkPtr".to_string(),

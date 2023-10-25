@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -242,14 +242,14 @@ impl<
 
 #[cfg(test)]
 mod tests {
-    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
+    use autd3_driver::{
+        autd3_device::AUTD3,
+        geometry::{IntoDevice, LegacyTransducer, Vector3},
+    };
 
     use super::*;
 
-    use crate::{
-        autd3_device::AUTD3,
-        gain::{Focus, Null, Plane},
-    };
+    use crate::gain::{Focus, Null, Plane};
 
     #[test]
     fn test_group() {

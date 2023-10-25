@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, STMPropsPtr, TimerStrategy, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, RuntimePtr, STMPropsPtr, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -219,6 +219,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerOpenWith.argtypes = [ControllerBuilderPtr, LinkBuilderPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerOpenWith.restype = ControllerPtr
 
+        self.dll.AUTDControllerGetRuntime.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDControllerGetRuntime.restype = RuntimePtr
+
         self.dll.AUTDControllerClose.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerClose.restype = ctypes.c_bool
 
@@ -284,9 +287,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDControllerGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerGroup.restype = ctypes.c_int32
-
-        self.dll.AUTDControllerSoftwareSTM.argtypes = [ControllerPtr, ctypes.c_void_p, ctypes.c_void_p, TimerStrategy, ctypes.c_uint64, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerSoftwareSTM.restype = ctypes.c_int32
 
         self.dll.AUTDLinkAudit.argtypes = [] 
         self.dll.AUTDLinkAudit.restype = LinkAuditBuilderPtr
@@ -720,6 +720,9 @@ class NativeMethods(metaclass=Singleton):
     def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char]) -> ControllerPtr:
         return self.dll.AUTDControllerOpenWith(builder, link_builder, err)
 
+    def controller_get_runtime(self, cnt: ControllerPtr) -> RuntimePtr:
+        return self.dll.AUTDControllerGetRuntime(cnt)
+
     def controller_close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDControllerClose(cnt, err)
 
@@ -785,9 +788,6 @@ class NativeMethods(metaclass=Singleton):
 
     def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32], kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDControllerGroup(cnt, map, kv_map, err)
-
-    def controller_software_stm(self, cnt: ControllerPtr, callback: ctypes.c_void_p, context: ctypes.c_void_p, timer_strategy: TimerStrategy, interval_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDControllerSoftwareSTM(cnt, callback, context, timer_strategy, interval_ns, err)
 
     def link_audit(self) -> LinkAuditBuilderPtr:
         return self.dll.AUTDLinkAudit()

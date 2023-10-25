@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,7 @@ use scarlet::colormap::{ColorMap, ListedColorMap};
 
 use crate::{colormap, error::VisualizerError, Backend};
 
-use autd3::autd3_device::AUTD3;
-use autd3_driver::{defined::float, geometry::Geometry};
+use autd3_driver::{autd3_device::AUTD3, defined::float, geometry::Geometry};
 
 #[derive(Clone, Debug)]
 pub struct PlotConfig {

@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -110,13 +110,14 @@ mod tests {
     use rand::Rng;
 
     use autd3_driver::{
+        autd3_device::AUTD3,
         defined::PI,
         geometry::{IntoDevice, LegacyTransducer},
     };
 
     use super::*;
 
-    use crate::{autd3_device::AUTD3, tests::random_vector3};
+    use crate::tests::random_vector3;
 
     #[test]
     fn test_bessel() {

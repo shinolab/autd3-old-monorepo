@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,10 @@
 use std::{collections::HashMap, hash::Hash, time::Duration};
 
 use autd3_driver::{
+    cpu::{RxMessage, TxDatagram},
     datagram::Datagram,
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::{Device, Geometry, Transducer},
     link::Link,
     operation::{Operation, OperationHandler},
 };
@@ -74,30 +75,31 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
         Ok(self)
     }
 
-    pub fn send(mut self) -> Result<bool, AUTDInternalError> {
-        let timeout = self.timeout;
+    pub async fn send_impl(
+        link: &'a mut L,
+        geometry: &'a mut Geometry<T>,
+        tx_buf: &'a mut TxDatagram,
+        rx_buf: &'a mut [RxMessage],
+        f: F,
+        timeout: Option<Duration>,
+        mut op: HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>,
+    ) -> Result<bool, AUTDInternalError> {
+        let timeout = timeout;
 
-        let enable_flags_store = self
-            .cnt
-            .geometry
-            .iter()
-            .map(|dev| dev.enable)
-            .collect::<Vec<_>>();
+        let enable_flags_store = geometry.iter().map(|dev| dev.enable).collect::<Vec<_>>();
 
-        let enable_flags_map: HashMap<K, Vec<bool>> = self
-            .op
+        let enable_flags_map: HashMap<K, Vec<bool>> = op
             .keys()
             .map(|k| {
                 (
                     k.clone(),
-                    self.cnt
-                        .geometry
+                    geometry
                         .iter()
                         .map(|dev| {
                             if !dev.enable {
                                 return false;
                             }
-                            if let Some(kk) = (self.f)(dev) {
+                            if let Some(kk) = f(dev) {
                                 kk == *k
                             } else {
                                 false
@@ -108,34 +110,30 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
             })
             .collect();
 
-        self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
-            self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+        op.iter_mut().try_for_each(|(k, (op1, op2))| {
+            geometry.iter_mut().for_each(|dev| {
                 dev.enable = enable_flags_map[k][dev.idx()];
             });
-            OperationHandler::init(op1, op2, &self.cnt.geometry)
+            OperationHandler::init(op1, op2, geometry)
         })?;
 
         let r = loop {
             let start = std::time::Instant::now();
-            self.op.iter_mut().try_for_each(|(k, (op1, op2))| {
-                self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+            op.iter_mut().try_for_each(|(k, (op1, op2))| {
+                geometry.iter_mut().for_each(|dev| {
                     dev.enable = enable_flags_map[k][dev.idx()];
                 });
-                OperationHandler::pack(op1, op2, &self.cnt.geometry, &mut self.cnt.tx_buf)
+                OperationHandler::pack(op1, op2, geometry, tx_buf)
             })?;
 
-            if !self
-                .cnt
-                .link
-                .send_receive(&self.cnt.tx_buf, &mut self.cnt.rx_buf, timeout)?
-            {
+            if !link.send_receive(tx_buf, rx_buf, timeout).await? {
                 break false;
             }
-            if self.op.iter_mut().all(|(k, (op1, op2))| {
-                self.cnt.geometry_mut().iter_mut().for_each(|dev| {
+            if op.iter_mut().all(|(k, (op1, op2))| {
+                geometry.iter_mut().for_each(|dev| {
                     dev.enable = enable_flags_map[k][dev.idx()];
                 });
-                OperationHandler::is_finished(op1, op2, &self.cnt.geometry)
+                OperationHandler::is_finished(op1, op2, geometry)
             }) {
                 break true;
             }
@@ -144,12 +142,50 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
             }
         };
 
-        self.cnt
-            .geometry
+        geometry
             .iter_mut()
             .zip(enable_flags_store.iter())
             .for_each(|(dev, &enable)| dev.enable = enable);
 
         Ok(r)
+    }
+
+    #[cfg(feature = "async")]
+    pub async fn send(self) -> Result<bool, AUTDInternalError> {
+        let Self {
+            cnt,
+            f,
+            timeout,
+            op,
+        } = self;
+        Self::send_impl(
+            &mut cnt.link,
+            &mut cnt.geometry,
+            &mut cnt.tx_buf,
+            &mut cnt.rx_buf,
+            f,
+            timeout,
+            op,
+        )
+        .await
+    }
+
+    #[cfg(not(feature = "async"))]
+    pub fn send(self) -> Result<bool, AUTDInternalError> {
+        let Self {
+            cnt,
+            f,
+            timeout,
+            op,
+        } = self;
+        cnt.runtime.block_on(Self::send_impl(
+            &mut cnt.link,
+            &mut cnt.geometry,
+            &mut cnt.tx_buf,
+            &mut cnt.rx_buf,
+            f,
+            timeout,
+            op,
+        ))
     }
 }

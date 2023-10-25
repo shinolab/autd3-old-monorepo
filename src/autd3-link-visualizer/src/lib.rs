@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2023
+ * Last Modified: 24/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,11 +62,12 @@ pub struct VisualizerBuilder<D: Directivity, B: Backend> {
     gpu_compute: Option<gpu::FieldCompute>,
 }
 
+#[async_trait::async_trait]
 impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T> for VisualizerBuilder<D, B> {
     type L = Visualizer<D, B>;
 
     #[allow(unused_mut)]
-    fn open(mut self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(mut self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         #[cfg(feature = "gpu")]
         let gpu_compute = self.gpu_compute.take();
 
@@ -534,8 +535,9 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     }
 }
 
+#[async_trait::async_trait]
 impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
-    fn close(&mut self) -> Result<(), AUTDInternalError> {
+    async fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open {
             return Ok(());
         }
@@ -544,7 +546,7 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -556,7 +558,7 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
