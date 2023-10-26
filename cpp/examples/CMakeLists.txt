@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(AUTD_LOCAL_TEST "For local test build" OFF)
-option(ENABLE_LINK_VISUALIZER ENABLE_LINK_VISUALIZER ON)
+option(ENABLE_LINK_VISUALIZER ENABLE_LINK_VISUALIZER OFF)
 option(USE_PYTHON "Use python backend for visualizer" OFF)
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
@@ -39,9 +39,6 @@ else()
     autd3
     URL https://github.com/shinolab/autd3/releases/download/v17.0.0/autd3-v17.0.0
   )
-endif()
-if(APPLE)
-  set(ENABLE_LINK_VISUALIZER OFF)
 endif()
 FetchContent_MakeAvailable(autd3)
 

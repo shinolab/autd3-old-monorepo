@@ -25,7 +25,6 @@ runs:
   steps:
     - name: Install packaging
       shell: bash
-      if: inputs.os == 'macos-latest'
       run: |
         python3 -m pip install -U packaging
 
@@ -91,18 +90,12 @@ runs:
         sudo apt-get update
         sudo apt-get install -y pkg-config libfreetype6-dev libfontconfig1-dev
 
-    - name: install arm32 target on linux
+    - name: install cross
       shell: bash
-      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'arm32'
-      run : |
-        sudo apt-get update
-        sudo apt-get -y install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-        rustup target add armv7-unknown-linux-gnueabihf
-
-    - name: install arm64 target on linux
-      shell: bash
-      if : inputs.os == 'ubuntu-latest' && inputs.arch == 'aarch64'
-      run : |
-        sudo apt-get update
-        sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-        rustup target add aarch64-unknown-linux-gnu
+      if: inputs.os == 'ubuntu-latest' && inputs.arch
+      run: |
+        curl -L https://github.com/cross-rs/cross/releases/download/v0.2.5/cross-x86_64-unknown-linux-gnu.tar.gz > cross.tar.gz
+        tar -xzf cross.tar.gz
+        cp cross /usr/local/bin
+        cp cross-util /usr/local/bin
+        rm cross.tar.gz

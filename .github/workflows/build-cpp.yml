@@ -40,6 +40,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
@@ -47,6 +53,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
           cuda: true
+          shaderc: true
 
       - name: Rust cache
         if: needs.check.outputs.status
@@ -57,20 +64,11 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         run: |
           python3 build.py cpp build --release --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
-        if: needs.check.outputs.status && matrix.os == 'macos-latest'
-      - name: Build C++ library on ${{ matrix.os }}
-        run: |
-          python3 build.py cpp build --release
-        if: needs.check.outputs.status && matrix.os != 'macos-latest'
-
+        if: needs.check.outputs.status
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          python3 build.py cpp test --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
-        if: needs.check.outputs.status && matrix.os == 'macos-latest'
-      - name: Run C++ tests on ${{ matrix.os }}
-        run: |
-          python3 build.py cpp test --skip-cuda
-        if: needs.check.outputs.status && matrix.os != 'macos-latest'
+          python3 build.py cpp test --release --universal --skip-cuda --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+        if: needs.check.outputs.status
 
 
   build-linux-arm32:
@@ -98,7 +96,7 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cpp build --arch arm32 --release
+          python3 build.py cpp build --arch arm32 --release --no-examples
 
 
   build-linux-aarch64:
@@ -126,4 +124,4 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cpp build --arch aarch64 --release
+          python3 build.py cpp build --arch aarch64 --release --no-examples

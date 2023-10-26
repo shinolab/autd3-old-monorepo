@@ -4,6 +4,7 @@
 - Remove `Controller::software_stm`
 - Remove `Lightweight` options
 - `modulation::Square` with out of range duty ratio now return Err
+- Add pre-built `libautd3capi-link-visualizer` dynamic library for macOS 
 - Fix [#212](https://github.com/shinolab/autd3/issues/212): unity-linux and unity-mac packages are not published
 - Fix [#213](https://github.com/shinolab/autd3/issues/213): simulator settings file can not be saved on unity
 
