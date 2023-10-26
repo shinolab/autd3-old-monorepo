@@ -41,6 +41,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
@@ -87,6 +93,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
