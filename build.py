@@ -165,6 +165,7 @@ class Config:
         if self.is_linux() and hasattr(args, "arch") and args.arch is not None:
             self.cuda = False
             self._af = False
+            self.shaderc = False
             match args.arch:
                 case "arm32":
                     self.target = "armv7-unknown-linux-gnueabihf"
