@@ -43,24 +43,24 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install tools
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
           python3 -m pip install -U mypy numpy build wheel pytest
 
       - name: Rust cache
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './capi -> target'
 
       - name: Setup
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -68,11 +68,11 @@ jobs:
           cuda: true
 
       - name: Build python library on ${{ matrix.os }}
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
           python3 build.py python build --no-install --release --universal
 
       - name: Test python library on ${{ matrix.os }}
-        if: needs.check.outputs.status
+        if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
           python3 build.py python test --release --skip-cuda

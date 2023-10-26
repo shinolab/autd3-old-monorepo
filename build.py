@@ -23,8 +23,16 @@ import subprocess
 import os
 import sys
 import platform
-from shutil import which
+from typing import List, Optional
 from packaging import version
+
+
+def fetch_submodule():
+    if shutil.which("git") is not None:
+        with working_dir(os.path.dirname(os.path.abspath(__file__))):
+            subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
+    else:
+        err("git is not installed. Skip fetching submodules.")
 
 
 def err(msg: str):
@@ -109,216 +117,268 @@ def env_exists(value):
     return value in os.environ and os.environ[value] != ""
 
 
-is_windows = platform.system() == "Windows"
-is_macos = platform.system() == "Darwin"
-is_linux = platform.system() == "Linux"
-if not is_windows and not is_macos and not is_linux:
-    err(f'platform "{platform.system()}" is not supported.')
-    sys.exit(-1)
+class Config:
+    _platform: str
+    _all: bool
+    release: bool
+    cuda: bool
+    skip_cuda: bool
+    _af: bool
+    shaderc: bool
+    target: Optional[str]
+    universal: bool
+    no_examples: bool
+    cmake_extra: Optional[List[str]]
 
-exe_ext = ".exe" if is_windows else ""
+    def __init__(self, args):
+        self._platform = platform.system()
 
+        if not self.is_windows() and not self.is_macos() and not self.is_linux():
+            err(f'platform "{platform.system()}" is not supported.')
+            sys.exit(-1)
 
-def is_cuda_available():
-    return which("nvcc") is not None
+        self._all = hasattr(args, "all") and args.all
+        self.release = hasattr(args, "release") and args.release
+        self.universal = hasattr(args, "universal") and args.universal
+        self.skip_cuda = hasattr(args, "skip_cuda") and args.skip_cuda
+        self.no_examples = hasattr(args, "no_examples") and args.no_examples
+        self.cmake_extra = args.cmake_extra.split(" ") if hasattr(args, "cmake_extra") and args.cmake_extra is not None else None
 
-
-def is_cmake_available():
-    return which("cmake") is not None
-
-
-def is_git_available():
-    return which("git") is not None
-
-
-def is_arrayfire_available():
-    return env_exists("AF_PATH")
-
-
-def is_shaderc_available():
-    shaderc_lib_name = "shaderc_combined.lib" if is_windows else "libshaderc_combined.a"
-    if env_exists("SHADERC_LIB_DIR"):
-        if os.path.isfile(f"{os.environ['SHADERC_LIB_DIR']}/{shaderc_lib_name}"):
-            return True
-    if env_exists("VULKAN_SDK"):
-        if os.path.isfile(f"{os.environ['VULKAN_SDK']}/lib/{shaderc_lib_name}"):
-            return True
-    if not is_windows:
-        if os.path.isfile(f"/usr/local/lib/{shaderc_lib_name}"):
-            return True
-    return False
-
-
-def setup_arm32_linker():
-    os.makedirs(".cargo", exist_ok=True)
-    with open(".cargo/config", "w") as f:
-        f.write("[target.armv7-unknown-linux-gnueabihf]\n")
-        f.write('linker = "arm-linux-gnueabihf-gcc"\n')
-
-
-def setup_aarch64_linker():
-    os.makedirs(".cargo", exist_ok=True)
-    with open(".cargo/config", "w") as f:
-        f.write("[target.aarch64-unknown-linux-gnu]\n")
-        f.write('linker = "aarch64-linux-gnu-gcc"\n')
-
-
-def fetch_submodule():
-    if is_git_available():
-        with working_dir(os.path.dirname(os.path.abspath(__file__))):
-            subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
-    else:
-        err("git is not installed. Skip fetching submodules.")
-
-
-def check_ext_libs(args):
-    if args.all:
-        if is_macos:
-            args.cuda = False
+        if self.is_macos():
+            self.cuda = False
         else:
-            if not is_cuda_available():
-                warn("CUDA is not installed. Skip building crates using CUDA.")
-                args.cuda = False
+            if self.is_cuda_available():
+                self.cuda = True
             else:
-                args.cuda = True
+                self.cuda = False
 
-        if is_arrayfire_available():
-            args.af = True
+        if self.is_arrayfire_available():
+            self._af = True
         else:
-            warn("ArrayFire is not installed. Skip building crates using ArrayFire.")
-            args.af = False
+            self._af = False
 
-        if is_shaderc_available():
-            args.gpu = True
+        if self.is_shaderc_available():
+            self.shaderc = True
         else:
-            args.gpu = False
-            warn("shaderc is not installed. Skip building crates using Vulkano.")
+            self.shaderc = False
+
+        if self.is_linux() and hasattr(args, "arch") and args.arch is not None:
+            self.cuda = False
+            self._af = False
+            match args.arch:
+                case "arm32":
+                    self.target = "armv7-unknown-linux-gnueabihf"
+                case "aarch64":
+                    self.target = "aarch64-unknown-linux-gnu"
+                case _:
+                    err(f'arch "{args.arch}" is not supported.')
+                    sys.exit(-1)
+        else:
+            self.target = None
+
+        if self._all:
+            if not self.cuda:
+                warn("Skip building crates using CUDA")
+            if not self._af:
+                warn("Skip building crates using ArrayFire")
+            if not self.shaderc:
+                warn("Skip building crates using Vulkano")
+
+    def cargo_command_base(self, subcommand):
+        command = []
+        if self.target is None:
+            command.append("cargo")
+            command.append(subcommand)
+        else:
+            command.append("cross")
+            command.append(subcommand)
+            command.append("--target")
+            command.append(self.target)
+        if self.release:
+            command.append("--release")
+        return command
+
+    def cargo_build_command(self):
+        command = self.cargo_command_base("build")
+        features = "remote"
+        if self._all:
+            features += " python"
+            command.append("--all")
+            if not self.cuda:
+                command.append("--exclude=autd3-backend-cuda")
+            if not self._af:
+                command.append("--exclude=autd3-backend-arrayfire")
+            if self.shaderc:
+                features += " gpu"
+        command.append("--features")
+        command.append(features)
+        return command
+
+    def cargo_test_command(self):
+        command = self.cargo_command_base("test")
+        features = "test-utilities remote"
+        if self._all:
+            features += " python"
+            command.append("--all")
+            if not self.cuda or self.skip_cuda:
+                command.append("--exclude=autd3-backend-cuda")
+            if not self._af:
+                command.append("--exclude=autd3-backend-arrayfire")
+            if self.shaderc:
+                features += " gpu"
+        command.append("--features")
+        command.append(features)
+        return command
+
+    def cargo_example_build_command(self):
+        command = self.cargo_command_base("build")
+        command.append("--bins")
+        features = "soem twincat"
+        if self._all:
+            if self.cuda and not self.skip_cuda:
+                features += " cuda"
+            features += " simulator remote_soem remote_twincat visualizer python"
+            if self.shaderc:
+                features += " gpu"
+        command.append("--features")
+        command.append(features)
+        return command
+
+    def cargo_clippy_command(self):
+        command = self.cargo_build_command()
+        command[1] = "clippy"
+        command.append("--")
+        command.append("-D")
+        command.append("warnings")
+        return command
+
+    def cargo_cov_command(self):
+        features = "remote test-utilities python"
+        if self.shaderc:
+            features += " gpu"
+        command = [
+            "cargo",
+            "+nightly",
+            "llvm-cov",
+            "--features",
+            features,
+            "--workspace",
+            "--lcov",
+            "--output-path",
+            "lcov.info",
+        ]
+        if self.release:
+            command.append("--release")
+        if not self.cuda or self.skip_cuda:
+            command.append("--exclude=autd3-backend-cuda")
+        if not self._af:
+            command.append("--exclude=autd3-backend-arrayfire")
+        return command
+
+    def cargo_build_capi_command(self, features=None):
+        command = self.cargo_command_base("build")
+        command.append("--all")
+        if features is not None:
+            command.append("--features")
+            command.append(features)
+        if not self.cuda:
+            command.append("--exclude=autd3capi-backend-cuda")
+        if not self.is_built_autd3capi_link_visualizer():
+            command.append("--exclude=autd3capi-link-visualizer")
+
+        if self.is_macos() and self.universal:
+            command_aarch64 = command.copy()
+            command_aarch64.append("--target=aarch64-apple-darwin")
+            command_x86 = command.copy()
+            command_x86.append("--target=x86_64-apple-darwin")
+            return [command_aarch64, command_x86]
+        else:
+            return [command]
+
+    def cargo_clippy_capi_command(self):
+        command = self.cargo_build_capi_command()[0]
+        command[1] = "clippy"
+        command.append("--")
+        command.append("-D")
+        command.append("warnings")
+        return command
+
+    def is_built_autd3capi_link_visualizer(self):
+        return self.shaderc
+
+    def is_windows(self):
+        return self._platform == "Windows"
+
+    def is_macos(self):
+        return self._platform == "Darwin"
+
+    def is_linux(self):
+        return self._platform == "Linux"
+
+    def exe_ext(self):
+        return ".exe" if self.is_windows() else ""
+
+    def is_cuda_available(self):
+        return shutil.which("nvcc") is not None
+
+    def is_arrayfire_available(self):
+        return env_exists("AF_PATH")
+
+    def is_shaderc_available(self):
+        shaderc_lib_name = "shaderc_combined.lib" if self.is_windows() else "libshaderc_combined.a"
+        if env_exists("SHADERC_LIB_DIR"):
+            if os.path.isfile(f"{os.environ['SHADERC_LIB_DIR']}/{shaderc_lib_name}"):
+                return True
+        if env_exists("VULKAN_SDK"):
+            if os.path.isfile(f"{os.environ['VULKAN_SDK']}/lib/{shaderc_lib_name}"):
+                return True
+        if not self.is_windows():
+            if os.path.isfile(f"/usr/local/lib/{shaderc_lib_name}"):
+                return True
+        return False
+
+    def setup_linker(self):
+        if not self.is_linux() or self.target is None:
+            return
+        
+        os.makedirs(".cargo", exist_ok=True)
+        with open(".cargo/config", "w") as f:        
+            if self.target == "armv7-unknown-linux-gnueabihf":
+                f.write("[target.armv7-unknown-linux-gnueabihf]\n")
+                f.write('linker = "arm-linux-gnueabihf-gcc"\n')
+            if self.target == "aarch64-unknown-linux-gnu":
+                f.write("[target.aarch64-unknown-linux-gnu]\n")
+                f.write('linker = "aarch64-linux-gnu-gcc"\n')
+
 
 
 def rust_build(args):
-    check_ext_libs(args)
-    if args.all:
-        args.visualizer = True
+    config = Config(args)
+
     with working_dir("src"):
-        target = None
-        if is_linux and args.arch is not None:
-            info("Skip build examples because cross compilation is not supported.")
-            args.no_examples = True
-            args.cuda = False
-            args.af = False
-            args.visualizer = False
-            if args.arch == "arm32":
-                setup_arm32_linker()
-                target = "armv7-unknown-linux-gnueabihf"
-            elif args.arch == "aarch64":
-                setup_aarch64_linker()
-                target = "aarch64-unknown-linux-gnu"
-            else:
-                err(f'arch "{args.arch}" is not supported.')
-                sys.exit(-1)
+        subprocess.run(config.cargo_build_command()).check_returncode()
 
-        commands = ["cargo", "build"]
-        if args.release:
-            commands.append("--release")
-        features = "remote"
-        if args.all:
-            commands.append("--all")
-            if not args.cuda:
-                commands.append("--exclude=autd3-backend-cuda")
-            if not args.af:
-                commands.append("--exclude=autd3-backend-arrayfire")
-            if args.visualizer:
-                features += " python"
-                if args.gpu:
-                    features += " gpu"
-            else:
-                commands.append("--exclude=autd3-link-visualizer")
-        commands.append("--features")
-        commands.append(features)
-
-        if target is not None:
-            commands.append(f"--target={target}")
-
-        subprocess.run(commands).check_returncode()
-
-    if not args.no_examples:
+    if not config.no_examples:
         info("Building examples...")
         with working_dir("src/examples"):
-            command = ["cargo", "build", "--bins"]
-            if args.release:
-                command.append("--release")
-            features = "soem twincat"
-            if args.all:
-                features += " simulator remote_soem remote_twincat"
-                if args.visualizer:
-                    features += " visualizer python"
-                    if args.gpu:
-                        features += " gpu"
-            command.append("--features")
-            command.append(features)
-            subprocess.run(command).check_returncode()
+            subprocess.run(config.cargo_example_build_command()).check_returncode()
 
 
 def rust_lint(args):
-    check_ext_libs(args)
+    config = Config(args)
 
     with working_dir("src"):
-        commands = ["cargo", "clippy"]
-        features = "remote python"
-        if args.release:
-            commands.append("--release")
-        if args.all:
-            commands.append("--all")
-            if not args.cuda:
-                commands.append("--exclude=autd3-backend-cuda")
-            if not args.af:
-                commands.append("--exclude=autd3-backend-arrayfire")
-            if args.gpu:
-                features += " gpu"
-        commands.append("--features")
-        commands.append(features)
-        commands.append("--")
-        commands.append("-D")
-        commands.append("warnings")
-        subprocess.run(commands).check_returncode()
+        subprocess.run(config.cargo_clippy_command()).check_returncode()
 
     with working_dir("capi"):
-        commands = ["cargo", "clippy"]
-        if args.release:
-            commands.append("--release")
-        if args.all:
-            commands.append("--all")
-            if not args.cuda:
-                commands.append("--exclude=autd3capi-backend-cuda")
-            if not args.gpu:
-                commands.append("--exclude=autd3capi-link-visualizer")
-        commands.append("--")
-        commands.append("-D")
-        commands.append("warnings")
-
-        subprocess.run(commands).check_returncode()
+        subprocess.run(config.cargo_clippy_capi_command()).check_returncode()
 
 
 def rust_test(args):
-    check_ext_libs(args)
+    config = Config(args)
 
     with working_dir("src"):
-        commands = ["cargo", "test"]
-        features = "test-utilities remote python"
-        if args.release:
-            commands.append("--release")
-        if args.all:
-            commands.append("--all")
-            if not args.cuda or args.skip_cuda:
-                commands.append("--exclude=autd3-backend-cuda")
-            if not args.af:
-                commands.append("--exclude=autd3-backend-arrayfire")
-            if args.gpu:
-                features += " gpu"
-        commands.append("--features")
-        commands.append(features)
-
-        subprocess.run(commands).check_returncode()
+        subprocess.run(config.cargo_test_command()).check_returncode()
 
 
 def rust_run(args):
@@ -338,18 +398,20 @@ def rust_run(args):
         info(f"Available examples: {examples}")
         return -1
 
-    if args.target == "soem":
-        args.features = "soem"
-    if args.target == "remote_soem":
-        args.features = "remote_soem"
-    if args.target == "twincat":
-        args.features = "twincat"
-    if args.target == "remote_twincat":
-        args.features = "remote_twincat"
-    if args.target == "simulator":
-        args.features = "simulator"
-    if args.target == "visualizer":
-        args.features = "visualizer"
+    features = None
+    match args.target:
+        case "soem":
+            features = "soem"
+        case "remote_soem":
+            features = "remote_soem"
+        case "twincat":
+            features = "twincat"
+        case "remote_twincat":
+            features = "remote_twincat"
+        case "simulator":
+            features = "simulator"
+        case "visualizer":
+            features = "visualizer"
 
     with working_dir("src/examples"):
         commands = ["cargo", "run"]
@@ -359,7 +421,7 @@ def rust_run(args):
         commands.append(args.target)
         if hasattr(args, "features"):
             commands.append("--features")
-            commands.append(args.features)
+            commands.append(features)
 
         subprocess.run(commands).check_returncode()
 
@@ -370,32 +432,10 @@ def rust_clear(_):
 
 
 def rust_coverage(args):
-    args.all = True
-    check_ext_libs(args)
+    config = Config(args)
 
     with working_dir("src"):
-        features = "remote test-utilities python"
-        if args.gpu:
-            features += " gpu"
-        commands = [
-            "cargo",
-            "+nightly",
-            "llvm-cov",
-            "--features",
-            features,
-            "--workspace",
-            "--lcov",
-            "--output-path",
-            "lcov.info",
-        ]
-        if args.release:
-            commands.append("--release")
-        if not args.cuda or args.skip_cuda:
-            commands.append("--exclude=autd3-backend-cuda")
-        if not args.af:
-            commands.append("--exclude=autd3-backend-arrayfire")
-
-        subprocess.run(commands).check_returncode()
+        subprocess.run(config.cargo_cov_command()).check_returncode()
 
 
 def capi_clear(_):
@@ -403,67 +443,14 @@ def capi_clear(_):
         subprocess.run(["cargo", "clean"]).check_returncode()
 
 
-def build_capi(args, features=None):
-    with working_dir("capi"):
-        args.all = True
-        check_ext_libs(args)
-
-        commands = ["cargo", "build"]
-        if args.release:
-            commands.append("--release")
-        commands.append("--all")
-        if features is not None:
-            commands.append("--features")
-            commands.append(features)
-
-        if not args.cuda:
-            commands.append("--exclude=autd3capi-backend-cuda")
-        if not args.gpu:
-            commands.append("--exclude=autd3capi-link-visualizer")
-
-        if is_macos and args.universal:
-            commands.append("--exclude=autd3capi-link-visualizer")
-            commands_x86 = commands.copy()
-            commands_x86.append("--target=x86_64-apple-darwin")
-            subprocess.run(commands_x86).check_returncode()
-            commands_aarch64 = commands.copy()
-            commands_aarch64.append("--target=aarch64-apple-darwin")
-            subprocess.run(commands_aarch64).check_returncode()
-        else:
-            if is_linux and args.arch is not None:
-                if args.arch == "arm32":
-                    setup_arm32_linker()
-                    commands.append("--exclude=autd3capi-backend-cuda")
-                    commands.append("--exclude=autd3capi-link-visualizer")
-                    commands.append("--target=armv7-unknown-linux-gnueabihf")
-                elif args.arch == "aarch64":
-                    setup_aarch64_linker()
-                    commands.append("--exclude=autd3capi-backend-cuda")
-                    commands.append("--exclude=autd3capi-link-visualizer")
-                    commands.append("--target=aarch64-unknown-linux-gnu")
-                else:
-                    err(f'arch "{args.arch}" is not supported.')
-                    sys.exit(-1)
-            subprocess.run(commands).check_returncode()
-
-
-def cpp_build(args):
-    build_capi(args)
-
-    os.makedirs("cpp/lib", exist_ok=True)
-    os.makedirs("cpp/bin", exist_ok=True)
-    if is_windows:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        for lib in glob.glob(f"{target}/*.dll.lib"):
-            shutil.copy(lib, "cpp/lib")
+def copy_dll(config: Config, dst: str):
+    if config.is_windows():
+        target = "capi/target/release" if config.release else "capi/target/debug"
         for dll in glob.glob(f"{target}/*.dll"):
-            shutil.copy(dll, "cpp/bin")
-        if not args.release:
-            for pdb in glob.glob(f"{target}/*.pdb"):
-                shutil.copy(pdb, "cpp/lib")
-    elif is_macos:
-        if args.universal:
-            target = "capi/target/x86_64-apple-darwin/release" if args.release else "capi/target/x86_64-apple-darwin/debug"
+            shutil.copy(dll, dst)
+    elif config.is_macos():
+        if config.universal:
+            target = "capi/target/x86_64-apple-darwin/release" if config.release else "capi/target/x86_64-apple-darwin/debug"
             for x64_lib in glob.glob(f"{target}/*.dylib"):
                 base_name = os.path.basename(x64_lib)
                 subprocess.run(
@@ -473,85 +460,103 @@ def cpp_build(args):
                         x64_lib,
                         f"./capi/target/aarch64-apple-darwin/release/{base_name}",
                         "-output",
-                        f"./cpp/bin/{base_name}",
+                        f"./{dst}/{base_name}",
                     ]
                 ).check_returncode()
         else:
-            target = "capi/target/release" if args.release else "capi/target/debug"
+            target = "capi/target/release" if config.release else "capi/target/debug"
             for lib in glob.glob(f"{target}/*.dylib"):
-                shutil.copy(lib, "cpp/bin")
-    elif is_linux:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        if args.arch is not None:
-            info("Skip build examples because cross compilation is not supported.")
-            args.no_examples = True
-            if args.arch == "arm32":
-                target = "capi/target/armv7-unknown-linux-gnueabihf/release" if args.release else "capi/target/armv7-unknown-linux-gnueabihf/debug"
-            elif args.arch == "aarch64":
-                target = "capi/target/aarch64-unknown-linux-gnu/release" if args.release else "capi/target/aarch64-unknown-linux-gnu/debug"
-            else:
-                pass
+                shutil.copy(lib, dst)
+    elif config.is_linux():
+        target = ""
+        if config.target is None:
+            target = "capi/target/release" if config.release else "capi/target/debug"
+        else:
+            target = f"capi/target/{config.target}/release" if config.release else f"capi/target/{config.target}/debug"
         for lib in glob.glob(f"{target}/*.so"):
-            shutil.copy(lib, "cpp/bin")
+            shutil.copy(lib, dst)
+
+
+def cpp_build(args):
+    config = Config(args)
+
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    os.makedirs("cpp/lib", exist_ok=True)
+    os.makedirs("cpp/bin", exist_ok=True)
+    copy_dll(config, "cpp/bin")
+    if config.is_windows():
+        target = "capi/target/release" if config.release else "capi/target/debug"
+        for lib in glob.glob(f"{target}/*.dll.lib"):
+            shutil.copy(lib, "cpp/lib")
+        if not config.release:
+            for pdb in glob.glob(f"{target}/*.pdb"):
+                shutil.copy(pdb, "cpp/lib")
 
     shutil.copyfile("LICENSE", "cpp/LICENSE")
     shutil.copyfile("README.md", "cpp/README.md")
     shutil.copyfile("capi/ThirdPartyNotice.txt", "cpp/ThirdPartyNotice.txt")
 
-    if not args.no_examples:
+    if not config.no_examples:
         info("Building examples...")
         with working_dir("cpp/examples"):
             os.makedirs("build", exist_ok=True)
             with working_dir("build"):
                 command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
-                if not args.gpu:
+                if not config.is_built_autd3capi_link_visualizer():
                     command.append("-DENABLE_LINK_VISUALIZER=OFF")
-                if args.cmake_extra is not None:
-                    for cmd in args.cmake_extra.split(" "):
+                if config.cmake_extra is not None:
+                    for cmd in config.cmake_extra:
                         command.append(cmd)
                 subprocess.run(command).check_returncode()
                 command = ["cmake", "--build", "."]
-                if args.release:
+                if config.release:
                     command.append("--config")
                     command.append("Release")
                 subprocess.run(command).check_returncode()
 
 
 def cpp_test(args):
-    args.release = True
-    args.arch = None
     args.no_examples = True
     cpp_build(args)
 
+    config = Config(args)
     with working_dir("cpp/tests"):
         os.makedirs("build", exist_ok=True)
         with working_dir("build"):
             command = ["cmake", ".."]
-            if args.cuda and not args.skip_cuda:
+            if config.cuda and not config.skip_cuda:
                 command.append("-DENABLE_BACKEND_CUDA=ON")
-            if args.cmake_extra is not None:
-                for cmd in args.cmake_extra.split(" "):
+            if config.cmake_extra is not None:
+                for cmd in config.cmake_extra:
                     command.append(cmd)
             subprocess.run(command).check_returncode()
-            subprocess.run(["cmake", "--build", ".", "--config", "Release"]).check_returncode()
+            command = ["cmake", "--build", "."]
+            if config.release:
+                command.append("--config")
+                command.append("Release")
+            subprocess.run(command).check_returncode()
 
-            target_dir = "Release" if is_windows else "."
-            subprocess.run([f"{target_dir}/test_autd3{exe_ext}"]).check_returncode()
+            target_dir = "."
+            if config.is_windows():
+                target_dir = "Release" if config.release else "Debug"
+            subprocess.run([f"{target_dir}/test_autd3{config.exe_ext()}"]).check_returncode()
 
 
 def cpp_run(args):
-    args.universal = None
-    args.arch = None
     args.no_examples = False
-    args.cmake_extra = None
     cpp_build(args)
 
-    if is_windows:
+    config = Config(args)
+    if config.is_windows():
         target_dir = "Release" if args.release else "Debug"
     else:
         target_dir = "."
 
-    subprocess.run([f"cpp/examples/build/{target_dir}/{args.target}{exe_ext}"]).check_returncode()
+    subprocess.run([f"cpp/examples/build/{target_dir}/{args.target}{config.exe_ext()}"]).check_returncode()
 
 
 def cpp_clear(_):
@@ -564,40 +569,21 @@ def cpp_clear(_):
 
 def cs_build(args):
     args.universal = True
-    build_capi(args)
+    config = Config(args)
 
-    if is_windows:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        for dll in glob.glob(f"{target}/*.dll"):
-            shutil.copy(dll, "dotnet/cs/src/native/windows/x64")
-    elif is_macos:
-        target = "capi/target/x86_64-apple-darwin/release" if args.release else "capi/target/x86_64-apple-darwin/debug"
-        target_aarch64 = "capi/target/aarch64-apple-darwin/release" if args.release else "capi/target/aarch64-apple-darwin/debug"
-        for x64_lib in glob.glob(f"{target}/*.dylib"):
-            base_name = os.path.basename(x64_lib)
-            subprocess.run(
-                [
-                    "lipo",
-                    "-create",
-                    x64_lib,
-                    f"{target_aarch64}/{base_name}",
-                    "-output",
-                    f"./dotnet/cs/src/native/osx/universal/{base_name}",
-                ]
-            ).check_returncode()
-    elif is_linux:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        if args.arch is not None:
-            info("Skip build examples because cross compilation is not supported.")
-            args.no_examples = True
-            if args.arch == "arm32":
-                target = "capi/target/armv7-unknown-linux-gnueabihf/release" if args.release else "capi/target/armv7-unknown-linux-gnueabihf/debug"
-            elif args.arch == "aarch64":
-                target = "capi/target/aarch64-unknown-linux-gnu/release" if args.release else "capi/target/aarch64-unknown-linux-gnu/debug"
-            else:
-                pass
-        for lib in glob.glob(f"{target}/*.so"):
-            shutil.copy(lib, "dotnet/cs/src/native/linux/x64")
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    dst = ""
+    if config.is_windows():
+        dst = "dotnet/cs/src/native/windows/x64"
+    elif config.is_macos():
+        dst = "dotnet/cs/src/native/osx/universal"
+    elif config.is_linux():
+        dst = "dotnet/cs/src/native/linux/x64"
+    copy_dll(config, dst)
 
     shutil.copyfile("LICENSE", "dotnet/cs/src/LICENSE.txt")
 
@@ -608,7 +594,7 @@ def cs_build(args):
 
     with working_dir("dotnet/cs/src"):
         command = ["dotnet", "build"]
-        if args.release:
+        if config.release:
             command.append("-c:Release")
         subprocess.run(command).check_returncode()
 
@@ -617,7 +603,7 @@ def cs_build(args):
             check=False,
             capture_output=True,
         )
-        bin_dir = "Release" if args.release else "Debug"
+        bin_dir = "Release" if config.release else "Debug"
         subprocess.run(
             [
                 "dotnet",
@@ -630,43 +616,25 @@ def cs_build(args):
             ]
         )
 
-    if not args.no_examples:
+    if not config.no_examples:
         info("Building examples...")
         with working_dir("dotnet/cs/example"):
             command = ["dotnet", "build"]
-            if args.release:
+            if config.release:
                 command.append("-c:Release")
             subprocess.run(command).check_returncode()
 
 
 def cs_test(args):
     args.universal = True
-    args.release = True
-    args.arch = None
-    build_capi(args)
+    config = Config(args)
 
-    if is_windows:
-        target_dir = "capi/target/release"
-        for dll in glob.glob(f"{target_dir}/*.dll"):
-            shutil.copy(dll, "dotnet/cs/tests")
-    elif is_macos:
-        target_dir = "capi/target/x86_64-apple-darwin/release"
-        for x64_lib in glob.glob(f"{target_dir}/*.dylib"):
-            base_name = os.path.basename(x64_lib)
-            subprocess.run(
-                [
-                    "lipo",
-                    "-create",
-                    x64_lib,
-                    f"./capi/target/aarch64-apple-darwin/release/{base_name}",
-                    "-output",
-                    f"./dotnet/cs/tests/{base_name}",
-                ]
-            ).check_returncode()
-    elif is_linux:
-        target_dir = "capi/target/release"
-        for lib in glob.glob(f"{target_dir}/*.so"):
-            shutil.copy(lib, "dotnet/cs/tests")
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    copy_dll(config, "dotnet/cs/tests")
 
     shutil.copyfile("LICENSE", "dotnet/cs/src/LICENSE.txt")
 
@@ -681,7 +649,6 @@ def cs_test(args):
 
 
 def cs_run(args):
-    args.arch = None
     args.no_examples = False
     cs_build(args)
 
@@ -711,6 +678,10 @@ def cs_clear(_):
 
 
 def unity_build(args):
+    args.universal = True
+    args.arch = None
+    config = Config(args)
+
     ignore = shutil.ignore_patterns("NativeMethods")
     shutil.copytree(
         "dotnet/cs/src",
@@ -728,14 +699,14 @@ def unity_build(args):
     rmtree_f("dotnet/unity/Assets/Scripts/Utils")
 
     unity_dir = ""
-    if is_windows:
+    if config.is_windows():
         unity_dir = "dotnet/unity"
-    elif is_macos:
+    elif config.is_macos():
         unity_dir = "dotnet/unity-mac"
-    elif is_linux:
+    elif config.is_linux():
         unity_dir = "dotnet/unity-linux"
 
-    if not is_windows:
+    if not config.is_windows():
         shutil.copytree(
             "dotnet/unity/Assets/Scripts",
             f"{unity_dir}/Assets/Scripts",
@@ -757,37 +728,15 @@ def unity_build(args):
             dirs_exist_ok=True,
         )
 
-    args.universal = True
-    args.arch = None
-    build_capi(args, "single_float use_meter")
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command("single_float use_meter"):
+            subprocess.run(command).check_returncode()
 
-    if is_windows:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        for dll in glob.glob(f"{target}/*.dll"):
-            shutil.copy(dll, f"{unity_dir}/Assets/Plugins/x86_64")
-    elif is_macos:
-        target = "capi/target/x86_64-apple-darwin/release" if args.release else "capi/target/x86_64-apple-darwin/debug"
-        target_aarch64 = "capi/target/aarch64-apple-darwin/release" if args.release else "capi/target/aarch64-apple-darwin/debug"
-        for x64_lib in glob.glob(f"{target}/*.dylib"):
-            base_name = os.path.basename(x64_lib)
-            subprocess.run(
-                [
-                    "lipo",
-                    "-create",
-                    x64_lib,
-                    f"{target_aarch64}/{base_name}",
-                    "-output",
-                    f"./{unity_dir}/Assets/Plugins/x86_64/{base_name}",
-                ]
-            ).check_returncode()
-            shutil.copy(
-                f"./{unity_dir}/Assets/Plugins/x86_64/{base_name}",
-                f"./{unity_dir}/Assets/Plugins/aarch64/{base_name}",
-            )
-    elif is_linux:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        for lib in glob.glob(f"{target}/*.so"):
-            shutil.copy(lib, f"{unity_dir}/Assets/Plugins/x86_64")
+    copy_dll(config, f"{unity_dir}/Assets/Plugins/x86_64")
+    if config.is_macos():
+        for x64_lib in glob.glob(f"./{unity_dir}/Assets/Plugins/x86_64/*.dylib"):
+            shutil.copy(x64_lib, f"./{unity_dir}/Assets/Plugins/aarch64")
 
     shutil.copy("LICENSE", f"{unity_dir}/Assets/LICENSE.md")
     with open("capi/ThirdPartyNotice.txt", "r") as notice:
@@ -796,17 +745,17 @@ def unity_build(args):
             f.write(notice.read())
     shutil.copy("CHANGELOG.md", f"{unity_dir}/Assets/CHANGELOG.md")
 
-    if is_windows:
-        if is_shaderc_available():
+    if config.is_windows():
+        if config.shaderc:
             with working_dir("server/simulator"):
                 commands = ["cargo", "build"]
-                if args.release:
+                if config.release:
                     commands.append("--release")
                 commands.append("--features")
                 commands.append("left_handed use_meter")
                 subprocess.run(commands).check_returncode()
 
-            simulator_src = "server/src-tauri/target/release/simulator.exe" if args.release else "server/src-tauri/target/debug/simulator.exe"
+            simulator_src = "server/src-tauri/target/release/simulator.exe" if config.release else "server/src-tauri/target/debug/simulator.exe"
             shutil.copy(simulator_src, f"{unity_dir}/Assets/Editor/autd_simulator.exe")
             os.makedirs(f"{unity_dir}/Assets/Editor/assets", exist_ok=True)
             shutil.copy(
@@ -888,52 +837,9 @@ def fs_clear(_):
         rmtree_glob_f("example/**/obj")
 
 
-def copy_py_bin(args):
-    os.makedirs("python/pyautd3/bin", exist_ok=True)
-    if is_windows:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        for dll in glob.glob(f"{target}/*.dll"):
-            shutil.copy(dll, "python/pyautd3/bin")
-    elif is_macos:
-        if args.universal:
-            target = "capi/target/x86_64-apple-darwin/release" if args.release else "capi/target/x86_64-apple-darwin/debug"
-            for x64_lib in glob.glob(f"{target}/*.dylib"):
-                base_name = os.path.basename(x64_lib)
-                subprocess.run(
-                    [
-                        "lipo",
-                        "-create",
-                        x64_lib,
-                        f"./capi/target/aarch64-apple-darwin/release/{base_name}",
-                        "-output",
-                        f"./python/pyautd3/bin/{base_name}",
-                    ]
-                ).check_returncode()
-        else:
-            target = "capi/target/release" if args.release else "capi/target/debug"
-            for lib in glob.glob(f"{target}/*.dylib"):
-                shutil.copy(lib, "python/pyautd3/bin")
-    elif is_linux:
-        target = "capi/target/release" if args.release else "capi/target/debug"
-        if args.arch is not None:
-            info("Skip build examples because cross compilation is not supported.")
-            args.no_examples = True
-            if args.arch == "arm32":
-                target = "capi/target/armv7-unknown-linux-gnueabihf/release" if args.release else "capi/target/armv7-unknown-linux-gnueabihf/debug"
-            elif args.arch == "aarch64":
-                target = "capi/target/aarch64-unknown-linux-gnu/release" if args.release else "capi/target/aarch64-unknown-linux-gnu/debug"
-            else:
-                pass
-        for lib in glob.glob(f"{target}/*.so"):
-            shutil.copy(lib, "python/pyautd3/bin")
-
-    shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
-    shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
-
-
-def build_wheel(args):
+def build_wheel(config: Config):
     with working_dir("python"):
-        if is_windows:
+        if config.is_windows():
             with open("setup.cfg.template", "r") as setup:
                 content = setup.read()
                 content = content.replace(r"${classifiers_os}", "Operating System :: Microsoft :: Windows")
@@ -941,8 +847,8 @@ def build_wheel(args):
                 with open("setup.cfg", "w") as f:
                     f.write(content)
             subprocess.run(["python", "-m", "build", "-w"]).check_returncode()
-        elif is_macos:
-            if args.universal:
+        elif config.is_macos():
+            if config.universal:
                 with open("setup.cfg.template", "r") as setup:
                     content = setup.read()
                     content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
@@ -970,19 +876,17 @@ def build_wheel(args):
                     with open("setup.cfg", "w") as f:
                         f.write(content)
                 subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
-        elif is_linux:
+        elif config.is_linux():
             with open("setup.cfg.template", "r") as setup:
                 content = setup.read()
                 content = content.replace(r"${classifiers_os}", "Operating System :: POSIX")
                 plat_name = ""
-                if args.arch is not None:
-                    if args.arch == "arm32":
-                        plat_name = "linux_armv7l"
-                    elif args.arch == "aarch64":
-                        plat_name = "manylinux2014_aarch64"
-                    else:
-                        err(f'arch "{args.arch}" is not supported.')
-                        sys.exit(-1)
+                if config.target is not None:
+                    match config.target:
+                        case "armv7-unknown-linux-gnueabihf":
+                            plat_name = "linux_armv7l"
+                        case "aarch64-unknown-linux-gnu":
+                            plat_name = "manylinux2014_aarch64"
                 else:
                     if platform.machine() in ["ADM64", "x86_64"]:
                         plat_name = "manylinux1-x86_64"
@@ -997,9 +901,19 @@ def build_wheel(args):
 
 
 def py_build(args):
-    build_capi(args)
-    copy_py_bin(args)
-    build_wheel(args)
+    config = Config(args)
+
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    os.makedirs("python/pyautd3/bin", exist_ok=True)
+    copy_dll(config, "python/pyautd3/bin")
+    shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
+    shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
+
+    build_wheel(config)
 
     if not args.no_install:
         with working_dir("python"):
@@ -1009,7 +923,7 @@ def py_build(args):
                 m = re.search("version = (.*)", content)
                 version = m.group(1)
             command = []
-            if is_windows:
+            if config.is_windows():
                 command.append("python")
             else:
                 command.append("python3")
@@ -1017,14 +931,14 @@ def py_build(args):
             command.append("pip")
             command.append("install")
             plat_name = ""
-            if is_windows:
+            if config.is_windows():
                 plat_name = "win_amd64"
-            elif is_macos:
+            elif config.is_macos():
                 if platform.machine() in ["ADM64", "x86_64"]:
                     plat_name = "macosx_10_13_x86_64"
                 else:
                     plat_name = "macosx_11_0_arm64"
-            elif is_linux:
+            elif config.is_linux():
                 if platform.machine() in ["ADM64", "x86_64"]:
                     plat_name = "manylinux1_x86_64"
                 elif platform.machine() in ["armv7l"]:
@@ -1040,15 +954,21 @@ def py_build(args):
 
 
 def py_test(args):
-    args.universal = None
-    args.arch = None
-    args.no_install = True
-    build_capi(args)
-    copy_py_bin(args)
+    config = Config(args)
+
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    os.makedirs("python/pyautd3/bin", exist_ok=True)
+    copy_dll(config, "python/pyautd3/bin")
+    shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
+    shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
 
     with working_dir("python"):
         command = []
-        if is_windows:
+        if config.is_windows():
             command.append("python")
         else:
             command.append("python3")
@@ -1058,13 +978,13 @@ def py_test(args):
         subprocess.run(command).check_returncode()
 
         command = []
-        if is_windows:
+        if config.is_windows():
             command.append("python")
         else:
             command.append("python3")
         command.append("-m")
         command.append("pytest")
-        if is_cuda_available() and not args.skip_cuda:
+        if config.cuda and not config.skip_cuda:
             command.append("--test_cuda")
         subprocess.run(command).check_returncode()
 
@@ -1085,17 +1005,19 @@ def py_clear(_):
 
 
 def server_build(args):
-    if not is_shaderc_available():
+    config = Config(args)
+
+    if not config.shaderc:
         err("shaderc is not installed. Cannot build simulator.")
         sys.exit(-1)
 
     with working_dir("server"):
-        if is_windows:
+        if config.is_windows():
             subprocess.run(["npm", "install"], shell=True).check_returncode()
         else:
             subprocess.run(["npm", "install"]).check_returncode()
 
-        if is_macos:
+        if config.is_macos():
             command_x86 = ["cargo", "build", "--release", "--target=x86_64-apple-darwin"]
             command_aarch64 = ["cargo", "build", "--release", "--target=aarch64-apple-darwin"]
 
@@ -1129,15 +1051,17 @@ def server_build(args):
                 subprocess.run(command).check_returncode()
 
             if not args.external_only:
-                if is_windows:
+                if config.is_windows():
                     subprocess.run(["npm", "run", "tauri", "build"], shell=True).check_returncode()
                 else:
                     subprocess.run(["npm", "run", "tauri", "build"]).check_returncode()
 
 
-def server_clear(_):
+def server_clear(args):
+    config = Config(args)
+
     with working_dir("server"):
-        if is_windows:
+        if config.is_windows():
             subprocess.run(["npm", "cache", "clean", "--force"], shell=True).check_returncode()
         else:
             subprocess.run(["npm", "cache", "clean", "--force"]).check_returncode()
@@ -1177,6 +1101,8 @@ def doc_test(args):
 
 
 def util_update_ver(args):
+    config = Config(args)
+
     version = args.version
 
     with working_dir("src"):
@@ -1374,7 +1300,7 @@ def util_update_ver(args):
         with working_dir("src-tauri"):
             subprocess.run(["cargo", "update"]).check_returncode()
 
-        if is_windows:
+        if config.is_windows():
             subprocess.run(["npm", "i"], shell=True).check_returncode()
         else:
             subprocess.run(["npm", "i"]).check_returncode()
@@ -1397,6 +1323,7 @@ if __name__ == "__main__":
         parser_build.add_argument("--release", action="store_true", help="release build")
         parser_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
         parser_build.add_argument("--no-examples", action="store_true", help="skip building examples")
+        parser_build.add_argument("--skip-cuda", action="store_true", help="force disable cuda features in examples")
         parser_build.set_defaults(handler=rust_build)
 
         # lint (rust)
@@ -1456,6 +1383,7 @@ if __name__ == "__main__":
         # cpp test
         parser_cpp_test = subparsers_cpp.add_parser("test", help="see `cpp test -h`")
         parser_cpp_test.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
+        parser_cpp_test.add_argument("--release", action="store_true", help="release build")
         parser_cpp_test.add_argument(
             "--universal",
             action="store_true",

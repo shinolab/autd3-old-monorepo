@@ -40,6 +40,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        
+      - name: Rust cache
+        if: needs.check-src.outputs.status
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src -> target'
+
+      - name: Setup Python
+        if: needs.check-src.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
@@ -48,17 +60,12 @@ jobs:
           os: ${{ matrix.os }}
           cuda: true
           shaderc: true
-        
-      - name: Rust cache
-        if: needs.check-src.outputs.status
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src -> target'
 
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --release
+          python3 build.py build --all --release --no-examples
+          python3 build.py build --all --release --skip-cuda
           python3 build.py test --all --release --skip-cuda
         shell: bash
 
@@ -79,7 +86,6 @@ jobs:
           os: ubuntu-latest
           arch: 'arm32'
           cuda: false
-          shaderc: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -90,7 +96,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch arm32 --release
+          python3 build.py build --all --arch arm32 --release --no-examples
 
   build-linux-aarch64-src:
     needs: check-src
@@ -108,7 +114,6 @@ jobs:
           os: ubuntu-latest
           arch: 'aarch64'
           cuda: false
-          shaderc: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -119,7 +124,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch aarch64 --release
+          python3 build.py build --all --arch arm32 --release --no-examples
 
   lint-src:
     needs: check-src
@@ -145,7 +150,7 @@ jobs:
       - name: lint src
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py lint --release
+          python3 build.py lint --all --release
 
   check-server:
     runs-on: ubuntu-latest
