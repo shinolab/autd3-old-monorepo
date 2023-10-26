@@ -3,7 +3,7 @@
 `Visualizer` link is a link for visualizing phase pattern and sound field.
 
 > NOTE:
-> Currently, this Link is not provided in the distributed C++/C#/Unity/Python libraries for macOS, linux-armv7 and linux-aarch64. If you want to use this, you need to build it by yourself.
+> Currently, this Link is not provided in the distributed C++/C#/Unity/Python libraries for linux-armv7 and linux-aarch64. If you want to use this, you need to build it by yourself.
 
 [[_TOC_]]
 

@@ -1,0 +1,13 @@
+[build]
+xargo = false
+build-std = true
+
+[target.armv7-unknown-linux-gnueabihf]
+build-std = false
+pre-build = "cross-arm32.sh"
+image = "ubuntu:22.04"
+
+[target.aarch64-unknown-linux-gnu]
+build-std = false
+pre-build = "cross-aarch64.sh"
+image = "ubuntu:22.04"
