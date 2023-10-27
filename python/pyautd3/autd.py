@@ -12,29 +12,30 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from abc import ABCMeta, abstractmethod
-from datetime import timedelta
 import ctypes
-import numpy as np
-from typing import Callable, Dict, Generic, List, Optional, Tuple, TypeVar
+from collections.abc import Callable
+from datetime import timedelta
+from typing import Generic, TypeVar
 
-from .autd_error import AUTDError
-from .native_methods.autd3capi import NativeMethods as Base
+import numpy as np
+
+from .autd_error import AUTDError, KeyAlreadyExistsError
+from .geometry import AUTD3, Device, Geometry
+from .internal.datagram import Datagram, SpecialDatagram
+from .internal.link import Link, LinkBuilder
 from .native_methods.autd3capi import ControllerBuilderPtr
+from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi_def import (
-    GroupKVMapPtr,
-    LinkBuilderPtr,
-    TimerStrategy,
-    TransMode,
     AUTD3_ERR,
-    AUTD3_TRUE,
     AUTD3_FALSE,
+    AUTD3_TRUE,
+    ControllerPtr,
     DatagramPtr,
     DatagramSpecialPtr,
-    ControllerPtr,
+    GroupKVMapPtr,
+    LinkBuilderPtr,
+    TransMode,
 )
-from .internal.link import LinkBuilder
-from .geometry import Device, Geometry, AUTD3
 
 K = TypeVar("K")
 
@@ -42,124 +43,103 @@ LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 
-class SpecialDatagram(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def _ptr(self) -> DatagramSpecialPtr:
-        pass
-
-
-class Datagram(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def _ptr(self, geometry: Geometry) -> DatagramPtr:
-        pass
-
-
 class Silencer(Datagram):
-    """Datagram for configure silencer"""
+    """Datagram for configure silencer."""
 
     _step: int
 
-    def __init__(self, step: int = 10):
-        """Constructor
+    def __init__(self: "Silencer", step: int = 10) -> None:
+        """Constructor.
 
         Arguments:
-        - `step` - The update step of silencer. The lower the value, the stronger the silencer effect.
+        ---------
+            step: The update step of silencer. The lower the value, the stronger the silencer effect.
         """
-
         super().__init__()
         self._step = step
 
     @staticmethod
     def disable() -> "Silencer":
-        """Disable silencer"""
-
+        """Disable silencer."""
         return Silencer(0xFFFF)
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "Silencer", _: Geometry) -> DatagramPtr:
         return Base().datagram_silencer(self._step)
 
 
 class FPGAInfo:
-    """FPGA information"""
+    """FPGA information."""
 
     info: ctypes.c_uint8
 
-    def __init__(self, info: ctypes.c_uint8):
+    def __init__(self: "FPGAInfo", info: ctypes.c_uint8) -> None:
         self.info = info
 
-    def is_thermal_assert(self) -> bool:
-        """Check if thermal sensor is asserted"""
-
+    def is_thermal_assert(self: "FPGAInfo") -> bool:
+        """Check if thermal sensor is asserted."""
         return (int(self.info) & 0x01) != 0
 
-    def __str__(self) -> str:
+    def __str__(self: "FPGAInfo") -> str:
         return f"Thermal assert = {self.is_thermal_assert()}"
 
 
 class FirmwareInfo:
-    """Firmware information"""
+    """Firmware information."""
 
     _info: str
 
-    def __init__(self, info: str):
+    def __init__(self: "FirmwareInfo", info: str) -> None:
         self._info = info
 
     @property
-    def info(self) -> str:
+    def info(self: "FirmwareInfo") -> str:
+        """Get firmware information."""
         return self._info
 
     @staticmethod
     def latest_version() -> str:
-        """Get latest firmware version"""
-
+        """Get latest firmware version."""
         sb = ctypes.create_string_buffer(256)
         Base().firmware_latest(sb)
         return sb.value.decode("utf-8")
 
-    def __repr__(self) -> str:
+    def __repr__(self: "FirmwareInfo") -> str:
         return self._info
 
 
 class Controller:
-    class Builder:
+    """Controller."""
+
+    class _Builder:
         _ptr: ControllerBuilderPtr
         _mode: TransMode
 
-        def __init__(self):
+        def __init__(self: "Controller._Builder") -> None:
             self._ptr = Base().controller_builder()
             self._mode = TransMode.Legacy
 
-        def legacy(self) -> "Controller.Builder":
-            """Set legacy mode"""
-
+        def legacy(self: "Controller._Builder") -> "Controller._Builder":
+            """Set legacy mode."""
             self._mode = TransMode.Legacy
             return self
 
-        def advanced(self) -> "Controller.Builder":
-            """Set advanced mode"""
-
+        def advanced(self: "Controller._Builder") -> "Controller._Builder":
+            """Set advanced mode."""
             self._mode = TransMode.Advanced
             return self
 
-        def advanced_phase(self) -> "Controller.Builder":
-            """Set advanced phase mode"""
-
+        def advanced_phase(self: "Controller._Builder") -> "Controller._Builder":
+            """Set advanced phase mode."""
             self._mode = TransMode.AdvancedPhase
             return self
 
-        def add_device(self, device: AUTD3) -> "Controller.Builder":
-            """Add device
+        def add_device(self: "Controller._Builder", device: AUTD3) -> "Controller._Builder":
+            """Add device.
 
             Arguments:
-            - `device` - Device to add
+            ---------
+                device: Device to add
             """
-
             if device._rot is not None:
                 self._ptr = Base().controller_builder_add_device(
                     self._ptr,
@@ -183,45 +163,56 @@ class Controller:
                 )
             return self
 
-        def open_with(self, link: LinkBuilder) -> "Controller":
-            """Open controller
+        def open_with(self: "Controller._Builder", link: LinkBuilder) -> "Controller":
+            """Open controller.
 
             Arguments:
-            - `link` - LinkBuilder
+            ---------
+                link: LinkBuilder
             """
-
-            cnt = Controller._open_impl(self._ptr, self._mode, link._ptr())
-            link._resolve_link(cnt)
+            cnt = Controller._open_impl(self._ptr, self._mode, link._link_builder_ptr())
+            cnt._link = link._resolve_link(cnt._ptr)
             return cnt
 
     _geometry: Geometry
     _ptr: ControllerPtr
     _mode: TransMode
+    _link: Link | None
 
-    def __init__(self, geometry: Geometry, ptr: ControllerPtr, mode: TransMode):
+    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, mode: TransMode) -> None:
         self._geometry = geometry
         self._ptr = ptr
         self._mode = mode
+        self._link = None
 
     @staticmethod
-    def builder() -> "Controller.Builder":
-        """Create builder"""
+    def builder() -> "Controller._Builder":
+        """Create builder."""
+        return Controller._Builder()
 
-        return Controller.Builder()
+    def __del__(self: "Controller") -> None:
+        self._dispose()
 
-    def __del__(self):
-        self.dispose()
-
-    def dispose(self):
+    def _dispose(self: "Controller") -> None:
         if self._ptr._0 is not None:
             Base().controller_delete(self._ptr)
             self._ptr._0 = None
 
-    @property
-    def geometry(self) -> Geometry:
-        """Get geometry"""
+    def __enter__(self: "Controller") -> "Controller":
+        return self
 
+    def __exit__(self: "Controller", *args: object) -> None:
+        self._dispose()
+
+    @property
+    def geometry(self: "Controller") -> Geometry:
+        """Get geometry."""
         return self._geometry
+
+    @property
+    def link(self: "Controller") -> Link:
+        """Get link."""
+        return self._link
 
     @staticmethod
     def _open_impl(builder: ControllerBuilderPtr, mode: TransMode, link: LinkBuilderPtr) -> "Controller":
@@ -232,9 +223,8 @@ class Controller:
         geometry = Geometry(Base().geometry(ptr), mode)
         return Controller(geometry, ptr, mode)
 
-    def firmware_info_list(self) -> List[FirmwareInfo]:
-        """Get firmware information list"""
-
+    def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
+        """Get firmware information list."""
         err = ctypes.create_string_buffer(256)
         handle = Base().controller_firmware_info_list_pointer(self._ptr, err)
         if handle._0 is None:
@@ -252,58 +242,59 @@ class Controller:
 
         return res
 
-    def close(self):
-        """Close controller"""
-
+    def close(self: "Controller") -> None:
+        """Close controller."""
         err = ctypes.create_string_buffer(256)
         if not Base().controller_close(self._ptr, err):
             raise AUTDError(err)
 
     @property
-    def fpga_info(self) -> List[FPGAInfo]:
-        """Get FPGA information list"""
-
+    def fpga_info(self: "Controller") -> list[FPGAInfo]:
+        """Get FPGA information list."""
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         err = ctypes.create_string_buffer(256)
         if not Base().controller_fpga_info(self._ptr, pinfos, err):
             raise AUTDError(err)
-        return list(map(lambda x: FPGAInfo(x), infos))
+        return [FPGAInfo(x) for x in infos]
 
     def send(
-        self,
-        d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
-        timeout: Optional[timedelta] = None,
+        self: "Controller",
+        d: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+        *,
+        timeout: timedelta | None = None,
     ) -> bool:
-        """Send data
+        """Send data.
 
         Arguments:
-        - `d` - Data to send
-        - `timeout` - Timeout
+        ---------
+            d: Data to send
+            timeout: Timeout
 
         Returns:
-        - `bool` - If true, it is confirmed that the data has been successfully transmitted.
-          If false, there are no errors, but it is unclear whether the data has been sent reliably or not.
+        -------
+            bool: If true, it is confirmed that the data has been successfully transmitted.
+                  If false, there are no errors, but it is unclear whether the data has been sent reliably or not.
 
         Raises:
-        - `AUTDError` - If an error occurs
+        ------
+            AUTDError: If an error occurs
         """
-
         timeout_ = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
         if isinstance(d, SpecialDatagram):
-            res = Base().controller_send_special(self._ptr, self._mode, d._ptr(), timeout_, err)
+            res = Base().controller_send_special(self._ptr, self._mode, d._special_datagram_ptr(), timeout_, err)
         if isinstance(d, Datagram):
-            res = Base().controller_send(self._ptr, self._mode, d._ptr(self.geometry), DatagramPtr(None), timeout_, err)
-        if isinstance(d, tuple) and len(d) == 2:
+            res = Base().controller_send(self._ptr, self._mode, d._datagram_ptr(self.geometry), DatagramPtr(None), timeout_, err)
+        if isinstance(d, tuple) and len(d) == 2:  # noqa: PLR2004
             (d1, d2) = d
             if isinstance(d1, Datagram) and isinstance(d2, Datagram):
                 res = Base().controller_send(
                     self._ptr,
                     self._mode,
-                    d1._ptr(self.geometry),
-                    d2._ptr(self.geometry),
+                    d1._datagram_ptr(self.geometry),
+                    d2._datagram_ptr(self.geometry),
                     timeout_,
                     err,
                 )
@@ -313,56 +304,70 @@ class Controller:
 
         return res == AUTD3_TRUE
 
-    class GroupGuard(Generic[K]):
+    class _GroupGuard(Generic[K]):
         _controller: "Controller"
-        _map: Callable[[Device], Optional[K]]
+        _map: Callable[[Device], K | None]
         _kv_map: GroupKVMapPtr
-        _keymap: Dict[K, int]
+        _keymap: dict[K, int]
         _k: int
 
-        def __init__(self, map: Callable[[Device], Optional[K]], controller: "Controller"):
-            self._map = map
+        def __init__(self: "Controller._GroupGuard", group_map: Callable[[Device], K | None], controller: "Controller") -> None:
+            self._map = group_map
             self._controller = controller
             self._kv_map = Base().controller_group_create_kv_map()
             self._keymap = {}
             self._k = 0
 
-        def set(
-            self,
+        def set_data(
+            self: "Controller._GroupGuard",
             key: K,
-            d: SpecialDatagram | Datagram | Tuple[Datagram, Datagram],
-            timeout: Optional[timedelta] = None,
-        ) -> "Controller.GroupGuard":
+            d: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+            *,
+            timeout: timedelta | None = None,
+        ) -> "Controller._GroupGuard":
             if key in self._keymap:
-                raise AUTDError("Key is already exists")
+                raise KeyAlreadyExistsError
 
             timeout_ns = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
 
             err = ctypes.create_string_buffer(256)
             if isinstance(d, SpecialDatagram):
                 self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set_special(self._kv_map, self._k, d._ptr(), self._controller._mode, timeout_ns, err)
+                self._kv_map = Base().controller_group_kv_map_set_special(
+                    self._kv_map,
+                    self._k,
+                    d._special_datagram_ptr(),
+                    self._controller._mode,
+                    timeout_ns,
+                    err,
+                )
                 self._k += 1
                 if self._kv_map._0 is None:
                     raise AUTDError(err)
             if isinstance(d, Datagram):
                 self._keymap[key] = self._k
                 self._kv_map = Base().controller_group_kv_map_set(
-                    self._kv_map, self._k, d._ptr(self._controller._geometry), DatagramPtr(None), self._controller._mode, timeout_ns, err
+                    self._kv_map,
+                    self._k,
+                    d._datagram_ptr(self._controller._geometry),
+                    DatagramPtr(None),
+                    self._controller._mode,
+                    timeout_ns,
+                    err,
                 )
                 self._k += 1
                 if self._kv_map._0 is None:
                     raise AUTDError(err)
 
-            if isinstance(d, tuple) and len(d) == 2:
+            if isinstance(d, tuple) and len(d) == 2:  # noqa: PLR2004
                 (d1, d2) = d
                 if isinstance(d1, Datagram) and isinstance(d2, Datagram):
                     self._keymap[key] = self._k
                     self._kv_map = Base().controller_group_kv_map_set(
                         self._kv_map,
                         self._k,
-                        d1._ptr(self._controller._geometry),
-                        d2._ptr(self._controller._geometry),
+                        d1._datagram_ptr(self._controller._geometry),
+                        d2._datagram_ptr(self._controller._geometry),
                         self._controller._mode,
                         timeout_ns,
                         err,
@@ -373,106 +378,106 @@ class Controller:
 
             return self
 
-        def send(self):
+        def send(self: "Controller._GroupGuard") -> bool:
             m = np.fromiter(
-                map(
-                    lambda k: self._keymap[k] if k is not None else -1,
-                    map(lambda dev: self._map(dev) if dev.enable else None, self._controller.geometry),
-                ),
+                (self._keymap[k] if k is not None else -1 for k in (self._map(dev) if dev.enable else None for dev in self._controller.geometry)),
                 dtype=np.int32,
             )
             err = ctypes.create_string_buffer(256)
-            if Base().controller_group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err) == AUTD3_ERR:
+            res = Base().controller_group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err)
+            if res == AUTD3_ERR:
                 raise AUTDError(err)
+            return res == AUTD3_TRUE
 
-    def group(self, map: Callable[[Device], Optional[K]]) -> "Controller.GroupGuard":
-        return Controller.GroupGuard(map, self)
+    def group(self: "Controller", group_map: Callable[[Device], K | None]) -> "Controller._GroupGuard":
+        """Grouping data."""
+        return Controller._GroupGuard(group_map, self)
 
 
 class Amplitudes(Datagram):
-    """Amplitudes settings for advanced phase mode"""
+    """Amplitudes settings for advanced phase mode."""
 
     _amp: float
 
-    def __init__(self, amp: float):
-        """Constructor
+    def __init__(self: "Amplitudes", amp: float) -> None:
+        """Constructor.
 
         Arguments:
-        - `amp` - Amplitude
+        ---------
+            amp: Amplitude
         """
-
         super().__init__()
         self._amp = amp
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "Amplitudes", _: Geometry) -> DatagramPtr:
         return Base().datagram_amplitudes(self._amp)
 
 
 class Clear(Datagram):
-    """Datagram for clear all data in devices"""
+    """Datagram for clear all data in devices."""
 
-    def __init__(self):
+    def __init__(self: "Clear") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "Clear", _: Geometry) -> DatagramPtr:
         return Base().datagram_clear()
 
 
 class Stop(SpecialDatagram):
-    """Datagram to stop output"""
+    """Datagram to stop output."""
 
-    def __init__(self):
+    def __init__(self: "Stop") -> None:
         super().__init__()
 
-    def _ptr(self) -> DatagramSpecialPtr:
+    def _special_datagram_ptr(self: "Stop") -> DatagramSpecialPtr:
         return Base().datagram_stop()
 
 
 class UpdateFlags(Datagram):
-    """Datagram to update flags (Force fan flag and reads FPGA info flag)"""
+    """Datagram to update flags (Force fan flag and reads FPGA info flag)."""
 
-    def __init__(self):
+    def __init__(self: "UpdateFlags") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "UpdateFlags", _: Geometry) -> DatagramPtr:
         return Base().datagram_update_flags()
 
 
 class Synchronize(Datagram):
-    """Datagram to synchronize devices"""
+    """Datagram to synchronize devices."""
 
-    def __init__(self):
+    def __init__(self: "Synchronize") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "Synchronize", _: Geometry) -> DatagramPtr:
         return Base().datagram_synchronize()
 
 
 class ConfigureModDelay(Datagram):
-    """Datagram to configure modulation delay"""
+    """Datagram to configure modulation delay."""
 
-    def __init__(self):
+    def __init__(self: "ConfigureModDelay") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "ConfigureModDelay", _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_mod_delay()
 
 
 class ConfigureAmpFilter(Datagram):
-    """Datagram to configure amplitude filter"""
+    """Datagram to configure amplitude filter."""
 
-    def __init__(self):
+    def __init__(self: "ConfigureAmpFilter") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "ConfigureAmpFilter", _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_amp_filter()
 
 
 class ConfigurePhaseFilter(Datagram):
-    """Datagram to configure phase filter"""
+    """Datagram to configure phase filter."""
 
-    def __init__(self):
+    def __init__(self: "ConfigurePhaseFilter") -> None:
         super().__init__()
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "ConfigurePhaseFilter", _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_phase_filter()

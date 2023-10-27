@@ -41,3 +41,10 @@ class InvalidPlotConfigError(AUTDError):
 
     def __init__(self: "InvalidPlotConfigError") -> None:
         super().__init__("Invalid plot config type")
+
+
+class KeyAlreadyExistsError(AUTDError):
+    """Exception class for key already exists."""
+
+    def __init__(self: "KeyAlreadyExistsError") -> None:
+        super().__init__("Key already exists")
