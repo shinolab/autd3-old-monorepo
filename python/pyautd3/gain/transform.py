@@ -39,7 +39,7 @@ class Transform(IGain):
 
     def _gain_ptr(self: "Transform", geometry: Geometry) -> GainPtr:
         err = create_string_buffer(256)
-        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry.ptr(), err)
+        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr(), err)
         if res._0 is None:
             raise AUTDError(err)
 
