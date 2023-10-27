@@ -999,7 +999,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_static_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
         return self.dll.AUTDModulationStaticWithAmp(m, amp)
 
-    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p, context: ctypes.c_void_p) -> ModulationPtr:
+    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None) -> ModulationPtr:
         return self.dll.AUTDModulationWithTransform(m, f, context)
 
     def stm_focus(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double] | None, shift: ctypes.Array[ctypes.c_uint8] | None, size: int) -> DatagramPtr:

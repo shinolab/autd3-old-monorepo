@@ -155,7 +155,7 @@ impl PythonGenerator {
                 Type::Float32 => "float",
                 Type::Float64 => "float",
                 Type::Bool => "bool",
-                Type::VoidPtr => "ctypes.c_void_p",
+                Type::VoidPtr => "ctypes.c_void_p | None",
                 Type::Custom(ref s) => s,
             },
             1 => match arg.ty {
