@@ -1,4 +1,4 @@
-'''
+"""
 File: visualizer.py
 Project: link
 Created Date: 13/10/2023
@@ -9,66 +9,96 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-from abc import ABCMeta, abstractmethod
 import ctypes
-from typing import Iterable, Optional, Tuple
+from abc import ABCMeta, abstractmethod
+from collections.abc import Iterable
 
 import numpy as np
 
+from pyautd3.autd_error import AUTDError, InvalidPlotConfigError
+from pyautd3.geometry import Geometry
+from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_visualizer import (
-    Backend, CMap, ConfigPtr, Directivity, LinkBuilderPtr,
+    Backend,
+    CMap,
+    ConfigPtr,
+    Directivity,
+    LinkBuilderPtr,
+)
+from pyautd3.native_methods.autd3capi_link_visualizer import (
     NativeMethods as LinkVisualizer,
 )
-from pyautd3.native_methods.autd3capi import NativeMethods as Base
 
-from pyautd3.autd_error import AUTDError
-from pyautd3.internal.link import LinkBuilder
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, LinkPtr
-from pyautd3.geometry import Geometry
+__all__ = [
+    "PlottersBackend",
+    "PythonBackend",
+    "NullBackend",
+    "Sphere",
+    "T4010A1",
+    "PlotRange",
+    "PlotConfig",
+    "PyPlotConfig",
+    "NullPlotConfig",
+    "Visualizer",
+]  # type: ignore[var-annotated]
 
 
 class IPlotBackend(metaclass=ABCMeta):
     _backend: Backend
 
-    def __init__(self, backend: Backend):
+    def __init__(self: "IPlotBackend", backend: Backend) -> None:
         self._backend = backend
 
 
 class PlottersBackend(IPlotBackend):
-    def __init__(self):
+    """Plotters backend."""
+
+    def __init__(self: "PlottersBackend") -> None:
         super().__init__(Backend.Plotters)
 
 
 class PythonBackend(IPlotBackend):
-    def __init__(self):
+    """Python backend."""
+
+    def __init__(self: "PythonBackend") -> None:
         super().__init__(Backend.Python)
 
 
 class NullBackend(IPlotBackend):
-    def __init__(self):
+    """Null backend."""
+
+    def __init__(self: "NullBackend") -> None:
         super().__init__(Backend.Null)
 
 
 class IDirectivity(metaclass=ABCMeta):
     _directivity: Directivity
 
-    def __init__(self, directivity: Directivity):
+    def __init__(self: "IDirectivity", directivity: Directivity) -> None:
         self._directivity = directivity
 
 
 class Sphere(IDirectivity):
-    def __init__(self):
+    """Sphere directivity."""
+
+    def __init__(self: "Sphere") -> None:
         super().__init__(Directivity.Sphere)
 
 
 class T4010A1(IDirectivity):
-    def __init__(self):
+    """T4010A1 directivity."""
+
+    def __init__(self: "T4010A1") -> None:
         super().__init__(Directivity.T4010A1)
 
 
 class PlotRange:
+    """Plot range."""
+
     x_start: float
     x_end: float
     y_start: float
@@ -77,47 +107,71 @@ class PlotRange:
     z_end: float
     resolution: float
 
-    def __init__(self, **kwargs):
-        self.x_start = kwargs.get("x_start", 0)
-        self.x_end = kwargs.get("x_end", 0)
-        self.y_start = kwargs.get("y_start", -0)
-        self.y_end = kwargs.get("y_end", 0)
-        self.z_start = kwargs.get("z_start", -0)
-        self.z_end = kwargs.get("z_end", 0)
-        self.resolution = kwargs.get("resolution", 1)
+    def __init__(
+        self: "PlotRange",
+        *,
+        x_start: float = -0,
+        x_end: float = 0,
+        y_start: float = -0,
+        y_end: float = 0,
+        z_start: float = -0,
+        z_end: float = 0,
+        resolution: float = 1,
+    ) -> None:
+        self.x_start = x_start
+        self.x_end = x_end
+        self.y_start = y_start
+        self.y_end = y_end
+        self.z_start = z_start
+        self.z_end = z_end
+        self.resolution = resolution
 
 
 class IPlotConfig(metaclass=ABCMeta):
     @abstractmethod
-    def _ptr(self) -> ConfigPtr:
+    def _config_ptr(self: "IPlotConfig") -> ConfigPtr:
         pass
 
     @abstractmethod
-    def _backend(self) -> Backend:
+    def _backend(self: "IPlotConfig") -> Backend:
         pass
 
 
 class PlotConfig(IPlotConfig):
-    figsize: Optional[Tuple[int, int]]
-    cbar_size: Optional[float]
-    font_size: Optional[int]
-    label_area_size: Optional[int]
-    margin: Optional[int]
-    ticks_step: Optional[float]
-    cmap: Optional[CMap]
-    fname: Optional[str]
+    """Plot config for PlottersBackend."""
 
-    def __init__(self, **kwargs):
-        self.figsize = kwargs.get("figsize", None)
-        self.cbar_size = kwargs.get("cbar_size", None)
-        self.font_size = kwargs.get("font_size", None)
-        self.label_area_size = kwargs.get("label_area_size", None)
-        self.margin = kwargs.get("margin", None)
-        self.ticks_step = kwargs.get("ticks_step", None)
-        self.cmap = kwargs.get("cmap", None)
-        self.fname = kwargs.get("fname", None)
+    figsize: tuple[int, int] | None
+    cbar_size: float | None
+    font_size: int | None
+    label_area_size: int | None
+    margin: int | None
+    ticks_step: float | None
+    cmap: CMap | None
+    fname: str | None
 
-    def _ptr(self) -> ConfigPtr:
+    def __init__(
+        self: "PlotConfig",
+        *,
+        figsize: tuple[int, int] | None = None,
+        cbar_size: float | None = None,
+        font_size: int | None = None,
+        label_area_size: int | None = None,
+        margin: int | None = None,
+        ticks_step: float | None = None,
+        cmap: CMap | None = None,
+        fname: str | None = None,
+    ) -> None:
+        self.figsize = figsize
+        self.cbar_size = cbar_size
+        self.font_size = font_size
+        self.label_area_size = label_area_size
+        self.margin = margin
+        self.ticks_step = ticks_step
+        self.cmap = cmap
+        self.fname = fname
+
+    def _config_ptr(self: "PlotConfig") -> ConfigPtr:
+        err = ctypes.create_string_buffer(256)
         ptr = LinkVisualizer().link_visualizer_plot_config_default()
         if self.figsize is not None:
             ptr = LinkVisualizer().link_visualizer_plot_config_with_fig_size(ptr, self.figsize[0], self.figsize[1])
@@ -133,42 +187,56 @@ class PlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_plot_config_with_ticks_step(ptr, self.ticks_step)
         if self.cmap is not None:
             ptr = LinkVisualizer().link_visualizer_plot_config_with_c_map(ptr, self.cmap)
-        err = ctypes.create_string_buffer(256)
         if self.fname is not None:
             ptr = LinkVisualizer().link_visualizer_plot_config_with_f_name(ptr, self.fname.encode("utf-8"), err)
         if ptr._0 is None:
             raise AUTDError(err)
         return ConfigPtr(ptr._0)
 
-    def _backend(self):
+    def _backend(self: "PlotConfig") -> Backend:
         return Backend.Plotters
 
 
 class PyPlotConfig(IPlotConfig):
-    figsize: Optional[Tuple[int, int]]
-    dpi: Optional[int]
-    cbar_position: Optional[str]
-    cbar_size: Optional[str]
-    cbar_pad: Optional[str]
-    fontsize: Optional[int]
-    ticks_step: Optional[float]
-    cmap: Optional[str]
-    show: Optional[bool]
-    fname: Optional[str]
+    """Plot config for PythonBackend."""
 
-    def __init__(self, **kwargs):
-        self.figsize = kwargs.get("figsize", None)
-        self.dpi = kwargs.get("dpi", None)
-        self.cbar_position = kwargs.get("cbar_position", None)
-        self.cbar_size = kwargs.get("cbar_size", None)
-        self.cbar_pad = kwargs.get("cbar_pad", None)
-        self.fontsize = kwargs.get("fontsize", None)
-        self.ticks_step = kwargs.get("ticks_step", None)
-        self.cmap = kwargs.get("cmap", None)
-        self.show = kwargs.get("show", None)
-        self.fname = kwargs.get("fname", None)
+    figsize: tuple[int, int] | None
+    dpi: int | None
+    cbar_position: str | None
+    cbar_size: str | None
+    cbar_pad: str | None
+    fontsize: int | None
+    ticks_step: float | None
+    cmap: str | None
+    show: bool | None
+    fname: str | None
 
-    def _ptr(self) -> ConfigPtr:
+    def __init__(
+        self: "PyPlotConfig",
+        *,
+        figsize: tuple[int, int] | None = None,
+        dpi: int | None = None,
+        cbar_position: str | None = None,
+        cbar_size: str | None = None,
+        cbar_pad: str | None = None,
+        fontsize: int | None = None,
+        ticks_step: float | None = None,
+        cmap: str | None = None,
+        show: bool | None = None,
+        fname: str | None = None,
+    ) -> None:
+        self.figsize = figsize
+        self.dpi = dpi
+        self.cbar_position = cbar_position
+        self.cbar_size = cbar_size
+        self.cbar_pad = cbar_pad
+        self.fontsize = fontsize
+        self.ticks_step = ticks_step
+        self.cmap = cmap
+        self.show = show
+        self.fname = fname
+
+    def _config_ptr(self: "PyPlotConfig") -> ConfigPtr:
         err = ctypes.create_string_buffer(256)
         ptr = LinkVisualizer().link_visualizer_py_plot_config_default()
         if self.figsize is not None:
@@ -177,48 +245,40 @@ class PyPlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_dpi(ptr, self.dpi)
         if self.cbar_position is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_position(ptr, self.cbar_position.encode("utf-8"), err)
-            if ptr._0 is None:
-                raise AUTDError(err)
         if self.cbar_size is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_size(ptr, self.cbar_size.encode("utf-8"), err)
-            if ptr._0 is None:
-                raise AUTDError(err)
         if self.cbar_pad is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_pad(ptr, self.cbar_pad.encode("utf-8"), err)
-            if ptr._0 is None:
-                raise AUTDError(err)
         if self.fontsize is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_font_size(ptr, self.fontsize)
         if self.ticks_step is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_ticks_step(ptr, self.ticks_step)
         if self.cmap is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_map(ptr, self.cmap.encode("utf-8"), err)
-            if ptr._0 is None:
-                raise AUTDError(err)
         if self.show is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_show(ptr, self.show)
         if self.fname is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_f_name(ptr, self.fname.encode("utf-8"), err)
-            if ptr._0 is None:
-                raise AUTDError(err)
+        if ptr._0 is None:
+            raise AUTDError(err)
         return ConfigPtr(ptr._0)
 
-    def _backend(self):
+    def _backend(self: "PyPlotConfig") -> Backend:
         return Backend.Python
 
 
 class NullPlotConfig(IPlotConfig):
-    def _ptr(self) -> ConfigPtr:
+    """Plot config for NullBackend."""
+
+    def _config_ptr(self: "NullPlotConfig") -> ConfigPtr:
         return ConfigPtr(LinkVisualizer().link_visualizer_null_plot_config_default()._0)
 
-    def _backend(self):
+    def _backend(self: "NullPlotConfig") -> Backend:
         return Backend.Null
 
 
-class Visualizer:
-    """Link for visualizing
-
-    """
+class Visualizer(Link):
+    """Link for visualizing."""
 
     _ptr: LinkPtr
     _backend: Backend
@@ -227,143 +287,152 @@ class Visualizer:
     class _Builder(LinkBuilder):
         _backend: Backend
         _directivity: Directivity
-        _gpu_idx: Optional[int]
+        _gpu_idx: int | None
 
-        def __init__(self, backend: Optional[Backend] = None, directivity: Optional[Directivity] = None):
+        def __init__(self: "Visualizer._Builder", backend: Backend | None = None, directivity: Directivity | None = None) -> None:
             self._backend = backend if backend is not None else Backend.Plotters
             self._directivity = directivity if directivity is not None else Directivity.Sphere
             self._gpu_idx = None
 
-        def _ptr(self) -> LinkBuilderPtr:
-            if self._backend == Backend.Plotters:
-                if self._directivity == Directivity.Sphere:
-                    return LinkVisualizer().link_visualizer_sphere_plotters(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
-                elif self._directivity == Directivity.T4010A1:
-                    return LinkVisualizer().link_visualizer_t_4010_a_1_plotters(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
-            elif self._backend == Backend.Python:
-                if self._directivity == Directivity.Sphere:
-                    return LinkVisualizer().link_visualizer_sphere_python(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
-                elif self._directivity == Directivity.T4010A1:
-                    return LinkVisualizer().link_visualizer_t_4010_a_1_python(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
-            else:
-                if self._directivity == Directivity.Sphere:
-                    return LinkVisualizer().link_visualizer_sphere_null(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
-                elif self._directivity == Directivity.T4010A1:
-                    return LinkVisualizer().link_visualizer_t_4010_a_1_null(
-                        self._gpu_idx is not None, self._gpu_idx if self._gpu_idx is not None else 0)
+        def _link_builder_ptr(self: "Visualizer._Builder") -> LinkBuilderPtr:
+            match self._backend:
+                case Backend.Plotters:
+                    match self._directivity:
+                        case Directivity.Sphere:
+                            return LinkVisualizer().link_visualizer_sphere_plotters(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
+                        case Directivity.T4010A1:
+                            return LinkVisualizer().link_visualizer_t_4010_a_1_plotters(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
+                case Backend.Python:
+                    match self._directivity:
+                        case Directivity.Sphere:
+                            return LinkVisualizer().link_visualizer_sphere_python(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
+                        case Directivity.T4010A1:
+                            return LinkVisualizer().link_visualizer_t_4010_a_1_python(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
+                case Backend.Null:
+                    match self._directivity:
+                        case Directivity.Sphere:
+                            return LinkVisualizer().link_visualizer_sphere_null(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
+                        case Directivity.T4010A1:
+                            return LinkVisualizer().link_visualizer_t_4010_a_1_null(
+                                self._gpu_idx is not None,
+                                self._gpu_idx if self._gpu_idx is not None else 0,
+                            )
 
-        def _resolve_link(self, obj):
-            obj.link = Visualizer(Base().link_get(obj._ptr), self._backend, self._directivity)
+        def _resolve_link(self: "Visualizer._Builder", ptr: ControllerPtr) -> "Visualizer":
+            return Visualizer(Base().link_get(ptr), self._backend, self._directivity)
 
-        def with_gpu(self, gpu_idx: int) -> "Visualizer._Builder":
-            """Set GPU index
+        def with_gpu(self: "Visualizer._Builder", gpu_idx: int) -> "Visualizer._Builder":
+            """Set GPU index.
 
             Arguments:
-            - `gpu_idx` - GPU index
+            ---------
+                gpu_idx: GPU index
             """
-
             self._gpu_idx = gpu_idx
             return self
 
-        def with_backend(self, backend: IPlotBackend) -> "Visualizer._Builder":
-            """Set backend
+        def with_backend(self: "Visualizer._Builder", backend: IPlotBackend) -> "Visualizer._Builder":
+            """Set backend.
 
             Arguments:
-            - `backend` - Backend
+            ---------
+                backend: Backend
             """
-
             self._backend = backend._backend
             return self
 
-        def with_directivity(self, directivity: IDirectivity) -> "Visualizer._Builder":
-            """Set directivity
+        def with_directivity(self: "Visualizer._Builder", directivity: IDirectivity) -> "Visualizer._Builder":
+            """Set directivity.
 
             Arguments:
-            - `directivity` - Directivity
+            ---------
+                directivity: Directivity
             """
-
             self._directivity = directivity._directivity
             return self
 
-    def __init__(self, ptr: LinkPtr, backend: Backend, directivity: Directivity):
-        self._ptr = ptr
+    def __init__(self: "Visualizer", ptr: LinkPtr, backend: Backend, directivity: Directivity) -> None:
+        super().__init__(ptr)
         self._backend = backend
         self._directivity = directivity
 
     @staticmethod
     def builder() -> _Builder:
+        """Create visualizer link builder."""
         return Visualizer._Builder()
 
     @staticmethod
     def plotters() -> _Builder:
+        """Create visualizer link builder with PlottersBackend."""
         return Visualizer._Builder(Backend.Plotters)
 
     @staticmethod
     def python() -> _Builder:
+        """Create visualizer link builder with PythonBackend."""
         return Visualizer._Builder(Backend.Python)
 
     @staticmethod
     def null() -> _Builder:
+        """Create visualizer link builder with NullBackend."""
         return Visualizer._Builder(Backend.Null)
 
-    def phases_of(self, idx: int) -> np.ndarray:
-        size = LinkVisualizer().link_visualizer_phases_of(self._ptr, self._backend, self._directivity, idx, None)  # type: ignore
-        phases = np.zeros(int(size), dtype=np.float64)
-        LinkVisualizer().link_visualizer_phases_of(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            idx,
-            np.ctypeslib.as_ctypes(phases))  # type: ignore
+    def phases_of(self: "Visualizer", idx: int) -> np.ndarray:
+        """Get phases of specifig STM index."""
+        size = LinkVisualizer().link_visualizer_phases_of(self._ptr, self._backend, self._directivity, idx, None)
+        phases = np.zeros(int(size)).astype(ctypes.c_double)
+        LinkVisualizer().link_visualizer_phases_of(self._ptr, self._backend, self._directivity, idx, np.ctypeslib.as_ctypes(phases))
         return phases
 
-    def phases(self) -> np.ndarray:
+    def phases(self: "Visualizer") -> np.ndarray:
+        """Get phases."""
         return self.phases_of(0)
 
-    def duties_of(self, idx: int) -> np.ndarray:
-        size = LinkVisualizer().link_visualizer_duties_of(self._ptr, self._backend, self._directivity, idx, None)  # type: ignore
-        phases = np.zeros(int(size), dtype=np.float64)
-        LinkVisualizer().link_visualizer_duties_of(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            idx,
-            np.ctypeslib.as_ctypes(phases))  # type: ignore
+    def duties_of(self: "Visualizer", idx: int) -> np.ndarray:
+        """Get duties of specifig STM index."""
+        size = LinkVisualizer().link_visualizer_duties_of(self._ptr, self._backend, self._directivity, idx, None)
+        phases = np.zeros(int(size)).astype(ctypes.c_double)
+        LinkVisualizer().link_visualizer_duties_of(self._ptr, self._backend, self._directivity, idx, np.ctypeslib.as_ctypes(phases))
         return phases
 
-    def duties(self) -> np.ndarray:
+    def duties(self: "Visualizer") -> np.ndarray:
+        """Get duties."""
         return self.duties_of(0)
 
-    def modulation_raw(self):
+    def modulation_raw(self: "Visualizer") -> np.ndarray:
+        """Get raw modulation data."""
         size = LinkVisualizer().link_visualizer_modulation_raw(self._ptr, self._backend, self._directivity, None)
-        modulation = np.zeros(size, dtype=np.float64)
-        LinkVisualizer().link_visualizer_modulation_raw(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            np.ctypeslib.as_ctypes(modulation))
+        modulation = np.zeros(int(size)).astype(ctypes.c_double)
+        LinkVisualizer().link_visualizer_modulation_raw(self._ptr, self._backend, self._directivity, np.ctypeslib.as_ctypes(modulation))
         return modulation
 
-    def modulation(self):
+    def modulation(self: "Visualizer") -> np.ndarray:
+        """Get modulation data."""
         size = LinkVisualizer().link_visualizer_modulation(self._ptr, self._backend, self._directivity, None)
-        modulation = np.zeros(size, dtype=np.float64)
-        LinkVisualizer().link_visualizer_modulation(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            np.ctypeslib.as_ctypes(modulation))
+        modulation = np.zeros(int(size)).astype(ctypes.c_double)
+        LinkVisualizer().link_visualizer_modulation(self._ptr, self._backend, self._directivity, np.ctypeslib.as_ctypes(modulation))
         return modulation
 
-    def calc_field_of(self, points_iter: Iterable[np.ndarray], geometry: Geometry, idx: int) -> np.ndarray:
+    def calc_field_of(self: "Visualizer", points_iter: Iterable[np.ndarray], geometry: Geometry, idx: int) -> np.ndarray:
+        """Calculate field of specific STM index."""
         points = np.fromiter(points_iter, dtype=np.ndarray)
         points_len = len(points)
-        points = np.ravel(np.stack(points))  # type: ignore
-        buf = np.zeros(points_len * 2, dtype=np.float64)
+        points = np.ravel(np.stack(points))  # type: ignore[call-overload]
+        buf = np.zeros(points_len * 2).astype(ctypes.c_double)
         LinkVisualizer().link_visualizer_calc_field_of(
             self._ptr,
             self._backend,
@@ -372,78 +441,75 @@ class Visualizer:
             points_len,
             geometry.ptr(),
             idx,
-            np.ctypeslib.as_ctypes(buf))  # type: ignore
+            np.ctypeslib.as_ctypes(buf),
+        )
         return np.fromiter([buf[2 * i] + buf[2 * i + 1] * 1j for i in range(points_len)], dtype=np.complex128, count=points_len)
 
-    def calc_field(self, points_iter: Iterable[np.ndarray], geometry: Geometry) -> np.ndarray:
+    def calc_field(self: "Visualizer", points_iter: Iterable[np.ndarray], geometry: Geometry) -> np.ndarray:
+        """Calculate field."""
         return self.calc_field_of(points_iter, geometry, 0)
 
-    def plot_field_of(self, config: IPlotConfig, range: PlotRange, geometry: Geometry, idx: int):
+    def plot_field_of(self: "Visualizer", config: IPlotConfig, plot_range: PlotRange, geometry: Geometry, idx: int) -> None:
+        """Plot field of specific STM index."""
         if self._backend != config._backend():
-            raise AUTDError("Invalid plot config type.")
+            raise InvalidPlotConfigError
         err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_field_of(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            config._ptr(),
-            LinkVisualizer().link_visualizer_plot_range(
-                range.x_start,
-                range.x_end,
-                range.y_start,
-                range.y_end,
-                range.z_start,
-                range.z_end,
-                range.resolution),
-            geometry.ptr(),
-            idx,
-            err
-        ) == AUTD3_ERR:
+        if (
+            LinkVisualizer().link_visualizer_plot_field_of(
+                self._ptr,
+                self._backend,
+                self._directivity,
+                config._config_ptr(),
+                LinkVisualizer().link_visualizer_plot_range(
+                    plot_range.x_start,
+                    plot_range.x_end,
+                    plot_range.y_start,
+                    plot_range.y_end,
+                    plot_range.z_start,
+                    plot_range.z_end,
+                    plot_range.resolution,
+                ),
+                geometry.ptr(),
+                idx,
+                err,
+            )
+            == AUTD3_ERR
+        ):
             raise AUTDError(err)
 
-    def plot_field(self, config: IPlotConfig, range: PlotRange, geometry: Geometry):
-        self.plot_field_of(config, range, geometry, 0)
+    def plot_field(self: "Visualizer", config: IPlotConfig, plot_range: PlotRange, geometry: Geometry) -> None:
+        """Plot field."""
+        self.plot_field_of(config, plot_range, geometry, 0)
 
-    def plot_phase_of(self, config: IPlotConfig, geometry: Geometry, idx: int):
+    def plot_phase_of(self: "Visualizer", config: IPlotConfig, geometry: Geometry, idx: int) -> None:
+        """Plot phase of specific STM index."""
         if self._backend != config._backend():
-            raise AUTDError("Invalid plot config type.")
+            raise InvalidPlotConfigError
         err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_phase_of(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            config._ptr(),
-            geometry.ptr(),
-            idx,
-            err
-        ) == AUTD3_ERR:
+        if (
+            LinkVisualizer().link_visualizer_plot_phase_of(
+                self._ptr, self._backend, self._directivity, config._config_ptr(), geometry.ptr(), idx, err
+            )
+            == AUTD3_ERR
+        ):
             raise AUTDError(err)
 
-    def plot_phase(self, config: IPlotConfig, geometry: Geometry):
+    def plot_phase(self: "Visualizer", config: IPlotConfig, geometry: Geometry) -> None:
+        """Plot phase."""
         self.plot_phase_of(config, geometry, 0)
 
-    def plot_modulation_raw(self, config: IPlotConfig):
+    def plot_modulation_raw(self: "Visualizer", config: IPlotConfig) -> None:
+        """Plot raw modulation."""
         if self._backend != config._backend():
-            raise AUTDError("Invalid plot config type.")
+            raise InvalidPlotConfigError
         err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_modulation_raw(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            config._ptr(),
-            err
-        ) == AUTD3_ERR:
+        if LinkVisualizer().link_visualizer_plot_modulation_raw(self._ptr, self._backend, self._directivity, config._config_ptr(), err) == AUTD3_ERR:
             raise AUTDError(err)
 
-    def plot_modulation(self, config: IPlotConfig):
+    def plot_modulation(self: "Visualizer", config: IPlotConfig) -> None:
+        """Plot modulation."""
         if self._backend != config._backend():
-            raise AUTDError("Invalid plot config type.")
+            raise InvalidPlotConfigError
         err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_modulation(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            config._ptr(),
-            err
-        ) == AUTD3_ERR:
+        if LinkVisualizer().link_visualizer_plot_modulation(self._ptr, self._backend, self._directivity, config._config_ptr(), err) == AUTD3_ERR:
             raise AUTDError(err)
