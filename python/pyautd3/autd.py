@@ -210,7 +210,7 @@ class Controller:
         return self._geometry
 
     @property
-    def link(self: "Controller") -> Link:
+    def link(self: "Controller") -> Link | None:
         """Get link."""
         return self._link
 
