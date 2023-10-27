@@ -47,7 +47,7 @@ class NativeMethods(metaclass=Singleton):
     def link_simulator(self, port: int) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulator(port)
 
-    def link_simulator_with_addr(self, simulator: LinkSimulatorBuilderPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkSimulatorBuilderPtr:
+    def link_simulator_with_addr(self, simulator: LinkSimulatorBuilderPtr, addr: bytes, err: ctypes.Array[ctypes.c_char] | None) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulatorWithAddr(simulator, addr, err)
 
     def link_simulator_with_timeout(self, simulator: LinkSimulatorBuilderPtr, timeout_ns: int) -> LinkSimulatorBuilderPtr:
@@ -56,5 +56,5 @@ class NativeMethods(metaclass=Singleton):
     def link_simulator_into_builder(self, simulator: LinkSimulatorBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSimulatorIntoBuilder(simulator)
 
-    def link_simulator_update_geometry(self, simulator: LinkPtr, runtime: RuntimePtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def link_simulator_update_geometry(self, simulator: LinkPtr, runtime: RuntimePtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDLinkSimulatorUpdateGeometry(simulator, runtime, geometry, err)

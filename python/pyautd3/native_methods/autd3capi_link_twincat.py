@@ -66,7 +66,7 @@ class NativeMethods(metaclass=Singleton):
     def link_twin_cat_into_builder(self, twincat: LinkTwinCATBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkTwinCATIntoBuilder(twincat)
 
-    def link_remote_twin_cat(self, server_ams_net_id: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteTwinCATBuilderPtr:
+    def link_remote_twin_cat(self, server_ams_net_id: bytes, err: ctypes.Array[ctypes.c_char] | None) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCAT(server_ams_net_id, err)
 
     def link_remote_twin_cat_with_server_ip(self, twincat: LinkRemoteTwinCATBuilderPtr, addr: bytes) -> LinkRemoteTwinCATBuilderPtr:

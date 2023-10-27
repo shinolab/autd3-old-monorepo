@@ -103,13 +103,13 @@ class NativeMethods(metaclass=Singleton):
     def adapter_pointer(self) -> ctypes.c_void_p:
         return self.dll.AUTDAdapterPointer()
 
-    def adapter_get_size(self, adapters: ctypes.c_void_p) -> ctypes.c_uint32:
+    def adapter_get_size(self, adapters: ctypes.c_void_p | None) -> ctypes.c_uint32:
         return self.dll.AUTDAdapterGetSize(adapters)
 
-    def adapter_get_adapter(self, adapters: ctypes.c_void_p, idx: int, desc: ctypes.Array[ctypes.c_char], name: ctypes.Array[ctypes.c_char]) -> None:
+    def adapter_get_adapter(self, adapters: ctypes.c_void_p | None, idx: int, desc: ctypes.Array[ctypes.c_char] | None, name: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDAdapterGetAdapter(adapters, idx, desc, name)
 
-    def adapter_pointer_delete(self, adapters: ctypes.c_void_p) -> None:
+    def adapter_pointer_delete(self, adapters: ctypes.c_void_p | None) -> None:
         return self.dll.AUTDAdapterPointerDelete(adapters)
 
     def link_soem(self) -> LinkSOEMBuilderPtr:
@@ -136,10 +136,10 @@ class NativeMethods(metaclass=Singleton):
     def link_soem_with_state_check_interval(self, soem: LinkSOEMBuilderPtr, interval_ms: int) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithStateCheckInterval(soem, interval_ms)
 
-    def link_soem_with_on_lost(self, soem: LinkSOEMBuilderPtr, on_lost_func: ctypes.c_void_p) -> LinkSOEMBuilderPtr:
+    def link_soem_with_on_lost(self, soem: LinkSOEMBuilderPtr, on_lost_func: ctypes.c_void_p | None) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithOnLost(soem, on_lost_func)
 
-    def link_soem_with_on_err(self, soem: LinkSOEMBuilderPtr, on_err_func: ctypes.c_void_p) -> LinkSOEMBuilderPtr:
+    def link_soem_with_on_err(self, soem: LinkSOEMBuilderPtr, on_err_func: ctypes.c_void_p | None) -> LinkSOEMBuilderPtr:
         return self.dll.AUTDLinkSOEMWithOnErr(soem, on_err_func)
 
     def link_soem_with_timeout(self, soem: LinkSOEMBuilderPtr, timeout_ns: int) -> LinkSOEMBuilderPtr:
@@ -148,7 +148,7 @@ class NativeMethods(metaclass=Singleton):
     def link_soem_into_builder(self, soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSOEMIntoBuilder(soem)
 
-    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteSOEMBuilderPtr:
+    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char] | None) -> LinkRemoteSOEMBuilderPtr:
         return self.dll.AUTDLinkRemoteSOEM(addr, err)
 
     def link_remote_soem_with_timeout(self, soem: LinkRemoteSOEMBuilderPtr, timeout_ns: int) -> LinkRemoteSOEMBuilderPtr:

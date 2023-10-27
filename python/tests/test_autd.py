@@ -12,15 +12,28 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 from datetime import timedelta
-import numpy as np
-from pyautd3 import Clear, Controller, AUTD3, FirmwareInfo, Silencer, Stop, Synchronize, TimerStrategy, UpdateFlags, Amplitudes
-from pyautd3 import ConfigureModDelay, ConfigureAmpFilter, ConfigurePhaseFilter
-from pyautd3.link.audit import Audit
-from pyautd3.modulation import Static, Sine
-from pyautd3.gain import Uniform, Null
-from pyautd3.autd_error import AUTDError
 
+import numpy as np
 import pytest
+
+from pyautd3 import (
+    AUTD3,
+    Amplitudes,
+    Clear,
+    ConfigureAmpFilter,
+    ConfigureModDelay,
+    ConfigurePhaseFilter,
+    Controller,
+    FirmwareInfo,
+    Silencer,
+    Stop,
+    Synchronize,
+    UpdateFlags,
+)
+from pyautd3.autd_error import AUTDError
+from pyautd3.gain import Null, Uniform
+from pyautd3.link.audit import Audit
+from pyautd3.modulation import Sine, Static
 
 
 def create_controller():
@@ -242,7 +255,7 @@ def test_send_special():
 def test_group():
     autd = create_controller()
 
-    autd.group(lambda dev: dev.idx).set(0, (Static(), Null())).set(1, (Sine(150), Uniform(1.0))).send()
+    autd.group(lambda dev: dev.idx).set_data(0, (Static(), Null())).set_data(1, (Sine(150), Uniform(1.0))).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 2
@@ -257,7 +270,7 @@ def test_group():
     assert np.all(duties == 2048)
     assert np.all(phases == 0)
 
-    autd.group(lambda dev: dev.idx).set(1, Stop()).set(0, (Sine(150), Uniform(1.0))).send()
+    autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(1.0))).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 80
@@ -280,7 +293,7 @@ def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    autd.group(f).set(0, (Sine(150), Uniform(0.5).with_phase(np.pi))).send()
+    autd.group(f).set_data(0, (Sine(150), Uniform(0.5).with_phase(np.pi))).send()
 
     assert not check[0]
     assert check[1]

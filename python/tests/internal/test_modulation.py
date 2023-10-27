@@ -1,4 +1,4 @@
-'''
+"""
 File: test_modulation.py
 Project: modulation
 Created Date: 20/09/2023
@@ -9,15 +9,14 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from ..test_autd import create_controller
-
-from pyautd3.modulation import Modulation
-from pyautd3.modulation import Sine
 
 import numpy as np
+
+from pyautd3.modulation import Modulation, Sine
+
+from ..test_autd import create_controller
 
 
 def test_cache():
@@ -109,7 +108,8 @@ def test_cache():
             15,
             28,
             44,
-            63]
+            63,
+        ]
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 40960
 
@@ -233,7 +233,8 @@ def test_transform():
             7,
             14,
             22,
-            31]
+            31,
+        ]
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 40960
 
@@ -327,6 +328,7 @@ def test_radiation_pressure():
             50,
             70,
             89,
-            108]
+            108,
+        ]
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 40960

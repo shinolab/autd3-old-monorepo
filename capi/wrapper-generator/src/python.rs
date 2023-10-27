@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/09/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -155,29 +155,29 @@ impl PythonGenerator {
                 Type::Float32 => "float",
                 Type::Float64 => "float",
                 Type::Bool => "bool",
-                Type::VoidPtr => "ctypes.c_void_p",
+                Type::VoidPtr => "ctypes.c_void_p | None",
                 Type::Custom(ref s) => s,
             },
             1 => match arg.ty {
-                Type::Int8 => "ctypes.Array[ctypes.c_int8]",
-                Type::Int16 => "ctypes.Array[ctypes.c_int16]",
-                Type::Int32 => "ctypes.Array[ctypes.c_int32]",
-                Type::Int64 => "ctypes.Array[ctypes.c_int64]",
-                Type::UInt8 => "ctypes.Array[ctypes.c_uint8]",
-                Type::UInt16 => "ctypes.Array[ctypes.c_uint16]",
-                Type::UInt32 => "ctypes.Array[ctypes.c_uint32]",
-                Type::UInt64 => "ctypes.Array[ctypes.c_uint64]",
+                Type::Int8 => "ctypes.Array[ctypes.c_int8] | None",
+                Type::Int16 => "ctypes.Array[ctypes.c_int16] | None",
+                Type::Int32 => "ctypes.Array[ctypes.c_int32] | None",
+                Type::Int64 => "ctypes.Array[ctypes.c_int64] | None",
+                Type::UInt8 => "ctypes.Array[ctypes.c_uint8] | None",
+                Type::UInt16 => "ctypes.Array[ctypes.c_uint16] | None",
+                Type::UInt32 => "ctypes.Array[ctypes.c_uint32] | None",
+                Type::UInt64 => "ctypes.Array[ctypes.c_uint64] | None",
                 Type::Void => unimplemented!(),
                 Type::Char => match arg.inout {
                     InOut::In => "bytes",
-                    InOut::Out => "ctypes.Array[ctypes.c_char]",
+                    InOut::Out => "ctypes.Array[ctypes.c_char] | None",
                     _ => "Any",
                 },
-                Type::Float32 => "ctypes.Array[ctypes.c_float]",
-                Type::Float64 => "ctypes.Array[ctypes.c_double]",
-                Type::Bool => "ctypes.Array[ctypes.c_bool]",
-                Type::VoidPtr => "ctypes.Array[ctypes.c_void_p]",
-                Type::Custom(_) => "ctypes.Array",
+                Type::Float32 => "ctypes.Array[ctypes.c_float] | None",
+                Type::Float64 => "ctypes.Array[ctypes.c_double] | None",
+                Type::Bool => "ctypes.Array[ctypes.c_bool] | None",
+                Type::VoidPtr => "ctypes.Array[ctypes.c_void_p] | None",
+                Type::Custom(_) => "ctypes.Array | None",
             },
             2 => match arg.ty {
                 Type::Int32 => "ctypes.Array[ctypes.Array[ctypes.c_int32]]",

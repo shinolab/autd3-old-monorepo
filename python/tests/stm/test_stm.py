@@ -1,4 +1,4 @@
-'''
+"""
 File: test_stm.py
 Project: stm
 Created Date: 20/09/2023
@@ -9,18 +9,18 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 from datetime import timedelta
-from pyautd3 import AUTD3, Controller
-
-from ..test_autd import create_controller
-
-from pyautd3.stm import FocusSTM, GainSTM, GainSTMMode
-from pyautd3.gain import Uniform
-from pyautd3.link.audit import Audit
 
 import numpy as np
+
+from pyautd3 import AUTD3, Controller
+from pyautd3.gain import Uniform
+from pyautd3.link.audit import Audit
+from pyautd3.stm import FocusSTM, GainSTM, GainSTMMode
+
+from ..test_autd import create_controller
 
 
 def test_focus_stm():
@@ -106,10 +106,12 @@ def test_focus_stm():
 
 
 def test_gain_stm_legacy():
-    autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     size = 2
     stm = GainSTM(1.0).add_gains_from_iter(
@@ -212,11 +214,13 @@ def test_gain_stm_legacy():
 
 
 def test_gain_stm_advanced():
-    autd = Controller.builder()\
-        .advanced()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     size = 2
     stm = GainSTM(1.0).add_gains_from_iter(
@@ -307,11 +311,13 @@ def test_gain_stm_advanced():
 
 
 def test_gain_stm_advanced_phase():
-    autd = Controller.builder()\
-        .advanced_phase()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))\
+    autd = (
+        Controller.builder()
+        .advanced_phase()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
+    )
 
     size = 2
     stm = GainSTM(1.0).add_gains_from_iter(

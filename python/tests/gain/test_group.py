@@ -1,4 +1,4 @@
-'''
+"""
 File: test_group.py
 Project: gain
 Created Date: 20/09/2023
@@ -9,15 +9,15 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from ..test_autd import create_controller
-
-from pyautd3.autd_error import AUTDError
-from pyautd3.gain import Null, Uniform, Group
 
 import numpy as np
+
+from pyautd3.autd_error import AUTDError
+from pyautd3.gain import Group, Null, Uniform
+
+from ..test_autd import create_controller
 
 
 def test_group():
@@ -25,9 +25,9 @@ def test_group():
 
     cx = autd.geometry.center[0]
 
-    assert autd.send(Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null")
-                     .set("uniform", Uniform(0.5).with_phase(np.pi))
-                     .set("null", Null()))
+    assert autd.send(
+        Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null())
+    )
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -45,9 +45,7 @@ def test_group_unknown_key():
 
     caught_err = False
     try:
-        autd.send(Group(lambda _, tr: "null")
-                  .set("uniform", Uniform(0.5).with_phase(np.pi))
-                  .set("null", Null()))
+        autd.send(Group(lambda _, tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
     except AUTDError as e:
         caught_err = True
         assert e.msg == "Unknown group key"
@@ -77,7 +75,8 @@ def test_group_check_only_for_enabled():
     def f(dev, tr):
         check[dev.idx] = True
         return 0
-    assert autd.send(Group(f).set(0, Uniform(0.5).with_phase(np.pi)))
+
+    assert autd.send(Group(f).set_gain(0, Uniform(0.5).with_phase(np.pi)))
 
     assert not check[0]
     assert check[1]
