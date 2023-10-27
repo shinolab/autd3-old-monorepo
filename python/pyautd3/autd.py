@@ -19,7 +19,7 @@ from typing import Generic, TypeVar
 
 import numpy as np
 
-from .autd_error import AUTDError, KeyAlreadyExistsError
+from .autd_error import AUTDError, InvalidDatagramTypeError, KeyAlreadyExistsError
 from .geometry import AUTD3, Device, Geometry
 from .internal.datagram import Datagram, SpecialDatagram
 from .internal.link import Link, LinkBuilder
@@ -260,7 +260,8 @@ class Controller:
 
     def send(
         self: "Controller",
-        d: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+        d1: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+        d2: Datagram | None = None,
         *,
         timeout: timedelta | None = None,
     ) -> bool:
@@ -268,7 +269,8 @@ class Controller:
 
         Arguments:
         ---------
-            d: Data to send
+            d1: Data to send
+            d2: Data to send
             timeout: Timeout
 
         Returns:
@@ -283,21 +285,35 @@ class Controller:
         timeout_ = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
-        if isinstance(d, SpecialDatagram):
-            res = Base().controller_send_special(self._ptr, self._mode, d._special_datagram_ptr(), timeout_, err)
-        if isinstance(d, Datagram):
-            res = Base().controller_send(self._ptr, self._mode, d._datagram_ptr(self.geometry), DatagramPtr(None), timeout_, err)
-        if isinstance(d, tuple) and len(d) == 2:  # noqa: PLR2004
-            (d1, d2) = d
-            if isinstance(d1, Datagram) and isinstance(d2, Datagram):
-                res = Base().controller_send(
-                    self._ptr,
-                    self._mode,
-                    d1._datagram_ptr(self.geometry),
-                    d2._datagram_ptr(self.geometry),
-                    timeout_,
-                    err,
-                )
+        if d2 is None:
+            if isinstance(d1, SpecialDatagram):
+                res = Base().controller_send_special(self._ptr, self._mode, d1._special_datagram_ptr(), timeout_, err)
+            elif isinstance(d1, Datagram):
+                res = Base().controller_send(self._ptr, self._mode, d1._datagram_ptr(self.geometry), DatagramPtr(None), timeout_, err)
+            elif isinstance(d1, tuple) and len(d1) == 2:  # noqa: PLR2004
+                (d11, d12) = d1
+                if isinstance(d11, Datagram) and isinstance(d12, Datagram):
+                    res = Base().controller_send(
+                        self._ptr,
+                        self._mode,
+                        d11._datagram_ptr(self.geometry),
+                        d12._datagram_ptr(self.geometry),
+                        timeout_,
+                        err,
+                    )
+            else:
+                raise InvalidDatagramTypeError
+        elif isinstance(d1, Datagram) and isinstance(d2, Datagram):
+            res = Base().controller_send(
+                self._ptr,
+                self._mode,
+                d1._datagram_ptr(self.geometry),
+                d2._datagram_ptr(self.geometry),
+                timeout_,
+                err,
+            )
+        else:
+            raise InvalidDatagramTypeError
 
         if res == AUTD3_ERR:
             raise AUTDError(err)
@@ -321,7 +337,8 @@ class Controller:
         def set_data(
             self: "Controller._GroupGuard",
             key: K,
-            d: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+            d1: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
+            d2: Datagram | None = None,
             *,
             timeout: timedelta | None = None,
         ) -> "Controller._GroupGuard":
@@ -331,50 +348,63 @@ class Controller:
             timeout_ns = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
 
             err = ctypes.create_string_buffer(256)
-            if isinstance(d, SpecialDatagram):
-                self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set_special(
-                    self._kv_map,
-                    self._k,
-                    d._special_datagram_ptr(),
-                    self._controller._mode,
-                    timeout_ns,
-                    err,
-                )
-                self._k += 1
-                if self._kv_map._0 is None:
-                    raise AUTDError(err)
-            if isinstance(d, Datagram):
-                self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set(
-                    self._kv_map,
-                    self._k,
-                    d._datagram_ptr(self._controller._geometry),
-                    DatagramPtr(None),
-                    self._controller._mode,
-                    timeout_ns,
-                    err,
-                )
-                self._k += 1
-                if self._kv_map._0 is None:
-                    raise AUTDError(err)
-
-            if isinstance(d, tuple) and len(d) == 2:  # noqa: PLR2004
-                (d1, d2) = d
-                if isinstance(d1, Datagram) and isinstance(d2, Datagram):
+            if d2 is None:
+                if isinstance(d1, SpecialDatagram):
                     self._keymap[key] = self._k
-                    self._kv_map = Base().controller_group_kv_map_set(
+                    self._kv_map = Base().controller_group_kv_map_set_special(
                         self._kv_map,
                         self._k,
-                        d1._datagram_ptr(self._controller._geometry),
-                        d2._datagram_ptr(self._controller._geometry),
+                        d1._special_datagram_ptr(),
                         self._controller._mode,
                         timeout_ns,
                         err,
                     )
                     self._k += 1
-                    if self._kv_map._0 is None:
-                        raise AUTDError(err)
+                elif isinstance(d1, Datagram):
+                    self._keymap[key] = self._k
+                    self._kv_map = Base().controller_group_kv_map_set(
+                        self._kv_map,
+                        self._k,
+                        d1._datagram_ptr(self._controller._geometry),
+                        DatagramPtr(None),
+                        self._controller._mode,
+                        timeout_ns,
+                        err,
+                    )
+                    self._k += 1
+                elif isinstance(d1, tuple) and len(d1) == 2:  # noqa: PLR2004
+                    (d11, d12) = d1
+                    if isinstance(d1, Datagram) and isinstance(d2, Datagram):
+                        self._keymap[key] = self._k
+                        self._kv_map = Base().controller_group_kv_map_set(
+                            self._kv_map,
+                            self._k,
+                            d11._datagram_ptr(self._controller._geometry),
+                            d12._datagram_ptr(self._controller._geometry),
+                            self._controller._mode,
+                            timeout_ns,
+                            err,
+                        )
+                        self._k += 1
+                else:
+                    raise InvalidDatagramTypeError
+            elif isinstance(d1, Datagram) and isinstance(d2, Datagram):
+                self._keymap[key] = self._k
+                self._kv_map = Base().controller_group_kv_map_set(
+                    self._kv_map,
+                    self._k,
+                    d1._datagram_ptr(self._controller._geometry),
+                    d2._datagram_ptr(self._controller._geometry),
+                    self._controller._mode,
+                    timeout_ns,
+                    err,
+                )
+                self._k += 1
+            else:
+                raise InvalidDatagramTypeError
+
+            if self._kv_map._0 is None:
+                raise AUTDError(err)
 
             return self
 

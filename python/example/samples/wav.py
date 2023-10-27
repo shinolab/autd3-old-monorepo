@@ -21,7 +21,7 @@ from pyautd3.gain import Focus
 from pyautd3.modulation.audio_file import Wav
 
 
-def wav(autd: Controller):
+def wav(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 

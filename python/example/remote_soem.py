@@ -18,6 +18,7 @@ from pyautd3 import AUTD3, Controller
 from pyautd3.link.soem import RemoteSOEM
 
 if __name__ == "__main__":
-    autd = Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(RemoteSOEM.builder("127.0.0.1:8080"))
-
-    runner.run(autd)
+    with Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(
+        RemoteSOEM.builder("127.0.0.1:8080"),
+    ) as autd:
+        runner.run(autd)

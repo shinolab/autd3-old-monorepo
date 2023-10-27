@@ -20,7 +20,7 @@ from pyautd3.modulation import Static
 from pyautd3.stm import FocusSTM, GainSTM
 
 
-def stm_focus(autd: Controller):
+def stm_focus(autd: Controller) -> None:
     config = Silencer.disable()
     autd.send(config)
 
@@ -33,10 +33,10 @@ def stm_focus(autd: Controller):
         center + radius * np.array([np.cos(theta), np.sin(theta), 0]) for theta in (2.0 * np.pi * i / size for i in range(size))
     )
 
-    autd.send((m, stm))
+    autd.send(m, stm)
 
 
-def stm_gain(autd: Controller):
+def stm_gain(autd: Controller) -> None:
     config = Silencer.disable()
     autd.send(config)
 
@@ -49,4 +49,4 @@ def stm_gain(autd: Controller):
         Focus(center + radius * np.array([np.cos(theta), np.sin(theta), 0])) for theta in (2.0 * np.pi * i / size for i in range(size))
     )
 
-    autd.send((m, stm))
+    autd.send(m, stm)

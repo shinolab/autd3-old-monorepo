@@ -19,7 +19,7 @@ from pyautd3.gain.holo import GSPAT, NalgebraBackend
 from pyautd3.modulation import Sine
 
 
-def holo(autd: Controller):
+def holo(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 
@@ -28,4 +28,4 @@ def holo(autd: Controller):
     f = GSPAT(backend).add_focus(center - np.array([30.0, 0.0, 0.0]), 1.0).add_focus(center + np.array([30.0, 0.0, 0.0]), 1.0)
     m = Sine(150)
 
-    autd.send((m, f))
+    autd.send(m, f)
