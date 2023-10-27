@@ -17,7 +17,7 @@ tonic = { version = "0.10.0", default-features = false, features = ["prost", "co
 autd3-driver = { path = "../autd3-driver", version = "17.0.0" }
 autd3-gain-holo = { path = "../autd3-gain-holo", version = "17.0.0" }
 thiserror = "1.0.40"
-tokio = { version = "1.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.33.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]
 tonic-build = "0.10.0"

@@ -4,7 +4,7 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -183,7 +183,7 @@ namespace AUTD3Sharp.Link
             return NativeMethods.Base.AUTDLinkAuditFpgaStmFinishIdx(_ptr, (uint)idx);
         }
 
-        public Audit Create(LinkPtr ptr, RuntimePtr _runtime, object? _props)
+        public Audit Create(LinkPtr ptr, object? _props)
         {
             return new Audit
             {

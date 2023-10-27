@@ -19,7 +19,7 @@ from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr, RuntimePtr
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_simulator import (
     LinkBuilderPtr,
     LinkSimulatorBuilderPtr,
@@ -33,7 +33,6 @@ class Simulator(Link):
     """Link for Simulator."""
 
     _ptr: LinkPtr
-    _runtime_ptr: RuntimePtr
 
     class _Builder(LinkBuilder):
         _builder: LinkSimulatorBuilderPtr
@@ -68,11 +67,10 @@ class Simulator(Link):
             return LinkSimulator().link_simulator_into_builder(self._builder)
 
         def _resolve_link(self: "Simulator._Builder", ptr: ControllerPtr) -> "Simulator":
-            return Simulator(Base().link_get(ptr), Base().controller_get_runtime(ptr))
+            return Simulator(Base().link_get(ptr))
 
-    def __init__(self: "Simulator", ptr: LinkPtr, runtime_ptr: RuntimePtr) -> None:
+    def __init__(self: "Simulator", ptr: LinkPtr) -> None:
         super().__init__(ptr)
-        self._runtime_ptr = runtime_ptr
 
     @staticmethod
     def builder(port: int) -> _Builder:
@@ -82,5 +80,5 @@ class Simulator(Link):
     def update_geometry(self: "Simulator", geometry: Geometry) -> None:
         """Update geometry."""
         err = ctypes.create_string_buffer(256)
-        if LinkSimulator().link_simulator_update_geometry(self._ptr, self._runtime_ptr, geometry._geometry_ptr(), err) == AUTD3_ERR:
+        if LinkSimulator().link_simulator_update_geometry(self._ptr, geometry._geometry_ptr(), err) == AUTD3_ERR:
             raise AUTDError(err)

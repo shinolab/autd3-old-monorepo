@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@ pub use autd3capi_common::holo;
 
 use autd3capi_common::float;
 use common::{
-    ConstPtr, DynamicDatagram, DynamicLinkBuilder, DynamicTransducer, Gain, Modulation, STMProps,
-    G, M,
+    driver::link::LinkSyncBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder,
+    DynamicTransducer, Gain, Modulation, STMProps, G, M,
 };
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
@@ -94,10 +94,6 @@ pub struct GeometryPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct RuntimePtr(pub ConstPtr);
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C)]
 pub struct DevicePtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
@@ -113,9 +109,8 @@ pub struct LinkBuilderPtr(pub ConstPtr);
 pub struct LinkPtr(pub ConstPtr);
 
 impl LinkBuilderPtr {
-    pub fn new<B: DynamicLinkBuilder>(builder: B) -> LinkBuilderPtr {
-        let builder: Box<dyn DynamicLinkBuilder> = Box::new(builder);
-        Self(Box::into_raw(Box::new(builder)) as _)
+    pub fn new<B: LinkSyncBuilder<DynamicTransducer> + 'static>(builder: B) -> LinkBuilderPtr {
+        Self(Box::into_raw(Box::new(DynamicLinkBuilder::new(builder))) as _)
     }
 }
 

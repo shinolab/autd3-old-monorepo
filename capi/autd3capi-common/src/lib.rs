@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ pub use autd3;
 pub use autd3_derive as derive;
 pub use autd3_driver as driver;
 pub use autd3_gain_holo as holo;
+use driver::link::LinkSync;
 pub use libc;
 
 pub use autd3::prelude::*;
@@ -33,7 +34,7 @@ pub use autd3_driver::{
 
 pub use custom::{CustomGain, CustomModulation};
 pub use dynamic_datagram::DynamicDatagram;
-pub use dynamic_link::{DynamicLinkBuilder, DynamicLinkBuilderWrapper};
+pub use dynamic_link::DynamicLinkBuilder;
 pub use dynamic_transducer::{DynamicTransducer, TransMode};
 
 pub use libc::c_void;
@@ -42,7 +43,7 @@ pub type ConstPtr = *const c_void;
 pub type Tr = DynamicTransducer;
 pub type Dev = Device<Tr>;
 pub type Geo = Geometry<Tr>;
-pub type L = dyn Link;
+pub type L = dyn LinkSync;
 pub type G = dyn Gain<Tr>;
 pub type M = dyn Modulation;
 pub type Cnt = Controller<Tr, Box<L>>;

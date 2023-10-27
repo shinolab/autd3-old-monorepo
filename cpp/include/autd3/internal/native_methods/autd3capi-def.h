@@ -60,10 +60,6 @@ struct GeometryPtr {
   void* _0;
 };
 
-struct RuntimePtr {
-  void* _0;
-};
-
 struct ModulationPtr {
   void* _0;
 };

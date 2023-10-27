@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -102,7 +102,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
             type O1 = ModulationOp;
             type O2 = NullOp;
 
-            fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+            fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
                 let freq_div = self.freq_div;
                 Ok((Self::O1::new(self.calc()?, freq_div), Self::O2::default()))
             }
@@ -141,8 +141,104 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             type O1 = GainOp<T,Self>;
             type O2 = NullOp;
 
-            fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
+            fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
                 Ok((Self::O1::new(self), Self::O2::default()))
+            }
+        }
+    };
+    gen.into()
+}
+
+#[proc_macro_derive(LinkSync)]
+pub fn link_sync_derive(input: TokenStream) -> TokenStream {
+    let ast: syn::DeriveInput = syn::parse(input).unwrap();
+
+    let name = &ast.ident;
+    let name_builder = quote::format_ident!("{}Builder", name);
+    let name_sync = quote::format_ident!("{}Sync", name);
+    let name_sync_builder = quote::format_ident!("{}SyncBuilder", name);
+
+    let generics = &ast.generics;
+    let (_, ty_generics_def, where_clause_def) = generics.split_for_impl();
+    let (_, ty_generics_builder_def, where_clause_builder_def) = generics.split_for_impl();
+    let (_, ty_generics_open, where_clause_open) = generics.split_for_impl();
+    let type_params_open = generics.type_params();
+    let (_, ty_generics_impl, where_clause_impl) = generics.split_for_impl();
+    let type_params_impl = generics.type_params();
+    let (_, ty_generics_blocking, where_clause_blocking) = generics.split_for_impl();
+    let type_params_blocking = generics.type_params();
+
+    let gen = quote! {
+        #[cfg(feature = "sync")]
+        pub struct #name_sync #ty_generics_def #where_clause_def {
+            pub inner: #name #ty_generics_def,
+            pub runtime: tokio::runtime::Runtime,
+        }
+
+        #[cfg(feature = "sync")]
+        pub struct #name_sync_builder #ty_generics_builder_def #where_clause_builder_def {
+            inner: #name_builder #ty_generics_builder_def,
+            runtime: tokio::runtime::Runtime,
+        }
+
+        #[cfg(feature = "sync")]
+        impl <#(#type_params_impl,)*>  autd3_driver::link::LinkSync for #name_sync #ty_generics_impl #where_clause_impl{
+            fn close(&mut self) -> Result<(), autd3_driver::error::AUTDInternalError> {
+                self.runtime.block_on(self.inner.close())
+            }
+            fn send(&mut self, tx: &autd3_driver::cpu::TxDatagram) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                self.runtime.block_on(self.inner.send(tx))
+            }
+            fn receive(&mut self, rx: &mut [autd3_driver::cpu::RxMessage]) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                self.runtime.block_on(self.inner.receive(rx))
+            }
+            fn is_open(&self) -> bool {
+                self.inner.is_open()
+            }
+            fn timeout(&self) -> std::time::Duration {
+                self.inner.timeout()
+            }
+            fn send_receive(
+                &mut self,
+                tx: &autd3_driver::cpu::TxDatagram,
+                rx: &mut [autd3_driver::cpu::RxMessage],
+                timeout: Option<std::time::Duration>,
+            ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                self.runtime
+                    .block_on(self.inner.send_receive(tx, rx, timeout))
+            }
+            fn wait_msg_processed(
+                &mut self,
+                tx: &autd3_driver::cpu::TxDatagram,
+                rx: &mut [autd3_driver::cpu::RxMessage],
+                timeout: std::time::Duration,
+            ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                self.runtime
+                    .block_on(self.inner.wait_msg_processed(tx, rx, timeout))
+            }
+        }
+
+        #[cfg(feature = "sync")]
+        impl<#(#type_params_open,)* T: autd3_driver::geometry::Transducer> autd3_driver::link::LinkSyncBuilder<T> for #name_sync_builder #ty_generics_open #where_clause_open {
+            type L = #name_sync #ty_generics_open;
+
+            fn open(self, geometry: &autd3_driver::geometry::Geometry<T>) -> Result<Self::L, autd3_driver::error::AUTDInternalError> {
+                let Self { inner, runtime } = self;
+                let inner = runtime.block_on(inner.open(geometry))?;
+                Ok(Self::L { inner, runtime })
+            }
+        }
+
+        #[cfg(feature = "sync")]
+        impl <#(#type_params_blocking,)*> #name_builder #ty_generics_blocking #where_clause_blocking{
+            pub fn blocking(self) -> #name_sync_builder #ty_generics_blocking {
+                #name_sync_builder {
+                    inner: self,
+                    runtime: tokio::runtime::Builder::new_multi_thread()
+                        .enable_all()
+                        .build()
+                        .unwrap(),
+                }
             }
         }
     };

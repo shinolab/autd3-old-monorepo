@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,9 +54,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCATWithTimeout(
 pub unsafe extern "C" fn AUTDLinkTwinCATIntoBuilder(
     twincat: LinkTwinCATBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(DynamicLinkBuilderWrapper::new(*Box::from_raw(
-        twincat.0 as *mut TwinCATBuilder,
-    )))
+    LinkBuilderPtr::new(Box::from_raw(twincat.0 as *mut TwinCATBuilder).blocking())
 }
 
 #[repr(C)]
@@ -122,7 +120,5 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATWithTimeout(
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATIntoBuilder(
     twincat: LinkRemoteTwinCATBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(DynamicLinkBuilderWrapper::new(*Box::from_raw(
-        twincat.0 as *mut RemoteTwinCATBuilder,
-    )))
+    LinkBuilderPtr::new(Box::from_raw(twincat.0 as *mut RemoteTwinCATBuilder).blocking())
 }

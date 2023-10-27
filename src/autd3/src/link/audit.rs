@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use std::{
     time::Duration,
 };
 
+use autd3_derive::LinkSync;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
@@ -25,6 +26,7 @@ use autd3_driver::{
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link for test
+#[derive(LinkSync)]
 pub struct Audit {
     is_open: bool,
     timeout: Duration,

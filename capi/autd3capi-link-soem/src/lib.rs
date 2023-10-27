@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -213,9 +213,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMWithTimeout(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMIntoBuilder(soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(DynamicLinkBuilderWrapper::new(*Box::from_raw(
-        soem.0 as *mut SOEMBuilder,
-    )))
+    LinkBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).blocking())
 }
 
 #[repr(C)]
@@ -262,7 +260,5 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(
 pub unsafe extern "C" fn AUTDLinkRemoteSOEMIntoBuilder(
     soem: LinkRemoteSOEMBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(DynamicLinkBuilderWrapper::new(*Box::from_raw(
-        soem.0 as *mut RemoteSOEMBuilder,
-    )))
+    LinkBuilderPtr::new((*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder)).blocking())
 }

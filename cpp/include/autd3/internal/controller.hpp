@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2023
+// Last Modified: 27/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -141,7 +141,7 @@ class Controller {
 
   template <typename L>
   [[nodiscard]] L link() const {
-    return L(internal::native_methods::AUTDLinkGet(_ptr), internal::native_methods::AUTDControllerGetRuntime(_ptr), _link_props);
+    return L(internal::native_methods::AUTDLinkGet(_ptr), _link_props);
   }
 
   /**

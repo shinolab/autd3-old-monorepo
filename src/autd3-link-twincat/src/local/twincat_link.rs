@@ -4,13 +4,14 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::LinkSync;
 use libloading as lib;
 
 use std::{ffi::c_void, time::Duration};
@@ -44,6 +45,8 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 /// Link using TwinCAT3
+
+#[derive(LinkSync)]
 pub struct TwinCAT {
     port: i32,
     send_addr: AmsAddr,

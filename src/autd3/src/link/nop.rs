@@ -4,13 +4,14 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::LinkSync;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
@@ -20,7 +21,7 @@ use autd3_driver::{
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link to do nothing
-#[derive(Default)]
+#[derive(LinkSync)]
 pub struct Nop {
     is_open: bool,
     cpus: Vec<CPUEmulator>,
@@ -31,12 +32,6 @@ pub struct NopBuilder {}
 impl NopBuilder {
     pub fn with_timeout(self, _timeout: std::time::Duration) -> Self {
         self
-    }
-}
-
-impl Nop {
-    pub fn builder() -> NopBuilder {
-        NopBuilder {}
     }
 }
 
@@ -97,5 +92,11 @@ impl Link for Nop {
 
     fn timeout(&self) -> std::time::Duration {
         std::time::Duration::ZERO
+    }
+}
+
+impl Nop {
+    pub fn builder() -> NopBuilder {
+        NopBuilder {}
     }
 }

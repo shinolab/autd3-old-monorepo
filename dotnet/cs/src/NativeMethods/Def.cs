@@ -72,12 +72,6 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct RuntimePtr
-    {
-        public IntPtr _0;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct DevicePtr
     {
         public IntPtr _0;

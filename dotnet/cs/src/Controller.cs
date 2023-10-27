@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -355,7 +355,7 @@ namespace AUTD3Sharp
         public T Link<T>()
         where T : ILink<T>, new()
         {
-            return new T().Create(Base.AUTDLinkGet(Ptr), Base.AUTDControllerGetRuntime(Ptr), _linkProps);
+            return new T().Create(Base.AUTDLinkGet(Ptr), _linkProps);
         }
 
         #endregion
