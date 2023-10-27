@@ -1,4 +1,4 @@
-'''
+"""
 File: test_square.py
 Project: modulation
 Created Date: 20/09/2023
@@ -9,15 +9,16 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 from datetime import timedelta
-from ..test_autd import create_controller
+
+import numpy as np
 
 from pyautd3.modulation import Square
 
-import numpy as np
+from ..test_autd import create_controller
 
 
 def test_square():
@@ -27,8 +28,7 @@ def test_square():
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
-        mod_expext = [
-            85, 85, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
+        mod_expext = [85, 85, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 40960
 

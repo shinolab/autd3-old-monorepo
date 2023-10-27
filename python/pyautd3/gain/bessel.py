@@ -1,4 +1,4 @@
-'''
+"""
 File: bessel.py
 Project: gain
 Created Date: 14/09/2023
@@ -9,56 +9,51 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
+
 
 import numpy as np
-from typing import Optional
 
+from pyautd3.geometry import Geometry
+from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.geometry import Geometry
-from ..internal.gain import IGain
 
 
 class Bessel(IGain):
-    """Gain to produce a Bessel beam
-
-    """
+    """Gain to produce a Bessel beam."""
 
     _p: np.ndarray
     _d: np.ndarray
     _theta: float
-    _amp: Optional[float]
+    _amp: float | None
 
-    def __init__(self, pos: np.ndarray, dir: np.ndarray, theta_z: float):
-        """Constructor
+    def __init__(self: "Bessel", pos: np.ndarray, direction: np.ndarray, theta_z: float) -> None:
+        """Constructor.
 
         Arguments:
-        - `pos` - Start point of the beam (the apex of the conical wavefront of the beam)
-        - `dir` - Direction of the beam
-        - `theta_z` - Angle between the conical wavefront of the beam and the plane normal to `dir`
+        ---------
+            pos: Start point of the beam (the apex of the conical wavefront of the beam)
+            direction: Direction of the beam
+            theta_z: Angle between the conical wavefront of the beam and the plane normal to `dir`
         """
-
-        assert len(pos) == 3
-        assert len(dir) == 3
-
         super().__init__()
         self._p = pos
-        self._d = dir
+        self._d = direction
         self._theta = theta_z
         self._amp = None
 
-    def with_amp(self, amp: float) -> "Bessel":
-        """Set amplitude
+    def with_amp(self: "Bessel", amp: float) -> "Bessel":
+        """Set amplitude.
 
         Arguments:
-        - `amp` - Normalized amplitude (from 0 to 1)
+        ---------
+            amp: Normalized amplitude (from 0 to 1)
         """
-
         self._amp = amp
         return self
 
-    def gain_ptr(self, _: Geometry) -> GainPtr:
+    def _gain_ptr(self: "Bessel", _: Geometry) -> GainPtr:
         ptr = Base().gain_bessel(
             self._p[0],
             self._p[1],

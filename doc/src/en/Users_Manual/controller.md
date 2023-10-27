@@ -166,8 +166,8 @@ def grouping(dev):
         return None
 
 autd.group(grouping)\
-    .set("null", Null())\
-    .set("focus", Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))\
+    .set_data("null", Null())\
+    .set_data("focus", Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))\
     .send()
 ```
 

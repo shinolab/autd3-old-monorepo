@@ -555,7 +555,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_custom(self) -> GainPtr:
         return self.dll.AUTDGainCustom()
 
-    def gain_custom_set(self, custom: GainPtr, dev_idx: int, ptr: ctypes.Array, len: int) -> GainPtr:
+    def gain_custom_set(self, custom: GainPtr, dev_idx: int, ptr: ctypes.Array | None, len: int) -> GainPtr:
         return self.dll.AUTDGainCustomSet(custom, dev_idx, ptr, len)
 
     def gain_focus(self, x: float, y: float, z: float) -> GainPtr:
@@ -564,22 +564,22 @@ class NativeMethods(metaclass=Singleton):
     def gain_focus_with_amp(self, focus: GainPtr, amp: float) -> GainPtr:
         return self.dll.AUTDGainFocusWithAmp(focus, amp)
 
-    def gain_group_create_map(self, device_indices_ptr: ctypes.Array[ctypes.c_uint32], num_devices: int) -> GroupGainMapPtr:
+    def gain_group_create_map(self, device_indices_ptr: ctypes.Array[ctypes.c_uint32] | None, num_devices: int) -> GroupGainMapPtr:
         return self.dll.AUTDGainGroupCreateMap(device_indices_ptr, num_devices)
 
-    def gain_group_map_set(self, map: GroupGainMapPtr, dev_idx: int, map_data: ctypes.Array[ctypes.c_int32]) -> GroupGainMapPtr:
+    def gain_group_map_set(self, map: GroupGainMapPtr, dev_idx: int, map_data: ctypes.Array[ctypes.c_int32] | None) -> GroupGainMapPtr:
         return self.dll.AUTDGainGroupMapSet(map, dev_idx, map_data)
 
-    def gain_group(self, map: GroupGainMapPtr, keys_ptr: ctypes.Array[ctypes.c_int32], values_ptr: ctypes.Array, kv_len: int) -> GainPtr:
+    def gain_group(self, map: GroupGainMapPtr, keys_ptr: ctypes.Array[ctypes.c_int32] | None, values_ptr: ctypes.Array | None, kv_len: int) -> GainPtr:
         return self.dll.AUTDGainGroup(map, keys_ptr, values_ptr, kv_len)
 
     def gain_into_datagram(self, gain: GainPtr) -> DatagramPtr:
         return self.dll.AUTDGainIntoDatagram(gain)
 
-    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> GainCalcDrivesMapPtr:
+    def gain_calc(self, gain: GainPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char] | None) -> GainCalcDrivesMapPtr:
         return self.dll.AUTDGainCalc(gain, geometry, err)
 
-    def gain_calc_get_result(self, src: GainCalcDrivesMapPtr, dst: ctypes.Array, idx: int) -> None:
+    def gain_calc_get_result(self, src: GainCalcDrivesMapPtr, dst: ctypes.Array | None, idx: int) -> None:
         return self.dll.AUTDGainCalcGetResult(src, dst, idx)
 
     def gain_calc_free_result(self, src: GainCalcDrivesMapPtr) -> None:
@@ -627,7 +627,7 @@ class NativeMethods(metaclass=Singleton):
     def device_set_attenuation(self, dev: DevicePtr, value: float) -> None:
         return self.dll.AUTDDeviceSetAttenuation(dev, value)
 
-    def device_center(self, dev: DevicePtr, center: ctypes.Array[ctypes.c_double]) -> None:
+    def device_center(self, dev: DevicePtr, center: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDDeviceCenter(dev, center)
 
     def device_translate(self, dev: DevicePtr, x: float, y: float, z: float) -> None:
@@ -660,31 +660,31 @@ class NativeMethods(metaclass=Singleton):
     def transducer(self, dev: DevicePtr, tr_idx: int) -> TransducerPtr:
         return self.dll.AUTDTransducer(dev, tr_idx)
 
-    def transducer_position(self, tr: TransducerPtr, pos: ctypes.Array[ctypes.c_double]) -> None:
+    def transducer_position(self, tr: TransducerPtr, pos: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerPosition(tr, pos)
 
-    def transducer_rotation(self, tr: TransducerPtr, rot: ctypes.Array[ctypes.c_double]) -> None:
+    def transducer_rotation(self, tr: TransducerPtr, rot: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerRotation(tr, rot)
 
-    def transducer_direction_x(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+    def transducer_direction_x(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerDirectionX(tr, dir)
 
-    def transducer_direction_y(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+    def transducer_direction_y(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerDirectionY(tr, dir)
 
-    def transducer_direction_z(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double]) -> None:
+    def transducer_direction_z(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerDirectionZ(tr, dir)
 
     def transducer_frequency_get(self, tr: TransducerPtr) -> ctypes.c_double:
         return self.dll.AUTDTransducerFrequencyGet(tr)
 
-    def transducer_frequency_set(self, tr: TransducerPtr, value: float, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def transducer_frequency_set(self, tr: TransducerPtr, value: float, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
         return self.dll.AUTDTransducerFrequencySet(tr, value, err)
 
     def transducer_cycle_get(self, tr: TransducerPtr) -> ctypes.c_uint16:
         return self.dll.AUTDTransducerCycleGet(tr)
 
-    def transducer_cycle_set(self, tr: TransducerPtr, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def transducer_cycle_set(self, tr: TransducerPtr, value: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
         return self.dll.AUTDTransducerCycleSet(tr, value, err)
 
     def transducer_wavelength(self, tr: TransducerPtr, sound_speed: float) -> ctypes.c_double:
@@ -717,31 +717,31 @@ class NativeMethods(metaclass=Singleton):
     def controller_builder_add_device_quaternion(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilderAddDeviceQuaternion(builder, x, y, z, qw, qx, qy, qz)
 
-    def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char]) -> ControllerPtr:
+    def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char] | None) -> ControllerPtr:
         return self.dll.AUTDControllerOpenWith(builder, link_builder, err)
 
     def controller_get_runtime(self, cnt: ControllerPtr) -> RuntimePtr:
         return self.dll.AUTDControllerGetRuntime(cnt)
 
-    def controller_close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def controller_close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
         return self.dll.AUTDControllerClose(cnt, err)
 
     def controller_delete(self, cnt: ControllerPtr) -> None:
         return self.dll.AUTDControllerDelete(cnt)
 
-    def controller_fpga_info(self, cnt: ControllerPtr, out: ctypes.Array[ctypes.c_uint8], err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def controller_fpga_info(self, cnt: ControllerPtr, out: ctypes.Array[ctypes.c_uint8] | None, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
         return self.dll.AUTDControllerFPGAInfo(cnt, out, err)
 
-    def controller_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPtr:
+    def controller_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char] | None) -> FirmwareInfoListPtr:
         return self.dll.AUTDControllerFirmwareInfoListPointer(cnt, err)
 
-    def controller_firmware_info_get(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char]) -> None:
+    def controller_firmware_info_get(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDControllerFirmwareInfoGet(p_info_list, idx, info)
 
     def controller_firmware_info_list_pointer_delete(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDControllerFirmwareInfoListPointerDelete(p_info_list)
 
-    def firmware_latest(self, latest: ctypes.Array[ctypes.c_char]) -> None:
+    def firmware_latest(self, latest: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDFirmwareLatest(latest)
 
     def datagram_synchronize(self) -> DatagramPtr:
@@ -771,22 +771,22 @@ class NativeMethods(metaclass=Singleton):
     def datagram_amplitudes(self, amp: float) -> DatagramPtr:
         return self.dll.AUTDDatagramAmplitudes(amp)
 
-    def controller_send(self, cnt: ControllerPtr, mode: TransMode, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def controller_send(self, cnt: ControllerPtr, mode: TransMode, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDControllerSend(cnt, mode, d1, d2, timeout_ns, err)
 
-    def controller_send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def controller_send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDControllerSendSpecial(cnt, mode, special, timeout_ns, err)
 
     def controller_group_create_kv_map(self) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupCreateKVMap()
 
-    def controller_group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> GroupKVMapPtr:
+    def controller_group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupKVMapSet(map, key, d1, d2, mode, timeout_ns, err)
 
-    def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> GroupKVMapPtr:
+    def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupKVMapSetSpecial(map, key, special, mode, timeout_ns, err)
 
-    def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32], kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDControllerGroup(cnt, map, kv_map, err)
 
     def link_audit(self) -> LinkAuditBuilderPtr:
@@ -858,16 +858,16 @@ class NativeMethods(metaclass=Singleton):
     def link_audit_fpga_silencer_step(self, audit: LinkPtr, idx: int) -> ctypes.c_uint16:
         return self.dll.AUTDLinkAuditFpgaSilencerStep(audit, idx)
 
-    def link_audit_fpga_cycles(self, audit: LinkPtr, idx: int, cycles: ctypes.Array[ctypes.c_uint16]) -> None:
+    def link_audit_fpga_cycles(self, audit: LinkPtr, idx: int, cycles: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaCycles(audit, idx, cycles)
 
-    def link_audit_fpga_mod_delays(self, audit: LinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16]) -> None:
+    def link_audit_fpga_mod_delays(self, audit: LinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaModDelays(audit, idx, delay)
 
-    def link_audit_fpga_duty_filters(self, audit: LinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16]) -> None:
+    def link_audit_fpga_duty_filters(self, audit: LinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaDutyFilters(audit, idx, filters)
 
-    def link_audit_fpga_phase_filters(self, audit: LinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16]) -> None:
+    def link_audit_fpga_phase_filters(self, audit: LinkPtr, idx: int, filters: ctypes.Array[ctypes.c_int16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaPhaseFilters(audit, idx, filters)
 
     def link_audit_fpga_stm_frequency_division(self, audit: LinkPtr, idx: int) -> ctypes.c_uint32:
@@ -891,10 +891,10 @@ class NativeMethods(metaclass=Singleton):
     def link_audit_fpga_modulation_cycle(self, audit: LinkPtr, idx: int) -> ctypes.c_uint32:
         return self.dll.AUTDLinkAuditFpgaModulationCycle(audit, idx)
 
-    def link_audit_fpga_modulation(self, audit: LinkPtr, idx: int, data: ctypes.Array[ctypes.c_uint8]) -> None:
+    def link_audit_fpga_modulation(self, audit: LinkPtr, idx: int, data: ctypes.Array[ctypes.c_uint8] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaModulation(audit, idx, data)
 
-    def link_audit_fpga_duties_and_phases(self, audit: LinkPtr, idx: int, stm_idx: int, duties: ctypes.Array[ctypes.c_uint16], phases: ctypes.Array[ctypes.c_uint16]) -> None:
+    def link_audit_fpga_duties_and_phases(self, audit: LinkPtr, idx: int, stm_idx: int, duties: ctypes.Array[ctypes.c_uint16] | None, phases: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaDutiesAndPhases(audit, idx, stm_idx, duties, phases)
 
     def link_get(self, cnt: ControllerPtr) -> LinkPtr:
@@ -903,13 +903,13 @@ class NativeMethods(metaclass=Singleton):
     def link_nop(self) -> LinkBuilderPtr:
         return self.dll.AUTDLinkNop()
 
-    def modulation_with_cache(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ModulationCachePtr:
+    def modulation_with_cache(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char] | None) -> ModulationCachePtr:
         return self.dll.AUTDModulationWithCache(m, err)
 
     def modulation_cache_get_buffer_size(self, m: ModulationCachePtr) -> ctypes.c_uint32:
         return self.dll.AUTDModulationCacheGetBufferSize(m)
 
-    def modulation_cache_get_buffer(self, m: ModulationCachePtr, buf: ctypes.Array[ctypes.c_double]) -> None:
+    def modulation_cache_get_buffer(self, m: ModulationCachePtr, buf: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDModulationCacheGetBuffer(m, buf)
 
     def modulation_cache_into_modulation(self, m: ModulationCachePtr) -> ModulationPtr:
@@ -918,7 +918,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_cache_delete(self, m: ModulationCachePtr) -> None:
         return self.dll.AUTDModulationCacheDelete(m)
 
-    def modulation_custom(self, freq_div: int, ptr: ctypes.Array[ctypes.c_double], len: int) -> ModulationPtr:
+    def modulation_custom(self, freq_div: int, ptr: ctypes.Array[ctypes.c_double] | None, len: int) -> ModulationPtr:
         return self.dll.AUTDModulationCustom(freq_div, ptr, len)
 
     def modulation_with_low_pass(self, m: ModulationPtr, n_taps: int, cutoff: float) -> ModulationPtr:
@@ -945,7 +945,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_into_datagram(self, m: ModulationPtr) -> DatagramPtr:
         return self.dll.AUTDModulationIntoDatagram(m)
 
-    def modulation_size(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def modulation_size(self, m: ModulationPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDModulationSize(m, err)
 
     def modulation_with_radiation_pressure(self, m: ModulationPtr) -> ModulationPtr:
@@ -999,13 +999,13 @@ class NativeMethods(metaclass=Singleton):
     def modulation_static_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
         return self.dll.AUTDModulationStaticWithAmp(m, amp)
 
-    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p, context: ctypes.c_void_p) -> ModulationPtr:
+    def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None) -> ModulationPtr:
         return self.dll.AUTDModulationWithTransform(m, f, context)
 
-    def stm_focus(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double], shift: ctypes.Array[ctypes.c_uint8], size: int) -> DatagramPtr:
+    def stm_focus(self, props: STMPropsPtr, points: ctypes.Array[ctypes.c_double] | None, shift: ctypes.Array[ctypes.c_uint8] | None, size: int) -> DatagramPtr:
         return self.dll.AUTDSTMFocus(props, points, shift, size)
 
-    def stm_gain(self, props: STMPropsPtr, gains: ctypes.Array, size: int, mode: GainSTMMode) -> DatagramPtr:
+    def stm_gain(self, props: STMPropsPtr, gains: ctypes.Array | None, size: int, mode: GainSTMMode) -> DatagramPtr:
         return self.dll.AUTDSTMGain(props, gains, size, mode)
 
     def stm_gain_add_gain(self, stm: DatagramPtr, gain: GainPtr) -> DatagramPtr:

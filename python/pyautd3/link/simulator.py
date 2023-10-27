@@ -12,24 +12,25 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from datetime import timedelta
 import ctypes
+from datetime import timedelta
 
+from pyautd3.autd_error import AUTDError
+from pyautd3.geometry import Geometry
+from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr, RuntimePtr
 from pyautd3.native_methods.autd3capi_link_simulator import (
+    LinkBuilderPtr,
     LinkSimulatorBuilderPtr,
+)
+from pyautd3.native_methods.autd3capi_link_simulator import (
     NativeMethods as LinkSimulator,
 )
-from pyautd3.native_methods.autd3capi import NativeMethods as Base
-
-from pyautd3.native_methods.autd3capi_link_simulator import LinkBuilderPtr
-from pyautd3.autd_error import AUTDError
-from pyautd3.internal.link import LinkBuilder
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, LinkPtr, RuntimePtr
-from pyautd3.geometry import Geometry
 
 
-class Simulator:
-    """Link for Simulator"""
+class Simulator(Link):
+    """Link for Simulator."""
 
     _ptr: LinkPtr
     _runtime_ptr: RuntimePtr
@@ -37,47 +38,49 @@ class Simulator:
     class _Builder(LinkBuilder):
         _builder: LinkSimulatorBuilderPtr
 
-        def __init__(self, port: int):
+        def __init__(self: "Simulator._Builder", port: int) -> None:
             self._builder = LinkSimulator().link_simulator(port)
 
-        def with_server_ip(self, addr: str) -> "Simulator._Builder":
-            """Set server IP address
+        def with_server_ip(self: "Simulator._Builder", addr: str) -> "Simulator._Builder":
+            """Set server IP address.
 
             Arguments:
-            - `addr` - Server IP address
+            ---------
+                addr: Server IP address
             """
-
             err = ctypes.create_string_buffer(256)
             self._builder = LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8"), err)
             if self._builder._0 is None:
                 raise AUTDError(err)
             return self
 
-        def with_timeout(self, timeout: timedelta) -> "Simulator._Builder":
-            """Set timeout
+        def with_timeout(self: "Simulator._Builder", timeout: timedelta) -> "Simulator._Builder":
+            """Set timeout.
 
             Arguments:
-            - `timeout` - Timeout
+            ---------
+                timeout: Timeout
             """
-
             self._builder = LinkSimulator().link_simulator_with_timeout(self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000))
             return self
 
-        def _ptr(self) -> LinkBuilderPtr:
+        def _link_builder_ptr(self: "Simulator._Builder") -> LinkBuilderPtr:
             return LinkSimulator().link_simulator_into_builder(self._builder)
 
-        def _resolve_link(self, obj):
-            obj.link = Simulator(Base().link_get(obj._ptr), Base().controller_get_runtime(obj._ptr))
+        def _resolve_link(self: "Simulator._Builder", ptr: ControllerPtr) -> "Simulator":
+            return Simulator(Base().link_get(ptr), Base().controller_get_runtime(ptr))
 
-    def __init__(self, ptr: LinkPtr, runtime_ptr: RuntimePtr):
-        self._ptr = ptr
+    def __init__(self: "Simulator", ptr: LinkPtr, runtime_ptr: RuntimePtr) -> None:
+        super().__init__(ptr)
         self._runtime_ptr = runtime_ptr
 
     @staticmethod
     def builder(port: int) -> _Builder:
+        """Create Simulator link builder."""
         return Simulator._Builder(port)
 
-    def update_geometry(self, geometry: Geometry):
+    def update_geometry(self: "Simulator", geometry: Geometry) -> None:
+        """Update geometry."""
         err = ctypes.create_string_buffer(256)
-        if LinkSimulator().link_simulator_update_geometry(self._ptr, self._runtime_ptr, geometry._ptr, err) == AUTD3_ERR:
+        if LinkSimulator().link_simulator_update_geometry(self._ptr, self._runtime_ptr, geometry._geometry_ptr(), err) == AUTD3_ERR:
             raise AUTDError(err)

@@ -1,4 +1,4 @@
-'''
+"""
 File: test_fourier.py
 Project: modulation
 Created Date: 20/09/2023
@@ -9,14 +9,14 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from ..test_autd import create_controller
-
-from pyautd3.modulation import Sine, Fourier
 
 import numpy as np
+
+from pyautd3.modulation import Fourier, Sine
+
+from ..test_autd import create_controller
 
 
 def test_fourier():

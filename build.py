@@ -17,13 +17,14 @@ import argparse
 import contextlib
 import datetime
 import glob
+import os
+import platform
 import re
 import shutil
 import subprocess
-import os
 import sys
-import platform
 from typing import List, Optional
+
 from packaging import version
 
 

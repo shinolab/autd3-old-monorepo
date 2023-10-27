@@ -90,7 +90,7 @@ class Focus(Gain):
         self.point = np.array(point)
 
     def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        return Gain.transform(
+        return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),

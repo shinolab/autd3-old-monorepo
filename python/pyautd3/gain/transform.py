@@ -1,4 +1,4 @@
-'''
+"""
 File: transform.py
 Project: gain
 Created Date: 10/10/2023
@@ -9,70 +9,69 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
+from collections.abc import Callable
+from ctypes import POINTER, create_string_buffer
 from functools import reduce
+
 import numpy as np
-from typing import Callable, Dict
-from ctypes import create_string_buffer, POINTER
 
-from pyautd3.geometry import Geometry, Device, Transducer
 from pyautd3.autd_error import AUTDError
+from pyautd3.geometry import Device, Geometry, Transducer
 from pyautd3.internal.gain import IGain
-
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
 
 class Transform(IGain):
-    """Gain to transform gain data
-
-    """
+    """Gain to transform gain data."""
 
     _g: IGain
     _f: Callable[[Device, Transducer, Drive], Drive]
 
-    def __init__(self, g: IGain, f: Callable[[Device, Transducer, Drive], Drive]):
+    def __init__(self: "Transform", g: IGain, f: Callable[[Device, Transducer, Drive], Drive]) -> None:
         super().__init__()
         self._g = g
         self._f = f
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def _gain_ptr(self: "Transform", geometry: Geometry) -> GainPtr:
         err = create_string_buffer(256)
-        res = Base().gain_calc(self._g.gain_ptr(geometry), geometry.ptr(), err)
+        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr(), err)
         if res._0 is None:
             raise AUTDError(err)
 
-        drives: Dict[int, np.ndarray] = {}
+        drives: dict[int, np.ndarray] = {}
         for dev in geometry.devices():
             d = np.zeros(dev.num_transducers, dtype=Drive)
 
-            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore
+            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore[arg-type]
             for tr in dev:
-                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))  # type: ignore
+                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))  # type: ignore[call-overload]
             drives[dev.idx] = d
 
         Base().gain_calc_free_result(res)
 
         return reduce(
-            lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
-                                                    drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
-                                                    len(drives[dev.idx])),
+            lambda acc, dev: Base().gain_custom_set(
+                acc, dev.idx, drives[dev.idx].ctypes.data_as(POINTER(Drive)), len(drives[dev.idx])  # type: ignore[arg-type]
+            ),
             geometry.devices(),
             Base().gain_custom(),
         )
 
 
-def __with_transform(self, f: Callable[[Device, Transducer, Drive], Drive]):
-    """Transform the result of calculation
+def __with_transform(self: "IGain", f: Callable[[Device, Transducer, Drive], Drive]) -> Transform:
+    """Transform the result of calculation.
 
     Arguments:
-    - `f` - Transform function. The first argument is device, the second is transducer, and the third is the original drive data.
+    ---------
+        self: Gain
+        f: Transform function. The first argument is device, the second is transducer, and the third is the original drive data.
     """
-
     return Transform(self, f)
 
 
-IGain.with_transform = __with_transform  # type: ignore
+IGain.with_transform = __with_transform  # type: ignore[attr-defined]
