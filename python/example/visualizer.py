@@ -1,4 +1,4 @@
-'''
+"""
 File: visualizer.py
 Project: example
 Created Date: 13/10/2023
@@ -9,16 +9,14 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 import numpy as np
 
-
-from pyautd3 import Controller, AUTD3
-from pyautd3.link.visualizer import Visualizer, PyPlotConfig, PythonBackend, PlotRange
+from pyautd3 import AUTD3, Controller
 from pyautd3.gain import Focus
+from pyautd3.link.visualizer import PlotRange, PyPlotConfig, PythonBackend, Visualizer
 from pyautd3.modulation import Square
-
 
 if __name__ == "__main__":
     autd = (

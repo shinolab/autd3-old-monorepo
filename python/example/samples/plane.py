@@ -1,4 +1,4 @@
-'''
+"""
 File: plane.py
 Project: samples
 Created Date: 14/09/2023
@@ -9,7 +9,7 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 import numpy as np
