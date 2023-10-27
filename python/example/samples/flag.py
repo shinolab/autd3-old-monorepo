@@ -17,7 +17,7 @@ import threading
 from pyautd3 import Controller, UpdateFlags
 
 
-def flag(autd: Controller):
+def flag(autd: Controller) -> None:
     for dev in autd.geometry:
         dev.force_fan = True
         dev.reads_fpga_info = True
@@ -29,7 +29,7 @@ def flag(autd: Controller):
 
     fin = False
 
-    def f():
+    def f() -> None:
         prompts = ["-", "/", "|", "\\"]
         prompts_idx = 0
         while not fin:

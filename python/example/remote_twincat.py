@@ -22,10 +22,9 @@ if __name__ == "__main__":
     remore_ams_net_id = "remote ams net id"
     local_ams_net_id = "local ams net is"
 
-    autd = (
+    with (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(RemoteTwinCAT.builder(remore_ams_net_id).with_server_ip(remote_ip_addr).with_client_ams_net_id(local_ams_net_id))
-    )
-
-    runner.run(autd)
+    ) as autd:
+        runner.run(autd)

@@ -19,11 +19,11 @@ from pyautd3.gain import Plane
 from pyautd3.modulation import Sine
 
 
-def plane(autd: Controller):
+def plane(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 
     f = Plane(np.array([0.0, 0.0, 1.0]))
     m = Sine(150)
 
-    autd.send((m, f))
+    autd.send(m, f)

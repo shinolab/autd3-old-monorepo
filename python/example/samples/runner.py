@@ -16,7 +16,7 @@ from pyautd3 import Controller, Stop
 from . import bessel, custom, flag, focus, group, holo, plane, stm, transtest, wav
 
 
-def run(autd: Controller):
+def run(autd: Controller) -> None:
     samples = [
         (focus.simple, "Single focus test"),
         (bessel.bessel, "Bessel beam test"),
@@ -55,5 +55,3 @@ def run(autd: Controller):
 
         print("finish.")
         autd.send(Stop())
-
-    autd.close()

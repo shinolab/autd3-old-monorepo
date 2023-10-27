@@ -16,16 +16,15 @@ from pyautd3 import AUTD3, Controller, Synchronize
 from pyautd3.link.nop import Nop
 
 if __name__ == "__main__":
-    autd = (
+    with (
         Controller.builder()
         .advanced()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Nop.builder())
-    )
+    ) as autd:
+        for dev in autd.geometry:
+            for tr in dev:
+                tr.frequency = 70e3
 
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.frequency = 70e3
-
-    autd.send(Synchronize())
+        autd.send(Synchronize())

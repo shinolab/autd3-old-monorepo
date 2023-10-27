@@ -18,6 +18,5 @@ from pyautd3 import AUTD3, Controller
 from pyautd3.link.twincat import TwinCAT
 
 if __name__ == "__main__":
-    autd = Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(TwinCAT.builder())
-
-    runner.run(autd)
+    with Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(TwinCAT.builder()) as autd:
+        runner.run(autd)

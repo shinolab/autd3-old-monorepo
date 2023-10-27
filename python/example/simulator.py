@@ -18,11 +18,10 @@ from pyautd3 import AUTD3, Controller
 from pyautd3.link.simulator import Simulator
 
 if __name__ == "__main__":
-    autd = (
+    with (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Simulator.builder(8080))
-    )
-
-    runner.run(autd)
+    ) as autd:
+        runner.run(autd)

@@ -20,10 +20,10 @@ from pyautd3.modulation import Modulation
 
 
 class Focus(Gain):
-    def __init__(self, point):
+    def __init__(self: "Focus", point: np.ndarray) -> None:
         self.point = np.array(point)
 
-    def calc(self, geometry: Geometry) -> dict[int, np.ndarray]:
+    def calc(self: "Focus", geometry: Geometry) -> dict[int, np.ndarray]:
         return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
@@ -36,21 +36,21 @@ class Focus(Gain):
 class Burst(Modulation):
     _length: int
 
-    def __init__(self, length: int, freq_div: int = 5120):
+    def __init__(self: "Burst", length: int, freq_div: int = 5120) -> None:
         super().__init__(freq_div)
         self._length = length
 
-    def calc(self):
+    def calc(self: "Burst") -> np.ndarray:
         buf = np.zeros(self._length, dtype=np.float64)
         buf[0] = 1
         return buf
 
 
-def custom(autd: Controller):
+def custom(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Burst(4000)
 
-    autd.send((m, f))
+    autd.send(m, f)

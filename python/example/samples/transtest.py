@@ -17,11 +17,11 @@ from pyautd3.gain import TransducerTest
 from pyautd3.modulation import Sine
 
 
-def transtest(autd: Controller):
+def transtest(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 
-    f = TransducerTest().set_drive(0, 0, 1.0, 0.0).set_drive(0, 248, 1.0, 0.0)
+    f = TransducerTest().set_drive(0, 0, 0.0, 1.0).set_drive(0, 248, 0.0, 1.0)
     m = Sine(150)
 
-    autd.send((m, f))
+    autd.send(m, f)

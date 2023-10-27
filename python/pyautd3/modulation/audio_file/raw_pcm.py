@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import ctypes
+from pathlib import Path
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulationWithFreqDiv
@@ -30,10 +31,10 @@ class RawPCM(IModulationWithFreqDiv):
     The data is resampled to the sampling frequency of the Modulation.
     """
 
-    _path: str
+    _path: Path
     _sample_rate: int
 
-    def __init__(self: "RawPCM", path: str, sample_rate: int) -> None:
+    def __init__(self: "RawPCM", path: Path, sample_rate: int) -> None:
         """Constructor.
 
         Arguments:
@@ -47,7 +48,7 @@ class RawPCM(IModulationWithFreqDiv):
 
     def _modulation_ptr(self: "RawPCM") -> ModulationPtr:
         err = ctypes.create_string_buffer(256)
-        ptr = ModulationAudioFile().modulation_raw_pcm(self._path.encode("utf-8"), self._sample_rate, err)
+        ptr = ModulationAudioFile().modulation_raw_pcm(str(self._path).encode("utf-8"), self._sample_rate, err)
         if ptr._0 is None:
             raise AUTDError(err)
         if self._freq_div is not None:

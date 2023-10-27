@@ -19,11 +19,11 @@ from pyautd3.gain import Focus, Null
 from pyautd3.modulation import Sine, Static
 
 
-def group(autd: Controller):
+def group(autd: Controller) -> None:
     config = Silencer()
     autd.send(config)
 
-    def grouping(dev: Device):
+    def grouping(dev: Device) -> str | None:
         match dev.idx:
             case 0:
                 return "null"
@@ -32,6 +32,8 @@ def group(autd: Controller):
             case _:
                 return None
 
-    autd.group(grouping).set_data("null", (Static(), Null())).set_data(
-        "focus", (Sine(150), Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))
+    autd.group(grouping).set_data("null", Static(), Null()).set_data(
+        "focus",
+        Sine(150),
+        Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])),
     ).send()

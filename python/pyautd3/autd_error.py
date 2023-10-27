@@ -48,3 +48,10 @@ class KeyAlreadyExistsError(AUTDError):
 
     def __init__(self: "KeyAlreadyExistsError") -> None:
         super().__init__("Key already exists")
+
+
+class InvalidDatagramTypeError(AUTDError):
+    """Exception class for invalid datagram type."""
+
+    def __init__(self: "InvalidDatagramTypeError") -> None:
+        super().__init__("Invalid datagram type")

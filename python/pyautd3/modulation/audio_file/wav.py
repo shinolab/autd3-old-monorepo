@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 import ctypes
+from pathlib import Path
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulationWithFreqDiv
@@ -27,9 +28,9 @@ class Wav(IModulationWithFreqDiv):
     The data is resampled to the sampling frequency of the Modulation.
     """
 
-    _path: str
+    _path: Path
 
-    def __init__(self: "Wav", path: str) -> None:
+    def __init__(self: "Wav", path: Path) -> None:
         """Constructor.
 
         Arguments:
@@ -41,7 +42,7 @@ class Wav(IModulationWithFreqDiv):
 
     def _modulation_ptr(self: "Wav") -> ModulationPtr:
         err = ctypes.create_string_buffer(256)
-        ptr = ModulationAudioFile().modulation_wav(self._path.encode("utf-8"), err)
+        ptr = ModulationAudioFile().modulation_wav(str(self._path).encode("utf-8"), err)
         if ptr._0 is None:
             raise AUTDError(err)
         if self._freq_div is not None:
