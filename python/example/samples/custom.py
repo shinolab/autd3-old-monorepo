@@ -1,4 +1,4 @@
-'''
+"""
 File: custom.py
 Project: samples
 Created Date: 11/10/2021
@@ -9,23 +9,22 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-from typing import Dict
-
-from pyautd3 import Controller, Silencer, Geometry, Drive
-from pyautd3.gain import Gain
-from pyautd3.modulation import Modulation
 
 import numpy as np
+
+from pyautd3 import Controller, Drive, Geometry, Silencer
+from pyautd3.gain import Gain
+from pyautd3.modulation import Modulation
 
 
 class Focus(Gain):
     def __init__(self, point):
         self.point = np.array(point)
 
-    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        return Gain.transform(
+    def calc(self, geometry: Geometry) -> dict[int, np.ndarray]:
+        return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),

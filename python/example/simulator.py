@@ -1,4 +1,4 @@
-'''
+"""
 File: simulator.py
 Project: example
 Created Date: 29/08/2023
@@ -9,14 +9,13 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from pyautd3 import Controller, AUTD3
-from pyautd3.link.simulator import Simulator
 
 from samples import runner
 
+from pyautd3 import AUTD3, Controller
+from pyautd3.link.simulator import Simulator
 
 if __name__ == "__main__":
     autd = (

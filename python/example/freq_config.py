@@ -1,4 +1,4 @@
-'''
+"""
 File: freq_config.py
 Project: example
 Created Date: 14/09/2023
@@ -9,12 +9,11 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
-from pyautd3 import Controller, AUTD3, Synchronize
+from pyautd3 import AUTD3, Controller, Synchronize
 from pyautd3.link.nop import Nop
-
 
 if __name__ == "__main__":
     autd = (
