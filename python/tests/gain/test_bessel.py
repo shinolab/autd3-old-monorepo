@@ -1,4 +1,4 @@
-'''
+"""
 File: test_bessel.py
 Project: gain
 Created Date: 20/09/2023
@@ -9,13 +9,13 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-from ..test_autd import create_controller
+import numpy as np
 
 from pyautd3.gain import Bessel
 
-import numpy as np
+from ..test_autd import create_controller
 
 
 def test_bessel():

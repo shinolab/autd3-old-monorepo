@@ -1,4 +1,4 @@
-'''
+"""
 File: test_modulation.py
 Project: modulation
 Created Date: 20/09/2023
@@ -9,18 +9,17 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from ..test_autd import create_controller
-
-from pyautd3.modulation import Modulation
 
 import numpy as np
 
+from pyautd3.modulation import Modulation
+
+from ..test_autd import create_controller
+
 
 class Burst(Modulation):
-
     def __init__(self):
         super().__init__(5120)
 
