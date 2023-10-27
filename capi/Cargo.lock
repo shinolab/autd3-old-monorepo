@@ -184,6 +184,7 @@ dependencies = [
  "nalgebra",
  "serde",
  "thiserror",
+ "tokio",
  "windows",
 ]
 
@@ -212,9 +213,11 @@ name = "autd3-link-simulator"
 version = "17.0.0"
 dependencies = [
  "async-trait",
+ "autd3-derive",
  "autd3-driver",
  "autd3-protobuf",
  "thiserror",
+ "tokio",
  "tonic",
 ]
 
@@ -223,6 +226,7 @@ name = "autd3-link-soem"
 version = "17.0.0"
 dependencies = [
  "async-trait",
+ "autd3-derive",
  "autd3-driver",
  "autd3-protobuf",
  "cc",
@@ -230,6 +234,7 @@ dependencies = [
  "glob",
  "thiserror",
  "time",
+ "tokio",
  "tonic",
  "windows",
 ]
@@ -239,11 +244,13 @@ name = "autd3-link-twincat"
 version = "17.0.0"
 dependencies = [
  "async-trait",
+ "autd3-derive",
  "autd3-driver",
  "cc",
  "itertools",
  "libloading 0.8.1",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -251,6 +258,7 @@ name = "autd3-link-visualizer"
 version = "17.0.0"
 dependencies = [
  "async-trait",
+ "autd3-derive",
  "autd3-driver",
  "autd3-firmware-emulator",
  "itertools",
@@ -260,6 +268,7 @@ dependencies = [
  "pyo3",
  "scarlet",
  "thiserror",
+ "tokio",
  "vulkano",
  "vulkano-shaders",
  "which",
@@ -315,7 +324,6 @@ dependencies = [
 name = "autd3capi-common"
 version = "17.0.0"
 dependencies = [
- "async-trait",
  "autd3",
  "autd3-derive",
  "autd3-driver",
@@ -2438,6 +2446,7 @@ dependencies = [
  "num_cpus",
  "pin-project-lite",
  "socket2 0.5.5",
+ "tokio-macros",
  "windows-sys",
 ]
 
@@ -2449,6 +2458,17 @@ checksum = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf"
 dependencies = [
  "pin-project-lite",
  "tokio",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.38",
 ]
 
 [[package]]

@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ pub mod stm;
 
 use autd3capi_def::{
     common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
-    RuntimePtr, TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -98,8 +98,8 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
     link_builder: LinkBuilderPtr,
     err: *mut c_char,
 ) -> ControllerPtr {
-    let link_builder: Box<Box<dyn DynamicLinkBuilder>> =
-        Box::from_raw(link_builder.0 as *mut Box<dyn DynamicLinkBuilder>);
+    let link_builder: Box<DynamicLinkBuilder> =
+        Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
     let cnt = try_or_return!(
         Box::from_raw(
             builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>
@@ -109,12 +109,6 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
         ControllerPtr(NULL)
     );
     ControllerPtr(Box::into_raw(Box::new(cnt)) as _)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDControllerGetRuntime(cnt: ControllerPtr) -> RuntimePtr {
-    RuntimePtr(&cast!(cnt.0, Cnt).runtime as *const _ as _)
 }
 
 #[no_mangle]

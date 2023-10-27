@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, RuntimePtr, STMPropsPtr, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, STMPropsPtr, TransMode, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -218,9 +218,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDControllerOpenWith.argtypes = [ControllerBuilderPtr, LinkBuilderPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerOpenWith.restype = ControllerPtr
-
-        self.dll.AUTDControllerGetRuntime.argtypes = [ControllerPtr]  # type: ignore 
-        self.dll.AUTDControllerGetRuntime.restype = RuntimePtr
 
         self.dll.AUTDControllerClose.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerClose.restype = ctypes.c_bool
@@ -719,9 +716,6 @@ class NativeMethods(metaclass=Singleton):
 
     def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char] | None) -> ControllerPtr:
         return self.dll.AUTDControllerOpenWith(builder, link_builder, err)
-
-    def controller_get_runtime(self, cnt: ControllerPtr) -> RuntimePtr:
-        return self.dll.AUTDControllerGetRuntime(cnt)
 
     def controller_close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
         return self.dll.AUTDControllerClose(cnt, err)

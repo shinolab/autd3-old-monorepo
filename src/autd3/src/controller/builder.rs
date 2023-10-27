@@ -4,19 +4,16 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{
-    geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, IntoDevice,
-        LegacyTransducer, Transducer,
-    },
-    link::LinkBuilder,
+use autd3_driver::geometry::{
+    AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, IntoDevice, LegacyTransducer,
+    Transducer,
 };
 
 use super::Controller;
@@ -45,8 +42,8 @@ impl<T: Transducer> ControllerBuilder<T> {
     }
 
     /// Open controller
-    #[cfg(feature = "async")]
-    pub async fn open_with<B: LinkBuilder<T>>(
+    #[cfg(not(feature = "sync"))]
+    pub async fn open_with<B: autd3_driver::link::LinkBuilder<T>>(
         self,
         link_builder: B,
     ) -> Result<Controller<T, B::L>, AUTDError> {
@@ -56,18 +53,14 @@ impl<T: Transducer> ControllerBuilder<T> {
     }
 
     /// Open controller
-    #[cfg(not(feature = "async"))]
-    pub fn open_with<B: LinkBuilder<T>>(
+    #[cfg(feature = "sync")]
+    pub fn open_with<B: autd3_driver::link::LinkSyncBuilder<T>>(
         self,
         link_builder: B,
     ) -> Result<Controller<T, B::L>, AUTDError> {
         let geometry = Geometry::<T>::new(self.devices);
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let link = runtime.block_on(link_builder.open(&geometry))?;
-        Controller::open_impl(runtime, geometry, link)
+        let link = link_builder.open(&geometry)?;
+        Controller::open_impl(geometry, link)
     }
 
     fn convert<T2: Transducer>(self) -> ControllerBuilder<T2> {

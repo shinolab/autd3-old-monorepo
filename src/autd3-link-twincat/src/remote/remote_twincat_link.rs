@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use std::{
     time::Duration,
 };
 
+use autd3_derive::LinkSync;
 use itertools::Itertools;
 
 use autd3_driver::{
@@ -33,6 +34,7 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 /// Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
+#[derive(LinkSync)]
 pub struct RemoteTwinCAT {
     port: c_long,
     net_id: AmsNetId,

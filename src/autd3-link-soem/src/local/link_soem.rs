@@ -4,13 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::LinkSync;
 use crossbeam_channel::{bounded, Receiver, Sender, TrySendError};
 use std::{
     ffi::c_void,
@@ -66,6 +67,7 @@ type OnLostCallBack = Box<dyn Fn(&str) + Send + Sync>;
 type OnErrCallBack = Box<dyn Fn(&str) + Send + Sync>;
 
 /// Link using [SOEM](https://github.com/OpenEtherCATsociety/SOEM)
+#[derive(LinkSync)]
 pub struct SOEM {
     ecatth_handle: Option<JoinHandle<Result<(), SOEMError>>>,
     timer_handle: Option<Box<Timer<SoemCallback>>>,

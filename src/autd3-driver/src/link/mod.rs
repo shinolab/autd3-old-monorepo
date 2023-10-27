@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -80,6 +80,30 @@ pub trait Link: Send + Sync {
     }
 }
 
+#[cfg(feature = "sync")]
+/// Link for blocking operation
+pub trait LinkSync {
+    fn close(&mut self) -> Result<(), AUTDInternalError>;
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError>;
+    #[must_use]
+    fn is_open(&self) -> bool;
+    #[must_use]
+    fn timeout(&self) -> Duration;
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut [RxMessage],
+        timeout: Option<Duration>,
+    ) -> Result<bool, AUTDInternalError>;
+    fn wait_msg_processed(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut [RxMessage],
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError>;
+}
+
 #[async_trait]
 pub trait LinkBuilder<T: Transducer> {
     type L: Link;
@@ -88,21 +112,29 @@ pub trait LinkBuilder<T: Transducer> {
     async fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
 }
 
-#[async_trait]
-impl Link for Box<dyn Link> {
+#[cfg(feature = "sync")]
+pub trait LinkSyncBuilder<T: Transducer> {
+    type L: LinkSync;
+
+    /// Open link
+    fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
+}
+
+#[cfg(feature = "sync")]
+impl LinkSync for Box<dyn LinkSync> {
     #[cfg_attr(coverage_nightly, coverage(off))]
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
-        self.as_mut().close().await
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
+        self.as_mut().close()
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        self.as_mut().send(tx).await
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+        self.as_mut().send(tx)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
-        self.as_mut().receive(rx).await
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+        self.as_mut().receive(rx)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
@@ -116,23 +148,23 @@ impl Link for Box<dyn Link> {
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    async fn send_receive(
+    fn send_receive(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Option<Duration>,
     ) -> Result<bool, AUTDInternalError> {
-        self.as_mut().send_receive(tx, rx, timeout).await
+        self.as_mut().send_receive(tx, rx, timeout)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    async fn wait_msg_processed(
+    fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
-        self.as_mut().wait_msg_processed(tx, rx, timeout).await
+        self.as_mut().wait_msg_processed(tx, rx, timeout)
     }
 }
 

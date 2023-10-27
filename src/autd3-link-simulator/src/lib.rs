@@ -4,13 +4,14 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::LinkSync;
 use autd3_protobuf::*;
 
 use std::{
@@ -31,6 +32,7 @@ enum Either {
 }
 
 /// Link for Simulator
+#[derive(LinkSync)]
 pub struct Simulator {
     client: simulator_client::SimulatorClient<tonic::transport::Channel>,
     timeout: Duration,
@@ -176,6 +178,25 @@ impl Simulator {
         geometry: &autd3_driver::geometry::Geometry<T>,
     ) -> Result<(), AUTDInternalError> {
         if self.client.update_geomety(geometry.to_msg()).await.is_err() {
+            return Err(
+                AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
+            );
+        }
+        Ok(())
+    }
+}
+
+#[cfg(feature = "sync")]
+impl SimulatorSync {
+    pub fn update_geometry<T: Transducer>(
+        &mut self,
+        geometry: &autd3_driver::geometry::Geometry<T>,
+    ) -> Result<(), AUTDInternalError> {
+        if self
+            .runtime
+            .block_on(self.inner.client.update_geomety(geometry.to_msg()))
+            .is_err()
+        {
             return Err(
                 AUTDProtoBufError::SendError("Failed to update geometry".to_string()).into(),
             );

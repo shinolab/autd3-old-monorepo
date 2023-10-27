@@ -56,7 +56,7 @@ autd3-link-visualizer = { path = "../autd3-link-visualizer", optional = true }
 autd3-modulation-audio-file = { path = "../autd3-modulation-audio-file" }
 autd3-protobuf = { path = "../autd3-protobuf", optional = true }
 colored = "2.0.0"
-tokio = { version = "1.29.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
 async-std = "1.12.0"
 
 [features]

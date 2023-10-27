@@ -14,6 +14,7 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 pub mod acoustics;
+pub mod autd3_device;
 pub mod common;
 pub mod cpu;
 pub mod datagram;
@@ -27,7 +28,6 @@ pub mod operation;
 pub mod osal_timer;
 pub mod sync_mode;
 pub mod timer_strategy;
-pub mod autd3_device;
 
 pub mod derive {
     pub mod prelude {

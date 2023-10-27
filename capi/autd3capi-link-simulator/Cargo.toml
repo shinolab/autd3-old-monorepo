@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }
-autd3-link-simulator = { path = "../../src/autd3-link-simulator" }
+autd3-link-simulator = { path = "../../src/autd3-link-simulator", features = ["sync"] }
 tokio = { version = "1.33.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]

@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@ mod gpu;
 
 mod backend;
 
+use autd3_derive::LinkSync;
 pub use backend::*;
 
 #[cfg(feature = "plotters")]
@@ -44,7 +45,12 @@ pub use scarlet::colormap::ListedColorMap;
 use error::VisualizerError;
 
 /// Link to monitoring the status of AUTD and acoustic field
-pub struct Visualizer<D: Directivity, B: Backend> {
+#[derive(LinkSync)]
+pub struct Visualizer<D, B>
+where
+    D: Directivity,
+    B: Backend,
+{
     is_open: bool,
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
@@ -54,7 +60,11 @@ pub struct Visualizer<D: Directivity, B: Backend> {
     gpu_compute: Option<gpu::FieldCompute>,
 }
 
-pub struct VisualizerBuilder<D: Directivity, B: Backend> {
+pub struct VisualizerBuilder<D, B>
+where
+    D: Directivity,
+    B: Backend,
+{
     backend: B,
     timeout: Duration,
     _d: PhantomData<D>,
