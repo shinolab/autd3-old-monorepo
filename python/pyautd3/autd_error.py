@@ -34,3 +34,10 @@ class UnknownGroupKeyError(AUTDError):
 
     def __init__(self: "UnknownGroupKeyError") -> None:
         super().__init__("Unknown group key")
+
+
+class InvalidPlotConfigError(AUTDError):
+    """Exception class for invalid plot config."""
+
+    def __init__(self: "InvalidPlotConfigError") -> None:
+        super().__init__("Invalid plot config type")
