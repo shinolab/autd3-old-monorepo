@@ -89,7 +89,7 @@ class SOEM:
             self._builder = LinkSOEM().link_soem_with_sync_0_cycle(self._builder, cycle)
             return self
 
-        def with_on_lost(self: "SOEM._Builder", handle: type[ctypes._FuncPointer]) -> "SOEM._Builder":
+        def with_on_lost(self: "SOEM._Builder", handle) -> "SOEM._Builder":  # noqa: ANN001
             """Set callback function when the link is lost.
 
             Arguments:
@@ -99,7 +99,7 @@ class SOEM:
             self._builder = LinkSOEM().link_soem_with_on_lost(self._builder, handle)  # type: ignore[arg-type]
             return self
 
-        def with_on_err(self: "SOEM._Builder", handle: type[ctypes._FuncPointer]) -> "SOEM._Builder":
+        def with_on_err(self: "SOEM._Builder", handle) -> "SOEM._Builder":  # noqa: ANN001
             """Set callback function when some error occurs.
 
             Arguments:
