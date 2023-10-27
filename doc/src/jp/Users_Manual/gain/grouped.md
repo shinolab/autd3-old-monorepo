@@ -41,7 +41,7 @@ var g = new Group((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
 ```python
 from pyautd3.gain import Focus, Null, Group
 
-g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set("null", Null()).set("focus", Focus(np.array([x, y, z])))
+g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set_gain("null", Null()).set_gain("focus", Focus(np.array([x, y, z])))
 
 ```
 
