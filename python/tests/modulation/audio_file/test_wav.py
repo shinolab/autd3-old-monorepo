@@ -1,4 +1,4 @@
-'''
+"""
 File: test_wav.py
 Project: audio_file
 Created Date: 20/09/2023
@@ -9,16 +9,17 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
-from datetime import timedelta
 import os
-from ...test_autd import create_controller
+from datetime import timedelta
+
+import numpy as np
 
 from pyautd3.modulation.audio_file import Wav
 
-import numpy as np
+from ...test_autd import create_controller
 
 
 def test_wav():
@@ -108,7 +109,8 @@ def test_wav():
             16,
             29,
             45,
-            64]
+            64,
+        ]
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 40960
 

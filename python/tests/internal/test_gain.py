@@ -1,4 +1,4 @@
-'''
+"""
 File: test_gain.py
 Project: gain
 Created Date: 20/09/2023
@@ -9,16 +9,17 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 from typing import Dict
-from ..test_autd import create_controller
-
-from pyautd3 import Drive, Geometry
-from pyautd3.gain import Uniform, Gain
 
 import numpy as np
+
+from pyautd3 import Drive, Geometry
+from pyautd3.gain import Gain, Uniform
+
+from ..test_autd import create_controller
 
 
 def test_cache():
@@ -40,7 +41,7 @@ class CacheTest(Gain):
 
     def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
         self.calc_cnt += 1
-        return Gain.transform(
+        return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
                 np.pi,

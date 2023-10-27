@@ -1,4 +1,4 @@
-'''
+"""
 File: test_geometry.py
 Project: tests
 Created Date: 18/09/2023
@@ -9,10 +9,11 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 import numpy as np
+
 from pyautd3 import AUTD3, UpdateFlags
 
 from .test_autd import create_controller
@@ -155,7 +156,7 @@ def test_device_rotate():
     autd = create_controller()
 
     for dev in autd.geometry:
-        r = [0.70710678, 0., 0., 0.70710678]
+        r = [0.70710678, 0.0, 0.0, 0.70710678]
         dev.rotate(r)
         for tr in dev:
             assert np.allclose(tr.rotation, r)
@@ -167,7 +168,7 @@ def test_device_affine():
     for dev in autd.geometry:
         original_pos = [tr.position for tr in dev]
         t = [1, 2, 3]
-        r = [0.70710678, 0., 0., 0.70710678]
+        r = [0.70710678, 0.0, 0.0, 0.70710678]
         dev.affine(t, r)
         for tr in dev:
             op = original_pos[tr.local_idx]
@@ -188,12 +189,16 @@ def test_transducer_position():
     autd = create_controller()
 
     assert np.allclose(autd.geometry[0][0].position, [0.0, 0.0, 0.0])
-    assert np.allclose(autd.geometry[0][-1].position, [(AUTD3.num_transducer_in_x() - 1) *
-                       AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0])
+    assert np.allclose(
+        autd.geometry[0][-1].position,
+        [(AUTD3.num_transducer_in_x() - 1) * AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0],
+    )
 
     assert np.allclose(autd.geometry[1][0].position, [0.0, 0.0, 0.0])
-    assert np.allclose(autd.geometry[1][-1].position, [(AUTD3.num_transducer_in_x() - 1) *
-                       AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0])
+    assert np.allclose(
+        autd.geometry[1][-1].position,
+        [(AUTD3.num_transducer_in_x() - 1) * AUTD3.transducer_spacing(), (AUTD3.num_transducer_in_y() - 1) * AUTD3.transducer_spacing(), 0.0],
+    )
 
 
 def test_transducer_rotation():
