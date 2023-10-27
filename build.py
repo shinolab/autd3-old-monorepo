@@ -342,16 +342,15 @@ class Config:
     def setup_linker(self):
         if not self.is_linux() or self.target is None:
             return
-        
+
         os.makedirs(".cargo", exist_ok=True)
-        with open(".cargo/config", "w") as f:        
+        with open(".cargo/config", "w") as f:
             if self.target == "armv7-unknown-linux-gnueabihf":
                 f.write("[target.armv7-unknown-linux-gnueabihf]\n")
                 f.write('linker = "arm-linux-gnueabihf-gcc"\n')
             if self.target == "aarch64-unknown-linux-gnu":
                 f.write("[target.aarch64-unknown-linux-gnu]\n")
                 f.write('linker = "aarch64-linux-gnu-gcc"\n')
-
 
 
 def rust_build(args):
@@ -1417,6 +1416,7 @@ if __name__ == "__main__":
 
         # cs test
         parser_cs_test = subparsers_cs.add_parser("test", help="see `cs test -h`")
+        parser_cs_test.add_argument("--release", action="store_true", help="release build")
         parser_cs_test.set_defaults(handler=cs_test)
 
         # cs run
