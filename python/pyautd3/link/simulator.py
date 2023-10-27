@@ -82,5 +82,5 @@ class Simulator(Link):
     def update_geometry(self: "Simulator", geometry: Geometry) -> None:
         """Update geometry."""
         err = ctypes.create_string_buffer(256)
-        if LinkSimulator().link_simulator_update_geometry(self._ptr, self._runtime_ptr, geometry._ptr, err) == AUTD3_ERR:
+        if LinkSimulator().link_simulator_update_geometry(self._ptr, self._runtime_ptr, geometry._geometry_ptr(), err) == AUTD3_ERR:
             raise AUTDError(err)

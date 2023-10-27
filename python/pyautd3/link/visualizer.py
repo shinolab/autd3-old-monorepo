@@ -439,7 +439,7 @@ class Visualizer(Link):
             self._directivity,
             np.ctypeslib.as_ctypes(points),
             points_len,
-            geometry.ptr(),
+            geometry._geometry_ptr(),
             idx,
             np.ctypeslib.as_ctypes(buf),
         )
@@ -469,7 +469,7 @@ class Visualizer(Link):
                     plot_range.z_end,
                     plot_range.resolution,
                 ),
-                geometry.ptr(),
+                geometry._geometry_ptr(),
                 idx,
                 err,
             )
@@ -488,7 +488,7 @@ class Visualizer(Link):
         err = ctypes.create_string_buffer(256)
         if (
             LinkVisualizer().link_visualizer_plot_phase_of(
-                self._ptr, self._backend, self._directivity, config._config_ptr(), geometry.ptr(), idx, err
+                self._ptr, self._backend, self._directivity, config._config_ptr(), geometry._geometry_ptr(), idx, err
             )
             == AUTD3_ERR
         ):
