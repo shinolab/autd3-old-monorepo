@@ -27,7 +27,7 @@ class IGain(Datagram, metaclass=ABCMeta):
     def __init__(self: "IGain") -> None:
         super().__init__()
 
-    def _ptr(self: "IGain", geometry: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "IGain", geometry: Geometry) -> DatagramPtr:
         return Base().gain_into_datagram(self._gain_ptr(geometry))
 
     @abstractmethod

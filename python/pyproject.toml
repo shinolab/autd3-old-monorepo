@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 select = ["ALL"]
-ignore = ["SLF001", "D105", "D107", "D205", "D212", "D213", "D401"]
+ignore = ["SLF001", "C901", "D105", "D107", "D205", "D212", "D213", "D401", "PLR0913"]
 fixable = ["ALL"]
 target-version = "py310"
 line-length = 150
