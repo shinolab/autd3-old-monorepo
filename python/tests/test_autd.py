@@ -255,7 +255,7 @@ def test_send_special():
 def test_group():
     autd = create_controller()
 
-    autd.group(lambda dev: dev.idx).set_data(0, (Static(), Null())).set_data(1, (Sine(150), Uniform(1.0))).send()
+    autd.group(lambda dev: dev.idx).set_data(0, Static(), Null()).set_data(1, Sine(150), Uniform(1.0)).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 2
@@ -293,7 +293,7 @@ def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    autd.group(f).set_data(0, (Sine(150), Uniform(0.5).with_phase(np.pi))).send()
+    autd.group(f).set_data(0, Sine(150), Uniform(0.5).with_phase(np.pi)).send()
 
     assert not check[0]
     assert check[1]

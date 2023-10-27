@@ -488,7 +488,13 @@ class Visualizer(Link):
         err = ctypes.create_string_buffer(256)
         if (
             LinkVisualizer().link_visualizer_plot_phase_of(
-                self._ptr, self._backend, self._directivity, config._config_ptr(), geometry._geometry_ptr(), idx, err
+                self._ptr,
+                self._backend,
+                self._directivity,
+                config._config_ptr(),
+                geometry._geometry_ptr(),
+                idx,
+                err,
             )
             == AUTD3_ERR
         ):

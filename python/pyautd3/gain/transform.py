@@ -56,7 +56,10 @@ class Transform(IGain):
 
         return reduce(
             lambda acc, dev: Base().gain_custom_set(
-                acc, dev.idx, drives[dev.idx].ctypes.data_as(POINTER(Drive)), len(drives[dev.idx])  # type: ignore[arg-type]
+                acc,
+                dev.idx,
+                drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore[arg-type]
+                len(drives[dev.idx]),
             ),
             geometry.devices(),
             Base().gain_custom(),
