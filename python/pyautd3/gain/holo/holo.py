@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import functools
 from collections.abc import Iterable
+from typing import TypeVar
 
 import numpy as np
 
@@ -23,6 +24,9 @@ from .backend import Backend
 from .constraint import AmplitudeConstraint
 
 __all__ = []  # type: ignore[var-annotated]
+
+
+H = TypeVar("H", bound="Holo")
 
 
 class Holo(IGain):
@@ -37,7 +41,7 @@ class Holo(IGain):
         self._repeat = None
         self._constraint = None
 
-    def add_focus(self: "Holo", focus: np.ndarray, amp: float) -> "Holo":
+    def add_focus(self: H, focus: np.ndarray, amp: float) -> H:
         """Add focus.
 
         Arguments:
@@ -51,7 +55,7 @@ class Holo(IGain):
         self._amps.append(amp)
         return self
 
-    def add_foci_from_iter(self: "Holo", iterable: Iterable[tuple[np.ndarray, float]]) -> "Holo":
+    def add_foci_from_iter(self: H, iterable: Iterable[tuple[np.ndarray, float]]) -> H:
         """Add foci from iterable.
 
         Arguments:
@@ -64,7 +68,7 @@ class Holo(IGain):
             self,
         )
 
-    def with_constraint(self: "Holo", constraint: AmplitudeConstraint) -> "Holo":
+    def with_constraint(self: H, constraint: AmplitudeConstraint) -> H:
         """Set amplitude constraint.
 
         Arguments:
