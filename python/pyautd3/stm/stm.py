@@ -42,7 +42,11 @@ class STM(Datagram, metaclass=ABCMeta):
     _finish_idx: int
 
     def __init__(
-        self: "STM", freq: float | None, sampling_freq: float | None, sampling_freq_div: int | None, sampling_period: timedelta | None
+        self: "STM",
+        freq: float | None,
+        sampling_freq: float | None,
+        sampling_freq_div: int | None,
+        sampling_period: timedelta | None,
     ) -> None:
         super().__init__()
         self._freq = freq

@@ -285,35 +285,39 @@ class Controller:
         timeout_ = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         err = ctypes.create_string_buffer(256)
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
-        if d2 is None:
-            if isinstance(d1, SpecialDatagram):
-                res = Base().controller_send_special(self._ptr, self._mode, d1._special_datagram_ptr(), timeout_, err)
-            elif isinstance(d1, Datagram):
-                res = Base().controller_send(self._ptr, self._mode, d1._datagram_ptr(self.geometry), DatagramPtr(None), timeout_, err)
-            elif isinstance(d1, tuple) and len(d1) == 2:  # noqa: PLR2004
-                (d11, d12) = d1
-                if isinstance(d11, Datagram) and isinstance(d12, Datagram):
-                    res = Base().controller_send(
-                        self._ptr,
-                        self._mode,
-                        d11._datagram_ptr(self.geometry),
-                        d12._datagram_ptr(self.geometry),
-                        timeout_,
-                        err,
-                    )
-            else:
+        match (d1, d2):
+            case (SpecialDatagram(), None):
+                res = Base().controller_send_special(self._ptr, self._mode, d1._special_datagram_ptr(), timeout_, err)  # type: ignore[union-attr]
+            case (Datagram(), None):
+                res = Base().controller_send(
+                    self._ptr,
+                    self._mode,
+                    d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
+                    DatagramPtr(None),
+                    timeout_,
+                    err,
+                )
+            case ((Datagram(), Datagram()), None):
+                (d11, d12) = d1  # type: ignore[misc]
+                res = Base().controller_send(
+                    self._ptr,
+                    self._mode,
+                    d11._datagram_ptr(self.geometry),  # type: ignore[union-attr]
+                    d12._datagram_ptr(self.geometry),  # type: ignore[union-attr]
+                    timeout_,
+                    err,
+                )
+            case (Datagram(), Datagram()):
+                res = Base().controller_send(
+                    self._ptr,
+                    self._mode,
+                    d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
+                    d2._datagram_ptr(self.geometry),  # type: ignore[union-attr]
+                    timeout_,
+                    err,
+                )
+            case _:
                 raise InvalidDatagramTypeError
-        elif isinstance(d1, Datagram) and isinstance(d2, Datagram):
-            res = Base().controller_send(
-                self._ptr,
-                self._mode,
-                d1._datagram_ptr(self.geometry),
-                d2._datagram_ptr(self.geometry),
-                timeout_,
-                err,
-            )
-        else:
-            raise InvalidDatagramTypeError
 
         if res == AUTD3_ERR:
             raise AUTDError(err)
@@ -344,67 +348,59 @@ class Controller:
         ) -> "Controller._GroupGuard":
             if key in self._keymap:
                 raise KeyAlreadyExistsError
+            self._keymap[key] = self._k
 
             timeout_ns = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
 
             err = ctypes.create_string_buffer(256)
-            if d2 is None:
-                if isinstance(d1, SpecialDatagram):
-                    self._keymap[key] = self._k
+            match (d1, d2):
+                case (SpecialDatagram(), None):
                     self._kv_map = Base().controller_group_kv_map_set_special(
                         self._kv_map,
                         self._k,
-                        d1._special_datagram_ptr(),
+                        d1._special_datagram_ptr(),  # type: ignore[union-attr]
                         self._controller._mode,
                         timeout_ns,
                         err,
                     )
-                    self._k += 1
-                elif isinstance(d1, Datagram):
-                    self._keymap[key] = self._k
+                case (Datagram(), None):
                     self._kv_map = Base().controller_group_kv_map_set(
                         self._kv_map,
                         self._k,
-                        d1._datagram_ptr(self._controller._geometry),
+                        d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         DatagramPtr(None),
                         self._controller._mode,
                         timeout_ns,
                         err,
                     )
-                    self._k += 1
-                elif isinstance(d1, tuple) and len(d1) == 2:  # noqa: PLR2004
-                    (d11, d12) = d1
-                    if isinstance(d1, Datagram) and isinstance(d2, Datagram):
-                        self._keymap[key] = self._k
-                        self._kv_map = Base().controller_group_kv_map_set(
-                            self._kv_map,
-                            self._k,
-                            d11._datagram_ptr(self._controller._geometry),
-                            d12._datagram_ptr(self._controller._geometry),
-                            self._controller._mode,
-                            timeout_ns,
-                            err,
-                        )
-                        self._k += 1
-                else:
+                case ((Datagram(), Datagram()), None):
+                    (d11, d12) = d1  # type: ignore[misc]
+                    self._kv_map = Base().controller_group_kv_map_set(
+                        self._kv_map,
+                        self._k,
+                        d11._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
+                        d12._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
+                        self._controller._mode,
+                        timeout_ns,
+                        err,
+                    )
+                case (Datagram(), Datagram()):
+                    self._kv_map = Base().controller_group_kv_map_set(
+                        self._kv_map,
+                        self._k,
+                        d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
+                        d2._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
+                        self._controller._mode,
+                        timeout_ns,
+                        err,
+                    )
+                case _:
                     raise InvalidDatagramTypeError
-            elif isinstance(d1, Datagram) and isinstance(d2, Datagram):
-                self._keymap[key] = self._k
-                self._kv_map = Base().controller_group_kv_map_set(
-                    self._kv_map,
-                    self._k,
-                    d1._datagram_ptr(self._controller._geometry),
-                    d2._datagram_ptr(self._controller._geometry),
-                    self._controller._mode,
-                    timeout_ns,
-                    err,
-                )
-                self._k += 1
-            else:
-                raise InvalidDatagramTypeError
 
             if self._kv_map._0 is None:
                 raise AUTDError(err)
+
+            self._k += 1
 
             return self
 
