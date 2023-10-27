@@ -106,7 +106,7 @@ class NativeMethods(metaclass=Singleton):
     def adapter_get_size(self, adapters: ctypes.c_void_p) -> ctypes.c_uint32:
         return self.dll.AUTDAdapterGetSize(adapters)
 
-    def adapter_get_adapter(self, adapters: ctypes.c_void_p, idx: int, desc: ctypes.Array[ctypes.c_char], name: ctypes.Array[ctypes.c_char]) -> None:
+    def adapter_get_adapter(self, adapters: ctypes.c_void_p, idx: int, desc: ctypes.Array[ctypes.c_char] | None, name: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDAdapterGetAdapter(adapters, idx, desc, name)
 
     def adapter_pointer_delete(self, adapters: ctypes.c_void_p) -> None:
@@ -148,7 +148,7 @@ class NativeMethods(metaclass=Singleton):
     def link_soem_into_builder(self, soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSOEMIntoBuilder(soem)
 
-    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteSOEMBuilderPtr:
+    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char] | None) -> LinkRemoteSOEMBuilderPtr:
         return self.dll.AUTDLinkRemoteSOEM(addr, err)
 
     def link_remote_soem_with_timeout(self, soem: LinkRemoteSOEMBuilderPtr, timeout_ns: int) -> LinkRemoteSOEMBuilderPtr:

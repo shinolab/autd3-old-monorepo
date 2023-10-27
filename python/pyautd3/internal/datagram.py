@@ -29,7 +29,7 @@ class SpecialDatagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _ptr(self: "SpecialDatagram") -> DatagramSpecialPtr:
+    def _special_datagram_ptr(self: "SpecialDatagram") -> DatagramSpecialPtr:
         pass
 
 
@@ -39,5 +39,5 @@ class Datagram(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _ptr(self: "Datagram", geometry: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "Datagram", geometry: Geometry) -> DatagramPtr:
         pass

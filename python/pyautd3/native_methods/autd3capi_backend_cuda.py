@@ -109,13 +109,13 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloCUDALMWithInitial.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDGainHoloCUDALMWithInitial.restype = GainPtr
 
-    def cuda_backend(self, err: ctypes.Array[ctypes.c_char]) -> BackendPtr:
+    def cuda_backend(self, err: ctypes.Array[ctypes.c_char] | None) -> BackendPtr:
         return self.dll.AUTDCUDABackend(err)
 
     def cuda_backend_delete(self, backend: BackendPtr) -> None:
         return self.dll.AUTDCUDABackendDelete(backend)
 
-    def gain_holo_cudasdp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cudasdp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDASDP(backend, points, amps, size)
 
     def gain_holo_cudasdp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -130,7 +130,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cudasdp_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDASDPWithRepeat(holo, repeat)
 
-    def gain_holo_cudaevp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cudaevp(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAEVP(backend, points, amps, size)
 
     def gain_holo_cudaevp_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -139,7 +139,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cudaevp_with_gamma(self, holo: GainPtr, gamma: float) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAEVPWithGamma(holo, gamma)
 
-    def gain_holo_cudags(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cudags(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGS(backend, points, amps, size)
 
     def gain_holo_cudags_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -148,7 +148,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cudags_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGSWithRepeat(holo, repeat)
 
-    def gain_holo_cudagspat(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cudagspat(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGSPAT(backend, points, amps, size)
 
     def gain_holo_cudagspat_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -157,13 +157,13 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cudagspat_with_repeat(self, holo: GainPtr, repeat: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGSPATWithRepeat(holo, repeat)
 
-    def gain_holo_cuda_naive(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cuda_naive(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDANaive(backend, points, amps, size)
 
     def gain_holo_cuda_naive_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
         return self.dll.AUTDGainHoloCUDANaiveWithConstraint(holo, constraint)
 
-    def gain_holo_cuda_greedy(self, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cuda_greedy(self, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGreedy(points, amps, size)
 
     def gain_holo_cuda_greedy_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -172,7 +172,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cuda_greedy_with_phase_div(self, holo: GainPtr, div: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDAGreedyWithPhaseDiv(holo, div)
 
-    def gain_holo_cudalm(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double], amps: ctypes.Array[ctypes.c_double], size: int) -> GainPtr:
+    def gain_holo_cudalm(self, backend: BackendPtr, points: ctypes.Array[ctypes.c_double] | None, amps: ctypes.Array[ctypes.c_double] | None, size: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDALM(backend, points, amps, size)
 
     def gain_holo_cudalm_with_constraint(self, holo: GainPtr, constraint: ConstraintPtr) -> GainPtr:
@@ -190,5 +190,5 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_cudalm_with_k_max(self, holo: GainPtr, k_max: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDALMWithKMax(holo, k_max)
 
-    def gain_holo_cudalm_with_initial(self, holo: GainPtr, initial_ptr: ctypes.Array[ctypes.c_double], len: int) -> GainPtr:
+    def gain_holo_cudalm_with_initial(self, holo: GainPtr, initial_ptr: ctypes.Array[ctypes.c_double] | None, len: int) -> GainPtr:
         return self.dll.AUTDGainHoloCUDALMWithInitial(holo, initial_ptr, len)
