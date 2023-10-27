@@ -1,3 +1,11 @@
 [build-system]
 requires = ["wheel", "setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+select = ["ALL"]
+ignore = ["SLF001", "D105", "D107", "D205", "D212", "D213", "D401"]
+fixable = ["ALL"]
+target-version = "py310"
+line-length = 150
+exclude = [".venv", "venv", "pyautd3/native_methods/*.py"]
