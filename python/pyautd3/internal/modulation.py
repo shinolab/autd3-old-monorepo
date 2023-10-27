@@ -16,9 +16,9 @@ from abc import ABCMeta, abstractmethod
 from ctypes import create_string_buffer
 from datetime import timedelta
 
-from pyautd3.autd import Datagram
 from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import AUTD3, Geometry
+from pyautd3.internal.datagram import Datagram
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import FPGA_SUB_CLK_FREQ, DatagramPtr, ModulationPtr
 
@@ -30,11 +30,11 @@ class IModulation(Datagram, metaclass=ABCMeta):
         super().__init__()
 
     def _datagram_ptr(self: "IModulation", _: Geometry) -> DatagramPtr:
-        return Base().modulation_into_datagram(self.modulation_ptr())
+        return Base().modulation_into_datagram(self._modulation_ptr())
 
     @property
     def sampling_frequency_division(self: "IModulation") -> int:
-        return int(Base().modulation_sampling_frequency_division(self.modulation_ptr()))
+        return int(Base().modulation_sampling_frequency_division(self._modulation_ptr()))
 
     @property
     def sampling_frequency(self: "IModulation") -> float:
@@ -42,10 +42,10 @@ class IModulation(Datagram, metaclass=ABCMeta):
 
     def __len__(self: "IModulation") -> int:
         err = create_string_buffer(256)
-        n = Base().modulation_size(self.modulation_ptr(), err)
+        n = int(Base().modulation_size(self._modulation_ptr(), err))
         if n < 0:
             raise AUTDError(err)
-        return int(n)
+        return n
 
     @abstractmethod
     def _modulation_ptr(self: "IModulation") -> ModulationPtr:
