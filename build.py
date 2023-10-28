@@ -569,7 +569,6 @@ def cpp_clear(_):
 
 
 def cs_build(args):
-    args.universal = True
     config = Config(args)
 
     with working_dir("capi"):
@@ -1410,6 +1409,11 @@ if __name__ == "__main__":
         # cs build
         parser_cs_build = subparsers_cs.add_parser("build", help="see `cs build -h`")
         parser_cs_build.add_argument("--release", action="store_true", help="release build")
+        parser_cs_build.add_argument(
+            "--universal",
+            action="store_true",
+            help="build universal binary (for macOS)",
+        )
         parser_cs_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
         parser_cs_build.add_argument("--no-examples", action="store_true", help="skip building examples")
         parser_cs_build.set_defaults(handler=cs_build)

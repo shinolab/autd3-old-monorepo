@@ -70,9 +70,9 @@ jobs:
       - name: Build python library on ${{ matrix.os }}
         if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
-          python3 build.py python build --no-install --release --universal
+          python3 build.py python build --no-install
 
       - name: Test python library on ${{ matrix.os }}
         if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
-          python3 build.py python test --release --skip-cuda
+          python3 build.py python test --skip-cuda
