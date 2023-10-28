@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 28/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,13 +54,13 @@ pub unsafe extern "C" fn AUTDLinkAuditIntoBuilder(audit: LinkAuditBuilderPtr) ->
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditIsOpen(audit: LinkPtr) -> bool {
-    cast!(audit.0, Box<dyn Link>).is_open()
+    cast!(audit.0, Box<AuditSync>).inner.is_open()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditTimeoutNs(audit: LinkPtr) -> u64 {
-    cast!(audit.0, Box<dyn Link>).timeout().as_nanos() as _
+    cast!(audit.0, Box<AuditSync>).inner.timeout().as_nanos() as _
 }
 
 #[no_mangle]
