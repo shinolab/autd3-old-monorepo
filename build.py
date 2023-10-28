@@ -452,6 +452,7 @@ def copy_dll(config: Config, dst: str):
     elif config.is_macos():
         if config.universal:
             target = "capi/target/x86_64-apple-darwin/release" if config.release else "capi/target/x86_64-apple-darwin/debug"
+            target_aarch64 = "capi/target/aarch64-apple-darwin/release" if config.release else "capi/target/aarch64-apple-darwin/debug"
             for x64_lib in glob.glob(f"{target}/*.dylib"):
                 base_name = os.path.basename(x64_lib)
                 subprocess.run(
@@ -459,7 +460,7 @@ def copy_dll(config: Config, dst: str):
                         "lipo",
                         "-create",
                         x64_lib,
-                        f"./capi/target/aarch64-apple-darwin/release/{base_name}",
+                        f"./{target_aarch64}/{base_name}",
                         "-output",
                         f"./{dst}/{base_name}",
                     ]
@@ -626,7 +627,6 @@ def cs_build(args):
 
 
 def cs_test(args):
-    args.universal = True
     config = Config(args)
 
     with working_dir("capi"):
@@ -1421,6 +1421,11 @@ if __name__ == "__main__":
         # cs test
         parser_cs_test = subparsers_cs.add_parser("test", help="see `cs test -h`")
         parser_cs_test.add_argument("--release", action="store_true", help="release build")
+        parser_cs_test.add_argument(
+            "--universal",
+            action="store_true",
+            help="build universal binary (for macOS)",
+        )
         parser_cs_test.set_defaults(handler=cs_test)
 
         # cs run
