@@ -64,9 +64,9 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --no-examples
-          python3 build.py build --all --skip-cuda
-          python3 build.py test --all --skip-cuda
+          python3 build.py build --release --all --no-examples
+          python3 build.py build --release --all --skip-cuda
+          python3 build.py test --release --all --skip-cuda
         shell: bash
 
   build-linux-arm32-src:
