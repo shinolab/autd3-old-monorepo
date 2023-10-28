@@ -64,9 +64,9 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --release --no-examples
-          python3 build.py build --all --release --skip-cuda
-          python3 build.py test --all --release --skip-cuda
+          python3 build.py build --all --no-examples
+          python3 build.py build --all --skip-cuda
+          python3 build.py test --all --skip-cuda
         shell: bash
 
   build-linux-arm32-src:
@@ -96,7 +96,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch arm32 --release --no-examples
+          python3 build.py build --all --arch arm32 --no-examples
 
   build-linux-aarch64-src:
     needs: check-src
@@ -124,7 +124,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch arm32 --release --no-examples
+          python3 build.py build --all --arch arm32 --no-examples
 
   lint-src:
     needs: check-src
@@ -150,7 +150,7 @@ jobs:
       - name: lint src
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py lint --all --release
+          python3 build.py lint --all
 
   check-server:
     runs-on: ubuntu-latest

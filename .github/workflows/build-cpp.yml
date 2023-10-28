@@ -63,11 +63,11 @@ jobs:
 
       - name: Build C++ library on ${{ matrix.os }}
         run: |
-          python3 build.py cpp build --release --universal --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+          python3 build.py cpp build --release --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
         if: needs.check.outputs.status
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          python3 build.py cpp test --release --universal --skip-cuda --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+          python3 build.py cpp test --release --skip-cuda --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
         if: needs.check.outputs.status
 
 
@@ -96,7 +96,7 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cpp build --arch arm32 --release --no-examples
+          python3 build.py cpp build --arch arm32 --no-examples
 
 
   build-linux-aarch64:
@@ -124,4 +124,4 @@ jobs:
       - name: Build C++ library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cpp build --arch aarch64 --release --no-examples
+          python3 build.py cpp build --arch aarch64 --no-examples

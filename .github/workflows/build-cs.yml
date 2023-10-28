@@ -70,7 +70,7 @@ jobs:
       - name: Build cs library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cs build --release
+          python3 build.py cs build
 
       - name: Test library on ${{ matrix.os }}
         if: needs.check.outputs.status
@@ -80,7 +80,7 @@ jobs:
       - name: Build fs library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py fs build --release
+          python3 build.py fs build
 
   build-unity:
     needs: check
@@ -122,4 +122,4 @@ jobs:
       - name: Build unity library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py unity build --release
+          python3 build.py unity build
