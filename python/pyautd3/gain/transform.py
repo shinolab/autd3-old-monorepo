@@ -15,6 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 from collections.abc import Callable
 from ctypes import POINTER, create_string_buffer
 from functools import reduce
+from typing import Generic, TypeVar
 
 import numpy as np
 
@@ -25,14 +26,16 @@ from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
+G = TypeVar("G", bound=IGain)
 
-class Transform(IGain):
+
+class Transform(IGain, Generic[G]):
     """Gain to transform gain data."""
 
-    _g: IGain
+    _g: G
     _f: Callable[[Device, Transducer, Drive], Drive]
 
-    def __init__(self: "Transform", g: IGain, f: Callable[[Device, Transducer, Drive], Drive]) -> None:
+    def __init__(self: "Transform", g: G, f: Callable[[Device, Transducer, Drive], Drive]) -> None:
         super().__init__()
         self._g = g
         self._f = f
@@ -66,7 +69,7 @@ class Transform(IGain):
         )
 
 
-def __with_transform(self: "IGain", f: Callable[[Device, Transducer, Drive], Drive]) -> Transform:
+def __with_transform(self: G, f: Callable[[Device, Transducer, Drive], Drive]) -> Transform:
     """Transform the result of calculation.
 
     Arguments:
@@ -77,4 +80,4 @@ def __with_transform(self: "IGain", f: Callable[[Device, Transducer, Drive], Dri
     return Transform(self, f)
 
 
-IGain.with_transform = __with_transform  # type: ignore[attr-defined]
+IGain.with_transform = __with_transform  # type: ignore[method-assign]

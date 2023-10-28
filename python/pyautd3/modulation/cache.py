@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from collections.abc import Iterator
 from ctypes import create_string_buffer
+from typing import TypeVar
 
 import numpy as np
 
@@ -23,6 +24,8 @@ from pyautd3.native_methods.autd3capi import ModulationCachePtr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 
+M = TypeVar("M", bound=IModulation)
+
 
 class Cache(IModulation):
     """Modulation to cache the result of calculation."""
@@ -30,7 +33,7 @@ class Cache(IModulation):
     _cache: ModulationCachePtr
     _buffer: np.ndarray
 
-    def __init__(self: "Cache", m: IModulation) -> None:
+    def __init__(self: "Cache", m: M) -> None:
         err = create_string_buffer(256)
         cache = Base().modulation_with_cache(m._modulation_ptr(), err)
         if cache._0 is None:
@@ -59,9 +62,9 @@ class Cache(IModulation):
         Base().modulation_cache_delete(self._cache)
 
 
-def __with_cache(self: IModulation) -> Cache:
+def __with_cache(self: M) -> Cache:
     """Cache the result of calculation."""
     return Cache(self)
 
 
-IModulation.with_cache = __with_cache  # type: ignore[attr-defined]
+IModulation.with_cache = __with_cache  # type: ignore[method-assign]

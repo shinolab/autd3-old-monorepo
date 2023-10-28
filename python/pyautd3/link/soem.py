@@ -14,8 +14,11 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import ctypes
 from datetime import timedelta
 
-from pyautd3.internal.link import LinkBuilder
-from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr, TimerStrategy
+from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.native_methods.autd3capi import (
+    NativeMethods as Base,
+)
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, TimerStrategy
 from pyautd3.native_methods.autd3capi_link_soem import LinkRemoteSOEMBuilderPtr, LinkSOEMBuilderPtr, SyncMode
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
 
@@ -39,7 +42,7 @@ class EtherCATAdapter:
         return f"{self.desc}, {self.name}"
 
 
-class SOEM:
+class SOEM(Link):
     """Link using SOEM."""
 
     class _Builder(LinkBuilder):
@@ -154,6 +157,9 @@ class SOEM:
         def _link_builder_ptr(self: "SOEM._Builder") -> LinkBuilderPtr:
             return LinkSOEM().link_soem_into_builder(self._builder)
 
+        def _resolve_link(self: "SOEM._Builder", _ptr: ControllerPtr) -> "SOEM":
+            return SOEM(Base().link_get(_ptr))
+
     @staticmethod
     def enumerate_adapters() -> list[EtherCATAdapter]:
         """Enumerate ethernet adapters."""
@@ -172,13 +178,16 @@ class SOEM:
 
         return res
 
+    def __init__(self: "SOEM", ptr: LinkPtr) -> None:
+        super().__init__(ptr)
+
     @staticmethod
     def builder() -> _Builder:
         """Create SOEM link builder."""
         return SOEM._Builder()
 
 
-class RemoteSOEM:
+class RemoteSOEM(Link):
     """Link to connect to remote SOEMServer."""
 
     class _Builder(LinkBuilder):
@@ -202,6 +211,12 @@ class RemoteSOEM:
 
         def _link_builder_ptr(self: "RemoteSOEM._Builder") -> LinkBuilderPtr:
             return LinkSOEM().link_remote_soem_into_builder(self._builder)
+
+        def _resolve_link(self: "RemoteSOEM._Builder", _ptr: ControllerPtr) -> "RemoteSOEM":
+            return RemoteSOEM(Base().link_get(_ptr))
+
+    def __init__(self: "RemoteSOEM", ptr: LinkPtr) -> None:
+        super().__init__(ptr)
 
     @staticmethod
     def builder(addr: str) -> _Builder:

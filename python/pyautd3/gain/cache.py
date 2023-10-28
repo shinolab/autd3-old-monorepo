@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from ctypes import POINTER, create_string_buffer
 from functools import reduce
+from typing import Generic, TypeVar
 
 import numpy as np
 
@@ -23,14 +24,16 @@ from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
+G = TypeVar("G", bound=IGain)
 
-class Cache(IGain):
+
+class Cache(IGain, Generic[G]):
     """Gain to cache the result of calculation."""
 
-    _g: IGain
+    _g: G
     _cache: dict[int, np.ndarray]
 
-    def __init__(self: "Cache", g: IGain) -> None:
+    def __init__(self: "Cache", g: G) -> None:
         super().__init__()
         self._g = g
         self._cache = {}
@@ -66,9 +69,9 @@ class Cache(IGain):
         return self._cache
 
 
-def __with_cache(self: "IGain") -> Cache:
+def __with_cache(self: G) -> Cache:
     """Cache the result of calculation."""
     return Cache(self)
 
 
-IGain.with_cache = __with_cache  # type: ignore[attr-defined]
+IGain.with_cache = __with_cache  # type: ignore[method-assign]
