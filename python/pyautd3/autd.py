@@ -33,11 +33,12 @@ from .native_methods.autd3capi_def import (
     DatagramPtr,
     DatagramSpecialPtr,
     GroupKVMapPtr,
-    LinkBuilderPtr,
     TransMode,
 )
 
 K = TypeVar("K")
+L = TypeVar("L", bound=Link)
+
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
@@ -107,88 +108,87 @@ class FirmwareInfo:
         return self._info
 
 
-class Controller:
+class _Builder(Generic[L]):
+    _ptr: ControllerBuilderPtr
+    _mode: TransMode
+
+    def __init__(self: "_Builder[L]") -> None:
+        self._ptr = Base().controller_builder()
+        self._mode = TransMode.Legacy
+
+    def legacy(self: "_Builder[L]") -> "_Builder[L]":
+        """Set legacy mode."""
+        self._mode = TransMode.Legacy
+        return self
+
+    def advanced(self: "_Builder[L]") -> "_Builder[L]":
+        """Set advanced mode."""
+        self._mode = TransMode.Advanced
+        return self
+
+    def advanced_phase(self: "_Builder[L]") -> "_Builder[L]":
+        """Set advanced phase mode."""
+        self._mode = TransMode.AdvancedPhase
+        return self
+
+    def add_device(self: "_Builder[L]", device: AUTD3) -> "_Builder[L]":
+        """Add device.
+
+        Arguments:
+        ---------
+            device: Device to add
+        """
+        if device._rot is not None:
+            self._ptr = Base().controller_builder_add_device(
+                self._ptr,
+                device._pos[0],
+                device._pos[1],
+                device._pos[2],
+                device._rot[0],
+                device._rot[1],
+                device._rot[2],
+            )
+        elif device._quat is not None:
+            self._ptr = Base().controller_builder_add_device_quaternion(
+                self._ptr,
+                device._pos[0],
+                device._pos[1],
+                device._pos[2],
+                device._quat[0],
+                device._quat[1],
+                device._quat[2],
+                device._quat[3],
+            )
+        return self
+
+    def open_with(self: "_Builder[L]", link: LinkBuilder[L]) -> "Controller[L]":
+        """Open controller.
+
+        Arguments:
+        ---------
+            link: LinkBuilder
+        """
+        return Controller._open_impl(self._ptr, self._mode, link)
+
+
+class Controller(Generic[L]):
     """Controller."""
-
-    class _Builder:
-        _ptr: ControllerBuilderPtr
-        _mode: TransMode
-
-        def __init__(self: "Controller._Builder") -> None:
-            self._ptr = Base().controller_builder()
-            self._mode = TransMode.Legacy
-
-        def legacy(self: "Controller._Builder") -> "Controller._Builder":
-            """Set legacy mode."""
-            self._mode = TransMode.Legacy
-            return self
-
-        def advanced(self: "Controller._Builder") -> "Controller._Builder":
-            """Set advanced mode."""
-            self._mode = TransMode.Advanced
-            return self
-
-        def advanced_phase(self: "Controller._Builder") -> "Controller._Builder":
-            """Set advanced phase mode."""
-            self._mode = TransMode.AdvancedPhase
-            return self
-
-        def add_device(self: "Controller._Builder", device: AUTD3) -> "Controller._Builder":
-            """Add device.
-
-            Arguments:
-            ---------
-                device: Device to add
-            """
-            if device._rot is not None:
-                self._ptr = Base().controller_builder_add_device(
-                    self._ptr,
-                    device._pos[0],
-                    device._pos[1],
-                    device._pos[2],
-                    device._rot[0],
-                    device._rot[1],
-                    device._rot[2],
-                )
-            elif device._quat is not None:
-                self._ptr = Base().controller_builder_add_device_quaternion(
-                    self._ptr,
-                    device._pos[0],
-                    device._pos[1],
-                    device._pos[2],
-                    device._quat[0],
-                    device._quat[1],
-                    device._quat[2],
-                    device._quat[3],
-                )
-            return self
-
-        def open_with(self: "Controller._Builder", link: LinkBuilder) -> "Controller":
-            """Open controller.
-
-            Arguments:
-            ---------
-                link: LinkBuilder
-            """
-            cnt = Controller._open_impl(self._ptr, self._mode, link._link_builder_ptr())
-            cnt._link = link._resolve_link(cnt._ptr)
-            return cnt
 
     _geometry: Geometry
     _ptr: ControllerPtr
     _mode: TransMode
-    _link: Link | None
+    link: L
 
-    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, mode: TransMode) -> None:
+    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, mode: TransMode, link: L) -> None:
         self._geometry = geometry
         self._ptr = ptr
         self._mode = mode
-        self._link = None
+        self.link = link
 
     @staticmethod
-    def builder() -> "Controller._Builder":
+    def builder() -> "_Builder[L]":
         """Create builder."""
-        return Controller._Builder()
+        return _Builder()
 
     def __del__(self: "Controller") -> None:
         self._dispose()
@@ -198,10 +198,10 @@ class Controller:
             Base().controller_delete(self._ptr)
             self._ptr._0 = None
 
-    def __enter__(self: "Controller") -> "Controller":
+    def __enter__(self: "Controller[L]") -> "Controller[L]":
         return self
 
-    def __exit__(self: "Controller", *args: object) -> None:
+    def __exit__(self: "Controller[L]", *args: object) -> None:
         self._dispose()
 
     @property
@@ -209,19 +209,15 @@ class Controller:
         """Get geometry."""
         return self._geometry
 
-    @property
-    def link(self: "Controller") -> Link | None:
-        """Get link."""
-        return self._link
-
     @staticmethod
-    def _open_impl(builder: ControllerBuilderPtr, mode: TransMode, link: LinkBuilderPtr) -> "Controller":
+    def _open_impl(builder: ControllerBuilderPtr, mode: TransMode, link_builder: LinkBuilder[L]) -> "Controller[L]":
         err = ctypes.create_string_buffer(256)
-        ptr = Base().controller_open_with(builder, link, err)
+        ptr = Base().controller_open_with(builder, link_builder._link_builder_ptr(), err)
         if ptr._0 is None:
             raise AUTDError(err)
         geometry = Geometry(Base().geometry(ptr), mode)
-        return Controller(geometry, ptr, mode)
+        link = link_builder._resolve_link(ptr)
+        return Controller(geometry, ptr, mode, link)
 
     def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
         """Get firmware information list."""

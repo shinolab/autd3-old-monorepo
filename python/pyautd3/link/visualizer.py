@@ -284,7 +284,7 @@ class Visualizer(Link):
     _backend: Backend
     _directivity: Directivity
 
-    class _Builder(LinkBuilder):
+    class _Builder(LinkBuilder["Visualizer"]):
         _backend: Backend
         _directivity: Directivity
         _gpu_idx: int | None

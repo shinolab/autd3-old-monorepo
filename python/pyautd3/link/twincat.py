@@ -15,13 +15,16 @@ import ctypes
 from datetime import timedelta
 
 from pyautd3.autd_error import AUTDError
-from pyautd3.internal.link import LinkBuilder
-from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr
+from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.native_methods.autd3capi import (
+    NativeMethods as Base,
+)
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_twincat import LinkRemoteTwinCATBuilderPtr, LinkTwinCATBuilderPtr
 from pyautd3.native_methods.autd3capi_link_twincat import NativeMethods as LinkTwinCAT
 
 
-class TwinCAT:
+class TwinCAT(Link):
     """Link using TwinCAT3."""
 
     class _Builder(LinkBuilder):
@@ -43,13 +46,19 @@ class TwinCAT:
         def _link_builder_ptr(self: "TwinCAT._Builder") -> LinkBuilderPtr:
             return LinkTwinCAT().link_twin_cat_into_builder(self._builder)
 
+        def _resolve_link(self: "TwinCAT._Builder", _ptr: ControllerPtr) -> "TwinCAT":
+            return TwinCAT(Base().link_get(_ptr))
+
+    def __init__(self: "TwinCAT", ptr: LinkPtr) -> None:
+        super().__init__(ptr)
+
     @staticmethod
     def builder() -> _Builder:
         """Create TwinCAT link builder."""
         return TwinCAT._Builder()
 
 
-class RemoteTwinCAT:
+class RemoteTwinCAT(Link):
     """Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library."""
 
     class _Builder(LinkBuilder):
@@ -93,6 +102,12 @@ class RemoteTwinCAT:
 
         def _link_builder_ptr(self: "RemoteTwinCAT._Builder") -> LinkBuilderPtr:
             return LinkTwinCAT().link_remote_twin_cat_into_builder(self._builder)
+
+        def _resolve_link(self: "RemoteTwinCAT._Builder", _ptr: ControllerPtr) -> "RemoteTwinCAT":
+            return RemoteTwinCAT(Base().link_get(_ptr))
+
+    def __init__(self: "RemoteTwinCAT", ptr: LinkPtr) -> None:
+        super().__init__(ptr)
 
     @staticmethod
     def builder(server_ams_net_id: str) -> _Builder:

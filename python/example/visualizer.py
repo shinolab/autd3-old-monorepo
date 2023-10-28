@@ -20,7 +20,8 @@ from pyautd3.modulation import Square
 
 if __name__ == "__main__":
     with (
-        Controller.builder()
+        Controller[Visualizer]
+        .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Visualizer.builder().with_backend(PythonBackend()))
     ) as autd:

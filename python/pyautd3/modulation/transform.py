@@ -14,18 +14,21 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import ctypes
 from collections.abc import Callable
+from typing import Generic, TypeVar
 
 from pyautd3.internal.modulation import IModulation
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 
+M = TypeVar("M", bound=IModulation)
 
-class Transform(IModulation):
+
+class Transform(IModulation, Generic[M]):
     """Modulation to transform modulation data."""
 
-    _m: IModulation
+    _m: M
 
-    def __init__(self: "Transform", m: IModulation, f: Callable[[int, float], float]) -> None:
+    def __init__(self: "Transform", m: M, f: Callable[[int, float], float]) -> None:
         self._m = m
         self._f_native = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_double)(lambda _, i, d: f(int(i), float(d)))
 
@@ -33,7 +36,7 @@ class Transform(IModulation):
         return Base().modulation_with_transform(self._m._modulation_ptr(), self._f_native, None)  # type: ignore[arg-type]
 
 
-def __with_transform(self: "IModulation", f: Callable[[int, float], float]) -> Transform:
+def __with_transform(self: M, f: Callable[[int, float], float]) -> Transform:
     """Transform modulation data.
 
     Arguments:
@@ -44,4 +47,4 @@ def __with_transform(self: "IModulation", f: Callable[[int, float], float]) -> T
     return Transform(self, f)
 
 
-IModulation.with_transform = __with_transform  # type: ignore[attr-defined]
+IModulation.with_transform = __with_transform  # type: ignore[method-assign]
