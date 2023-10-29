@@ -18,8 +18,8 @@ thiserror = "1.0.30"
 pyo3 = { version = "0.20.0", features = ["abi3", "abi3-py310", "auto-initialize"], optional = true }
 which = { version = "4.4.0", optional = true }
 itertools = "0.11.0"
-vulkano = { version = "0.33.0", optional = true }
-vulkano-shaders = { version = "0.33.0", optional = true }
+vulkano = { version = "0.34.0", optional = true }
+vulkano-shaders = { version = "0.34.0", optional = true }
 plotters = { version = "0.3.5", optional = true }
 scarlet = { version = "1.2.0", optional = true }
 plotters-bitmap = { version = "0.3.3", optional = true }

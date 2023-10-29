@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2023
+ * Last Modified: 29/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,28 +30,34 @@ use vulkano::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo, QueueFlags,
     },
-    instance::{Instance, InstanceCreateInfo},
-    memory::allocator::{AllocationCreateInfo, MemoryUsage, StandardMemoryAllocator},
-    pipeline::{ComputePipeline, Pipeline, PipelineBindPoint},
+    instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    pipeline::{
+        compute::ComputePipelineCreateInfo, layout::PipelineDescriptorSetLayoutCreateInfo,
+        ComputePipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
+    },
     sync::GpuFuture,
     VulkanLibrary,
 };
+
+use crate::error::VisualizerError;
 
 pub(crate) struct FieldCompute {
     pipeline: Arc<ComputePipeline>,
     queue: Arc<Queue>,
     command_buffer_allocator: StandardCommandBufferAllocator,
     descriptor_set_allocator: StandardDescriptorSetAllocator,
-    memory_allocator: StandardMemoryAllocator,
+    memory_allocator: Arc<StandardMemoryAllocator>,
 }
 
 impl FieldCompute {
-    pub(crate) fn new(gpu_idx: i32) -> Self {
-        let library = VulkanLibrary::new().unwrap();
+    pub(crate) fn new(gpu_idx: i32) -> Result<Self, VisualizerError> {
+        let library = VulkanLibrary::new()?;
         let instance = Instance::new(
             library,
             InstanceCreateInfo {
-                enumerate_portability: true,
+                flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
                 ..Default::default()
             },
         )
@@ -62,8 +68,7 @@ impl FieldCompute {
             ..DeviceExtensions::empty()
         };
         let available_properties = instance
-            .enumerate_physical_devices()
-            .unwrap()
+            .enumerate_physical_devices()?
             .filter(|p| p.supported_extensions().contains(&device_extensions))
             .filter_map(|p| {
                 p.queue_family_properties()
@@ -98,35 +103,40 @@ impl FieldCompute {
                 }],
                 ..Default::default()
             },
-        )
-        .unwrap();
+        )?;
 
         let queue = queues.next().unwrap();
 
         let command_buffer_allocator =
             StandardCommandBufferAllocator::new(queue.device().clone(), Default::default());
-        let descriptor_set_allocator = StandardDescriptorSetAllocator::new(queue.device().clone());
-        let memory_allocator = StandardMemoryAllocator::new_default(queue.device().clone());
+        let descriptor_set_allocator =
+            StandardDescriptorSetAllocator::new(queue.device().clone(), Default::default());
+        let memory_allocator =
+            Arc::new(StandardMemoryAllocator::new_default(queue.device().clone()));
 
         let pipeline = {
-            let shader = cs::load(device.clone()).unwrap();
+            let shader = cs::load(device.clone())?;
+            let cs = shader.entry_point("main").unwrap();
+            let stage = PipelineShaderStageCreateInfo::new(cs);
+            let layout = PipelineLayout::new(
+                device.clone(),
+                PipelineDescriptorSetLayoutCreateInfo::from_stages([&stage])
+                    .into_pipeline_layout_create_info(device.clone())?,
+            )?;
             ComputePipeline::new(
                 device.clone(),
-                shader.entry_point("main").unwrap(),
-                &(),
                 None,
-                |_| {},
-            )
-            .unwrap()
+                ComputePipelineCreateInfo::stage_layout(stage, layout),
+            )?
         };
 
-        Self {
+        Ok(Self {
             pipeline,
             queue,
             command_buffer_allocator,
             descriptor_set_allocator,
             memory_allocator,
-        }
+        })
     }
 
     pub(crate) fn calc_field_of<
@@ -139,7 +149,7 @@ impl FieldCompute {
         observe_points: I,
         geometry: &Geometry<T>,
         source_drive: Vec<[f32; 4]>,
-    ) -> Vec<Complex> {
+    ) -> Result<Vec<Complex>, VisualizerError> {
         let pipeline_layout = self.pipeline.layout();
         let layout = pipeline_layout.set_layouts().get(0).unwrap();
 
@@ -147,33 +157,34 @@ impl FieldCompute {
         let size = observe_points.len();
 
         let data_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_RANDOM_ACCESS,
                 ..Default::default()
             },
             (0..size).map(|_| [0f32, 0f32]),
-        )
-        .unwrap();
+        )?;
         let set_0 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, data_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let source_pos_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             geometry
@@ -189,85 +200,85 @@ impl FieldCompute {
                     })
                 })
                 .collect::<Vec<_>>(),
-        )
-        .unwrap();
+        )?;
         let set_1 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, source_pos_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let source_drive_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             source_drive,
-        )
-        .unwrap();
+        )?;
         let set_2 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, source_drive_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let observe_pos_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             observe_points
                 .iter()
                 .map(|p| [p.x as f32, p.y as f32, p.z as f32, 0.]),
-        )
-        .unwrap();
+        )?;
         let set_3 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, observe_pos_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let directivity_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             (0..91).map(|x| D::directivity(x as float) as f32),
-        )
-        .unwrap();
+        )?;
         let set_4 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, directivity_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let source_dir_buffer = Buffer::from_iter(
-            &self.memory_allocator,
+            self.memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             geometry
@@ -283,21 +294,19 @@ impl FieldCompute {
                     })
                 })
                 .collect::<Vec<_>>(),
-        )
-        .unwrap();
+        )?;
         let set_5 = PersistentDescriptorSet::new(
             &self.descriptor_set_allocator,
             layout.clone(),
             [WriteDescriptorSet::buffer(0, source_dir_buffer.clone())],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let mut builder = AutoCommandBufferBuilder::primary(
             &self.command_buffer_allocator,
             self.queue.queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        )?;
 
         let pc = cs::PushConsts {
             observe_num: size as u32,
@@ -307,26 +316,25 @@ impl FieldCompute {
         };
 
         builder
-            .bind_pipeline_compute(self.pipeline.clone())
+            .bind_pipeline_compute(self.pipeline.clone())?
             .bind_descriptor_sets(
                 PipelineBindPoint::Compute,
                 pipeline_layout.clone(),
                 0,
                 (set_0, set_1, set_2, set_3, set_4, set_5),
-            )
-            .push_constants(pipeline_layout.clone(), 0, pc)
-            .dispatch([(size as u32 - 1) / 32 + 1, 1, 1])
-            .unwrap();
-        let command_buffer = builder.build().unwrap();
-        let finished = command_buffer.execute(self.queue.clone()).unwrap();
-        let future = finished.then_signal_fence_and_flush().unwrap();
-        future.wait(None).unwrap();
+            )?
+            .push_constants(pipeline_layout.clone(), 0, pc)?
+            .dispatch([(size as u32 - 1) / 32 + 1, 1, 1])?;
+        let command_buffer = builder.build()?;
+        let finished = command_buffer.execute(self.queue.clone())?;
+        let future = finished.then_signal_fence_and_flush()?;
+        future.wait(None)?;
 
-        let data_content = data_buffer.read().unwrap();
-        data_content
+        let data_content = data_buffer.read()?;
+        Ok(data_content
             .iter()
             .map(|d| Complex::new(d[0] as float, d[1] as float))
-            .collect()
+            .collect())
     }
 }
 

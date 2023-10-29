@@ -2004,6 +2004,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "raw-window-handle"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2ff9a1f06a88b01621b7ae906ef0211290d1c8a168a15542486a8f61c0833b9"
+
+[[package]]
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2669,18 +2675,18 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vk-parse"
-version = "0.8.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6a0bda9bbe6b9e50e6456c80aa8fe4cca3b21e4311a1130c41e4915ec2e32a"
+checksum = "81086c28be67a8759cd80cbb3c8f7b520e0874605fc5eb74d5a1c9c2d1878e79"
 dependencies = [
  "xml-rs",
 ]
 
 [[package]]
 name = "vulkano"
-version = "0.33.0"
+version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e1f15eeb9d93a05eb3c237332a10806eac1eb82444e54485bfcc1859c483c23"
+checksum = "4a790cf632b45c8c153cb7ab0510d332366dd6b13d1008af84cf659a3f8ffdf5"
 dependencies = [
  "ahash",
  "ash",
@@ -2689,13 +2695,14 @@ dependencies = [
  "crossbeam-queue",
  "half",
  "heck",
- "indexmap 1.9.3",
- "libloading 0.7.4",
+ "indexmap 2.0.2",
+ "libloading 0.8.1",
  "objc",
  "once_cell",
  "parking_lot",
  "proc-macro2",
  "quote",
+ "raw-window-handle",
  "regex",
  "serde",
  "serde_json",
@@ -2707,9 +2714,9 @@ dependencies = [
 
 [[package]]
 name = "vulkano-macros"
-version = "0.33.0"
+version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "895b8a2cac1e7650d2d0552f2392da0970a358515ac11a34adaf19bfdc771b98"
+checksum = "52be622d364272fd77e298e7f68e8547ae66e7687cb86eb85335412cee7e3965"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2719,16 +2726,16 @@ dependencies = [
 
 [[package]]
 name = "vulkano-shaders"
-version = "0.33.0"
+version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f8cf18e9becbc6d39f1c39e26bcf69546c93989553eb5748cd734a8a697a6e5"
+checksum = "d1f63401297565d74afb96e9add12587d8e46235140cee325a8eb6ba4602f4ee"
 dependencies = [
  "ahash",
  "heck",
  "proc-macro2",
  "quote",
  "shaderc",
- "syn 1.0.109",
+ "syn 2.0.38",
  "vulkano",
 ]
 

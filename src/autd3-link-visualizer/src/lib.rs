@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 29/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ where
     timeout: Duration,
     _d: PhantomData<D>,
     #[cfg(feature = "gpu")]
-    gpu_compute: Option<gpu::FieldCompute>,
+    gpu_idx: Option<i32>,
 }
 
 #[async_trait::async_trait]
@@ -79,7 +79,11 @@ impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T> for VisualizerBui
     #[allow(unused_mut)]
     async fn open(mut self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
         #[cfg(feature = "gpu")]
-        let gpu_compute = self.gpu_compute.take();
+        let gpu_compute = if let Some(gpu_idx) = self.gpu_idx {
+            Some(gpu::FieldCompute::new(gpu_idx)?)
+        } else {
+            None
+        };
 
         let VisualizerBuilder {
             mut backend,
@@ -207,7 +211,7 @@ impl Visualizer<Sphere, PlottersBackend> {
             timeout: Duration::ZERO,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
-            gpu_compute: None,
+            gpu_idx: None,
         }
     }
 }
@@ -229,7 +233,7 @@ impl Visualizer<Sphere, PythonBackend> {
             timeout: Duration::ZERO,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
-            gpu_compute: None,
+            gpu_idx: None,
         }
     }
 }
@@ -242,7 +246,7 @@ impl Visualizer<Sphere, NullBackend> {
             timeout: Duration::ZERO,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
-            gpu_compute: None,
+            gpu_idx: None,
         }
     }
 }
@@ -255,7 +259,7 @@ impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
             timeout: self.timeout,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
-            gpu_compute: self.gpu_compute,
+            gpu_idx: self.gpu_idx,
         }
     }
 
@@ -266,7 +270,7 @@ impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
             timeout: self.timeout,
             _d: PhantomData,
             #[cfg(feature = "gpu")]
-            gpu_compute: self.gpu_compute,
+            gpu_idx: self.gpu_idx,
         }
     }
 }
@@ -276,7 +280,7 @@ impl<D: Directivity, B: Backend> VisualizerBuilder<D, B> {
     /// Enable GPU acceleration
     pub fn with_gpu(self, gpu_idx: i32) -> VisualizerBuilder<D, B> {
         Self {
-            gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
+            gpu_idx: Some(gpu_idx),
             ..self
         }
     }
@@ -362,7 +366,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
-    ) -> Vec<Complex> {
+    ) -> Result<Vec<Complex>, VisualizerError> {
         self.calc_field_of::<T, I>(observe_points, geometry, 0)
     }
 
@@ -379,7 +383,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
         observe_points: I,
         geometry: &Geometry<T>,
         idx: usize,
-    ) -> Vec<Complex> {
+    ) -> Result<Vec<Complex>, VisualizerError> {
         #[cfg(feature = "gpu")]
         {
             if let Some(gpu) = &self.gpu_compute {
@@ -406,7 +410,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                 return gpu.calc_field_of::<T, D, I>(observe_points, geometry, source_drive);
             }
         }
-        observe_points
+        Ok(observe_points
             .into_iter()
             .map(|target| {
                 self.cpus
@@ -426,7 +430,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                         )
                     })
             })
-            .collect()
+            .collect())
     }
 
     /// Plot acoustic field
@@ -463,7 +467,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
-        let acoustic_pressures = self.calc_field_of(&observe_points, geometry, idx);
+        let acoustic_pressures = self.calc_field_of(&observe_points, geometry, idx)?;
         if range.is_1d() {
             let (observe, label) = match (range.nx(), range.ny(), range.nz()) {
                 (_, 1, 1) => (range.observe_x(), "x [mm]"),

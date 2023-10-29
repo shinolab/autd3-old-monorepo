@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 29/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,6 +34,32 @@ pub enum VisualizerError {
     #[cfg(feature = "plotters")]
     #[error("{0}")]
     BitMapBackendError(plotters_bitmap::BitMapBackendError),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    ValidationError(#[from] Box<vulkano::ValidationError>),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    ValidatedVulkanError(#[from] vulkano::Validated<vulkano::VulkanError>),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    VulkanError(#[from] vulkano::VulkanError),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    CommandBufferExecError(#[from] vulkano::command_buffer::CommandBufferExecError),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    HostAccessError(#[from] vulkano::sync::HostAccessError),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    AllocateBufferError(#[from] vulkano::Validated<vulkano::buffer::AllocateBufferError>),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    LoadingError(#[from] vulkano::library::LoadingError),
+    #[cfg(feature = "gpu")]
+    #[error("{0}")]
+    IntoPipelineLayoutCreateInfoError(
+        #[from] vulkano::pipeline::layout::IntoPipelineLayoutCreateInfoError,
+    ),
 }
 
 impl From<VisualizerError> for AUTDInternalError {
