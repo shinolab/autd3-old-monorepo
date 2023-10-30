@@ -4,38 +4,49 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use std::{f32::consts::PI, io::Cursor, sync::Arc};
+use std::{f32::consts::PI, sync::Arc};
 
 use autd3_driver::autd3_device::AUTD3;
 use bytemuck::{Pod, Zeroable};
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},
     command_buffer::{
-        AutoCommandBufferBuilder, CommandBufferUsage, PrimaryAutoCommandBuffer,
-        PrimaryCommandBufferAbstract,
+        AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo,
+        PrimaryAutoCommandBuffer, PrimaryCommandBufferAbstract,
     },
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
     format::Format,
-    image::{view::ImageView, ImageDimensions, ImageViewAbstract, ImmutableImage, MipmapsCount},
-    memory::allocator::{AllocationCreateInfo, MemoryUsage},
+    image::{
+        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo, SamplerMipmapMode},
+        view::ImageView,
+        Image, ImageCreateInfo, ImageType, ImageUsage,
+    },
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
     pipeline::{
         graphics::{
-            color_blend::ColorBlendState, depth_stencil::DepthStencilState,
-            input_assembly::InputAssemblyState, multisample::MultisampleState,
-            vertex_input::Vertex, viewport::ViewportState,
+            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
+            depth_stencil::{DepthState, DepthStencilState},
+            input_assembly::{InputAssemblyState, PrimitiveTopology},
+            multisample::MultisampleState,
+            rasterization::RasterizationState,
+            vertex_input::{Vertex, VertexDefinition},
+            viewport::ViewportState,
+            GraphicsPipelineCreateInfo,
         },
-        GraphicsPipeline, Pipeline, PipelineBindPoint,
+        layout::PipelineDescriptorSetLayoutCreateInfo,
+        DynamicState, GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
     },
     render_pass::Subpass,
-    sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo, SamplerMipmapMode},
     sync::GpuFuture,
+    DeviceSize,
 };
 
 use crate::{
@@ -96,37 +107,65 @@ pub struct TransViewer {
 }
 
 impl TransViewer {
-    pub fn new(renderer: &Renderer) -> Self {
+    pub fn new(renderer: &Renderer) -> anyhow::Result<Self> {
         let device = renderer.device();
-        let vertices = Self::create_vertices(renderer);
-        let indices = Self::create_indices(renderer);
+        let vertices = Self::create_vertices(renderer)?;
+        let indices = Self::create_indices(renderer)?;
 
-        let vs = vs::load(device.clone()).unwrap();
-        let fs = fs::load(device.clone()).unwrap();
+        let vs = vs::load(device.clone())?.entry_point("main").unwrap();
+        let fs = fs::load(device.clone())?.entry_point("main").unwrap();
 
+        let vertex_input_state = [
+            CircleVertex::per_vertex(),
+            ModelInstanceData::per_instance(),
+            ColorInstanceData::per_instance(),
+        ]
+        .definition(&vs.info().input_interface)?;
+        let stages = [
+            PipelineShaderStageCreateInfo::new(vs),
+            PipelineShaderStageCreateInfo::new(fs),
+        ];
+        let layout = PipelineLayout::new(
+            device.clone(),
+            PipelineDescriptorSetLayoutCreateInfo::from_stages(&stages)
+                .into_pipeline_layout_create_info(device.clone())?,
+        )?;
         let subpass = Subpass::from(renderer.render_pass(), 0).unwrap();
-        let pipeline = GraphicsPipeline::start()
-            .vertex_input_state([
-                CircleVertex::per_vertex(),
-                ModelInstanceData::per_instance(),
-                ColorInstanceData::per_instance(),
-            ])
-            .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .input_assembly_state(InputAssemblyState::new())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
-            .fragment_shader(fs.entry_point("main").unwrap(), ())
-            .color_blend_state(ColorBlendState::new(subpass.num_color_attachments()).blend_alpha())
-            .depth_stencil_state(DepthStencilState::simple_depth_test())
-            .multisample_state(MultisampleState {
-                rasterization_samples: renderer.sample_count(),
-                ..MultisampleState::default()
-            })
-            .render_pass(subpass)
-            .build(device)
-            .unwrap();
+        let pipeline = GraphicsPipeline::new(
+            device.clone(),
+            None,
+            GraphicsPipelineCreateInfo {
+                stages: stages.into_iter().collect(),
+                vertex_input_state: Some(vertex_input_state),
+                input_assembly_state: Some(InputAssemblyState {
+                    topology: PrimitiveTopology::TriangleStrip,
+                    ..Default::default()
+                }),
+                viewport_state: Some(ViewportState::default()),
+                rasterization_state: Some(RasterizationState::default()),
+                multisample_state: Some(MultisampleState {
+                    rasterization_samples: renderer.sample_count(),
+                    ..MultisampleState::default()
+                }),
+                color_blend_state: Some(ColorBlendState::with_attachment_states(
+                    subpass.num_color_attachments(),
+                    ColorBlendAttachmentState {
+                        blend: Some(AttachmentBlend::alpha()),
+                        ..Default::default()
+                    },
+                )),
+                depth_stencil_state: Some(DepthStencilState {
+                    depth: Some(DepthState::simple()),
+                    ..Default::default()
+                }),
+                dynamic_state: [DynamicState::Viewport].into_iter().collect(),
+                subpass: Some(subpass.into()),
+                ..GraphicsPipelineCreateInfo::layout(layout)
+            },
+        )?;
 
-        let texture_desc_set = Self::create_texture_desc_set(pipeline.clone(), renderer);
-        Self {
+        let texture_desc_set = Self::create_texture_desc_set(pipeline.clone(), renderer)?;
+        Ok(Self {
             vertices,
             indices,
             model_instance_data: None,
@@ -134,29 +173,36 @@ impl TransViewer {
             pipeline,
             texture_desc_set,
             coloring_method: coloring_hsv,
-        }
+        })
     }
 
-    pub fn init(&mut self, renderer: &Renderer, sources: &SoundSources) {
+    pub fn init(&mut self, renderer: &Renderer, sources: &SoundSources) -> anyhow::Result<()> {
         self.color_instance_data = Some(Self::create_color_instance_data(
             renderer,
             sources,
             self.coloring_method,
-        ));
-        self.model_instance_data = Some(Self::create_model_instance_data(renderer, sources));
+        )?);
+        self.model_instance_data = Some(Self::create_model_instance_data(renderer, sources)?);
+        Ok(())
     }
 
-    pub fn update(&mut self, sources: &SoundSources, update_flag: &UpdateFlag) {
+    pub fn update(
+        &mut self,
+        sources: &SoundSources,
+        update_flag: &UpdateFlag,
+    ) -> anyhow::Result<()> {
         if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE)
             || update_flag.contains(UpdateFlag::UPDATE_SOURCE_ALPHA)
             || update_flag.contains(UpdateFlag::UPDATE_SOURCE_FLAG)
         {
-            self.update_color_instance_data(sources)
+            self.update_color_instance_data(sources)?;
         }
+
+        Ok(())
     }
 
-    pub fn update_source_pos(&mut self, sources: &SoundSources) {
-        self.update_model_instance_data(sources);
+    pub fn update_source_pos(&mut self, sources: &SoundSources) -> anyhow::Result<()> {
+        self.update_model_instance_data(sources)
     }
 
     pub fn render(
@@ -164,40 +210,42 @@ impl TransViewer {
         view: Matrix4,
         proj: Matrix4,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
-    ) {
+    ) -> anyhow::Result<()> {
         let pc = vs::PushConsts {
             proj_view: (proj * view).into(),
         };
 
         if let (Some(model), Some(color)) = (&self.model_instance_data, &self.color_instance_data) {
             builder
-                .bind_pipeline_graphics(self.pipeline.clone())
+                .bind_pipeline_graphics(self.pipeline.clone())?
                 .bind_descriptor_sets(
                     PipelineBindPoint::Graphics,
                     self.pipeline.layout().clone(),
                     0,
                     self.texture_desc_set.clone(),
-                )
-                .push_constants(self.pipeline.layout().clone(), 0, pc)
-                .bind_vertex_buffers(0, (self.vertices.clone(), model.clone(), color.clone()))
-                .bind_index_buffer(self.indices.clone())
-                .draw_indexed(self.indices.len() as u32, model.len() as u32, 0, 0, 0)
-                .unwrap();
+                )?
+                .push_constants(self.pipeline.layout().clone(), 0, pc)?
+                .bind_vertex_buffers(0, (self.vertices.clone(), model.clone(), color.clone()))?
+                .bind_index_buffer(self.indices.clone())?
+                .draw_indexed(self.indices.len() as u32, model.len() as u32, 0, 0, 0)?;
         }
+
+        Ok(())
     }
 
     fn create_model_instance_data(
         renderer: &Renderer,
         sources: &SoundSources,
-    ) -> Subbuffer<[ModelInstanceData]> {
-        Buffer::from_iter(
+    ) -> anyhow::Result<Subbuffer<[ModelInstanceData]>> {
+        let buffer = Buffer::from_iter(
             renderer.memory_allocator(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER | BufferUsage::VERTEX_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             sources
@@ -215,23 +263,25 @@ impl TransViewer {
                         model: (m * rotm).into(),
                     }
                 }),
-        )
-        .unwrap()
+        )?;
+
+        Ok(buffer)
     }
 
     fn create_color_instance_data(
         renderer: &Renderer,
         sources: &SoundSources,
         coloring_method: ColoringMethod,
-    ) -> Subbuffer<[ColorInstanceData]> {
-        Buffer::from_iter(
+    ) -> anyhow::Result<Subbuffer<[ColorInstanceData]>> {
+        let buffer = Buffer::from_iter(
             renderer.memory_allocator(),
             BufferCreateInfo {
                 usage: BufferUsage::STORAGE_BUFFER | BufferUsage::VERTEX_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             sources
@@ -241,19 +291,21 @@ impl TransViewer {
                     let color = coloring_method(drive.phase / (2.0 * PI), drive.amp, v);
                     ColorInstanceData { color }
                 }),
-        )
-        .unwrap()
+        )?;
+
+        Ok(buffer)
     }
 
-    fn create_vertices(renderer: &Renderer) -> Subbuffer<[CircleVertex]> {
-        Buffer::from_iter(
+    fn create_vertices(renderer: &Renderer) -> anyhow::Result<Subbuffer<[CircleVertex]>> {
+        let buffer = Buffer::from_iter(
             renderer.memory_allocator(),
             BufferCreateInfo {
                 usage: BufferUsage::VERTEX_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             [
@@ -276,32 +328,35 @@ impl TransViewer {
             ]
             .iter()
             .cloned(),
-        )
-        .unwrap()
+        )?;
+
+        Ok(buffer)
     }
 
-    fn create_indices(renderer: &Renderer) -> Subbuffer<[u32]> {
+    fn create_indices(renderer: &Renderer) -> anyhow::Result<Subbuffer<[u32]>> {
         let indices: Vec<u32> = vec![0, 1, 2, 2, 3, 0];
-        Buffer::from_iter(
+        let buffer = Buffer::from_iter(
             renderer.memory_allocator(),
             BufferCreateInfo {
                 usage: BufferUsage::INDEX_BUFFER,
                 ..Default::default()
             },
             AllocationCreateInfo {
-                usage: MemoryUsage::Upload,
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                 ..Default::default()
             },
             indices,
-        )
-        .unwrap()
+        )?;
+
+        Ok(buffer)
     }
 
     fn create_texture_desc_set(
         pipeline: Arc<GraphicsPipeline>,
         renderer: &Renderer,
-    ) -> Arc<PersistentDescriptorSet> {
-        let (uploads, texture) = Self::load_image(renderer);
+    ) -> anyhow::Result<Arc<PersistentDescriptorSet>> {
+        let (uploads, texture) = Self::load_image(renderer)?;
         let sampler = Sampler::new(
             pipeline.device().clone(),
             SamplerCreateInfo {
@@ -312,78 +367,91 @@ impl TransViewer {
                 mip_lod_bias: 0.0,
                 ..Default::default()
             },
-        )
-        .unwrap();
+        )?;
         let layout = pipeline.layout().set_layouts().get(0).unwrap();
 
         uploads
-            .execute(renderer.queue())
-            .unwrap()
-            .then_signal_fence_and_flush()
-            .unwrap()
-            .wait(None)
-            .unwrap();
+            .execute(renderer.queue())?
+            .then_signal_fence_and_flush()?
+            .wait(None)?;
 
-        PersistentDescriptorSet::new(
+        let set = PersistentDescriptorSet::new(
             renderer.descriptor_set_allocator(),
             layout.clone(),
             [WriteDescriptorSet::image_view_sampler(0, texture, sampler)],
-        )
-        .unwrap()
+            [],
+        )?;
+        Ok(set)
     }
 
-    fn load_image(renderer: &Renderer) -> (PrimaryAutoCommandBuffer, Arc<dyn ImageViewAbstract>) {
-        let png_bytes = include_bytes!("../assets/textures/circle.png").to_vec();
-        let cursor = Cursor::new(png_bytes);
-        let decoder = png::Decoder::new(cursor);
-        let mut reader = decoder.read_info().unwrap();
+    fn load_image(
+        renderer: &Renderer,
+    ) -> anyhow::Result<(Arc<PrimaryAutoCommandBuffer>, Arc<ImageView>)> {
+        let png_bytes = include_bytes!("../assets/textures/circle.png").as_slice();
+        let decoder = png::Decoder::new(png_bytes);
+        let mut reader = decoder.read_info()?;
         let info = reader.info();
-        let dimensions = ImageDimensions::Dim2d {
-            width: info.width,
-            height: info.height,
-            array_layers: 1,
-        };
-        let mut image_data = Vec::new();
-        image_data.resize((info.width * info.height * 4) as usize, 0);
-        reader.next_frame(&mut image_data).unwrap();
+        let extent = [info.width, info.height, 1];
+
+        let upload_buffer = Buffer::new_slice(
+            renderer.memory_allocator(),
+            BufferCreateInfo {
+                usage: BufferUsage::TRANSFER_SRC,
+                ..Default::default()
+            },
+            AllocationCreateInfo {
+                memory_type_filter: MemoryTypeFilter::PREFER_HOST
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                ..Default::default()
+            },
+            (info.width * info.height * 4) as DeviceSize,
+        )?;
+
+        reader.next_frame(&mut upload_buffer.write()?)?;
+
+        let image = Image::new(
+            renderer.memory_allocator(),
+            ImageCreateInfo {
+                image_type: ImageType::Dim2d,
+                format: Format::R8G8B8A8_SRGB,
+                extent,
+                usage: ImageUsage::TRANSFER_DST | ImageUsage::SAMPLED,
+                ..Default::default()
+            },
+            AllocationCreateInfo::default(),
+        )?;
 
         let mut uploads = AutoCommandBufferBuilder::primary(
             renderer.command_buffer_allocator(),
             renderer.queue().queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        )?;
 
-        let image = ImmutableImage::from_iter(
-            renderer.memory_allocator(),
-            image_data.iter().cloned(),
-            dimensions,
-            MipmapsCount::One,
-            Format::R8G8B8A8_SRGB,
-            &mut uploads,
-        )
-        .unwrap();
-        let image = ImageView::new_default(image).unwrap();
+        uploads.copy_buffer_to_image(CopyBufferToImageInfo::buffer_image(
+            upload_buffer,
+            image.clone(),
+        ))?;
 
-        (uploads.build().unwrap(), image)
+        let image = ImageView::new_default(image)?;
+
+        Ok((uploads.build()?, image))
     }
 
-    fn update_color_instance_data(&mut self, sources: &SoundSources) {
+    fn update_color_instance_data(&mut self, sources: &SoundSources) -> anyhow::Result<()> {
         if let Some(data) = &mut self.color_instance_data {
-            data.write()
-                .unwrap()
+            data.write()?
                 .iter_mut()
                 .zip(sources.drives().zip(sources.visibilities()))
                 .for_each(|(d, (drive, &v))| {
                     d.color = (self.coloring_method)(drive.phase / (2.0 * PI), drive.amp, v);
                 });
         }
+        Ok(())
     }
 
-    fn update_model_instance_data(&mut self, sources: &SoundSources) {
+    fn update_model_instance_data(&mut self, sources: &SoundSources) -> anyhow::Result<()> {
         if let Some(data) = &mut self.model_instance_data {
-            data.write()
-                .unwrap()
+            data.write()?
                 .iter_mut()
                 .zip(sources.positions().zip(sources.rotations()))
                 .for_each(|(d, (pos, rot))| {
@@ -397,5 +465,6 @@ impl TransViewer {
                     d.model = (m * rotm).into();
                 });
         }
+        Ok(())
     }
 }
