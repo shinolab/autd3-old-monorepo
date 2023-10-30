@@ -11,14 +11,14 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  check-server:
+  check-src:
     runs-on: ubuntu-latest
     name: check if server files changed
     outputs:
       status: ${{ steps.changed-files.outputs.modified_files }}
     steps:
       - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v37
+      - uses: tj-actions/changed-files@v40
         id: changed-files
         with:
           files: |
@@ -30,7 +30,7 @@ jobs:
             server/package.json
 
   build-server:
-    needs: check-server
+    needs: check-src
     name: build-server
     strategy:
       fail-fast: false
