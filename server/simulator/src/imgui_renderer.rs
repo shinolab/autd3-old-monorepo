@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,7 +68,7 @@ impl ImGuiRenderer {
         initial_settings: ViewerSettings,
         config_path: &Option<PathBuf>,
         renderer: &Renderer,
-    ) -> Self {
+    ) -> anyhow::Result<Self> {
         let mut imgui = Context::create();
         if let Some(path) = config_path {
             imgui.set_ini_filename(path.join("imgui.ini"));
@@ -87,10 +87,9 @@ impl ImGuiRenderer {
             renderer.device(),
             renderer.queue(),
             renderer.image_format(),
-        )
-        .expect("Failed to initialize renderer");
+        )?;
 
-        Self {
+        Ok(Self {
             imgui,
             platform,
             imgui_renderer,
@@ -107,7 +106,7 @@ impl ImGuiRenderer {
             show_mod_plot_raw: Vec::new(),
             mod_plot_size: Vec::new(),
             initial_settings,
-        }
+        })
     }
 
     pub fn init(&mut self, dev_num: usize) {
@@ -124,10 +123,8 @@ impl ImGuiRenderer {
             .handle_event(self.imgui.io_mut(), window, event);
     }
 
-    pub fn prepare_frame(&mut self, window: &Window) {
-        self.platform
-            .prepare_frame(self.imgui.io_mut(), window)
-            .expect("Failed to prepare frame");
+    pub fn prepare_frame(&mut self, window: &Window) -> anyhow::Result<()> {
+        Ok(self.platform.prepare_frame(self.imgui.io_mut(), window)?)
     }
 
     pub fn update_delta_time(&mut self) {
@@ -151,18 +148,16 @@ impl ImGuiRenderer {
         render: &Renderer,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
         settings: &mut ViewerSettings,
-    ) -> UpdateFlag {
+    ) -> anyhow::Result<UpdateFlag> {
         let mut update_flag = UpdateFlag::empty();
 
-        self.update_font(render);
+        self.update_font(render)?;
 
         let io = self.imgui.io_mut();
 
         let fps = io.framerate;
 
-        self.platform
-            .prepare_frame(io, render.window())
-            .expect("Failed to start frame");
+        self.platform.prepare_frame(io, render.window())?;
 
         let system_time = self.system_time();
         let ui = self.imgui.new_frame();
@@ -933,30 +928,26 @@ impl ImGuiRenderer {
 
         self.platform.prepare_render(ui, render.window());
         let draw_data = self.imgui.render();
-        self.imgui_renderer
-            .draw_commands(
-                builder,
-                render.queue(),
-                ImageView::new_default(render.image()).unwrap(),
-                draw_data,
-            )
-            .expect("Rendering failed");
+        self.imgui_renderer.draw_commands(
+            builder,
+            render.queue(),
+            ImageView::new_default(render.image())?,
+            draw_data,
+        )?;
 
-        update_flag
+        Ok(update_flag)
     }
 
     pub(crate) fn waiting(
         &mut self,
         render: &Renderer,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
-    ) {
-        self.update_font(render);
+    ) -> anyhow::Result<()> {
+        self.update_font(render)?;
 
         let io = self.imgui.io_mut();
 
-        self.platform
-            .prepare_frame(io, render.window())
-            .expect("Failed to start frame");
+        self.platform.prepare_frame(io, render.window())?;
 
         let ui = self.imgui.new_frame();
 
@@ -966,17 +957,17 @@ impl ImGuiRenderer {
 
         self.platform.prepare_render(ui, render.window());
         let draw_data = self.imgui.render();
-        self.imgui_renderer
-            .draw_commands(
-                builder,
-                render.queue(),
-                ImageView::new_default(render.image()).unwrap(),
-                draw_data,
-            )
-            .expect("Rendering failed");
+        self.imgui_renderer.draw_commands(
+            builder,
+            render.queue(),
+            ImageView::new_default(render.image())?,
+            draw_data,
+        )?;
+
+        Ok(())
     }
 
-    fn update_font(&mut self, render: &Renderer) {
+    fn update_font(&mut self, render: &Renderer) -> anyhow::Result<()> {
         if self.do_update_font {
             self.imgui.fonts().clear();
             self.imgui.fonts().add_font(&[FontSource::TtfData {
@@ -988,11 +979,14 @@ impl ImGuiRenderer {
                     ..FontConfig::default()
                 }),
             }]);
-            self.imgui_renderer
-                .reload_font_texture(&mut self.imgui, render.device(), render.queue())
-                .expect("Failed to reload fonts");
+            self.imgui_renderer.reload_font_texture(
+                &mut self.imgui,
+                render.device(),
+                render.queue(),
+            )?;
             self.do_update_font = false;
         }
+        Ok(())
     }
 
     pub(crate) const fn system_time(&self) -> u64 {

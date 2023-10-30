@@ -4,7 +4,7 @@
  * Created Date: 28/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -150,7 +150,7 @@ fn main() -> anyhow::Result<()> {
                 let settings_str = serde_json::to_string_pretty(settings)?;
 
                 if settings_path.exists() {
-                    fs::remove_file(&settings_path).unwrap();
+                    fs::remove_file(&settings_path)?;
                 }
 
                 std::fs::create_dir_all(settings_path.parent().unwrap())?;

@@ -4,7 +4,7 @@
  * Created Date: 14/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,9 +44,7 @@ where
                 write!(writer, "{}", span.name())?;
 
                 let ext = span.extensions();
-                let fields = &ext
-                    .get::<FormattedFields<N>>()
-                    .expect("will never be `None`");
+                let fields = &ext.get::<FormattedFields<N>>().unwrap();
 
                 if !fields.is_empty() {
                     write!(writer, "{{{}}}", fields)?;
