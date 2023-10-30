@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -70,6 +70,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFigSize(
     width: u32,
     height: u32,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         figsize: (width, height),
@@ -83,6 +86,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithCBarSize(
     config: PlotConfigPtr,
     cbar_size: float,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         cbar_size,
@@ -96,6 +102,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFontSize(
     config: PlotConfigPtr,
     font_size: u32,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         font_size,
@@ -109,6 +118,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithLabelAreaSize(
     config: PlotConfigPtr,
     label_area_size: u32,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         label_area_size,
@@ -122,6 +134,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithMargin(
     config: PlotConfigPtr,
     margin: u32,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig { margin, ..config })) as _)
 }
@@ -132,6 +147,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithTicksStep(
     config: PlotConfigPtr,
     ticks_step: float,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         ticks_step,
@@ -162,6 +180,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithCMap(
     config: PlotConfigPtr,
     cmap: CMap,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
         cmap: match cmap {
@@ -190,6 +211,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFName(
     fname: *const c_char,
     err: *mut c_char,
 ) -> PlotConfigPtr {
+    if config.0.is_null() {
+        return PlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
     let fname = try_or_return!(CStr::from_ptr(fname).to_str(), err, PlotConfigPtr(NULL));
     PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {

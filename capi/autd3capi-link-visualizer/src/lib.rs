@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -179,20 +179,26 @@ pub unsafe extern "C" fn AUTDLinkVisualizerCalcFieldOf(
     geometry: GeometryPtr,
     idx: u32,
     buf: *mut float,
-) {
+    err: *mut c_char,
+) -> i32 {
     let idx = idx as usize;
     let len = points_len as usize;
     let points = std::slice::from_raw_parts(points as *const Vector3, len);
-    let m = match_visualizer!(
-        backend,
-        directivity,
-        visualizer,
-        calc_field_of,
-        points.iter(),
-        cast!(geometry.0, Geo),
-        idx
+    let m = try_or_return!(
+        match_visualizer!(
+            backend,
+            directivity,
+            visualizer,
+            calc_field_of,
+            points.iter(),
+            cast!(geometry.0, Geo),
+            idx
+        ),
+        err,
+        AUTD3_ERR
     );
     std::ptr::copy_nonoverlapping(m.as_ptr(), buf as *mut _, m.len());
+    AUTD3_TRUE
 }
 
 #[no_mangle]

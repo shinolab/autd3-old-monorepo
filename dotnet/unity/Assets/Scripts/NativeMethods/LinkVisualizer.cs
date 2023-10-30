@@ -24,7 +24,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern uint AUTDLinkVisualizerModulation(LinkPtr visualizer, Backend backend, Directivity directivity, float[]? buf);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer, Backend backend, Directivity directivity, float[]? points, uint pointsLen, GeometryPtr geometry, uint idx, float[]? buf);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer, Backend backend, Directivity directivity, float[]? points, uint pointsLen, GeometryPtr geometry, uint idx, float[]? buf, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDLinkVisualizerPlotFieldOf(LinkPtr visualizer, Backend backend, Directivity directivity, ConfigPtr config, PlotRangePtr range, GeometryPtr geometry, uint idx, byte[] err);
 

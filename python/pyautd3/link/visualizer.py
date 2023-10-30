@@ -433,16 +433,22 @@ class Visualizer(Link):
         points_len = len(points)
         points = np.ravel(np.stack(points))  # type: ignore[call-overload]
         buf = np.zeros(points_len * 2).astype(ctypes.c_double)
-        LinkVisualizer().link_visualizer_calc_field_of(
-            self._ptr,
-            self._backend,
-            self._directivity,
-            np.ctypeslib.as_ctypes(points),
-            points_len,
-            geometry._geometry_ptr(),
-            idx,
-            np.ctypeslib.as_ctypes(buf),
-        )
+        err = ctypes.create_string_buffer(256)
+        if (
+            LinkVisualizer().link_visualizer_calc_field_of(
+                self._ptr,
+                self._backend,
+                self._directivity,
+                np.ctypeslib.as_ctypes(points),
+                points_len,
+                geometry._geometry_ptr(),
+                idx,
+                np.ctypeslib.as_ctypes(buf),
+                err,
+            )
+            == AUTD3_ERR
+        ):
+            raise AUTDError(err)
         return np.fromiter([buf[2 * i] + buf[2 * i + 1] * 1j for i in range(points_len)], dtype=np.complex128, count=points_len)
 
     def calc_field(self: "Visualizer", points_iter: Iterable[np.ndarray], geometry: Geometry) -> np.ndarray:
