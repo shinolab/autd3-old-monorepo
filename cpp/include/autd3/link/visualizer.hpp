@@ -3,7 +3,7 @@
 // Created Date: 12/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2023
+// Last Modified: 30/10/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -120,29 +120,15 @@ class Visualizer final {
       auto ptr = internal::native_methods::AUTDLinkVisualizerPyPlotConfigDefault();
       if (figsize.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFigSize(ptr, figsize.value().first, figsize.value().second);
       if (dpi.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithDPI(ptr, dpi.value());
-      if (cbar_position.has_value()) {
-        ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, cbar_position.value().c_str(), err);
-        if (ptr._0 == nullptr) throw internal::AUTDException(err);
-      }
-      if (cbar_size.has_value()) {
-        ptr = AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, cbar_size.value().c_str(), err);
-        if (ptr._0 == nullptr) throw internal::AUTDException(err);
-      }
-      if (cbar_pad.has_value()) {
-        ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, cbar_pad.value().c_str(), err);
-        if (ptr._0 == nullptr) throw internal::AUTDException(err);
-      }
+      if (cbar_position.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, cbar_position.value().c_str(), err);
+      if (cbar_size.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, cbar_size.value().c_str(), err);
+      if (cbar_pad.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, cbar_pad.value().c_str(), err);
       if (fontsize.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFontSize(ptr, fontsize.value());
       if (ticks_step.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithTicksStep(ptr, ticks_step.value());
-      if (cmap.has_value()) {
-        ptr = AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, cmap.value().c_str(), err);
-        if (ptr._0 == nullptr) throw internal::AUTDException(err);
-      }
+      if (cmap.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, cmap.value().c_str(), err);
       if (show.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithShow(ptr, show.value());
-      if (fname.has_value()) {
-        ptr = AUTDLinkVisualizerPyPlotConfigWithFName(ptr, fname.value().c_str(), err);
-        if (ptr._0 == nullptr) throw internal::AUTDException(err);
-      }
+      if (fname.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFName(ptr, fname.value().c_str(), err);
+      if (ptr._0 == nullptr) throw internal::AUTDException(err);
       return internal::native_methods::ConfigPtr{ptr._0};
     }
 
@@ -225,8 +211,7 @@ class Visualizer final {
 
   Visualizer() = delete;
 
-  explicit Visualizer(const internal::native_methods::LinkPtr ptr, const internal::native_methods::RuntimePtr, const std::shared_ptr<void>& props)
-      : _ptr(ptr) {
+  explicit Visualizer(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>& props) : _ptr(ptr) {
     const auto* p = static_cast<const Props*>(props.get());
     _backend = p->backend;
     _directivity = p->directivity;
@@ -274,8 +259,9 @@ class Visualizer final {
     const auto points_ptr = reinterpret_cast<double*>(points.data());
     std::vector<std::complex<double>> buf;
     buf.resize(points_len);
-    AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity, points_ptr, points_len, geometry.ptr(), static_cast<uint32_t>(idx),
-                                  reinterpret_cast<double*>(buf.data()));
+    if (char err[256]; AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity, points_ptr, points_len, geometry.ptr(), static_cast<uint32_t>(idx),
+                                                     reinterpret_cast<double*>(buf.data()), err) == internal::native_methods::AUTD3_ERR)
+      throw internal::AUTDException(err);
     return buf;
   }
 

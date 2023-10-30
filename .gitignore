@@ -9,3 +9,4 @@ assets_arm.zip
 publish/
 .DS_Store
 test.ps1
+*.png

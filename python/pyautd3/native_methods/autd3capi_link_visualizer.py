@@ -100,8 +100,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkVisualizerModulation.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDLinkVisualizerModulation.restype = ctypes.c_uint32
 
-        self.dll.AUTDLinkVisualizerCalcFieldOf.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32, GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
-        self.dll.AUTDLinkVisualizerCalcFieldOf.restype = None
+        self.dll.AUTDLinkVisualizerCalcFieldOf.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32, GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerCalcFieldOf.restype = ctypes.c_int32
 
         self.dll.AUTDLinkVisualizerPlotFieldOf.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, PlotRangePtr, GeometryPtr, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDLinkVisualizerPlotFieldOf.restype = ctypes.c_int32
@@ -211,8 +211,8 @@ class NativeMethods(metaclass=Singleton):
     def link_visualizer_modulation(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, buf: ctypes.Array[ctypes.c_double] | None) -> ctypes.c_uint32:
         return self.dll.AUTDLinkVisualizerModulation(visualizer, backend, directivity, buf)
 
-    def link_visualizer_calc_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, points: ctypes.Array[ctypes.c_double] | None, points_len: int, geometry: GeometryPtr, idx: int, buf: ctypes.Array[ctypes.c_double] | None) -> None:
-        return self.dll.AUTDLinkVisualizerCalcFieldOf(visualizer, backend, directivity, points, points_len, geometry, idx, buf)
+    def link_visualizer_calc_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, points: ctypes.Array[ctypes.c_double] | None, points_len: int, geometry: GeometryPtr, idx: int, buf: ctypes.Array[ctypes.c_double] | None, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
+        return self.dll.AUTDLinkVisualizerCalcFieldOf(visualizer, backend, directivity, points, points_len, geometry, idx, buf, err)
 
     def link_visualizer_plot_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, range: PlotRangePtr, geometry: GeometryPtr, idx: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDLinkVisualizerPlotFieldOf(visualizer, backend, directivity, config, range, geometry, idx, err)

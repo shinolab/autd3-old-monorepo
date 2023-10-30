@@ -4,7 +4,7 @@
  * Created Date: 13/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -70,6 +70,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithFigSize(
     width: i32,
     height: i32,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {
         figsize: (width, height),
@@ -83,6 +86,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithDPI(
     config: PyPlotConfigPtr,
     dpi: i32,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { dpi, ..config })) as _)
 }
@@ -94,6 +100,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPosition(
     cbar_position: *const c_char,
     err: *mut c_char,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let cbar_position = try_or_return!(
         CStr::from_ptr(cbar_position).to_str(),
         err,
@@ -114,6 +123,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarSize(
     cbar_size: *const c_char,
     err: *mut c_char,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let cbar_size = try_or_return!(
         CStr::from_ptr(cbar_size).to_str(),
         err,
@@ -134,6 +146,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPad(
     cbar_pad: *const c_char,
     err: *mut c_char,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let cbar_pad = try_or_return!(
         CStr::from_ptr(cbar_pad).to_str(),
         err,
@@ -150,6 +165,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithFontSize(
     config: PyPlotConfigPtr,
     fontsize: i32,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { fontsize, ..config })) as _)
 }
@@ -160,6 +178,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithTicksStep(
     config: PyPlotConfigPtr,
     ticks_step: float,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {
         ticks_step,
@@ -174,6 +195,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCMap(
     cmap: *const c_char,
     err: *mut c_char,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     let cmap = try_or_return!(CStr::from_ptr(cmap).to_str(), err, PyPlotConfigPtr(NULL)).to_owned();
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { cmap, ..config })) as _)
@@ -185,6 +209,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithShow(
     config: PyPlotConfigPtr,
     show: bool,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { show, ..config })) as _)
 }
@@ -196,6 +223,9 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithFName(
     fname: *const c_char,
     err: *mut c_char,
 ) -> PyPlotConfigPtr {
+    if config.0.is_null() {
+        return PyPlotConfigPtr(NULL);
+    }
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
     let fname = try_or_return!(CStr::from_ptr(fname).to_str(), err, PyPlotConfigPtr(NULL));
     PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {

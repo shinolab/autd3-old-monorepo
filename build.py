@@ -508,8 +508,8 @@ def cpp_build(args):
             os.makedirs("build", exist_ok=True)
             with working_dir("build"):
                 command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
-                if not config.is_built_autd3capi_link_visualizer():
-                    command.append("-DENABLE_LINK_VISUALIZER=OFF")
+                if config.is_built_autd3capi_link_visualizer():
+                    command.append("-DENABLE_LINK_VISUALIZER=ON")
                 if config.cmake_extra is not None:
                     for cmd in config.cmake_extra:
                         command.append(cmd)
@@ -532,6 +532,8 @@ def cpp_test(args):
             command = ["cmake", ".."]
             if config.cuda and not config.skip_cuda:
                 command.append("-DENABLE_BACKEND_CUDA=ON")
+            if config.is_built_autd3capi_link_visualizer():
+                command.append("-DENABLE_LINK_VISUALIZER=ON")
             if config.cmake_extra is not None:
                 for cmd in config.cmake_extra:
                     command.append(cmd)

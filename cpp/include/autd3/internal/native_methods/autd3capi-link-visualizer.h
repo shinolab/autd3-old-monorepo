@@ -86,14 +86,15 @@ uint32_t AUTDLinkVisualizerModulation(LinkPtr visualizer,
                                       Directivity directivity,
                                       double *buf);
 
-void AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer,
-                                   Backend backend,
-                                   Directivity directivity,
-                                   const double *points,
-                                   uint32_t points_len,
-                                   GeometryPtr geometry,
-                                   uint32_t idx,
-                                   double *buf);
+int32_t AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer,
+                                      Backend backend,
+                                      Directivity directivity,
+                                      const double *points,
+                                      uint32_t points_len,
+                                      GeometryPtr geometry,
+                                      uint32_t idx,
+                                      double *buf,
+                                      char *err);
 
 [[nodiscard]]
 int32_t AUTDLinkVisualizerPlotFieldOf(LinkPtr visualizer,

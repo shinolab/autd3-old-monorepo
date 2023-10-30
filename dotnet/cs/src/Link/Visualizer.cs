@@ -4,7 +4,7 @@
  * Created Date: 13/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -106,6 +106,7 @@ namespace AUTD3Sharp.Link
 
         public ConfigPtr Ptr()
         {
+            var err = new byte[256];
             var ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigDefault();
             if (Figsize.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFigSize(ptr, Figsize.Value.Item1, Figsize.Value.Item2);
@@ -121,9 +122,7 @@ namespace AUTD3Sharp.Link
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithTicksStep(ptr, TicksStep.Value);
             if (Cmap.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithCMap(ptr, Cmap.Value);
-            if (Fname == null) return new ConfigPtr { _0 = ptr._0 };
-            var err = new byte[256];
-            ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFName(ptr, Fname, err);
+            if (Fname != null) ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFName(ptr, Fname, err);
             if (ptr._0 == IntPtr.Zero)
                 throw new AUTDException(err);
             return new ConfigPtr { _0 = ptr._0 };
@@ -157,37 +156,20 @@ namespace AUTD3Sharp.Link
             if (DPI.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithDPI(ptr, DPI.Value);
             if (CbarPosition != null)
-            {
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, CbarPosition, err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
-            }
             if (CbarSize != null)
-            {
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, CbarSize, err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
-            }
             if (CbarPad != null)
-            {
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, CbarPad, err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
-            }
             if (FontSize.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFontSize(ptr, FontSize.Value);
             if (TicksStep.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithTicksStep(ptr, TicksStep.Value);
             if (Cmap != null)
-            {
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, Cmap, err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
-            }
             if (Show.HasValue)
                 ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithShow(ptr, Show.Value);
-            if (Fname == null) return new ConfigPtr { _0 = ptr._0 };
-            ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFName(ptr, Fname, err);
+            if (Fname != null) ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFName(ptr, Fname, err);
             if (ptr._0 == IntPtr.Zero)
                 throw new AUTDException(err);
             return new ConfigPtr { _0 = ptr._0 };
@@ -374,8 +356,10 @@ namespace AUTD3Sharp.Link
             var pointsLen = points.Count();
             var pointsPtr = points.SelectMany(v => new[] { v.x, v.y, v.z }).ToArray();
             var buf = new float_t[pointsLen * 2];
-            NativeMethods.LinkVisualizer.AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity,
-                               pointsPtr, (uint)pointsLen, geometry.Ptr, (uint)(idx), buf);
+            var err = new byte[256];
+            if (NativeMethods.LinkVisualizer.AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity,
+                               pointsPtr, (uint)pointsLen, geometry.Ptr, (uint)(idx), buf, err) == NativeMethods.Def.Autd3Err)
+                throw new AUTDException(err);
             return Enumerable.Range(0, pointsLen).Select(i => new System.Numerics.Complex(buf[2 * i], buf[2 * i + 1])).ToArray();
         }
 
