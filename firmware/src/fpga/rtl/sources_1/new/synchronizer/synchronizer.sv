@@ -29,11 +29,12 @@ module synchronizer (
 
   bit [63:0] ecat_sync_time;
   bit [63:0] lap;
-  bit [31:0] _unused_rem_lap;
-  bit [76:0] sync_time_raw;
+  bit [31:0] lap_rem_unused;
+  bit [63:0] sync_time_raw;
+  bit [13:0] sync_time_raw_unused;
   bit [63:0] sync_time;
 
-  assign sync_time = sync_time_raw[63:0];
+  assign sync_time = sync_time_raw;
 
   bit [2:0] sync_tri = 0;
   bit sync;
@@ -59,14 +60,14 @@ module synchronizer (
       .s_axis_divisor_tdata(ECAT_SYNC_BASE),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
-      .m_axis_dout_tdata({lap, _unused_rem_lap}),
+      .m_axis_dout_tdata({lap, lap_rem_unused}),
       .m_axis_dout_tvalid()
   );
 
   mult_sync_base mult_sync_base_time (
       .CLK(CLK),
       .A  (lap),
-      .P  (sync_time_raw)
+      .P  ({sync_time_raw_unused, sync_time_raw})
   );
 
   addsub_64_64 addsub_diff (

@@ -30,7 +30,7 @@ module pwm_preconditioner #(
 
   bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
 
-  bit [WIDTH:0] duty_buf[4], phase_buf;
+  bit [WIDTH-1:0] duty_buf[4], phase_buf;
   bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
   bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
