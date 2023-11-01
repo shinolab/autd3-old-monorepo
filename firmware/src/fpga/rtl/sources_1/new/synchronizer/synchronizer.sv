@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,8 @@ module synchronizer (
     input var SET,
     input var ECAT_SYNC,
     output var [63:0] SYS_TIME,
-    output var SYNC
+    output var SYNC,
+    output var SKIP_ONE_ASSERT
 );
 
   localparam int ADDSUB_LATENCY = 6;
@@ -48,6 +49,9 @@ module synchronizer (
 
   bit signed [64:0] a_diff, b_diff, s_diff;
   bit signed [64:0] a_next, b_next, s_next;
+
+  bit skip_one_assert;
+  assign SKIP_ONE_ASSERT = skip_one_assert;
 
   div_64_32 div_64_32_lap (
       .s_axis_dividend_tdata(ecat_sync_time),
@@ -108,24 +112,30 @@ module synchronizer (
       end
       addsub_cnt <= 0;
       next_sync_cnt <= ECAT_SYNC_BASE_CNT >> 1;
+      skip_one_assert <= 1'b0;
     end else begin
       if (addsub_cnt == ADDSUB_LATENCY + 1) begin
         if (sync_time_diff == 65'd0) begin
           sys_time <= sys_time + 1;
+          skip_one_assert <= 1'b0;
         end else if (sync_time_diff[64] == 1'b1) begin
           sys_time <= sys_time;
+          skip_one_assert <= 1'b0;
           sync_time_diff <= sync_time_diff + 1;
         end else begin
           sys_time <= sys_time + 2;
+          skip_one_assert <= 1'b1;
           sync_time_diff <= sync_time_diff - 1;
         end
       end else if (addsub_cnt == ADDSUB_LATENCY) begin
         sync_time_diff <= s_diff;
         addsub_cnt <= addsub_cnt + 1;
         sys_time <= sys_time + 1;
+        skip_one_assert <= 1'b0;
       end else begin
         addsub_cnt <= addsub_cnt + 1;
-        sys_time   <= sys_time + 1;
+        sys_time <= sys_time + 1;
+        skip_one_assert <= 1'b0;
       end
 
       if (next_sync_cnt == ECAT_SYNC_BASE_CNT - 1) begin
