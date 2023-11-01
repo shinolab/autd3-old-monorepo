@@ -4,7 +4,7 @@
  * Created Date: 28/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,13 @@
  */
 
 module filter #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var DIN_VALID,
     input var signed [WIDTH:0] FILTER_DUTY[DEPTH],
     input var signed [WIDTH:0] FILTER_PHASE[DEPTH],
-    input var [WIDTH-1:0] CYCLE[DEPTH],
     input var [WIDTH-1:0] DUTY,
     input var [WIDTH-1:0] PHASE,
     output var [WIDTH-1:0] DUTY_F,
@@ -29,12 +28,11 @@ module filter #(
 
   localparam int AddSubLatency = 2;
 
-  bit signed [WIDTH:0] cycle_buf[3];
   bit [WIDTH-1:0] duty_buf, phase_buf;
 
   bit signed [WIDTH+1:0] a_duty, b_duty, s_duty;
   bit signed [WIDTH-1:0] s_duty_buf[3];
-  
+
   bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
   bit signed [WIDTH+1:0] a_phase_fold, b_phase_fold, s_phase_fold;
   bit add, add_fold;
@@ -99,26 +97,26 @@ module filter #(
       end
       RUN: begin
         // step 1: calculate next duty/phase
-        a_duty <= {1'b0, duty_buf};
-        b_duty <= FILTER_DUTY[calc_cnt];
-        a_phase <= {1'b0, phase_buf};
-        b_phase <= FILTER_PHASE[calc_cnt];
+        a_duty   <= {1'b0, duty_buf};
+        b_duty   <= FILTER_DUTY[calc_cnt];
+        a_phase  <= {1'b0, phase_buf};
+        b_phase  <= FILTER_PHASE[calc_cnt];
         calc_cnt <= calc_cnt + 1;
 
         // step 2: make duty/phase be in [0, T-1]
-        if (s_duty > cycle_buf[AddSubLatency]) begin
-          s_duty_buf[0] <= cycle_buf[AddSubLatency][WIDTH-1:0];
+        if (s_duty > 11'sd511) begin
+          s_duty_buf[0] <= 9'sd511;
         end else if (s_duty[WIDTH] == 1'b1) begin
           s_duty_buf[0] <= '0;
         end else begin
           s_duty_buf[0] <= s_duty[WIDTH-1:0];
         end
         a_phase_fold <= s_phase;
-        if (s_phase >= cycle_buf[AddSubLatency]) begin
-          b_phase_fold <= cycle_buf[AddSubLatency];
+        if (s_phase >= 11'sd512) begin
+          b_phase_fold <= 11'sd512;
           add_fold <= 1'b0;
         end else if (s_phase[WIDTH] == 1'b1) begin
-          b_phase_fold <= cycle_buf[AddSubLatency];
+          b_phase_fold <= 11'sd512;
           add_fold <= 1'b1;
         end else begin
           b_phase_fold <= '0;
@@ -147,10 +145,6 @@ module filter #(
   always_ff @(posedge CLK) begin
     duty_buf <= DUTY;
     phase_buf <= PHASE;
-
-    cycle_buf[0] <= {1'b0, CYCLE[calc_cnt]};
-    cycle_buf[1] <= cycle_buf[0];
-    cycle_buf[2] <= cycle_buf[1];
 
     s_duty_buf[1] <= s_duty_buf[0];
     s_duty_buf[2] <= s_duty_buf[1];
