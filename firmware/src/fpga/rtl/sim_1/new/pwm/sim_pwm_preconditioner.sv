@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ module sim_pwm_preconditioner ();
   bit CLK_20P48M;
   bit locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME()
@@ -24,11 +23,9 @@ module sim_pwm_preconditioner ();
 
   sim_helper_random sim_helper_random ();
 
-  localparam int WIDTH = 13;
+  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
-  localparam int CYCLE = 4096;
 
-  bit [WIDTH-1:0] cycle [DEPTH];
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] phase;
 
@@ -45,7 +42,6 @@ module sim_pwm_preconditioner ();
   ) pwm_preconditioner (
       .CLK(CLK_20P48M),
       .DIN_VALID(din_valid),
-      .CYCLE(cycle),
       .DUTY(duty),
       .PHASE(phase),
       .RISE(rise),
@@ -53,18 +49,16 @@ module sim_pwm_preconditioner ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(int idx, bit [WIDTH-1:0] c, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
+  task automatic set(int idx, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
       if (i == idx) begin
-        duty = d;
+        duty  = d;
         phase = p;
-        cycle[i] = c;
       end else begin
-        duty = 0;
+        duty  = 0;
         phase = 0;
-        cycle[i] = 0;
       end
       duty_buf[i]  = duty;
       phase_buf[i] = phase;
@@ -77,9 +71,8 @@ module sim_pwm_preconditioner ();
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
-      cycle[i] = sim_helper_random.range(8000, 2000);
-      duty = sim_helper_random.range(cycle[i] / 2, 0);
-      phase = sim_helper_random.range(cycle[i] - 1, 0);
+      duty = sim_helper_random.range(511, 0);
+      phase = sim_helper_random.range(511, 0);
       duty_buf[i] = duty;
       phase_buf[i] = phase;
     end
@@ -96,8 +89,8 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if ((rise[i] != ((cycle[i]-phase_buf[i]-duty_buf[i]/2+cycle[i])%cycle[i]))
-        & (fall[i] == ((cycle[i]-phase_buf[i]+(duty_buf[i]+1)/2)%cycle[i]))) begin
+      if ((rise[i] != ((512-phase_buf[i]-duty_buf[i]/2+512)%512))
+        & (fall[i] == ((512-phase_buf[i]+(duty_buf[i]+1)/2)%512))) begin
         $error("Failed at idx=%d, d=%d, p=%d, R=%d, F=%d", i, duty_buf[i], phase_buf[i], rise[i],
                fall[i]);
         $finish();
@@ -106,47 +99,35 @@ module sim_pwm_preconditioner ();
   endtask
 
   initial begin
-    cycle = '{DEPTH{0}};
-
     @(posedge locked);
 
     fork
-      set(0, CYCLE, CYCLE / 2, CYCLE / 2);  // normal, D=CYCLE/2
+      set(0, 512 / 2, 512 / 2);  // normal, D=512/2
       check();
     join
 
     fork
-      set(0, CYCLE, CYCLE, CYCLE / 2);  // normal, D=CYCLE
+      set(0, 511, 512 / 2);  // normal, D=511
       check();
     join
 
     fork
-      set(0, CYCLE, 0, CYCLE / 2);  // normal, D=0
+      set(0, 0, 512 / 2);  // normal, D=0
       check();
     join
 
     fork
-      set(0, CYCLE, CYCLE / 2, CYCLE / 2 - CYCLE / 4);  // normal, D=CYCLE/2, left edge
+      set(0, 512 / 2, 512 / 2 - 512 / 4);  // normal, D=512/2, left edge
       check();
     join
 
     fork
-      set(0, CYCLE, CYCLE / 2, CYCLE / 2 + CYCLE / 4);  // normal, D=CYCLE/2, right edge
+      set(0, 512 / 2, 512 / 2 + 512 / 4);  // normal, D=512/2, right edge
       check();
     join
 
     fork
-      set(0, CYCLE, CYCLE / 2, 0);  // over, D=CYCLE/2
-      check();
-    join
-
-    fork
-      set(0, CYCLE, CYCLE / 2, CYCLE);  // over, D=CYCLE/2
-      check();
-    join
-
-    fork
-      set(0, CYCLE, 0, CYCLE);  // over, D=0
+      set(0, 512 / 2, 511);  // over, D=512/2
       check();
     join
 
