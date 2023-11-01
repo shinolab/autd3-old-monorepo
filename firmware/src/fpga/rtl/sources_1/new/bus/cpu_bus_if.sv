@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -55,14 +55,14 @@ interface cpu_bus_if ();
   ///////////////////////// STM Operator /////////////////////////
   bit STM_EN;
   assign STM_EN = (BRAM_SELECT == BRAM_SELECT_STM) & EN;
-  bit [4:0] STM_MEM_SEGMENT;
+  bit [4:0] STM_MEM_PAGE;
 
   modport stm_port(
       input BUS_CLK,
       input STM_EN,
       input WE,
       input BRAM_ADDR,
-      input STM_MEM_SEGMENT,
+      input STM_MEM_PAGE,
       input DATA_IN
   );
   ///////////////////////// STM Operator /////////////////////////
@@ -70,14 +70,14 @@ interface cpu_bus_if ();
   ///////////////////////////// Modulator /////////////////////////////
   bit MOD_EN;
   assign MOD_EN = (BRAM_SELECT == BRAM_SELECT_MOD) & EN;
-  bit MOD_MEM_SEGMENT;
+  bit MOD_MEM_PAGE;
 
   modport mod_port(
       input BUS_CLK,
       input MOD_EN,
       input WE,
       input BRAM_ADDR,
-      input MOD_MEM_SEGMENT,
+      input MOD_MEM_PAGE,
       input DATA_IN
   );
   ///////////////////////////// Modulator /////////////////////////////
@@ -86,9 +86,9 @@ interface cpu_bus_if ();
     ctl_we_edge <= {ctl_we_edge[1:0], (WE & CTL_EN)};
     if (ctl_we_edge == 3'b011) begin
       case (BRAM_ADDR)
-        ADDR_MOD_MEM_SEGMENT: MOD_MEM_SEGMENT <= DATA_IN[0];
-        ADDR_STM_MEM_SEGMENT: begin
-          STM_MEM_SEGMENT <= DATA_IN[4:0];
+        ADDR_MOD_MEM_PAGE: MOD_MEM_PAGE <= DATA_IN[0];
+        ADDR_STM_MEM_PAGE: begin
+          STM_MEM_PAGE <= DATA_IN[4:0];
         end
         default: begin
         end

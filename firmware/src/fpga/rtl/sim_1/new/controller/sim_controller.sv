@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,13 +16,12 @@ module sim_controller ();
   bit CLK_20P48M;
   bit locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME()
   );
 
-  localparam int WIDTH = 13;
+  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
   localparam bit [WIDTH-1:0] MAX = (1 << WIDTH) - 1;
 
@@ -34,15 +33,21 @@ module sim_controller ();
   bit use_stm_start_idx;
   bit [63:0] ecat_sync_time;
   bit sync_set;
+  bit op_mode;
+  bit stm_gain_mode;
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
+  bit signed [WIDTH:0] filter_duty[DEPTH];
+  bit signed [WIDTH:0] filter_phase[DEPTH];
   bit [WIDTH-1:0] step_s;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
   bit [15:0] stm_start_idx;
-  bit [WIDTH-1:0] cycle[DEPTH];
+  bit use_stm_start_idx;
+  bit [15:0] stm_finish_idx;
+  bit use_stm_finish_idx;
 
   controller #(
       .WIDTH(WIDTH),
@@ -54,16 +59,21 @@ module sim_controller ();
       .CPU_BUS(sim_helper_bram.cpu_bus.ctl_port),
       .ECAT_SYNC_TIME(ecat_sync_time),
       .SYNC_SET(sync_set),
+      .OP_MODE(op_mode),
+      .STM_GAIN_MODE(stm_gain_mode),
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
+      .FILTER_DUTY(filter_duty),
+      .FILTER_PHASE(filter_phase),
       .STEP_S(step_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
       .STM_START_IDX(stm_start_idx),
       .USE_STM_START_IDX(use_stm_start_idx),
-      .CYCLE(cycle)
+      .STM_FINISH_IDX(stm_finish_idx),
+      .USE_STM_FINISH_IDX(use_stm_finish_idx)
   );
 
   initial begin
@@ -71,13 +81,15 @@ module sim_controller ();
     bit [63:0] ecat_sync_time_buf;
     bit [15:0] cycle_m_buf;
     bit [31:0] freq_div_m_buf;
+    bit [15:0] delay_buf[DEPTH];
+    bit signed [WIDTH:0] filter_duty_buf[DEPTH];
+    bit signed [WIDTH:0] filter_phase_buf[DEPTH];
     bit [WIDTH-1:0] step_s_buf;
     bit [15:0] cycle_stm_buf;
     bit [31:0] freq_div_stm_buf;
     bit [31:0] sound_speed_buf;
     bit [15:0] stm_start_idx_buf;
-    bit [WIDTH-1:0] cycle_buf[DEPTH];
-    bit [15:0] delay_buf[DEPTH];
+    bit [15:0] stm_finish_idx_buf;
     @(posedge locked);
 
     sim_helper_random.init();
@@ -91,6 +103,20 @@ module sim_controller ();
 
     freq_div_m_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
     sim_helper_bram.write_mod_freq_div(freq_div_m_buf);
+
+    for (int i = 0; i < DEPTH; i++) begin
+      delay_buf[i] = sim_helper_random.range(16'hFFFF, 0);
+    end
+    sim_helper_bram.write_delay(delay_buf);
+
+    for (int i = 0; i < DEPTH; i++) begin
+      filter_duty_buf[i] = sim_helper_random.range(511, -512);
+    end
+    sim_helper_bram.write_filter_duty(filter_duty_buf);
+    for (int i = 0; i < DEPTH; i++) begin
+      filter_phase_buf[i] = sim_helper_random.range(511, -512);
+    end
+    sim_helper_bram.write_filter_phase(filter_phase_buf);
 
     step_s_buf = sim_helper_random.range(MAX, 0);
     sim_helper_bram.write_silent_step(step_s_buf);
@@ -107,17 +133,10 @@ module sim_controller ();
     stm_start_idx_buf = sim_helper_random.range(16'hFFFF, 0);
     sim_helper_bram.write_stm_start_idx(stm_start_idx_buf);
 
-    for (int i = 0; i < DEPTH; i++) begin
-      cycle_buf[i] = sim_helper_random.range(MAX, 0);
-    end
-    sim_helper_bram.write_cycle(cycle_buf);
+    stm_finish_idx_buf = sim_helper_random.range(16'hFFFF, 0);
+    sim_helper_bram.write_stm_finish_idx(stm_finish_idx_buf);
 
-    for (int i = 0; i < DEPTH; i++) begin
-      delay_buf[i] = sim_helper_random.range(16'hFFFF, 0);
-    end
-    sim_helper_bram.write_delay(delay_buf);
-
-    for (int i = 0; i < 100; i++) begin
+    for (int i = 0; i < 256; i++) begin
       @(posedge CLK_20P48M);
     end
 
@@ -128,6 +147,24 @@ module sim_controller ();
     if (freq_div_m_buf != freq_div_m) begin
       $error("Failed at freq_div_m");
       $finish();
+    end
+    for (int i = 0; i < DEPTH; i++) begin
+      if (delay_buf[i] != delay_m[i]) begin
+        $error("Failed at delay[%d]", i);
+        $finish();
+      end
+    end
+    for (int i = 0; i < DEPTH; i++) begin
+      if (filter_duty_buf[i] != filter_duty[i]) begin
+        $error("Failed at filter_duty[%d] (%d != %d)", i, filter_duty_buf[i], filter_duty[i]);
+        $finish();
+      end
+    end
+    for (int i = 0; i < DEPTH; i++) begin
+      if (filter_phase_buf[i] != filter_phase[i]) begin
+        $error("Failed at filter_phase[%d] (%d != %d)", i, filter_phase_buf[i], filter_phase[i]);
+        $finish();
+      end
     end
     if (step_s_buf != step_s) begin
       $error("Failed at step_s");
@@ -149,6 +186,10 @@ module sim_controller ();
       $error("Failed at stm_start_idx");
       $finish();
     end
+    if (stm_finish_idx_buf != stm_finish_idx) begin
+      $error("Failed at stm_finish_idx");
+      $finish();
+    end
 
     sim_helper_bram.set_ctl_reg(1, 1);
     @(posedge sync_set);
@@ -156,18 +197,6 @@ module sim_controller ();
     if (ecat_sync_time_buf != ecat_sync_time) begin
       $error("Failed at ecat_sync_time");
       $finish();
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (cycle_buf[i] != cycle[i]) begin
-        $error("Failed at cycle[%d]", i);
-        $finish();
-      end
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (delay_buf[i] != delay_m[i]) begin
-        $error("Failed at delay[%d]", i);
-        $finish();
-      end
     end
 
     $display("OK! sim_controller");
