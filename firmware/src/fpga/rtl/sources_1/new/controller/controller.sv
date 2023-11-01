@@ -44,13 +44,13 @@ module controller #(
   bit bus_clk;
   bit ctl_ena;
   bit wea;
-  bit [8:0] ctl_addr;
+  bit [6:0] ctl_addr;
   bit [7:0] dly_addr;
   bit [7:0] flt_duty_addr;
   bit [7:0] flt_phase_addr;
   bit [15:0] cpu_data_in;
   bit [15:0] cpu_data_out;
-  bit [8:0] addr;
+  bit [6:0] addr;
   bit we;
   bit [15:0] din;
   bit [15:0] dout;
@@ -90,7 +90,7 @@ module controller #(
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign ctl_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_MAIN);
   assign wea = CPU_BUS.WE;
-  assign ctl_addr = CPU_BUS.BRAM_ADDR[8:0];
+  assign ctl_addr = CPU_BUS.BRAM_ADDR[6:0];
   assign dly_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_DELAY);
   assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
   assign flt_duty_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_DUTY);

@@ -43,7 +43,6 @@ module pwm #(
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
     bit [WIDTH-1:0] R_buf, F_buf;
-    bit FULL_WIDTH_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)
     ) pwm_buffer (
