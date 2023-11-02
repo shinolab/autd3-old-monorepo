@@ -56,19 +56,6 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_stm_gain_duty_phase(int idx, input bit [WIDTH-1:0] duty[DEPTH],
-                                           input bit [WIDTH-1:0] phase[DEPTH]);
-    bit [15:0] offset;
-    bit [15:0] i;
-    offset = idx[20:5];
-    i = idx[4:0] << 9;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
-    for (int j = 0; j < DEPTH; j++) begin
-      bram_write(BRAM_SELECT_STM, i + j * 2, phase[j]);
-      bram_write(BRAM_SELECT_STM, i + j * 2 + 1, duty[j]);
-    end
-  endtask
-
-  task automatic write_stm_gain_duty_phase_legacy(int idx, input bit [WIDTH-1:0] duty[DEPTH],
                                                   input bit [WIDTH-1:0] phase[DEPTH]);
     bit [15:0] offset;
     bit [15:0] i;

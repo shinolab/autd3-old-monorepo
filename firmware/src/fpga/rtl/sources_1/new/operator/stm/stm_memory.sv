@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 `timescale 1ns / 1ps
 module stm_memory (
-    input var CLK_L,
+    input var CLK,
     cpu_bus_if.stm_port CPU_BUS,
     stm_bus_if.memory_port STM_BUS
 );
@@ -30,7 +30,7 @@ module stm_memory (
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign stm_ena = CPU_BUS.STM_EN;
   assign we = CPU_BUS.WE;
-  assign stm_addr = {CPU_BUS.STM_MEM_SEGMENT, CPU_BUS.BRAM_ADDR};
+  assign stm_addr = {CPU_BUS.STM_MEM_PAGE, CPU_BUS.BRAM_ADDR};
   assign data_in = CPU_BUS.DATA_IN;
   assign idx = STM_BUS.ADDR;
   assign STM_BUS.DATA_OUT = data_out;
@@ -42,7 +42,7 @@ module stm_memory (
       .addra(stm_addr),
       .dina (data_in),
       .douta(),
-      .clkb (CLK_L),
+      .clkb (CLK),
       .web  ('0),
       .addrb(idx),
       .dinb ('0),
