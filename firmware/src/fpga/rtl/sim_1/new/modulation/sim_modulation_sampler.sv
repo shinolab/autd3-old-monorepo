@@ -56,9 +56,9 @@ module sim_modulation_sampler ();
       end
       idx_old = idx;
       $display("check %d", i);
-      if (((SYS_TIME - 8 * DivLatency * 2 - 2 - 1) / freq_div_m) % (cycle_m + 1) != idx) begin
+      if (((SYS_TIME - DivLatency * 2 - 1) / freq_div_m) % (cycle_m + 1) != idx) begin
         $display("Index failed! %d != %d",
-                 ((SYS_TIME - 8 * DivLatency * 2 - 2 - 1) / freq_div_m) % (cycle_m + 1), idx);
+                 ((SYS_TIME - DivLatency * 2 - 1) / freq_div_m) % (cycle_m + 1), idx);
         $finish();
       end
     end
