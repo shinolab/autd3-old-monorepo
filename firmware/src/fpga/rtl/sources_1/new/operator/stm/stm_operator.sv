@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,14 +13,12 @@
 
 `timescale 1ns / 1ps
 module stm_operator #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
-    input var CLK_L,
+    input var CLK,
     input var [63:0] SYS_TIME,
-    input var TRIG_40KHZ,
-    input var LEGACY_MODE,
-    input var [WIDTH-1:0] CYCLE[DEPTH],
+    input var UPDATE,
     input var [15:0] CYCLE_STM,
     input var [31:0] FREQ_DIV_STM,
     input var [31:0] SOUND_SPEED,
@@ -42,6 +40,7 @@ module stm_operator #(
   bit [15:0] idx;
   bit start_gain, done_gain;
   bit start_focus, done_focus;
+  bit dout_valid_gain, dout_valid_focus;
 
   assign DUTY = STM_GAIN_MODE ? duty_gain : duty_focus;
   assign PHASE = STM_GAIN_MODE ? phase_gain : phase_focus;
@@ -49,13 +48,13 @@ module stm_operator #(
   assign IDX = idx;
 
   stm_memory stm_memory (
-      .CLK_L  (CLK_L),
+      .CLK(CLK),
       .CPU_BUS(CPU_BUS),
       .STM_BUS(stm_bus_if.memory_port)
   );
 
   stm_sampler stm_sampler (
-      .CLK_L(CLK_L),
+      .CLK(CLK),
       .SYS_TIME(SYS_TIME),
       .CYCLE_STM(CYCLE_STM),
       .FREQ_DIV_STM(FREQ_DIV_STM),
@@ -66,11 +65,10 @@ module stm_operator #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) stm_gain_operator (
-      .CLK_L(CLK_L),
-      .TRIG_40KHZ(TRIG_40KHZ),
+      .CLK(CLK),
+      .UPDATE(UPDATE),
       .IDX(idx),
       .STM_BUS(stm_bus_if.gain_port),
-      .LEGACY_MODE(LEGACY_MODE),
       .DUTY(duty_gain),
       .PHASE(phase_gain),
       .DOUT_VALID(dout_valid_gain)
@@ -80,12 +78,11 @@ module stm_operator #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) stm_focus_operator (
-      .CLK_L(CLK_L),
-      .TRIG_40KHZ(TRIG_40KHZ),
+      .CLK(CLK),
+      .UPDATE(UPDATE),
       .IDX(idx),
       .STM_BUS(stm_bus_if.focus_port),
       .SOUND_SPEED(SOUND_SPEED),
-      .CYCLE(CYCLE),
       .DUTY(duty_focus),
       .PHASE(phase_focus),
       .DOUT_VALID(dout_valid_focus)

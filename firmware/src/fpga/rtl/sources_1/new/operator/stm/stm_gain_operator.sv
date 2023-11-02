@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,14 +13,13 @@
 
 `timescale 1ns / 1ps
 module stm_gain_operator #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
-    input var CLK_L,
-    input var TRIG_40KHZ,
+    input var CLK,
+    input var UPDATE,
     input var [15:0] IDX,
     stm_bus_if.gain_port STM_BUS,
-    input var LEGACY_MODE,
     output var [WIDTH-1:0] DUTY,
     output var [WIDTH-1:0] PHASE,
     output var DOUT_VALID
@@ -57,134 +56,79 @@ module stm_gain_operator #(
 
   assign DOUT_VALID = dout_valid;
 
-  always_ff @(posedge CLK_L) begin
-    if (LEGACY_MODE) begin
-      case (state)
-        WAITING: begin
-          dout_valid <= 0;
-          if (TRIG_40KHZ) begin
-            gain_addr_base <= idx[10:1];
-            gain_addr_offset <= idx[0] ? 6'h20 : 0;
-            state <= BRAM_WAIT_0;
+  always_ff @(posedge CLK) begin
+    case (state)
+      WAITING: begin
+        dout_valid <= 0;
+        if (UPDATE) begin
+          gain_addr_base <= idx[10:1];
+          gain_addr_offset <= idx[0] ? 6'h20 : 0;
+          state <= BRAM_WAIT_0;
+        end
+      end
+      BRAM_WAIT_0: begin
+        state <= BRAM_WAIT_1;
+      end
+      BRAM_WAIT_1: begin
+        cnt <= 0;
+        set_cnt <= 0;
+        state <= RUN;
+      end
+      RUN: begin
+        dout_valid <= 1;
+        case (set_cnt)
+          0: begin
+            phase <= {data_out[7:0], 1'h0};
+            duty <= data_out[15:8] == 8'h00 ? 9'h00 : data_out[15:8] + 1;
+            set_cnt <= set_cnt + 1;
           end
-        end
-        BRAM_WAIT_0: begin
-          state <= BRAM_WAIT_1;
-        end
-        BRAM_WAIT_1: begin
-          cnt <= 0;
-          set_cnt <= 0;
-          state <= RUN;
-        end
-        RUN: begin
-          dout_valid <= 1;
-          case (set_cnt)
-            0: begin
-              phase <= {1'b0, data_out[7:0], 4'h00};
-              duty <= {2'b00, data_out[15:8], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            1: begin
-              phase <= {1'b0, data_out[23:16], 4'h00};
-              duty <= {2'b00, data_out[31:24], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            2: begin
-              phase <= {1'b0, data_out[39:32], 4'h00};
-              duty <= {2'b00, data_out[47:40], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            3: begin
-              phase <= {1'b0, data_out[55:48], 4'h00};
-              duty <= {2'b00, data_out[63:56], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            4: begin
-              phase <= {1'b0, data_out[71:64], 4'h00};
-              duty <= {2'b00, data_out[79:72], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            5: begin
-              phase <= {1'b0, data_out[87:80], 4'h00};
-              duty <= {2'b00, data_out[95:88], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-              gain_addr_offset <= gain_addr_offset + 1;
-            end
-            6: begin
-              phase <= {1'b0, data_out[103:96], 4'h00};
-              duty <= {2'b00, data_out[111:104], 3'h7} + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            7: begin
-              phase <= {1'b0, data_out[119:112], 4'h00};
-              duty <= {2'b00, data_out[127:120], 3'h7} + 1;
-              set_cnt <= 0;
-            end
-            default: begin
-            end
-          endcase
-          cnt <= cnt + 1;
-          if (cnt == DEPTH - 1) begin
-            state <= WAITING;
+          1: begin
+            phase <= {data_out[23:16], 1'h0};
+            duty <= data_out[31:24] == 8'h00 ? 9'h00 : data_out[31:24] + 1;
+            set_cnt <= set_cnt + 1;
           end
-        end
-        default: begin
-        end
-      endcase
-    end else begin
-      case (state)
-        WAITING: begin
-          dout_valid <= 0;
-          if (TRIG_40KHZ) begin
-            gain_addr_base <= idx[9:0];
-            gain_addr_offset <= 0;
-            state <= BRAM_WAIT_0;
+          2: begin
+            phase <= {data_out[39:32], 1'h0};
+            duty <= data_out[47:40] == 8'h00 ? 9'h00 : data_out[47:40] + 1;
+            set_cnt <= set_cnt + 1;
           end
-        end
-        BRAM_WAIT_0: begin
-          state <= BRAM_WAIT_1;
-        end
-        BRAM_WAIT_1: begin
-          cnt <= 0;
-          set_cnt <= 0;
-          state <= RUN;
-        end
-        RUN: begin
-          dout_valid <= 1;
-          case (set_cnt)
-            0: begin
-              phase <= data_out[0+WIDTH-1:0];
-              duty <= data_out[16+WIDTH-1:16];
-              set_cnt <= set_cnt + 1;
-            end
-            1: begin
-              phase <= data_out[32+WIDTH-1:32];
-              duty <= data_out[48+WIDTH-1:48];
-              gain_addr_offset <= gain_addr_offset + 1;
-              set_cnt <= set_cnt + 1;
-            end
-            2: begin
-              phase <= data_out[64+WIDTH-1:64];
-              duty <= data_out[80+WIDTH-1:80];
-              set_cnt <= set_cnt + 1;
-            end
-            3: begin
-              phase <= data_out[96+WIDTH-1:96];
-              duty <= data_out[112+WIDTH-1:112];
-              set_cnt <= 0;
-            end
-            default: begin
-            end
-          endcase
-          cnt <= cnt + 1;
-          if (cnt == DEPTH - 1) begin
-            state <= WAITING;
+          3: begin
+            phase <= {data_out[55:48], 1'h0};
+            duty <= data_out[63:56] == 8'h00 ? 9'h00 : data_out[63:56] + 1;
+            set_cnt <= set_cnt + 1;
           end
+          4: begin
+            phase <= {data_out[71:64], 1'h0};
+            duty <= data_out[79:72] == 8'h00 ? 9'h00 : data_out[79:72] + 1;
+            set_cnt <= set_cnt + 1;
+          end
+          5: begin
+            phase <= {data_out[87:80], 1'h0};
+            duty <= data_out[95:88] == 8'h00 ? 9'h00 : data_out[95:88] + 1;
+            set_cnt <= set_cnt + 1;
+            gain_addr_offset <= gain_addr_offset + 1;
+          end
+          6: begin
+            phase <= {data_out[103:96], 1'h0};
+            duty <= data_out[111:104] == 8'h00 ? 9'h00 : data_out[111:104] + 1;
+            set_cnt <= set_cnt + 1;
+          end
+          7: begin
+            phase <= {data_out[119:112], 1'h0};
+            duty <= data_out[127:120] == 8'h00 ? 9'h00 : data_out[127:120] + 1;
+            set_cnt <= 0;
+          end
+          default: begin
+          end
+        endcase
+        cnt <= cnt + 1;
+        if (cnt == DEPTH - 1) begin
+          state <= WAITING;
         end
-        default: begin
-        end
-      endcase
-    end
+      end
+      default: begin
+      end
+    endcase
   end
 
 endmodule
