@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,13 +12,12 @@
  */
 
 module silencer #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var DIN_VALID,
     input var [WIDTH-1:0] STEP,
-    input var [WIDTH-1:0] CYCLE[DEPTH],
     input var [WIDTH-1:0] DUTY,
     input var [WIDTH-1:0] PHASE,
     output var [WIDTH-1:0] DUTY_S,
@@ -29,7 +28,6 @@ module silencer #(
   localparam int AddSubLatency = 2;
 
   bit signed [WIDTH+1:0] step, step_n;
-  bit signed [WIDTH+1:0] cycle_buf[9], cycle_n_buf[3];
   bit [WIDTH-1:0] duty_buf, phase_buf;
 
   bit signed [WIDTH+1:0] current_duty [DEPTH] = '{DEPTH{0}};
@@ -159,19 +157,19 @@ module silencer #(
         b_phase_step <= current_phase[calc_step_cnt];
 
         // phase 2: should phase go forward or back?
-        a_phase_fg <= phase_step;
+        a_phase_fg   <= phase_step;
         if (phase_step[WIDTH+1] == 1'b0) begin
-          if (phase_step <= {1'b0, cycle_buf[AddSubLatency][WIDTH+1:1]}) begin
+          if (phase_step <= 11'sd256) begin
             b_phase_fg <= '0;
           end else begin
-            b_phase_fg <= cycle_buf[AddSubLatency];
+            b_phase_fg   <= 11'sd512;
             add_phase_fg <= 1'b0;
           end
         end else begin
-          if ({1'b1, cycle_n_buf[AddSubLatency][WIDTH+1:1]} <= phase_step) begin
+          if (-11'sd512 <= phase_step) begin
             b_phase_fg <= '0;
           end else begin
-            b_phase_fg <= cycle_buf[AddSubLatency];
+            b_phase_fg   <= 11'sd512;
             add_phase_fg <= 1'b1;
           end
         end
@@ -186,11 +184,11 @@ module silencer #(
 
         // phase 4: make phase be in [0, T-1]
         a_phase_fold <= s_phase;
-        if (s_phase >= cycle_buf[1+AddSubLatency+1+AddSubLatency+AddSubLatency]) begin
-          b_phase_fold <= cycle_buf[1+AddSubLatency+1+AddSubLatency+AddSubLatency];
+        if (s_phase >= 11'sd512) begin
+          b_phase_fold <= 11'sd512;
           add_fold <= 1'b0;
         end else if (s_phase[WIDTH+1] == 1'b1) begin
-          b_phase_fold <= cycle_buf[1+AddSubLatency+1+AddSubLatency+AddSubLatency];
+          b_phase_fold <= 11'sd512;
           add_fold <= 1'b1;
         end else begin
           b_phase_fold <= '0;
@@ -224,21 +222,8 @@ module silencer #(
   end
 
   always_ff @(posedge CLK) begin
-    duty_buf <= DUTY;
+    duty_buf  <= DUTY;
     phase_buf <= PHASE;
-
-    cycle_buf[0] <= {2'b00, CYCLE[calc_step_cnt]};
-    cycle_buf[1] <= cycle_buf[0];
-    cycle_buf[2] <= cycle_buf[1];
-    cycle_buf[3] <= cycle_buf[2];
-    cycle_buf[4] <= cycle_buf[3];
-    cycle_buf[5] <= cycle_buf[4];
-    cycle_buf[6] <= cycle_buf[5];
-    cycle_buf[7] <= cycle_buf[6];
-    cycle_buf[8] <= cycle_buf[7];
-    cycle_n_buf[0] <= -{2'b00, CYCLE[calc_step_cnt]};
-    cycle_n_buf[1] <= cycle_n_buf[0];
-    cycle_n_buf[2] <= cycle_n_buf[1];
   end
 
 endmodule
