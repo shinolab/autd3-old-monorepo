@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -107,10 +107,8 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_duty_phase(int idx, bit [15:0] duty, bit [15:0] phase);
-    automatic int i = idx << 1;
-    bram_write(BRAM_SELECT_NORMAL, i, phase);
-    bram_write(BRAM_SELECT_NORMAL, i + 1, duty);
+  task automatic write_duty_phase(int idx, bit [7:0] duty, bit [7:0] phase);
+    bram_write(BRAM_SELECT_NORMAL, idx, {duty, phase});
   endtask
 
   task automatic set_ctl_reg(bit force_fan, bit sync);
