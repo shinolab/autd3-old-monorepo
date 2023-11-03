@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 03/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 `timescale 1ns / 1ps
 module mux #(
-    parameter int WIDTH = 13
+    parameter int WIDTH = 9
 ) (
-    input var CLK_L,
+    input var CLK,
     input var OP_MODE,
     input var [WIDTH-1:0] DUTY_NORMAL,
     input var [WIDTH-1:0] PHASE_NORMAL,
@@ -55,7 +55,7 @@ module mux #(
   assign PHASE = output_stm ? phase_stm_buf : phase_normal_buf;
   assign DOUT_VALID = output_stm ? dout_valid_stm_buf : dout_valid_normal_buf;
 
-  always_ff @(posedge CLK_L) begin
+  always_ff @(posedge CLK) begin
     duty_stm_buf <= DUTY_STM;
     phase_stm_buf <= PHASE_STM;
     dout_valid_stm_buf <= DOUT_VALID_STM;
@@ -64,7 +64,7 @@ module mux #(
     dout_valid_normal_buf <= DOUT_VALID_NORMAL;
   end
 
-  always_ff @(posedge CLK_L) begin
+  always_ff @(posedge CLK) begin
     case (stm_state)
       NORMAL: begin
         if (OP_MODE) begin

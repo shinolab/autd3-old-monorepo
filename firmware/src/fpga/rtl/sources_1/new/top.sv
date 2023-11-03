@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 31/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ module top (
   `include "cvt_uid.vh"
   `include "params.vh"
 
-  bit clk, clk_l;
+  bit clk;
   bit reset;
 
   bit PWM_OUT[NUM_TRANSDUCERS];
@@ -54,18 +54,16 @@ module top (
 
   ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen (
       .clk_in1(MRCC_25P6M),
-      .reset(reset),
-      .clk_out1(clk),
-      .clk_out2(clk_l),
-      .locked()
+      .reset  (reset),
+      .clk_out(clk),
+      .locked ()
   );
 
   main #(
-      .WIDTH(13),
+      .WIDTH(9),
       .DEPTH(NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
-      .CLK_L(clk_l),
       .CAT_SYNC0(CAT_SYNC0),
       .CPU_BUS_CTL(cpu_bus.ctl_port),
       .CPU_BUS_NORMAL(cpu_bus.normal_port),

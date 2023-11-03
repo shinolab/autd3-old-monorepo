@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 03/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,10 @@
 
 `timescale 1ns / 1ps
 module main #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
-    input var CLK_L,
     input var CAT_SYNC0,
     cpu_bus_if.ctl_port CPU_BUS_CTL,
     cpu_bus_if.normal_port CPU_BUS_NORMAL,
@@ -31,17 +30,16 @@ module main #(
   `include "params.vh"
 
   bit [63:0] sys_time;
+  bit skip_one_assert;
+
+  bit [WIDTH-1:0] time_cnt;
+  bit update;
 
   bit [63:0] ecat_sync_time;
   bit sync_set;
 
-  bit trig_40khz;
-
-  bit legacy_mode;
-
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] phase;
-  bit [WIDTH-1:0] cycle[DEPTH];
   bit dout_valid;
 
   bit op_mode;
@@ -81,14 +79,15 @@ module main #(
       .SET(sync_set),
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
-      .SYNC()
+      .SYNC(),
+      .SKIP_ONE_ASSERT(skip_one_assert)
   );
 
   controller #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) controller (
-      .CLK(CLK_L),
+      .CLK(CLK),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
       .CPU_BUS(CPU_BUS_CTL),
@@ -107,26 +106,28 @@ module main #(
       .USE_STM_START_IDX(use_stm_start_idx),
       .STM_FINISH_IDX(stm_finish_idx),
       .USE_STM_FINISH_IDX(use_stm_finish_idx),
-      .CYCLE(cycle),
       .FILTER_DUTY(filter_duty),
-      .FILTER_PHASE(filter_phase),
-      .LEGACY_MODE(legacy_mode)
+      .FILTER_PHASE(filter_phase)
   );
 
-  timer_40kHz timer_40kHz (
-      .CLK_L(CLK_L),
+  time_cnt_generator #(
+      .WIDTH(WIDTH),
+      .DEPTH(DEPTH)
+  ) time_cnt_generator (
+      .CLK(CLK),
       .SYS_TIME(sys_time),
-      .TRIG_40KHZ(trig_40khz)
+      .SKIP_ONE_ASSERT(skip_one_assert),
+      .TIME_CNT(time_cnt),
+      .UPDATE(update)
   );
 
   normal_operator #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) normal_operator (
-      .CLK_L(CLK_L),
+      .CLK(CLK),
       .CPU_BUS(CPU_BUS_NORMAL),
-      .LEGACY_MODE(legacy_mode),
-      .TRIG_40KHZ(trig_40khz),
+      .UPDATE(update),
       .DUTY(duty_normal),
       .PHASE(phase_normal),
       .DOUT_VALID(dout_valid_normal)
@@ -142,11 +143,9 @@ module main #(
         .WIDTH(WIDTH),
         .DEPTH(DEPTH)
     ) stm_operator (
-        .CLK_L(CLK_L),
+        .CLK(CLK),
         .SYS_TIME(sys_time),
-        .TRIG_40KHZ(trig_40khz),
-        .LEGACY_MODE(legacy_mode),
-        .CYCLE(cycle),
+        .UPDATE(update),
         .CYCLE_STM(cycle_stm),
         .FREQ_DIV_STM(freq_div_stm),
         .SOUND_SPEED(sound_speed),
@@ -158,8 +157,10 @@ module main #(
         .IDX(stm_idx)
     );
 
-    mux mux (
-        .CLK_L(CLK_L),
+    mux #(
+        .WIDTH(WIDTH)
+    ) mux (
+        .CLK(CLK),
         .OP_MODE(op_mode),
         .DUTY_NORMAL(duty_normal),
         .PHASE_NORMAL(phase_normal),
@@ -182,23 +183,22 @@ module main #(
     assign dout_valid = dout_valid_normal;
   end
 
-  if (ENABLE_FILTER == "TRUE") begin: gen_filter
+  if (ENABLE_FILTER == "TRUE") begin : gen_filter
     filter #(
         .WIDTH(WIDTH),
         .DEPTH(DEPTH)
     ) filter (
-        .CLK(CLK_L),
+        .CLK(CLK),
         .DIN_VALID(dout_valid),
         .DUTY(duty),
         .PHASE(phase),
-        .CYCLE(cycle),
         .FILTER_DUTY(filter_duty),
         .FILTER_PHASE(filter_phase),
         .DUTY_F(duty_f),
         .PHASE_F(phase_f),
         .DOUT_VALID(dout_valid_f)
     );
-  end else begin: gen_filter_false
+  end else begin : gen_filter_false
     assign duty_f = duty;
     assign phase_f = phase;
     assign dout_valid_f = dout_valid;
@@ -209,7 +209,7 @@ module main #(
         .WIDTH(WIDTH),
         .DEPTH(DEPTH)
     ) modulator (
-        .CLK(CLK_L),
+        .CLK(CLK),
         .SYS_TIME(sys_time),
         .CYCLE_M(cycle_m),
         .FREQ_DIV_M(freq_div_m),
@@ -234,10 +234,9 @@ module main #(
         .WIDTH(WIDTH),
         .DEPTH(DEPTH)
     ) silencer (
-        .CLK(CLK_L),
+        .CLK(CLK),
         .DIN_VALID(dout_valid_m),
         .STEP(step_s),
-        .CYCLE(cycle),
         .DUTY(duty_m),
         .PHASE(phase_m),
         .DUTY_S(duty_s),
@@ -255,15 +254,12 @@ module main #(
       .DEPTH(DEPTH)
   ) pwm (
       .CLK(CLK),
-      .CLK_L(CLK_L),
-      .SYS_TIME(sys_time),
+      .TIME_CNT(time_cnt),
+      .UPDATE(update),
       .DIN_VALID(dout_valid_s),
-      .CYCLE(cycle),
       .DUTY(duty_s),
       .PHASE(phase_s),
-      .PWM_OUT(PWM_OUT),
-      .TIME_CNT(),
-      .DOUT_VALID()
+      .PWM_OUT(PWM_OUT)
   );
 
 endmodule
