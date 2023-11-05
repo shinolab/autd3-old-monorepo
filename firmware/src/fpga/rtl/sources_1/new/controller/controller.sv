@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 05/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -395,7 +395,9 @@ module controller #(
       CLR_SYNC_BIT: begin
         ctl_reg <= dout;
 
-        state   <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
+        sync_set <= 1'b0;
+
+        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       //////////////////////// synchronize ////////////////////////
 
