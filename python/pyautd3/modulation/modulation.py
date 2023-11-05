@@ -33,7 +33,7 @@ class Modulation(IModulation, metaclass=ABCMeta):
         Arguments:
         ---------
             freq_div: int
-          The sampling frequency will be `pyautd3.AUTD3.fpga_sub_clk_freq()` / `freq_div`.
+          The sampling frequency will be `pyautd3.AUTD3.fpga_clk_freq()` / `freq_div`.
         """
         super().__init__()
         self._freq_div = freq_div

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -192,20 +192,6 @@ mod tests {
 
         let cycle = MAX_CYCLE + 1;
         let res = tr.set_cycle(cycle);
-        assert!(res.is_err());
-    }
-
-    #[test]
-    fn freq() {
-        let mut tr = T::new(0, Vector3::zeros(), UnitQuaternion::identity());
-
-        let freq = 70e3;
-        let res = tr.set_frequency(freq);
-        assert!(res.is_ok());
-        assert_approx_eq!(freq, tr.frequency(), 100.);
-
-        let freq = 20e3;
-        let res = tr.set_frequency(freq);
         assert!(res.is_err());
     }
 

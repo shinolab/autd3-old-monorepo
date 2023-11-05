@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,8 +26,7 @@ pub const NUM_TRANS_IN_Y: u32 = 14;
 pub const TRANS_SPACING_MM: float = 10.16;
 pub const DEVICE_HEIGHT_MM: float = 151.4;
 pub const DEVICE_WIDTH_MM: float = 192.0;
-pub const FPGA_CLK_FREQ: u32 = 163840000;
-pub const FPGA_SUB_CLK_FREQ: u32 = 20480000;
+pub const FPGA_CLK_FREQ: u32 = 20480000;
 
 pub const AUTD3_ERR: i32 = -1;
 pub const AUTD3_TRUE: i32 = 1;

@@ -24,7 +24,6 @@ from .native_methods.autd3capi_def import (
     DEVICE_HEIGHT_MM,
     DEVICE_WIDTH_MM,
     FPGA_CLK_FREQ,
-    FPGA_SUB_CLK_FREQ,
     NUM_TRANS_IN_UNIT,
     NUM_TRANS_IN_X,
     NUM_TRANS_IN_Y,
@@ -116,13 +115,8 @@ class AUTD3:
 
     @staticmethod
     def fpga_clk_freq() -> int:
-        """FPGA main clock frequency."""
+        """FPGA clock frequency."""
         return FPGA_CLK_FREQ
-
-    @staticmethod
-    def fpga_sub_clk_freq() -> int:
-        """FPGA sub clock frequency."""
-        return FPGA_SUB_CLK_FREQ
 
 
 class Transducer:

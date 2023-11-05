@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     common::Drive,
     error::AUTDInternalError,
-    fpga::{AdvancedDrivePhase, LegacyDrive, FPGA_SUB_CLK_FREQ_DIV, GAIN_STM_BUF_SIZE_MAX},
+    fpga::{AdvancedDrivePhase, LegacyDrive, GAIN_STM_BUF_SIZE_MAX},
     geometry::{Device, Geometry, Transducer},
     operation::TypeTag,
 };
@@ -60,7 +60,7 @@ impl<T: Transducer> GainSTMOpDelegate<T> for GainSTMOpAdvancedPhase {
             tx[2] = (mode & 0xFF) as u8;
             tx[3] = (mode >> 8) as u8;
 
-            let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            let freq_div = freq_div;
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
@@ -208,7 +208,6 @@ mod tests {
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
         let mut op =
             GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -396,7 +395,6 @@ mod tests {
 
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
         let mut op = GainSTMOp::<_, _>::new(gains, GainSTMMode::PhaseFull, freq_div, None, None);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -779,12 +777,6 @@ mod tests {
         );
         assert_eq!(test(SAMPLING_FREQ_DIV_MIN), Ok(()));
         assert_eq!(test(SAMPLING_FREQ_DIV_MAX), Ok(()));
-        assert_eq!(
-            test(SAMPLING_FREQ_DIV_MAX + 1),
-            Err(AUTDInternalError::GainSTMFreqDivOutOfRange(
-                SAMPLING_FREQ_DIV_MAX + 1
-            ))
-        );
     }
 
     #[test]

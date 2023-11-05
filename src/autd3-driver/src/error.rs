@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -162,7 +162,7 @@ mod tests {
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
+            "Frequency division (1) is out of range ([512, 4294967295])"
         );
         assert_eq!(format!("{:?}", err), "ModFreqDivOutOfRange(1)");
 
@@ -214,7 +214,7 @@ mod tests {
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
+            "Frequency division (1) is out of range ([512, 4294967295])"
         );
         assert_eq!(format!("{:?}", err), "FocusSTMFreqDivOutOfRange(1)");
 
@@ -283,7 +283,7 @@ mod tests {
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
+            "Frequency division (1) is out of range ([512, 4294967295])"
         );
         assert_eq!(format!("{:?}", err), "GainSTMFreqDivOutOfRange(1)");
 

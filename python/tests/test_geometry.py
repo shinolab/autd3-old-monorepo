@@ -26,8 +26,7 @@ def test_autd3_props():
     assert AUTD3.num_transducer_in_x() == 18
     assert AUTD3.num_transducer_in_y() == 14
     assert AUTD3.num_transducer_in_unit() == 249
-    assert AUTD3.fpga_clk_freq() == 163.84e6
-    assert AUTD3.fpga_sub_clk_freq() == 20.48e6
+    assert AUTD3.fpga_clk_freq() == 20.48e6
 
 
 def test_geometry_num_devices():

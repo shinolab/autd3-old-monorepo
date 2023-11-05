@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
                 ///
                 /// # Arguments
                 ///
-                /// * `freq_div` - Sampling frequency division. The sampling frequency will be [FPGA_SUB_CLK_FREQ] / `freq_div`. The value must be at least [SAMPLING_FREQ_DIV_MIN]
+                /// * `freq_div` - Sampling frequency division. The sampling frequency will be [FPGA_CLK_FREQ] / `freq_div`. The value must be at least [SAMPLING_FREQ_DIV_MIN]
                 ///
                 #[allow(clippy::needless_update)]
                 pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
@@ -70,7 +70,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
                 ///
                 #[allow(clippy::needless_update)]
                 pub fn with_sampling_frequency(self, freq: float) -> Self {
-                    let freq_div = FPGA_SUB_CLK_FREQ as float / freq;
+                    let freq_div = FPGA_CLK_FREQ as float / freq;
                     self.with_sampling_frequency_division(freq_div as _)
                 }
 
@@ -82,7 +82,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
                 ///
                 #[allow(clippy::needless_update)]
                 pub fn with_sampling_period(self, period: std::time::Duration) -> Self {
-                    let freq_div = FPGA_SUB_CLK_FREQ as float / 1000000000. * period.as_nanos() as float;
+                    let freq_div = FPGA_CLK_FREQ as float / 1000000000. * period.as_nanos() as float;
                     self.with_sampling_frequency_division(freq_div as _)
                 }
             }

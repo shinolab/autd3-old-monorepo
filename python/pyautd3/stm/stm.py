@@ -105,7 +105,7 @@ class FocusSTM(STM):
 
     FocusSTM has following restrictions:
     - The maximum number of sampling points is 65536.
-    - The sampling frequency is `pyautd3.AUTD3.fpga_sub_clk_freq()`/N, where `N` is a 32-bit unsigned integer.
+    - The sampling frequency is `pyautd3.AUTD3.fpga_clk_freq()`/N, where `N` is a 32-bit unsigned integer.
     """
 
     _points: list[float]
