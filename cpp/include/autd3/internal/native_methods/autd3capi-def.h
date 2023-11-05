@@ -12,9 +12,7 @@ constexpr const uint32_t NUM_TRANS_IN_X = 18;
 
 constexpr const uint32_t NUM_TRANS_IN_Y = 14;
 
-constexpr const uint32_t FPGA_CLK_FREQ = 163840000;
-
-constexpr const uint32_t FPGA_SUB_CLK_FREQ = 20480000;
+constexpr const uint32_t FPGA_CLK_FREQ = 20480000;
 
 constexpr const int32_t AUTD3_ERR = -1;
 

@@ -26,9 +26,7 @@ namespace AUTD3Sharp
 
             public const float DeviceWidthMm = 192.0f;
 
-            public const uint FpgaClkFreq = 163840000;
-
-            public const uint FpgaSubClkFreq = 20480000;
+            public const uint FpgaClkFreq = 20480000;
 
             public const int Autd3Err = -1;
 

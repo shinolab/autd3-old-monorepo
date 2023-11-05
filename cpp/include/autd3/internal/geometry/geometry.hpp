@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,14 +50,9 @@ class AUTD3 {
   static constexpr double DEVICE_HEIGHT = native_methods::DEVICE_HEIGHT_MM;
 
   /**
-   * @brief FPGA main clock frequency
+   * @brief FPGA clock frequency
    */
   static constexpr double FPGA_CLK_FREQ = native_methods::FPGA_CLK_FREQ;
-
-  /**
-   * @brief FPGA sub clock frequency
-   */
-  static constexpr double FPGA_SUB_CLK_FREQ = native_methods::FPGA_SUB_CLK_FREQ;
 
   /**
    * @brief Constructor

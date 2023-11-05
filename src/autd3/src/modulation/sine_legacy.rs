@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 04/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -79,7 +79,7 @@ impl Modulation for SineLegacy {
         let sf = self.sampling_frequency();
         let freq = self
             .freq
-            .clamp(FPGA_SUB_CLK_FREQ as float / u32::MAX as float, sf / 2.0);
+            .clamp(FPGA_CLK_FREQ as float / u32::MAX as float, sf / 2.0);
         let n = (1.0 / freq * sf).round() as usize;
         Ok((0..n)
             .map(|i| self.amp / 2.0 * (2.0 * PI * i as float / n as float).sin() + self.offset)

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -97,7 +97,7 @@ struct ControlPoint {
  * @details The sampling timing is determined by hardware, thus the sampling time is precise.
  * FocusSTM has following restrictions:
  * - The maximum number of sampling points is 65536.
- * - The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
+ * - The sampling frequency is [autd3::internal::native_methods::FPGA_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
  * 4096.
  */
 class FocusSTM final : public STM {
@@ -269,7 +269,7 @@ class FocusSTM final : public STM {
  * @details The sampling timing is determined by hardware, thus the sampling time is precise.
  * GainSTM has following restrictions:
  * - The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
- * - The sampling frequency is [autd3::internal::native_methods::FPGA_SUB_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
+ * - The sampling frequency is [autd3::internal::native_methods::FPGA_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
  * 4096.
  */
 class GainSTM final : public STM {

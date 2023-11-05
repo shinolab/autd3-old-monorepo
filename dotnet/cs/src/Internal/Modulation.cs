@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public abstract class Modulation : IDatagram
     {
-        public float_t SamplingFrequency => (float_t)Def.FpgaSubClkFreq / SamplingFrequencyDivision;
+        public float_t SamplingFrequency => (float_t)Def.FpgaClkFreq / SamplingFrequencyDivision;
         public uint SamplingFrequencyDivision => Base.AUTDModulationSamplingFrequencyDivision(ModulationPtr());
 
         public DatagramPtr Ptr(Geometry geometry) => Base.AUTDModulationIntoDatagram(ModulationPtr());
@@ -57,7 +57,7 @@ namespace AUTD3Sharp.Internal
         /// <summary>
         /// Set sampling frequency division
         /// </summary>
-        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see> / div.</param>
+        /// <param name="div">The sampling frequency is <see cref="AUTD3.FPGAClkFreq">AUTD3.FPGAClkFreq</see> / div.</param>
         /// <returns></returns>
         public T WithSamplingFrequencyDivision(uint div)
         {
@@ -71,7 +71,7 @@ namespace AUTD3Sharp.Internal
         /// <returns></returns>
         public T WithSamplingFrequency(float_t freq)
         {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / freq));
+            return WithSamplingFrequencyDivision((uint)(Def.FpgaClkFreq / freq));
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace AUTD3Sharp.Internal
         /// <returns></returns>
         public T WithSamplingPeriod(TimeSpan period)
         {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaSubClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
+            return WithSamplingFrequencyDivision((uint)(Def.FpgaClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
         }
     }
 }

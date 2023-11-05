@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ mod gain;
 pub use focus::FocusSTM;
 pub use gain::GainSTM;
 
-use crate::{defined::float, fpga::FPGA_SUB_CLK_FREQ};
+use crate::{defined::float, fpga::FPGA_CLK_FREQ};
 
 #[doc(hidden)]
 /// This is used only for internal.
@@ -50,7 +50,7 @@ impl STMProps {
 
     pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
-            freq_div: Some((FPGA_SUB_CLK_FREQ as float / freq) as u32),
+            freq_div: Some((FPGA_CLK_FREQ as float / freq) as u32),
             freq: 0.,
             start_idx: None,
             finish_idx: None,
@@ -60,7 +60,7 @@ impl STMProps {
     pub fn with_sampling_period(period: std::time::Duration) -> Self {
         Self {
             freq_div: Some(
-                (FPGA_SUB_CLK_FREQ as float / 1000000000. * period.as_nanos() as float) as u32,
+                (FPGA_CLK_FREQ as float / 1000000000. * period.as_nanos() as float) as u32,
             ),
             freq: 0.,
             start_idx: None,
@@ -92,7 +92,7 @@ impl STMProps {
 
     pub fn freq(&self, size: usize) -> float {
         self.freq_div.map_or(self.freq, |div| {
-            FPGA_SUB_CLK_FREQ as float / div as float / size as float
+            FPGA_CLK_FREQ as float / div as float / size as float
         })
     }
 
@@ -101,7 +101,7 @@ impl STMProps {
             std::time::Duration::from_nanos((1000000000. / self.freq) as _),
             |div| {
                 std::time::Duration::from_nanos(
-                    (div as float / FPGA_SUB_CLK_FREQ as float * size as float * 1000000000.) as _,
+                    (div as float / FPGA_CLK_FREQ as float * size as float * 1000000000.) as _,
                 )
             },
         )
@@ -110,7 +110,7 @@ impl STMProps {
     pub fn sampling_frequency(&self, size: usize) -> float {
         self.freq_div
             .map_or((self.freq * size as float) as _, |div| {
-                FPGA_SUB_CLK_FREQ as float / div as float
+                FPGA_CLK_FREQ as float / div as float
             })
     }
 
@@ -119,7 +119,7 @@ impl STMProps {
             std::time::Duration::from_nanos((1000000000. / self.freq / size as float) as _),
             |div| {
                 std::time::Duration::from_nanos(
-                    (div as float / FPGA_SUB_CLK_FREQ as float * 1000000000.) as _,
+                    (div as float / FPGA_CLK_FREQ as float * 1000000000.) as _,
                 )
             },
         )
@@ -127,6 +127,6 @@ impl STMProps {
 
     pub fn sampling_frequency_division(&self, size: usize) -> u32 {
         self.freq_div
-            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * size as float)) as _)
+            .unwrap_or((FPGA_CLK_FREQ as float / (self.freq * size as float)) as _)
     }
 }

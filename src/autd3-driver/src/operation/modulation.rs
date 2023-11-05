@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::{collections::HashMap, fmt};
 use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
-    fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
     geometry::{Device, Geometry, Transducer},
     operation::{Operation, TypeTag},
 };
@@ -105,7 +105,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         tx[3] = (mod_size >> 8) as u8;
 
         if sent == 0 {
-            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            let freq_div = self.freq_div;
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
@@ -225,7 +225,6 @@ mod tests {
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -508,8 +507,5 @@ mod tests {
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX);
         assert!(op.init(&geometry).is_ok());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX + 1);
-        assert!(op.init(&geometry).is_err());
     }
 }

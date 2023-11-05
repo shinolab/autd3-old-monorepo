@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -100,7 +100,7 @@ namespace AUTD3Sharp
         public const int NumTransInY = (int)Def.NumTransInY;
 
         /// <summary>
-        /// FPGA main clock frequency
+        /// FPGA clock frequency
         /// </summary>
         public const uint FPGAClkFreq = Def.FpgaClkFreq;
 
@@ -113,11 +113,6 @@ namespace AUTD3Sharp
         /// Device width including substrate
         /// </summary>
         public const float_t DeviceWidth = Def.DeviceWidthMm * Millimeter;
-
-        /// <summary>
-        /// FPGA sub clock frequency
-        /// </summary>
-        public const uint FPGASubClkFreq = Def.FpgaSubClkFreq;
 
         #endregion
 

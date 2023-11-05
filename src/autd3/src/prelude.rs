@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ pub use autd3_driver::{
     },
     defined::{float, METER, MILLIMETER, PI},
     error::AUTDInternalError,
-    fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},
+    fpga::FPGA_CLK_FREQ,
     geometry::*,
     link::Link,
     operation::{ControlPoint, GainSTMMode},

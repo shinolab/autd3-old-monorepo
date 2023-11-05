@@ -4,18 +4,18 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{defined::float, error::AUTDInternalError, fpga::FPGA_SUB_CLK_FREQ};
+use crate::{defined::float, error::AUTDInternalError, fpga::FPGA_CLK_FREQ};
 
 pub trait ModulationProperty {
     fn sampling_frequency(&self) -> float {
-        FPGA_SUB_CLK_FREQ as float / self.sampling_frequency_division() as float
+        FPGA_CLK_FREQ as float / self.sampling_frequency_division() as float
     }
     fn sampling_frequency_division(&self) -> u32;
     fn sampling_period(&self) -> std::time::Duration {
@@ -27,7 +27,7 @@ pub trait ModulationProperty {
 ///
 /// Modulation has following restrictions:
 /// * The buffer size is up to 65536.
-/// * The sampling rate is [crate::FPGA_SUB_CLK_FREQ]/N, where N is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN].
+/// * The sampling rate is [crate::FPGA_CLK_FREQ]/N, where N is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN].
 /// * Modulation automatically loops. It is not possible to control only one loop, etc.
 /// * The start/end timing of Modulation cannot be controlled.
 #[allow(clippy::len_without_is_empty)]

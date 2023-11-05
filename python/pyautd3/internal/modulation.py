@@ -22,7 +22,7 @@ from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import AUTD3, Geometry
 from pyautd3.internal.datagram import Datagram
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import FPGA_SUB_CLK_FREQ, DatagramPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
 
 if TYPE_CHECKING:
     from pyautd3.modulation.cache import Cache
@@ -49,7 +49,7 @@ class IModulation(Datagram, metaclass=ABCMeta):
 
     @property
     def sampling_frequency(self: "IModulation") -> float:
-        return AUTD3.fpga_sub_clk_freq() / self.sampling_frequency_division
+        return AUTD3.fpga_clk_freq() / self.sampling_frequency_division
 
     def __len__(self: "IModulation") -> int:
         err = create_string_buffer(256)
@@ -104,7 +104,7 @@ class IModulationWithFreqDiv(IModulation):
         Arguments:
         ---------
             div: Sampling frequency division.
-                The sampling frequency will be `pyautd3.AUTD3.fpga_sub_clk_freq()` / `div`.
+                The sampling frequency will be `pyautd3.AUTD3.fpga_clk_freq()` / `div`.
         """
         self._freq_div = div
         return self
@@ -117,7 +117,7 @@ class IModulationWithFreqDiv(IModulation):
             freq: Sampling frequency.
                 The sampling frequency closest to `freq` from the possible sampling frequencies is set.
         """
-        div = int(FPGA_SUB_CLK_FREQ / freq)
+        div = int(FPGA_CLK_FREQ / freq)
         return self.with_sampling_frequency_division(div)
 
     def with_sampling_period(self: MF, period: timedelta) -> MF:
@@ -128,4 +128,4 @@ class IModulationWithFreqDiv(IModulation):
             period: Sampling period.
                 The sampling period closest to `period` from the possible sampling periods is set.
         """
-        return self.with_sampling_frequency_division(int(FPGA_SUB_CLK_FREQ / 1000000000.0 * (period.total_seconds() * 1000.0 * 1000.0 * 1000.0)))
+        return self.with_sampling_frequency_division(int(FPGA_CLK_FREQ / 1000000000.0 * (period.total_seconds() * 1000.0 * 1000.0 * 1000.0)))
