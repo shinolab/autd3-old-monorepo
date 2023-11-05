@@ -1,5 +1,7 @@
 # 17.0.0
 
+- Update firmware to v4.0.0
+  - Remove variable frequency feature
 - Make functions of `Link` async
 - Remove `Controller::software_stm`
 - Remove `Lightweight` options
