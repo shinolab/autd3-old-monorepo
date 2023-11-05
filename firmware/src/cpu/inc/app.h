@@ -3,7 +3,7 @@
 // Created Date: 25/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/08/2023
+// Last Modified: 03/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,18 +71,6 @@ inline static void bram_set(uint8_t bram_select, uint16_t base_bram_addr, uint16
   volatile uint16_t *base = (volatile uint16_t *)FPGA_BASE;
   volatile uint16_t *dst = &base[base_addr];
   while (cnt-- > 0) *dst++ = value;
-}
-
-inline static void memcpy_volatile(volatile void *restrict dst, const volatile void *restrict src, uint32_t cnt) {
-  const volatile unsigned char *src_c = src;
-  volatile unsigned char *dst_c = dst;
-  while (cnt-- > 0) *dst_c++ = *src_c++;
-}
-
-inline static void memset_volatile(volatile void *restrict dst, const int value, uint32_t cnt) {
-  const unsigned char value_c = value & 0xFF;
-  volatile unsigned char *dst_c = dst;
-  while (cnt-- > 0) *dst_c++ = value_c;
 }
 
 typedef struct {
