@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,13 +14,12 @@
 
 `timescale 1ns / 1ps
 module normal_operator #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
-    input var CLK_L,
+    input var CLK,
     cpu_bus_if.normal_port CPU_BUS,
-    input var LEGACY_MODE,
-    input var TRIG_40KHZ,
+    input var UPDATE,
     output var [WIDTH-1:0] DUTY,
     output var [WIDTH-1:0] PHASE,
     output var DOUT_VALID
@@ -29,13 +28,13 @@ module normal_operator #(
   bit bus_clk;
   bit ena;
   bit we;
-  bit [8:0] addr;
+  bit [7:0] addr;
   bit [15:0] data_in;
 
   bit dout_valid;
 
-  bit [8:0] read_addr = 0;
-  bit [31:0] dout;
+  bit [7:0] read_addr = 0;
+  bit [15:0] dout;
 
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] phase;
@@ -43,7 +42,7 @@ module normal_operator #(
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign ena = CPU_BUS.NORMAL_EN;
   assign we = CPU_BUS.WE;
-  assign addr = CPU_BUS.BRAM_ADDR[8:0];
+  assign addr = CPU_BUS.BRAM_ADDR[7:0];
   assign data_in = CPU_BUS.DATA_IN;
 
   assign DUTY = duty;
@@ -57,9 +56,9 @@ module normal_operator #(
       .addra(addr),
       .dina (data_in),
       .douta(),
-      .clkb (CLK_L),
+      .clkb (CLK),
       .web  ('0),
-      .addrb(read_addr[7:0]),
+      .addrb(read_addr),
       .dinb ('0),
       .doutb(dout)
   );
@@ -71,11 +70,11 @@ module normal_operator #(
 
   state_t state = WAITING;
 
-  always_ff @(posedge CLK_L) begin
+  always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
         dout_valid <= 0;
-        if (TRIG_40KHZ) begin
+        if (UPDATE) begin
           read_addr <= 0;
           state <= RUN;
         end
@@ -86,13 +85,8 @@ module normal_operator #(
         if (read_addr > 1) begin
           dout_valid <= 1;
 
-          if (LEGACY_MODE) begin
-            phase <= {1'b0, dout[7:0], 4'h00};
-            duty  <= {2'b00, dout[15:8], 3'h7} + 1;
-          end else begin
-            phase <= dout[WIDTH-1:0];
-            duty  <= dout[WIDTH-1+16:16];
-          end
+          phase <= {dout[7:0], 1'h0};
+          duty <= dout[15:8] == 8'h00 ? 9'h00 : dout[15:8] + 1;
         end
 
         if (read_addr == DEPTH + 1) begin

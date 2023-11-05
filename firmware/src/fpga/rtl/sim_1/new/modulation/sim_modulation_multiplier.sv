@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ module sim_modulation_multiplier ();
   bit CLK_20P48M;
   bit locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME()
@@ -25,7 +24,7 @@ module sim_modulation_multiplier ();
   sim_helper_random sim_helper_random ();
   sim_helper_bram sim_helper_bram ();
 
-  localparam int WIDTH = 13;
+  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
   bit din_valid, dout_valid;
@@ -75,8 +74,8 @@ module sim_modulation_multiplier ();
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
-      duty = sim_helper_random.range(8000, 0);
-      phase = sim_helper_random.range(8000, 0);
+      duty = sim_helper_random.range(511, 0);
+      phase = sim_helper_random.range(511, 0);
       duty_buf[i] = duty;
       phase_buf[i] = phase;
     end

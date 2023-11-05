@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 01/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 `timescale 1ns / 1ps
 module modulation_multiplier #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -94,7 +94,7 @@ module modulation_multiplier #(
   );
 
   div_32_8 div_32_8 (
-      .s_axis_dividend_tdata({10'd0, p[WIDTH+8:0]}),
+      .s_axis_dividend_tdata({14'd0, p[WIDTH+8:0]}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(8'hFF),
       .s_axis_divisor_tvalid(1'b1),
