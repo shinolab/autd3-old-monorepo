@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 05/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -151,7 +151,7 @@ module stm_focus_operator #(
   );
 
   div_64_32_l div_64_32_quo (
-      .s_axis_dividend_tdata({18'd0, sqrt_dout, 22'd0}),
+      .s_axis_dividend_tdata({21'd0, sqrt_dout, 19'd0}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(SOUND_SPEED),
       .s_axis_divisor_tvalid(1'b1),
