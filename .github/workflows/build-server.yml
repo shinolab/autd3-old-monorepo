@@ -40,6 +40,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check-src.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
       - name: Setup
         if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
