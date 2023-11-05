@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,30 +37,28 @@ pub async fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow
 
     let fin = Arc::new(AtomicBool::new(false));
 
-    tokio::join!(
-        async {
-            println!("press any key to stop checking FPGA status...");
-            let mut _s = String::new();
-            async_std::io::stdin().read_line(&mut _s).await.unwrap();
-            fin.store(true, Ordering::Relaxed);
-        },
-        async {
-            let prompts = ['-', '/', '|', '\\'];
-            let mut idx = 0;
-            while !fin.load(Ordering::Relaxed) {
-                let states = autd.fpga_info().await?;
-                println!("{} FPGA Status...", prompts[idx / 1000 % prompts.len()]);
-                idx += 1;
-                states.iter().enumerate().for_each(|(i, state)| {
-                    println!("\x1b[0K[{}]: thermo = {}", i, state.is_thermal_assert());
-                });
-                print!("\x1b[{}A", states.len() + 1);
-            }
-            print!("\x1b[1F\x1b[0J");
-            anyhow::Ok(true)
-        }
-    )
-    .1?;
+    let fin2 = fin.clone();
+    let fin_signal = tokio::spawn(async move {
+        println!("press any key to stop checking FPGA status...");
+        let mut _s = String::new();
+        async_std::io::stdin().read_line(&mut _s).await.unwrap();
+        fin2.store(true, Ordering::Relaxed);
+    });
+
+    let prompts = ['-', '/', '|', '\\'];
+    let mut idx = 0;
+    while !fin.load(Ordering::Relaxed) {
+        let states = autd.fpga_info().await?;
+        println!("{} FPGA Status...", prompts[idx / 1000 % prompts.len()]);
+        idx += 1;
+        states.iter().enumerate().for_each(|(i, state)| {
+            println!("\x1b[0K[{}]: thermo = {}", i, state.is_thermal_assert());
+        });
+        print!("\x1b[{}A", states.len() + 1);
+    }
+    print!("\x1b[1F\x1b[0J");
+
+    fin_signal.await?;
 
     autd.geometry.iter_mut().for_each(|dev| {
         dev.reads_fpga_info = false;
