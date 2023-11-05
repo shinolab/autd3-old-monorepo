@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 `timescale 1ns / 1ps
 module sim_helper_bram #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) ();
 
@@ -56,25 +56,12 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_stm_gain_duty_phase(int idx, input bit [WIDTH-1:0] duty[DEPTH],
-                                           input bit [WIDTH-1:0] phase[DEPTH]);
-    bit [15:0] offset;
-    bit [15:0] i;
-    offset = idx[20:5];
-    i = idx[4:0] << 9;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
-    for (int j = 0; j < DEPTH; j++) begin
-      bram_write(BRAM_SELECT_STM, i + j * 2, phase[j]);
-      bram_write(BRAM_SELECT_STM, i + j * 2 + 1, duty[j]);
-    end
-  endtask
-
-  task automatic write_stm_gain_duty_phase_legacy(int idx, input bit [WIDTH-1:0] duty[DEPTH],
                                                   input bit [WIDTH-1:0] phase[DEPTH]);
     bit [15:0] offset;
     bit [15:0] i;
     offset = idx[21:6];
     i = idx[5:0] << 8;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
     for (int j = 0; j < DEPTH; j++) begin
       bram_write(BRAM_SELECT_STM, i + j, {duty[j][7:0], phase[j][7:0]});
     end
@@ -84,7 +71,7 @@ module sim_helper_bram #(
                                  input bit [17:0] z, input bit [3:0] duty_shift);
     bit [15:0] offset = idx[15:11];
     bit [15:0] i = idx[10:0] << 3;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
     bram_write(BRAM_SELECT_STM, i, x[15:0]);
     bram_write(BRAM_SELECT_STM, i + 1, {y[13:0], x[17:16]});
     bram_write(BRAM_SELECT_STM, i + 2, {z[11:0], y[17:14]});
@@ -92,7 +79,7 @@ module sim_helper_bram #(
   endtask
 
   task automatic set_mod_bram_offset(input bit offset);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_SEGMENT, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_PAGE, offset);
   endtask
 
   task automatic write_mod(input bit [7:0] mod_data[65536], int cnt);
@@ -107,10 +94,8 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_duty_phase(int idx, unsigned [15:0] duty, unsigned [15:0] phase);
-    automatic int i = idx << 1;
-    bram_write(BRAM_SELECT_NORMAL, i, phase);
-    bram_write(BRAM_SELECT_NORMAL, i + 1, duty);
+  task automatic write_duty_phase(int idx, bit [7:0] duty, bit [7:0] phase);
+    bram_write(BRAM_SELECT_NORMAL, idx, {duty, phase});
   endtask
 
   task automatic set_ctl_reg(bit force_fan, bit sync);
@@ -158,15 +143,25 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_START_IDX, stm_start_idx);
   endtask
 
-  task automatic write_cycle(bit [WIDTH-1:0] cycle[DEPTH]);
-    for (int i = 0; i < DEPTH; i++) begin
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_CYCLE_BASE + i, cycle[i]);
-    end
+  task automatic write_stm_finish_idx(bit [15:0] stm_finish_idx);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_FINISH_IDX, stm_finish_idx);
   endtask
 
   task automatic write_delay(bit [15:0] delay[DEPTH]);
     for (int i = 0; i < DEPTH; i++) begin
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_DELAY_BASE + i, delay[i]);
+    end
+  endtask
+
+  task automatic write_filter_duty(bit signed [WIDTH:0] filter_duty[DEPTH]);
+    for (int i = 0; i < DEPTH; i++) begin
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_FILTER_DUTY_BASE + i, filter_duty[i]);
+    end
+  endtask
+
+  task automatic write_filter_phase(bit signed [WIDTH:0] filter_phase[DEPTH]);
+    for (int i = 0; i < DEPTH; i++) begin
+      bram_write(BRAM_SELECT_CONTROLLER, ADDR_FILTER_PHASE_BASE + i, filter_phase[i]);
     end
   endtask
 

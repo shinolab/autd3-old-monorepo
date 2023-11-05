@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 02/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,20 +17,17 @@ module sim_operator_stm_focus ();
   bit locked;
   bit [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 13;
+  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
-  localparam bit [WIDTH-1:0] MAX = (1 << WIDTH) - 1;
 
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit [WIDTH-1:0] cycle[DEPTH];
   bit [31:0] sound_speed;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
@@ -45,60 +42,44 @@ module sim_operator_stm_focus ();
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] phase;
 
-  stm_bus_if stm_bus_if ();
-
-  timer_40kHz timer_40kHz (
-      .CLK_L(CLK_20P48M),
-      .SYS_TIME(SYS_TIME),
-      .TRIG_40KHZ(TRIG_40KHZ)
-  );
-
-  stm_memory stm_memory (
-      .CLK_L  (CLK_20P48M),
-      .CPU_BUS(sim_helper_bram.cpu_bus.stm_port),
-      .STM_BUS(stm_bus_if.memory_port)
-  );
-
-  stm_sampler stm_sampler (
-      .CLK_L(CLK_20P48M),
-      .SYS_TIME(SYS_TIME),
-      .CYCLE_STM(cycle_stm),
-      .FREQ_DIV_STM(freq_div_stm),
-      .IDX(idx)
-  );
-
-  stm_focus_operator #(
+  time_cnt_generator #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
-  ) stm_gain_operator (
-      .CLK_L(CLK_20P48M),
-      .IDX(idx),
-      .TRIG_40KHZ(TRIG_40KHZ),
-      .STM_BUS(stm_bus_if.focus_port),
+  ) time_cnt_generator (
+      .CLK(CLK_20P48M),
+      .SYS_TIME(SYS_TIME),
+      .SKIP_ONE_ASSERT(1'b0),
+      .TIME_CNT(),
+      .UPDATE(UPDATE)
+  );
+
+  stm_operator stm_operator (
+      .CLK(CLK_20P48M),
+      .SYS_TIME(SYS_TIME),
+      .UPDATE(UPDATE),
+      .CYCLE_STM(cycle_stm),
+      .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
-      .CYCLE(cycle),
+      .STM_GAIN_MODE(1'b0),
+      .CPU_BUS(sim_helper_bram.cpu_bus.stm_port),
       .DUTY(duty),
       .PHASE(phase),
-      .DOUT_VALID(dout_valid)
+      .DOUT_VALID(dout_valid),
+      .IDX(idx)
   );
 
   bit [15:0] idx_buf;
   always @(posedge CLK_20P48M) begin
-    if (TRIG_40KHZ) idx_buf = idx;
+    if (UPDATE) idx_buf = idx;
   end
 
   initial begin
     automatic int id = 0;
-    stm_bus_if.STM_GAIN_MODE = 1'b0;
     sim_helper_random.init();
-
-    for (int i = 0; i < DEPTH; i++) begin
-      cycle[i] = sim_helper_random.range(8000, 2000);
-    end
 
     sound_speed = 340 * 1024;
     cycle_stm = 65536 - 1;
-    freq_div_stm = 4096;
+    freq_div_stm = 512;
 
     @(posedge locked);
 
@@ -140,15 +121,14 @@ module sim_operator_stm_focus ();
           z = focus_z[idx_buf];  // [0.025mm]
           r = $rtoi($sqrt(x * x + y * y + z * z));  // [0.025mm]
           lambda = (r << 22) / sound_speed;
-          p = lambda % cycle[id];
-          if (duty != (cycle[id] >> (1 + duty_shift[idx_buf]))) begin
-            $error("Failed at d_out=%d, d_in=%d @%d", duty, cycle[id] >> (1 + duty_shift[idx_buf]),
-                   id);
+          p = lambda % 512;
+          if (duty != (512 >> (1 + duty_shift[idx_buf]))) begin
+            $error("Failed at d_out=%d, d_in=%d @%d", duty, 512 >> (1 + duty_shift[idx_buf]), id);
             $finish();
           end
           if (phase != p) begin
-            $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d, cycle=%d) @%d", phase, p,
-                   x * x + y * y + z * z, r, lambda, cycle[id], id);
+            $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
+                   x * x + y * y + z * z, r, lambda, id);
             $error("x=%d, y=%d, z=%d", x, y, z);
             $finish();
           end

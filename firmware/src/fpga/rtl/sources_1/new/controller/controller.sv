@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/09/2023
+ * Last Modified: 05/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 `timescale 1ns / 1ps
 module controller #(
-    parameter int WIDTH = 13,
+    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -36,9 +36,7 @@ module controller #(
     output var [15:0] STM_START_IDX,
     output var USE_STM_START_IDX,
     output var [15:0] STM_FINISH_IDX,
-    output var USE_STM_FINISH_IDX,
-    output var [WIDTH-1:0] CYCLE[DEPTH],
-    output var LEGACY_MODE
+    output var USE_STM_FINISH_IDX
 );
 
   `include "params.vh"
@@ -46,13 +44,13 @@ module controller #(
   bit bus_clk;
   bit ctl_ena;
   bit wea;
-  bit [8:0] ctl_addr;
+  bit [6:0] ctl_addr;
   bit [7:0] dly_addr;
   bit [7:0] flt_duty_addr;
   bit [7:0] flt_phase_addr;
   bit [15:0] cpu_data_in;
   bit [15:0] cpu_data_out;
-  bit [8:0] addr;
+  bit [6:0] addr;
   bit we;
   bit [15:0] din;
   bit [15:0] dout;
@@ -70,38 +68,38 @@ module controller #(
 
   bit [63:0] ecat_sync_time;
   bit sync_set;
-  bit [7:0] set_cnt;
 
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
+
   bit signed [WIDTH:0] filter_duty[DEPTH];
   bit signed [WIDTH:0] filter_phase[DEPTH];
+
   bit [WIDTH-1:0] step_s;
+
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
   bit [15:0] stm_start_idx;
   bit [15:0] stm_finish_idx;
-  bit [WIDTH-1:0] cycle[DEPTH];
 
-  bit [2:0] ctl_segment;
+  bit [2:0] ctl_page;
 
-  assign ctl_segment = CPU_BUS.BRAM_ADDR[10:8];
+  assign ctl_page = CPU_BUS.BRAM_ADDR[10:8];
   assign bus_clk = CPU_BUS.BUS_CLK;
-  assign ctl_ena = CPU_BUS.CTL_EN & (ctl_segment == BRAM_SELECT_CONTROLLER_MAIN | ctl_segment == BRAM_SELECT_CONTROLLER_CYCLE);
+  assign ctl_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_MAIN);
   assign wea = CPU_BUS.WE;
-  assign ctl_addr = CPU_BUS.BRAM_ADDR[8:0];
-  assign dly_ena = CPU_BUS.CTL_EN & (ctl_segment == BRAM_SELECT_CONTROLLER_DELAY);
+  assign ctl_addr = CPU_BUS.BRAM_ADDR[6:0];
+  assign dly_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_DELAY);
   assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_duty_ena = CPU_BUS.CTL_EN & (ctl_segment == BRAM_SELECT_CONTROLLER_FILTER_DUTY);
+  assign flt_duty_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_DUTY);
   assign flt_duty_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_phase_ena = CPU_BUS.CTL_EN & (ctl_segment == BRAM_SELECT_CONTROLLER_FILTER_PHASE);
+  assign flt_phase_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_PHASE);
   assign flt_phase_addr = CPU_BUS.BRAM_ADDR[7:0];
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
-  assign LEGACY_MODE = ctl_reg[CTL_FLAG_LEGACY_MODE_BIT];
   assign FORCE_FAN = ctl_reg[CTL_FLAG_FORCE_FAN_BIT];
   assign OP_MODE = ctl_reg[CTL_FLAG_OP_MODE_BIT];
   assign STM_GAIN_MODE = ctl_reg[CTL_FLAG_STM_GAIN_MODE_BIT];
@@ -120,10 +118,9 @@ module controller #(
   assign STM_FINISH_IDX = stm_finish_idx;
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_cycle_delay
-    assign CYCLE[i]   = cycle[i];
     assign DELAY_M[i] = delay_m[i];
-    assign FILTER_DUTY[i]  = filter_duty[i];
-    assign FILTER_PHASE[i]  = filter_phase[i];
+    assign FILTER_DUTY[i] = filter_duty[i];
+    assign FILTER_PHASE[i] = filter_phase[i];
   end
 
   BRAM_CONTROLLER ctl_bram (
@@ -208,12 +205,9 @@ module controller #(
     REQ_RD_EC_SYNC_TIME_1,
     REQ_RD_EC_SYNC_TIME_2,
     REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0,
-    REQ_RD_CYCLE_0_RD_EC_SYNC_TIME_1,
-    REQ_RD_CYCLE_1_RD_EC_SYNC_TIME_2,
-    REQ_RD_CYCLE_2_RD_EC_SYNC_TIME_3,
-    RD_CYCLE,
-    WAIT_CLR_SYNC_BIT_0,
-    WAIT_CLR_SYNC_BIT_1,
+    RD_EC_SYNC_TIME_1,
+    RD_EC_SYNC_TIME_2,
+    RD_EC_SYNC_TIME_3,
     CLR_SYNC_BIT
   } state_t;
 
@@ -377,58 +371,33 @@ module controller #(
 
         ecat_sync_time[15:0] <= dout;
 
-        state <= REQ_RD_CYCLE_0_RD_EC_SYNC_TIME_1;
+        state <= RD_EC_SYNC_TIME_1;
       end
-      REQ_RD_CYCLE_0_RD_EC_SYNC_TIME_1: begin
-        addr <= ADDR_CYCLE_BASE;
+      RD_EC_SYNC_TIME_1: begin
+        addr <= ADDR_CTL_FLAG;
 
         ecat_sync_time[31:16] <= dout;
 
-        state <= REQ_RD_CYCLE_1_RD_EC_SYNC_TIME_2;
+        state <= RD_EC_SYNC_TIME_2;
       end
-      REQ_RD_CYCLE_1_RD_EC_SYNC_TIME_2: begin
-        addr <= addr + 1;
-
+      RD_EC_SYNC_TIME_2: begin
         ecat_sync_time[47:32] <= dout;
 
-        state <= REQ_RD_CYCLE_2_RD_EC_SYNC_TIME_3;
+        state <= RD_EC_SYNC_TIME_3;
       end
-      REQ_RD_CYCLE_2_RD_EC_SYNC_TIME_3: begin
-        addr <= addr + 1;
-
+      RD_EC_SYNC_TIME_3: begin
         ecat_sync_time[63:48] <= dout;
 
-        set_cnt <= 0;
+        sync_set <= 1'b1;
 
-        state <= RD_CYCLE;
-      end
-      RD_CYCLE: begin
-        cycle[set_cnt] <= dout[WIDTH-1:0];
-        if (set_cnt == DEPTH - 1) begin
-          addr <= ADDR_CTL_FLAG;
-
-          sync_set <= 1'b1;
-
-          state <= WAIT_CLR_SYNC_BIT_0;
-        end else begin
-          addr <= addr + 1;
-          set_cnt <= set_cnt + 1;
-
-          state <= RD_CYCLE;
-        end
-      end
-      WAIT_CLR_SYNC_BIT_0: begin
-        sync_set <= 1'b0;
-
-        state <= WAIT_CLR_SYNC_BIT_1;
-      end
-      WAIT_CLR_SYNC_BIT_1: begin
         state <= CLR_SYNC_BIT;
       end
       CLR_SYNC_BIT: begin
         ctl_reg <= dout;
 
-        state   <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
+        sync_set <= 1'b0;
+
+        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       //////////////////////// synchronize ////////////////////////
 
