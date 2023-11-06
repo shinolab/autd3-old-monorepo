@@ -4,7 +4,7 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,11 +84,6 @@ namespace AUTD3Sharp.Link
             return NativeMethods.Base.AUTDLinkAuditCpuFpgaFlags(_ptr, (uint)idx);
         }
 
-        public bool IsLegacy(int idx)
-        {
-            return NativeMethods.Base.AUTDLinkAuditFpgaIsLegacyMode(_ptr, (uint)idx);
-        }
-
         public int SilencerStep(int idx)
         {
             return NativeMethods.Base.AUTDLinkAuditFpgaSilencerStep(_ptr, (uint)idx);
@@ -115,14 +110,6 @@ namespace AUTD3Sharp.Link
         public uint ModulationFrequencyDivision(int idx)
         {
             return NativeMethods.Base.AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, (uint)idx);
-        }
-
-        public ushort[] Cycles(int idx)
-        {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new ushort[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaCycles(_ptr, (uint)idx, buf);
-            return buf;
         }
 
         public ushort[] ModDelays(int idx)

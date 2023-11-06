@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -112,34 +112,6 @@ namespace AUTD3Sharp
                 var dir = new float_t[3];
                 Base.AUTDTransducerDirectionZ(_ptr, dir);
                 return new Vector3(dir[0], dir[1], dir[2]);
-            }
-        }
-
-        /// <summary>
-        /// Frequency of the transducer
-        /// </summary>
-        public float_t Frequency
-        {
-            get => Base.AUTDTransducerFrequencyGet(_ptr);
-            set
-            {
-                var err = new byte[256];
-                if (!Base.AUTDTransducerFrequencySet(_ptr, value, err))
-                    throw new AUTDException(err);
-            }
-        }
-
-        /// <summary>
-        /// Cycle of the transducer
-        /// </summary>
-        public ushort Cycle
-        {
-            get => Base.AUTDTransducerCycleGet(_ptr);
-            set
-            {
-                var err = new byte[256];
-                if (!Base.AUTDTransducerCycleSet(_ptr, value, err))
-                    throw new AUTDException(err);
             }
         }
 

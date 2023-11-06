@@ -100,14 +100,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDTransducerDirectionZ(TransducerPtr tr, float[]? dir);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern float AUTDTransducerFrequencyGet(TransducerPtr tr);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDTransducerFrequencySet(TransducerPtr tr, float value, byte[] err);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ushort AUTDTransducerCycleGet(TransducerPtr tr);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDTransducerCycleSet(TransducerPtr tr, ushort value, byte[] err);
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern float AUTDTransducerWavelength(TransducerPtr tr, float soundSpeed);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ushort AUTDTransducerModDelayGet(TransducerPtr tr);
@@ -160,17 +152,15 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern DatagramPtr AUTDDatagramSilencer(ushort step);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern DatagramPtr AUTDDatagramAmplitudes(float amp);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSend(ControllerPtr cnt, DatagramPtr d1, DatagramPtr d2, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSend(ControllerPtr cnt, TransMode mode, DatagramPtr d1, DatagramPtr d2, long timeoutNs, byte[] err);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSendSpecial(ControllerPtr cnt, TransMode mode, DatagramSpecialPtr special, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerSendSpecial(ControllerPtr cnt, DatagramSpecialPtr special, long timeoutNs, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GroupKVMapPtr AUTDControllerGroupCreateKVMap();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map, int key, DatagramPtr d1, DatagramPtr d2, TransMode mode, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map, int key, DatagramPtr d1, DatagramPtr d2, long timeoutNs, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map, int key, DatagramSpecialPtr special, TransMode mode, long timeoutNs, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map, int key, DatagramSpecialPtr special, long timeoutNs, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern int AUTDControllerGroup(ControllerPtr cnt, int[]? map, GroupKVMapPtr kvMap, byte[] err);
 
@@ -210,8 +200,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint idx);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsLegacyMode(LinkPtr audit, uint idx);
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsForceFan(LinkPtr audit, uint idx);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmMode(LinkPtr audit, uint idx);
@@ -219,8 +207,6 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public unsafe static extern bool AUTDLinkAuditFpgaIsStmGainMode(LinkPtr audit, uint idx);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern ushort AUTDLinkAuditFpgaSilencerStep(LinkPtr audit, uint idx);
-
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaCycles(LinkPtr audit, uint idx, ushort[] cycles);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public unsafe static extern void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint idx, ushort[] delay);
 

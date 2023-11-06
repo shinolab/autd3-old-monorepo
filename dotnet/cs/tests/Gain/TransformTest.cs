@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,14 +24,14 @@ public class TransformTest
             dev.Idx == 0 ? d with { Phase = d.Phase + Math.PI / 4 } : d with { Phase = d.Phase - Math.PI / 4 })));
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
-            Assert.All(phases, p => Assert.Equal(2048 + 512, p));
+            Assert.All(duties, d => Assert.Equal(85, d));
+            Assert.All(phases, p => Assert.Equal(256 + 64, p));
         }
 
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
-            Assert.All(phases, p => Assert.Equal(2048 - 512, p));
+            Assert.All(duties, d => Assert.Equal(85, d));
+            Assert.All(phases, p => Assert.Equal(256 - 64, p));
         }
     }
 
@@ -59,8 +59,8 @@ public class TransformTest
         }
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
+            Assert.All(duties, d => Assert.Equal(85, d));
+            Assert.All(phases, p => Assert.Equal(256, p));
         }
     }
 }
