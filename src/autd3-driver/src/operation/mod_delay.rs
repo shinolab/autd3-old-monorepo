@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 use crate::{
     error::AUTDInternalError,
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -24,8 +24,8 @@ pub struct ConfigureModDelayOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for ConfigureModDelayOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for ConfigureModDelayOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
         assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
@@ -45,20 +45,20 @@ impl<T: Transducer> Operation<T> for ConfigureModDelayOp {
         Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         2 + device.num_transducers() * std::mem::size_of::<u16>()
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains.insert(device.idx(), 0);
     }
 }
@@ -68,14 +68,14 @@ mod tests {
     use rand::prelude::*;
 
     use super::*;
-    use crate::geometry::{tests::create_geometry, LegacyTransducer};
+    use crate::geometry::{tests::create_geometry};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn mod_delay_op() {
-        let mut geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let mut geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];

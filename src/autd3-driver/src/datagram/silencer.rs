@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram for configure silencer
 pub struct Silencer {
@@ -45,7 +45,7 @@ impl Default for Silencer {
     }
 }
 
-impl<T: Transducer> Datagram<T> for Silencer {
+impl Datagram for Silencer {
     type O1 = crate::operation::ConfigSilencerOp;
     type O2 = crate::operation::NullOp;
 
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn test_silencer_timeout() {
         let silencer = Silencer::new(10);
-        let timeout = <Silencer as Datagram<LegacyTransducer>>::timeout(&silencer);
+        let timeout = <Silencer as Datagram>::timeout(&silencer);
         assert!(timeout.is_some());
         assert!(timeout.unwrap() > Duration::ZERO);
     }
@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_silencer_operation() {
         let silencer = Silencer::new(10);
-        let r = <Silencer as Datagram<LegacyTransducer>>::operation(silencer);
+        let r = <Silencer as Datagram>::operation(silencer);
         assert!(r.is_ok());
         let _: (crate::operation::ConfigSilencerOp, crate::operation::NullOp) = r.unwrap();
     }

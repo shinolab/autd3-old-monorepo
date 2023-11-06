@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@ use crate::{
     cpu::{RxMessage, TxDatagram},
     derive::prelude::Geometry,
     error::AUTDInternalError,
-    geometry::Transducer,
 };
 
 /// Link is a interface to the AUTD device
@@ -105,19 +104,19 @@ pub trait LinkSync {
 }
 
 #[async_trait]
-pub trait LinkBuilder<T: Transducer> {
+pub trait LinkBuilder {
     type L: Link;
 
     /// Open link
-    async fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
+    async fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError>;
 }
 
 #[cfg(feature = "sync")]
-pub trait LinkSyncBuilder<T: Transducer> {
+pub trait LinkSyncBuilder {
     type L: LinkSync;
 
     /// Open link
-    fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError>;
+    fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError>;
 }
 
 #[cfg(feature = "sync")]

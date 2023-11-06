@@ -12,8 +12,7 @@
  */
 
 use crate::{
-    datagram::Datagram, defined::float, error::AUTDInternalError, geometry::*,
-    operation::ControlPoint,
+    datagram::Datagram, defined::float, error::AUTDInternalError, operation::ControlPoint,
 };
 
 use super::STMProps;
@@ -181,7 +180,7 @@ impl FocusSTM {
     }
 }
 
-impl<T: Transducer> Datagram<T> for FocusSTM {
+impl Datagram for FocusSTM {
     type O1 = crate::operation::FocusSTMOp;
     type O2 = crate::operation::NullOp;
 
@@ -201,6 +200,7 @@ mod tests {
     use super::*;
     use crate::{
         fpga::FPGA_CLK_FREQ,
+        geometry::Vector3,
         operation::{FocusSTMOp, NullOp},
     };
     use assert_approx_eq::assert_approx_eq;
@@ -373,7 +373,7 @@ mod tests {
             .add_focus((Vector3::new(4., 5., 6.), 1))
             .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2));
 
-        let r = <FocusSTM as Datagram<LegacyTransducer>>::operation(stm);
+        let r = <FocusSTM as Datagram>::operation(stm);
         assert!(r.is_ok());
         let _: (FocusSTMOp, NullOp) = r.unwrap();
     }

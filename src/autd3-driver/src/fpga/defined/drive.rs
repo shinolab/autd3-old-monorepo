@@ -1,10 +1,10 @@
 /*
- * File: legacy_drive.rs
+ * File: drive.rs
  * Project: defined
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,12 +15,12 @@ use crate::{common::Drive, defined::PI};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-pub struct LegacyDrive {
+pub struct FPGADrive {
     pub phase: u8,
     pub duty: u8,
 }
 
-impl LegacyDrive {
+impl FPGADrive {
     pub fn to_phase(d: &Drive) -> u8 {
         (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as _
     }
@@ -43,10 +43,10 @@ mod tests {
     use crate::{common::Amplitude, defined::PI};
 
     #[test]
-    fn legacy_drive() {
-        assert_eq!(size_of::<LegacyDrive>(), 2);
+    fn drive() {
+        assert_eq!(size_of::<FPGADrive>(), 2);
 
-        let d = LegacyDrive {
+        let d = FPGADrive {
             phase: 0x01,
             duty: 0x02,
         };
@@ -61,7 +61,7 @@ mod tests {
                 phase: 0.0,
                 amp: Amplitude::MIN,
             };
-            (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
+            (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
             assert_eq!(d[1], 0x00);
 
@@ -69,7 +69,7 @@ mod tests {
                 phase: PI,
                 amp: Amplitude::new_clamped(0.5),
             };
-            (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
+            (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
             assert_eq!(d[1], 84);
 
@@ -77,7 +77,7 @@ mod tests {
                 phase: 2.0 * PI,
                 amp: Amplitude::MAX,
             };
-            (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
+            (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
             assert_eq!(d[1], 0xFF);
 
@@ -85,7 +85,7 @@ mod tests {
                 phase: 3.0 * PI,
                 amp: Amplitude::new_clamped(1.5),
             };
-            (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
+            (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
             assert_eq!(d[1], 0xFF);
 
@@ -93,7 +93,7 @@ mod tests {
                 phase: -PI,
                 amp: Amplitude::new_clamped(-1.0),
             };
-            (*(&mut d as *mut _ as *mut LegacyDrive)).set(&s);
+            (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
             assert_eq!(d[1], 0);
         }

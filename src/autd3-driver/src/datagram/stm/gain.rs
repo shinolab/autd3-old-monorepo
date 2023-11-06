@@ -11,9 +11,7 @@
  *
  */
 
-use crate::{
-    datagram::*, defined::float, error::AUTDInternalError, geometry::*, operation::GainSTMMode,
-};
+use crate::{datagram::*, defined::float, error::AUTDInternalError, operation::GainSTMMode};
 
 use super::STMProps;
 
@@ -22,17 +20,16 @@ use super::STMProps;
 /// The sampling timing is determined by hardware, thus the sampling time is precise.
 ///
 /// GainSTM has following restrictions:
-/// - The maximum number of sampling [Gain] is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
+/// - The maximum number of sampling [Gain] is 2048.
 /// - The sampling frequency is [crate::FPGA_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at least [crate::SAMPLING_FREQ_DIV_MIN]
 ///
-pub struct GainSTM<T: Transducer, G: Gain<T>> {
+pub struct GainSTM<G: Gain> {
     gains: Vec<G>,
     mode: GainSTMMode,
     props: STMProps,
-    _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
+impl<G: Gain> GainSTM<G> {
     /// constructor
     ///
     /// # Arguments
@@ -44,7 +41,6 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
             gains: vec![],
             mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::new(freq),
-            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -69,7 +65,6 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
             gains: vec![],
             mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_frequency_division(freq_div),
-            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -84,7 +79,6 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
             gains: vec![],
             mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_frequency(freq),
-            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -99,7 +93,6 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
             gains: vec![],
             mode: GainSTMMode::PhaseDutyFull,
             props: STMProps::with_sampling_period(period),
-            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -175,7 +168,6 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
             gains: Vec::new(),
             mode,
             props,
-            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -193,7 +185,7 @@ impl<T: Transducer, G: Gain<T>> GainSTM<T, G> {
     }
 }
 
-impl<T: Transducer + 'static> GainSTM<T, Box<dyn Gain<T>>> {
+impl GainSTM<Box<dyn Gain>> {
     /// get Gain of specified index
     ///
     /// # Arguments
@@ -204,7 +196,7 @@ impl<T: Transducer + 'static> GainSTM<T, Box<dyn Gain<T>>> {
     ///
     /// * Gain of specified index if the type is matched, otherwise None
     ///
-    pub fn get<G: Gain<T> + 'static>(&self, idx: usize) -> Option<&G> {
+    pub fn get<G: Gain + 'static>(&self, idx: usize) -> Option<&G> {
         if idx >= self.gains.len() {
             return None;
         }
@@ -212,8 +204,8 @@ impl<T: Transducer + 'static> GainSTM<T, Box<dyn Gain<T>>> {
     }
 }
 
-impl<T: Transducer, G: Gain<T>> Datagram<T> for GainSTM<T, G> {
-    type O1 = crate::operation::GainSTMOp<T, G>;
+impl<G: Gain> Datagram for GainSTM<G> {
+    type O1 = crate::operation::GainSTMOp<G>;
     type O2 = crate::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -237,6 +229,7 @@ mod tests {
     use crate::{
         common::Drive,
         datagram::{Gain, GainAsAny},
+        derive::prelude::Geometry,
         fpga::FPGA_CLK_FREQ,
         operation::{tests::NullGain, GainSTMOp, NullOp},
     };
@@ -245,44 +238,40 @@ mod tests {
 
     #[test]
     fn freq() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::new(1.0);
+        let stm = GainSTM::<NullGain>::new(1.0);
         assert_eq!(stm.freq(), 1.0);
 
-        let stm = GainSTM::<LegacyTransducer, _>::with_sampling_frequency_division(512)
+        let stm = GainSTM::<_>::with_sampling_frequency_division(512)
             .add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_approx_eq!(stm.freq(), FPGA_CLK_FREQ as float / 512. / 10.);
 
-        let stm = GainSTM::<LegacyTransducer, _>::with_sampling_frequency(40e3)
+        let stm = GainSTM::<_>::with_sampling_frequency(40e3)
             .add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_approx_eq!(stm.freq(), 40e3 / 10.);
     }
 
     #[test]
     fn period() {
-        let stm =
-            GainSTM::<LegacyTransducer, NullGain>::with_period(std::time::Duration::from_millis(1));
+        let stm = GainSTM::<NullGain>::with_period(std::time::Duration::from_millis(1));
         assert_eq!(stm.period(), std::time::Duration::from_millis(1));
 
-        let stm = GainSTM::<LegacyTransducer, _>::with_sampling_period(
-            std::time::Duration::from_millis(1),
-        )
-        .add_gains_from_iter((0..10).map(|_| NullGain {}));
+        let stm = GainSTM::<_>::with_sampling_period(std::time::Duration::from_millis(1))
+            .add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_eq!(stm.period(), std::time::Duration::from_millis(10));
     }
 
     #[test]
     fn sampling_frequency_division() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_sampling_frequency_division(512);
+        let stm = GainSTM::<NullGain>::with_sampling_frequency_division(512);
         assert_eq!(stm.sampling_frequency_division(), 512);
 
-        let stm = GainSTM::<LegacyTransducer, _>::new(1.0)
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
+        let stm = GainSTM::<_>::new(1.0).add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_eq!(
             stm.sampling_frequency_division(),
             (FPGA_CLK_FREQ as float / 10.) as u32
         );
 
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_sampling_frequency(40e3);
+        let stm = GainSTM::<NullGain>::with_sampling_frequency(40e3);
         assert_eq!(
             stm.sampling_frequency_division(),
             (FPGA_CLK_FREQ as float / 40e3) as u32
@@ -291,32 +280,29 @@ mod tests {
 
     #[test]
     fn sampling_frequency() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_sampling_frequency(40e3);
+        let stm = GainSTM::<NullGain>::with_sampling_frequency(40e3);
         assert_eq!(stm.sampling_frequency(), 40e3);
 
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_sampling_frequency_division(512);
+        let stm = GainSTM::<NullGain>::with_sampling_frequency_division(512);
         assert_approx_eq!(stm.sampling_frequency(), FPGA_CLK_FREQ as float / 512.);
 
-        let stm = GainSTM::<LegacyTransducer, _>::new(1.0)
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
+        let stm = GainSTM::<_>::new(1.0).add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
     }
 
     #[test]
     fn sampling_period() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_sampling_period(
-            std::time::Duration::from_millis(1),
-        );
+        let stm = GainSTM::<NullGain>::with_sampling_period(std::time::Duration::from_millis(1));
         assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
 
-        let stm = GainSTM::<LegacyTransducer, _>::with_period(std::time::Duration::from_millis(10))
+        let stm = GainSTM::<_>::with_period(std::time::Duration::from_millis(10))
             .add_gains_from_iter((0..10).map(|_| NullGain {}));
         assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
     }
 
     #[test]
     fn with_mode() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::new(1.0);
+        let stm = GainSTM::<NullGain>::new(1.0);
         assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
 
         let stm = stm.with_mode(GainSTMMode::PhaseFull);
@@ -331,14 +317,12 @@ mod tests {
 
     #[test]
     fn with_props_mode() {
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_props_mode(
-            STMProps::new(1.0),
-            GainSTMMode::PhaseDutyFull,
-        );
+        let stm =
+            GainSTM::<NullGain>::with_props_mode(STMProps::new(1.0), GainSTMMode::PhaseDutyFull);
         assert_eq!(stm.freq(), 1.0);
         assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
 
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_props_mode(
+        let stm = GainSTM::<NullGain>::with_props_mode(
             STMProps::with_sampling_frequency_division(512),
             GainSTMMode::PhaseFull,
         )
@@ -346,7 +330,7 @@ mod tests {
         assert_approx_eq!(stm.freq(), FPGA_CLK_FREQ as float / 512. / 10.);
         assert_eq!(stm.mode(), GainSTMMode::PhaseFull);
 
-        let stm = GainSTM::<LegacyTransducer, NullGain>::with_props_mode(
+        let stm = GainSTM::<NullGain>::with_props_mode(
             STMProps::with_sampling_frequency(40e3),
             GainSTMMode::PhaseHalf,
         )
@@ -363,11 +347,11 @@ mod tests {
         }
     }
 
-    impl<T: Transducer> Gain<T> for NullGain2 {
+    impl Gain for NullGain2 {
         #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
-            _: &Geometry<T>,
+            _: &Geometry,
             _: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             unimplemented!()
@@ -376,7 +360,7 @@ mod tests {
 
     #[test]
     fn test_get() {
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.0)
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.0)
             .add_gain(Box::new(NullGain {}))
             .add_gain(Box::new(NullGain2 {}));
 
@@ -392,7 +376,7 @@ mod tests {
 
     #[test]
     fn test_clear() {
-        let mut stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.0)
+        let mut stm = GainSTM::<Box<dyn Gain>>::new(1.0)
             .add_gain(Box::new(NullGain {}))
             .add_gain(Box::new(NullGain2 {}));
 
@@ -404,72 +388,34 @@ mod tests {
 
     #[test]
     fn start_idx() {
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.);
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.);
         assert_eq!(stm.start_idx(), None);
 
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.)
-            .with_start_idx(Some(0));
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.).with_start_idx(Some(0));
         assert_eq!(stm.start_idx(), Some(0));
 
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.)
-            .with_start_idx(None);
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.).with_start_idx(None);
         assert_eq!(stm.start_idx(), None);
     }
 
     #[test]
     fn finish_idx() {
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.);
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.);
         assert_eq!(stm.finish_idx(), None);
 
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.)
-            .with_finish_idx(Some(0));
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.).with_finish_idx(Some(0));
         assert_eq!(stm.finish_idx(), Some(0));
 
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.)
-            .with_finish_idx(None);
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.).with_finish_idx(None);
         assert_eq!(stm.finish_idx(), None);
     }
 
     #[test]
-    fn gain_stm_legacy_operation() {
-        let stm = GainSTM::<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>::new(1.);
+    fn gain_stm_operation() {
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.);
 
-        let r = <GainSTM<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>> as Datagram<
-            LegacyTransducer,
-        >>::operation(stm);
+        let r = stm.operation();
         assert!(r.is_ok());
-        let _: (
-            GainSTMOp<LegacyTransducer, Box<dyn Gain<LegacyTransducer>>>,
-            NullOp,
-        ) = r.unwrap();
-    }
-
-    #[test]
-    fn gain_stm_advanced_operation() {
-        let stm = GainSTM::<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>>::new(1.);
-
-        let r = <GainSTM<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>> as Datagram<
-            AdvancedTransducer,
-        >>::operation(stm);
-        assert!(r.is_ok());
-        let _: (
-            GainSTMOp<AdvancedTransducer, Box<dyn Gain<AdvancedTransducer>>>,
-            NullOp,
-        ) = r.unwrap();
-    }
-
-    #[test]
-    fn gain_stm_advanced_phase_operation() {
-        let stm =
-            GainSTM::<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>>::new(1.);
-
-        let r = <GainSTM<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>> as Datagram<
-        AdvancedPhaseTransducer,
-        >>::operation(stm);
-        assert!(r.is_ok());
-        let _: (
-            GainSTMOp<AdvancedPhaseTransducer, Box<dyn Gain<AdvancedPhaseTransducer>>>,
-            NullOp,
-        ) = r.unwrap();
+        let _: (GainSTMOp<Box<dyn Gain>>, NullOp) = r.unwrap();
     }
 }

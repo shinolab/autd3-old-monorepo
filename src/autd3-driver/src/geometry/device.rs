@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,9 +17,9 @@ use crate::defined::{float, METER};
 
 use super::{Matrix3, Transducer, UnitQuaternion, Vector3};
 
-pub struct Device<T: Transducer> {
+pub struct Device {
     idx: usize,
-    transducers: Vec<T>,
+    transducers: Vec<Transducer>,
     pub enable: bool,
     pub force_fan: bool,
     pub reads_fpga_info: bool,
@@ -28,9 +28,9 @@ pub struct Device<T: Transducer> {
     inv: Matrix3,
 }
 
-impl<T: Transducer> Device<T> {
+impl Device {
     #[doc(hidden)]
-    pub fn new(idx: usize, transducers: Vec<T>) -> Self {
+    pub fn new(idx: usize, transducers: Vec<Transducer>) -> Self {
         let inv = Matrix3::from_columns(&[
             transducers[0].x_direction(),
             transducers[0].y_direction(),
@@ -123,45 +123,45 @@ impl<T: Transducer> Device<T> {
     }
 }
 
-impl<T: Transducer> Deref for Device<T> {
-    type Target = [T];
+impl Deref for Device {
+    type Target = [Transducer];
 
     fn deref(&self) -> &Self::Target {
         &self.transducers
     }
 }
 
-impl<T: Transducer> DerefMut for Device<T> {
+impl DerefMut for Device {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.transducers
     }
 }
 
-impl<'a, T: Transducer> IntoIterator for &'a Device<T> {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
+impl<'a> IntoIterator for &'a Device {
+    type Item = &'a Transducer;
+    type IntoIter = std::slice::Iter<'a, Transducer>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.transducers.iter()
     }
 }
 
-impl<'a, T: Transducer> IntoIterator for &'a mut Device<T> {
-    type Item = &'a mut T;
-    type IntoIter = std::slice::IterMut<'a, T>;
+impl<'a> IntoIterator for &'a mut Device {
+    type Item = &'a mut Transducer;
+    type IntoIter = std::slice::IterMut<'a, Transducer>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.transducers.iter_mut()
     }
 }
 
-pub trait IntoDevice<T: Transducer> {
-    fn into_device(self, dev_idx: usize) -> Device<T>;
+pub trait IntoDevice {
+    fn into_device(self, dev_idx: usize) -> Device;
 }
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{defined::PI, geometry::LegacyTransducer};
+    use crate::{defined::PI, geometry::Transducer};
 
     use super::*;
 
@@ -182,27 +182,27 @@ pub mod tests {
         };
     }
 
-    pub fn create_device<T: Transducer>(idx: usize, n: usize) -> Device<T> {
+    pub fn create_device(idx: usize, n: usize) -> Device {
         Device::new(
             idx,
             (0..n)
-                .map(|i| T::new(i, Vector3::zeros(), UnitQuaternion::identity()))
+                .map(|i| Transducer::new(i, Vector3::zeros(), UnitQuaternion::identity()))
                 .collect(),
         )
     }
 
     #[test]
     fn device_idx() {
-        let device = create_device::<LegacyTransducer>(0, 249);
+        let device = create_device(0, 249);
         assert_eq!(device.idx(), 0);
 
-        let device = create_device::<LegacyTransducer>(1, 249);
+        let device = create_device(1, 249);
         assert_eq!(device.idx(), 1);
     }
 
     #[test]
     fn device_num_transducers() {
-        let device = create_device::<LegacyTransducer>(0, 249);
+        let device = create_device(0, 249);
         assert_eq!(device.num_transducers(), 249);
     }
 
@@ -211,7 +211,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -232,7 +232,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -252,7 +252,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    LegacyTransducer::new(
+                    Transducer::new(
                         i,
                         10.16 * Vector3::new(x as float, y as float, 0.),
                         UnitQuaternion::identity(),
@@ -273,7 +273,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    LegacyTransducer::new(
+                    Transducer::new(
                         i,
                         10.16 * Vector3::new(x as float, y as float, 0.) + p,
                         UnitQuaternion::identity(),
@@ -292,7 +292,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    LegacyTransducer::new(i, 10.16 * Vector3::new(x as float, y as float, 0.), q)
+                    Transducer::new(i, 10.16 * Vector3::new(x as float, y as float, 0.), q)
                 })
                 .collect::<Vec<_>>();
 
@@ -310,11 +310,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    LegacyTransducer::new(
-                        i,
-                        10.16 * Vector3::new(x as float, y as float, 0.) + p,
-                        q,
-                    )
+                    Transducer::new(i, 10.16 * Vector3::new(x as float, y as float, 0.) + p, q)
                 })
                 .collect::<Vec<_>>();
 
@@ -333,7 +329,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -360,7 +356,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -401,7 +397,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -427,7 +423,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -482,7 +478,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -521,7 +517,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -541,7 +537,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),

@@ -4,14 +4,14 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram to set phase filter
 #[derive(Default)]
@@ -23,7 +23,7 @@ impl ConfigurePhaseFilter {
     }
 }
 
-impl<T: Transducer> Datagram<T> for ConfigurePhaseFilter {
+impl Datagram for ConfigurePhaseFilter {
     type O1 = crate::operation::ConfigurePhaseFilterOp;
     type O2 = crate::operation::NullOp;
 
@@ -41,14 +41,14 @@ mod tests {
     #[test]
     fn test_amp_filter_timeout() {
         let filter = ConfigurePhaseFilter::new();
-        let timeout = <ConfigurePhaseFilter as Datagram<LegacyTransducer>>::timeout(&filter);
+        let timeout = <ConfigurePhaseFilter as Datagram>::timeout(&filter);
         assert!(timeout.is_none());
     }
 
     #[test]
     fn test_amp_filter_operation() {
         let filter = ConfigurePhaseFilter::default();
-        let r = <ConfigurePhaseFilter as Datagram<LegacyTransducer>>::operation(filter);
+        let r = <ConfigurePhaseFilter as Datagram>::operation(filter);
         assert!(r.is_ok());
         let _: (ConfigurePhaseFilterOp, NullOp) = r.unwrap();
     }

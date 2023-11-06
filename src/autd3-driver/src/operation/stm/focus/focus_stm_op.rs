@@ -17,7 +17,7 @@ use crate::{
     defined::METER,
     error::AUTDInternalError,
     fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -50,8 +50,8 @@ impl FocusSTMOp {
     }
 }
 
-impl<T: Transducer> Operation<T> for FocusSTMOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for FocusSTMOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert!(self.remains[&device.idx()] > 0);
 
         tx[0] = TypeTag::FocusSTM as u8;
@@ -143,7 +143,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         }
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                 + std::mem::size_of::<FocusSTMControlFlags>()
@@ -161,7 +161,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         }
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         if !(2..=FOCUS_STM_BUF_SIZE_MAX).contains(&self.points.len()) {
             return Err(AUTDInternalError::FocusSTMPointSizeOutOfRange(
                 self.points.len(),
@@ -192,11 +192,11 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains
             .insert(device.idx(), self.points.len() - self.sent[&device.idx()]);
     }
@@ -210,7 +210,7 @@ mod tests {
     use crate::{
         defined::{float, MILLIMETER},
         fpga::{FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_WIDTH, SAMPLING_FREQ_DIV_MIN},
-        geometry::{tests::create_geometry, LegacyTransducer, Vector3},
+        geometry::{tests::create_geometry, Vector3},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -221,7 +221,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -339,7 +339,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = (FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>()
             + (FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() * 2;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -596,7 +596,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -691,7 +691,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_buffer_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let test = |n: usize| {
             let mut rng = rand::thread_rng();
@@ -726,7 +726,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_freq_div_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let test = |d: u32| {
             let mut rng = rand::thread_rng();
@@ -761,7 +761,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -785,7 +785,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_stm_idx_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let test = |n: usize, start_idx: Option<u16>, finish_idx: Option<u16>| {
             let mut rng = rand::thread_rng();

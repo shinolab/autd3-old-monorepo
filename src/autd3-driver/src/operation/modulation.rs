@@ -17,7 +17,7 @@ use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
     fpga::{MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -79,8 +79,8 @@ impl ModulationOp {
     }
 }
 
-impl<T: Transducer> Operation<T> for ModulationOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for ModulationOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert!(self.remains[&device.idx()] > 0);
 
         tx[0] = TypeTag::Modulation as u8;
@@ -128,7 +128,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                 + std::mem::size_of::<ModulationControlFlags>()
@@ -143,11 +143,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
         }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN || self.freq_div > SAMPLING_FREQ_DIV_MAX {
+        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
             return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
         }
 
@@ -160,11 +160,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains
             .insert(device.idx(), self.buf.len() - self.sent[&device.idx()]);
     }
@@ -175,10 +175,7 @@ mod tests {
     use rand::prelude::*;
 
     use super::*;
-    use crate::{
-        fpga::SAMPLING_FREQ_DIV_MIN,
-        geometry::{tests::create_geometry, LegacyTransducer},
-    };
+    use crate::{fpga::SAMPLING_FREQ_DIV_MIN, geometry::tests::create_geometry};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
@@ -215,7 +212,7 @@ mod tests {
     fn modulation_op() {
         const MOD_SIZE: usize = 100;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + 4 + MOD_SIZE) * NUM_DEVICE];
 
@@ -298,7 +295,7 @@ mod tests {
         const FRAME_SIZE: usize = 30;
         const MOD_SIZE: usize = FRAME_SIZE - 4 + FRAME_SIZE * 2;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + FRAME_SIZE) * NUM_DEVICE];
 
@@ -464,7 +461,7 @@ mod tests {
 
     #[test]
     fn modulation_op_buffer_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let check = |n: usize| {
             let mut rng = rand::thread_rng();
@@ -493,7 +490,7 @@ mod tests {
 
     #[test]
     fn modulation_op_freq_div_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut rng = rand::thread_rng();
 
