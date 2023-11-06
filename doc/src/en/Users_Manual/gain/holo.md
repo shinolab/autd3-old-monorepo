@@ -18,12 +18,14 @@ You can select the backend for the calculation of the algorithm from the followi
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
@@ -81,12 +83,14 @@ This can be controlled by `with_constraint`, and one of the following four must 
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
@@ -124,11 +128,13 @@ These are all specified by `with_xxx`.
 - e.g.,
     ```rust,edition2021
     # extern crate autd3;
+    # extern crate tokio;
     # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
     # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]
-    # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    # #[tokio::main]
+    # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     # let x1 = 0.;
     # let y1 = 0.;
     # let z1 = 0.;

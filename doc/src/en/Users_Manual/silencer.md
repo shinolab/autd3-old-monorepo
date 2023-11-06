@@ -21,12 +21,14 @@ To configure the silencer, send `Silencer` to the controller.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let config = Silencer::default();
-autd.send(config)?;
+autd.send(config).await?;
 # Ok(())
 # }
 ```
@@ -54,10 +56,12 @@ Roughly, the smaller the `step`, the quieter it becomes.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 # let step = 10;
 let config = Silencer::new(step);
 # Ok(())
@@ -83,10 +87,12 @@ To disable the silencer, do the following.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let config = Silencer::disable();
 # Ok(())
 # }

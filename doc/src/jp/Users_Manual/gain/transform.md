@@ -4,11 +4,12 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let g = Uniform::new(1.0).with_transform(|dev, tr: &LegacyTransducer, d| Drive {
+let g = Uniform::new(1.0).with_transform(|dev, tr, d| Drive {
     amp: Amplitude::new_clamped(d.amp.value() - 0.5),
     phase: d.phase + PI,
 });
@@ -41,4 +42,4 @@ def f(dev, tr, d):
 g = Uniform(1.0).with_transform(f)
 ```
 
-`with_transform`の引数は`Fn(&Device<T>, &T, &Drive) -> Drive`であり, 第1引数はデバイス, 第2引数は振動子, 第3引数は元の振幅/位相データである.
+`with_transform`の引数は`Fn(&Device, &Transducer, &Drive) -> Drive`であり, 第1引数はデバイス, 第2引数は振動子, 第3引数は元の振幅/位相データである.

@@ -7,6 +7,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_driver;
 use autd3::{
     derive::Modulation,

@@ -1,7 +1,7 @@
 # FocusSTM
 
 - 最大サンプリング点数は$65536$.
-- サンプリング周波数は$\clklf/N$.
+- サンプリング周波数は$\clkf/N$.
 
 `FocusSTM`の使用方法は以下のようになる.
 これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
@@ -9,10 +9,12 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
-let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
 let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
@@ -20,7 +22,7 @@ let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
     center + p
 }));
-autd.send(stm)?;
+autd.send(stm).await?;
 # Ok(())
 # }
 ```
@@ -66,8 +68,8 @@ autd.send(stm)
 
 `FocusSTM`のコンストラクタにはSTM周波数を指定する.
 なお, サンプリング点数とサンプリング周期に関する制約によって, 指定した周波数と実際の周波数は異なる可能性がある.
-例えば, 上記の例は200点を$\SI{1}{Hz}$で回すため, サンプリング周波数は$\SI{200}{Hz}=\clklf/102400$とすれば良い.
-しかし, 例えば`point_num=199`にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\clklf/N$を満たすような整数$N$は存在しない.
+例えば, 上記の例は200点を$\SI{1}{Hz}$で回すため, サンプリング周波数は$\SI{200}{Hz}=\clkf/102400$とすれば良い.
+しかし, 例えば`point_num=199`にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\clkf/N$を満たすような整数$N$は存在しない.
 そのため, もっとも近い$N$が選択される.
 これによって, 指定した周波数と実際の周波数がずれる.
 `frequency`によって実際の周波数を確認することができる.
@@ -78,9 +80,11 @@ autd.send(stm)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 let stm = FocusSTM::with_sampling_frequency(1.0);
 # Ok(())
 # }
@@ -104,9 +108,11 @@ stm = FocusSTM.with_sampling_frequency(1.0)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 let stm = FocusSTM::with_sampling_frequency_division(5120);
 # Ok(())
 # }

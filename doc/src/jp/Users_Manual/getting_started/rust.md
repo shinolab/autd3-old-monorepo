@@ -8,6 +8,7 @@ cargo new --bin autd3-sample
 cd autd3-sample
 cargo add autd3
 cargo add autd3-link-soem
+cargo add tokio --features full
 ```
 
 次に, `src/main.rs`ファイルを編集し, 以下のようにする.
@@ -15,11 +16,13 @@ cargo add autd3-link-soem
 
 ```rust,should_panic,filename=main.rs,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // AUTDを操作するControllerの作成
     let mut autd = Controller::builder()
         // 接続しているデバイス情報の登録
@@ -33,35 +36,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .open_with(SOEM::builder().with_on_lost(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
-        }))?;
+        })).await?;
 
     // ファームウェアバージョンのチェック
     // ここで, v3.0.2以外が表示される場合の動作は保証しない
-    autd.firmware_infos()?.iter().for_each(|firm_info| {
+    autd.firmware_infos().await?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });
 
     // 静音化処理を有効化
     // なお, デフォルトで有効にされているので, 実際には必要ない
     // 無効にしたい場合はSilencer::disable()を送信する
-    autd.send(Silencer::default())?;
+    autd.send(Silencer::default()).await?;
 
     // デバイスの中心から直上150mmに焦点
-    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+    let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
     let g = Focus::new(center);
 
     // 150Hzサイン波変調
     let m = Sine::new(150);
 
     // データの送信
-    autd.send((m, g))?;
+    autd.send((m, g)).await?;
 
     println!("press enter to quit...");
     let mut _s = String::new();
     std::io::stdin().read_line(&mut _s)?;
 
     // コントローラーを閉じる
-    autd.close()?;
+    autd.close().await?;
 
     Ok(())
 }

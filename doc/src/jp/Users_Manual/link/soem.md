@@ -22,18 +22,20 @@ Linux/macOSの場合は, 特に準備は必要ない.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_ifname("")
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -68,12 +70,14 @@ SOEM.builder()\
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
@@ -82,7 +86,7 @@ SOEM::builder()
     .with_on_err(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
         })
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -131,12 +135,14 @@ SOEM.builder()\
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
@@ -145,7 +151,7 @@ SOEM::builder()
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
         })
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -195,19 +201,21 @@ SOEM.builder()\
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -244,18 +252,20 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_timer_strategy(TimerStrategy::BusyWait)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -297,18 +307,20 @@ SOEM.builder()\
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::{SOEM, SyncMode};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync_mode(SyncMode::DC)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -371,17 +383,19 @@ AUTD3デバイスが見つかり, クライアントとの接続待ちである�
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::RemoteSOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 RemoteSOEM::builder("172.16.99.104:8080".parse()?)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```

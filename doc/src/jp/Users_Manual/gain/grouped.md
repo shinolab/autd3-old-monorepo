@@ -6,14 +6,15 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;
-# let gain : autd3::gain::Group<_, LegacyTransducer, _, _> =
-Group::new(|dev, tr: &LegacyTransducer| match tr.local_idx() {
+# let gain : autd3::gain::Group<_, _, _> =
+Group::new(|dev, tr| match tr.local_idx() {
                 0..=100 => Some("null"),
                 101.. => Some("focus"),
                 _ => None,

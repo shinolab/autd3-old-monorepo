@@ -1,16 +1,18 @@
 # FocusSTM
 
 - The maximum number of sampling points is $65536$.
-- The sampling frequency is $\clklf/N$.
+- The sampling frequency is $\clkf/N$.
 
 THe following is an example of using `FocusSTM` to focus on a point $\SI{150}{mm}$ directly above the center of the array with a radius of $\SI{30}{mm}$ centered on the center of the array.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
-let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
 let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
@@ -18,7 +20,7 @@ let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
     center + p
 }));
-autd.send(stm)?;
+autd.send(stm).await?;
 # Ok(())
 # }
 ```
@@ -64,8 +66,8 @@ autd.send(stm)
 
 `FocusSTM`'s constructor takes the STM frequency as an argument.
 Note that the specified frequency and the actual frequency may differ due to constraints on the number of sampling points and the sampling period.
-For example, the above example runs 200 points at $\SI{1}{Hz}$, so the sampling frequency should be $\SI{200}{Hz}=\clklf/102400$.
-However, if `point_num=199`, the sampling frequency must be $\SI{199}{Hz}$, but there is no integer $N$ that satisfies $\SI{199}{Hz}=\clklf/N$.
+For example, the above example runs 200 points at $\SI{1}{Hz}$, so the sampling frequency should be $\SI{200}{Hz}=\clkf/102400$.
+However, if `point_num=199`, the sampling frequency must be $\SI{199}{Hz}$, but there is no integer $N$ that satisfies $\SI{199}{Hz}=\clkf/N$.
 Therefore, the closest $N$ is selected.
 As a result, the specified frequency and the actual frequency are shifted.
 `frequency` can be used to check the actual frequency.
@@ -77,9 +79,11 @@ You can specify the sampling frequency by `with_sampling_frequency` instead of f
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 let stm = FocusSTM::with_sampling_frequency(1.0);
 # Ok(())
 # }
@@ -103,9 +107,11 @@ Also, you can specify the sampling frequency division ratio $N$ by `with_samplin
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 let stm = FocusSTM::with_sampling_frequency_division(5120);
 # Ok(())
 # }
