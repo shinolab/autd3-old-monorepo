@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -123,8 +123,8 @@ impl AUTD3 {
     }
 }
 
-impl<T: Transducer> IntoDevice<T> for AUTD3 {
-    fn into_device(self, dev_idx: usize) -> Device<T> {
+impl IntoDevice for AUTD3 {
+    fn into_device(self, dev_idx: usize) -> Device {
         let rot_mat: Matrix4 = From::from(self.rotation);
         let trans_mat = rot_mat.append_translation(&self.position);
         Device::new(
@@ -142,7 +142,7 @@ impl<T: Transducer> IntoDevice<T> for AUTD3 {
                 })
                 .map(|p| trans_mat * p)
                 .zip(0..)
-                .map(|(p, i)| T::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
+                .map(|(p, i)| Transducer::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
                 .collect(),
         )
     }

@@ -4,17 +4,14 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-mod advanced_phase_transducer;
-mod advanced_transducer;
 pub(crate) mod device;
-mod legacy_transducer;
 mod transducer;
 
 use crate::defined::float;
@@ -28,21 +25,19 @@ pub type Matrix3 = nalgebra::Matrix3<float>;
 pub type Matrix4 = nalgebra::Matrix4<float>;
 pub type Affine = nalgebra::Affine3<float>;
 
-pub use advanced_phase_transducer::*;
-pub use advanced_transducer::*;
 pub use device::*;
-pub use legacy_transducer::*;
+pub use transducer::*;
 pub use transducer::*;
 
 use std::ops::{Deref, DerefMut};
 
-pub struct Geometry<T: Transducer> {
-    pub(crate) devices: Vec<Device<T>>,
+pub struct Geometry {
+    pub(crate) devices: Vec<Device>,
 }
 
-impl<T: Transducer> Geometry<T> {
+impl Geometry {
     #[doc(hidden)]
-    pub fn new(devices: Vec<Device<T>>) -> Geometry<T> {
+    pub fn new(devices: Vec<Device>) -> Geometry {
         Self { devices }
     }
 
@@ -62,12 +57,12 @@ impl<T: Transducer> Geometry<T> {
     }
 
     /// Enumerate enabled devices
-    pub fn devices(&self) -> impl Iterator<Item = &Device<T>> {
+    pub fn devices(&self) -> impl Iterator<Item = &Device> {
         self.devices.iter().filter(|dev| dev.enable)
     }
 
     /// Enumerate enabled devices mutably
-    pub fn devices_mut(&mut self) -> impl Iterator<Item = &mut Device<T>> {
+    pub fn devices_mut(&mut self) -> impl Iterator<Item = &mut Device> {
         self.devices.iter_mut().filter(|dev| dev.enable)
     }
 
@@ -107,32 +102,32 @@ impl<T: Transducer> Geometry<T> {
     }
 }
 
-impl<T: Transducer> Deref for Geometry<T> {
-    type Target = [Device<T>];
+impl Deref for Geometry {
+    type Target = [Device];
 
     fn deref(&self) -> &Self::Target {
         &self.devices
     }
 }
 
-impl<T: Transducer> DerefMut for Geometry<T> {
+impl DerefMut for Geometry {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.devices
     }
 }
 
-impl<'a, T: Transducer> IntoIterator for &'a Geometry<T> {
-    type Item = &'a Device<T>;
-    type IntoIter = std::slice::Iter<'a, Device<T>>;
+impl<'a> IntoIterator for &'a Geometry {
+    type Item = &'a Device;
+    type IntoIter = std::slice::Iter<'a, Device>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.devices.iter()
     }
 }
 
-impl<'a, T: Transducer> IntoIterator for &'a mut Geometry<T> {
-    type Item = &'a mut Device<T>;
-    type IntoIter = std::slice::IterMut<'a, Device<T>>;
+impl<'a> IntoIterator for &'a mut Geometry {
+    type Item = &'a mut Device;
+    type IntoIter = std::slice::IterMut<'a, Device>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.devices.iter_mut()
@@ -151,44 +146,38 @@ pub mod tests {
         };
     }
 
-    fn create_device<T: Transducer>(idx: usize, n: usize) -> Device<T> {
+    fn create_device(idx: usize, n: usize) -> Device {
         Device::new(
             idx,
             (0..n)
-                .map(|i| T::new(i, Vector3::zeros(), UnitQuaternion::identity()))
+                .map(|i| Transducer::new(i, Vector3::zeros(), UnitQuaternion::identity()))
                 .collect(),
         )
     }
 
-    pub fn create_geometry<T: Transducer>(n: usize, num_trans_in_unit: usize) -> Geometry<T> {
+    pub fn create_geometry(n: usize, num_trans_in_unit: usize) -> Geometry {
         Geometry::new(
             (0..n)
-                .map(|i| create_device::<T>(i, num_trans_in_unit))
+                .map(|i| create_device(i, num_trans_in_unit))
                 .collect(),
         )
     }
 
     #[test]
     fn geometry_num_devices() {
-        let geometry = Geometry::new(vec![create_device::<LegacyTransducer>(0, 249)]);
+        let geometry = Geometry::new(vec![create_device(0, 249)]);
         assert_eq!(geometry.num_devices(), 1);
 
-        let geometry = Geometry::new(vec![
-            create_device::<LegacyTransducer>(0, 249),
-            create_device::<LegacyTransducer>(0, 249),
-        ]);
+        let geometry = Geometry::new(vec![create_device(0, 249), create_device(0, 249)]);
         assert_eq!(geometry.num_devices(), 2);
     }
 
     #[test]
     fn geometry_num_transducers() {
-        let geometry = Geometry::new(vec![create_device::<LegacyTransducer>(0, 249)]);
+        let geometry = Geometry::new(vec![create_device(0, 249)]);
         assert_eq!(geometry.num_transducers(), 249);
 
-        let geometry = Geometry::new(vec![
-            create_device::<LegacyTransducer>(0, 249),
-            create_device::<LegacyTransducer>(0, 249),
-        ]);
+        let geometry = Geometry::new(vec![create_device(0, 249), create_device(0, 249)]);
         assert_eq!(geometry.num_transducers(), 249 * 2);
     }
 
@@ -197,7 +186,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -209,7 +198,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),
@@ -230,7 +219,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -242,7 +231,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),
@@ -269,7 +258,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -281,7 +270,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),
@@ -300,7 +289,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -312,7 +301,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),
@@ -331,7 +320,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -343,7 +332,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),
@@ -363,7 +352,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -375,7 +364,7 @@ pub mod tests {
         let transducers = itertools::iproduct!((0..18), (0..14))
             .enumerate()
             .map(|(i, (y, x))| {
-                LegacyTransducer::new(
+                Transducer::new(
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.) + Vector3::new(10., 20., 30.),
                     UnitQuaternion::identity(),

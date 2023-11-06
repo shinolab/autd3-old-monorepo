@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,14 +31,14 @@ pub trait GainAsAny {
 }
 
 /// Gain controls amplitude and phase of each transducer.
-pub trait Gain<T: Transducer>: GainAsAny {
+pub trait Gain: GainAsAny {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>;
-    fn transform<F: Fn(&Device<T>, &T) -> Drive + Sync + Send>(
-        geometry: &Geometry<T>,
+    fn transform<F: Fn(&Device, &Transducer) -> Drive + Sync + Send>(
+        geometry: &Geometry,
         filter: GainFilter,
         f: F,
     ) -> HashMap<usize, Vec<Drive>>
@@ -76,18 +76,18 @@ pub trait Gain<T: Transducer>: GainAsAny {
     }
 }
 
-impl<'a, T: Transducer> GainAsAny for Box<dyn Gain<T> + 'a> {
+impl<'a> GainAsAny for Box<dyn Gain + 'a> {
     #[cfg_attr(coverage_nightly, coverage(off))]
     fn as_any(&self) -> &dyn std::any::Any {
         self.as_ref().as_any()
     }
 }
 
-impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
+impl<'a> Gain for Box<dyn Gain + 'a> {
     #[cfg_attr(coverage_nightly, coverage(off))]
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         self.as_ref().calc(geometry, filter)
@@ -98,10 +98,7 @@ impl<'a, T: Transducer> Gain<T> for Box<dyn Gain<T> + 'a> {
 mod tests {
     use super::*;
 
-    use crate::{
-        geometry::{tests::create_geometry, LegacyTransducer},
-        operation::tests::NullGain,
-    };
+    use crate::{geometry::tests::create_geometry, operation::tests::NullGain};
 
     #[test]
     fn test_gain_as_any() {
@@ -111,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_gain_transform_all() {
-        let geometry = create_geometry::<LegacyTransducer>(2, 249);
+        let geometry = create_geometry(2, 249);
         let g = NullGain {}.calc(&geometry, GainFilter::All).unwrap();
 
         assert_eq!(g.len(), 2);
@@ -136,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_gain_transform_all_enabled() {
-        let mut geometry = create_geometry::<LegacyTransducer>(2, 249);
+        let mut geometry = create_geometry(2, 249);
         geometry[0].enable = false;
 
         let g = NullGain {}.calc(&geometry, GainFilter::All).unwrap();
@@ -156,7 +153,7 @@ mod tests {
 
     #[test]
     fn test_gain_transform_filtered() {
-        let geometry = create_geometry::<LegacyTransducer>(3, 249);
+        let geometry = create_geometry(3, 249);
         let filter = geometry
             .iter()
             .take(2)
@@ -204,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_gain_transform_filtered_enabled() {
-        let mut geometry = create_geometry::<LegacyTransducer>(2, 249);
+        let mut geometry = create_geometry(2, 249);
         geometry[0].enable = false;
 
         let filter = geometry

@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,8 +29,8 @@ use directivity::Directivity;
 /// * `sound_speed` - Speed of sound
 /// * `target_pos` - Position of target
 ///
-pub fn propagate<D: Directivity, T: Transducer>(
-    tr: &T,
+pub fn propagate<D: Directivity>(
+    tr: &Transducer,
     attenuation: float,
     sound_speed: float,
     target_pos: &Vector3,
@@ -62,8 +62,7 @@ mod tests {
     fn propagate() {
         let mut rng = rand::thread_rng();
 
-        let tr =
-            crate::geometry::LegacyTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = crate::geometry::Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let atten = rng.gen_range(0.0..1.0);
         let c = rng.gen_range(300e3..400e3);
@@ -82,7 +81,7 @@ mod tests {
         };
         assert_complex_approx_eq!(
             expect,
-            super::propagate::<TestDirectivity, _>(&tr, atten, c, &target)
+            super::propagate::<TestDirectivity>(&tr, atten, c, &target)
         );
     }
 }

@@ -4,14 +4,14 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram to update flags (Force fan flag and reads FPGA info flag)
 #[derive(Default)]
@@ -23,7 +23,7 @@ impl UpdateFlags {
     }
 }
 
-impl<T: Transducer> Datagram<T> for UpdateFlags {
+impl Datagram for UpdateFlags {
     type O1 = crate::operation::UpdateFlagsOp;
     type O2 = crate::operation::NullOp;
 
@@ -41,14 +41,14 @@ mod tests {
     #[test]
     fn test_mod_delay_timeout() {
         let delay = UpdateFlags::new();
-        let timeout = <UpdateFlags as Datagram<LegacyTransducer>>::timeout(&delay);
+        let timeout = <UpdateFlags as Datagram>::timeout(&delay);
         assert!(timeout.is_none());
     }
 
     #[test]
     fn test_mod_delay_operation() {
         let delay = UpdateFlags::default();
-        let r = <UpdateFlags as Datagram<LegacyTransducer>>::operation(delay);
+        let r = <UpdateFlags as Datagram>::operation(delay);
         assert!(r.is_ok());
         let _: (UpdateFlagsOp, NullOp) = r.unwrap();
     }

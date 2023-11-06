@@ -13,16 +13,14 @@
 
 use crate::defined::{float, METER};
 
-mod advanced_drive;
+mod drive;
 mod filter;
 mod fpga_info;
-mod legacy_drive;
 mod stm_focus;
 
-pub use advanced_drive::{AdvancedDriveDuty, AdvancedDrivePhase};
+pub use drive::FPGADrive;
 pub use filter::{FilterDuty, FilterPhase};
 pub use fpga_info::FPGAInfo;
-pub use legacy_drive::LegacyDrive;
 pub use stm_focus::STMFocus;
 
 /// FPGA clock frequency
@@ -44,5 +42,4 @@ pub const MOD_BUF_SIZE_MAX: usize = 65536;
 
 pub const STM_BUF_SIZE_MIN: usize = 2;
 pub const FOCUS_STM_BUF_SIZE_MAX: usize = 65536;
-pub const GAIN_STM_BUF_SIZE_MAX: usize = 1024;
-pub const GAIN_STM_LEGACY_BUF_SIZE_MAX: usize = 2048;
+pub const GAIN_STM_BUF_SIZE_MAX: usize = 2048;

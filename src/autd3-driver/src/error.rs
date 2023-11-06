@@ -59,12 +59,6 @@ pub enum AUTDInternalError {
     #[error(
         "GainSTM size ({0}) is out of range ([{}, {}])",
         STM_BUF_SIZE_MIN,
-        GAIN_STM_LEGACY_BUF_SIZE_MAX
-    )]
-    GainSTMLegacySizeOutOfRange(usize),
-    #[error(
-        "GainSTM size ({0}) is out of range ([{}, {}])",
-        STM_BUF_SIZE_MIN,
         GAIN_STM_BUF_SIZE_MAX
     )]
     GainSTMSizeOutOfRange(usize),
@@ -248,27 +242,12 @@ mod tests {
     }
 
     #[test]
-    fn gain_stm_legacy_size_out_of_range() {
-        let err = AUTDInternalError::GainSTMLegacySizeOutOfRange(1);
-        assert!(err.source().is_none());
-        assert_eq!(
-            format!("{}", err),
-            "GainSTM size (1) is out of range ([2, 2048])"
-        );
-        assert_eq!(format!("{:?}", err), "GainSTMLegacySizeOutOfRange(1)");
-
-        let err = AUTDInternalError::GainSTMLegacySizeOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::GainSTMLegacySizeOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::GainSTMLegacySizeOutOfRange(2));
-    }
-
-    #[test]
     fn gain_stm_size_out_of_range() {
         let err = AUTDInternalError::GainSTMSizeOutOfRange(1);
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "GainSTM size (1) is out of range ([2, 1024])"
+            "GainSTM size (1) is out of range ([2, 2048])"
         );
         assert_eq!(format!("{:?}", err), "GainSTMSizeOutOfRange(1)");
 

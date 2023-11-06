@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     error::AUTDInternalError,
     fpga::FilterPhase,
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -27,8 +27,8 @@ pub struct ConfigurePhaseFilterOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for ConfigurePhaseFilterOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for ConfigurePhaseFilterOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
         assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<FilterPhase>());
@@ -43,26 +43,26 @@ impl<T: Transducer> Operation<T> for ConfigurePhaseFilterOp {
             );
             dst.iter_mut()
                 .zip(device.iter())
-                .for_each(|(d, tr)| d.set(tr.phase_filter(), tr.cycle()));
+                .for_each(|(d, tr)| d.set(tr.phase_filter()));
         }
 
         Ok(2 + device.num_transducers() * std::mem::size_of::<FilterPhase>())
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         2 + device.num_transducers() * std::mem::size_of::<FilterPhase>()
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains.insert(device.idx(), 0);
     }
 }
@@ -72,17 +72,14 @@ mod tests {
     use rand::prelude::*;
 
     use super::*;
-    use crate::{
-        defined::PI,
-        geometry::{tests::create_geometry, LegacyTransducer},
-    };
+    use crate::{defined::PI, geometry::tests::create_geometry};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn filter_phase_op() {
-        let mut geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let mut geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
@@ -137,7 +134,7 @@ mod tests {
                 .skip(1)
                 .zip(dev.iter())
                 .for_each(|(d, tr)| {
-                    let phase = FilterPhase::to_phase(tr.phase_filter(), tr.cycle());
+                    let phase = FilterPhase::to_phase(tr.phase_filter());
                     assert_eq!(d[0], (phase & 0xFF) as u8);
                     assert_eq!(d[1], (phase >> 8) as u8);
                 })

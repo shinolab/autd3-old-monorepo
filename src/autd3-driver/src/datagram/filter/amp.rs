@@ -4,14 +4,14 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram to set amplitude filter
 #[derive(Default)]
@@ -23,7 +23,7 @@ impl ConfigureAmpFilter {
     }
 }
 
-impl<T: Transducer> Datagram<T> for ConfigureAmpFilter {
+impl Datagram for ConfigureAmpFilter {
     type O1 = crate::operation::ConfigureAmpFilterOp;
     type O2 = crate::operation::NullOp;
 
@@ -41,14 +41,14 @@ mod tests {
     #[test]
     fn test_amp_filter_timeout() {
         let filter = ConfigureAmpFilter::new();
-        let timeout = <ConfigureAmpFilter as Datagram<LegacyTransducer>>::timeout(&filter);
+        let timeout = <ConfigureAmpFilter as Datagram>::timeout(&filter);
         assert!(timeout.is_none());
     }
 
     #[test]
     fn test_amp_filter_operation() {
         let filter = ConfigureAmpFilter::default();
-        let r = <ConfigureAmpFilter as Datagram<LegacyTransducer>>::operation(filter);
+        let r = <ConfigureAmpFilter as Datagram>::operation(filter);
         assert!(r.is_ok());
         let _: (ConfigureAmpFilterOp, NullOp) = r.unwrap();
     }

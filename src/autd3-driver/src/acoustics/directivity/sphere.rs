@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ impl Directivity for Sphere {
         1.
     }
 
-    fn directivity_from_tr<T: Transducer>(_: &T, _: &Vector3) -> float {
+    fn directivity_from_tr(_: &Transducer, _: &Vector3) -> float {
         1.
     }
 }
@@ -44,7 +44,7 @@ mod tests {
     fn directivity_from_tr() {
         let mut rng = rand::thread_rng();
 
-        let tr = crate::geometry::LegacyTransducer::new(
+        let tr = crate::geometry::Transducer::new(
             rng.gen(),
             Vector3::new(rng.gen(), rng.gen(), rng.gen()),
             UnitQuaternion::from_quaternion(Quaternion::new(

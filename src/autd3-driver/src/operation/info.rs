@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 use crate::{
     error::AUTDInternalError,
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -35,8 +35,8 @@ pub struct FirmInfoOp {
     remains: HashMap<usize, usize>,
 }
 
-impl<T: Transducer> Operation<T> for FirmInfoOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for FirmInfoOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         tx[0] = TypeTag::FirmwareInfo as u8;
         match self.remains[&device.idx()] {
             6 => {
@@ -63,20 +63,20 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
         Ok(2)
     }
 
-    fn required_size(&self, _: &Device<T>) -> usize {
+    fn required_size(&self, _: &Device) -> usize {
         2
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         self.remains = geometry.devices().map(|device| (device.idx(), 6)).collect();
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains.insert(device.idx(), self.remains(device) - 1);
     }
 }
@@ -85,14 +85,14 @@ impl<T: Transducer> Operation<T> for FirmInfoOp {
 mod tests {
 
     use super::*;
-    use crate::geometry::{tests::create_geometry, LegacyTransducer};
+    use crate::geometry::{tests::create_geometry};
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
 
     #[test]
     fn info_op() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = [0x00u8; 2 * NUM_DEVICE];
 
@@ -190,7 +190,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn info_op_panic() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
         let mut tx = [0x00u8; 2 * NUM_DEVICE];
 
         let mut op = FirmInfoOp::default();

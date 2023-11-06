@@ -4,26 +4,25 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{marker::PhantomData, time::Duration};
+use std::time::Duration;
 
 use super::Datagram;
-use crate::{error::AUTDInternalError, geometry::*};
+use crate::error::AUTDInternalError;
 
 /// Datagram with timeout
-pub struct DatagramWithTimeout<T: Transducer, D: Datagram<T>> {
+pub struct DatagramWithTimeout<D: Datagram> {
     datagram: D,
     timeout: Duration,
-    phantom: std::marker::PhantomData<T>,
 }
 
-impl<T: Transducer, D: Datagram<T>> Datagram<T> for DatagramWithTimeout<T, D> {
+impl<D: Datagram> Datagram for DatagramWithTimeout<D> {
     type O1 = D::O1;
     type O2 = D::O2;
 
@@ -36,18 +35,17 @@ impl<T: Transducer, D: Datagram<T>> Datagram<T> for DatagramWithTimeout<T, D> {
     }
 }
 
-pub trait DatagramT<T: Transducer, D: Datagram<T>> {
+pub trait DatagramT<D: Datagram> {
     /// Set timeout.
     /// This takes precedence over the timeout specified in Link.
-    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<T, D>;
+    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<D>;
 }
 
-impl<T: Transducer, D: Datagram<T>> DatagramT<T, D> for D {
-    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<T, D> {
+impl<D: Datagram> DatagramT<D> for D {
+    fn with_timeout(self, timeout: Duration) -> DatagramWithTimeout<D> {
         DatagramWithTimeout {
             datagram: self,
             timeout,
-            phantom: PhantomData,
         }
     }
 }
@@ -59,7 +57,7 @@ mod tests {
     use super::*;
 
     struct TestDatagram {}
-    impl<T: Transducer> Datagram<T> for TestDatagram {
+    impl Datagram for TestDatagram {
         type O1 = ConfigureAmpFilterOp;
         type O2 = NullOp;
 
@@ -70,18 +68,14 @@ mod tests {
 
     #[test]
     fn test_datagram_with_timeout() {
-        let d: DatagramWithTimeout<LegacyTransducer, TestDatagram> =
+        let d: DatagramWithTimeout<TestDatagram> =
             TestDatagram {}.with_timeout(Duration::from_millis(100));
 
-        let timeout = <DatagramWithTimeout<LegacyTransducer, TestDatagram> as Datagram<
-            LegacyTransducer,
-        >>::timeout(&d);
+        let timeout = <DatagramWithTimeout<TestDatagram> as Datagram>::timeout(&d);
         assert!(timeout.is_some());
         assert_eq!(timeout.unwrap(), Duration::from_millis(100));
 
-        let _:(ConfigureAmpFilterOp, NullOp) = <DatagramWithTimeout<LegacyTransducer, TestDatagram> as Datagram<
-            LegacyTransducer,
-        >>::operation(d)
-        .unwrap();
+        let _: (ConfigureAmpFilterOp, NullOp) =
+            <DatagramWithTimeout<TestDatagram> as Datagram>::operation(d).unwrap();
     }
 }

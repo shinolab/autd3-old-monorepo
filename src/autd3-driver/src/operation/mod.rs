@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ use crate::{
     cpu::TxDatagram,
     error::AUTDInternalError,
     fpga::FPGAControlFlags,
-    geometry::{Device, Geometry, Transducer},
+    geometry::{Device, Geometry},
 };
 
 #[repr(u8)]
@@ -60,37 +60,37 @@ pub enum TypeTag {
     Filter = 0x60,
 }
 
-pub trait Operation<T: Transducer> {
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
-    fn required_size(&self, device: &Device<T>) -> usize;
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError>;
-    fn commit(&mut self, device: &Device<T>);
-    fn remains(&self, device: &Device<T>) -> usize;
+pub trait Operation {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError>;
+    fn required_size(&self, device: &Device) -> usize;
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError>;
+    fn commit(&mut self, device: &Device);
+    fn remains(&self, device: &Device) -> usize;
 }
 
-impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
+impl Operation for Box<dyn Operation> {
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         self.as_mut().init(geometry)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         self.as_ref().required_size(device)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         self.as_mut().pack(device, tx)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.as_mut().commit(device)
     }
 
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.as_ref().remains(device)
     }
 }
@@ -98,29 +98,29 @@ impl<T: Transducer> Operation<T> for Box<dyn Operation<T>> {
 pub struct OperationHandler {}
 
 impl OperationHandler {
-    pub fn is_finished<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
+    pub fn is_finished<O1: Operation, O2: Operation>(
         op1: &mut O1,
         op2: &mut O2,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> bool {
         geometry
             .devices()
             .all(|dev| op1.remains(dev) == 0 && op2.remains(dev) == 0)
     }
 
-    pub fn init<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
+    pub fn init<O1: Operation, O2: Operation>(
         op1: &mut O1,
         op2: &mut O2,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<(), AUTDInternalError> {
         op1.init(geometry)?;
         op2.init(geometry)
     }
 
-    pub fn pack<'a, T: Transducer + 'a, O1: Operation<T>, O2: Operation<T>>(
+    pub fn pack<O1: Operation, O2: Operation>(
         op1: &mut O1,
         op2: &mut O2,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         tx: &mut TxDatagram,
     ) -> Result<(), AUTDInternalError> {
         geometry
@@ -157,9 +157,9 @@ impl OperationHandler {
         Ok(())
     }
 
-    fn pack_dev<T: Transducer, O: Operation<T>>(
+    fn pack_dev<O: Operation>(
         op: &mut O,
-        dev: &Device<T>,
+        dev: &Device,
         tx: &mut TxDatagram,
     ) -> Result<(), AUTDInternalError> {
         let hedaer = tx.header_mut(dev.idx());
@@ -185,7 +185,7 @@ pub mod tests {
         common::Amplitude,
         cpu::{Header, EC_OUTPUT_FRAME_SIZE},
         derive::prelude::{Drive, Gain, GainAsAny, GainFilter},
-        geometry::{LegacyTransducer, UnitQuaternion, Vector3},
+        geometry::{Transducer, UnitQuaternion, Vector3},
     };
 
     use super::*;
@@ -202,11 +202,11 @@ pub mod tests {
         }
     }
 
-    impl<T: Transducer> Gain<T> for TestGain {
+    impl Gain for TestGain {
         #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
-            _geometry: &Geometry<T>,
+            _geometry: &Geometry,
             _filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Ok(self.data.clone())
@@ -230,11 +230,11 @@ pub mod tests {
         }
     }
 
-    impl<T: Transducer> Gain<T> for NullGain {
+    impl Gain for NullGain {
         #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
-            geometry: &Geometry<T>,
+            geometry: &Geometry,
             filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Ok(Self::transform(geometry, filter, |_, _| Drive {
@@ -261,11 +261,11 @@ pub mod tests {
         }
     }
 
-    impl<T: Transducer> Gain<T> for ErrGain {
+    impl Gain for ErrGain {
         #[cfg_attr(coverage_nightly, coverage(off))]
         fn calc(
             &self,
-            _geometry: &Geometry<T>,
+            _geometry: &Geometry,
             _filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Err(AUTDInternalError::GainError("test".to_owned()))
@@ -280,8 +280,8 @@ pub mod tests {
         pub broken: bool,
     }
 
-    impl<T: Transducer> Operation<T> for OperationMock {
-        fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    impl Operation for OperationMock {
+        fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
             if self.broken {
                 return Err(AUTDInternalError::NotSupported("test".to_owned()));
             }
@@ -292,22 +292,22 @@ pub mod tests {
             Ok(())
         }
 
-        fn required_size(&self, device: &Device<T>) -> usize {
+        fn required_size(&self, device: &Device) -> usize {
             self.required_size[&device.idx()]
         }
 
-        fn pack(&mut self, device: &Device<T>, _: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        fn pack(&mut self, device: &Device, _: &mut [u8]) -> Result<usize, AUTDInternalError> {
             if self.broken {
                 return Err(AUTDInternalError::NotSupported("test".to_owned()));
             }
             Ok(self.pack_size[&device.idx()])
         }
 
-        fn commit(&mut self, device: &Device<T>) {
+        fn commit(&mut self, device: &Device) {
             *self.num_frames.get_mut(&device.idx()).unwrap() -= 1;
         }
 
-        fn remains(&self, device: &Device<T>) -> usize {
+        fn remains(&self, device: &Device) -> usize {
             self.num_frames[&device.idx()]
         }
     }
@@ -316,7 +316,7 @@ pub mod tests {
     fn op_handler_test() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -395,7 +395,7 @@ pub mod tests {
     fn op_handler_pack_first() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -445,7 +445,7 @@ pub mod tests {
     fn op_handler_pack_second() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -495,7 +495,7 @@ pub mod tests {
     fn op_handler_broken_init() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -542,7 +542,7 @@ pub mod tests {
     fn op_handler_broken_pack() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -612,7 +612,7 @@ pub mod tests {
     fn op_handler_pack_finished() {
         let geometry = Geometry::new(vec![Device::new(
             0,
-            vec![LegacyTransducer::new(
+            vec![Transducer::new(
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
