@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,33 +16,25 @@ use std::{collections::HashMap, hash::Hash, time::Duration};
 use autd3_driver::{
     datagram::Datagram,
     error::AUTDInternalError,
-    geometry::{Device, Transducer},
+    geometry::Device,
     operation::{Operation, OperationHandler},
 };
 
 use super::Controller;
 use super::Link;
 
-type OpMap<K, T> = HashMap<K, (Box<dyn Operation<T>>, Box<dyn Operation<T>>)>;
+type OpMap<K> = HashMap<K, (Box<dyn Operation>, Box<dyn Operation>)>;
 
 #[allow(clippy::type_complexity)]
-pub struct GroupGuard<
-    'a,
-    K: Hash + Eq + Clone,
-    T: Transducer,
-    L: Link,
-    F: Fn(&Device<T>) -> Option<K>,
-> {
-    pub(crate) cnt: &'a mut Controller<T, L>,
+pub struct GroupGuard<'a, K: Hash + Eq + Clone, L: Link, F: Fn(&Device) -> Option<K>> {
+    pub(crate) cnt: &'a mut Controller<L>,
     pub(crate) f: F,
     pub(crate) timeout: Option<Duration>,
-    pub(crate) op: OpMap<K, T>,
+    pub(crate) op: OpMap<K>,
 }
 
-impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Option<K>>
-    GroupGuard<'a, K, T, L, F>
-{
-    pub fn set<D: Datagram<T>>(mut self, k: K, d: D) -> Result<Self, AUTDInternalError>
+impl<'a, K: Hash + Eq + Clone, L: Link, F: Fn(&Device) -> Option<K>> GroupGuard<'a, K, L, F> {
+    pub fn set<D: Datagram>(mut self, k: K, d: D) -> Result<Self, AUTDInternalError>
     where
         D::O1: 'static,
         D::O2: 'static,
@@ -62,8 +54,8 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, L: Link, F: Fn(&Device<T>) -> Opti
     pub fn set_boxed_op(
         mut self,
         k: K,
-        op1: Box<dyn autd3_driver::operation::Operation<T>>,
-        op2: Box<dyn autd3_driver::operation::Operation<T>>,
+        op1: Box<dyn autd3_driver::operation::Operation>,
+        op2: Box<dyn autd3_driver::operation::Operation>,
         timeout: Option<Duration>,
     ) -> Result<Self, AUTDInternalError> {
         self.timeout = match (self.timeout, timeout) {

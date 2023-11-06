@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,44 +20,41 @@ use std::{
 };
 
 /// Gain to cache the result of calculation
-pub struct Cache<T: Transducer, G: Gain<T>> {
+pub struct Cache<G: Gain> {
     gain: G,
     cache: Rc<RefCell<HashMap<usize, Vec<Drive>>>>,
-    _phantom: std::marker::PhantomData<T>,
 }
 
-pub trait IntoCache<T: Transducer, G: Gain<T>> {
+pub trait IntoCache<G: Gain> {
     /// Cache the result of calculation
-    fn with_cache(self) -> Cache<T, G>;
+    fn with_cache(self) -> Cache<G>;
 }
 
-impl<T: Transducer, G: Gain<T>> IntoCache<T, G> for G {
-    fn with_cache(self) -> Cache<T, G> {
+impl<G: Gain> IntoCache<G> for G {
+    fn with_cache(self) -> Cache<G> {
         Cache::new(self)
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Clone for Cache<T, G> {
+impl<G: Gain + Clone> Clone for Cache<G> {
     fn clone(&self) -> Self {
         Self {
             gain: self.gain.clone(),
             cache: self.cache.clone(),
-            _phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<T: Transducer, G: Gain<T>> Cache<T, G> {
+impl<G: Gain> Cache<G> {
     /// constructor
     fn new(gain: G) -> Self {
         Self {
             gain,
             cache: Rc::new(Default::default()),
-            _phantom: std::marker::PhantomData,
         }
     }
 
-    pub fn init(&self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    pub fn init(&self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         if self.cache.borrow().len() != geometry.devices().count()
             || geometry
                 .devices()
@@ -84,12 +81,11 @@ impl<T: Transducer, G: Gain<T>> Cache<T, G> {
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::Datagram<T>
-    for Cache<T, G>
+impl<G: Gain + 'static> autd3_driver::datagram::Datagram for Cache<G>
 where
-    autd3_driver::operation::GainOp<T, Self>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<Self>: autd3_driver::operation::Operation,
 {
-    type O1 = autd3_driver::operation::GainOp<T, Self>;
+    type O1 = autd3_driver::operation::GainOp<Self>;
     type O2 = autd3_driver::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
@@ -97,18 +93,16 @@ where
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> autd3_driver::datagram::GainAsAny
-    for Cache<T, G>
-{
+impl<G: Gain + 'static> autd3_driver::datagram::GainAsAny for Cache<G> {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
 
-impl<T: Transducer + 'static, G: Gain<T> + 'static> Gain<T> for Cache<T, G> {
+impl<G: Gain + 'static> Gain for Cache<G> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         self.init(geometry)?;
@@ -126,7 +120,7 @@ mod tests {
     use autd3_driver::{
         autd3_device::AUTD3,
         common::Amplitude,
-        geometry::{IntoDevice, LegacyTransducer, Vector3},
+        geometry::{IntoDevice, Vector3},
     };
 
     use super::*;
@@ -137,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_cache() {
-        let geometry: Geometry<LegacyTransducer> =
+        let geometry: Geometry =
             Geometry::new(vec![
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);
@@ -171,10 +165,10 @@ mod tests {
         pub calc_cnt: Arc<AtomicUsize>,
     }
 
-    impl<T: Transducer> Gain<T> for TestGain {
+    impl Gain for TestGain {
         fn calc(
             &self,
-            geometry: &Geometry<T>,
+            geometry: &Geometry,
             filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
@@ -187,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_cache_calc_once() {
-        let geometry: Geometry<LegacyTransducer> =
+        let geometry: Geometry =
             Geometry::new(vec![
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);

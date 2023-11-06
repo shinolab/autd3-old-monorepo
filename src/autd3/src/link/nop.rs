@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use autd3_derive::LinkSync;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Geometry},
     link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
@@ -36,10 +36,10 @@ impl NopBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for NopBuilder {
+impl LinkBuilder for NopBuilder {
     type L = Nop;
 
-    async fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
         Ok(Nop {
             is_open: true,
             cpus: geometry

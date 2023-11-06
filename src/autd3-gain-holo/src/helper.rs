@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3_driver::{
     datagram::GainFilter,
     defined::PI,
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Geometry},
 };
 use nalgebra::ComplexField;
 
@@ -116,8 +116,8 @@ macro_rules! impl_holo {
 }
 
 #[allow(clippy::uninit_vec)]
-pub fn generate_result<T: Transducer>(
-    geometry: &Geometry<T>,
+pub fn generate_result(
+    geometry: &Geometry,
     q: VectorXc,
     constraint: &Constraint,
     filter: GainFilter,

@@ -4,7 +4,7 @@
  * Created Date: 30/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3::prelude::*;
 use autd3_driver::geometry::IntoDevice;
 
-pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
+pub fn generate_geometry(size: usize) -> Geometry {
     Geometry::new(
         (0..size)
             .flat_map(|i| {

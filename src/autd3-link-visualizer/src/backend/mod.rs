@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use crate::error::VisualizerError;
 
 use autd3_driver::{
     defined::{float, Complex},
-    geometry::{Geometry, Transducer},
+    geometry::Geometry,
 };
 
 /// Plotting backend
@@ -56,9 +56,9 @@ pub trait Backend: Send + Sync {
         config: Self::PlotConfig,
     ) -> Result<(), VisualizerError>;
 
-    fn plot_phase<T: Transducer>(
+    fn plot_phase(
         config: Self::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         phases: Vec<float>,
     ) -> Result<(), VisualizerError>;
 }

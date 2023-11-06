@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,6 @@ use time::ext::NumericalDuration;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC},
     error::AUTDInternalError,
-    geometry::Transducer,
     link::{Link, LinkBuilder},
     osal_timer::{Timer, TimerCallback},
     timer_strategy::TimerStrategy,
@@ -168,12 +167,12 @@ impl SOEMBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for SOEMBuilder {
+impl LinkBuilder for SOEMBuilder {
     type L = SOEM;
 
     async fn open(
         self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
         let SOEMBuilder {
             buf_size,

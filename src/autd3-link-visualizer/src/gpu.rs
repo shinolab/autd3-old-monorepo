@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::sync::Arc;
 
 use autd3_driver::{
     defined::{float, Complex},
-    geometry::{Geometry, Transducer, Vector3},
+    geometry::{Geometry, Vector3},
 };
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},
@@ -141,13 +141,12 @@ impl FieldCompute {
 
     pub(crate) fn calc_field_of<
         'a,
-        T: Transducer,
         D: autd3_driver::acoustics::directivity::Directivity,
         I: IntoIterator<Item = &'a Vector3>,
     >(
         &self,
         observe_points: I,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         source_drive: Vec<[f32; 4]>,
     ) -> Result<Vec<Complex>, VisualizerError> {
         let pipeline_layout = self.pipeline.layout();

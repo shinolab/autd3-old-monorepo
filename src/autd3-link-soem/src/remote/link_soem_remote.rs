@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@ use autd3_derive::LinkSync;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::Transducer,
     link::{Link, LinkBuilder},
 };
 
@@ -44,12 +43,12 @@ impl RemoteSOEMBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for RemoteSOEMBuilder {
+impl LinkBuilder for RemoteSOEMBuilder {
     type L = RemoteSOEM;
 
     async fn open(
         self,
-        _: &autd3_driver::geometry::Geometry<T>,
+        _: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
         Ok(Self::L {
             client: ecat_client::EcatClient::connect(format!("http://{}", self.addr))

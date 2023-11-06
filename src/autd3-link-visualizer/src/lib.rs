@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     defined::{float, Complex, PI},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer, Vector3},
+    geometry::{Geometry, Vector3},
     link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
@@ -73,11 +73,11 @@ where
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T> for VisualizerBuilder<D, B> {
+impl<D: Directivity, B: Backend> LinkBuilder for VisualizerBuilder<D, B> {
     type L = Visualizer<D, B>;
 
     #[allow(unused_mut)]
-    async fn open(mut self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(mut self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
         #[cfg(feature = "gpu")]
         let gpu_compute = if let Some(gpu_idx) = self.gpu_idx {
             Some(gpu::FieldCompute::new(gpu_idx)?)
@@ -362,12 +362,12 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `observe_points` - Observe points iterator
     /// * `geometry` - Geometry
     ///
-    pub fn calc_field<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
+    pub fn calc_field<'a, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<Vec<Complex>, VisualizerError> {
-        self.calc_field_of::<T, I>(observe_points, geometry, 0)
+        self.calc_field_of::<I>(observe_points, geometry, 0)
     }
 
     /// Calculate acoustic field at specified points
@@ -378,10 +378,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn calc_field_of<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
+    pub fn calc_field_of<'a, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Result<Vec<Complex>, VisualizerError> {
         #[cfg(feature = "gpu")]
@@ -397,17 +397,16 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                         cpu.fpga()
                             .duties_and_phases(idx)
                             .iter()
-                            .zip(dev.iter().map(|t| t.cycle()))
                             .zip(dev.iter().map(|t| t.wavenumber(sound_speed)))
-                            .map(|((d, c), w)| {
-                                let amp = (std::f32::consts::PI * d.0 as f32 / c as f32).sin();
-                                let phase = 2. * std::f32::consts::PI * d.1 as f32 / c as f32;
+                            .map(|(d, w)| {
+                                let amp = (std::f32::consts::PI * d.0 as f32 / 512.0).sin();
+                                let phase = 2. * std::f32::consts::PI * d.1 as f32 / 512.0;
                                 [amp, phase, 0., w as f32]
                             })
                             .collect::<Vec<_>>()
                     })
                     .collect::<Vec<_>>();
-                return gpu.calc_field_of::<T, D, I>(observe_points, geometry, source_drive);
+                return gpu.calc_field_of::<D, I>(observe_points, geometry, source_drive);
             }
         }
         Ok(observe_points
@@ -422,9 +421,9 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                         acc + geometry[i].iter().zip(drives.iter()).fold(
                             Complex::new(0., 0.),
                             |acc, (t, d)| {
-                                let amp = (PI * d.0 as float / t.cycle() as float).sin();
-                                let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                                acc + propagate::<D, T>(t, 0.0, sound_speed, target)
+                                let amp = (PI * d.0 as float / 512.0).sin();
+                                let phase = 2. * PI * d.1 as float / 512.0;
+                                acc + propagate::<D>(t, 0.0, sound_speed, target)
                                     * Complex::from_polar(amp, phase)
                             },
                         )
@@ -441,11 +440,11 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `config` - Plot configuration
     /// * `geometry` - Geometry
     ///
-    pub fn plot_field<T: Transducer>(
+    pub fn plot_field(
         &self,
         config: B::PlotConfig,
         range: PlotRange,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<(), VisualizerError> {
         self.plot_field_of(config, range, geometry, 0)
     }
@@ -459,11 +458,11 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn plot_field_of<T: Transducer>(
+    pub fn plot_field_of(
         &self,
         config: B::PlotConfig,
         range: PlotRange,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
@@ -510,10 +509,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `config` - Plot configuration
     /// * `geometry` - Geometry
     ///
-    pub fn plot_phase<T: Transducer>(
+    pub fn plot_phase(
         &self,
         config: B::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<(), VisualizerError> {
         self.plot_phase_of(config, geometry, 0)
     }
@@ -526,10 +525,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn plot_phase_of<T: Transducer>(
+    pub fn plot_phase_of(
         &self,
         config: B::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let phases = self.phases_of(idx);

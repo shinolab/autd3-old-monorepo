@@ -98,7 +98,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
 
         #freq_config
 
-        impl <#(#linetimes_datagram,)* #(#type_params_datagram,)* T: Transducer> Datagram<T> for #name #ty_generics #where_clause {
+        impl <#(#linetimes_datagram,)* #(#type_params_datagram,)* > Datagram for #name #ty_generics #where_clause {
             type O1 = ModulationOp;
             type O2 = NullOp;
 
@@ -124,10 +124,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let type_params_for_any = generics.type_params();
     let linetimes_for_any = generics.lifetimes();
     let (_, ty_generics, where_clause) = generics.split_for_impl();
-    let type_params = generics
-        .type_params()
-        .filter(|ty| ty.ident != "T")
-        .collect::<Vec<_>>();
+    let type_params = generics.type_params();
     let gen = quote! {
         impl <#(#linetimes_for_any,)* #(#type_params_for_any,)*> GainAsAny for #name #ty_generics #where_clause {
             fn as_any(&self) -> &dyn std::any::Any {
@@ -135,10 +132,10 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl <#(#linetimes,)* #(#type_params,)* T: Transducer> Datagram<T> for #name #ty_generics #where_clause
-            where GainOp<T,Self>: Operation<T>
+        impl <#(#linetimes,)* #(#type_params,)*> Datagram for #name #ty_generics #where_clause
+            where GainOp<Self>: Operation
         {
-            type O1 = GainOp<T,Self>;
+            type O1 = GainOp<Self>;
             type O2 = NullOp;
 
             fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
@@ -219,10 +216,10 @@ pub fn link_sync_derive(input: TokenStream) -> TokenStream {
         }
 
         #[cfg(feature = "sync")]
-        impl<#(#type_params_open,)* T: autd3_driver::geometry::Transducer> autd3_driver::link::LinkSyncBuilder<T> for #name_sync_builder #ty_generics_open #where_clause_open {
+        impl<#(#type_params_open,)*> autd3_driver::link::LinkSyncBuilder for #name_sync_builder #ty_generics_open #where_clause_open {
             type L = #name_sync #ty_generics_open;
 
-            fn open(self, geometry: &autd3_driver::geometry::Geometry<T>) -> Result<Self::L, autd3_driver::error::AUTDInternalError> {
+            fn open(self, geometry: &autd3_driver::geometry::Geometry) -> Result<Self::L, autd3_driver::error::AUTDInternalError> {
                 let Self { inner, runtime } = self;
                 let inner = runtime.block_on(inner.open(geometry))?;
                 Ok(Self::L { inner, runtime })

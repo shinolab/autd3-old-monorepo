@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -288,13 +288,10 @@ impl PlottersBackend {
         Ok(())
     }
 
-    fn plot_phase_impl<
-        T: autd3_driver::geometry::Transducer,
-        B: plotters::backend::DrawingBackend,
-    >(
+    fn plot_phase_impl<B: plotters::backend::DrawingBackend>(
         root: DrawingArea<B, Shift>,
         config: &PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         phases: Vec<float>,
     ) -> Result<(), crate::error::VisualizerError>
     where
@@ -555,9 +552,9 @@ impl Backend for PlottersBackend {
         }
     }
 
-    fn plot_phase<T: autd3_driver::geometry::Transducer>(
+    fn plot_phase(
         config: Self::PlotConfig,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
         phases: Vec<float>,
     ) -> Result<(), crate::error::VisualizerError> {
         let path = std::path::Path::new(&config.fname);
