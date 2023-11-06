@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -59,8 +59,6 @@ class Audit final {
 
   [[nodiscard]] int fpga_flags(const size_t idx) const { return AUTDLinkAuditCpuFpgaFlags(_ptr, static_cast<std::uint32_t>(idx)); }
 
-  [[nodiscard]] bool is_legacy(const size_t idx) const { return AUTDLinkAuditFpgaIsLegacyMode(_ptr, static_cast<std::uint32_t>(idx)); }
-
   [[nodiscard]] int silencer_step(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStep(_ptr, static_cast<std::uint32_t>(idx)); }
 
   void assert_thermal_sensor(const size_t idx) const { AUTDLinkAuditFpgaAssertThermalSensor(_ptr, static_cast<std::uint32_t>(idx)); }
@@ -76,13 +74,6 @@ class Audit final {
 
   [[nodiscard]] std::uint32_t modulation_frequency_division(const size_t idx) const {
     return AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, static_cast<std::uint32_t>(idx));
-  }
-
-  [[nodiscard]] std::vector<std::uint16_t> cycles(const size_t idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::uint16_t> buf(n);
-    AUTDLinkAuditFpgaCycles(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
   }
 
   [[nodiscard]] std::vector<std::uint16_t> mod_delays(const size_t idx) const {

@@ -3,14 +3,15 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#include <autd3/modulation/sine.hpp>
 #include <gtest/gtest.h>
+
+#include <autd3/modulation/sine.hpp>
 
 #include "utils.hpp"
 
@@ -26,6 +27,6 @@ TEST(Modulation, RadiationPressure) {
                                     127, 108, 89,  70,  51,  31,  12,  6,   25,  44,  63,  82,  101, 121, 140, 159, 178, 197, 216, 235,
                                     255, 235, 216, 197, 178, 159, 140, 121, 102, 82,  63,  44,  25,  6,   12,  31,  50,  70,  89,  108};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
-    ASSERT_EQ(40960, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
+    ASSERT_EQ(5120, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
   }
 }

@@ -85,11 +85,8 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramSilencer(uint16_t step);
 
-[[nodiscard]] DatagramPtr AUTDDatagramAmplitudes(double amp);
-
 [[nodiscard]]
 int32_t AUTDControllerSend(ControllerPtr cnt,
-                           TransMode mode,
                            DatagramPtr d1,
                            DatagramPtr d2,
                            int64_t timeout_ns,
@@ -97,7 +94,6 @@ int32_t AUTDControllerSend(ControllerPtr cnt,
 
 [[nodiscard]]
 int32_t AUTDControllerSendSpecial(ControllerPtr cnt,
-                                  TransMode mode,
                                   DatagramSpecialPtr special,
                                   int64_t timeout_ns,
                                   char *err);
@@ -109,7 +105,6 @@ GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map,
                                           int32_t key,
                                           DatagramPtr d1,
                                           DatagramPtr d2,
-                                          TransMode mode,
                                           int64_t timeout_ns,
                                           char *err);
 
@@ -117,7 +112,6 @@ GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map,
 GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map,
                                                  int32_t key,
                                                  DatagramSpecialPtr special,
-                                                 TransMode mode,
                                                  int64_t timeout_ns,
                                                  char *err);
 
@@ -245,14 +239,6 @@ void AUTDTransducerDirectionY(TransducerPtr tr, double *dir);
 
 void AUTDTransducerDirectionZ(TransducerPtr tr, double *dir);
 
-[[nodiscard]] double AUTDTransducerFrequencyGet(TransducerPtr tr);
-
-[[nodiscard]] bool AUTDTransducerFrequencySet(TransducerPtr tr, double value, char *err);
-
-[[nodiscard]] uint16_t AUTDTransducerCycleGet(TransducerPtr tr);
-
-[[nodiscard]] bool AUTDTransducerCycleSet(TransducerPtr tr, uint16_t value, char *err);
-
 [[nodiscard]] double AUTDTransducerWavelength(TransducerPtr tr, double sound_speed);
 
 [[nodiscard]] uint16_t AUTDTransducerModDelayGet(TransducerPtr tr);
@@ -307,8 +293,6 @@ void AUTDLinkAuditFpgaAssertThermalSensor(LinkPtr audit, uint32_t idx);
 
 void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint32_t idx);
 
-[[nodiscard]] bool AUTDLinkAuditFpgaIsLegacyMode(LinkPtr audit, uint32_t idx);
-
 [[nodiscard]] bool AUTDLinkAuditFpgaIsForceFan(LinkPtr audit, uint32_t idx);
 
 [[nodiscard]] bool AUTDLinkAuditFpgaIsStmMode(LinkPtr audit, uint32_t idx);
@@ -316,8 +300,6 @@ void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint32_t idx);
 [[nodiscard]] bool AUTDLinkAuditFpgaIsStmGainMode(LinkPtr audit, uint32_t idx);
 
 [[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStep(LinkPtr audit, uint32_t idx);
-
-void AUTDLinkAuditFpgaCycles(LinkPtr audit, uint32_t idx, uint16_t *cycles);
 
 void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint32_t idx, uint16_t *delay);
 

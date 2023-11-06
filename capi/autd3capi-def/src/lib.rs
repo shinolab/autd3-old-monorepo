@@ -27,6 +27,7 @@ pub const TRANS_SPACING_MM: float = 10.16;
 pub const DEVICE_HEIGHT_MM: float = 151.4;
 pub const DEVICE_WIDTH_MM: float = 192.0;
 pub const FPGA_CLK_FREQ: u32 = 20480000;
+pub const ULTRASOUND_FREQUENCY: float = 40000.0;
 
 pub const AUTD3_ERR: i32 = -1;
 pub const AUTD3_TRUE: i32 = 1;

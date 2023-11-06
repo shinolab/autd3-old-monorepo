@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -114,7 +114,7 @@ TEST(Internal, ControllerSendDouble) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
@@ -131,7 +131,7 @@ TEST(Internal, ControllerSendSpecial) {
   ASSERT_TRUE(autd.send(autd3::gain::Uniform(1)));
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
@@ -161,14 +161,14 @@ TEST(Internal, ControllerGroup) {
     ASSERT_EQ(2, m.size());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 8; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
     const auto m = autd.link<autd3::link::Audit>().modulation(1);
     ASSERT_EQ(80, m.size());
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
@@ -181,7 +181,7 @@ TEST(Internal, ControllerGroup) {
     const auto m = autd.link<autd3::link::Audit>().modulation(0);
     ASSERT_EQ(80, m.size());
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
@@ -214,7 +214,7 @@ TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
     const auto m = autd.link<autd3::link::Audit>().modulation(1);
     ASSERT_EQ(80, m.size());
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256; }));
   }
 }

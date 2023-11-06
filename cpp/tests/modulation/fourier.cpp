@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,6 +35,6 @@ TEST(Modulation, Fourier) {
                                     85,  80,  77,  74,  74,  75,  77,  81,  85,  88,  90,  91,  89, 86, 81, 76, 71, 67, 65, 65,
                                     66,  70,  75,  80,  85,  87,  87,  83,  76,  66,  54,  42,  31, 22, 17, 17, 21, 31, 45, 63};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
-    ASSERT_EQ(40960, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
+    ASSERT_EQ(5120, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
   }
 }

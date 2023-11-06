@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ TEST(Internal_Geometry, DeviceNumTransducers) {
 
 TEST(Internal_Geometry, DeviceCenter) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    ASSERT_EQ(dev.center(), autd3::internal::Vector3(86.62522088353406, 66.71325301204821, 0));
+    ASSERT_NEAR_VECTOR3(dev.center(), autd3::internal::Vector3(86.62522088353406, 66.7132530125621, 0), 1e-6);
   }
 }
 
