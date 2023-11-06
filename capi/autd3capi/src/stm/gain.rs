@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ pub unsafe extern "C" fn AUTDSTMGain(
     mode: GainSTMMode,
 ) -> DatagramPtr {
     DatagramPtr::new(
-        GainSTM::<DynamicTransducer, Box<dyn Gain<DynamicTransducer>>>::with_props_mode(
+        GainSTM::<Box<dyn Gain>>::with_props_mode(
             *Box::from_raw(props.0 as *mut STMProps),
             mode.into(),
         )
@@ -39,7 +39,7 @@ pub unsafe extern "C" fn AUTDSTMGain(
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMGainAddGain(stm: DatagramPtr, gain: GainPtr) -> DatagramPtr {
     DatagramPtr::new(
-        Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer, _>>)
+        Box::from_raw(stm.0 as *mut Box<GainSTM<_>>)
             .add_gain(*Box::from_raw(gain.0 as *mut Box<G>)),
     )
 }
@@ -48,7 +48,7 @@ pub unsafe extern "C" fn AUTDSTMGainAddGain(stm: DatagramPtr, gain: GainPtr) -> 
 mod tests {
     use super::*;
 
-    use crate::{gain::null::AUTDGainNull, stm::*, tests::*, TransMode, *};
+    use crate::{gain::null::AUTDGainNull, stm::*, tests::*, *};
     use autd3capi_def::GainSTMMode;
 
     #[test]
@@ -74,7 +74,6 @@ mod tests {
             assert_eq!(
                 AUTDControllerSend(
                     cnt,
-                    TransMode::Legacy,
                     stm,
                     DatagramPtr(std::ptr::null()),
                     -1,

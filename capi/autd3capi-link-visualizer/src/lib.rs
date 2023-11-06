@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -191,7 +191,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerCalcFieldOf(
             visualizer,
             calc_field_of,
             points.iter(),
-            cast!(geometry.0, Geo),
+            cast!(geometry.0, Geometry),
             idx
         ),
         err,
@@ -222,7 +222,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotFieldOf(
             plot_field_of,
             config,
             *Box::from_raw(range.0 as *mut PlotRange),
-            cast!(geometry.0, Geo),
+            cast!(geometry.0, Geometry),
             idx
         ),
         err,
@@ -250,7 +250,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotPhaseOf(
             visualizer,
             plot_phase_of,
             config,
-            cast!(geometry.0, Geo),
+            cast!(geometry.0, Geometry),
             idx
         ),
         err,

@@ -16,8 +16,8 @@ pub use autd3capi_common::holo;
 
 use autd3capi_common::float;
 use common::{
-    driver::link::LinkSyncBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder,
-    DynamicTransducer, Gain, Modulation, STMProps, G, M,
+    driver::link::LinkSyncBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder, Gain, Modulation,
+    STMProps, G, M,
 };
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
@@ -45,23 +45,6 @@ impl From<GainSTMMode> for common::autd3::prelude::GainSTMMode {
             GainSTMMode::PhaseDutyFull => common::autd3::prelude::GainSTMMode::PhaseDutyFull,
             GainSTMMode::PhaseFull => common::autd3::prelude::GainSTMMode::PhaseFull,
             GainSTMMode::PhaseHalf => common::autd3::prelude::GainSTMMode::PhaseHalf,
-        }
-    }
-}
-
-#[repr(u8)]
-pub enum TransMode {
-    Legacy = 0,
-    Advanced = 1,
-    AdvancedPhase = 2,
-}
-
-impl From<TransMode> for common::TransMode {
-    fn from(value: TransMode) -> Self {
-        match value {
-            TransMode::Legacy => common::TransMode::Legacy,
-            TransMode::Advanced => common::TransMode::Advanced,
-            TransMode::AdvancedPhase => common::TransMode::AdvancedPhase,
         }
     }
 }
@@ -108,7 +91,7 @@ pub struct LinkBuilderPtr(pub ConstPtr);
 pub struct LinkPtr(pub ConstPtr);
 
 impl LinkBuilderPtr {
-    pub fn new<B: LinkSyncBuilder<DynamicTransducer> + 'static>(builder: B) -> LinkBuilderPtr {
+    pub fn new<B: LinkSyncBuilder + 'static>(builder: B) -> LinkBuilderPtr {
         Self(Box::into_raw(Box::new(DynamicLinkBuilder::new(builder))) as _)
     }
 }
@@ -147,7 +130,7 @@ impl DatagramSpecialPtr {
 pub struct GainPtr(pub ConstPtr);
 
 impl GainPtr {
-    pub fn new<T: Gain<DynamicTransducer> + 'static>(g: T) -> Self {
+    pub fn new<T: Gain + 'static>(g: T) -> Self {
         let g: Box<Box<G>> = Box::new(Box::new(g));
         Self(Box::into_raw(g) as _)
     }

@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -342,7 +342,6 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaDutiesAndPhases(
 
 #[cfg(test)]
 mod tests {
-    use autd3capi_def::TransMode;
     use driver::fpga::FPGAControlFlags;
 
     use crate::{
@@ -415,7 +414,6 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let _ = AUTDControllerSend(
                 cnt,
-                TransMode::Legacy,
                 update,
                 DatagramPtr(std::ptr::null()),
                 -1,
@@ -460,7 +458,6 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let _ = AUTDControllerSend(
                 cnt,
-                TransMode::Legacy,
                 update,
                 DatagramPtr(std::ptr::null()),
                 -1,
@@ -502,7 +499,6 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let _ = AUTDControllerSend(
                 cnt,
-                TransMode::Legacy,
                 gain,
                 DatagramPtr(std::ptr::null()),
                 -1,
@@ -530,7 +526,6 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let _ = AUTDControllerSend(
                 cnt,
-                TransMode::Legacy,
                 update,
                 DatagramPtr(std::ptr::null()),
                 -1,

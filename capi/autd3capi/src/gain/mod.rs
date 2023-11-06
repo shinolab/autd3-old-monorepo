@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ pub unsafe extern "C" fn AUTDGainCalc(
     geometry: GeometryPtr,
     err: *mut c_char,
 ) -> GainCalcDrivesMapPtr {
-    let geo = cast!(geometry.0, Geo);
+    let geo = cast!(geometry.0, Geometry);
     GainCalcDrivesMapPtr(Box::into_raw(Box::new(try_or_return!(
         Box::from_raw(gain.0 as *mut Box<G>).calc(geo, GainFilter::All),
         err,
