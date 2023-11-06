@@ -318,7 +318,7 @@ impl FPGAEmulator {
                     (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
                 let dist = d2.sqrt() as u64;
                 let q = (dist << 19) / sound_speed;
-                let p = (q & 0x1FF) as u64;
+                let p = q & 0x1FF;
                 (0x1FF >> duty_shift, p as u16)
             })
             .collect()
