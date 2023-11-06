@@ -268,7 +268,7 @@ class FocusSTM final : public STM {
  * @brief GainSTM is an STM for moving Gain.
  * @details The sampling timing is determined by hardware, thus the sampling time is precise.
  * GainSTM has following restrictions:
- * - The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).
+ * - The maximum number of sampling Gain is 2048.
  * - The sampling frequency is [autd3::internal::native_methods::FPGA_CLK_FREQ]/N, where `N` is a 32-bit unsigned integer and must be at
  * 4096.
  */

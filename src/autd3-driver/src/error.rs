@@ -67,12 +67,6 @@ pub enum AUTDInternalError {
         SAMPLING_FREQ_DIV_MIN,
         SAMPLING_FREQ_DIV_MAX
     )]
-    GainSTMLegacyFreqDivOutOfRange(u32),
-    #[error(
-        "Frequency division ({0}) is out of range ([{}, {}])",
-        SAMPLING_FREQ_DIV_MIN,
-        SAMPLING_FREQ_DIV_MAX
-    )]
     GainSTMFreqDivOutOfRange(u32),
     #[error("Cycle ({0}) is out of range ([{}, {}])", MIN_CYCLE, MAX_CYCLE)]
     CycleOutOfRange(u16),

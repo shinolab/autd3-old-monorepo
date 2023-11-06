@@ -18,7 +18,7 @@ namespace tests.STM;
 public class GainSTMTest
 {
     [Fact]
-    public void TestGainSTMLegacy()
+    public void TestGainSTM()
     {
         var autd = Controller.Builder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
