@@ -463,31 +463,6 @@ mod tests {
     }
 
     #[test]
-    fn test_fpga_is_legacy_mode() {
-        unsafe {
-            let cnt = create_controller();
-            let link = AUTDLinkGet(cnt);
-
-            assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 0));
-            assert!(!AUTDLinkAuditFpgaIsLegacyMode(link, 1));
-
-            let gain = AUTDGainNull();
-            let gain = AUTDGainIntoDatagram(gain);
-            let mut err = vec![c_char::default(); 256];
-            let _ = AUTDControllerSend(
-                cnt,
-                gain,
-                DatagramPtr(std::ptr::null()),
-                -1,
-                err.as_mut_ptr(),
-            );
-
-            assert!(AUTDLinkAuditFpgaIsLegacyMode(link, 0));
-            assert!(AUTDLinkAuditFpgaIsLegacyMode(link, 1));
-        }
-    }
-
-    #[test]
     fn test_fpga_is_force_fan() {
         unsafe {
             let cnt = create_controller();

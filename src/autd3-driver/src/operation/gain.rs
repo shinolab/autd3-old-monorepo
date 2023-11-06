@@ -166,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn error_gain_legacy() {
+    fn error_gain() {
         let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let gain = ErrGain {};
