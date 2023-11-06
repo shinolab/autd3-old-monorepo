@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ pub mod stm;
 
 use autd3capi_def::{
     common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
-    TransMode, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -43,9 +43,7 @@ unsafe impl Send for CallbackPtr {}
 #[must_use]
 #[allow(clippy::box_default)]
 pub unsafe extern "C" fn AUTDControllerBuilder() -> ControllerBuilderPtr {
-    ControllerBuilderPtr(
-        Box::into_raw(Box::new(Controller::builder_with::<DynamicTransducer>())) as _,
-    )
+    ControllerBuilderPtr(Box::into_raw(Box::new(Controller::builder_with())) as _)
 }
 
 #[no_mangle]
@@ -59,13 +57,9 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDevice(
     rz2: float,
 ) -> ControllerBuilderPtr {
     ControllerBuilderPtr(Box::into_raw(Box::new(
-        Box::from_raw(
-            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>,
-        )
-        .add_device(AUTD3::new(
-            Vector3::new(x, y, z),
-            Vector3::new(rz1, ry, rz2),
-        )),
+        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder).add_device(
+            AUTD3::new(Vector3::new(x, y, z), Vector3::new(rz1, ry, rz2)),
+        ),
     )) as _)
 }
 
@@ -81,13 +75,12 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
     qz: float,
 ) -> ControllerBuilderPtr {
     ControllerBuilderPtr(Box::into_raw(Box::new(
-        Box::from_raw(
-            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>,
-        )
-        .add_device(AUTD3::with_quaternion(
-            Vector3::new(x, y, z),
-            UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
-        )),
+        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder).add_device(
+            AUTD3::with_quaternion(
+                Vector3::new(x, y, z),
+                UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
+            ),
+        ),
     )) as _)
 }
 
@@ -101,10 +94,8 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
     let link_builder: Box<DynamicLinkBuilder> =
         Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
     let cnt = try_or_return!(
-        Box::from_raw(
-            builder.0 as *mut autd3::controller::builder::ControllerBuilder<DynamicTransducer>
-        )
-        .open_with(*link_builder),
+        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder)
+            .open_with(*link_builder),
         err,
         ControllerPtr(NULL)
     );
@@ -228,15 +219,8 @@ pub unsafe extern "C" fn AUTDDatagramSilencer(step: u16) -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramAmplitudes(amp: float) -> DatagramPtr {
-    DatagramPtr::new(Amplitudes::uniform(amp))
-}
-
-#[no_mangle]
-#[must_use]
 pub unsafe extern "C" fn AUTDControllerSend(
     cnt: ControllerPtr,
-    mode: TransMode,
     d1: DatagramPtr,
     d2: DatagramPtr,
     timeout_ns: i64,
@@ -247,26 +231,25 @@ pub unsafe extern "C" fn AUTDControllerSend(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let mode = mode.into();
     let res = if !d1.0.is_null() && !d2.0.is_null() {
         let d1 = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         let d2 = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, d1, d2, timeout)),
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack2 { d1, d2, timeout }),
             err,
             AUTD3_ERR
         )
     } else if !d1.0.is_null() {
         let d = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, d, timeout)),
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
             err,
             AUTD3_ERR
         )
     } else if !d2.0.is_null() {
         let d = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send((mode, d, timeout)),
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
             err,
             AUTD3_ERR
         )
@@ -284,7 +267,6 @@ pub unsafe extern "C" fn AUTDControllerSend(
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerSendSpecial(
     cnt: ControllerPtr,
-    mode: TransMode,
     special: DatagramSpecialPtr,
     timeout_ns: i64,
     err: *mut c_char,
@@ -294,10 +276,9 @@ pub unsafe extern "C" fn AUTDControllerSendSpecial(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let mode = mode.into();
-    let special = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
+    let d = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
     if try_or_return!(
-        cast_mut!(cnt.0, Cnt).send((mode, special, timeout)),
+        cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
         err,
         AUTD3_ERR
     ) {
@@ -309,8 +290,8 @@ pub unsafe extern "C" fn AUTDControllerSendSpecial(
 
 type K = i32;
 type V = (
-    Box<dyn driver::operation::Operation<DynamicTransducer>>,
-    Box<dyn driver::operation::Operation<DynamicTransducer>>,
+    Box<dyn driver::operation::Operation>,
+    Box<dyn driver::operation::Operation>,
     Option<Duration>,
 );
 type M = std::collections::HashMap<K, V>;
@@ -328,7 +309,6 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
     key: i32,
     d1: DatagramPtr,
     d2: DatagramPtr,
-    mode: TransMode,
     timeout_ns: i64,
     err: *mut c_char,
 ) -> GroupKVMapPtr {
@@ -337,13 +317,12 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let mode = mode.into();
     let mut map = Box::from_raw(map.0 as *mut M);
     if !d1.0.is_null() && !d2.0.is_null() {
         let d1 = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         let d2 = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         let (op1, op2) = try_or_return!(
-            (mode, d1, d2, timeout).operation(),
+            DynamicDatagramPack2 { d1, d2, timeout }.operation(),
             err,
             GroupKVMapPtr(std::ptr::null())
         );
@@ -351,7 +330,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
     } else if !d1.0.is_null() {
         let d = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         let (op1, op2) = try_or_return!(
-            (mode, d, timeout).operation(),
+            DynamicDatagramPack { d, timeout }.operation(),
             err,
             GroupKVMapPtr(std::ptr::null())
         );
@@ -359,7 +338,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
     } else if !d2.0.is_null() {
         let d = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
         let (op1, op2) = try_or_return!(
-            (mode, d, timeout).operation(),
+            DynamicDatagramPack { d, timeout }.operation(),
             err,
             GroupKVMapPtr(std::ptr::null())
         );
@@ -374,7 +353,6 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
     map: GroupKVMapPtr,
     key: i32,
     special: DatagramSpecialPtr,
-    mode: TransMode,
     timeout_ns: i64,
     err: *mut c_char,
 ) -> GroupKVMapPtr {
@@ -383,12 +361,11 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let mode = mode.into();
     let mut map = Box::from_raw(map.0 as *mut M);
 
     let d = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
     let (op1, op2) = try_or_return!(
-        (mode, d, timeout).operation(),
+        DynamicDatagramPack { d, timeout }.operation(),
         err,
         GroupKVMapPtr(std::ptr::null())
     );
@@ -497,111 +474,37 @@ mod tests {
 
             let s = AUTDDatagramSynchronize();
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    s,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr()
-                ),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramClear();
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    s,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr()
-                ),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramUpdateFlags();
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    s,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr()
-                ),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramStop();
             assert_eq!(
-                AUTDControllerSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()),
+                AUTDControllerSendSpecial(cnt, s, -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramConfigureModDelay();
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    s,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr()
-                ),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramSilencer(10);
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    s,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
-
-            let s = AUTDDatagramAmplitudes(1.);
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    DatagramPtr(std::ptr::null()),
-                    s,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_ERR
-            );
-
-            let s = AUTDDatagramAmplitudes(1.);
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Advanced,
-                    DatagramPtr(std::ptr::null()),
-                    s,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_ERR
-            );
-
-            let s = AUTDDatagramAmplitudes(1.);
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::AdvancedPhase,
-                    DatagramPtr(std::ptr::null()),
-                    s,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr(),),
                 AUTD3_TRUE
             );
 

@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,10 +37,10 @@ impl CustomGain {
     }
 }
 
-impl<T: Transducer> crate::driver::datagram::Gain<T> for CustomGain {
+impl crate::driver::datagram::Gain for CustomGain {
     fn calc(
         &self,
-        _geometry: &Geometry<T>,
+        _geometry: &Geometry,
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(self.drives.clone())

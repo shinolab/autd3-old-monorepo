@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,7 +86,7 @@ pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometry(
     err: *mut c_char,
 ) -> i32 {
     try_or_return!(
-        cast_mut!(simulator.0, Box<SimulatorSync>).update_geometry(cast!(geometry.0, Geo)),
+        cast_mut!(simulator.0, Box<SimulatorSync>).update_geometry(cast!(geometry.0, Geometry)),
         err,
         AUTD3_ERR
     );

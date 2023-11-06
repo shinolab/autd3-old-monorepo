@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ mod tests {
         *,
     };
 
-    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_fourier() {
@@ -59,14 +59,7 @@ mod tests {
 
             let mut err = vec![c_char::default(); 256];
             assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    m,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
+                AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr(),),
                 AUTD3_TRUE
             );
 

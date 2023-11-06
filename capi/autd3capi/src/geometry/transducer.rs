@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,19 +13,17 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use std::ffi::c_char;
-
 use autd3capi_def::{common::*, DevicePtr, TransducerPtr};
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducer(dev: DevicePtr, tr_idx: u32) -> TransducerPtr {
-    TransducerPtr(&cast!(dev.0, Dev)[tr_idx as usize] as *const _ as _)
+    TransducerPtr(&cast!(dev.0, Device)[tr_idx as usize] as *const _ as _)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerPosition(tr: TransducerPtr, pos: *mut float) {
-    let p = cast!(tr.0, Tr).position();
+    let p = cast!(tr.0, Transducer).position();
     pos.add(0).write(p.x);
     pos.add(1).write(p.y);
     pos.add(2).write(p.z);
@@ -33,7 +31,7 @@ pub unsafe extern "C" fn AUTDTransducerPosition(tr: TransducerPtr, pos: *mut flo
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerRotation(tr: TransducerPtr, rot: *mut float) {
-    let r = cast!(tr.0, Tr).rotation();
+    let r = cast!(tr.0, Transducer).rotation();
     rot.add(0).write(r.w);
     rot.add(1).write(r.i);
     rot.add(2).write(r.j);
@@ -42,7 +40,7 @@ pub unsafe extern "C" fn AUTDTransducerRotation(tr: TransducerPtr, rot: *mut flo
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerDirectionX(tr: TransducerPtr, dir: *mut float) {
-    let d = cast!(tr.0, Tr).x_direction();
+    let d = cast!(tr.0, Transducer).x_direction();
     dir.add(0).write(d.x);
     dir.add(1).write(d.y);
     dir.add(2).write(d.z);
@@ -50,7 +48,7 @@ pub unsafe extern "C" fn AUTDTransducerDirectionX(tr: TransducerPtr, dir: *mut f
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerDirectionY(tr: TransducerPtr, dir: *mut float) {
-    let d = cast!(tr.0, Tr).y_direction();
+    let d = cast!(tr.0, Transducer).y_direction();
     dir.add(0).write(d.x);
     dir.add(1).write(d.y);
     dir.add(2).write(d.z);
@@ -58,7 +56,7 @@ pub unsafe extern "C" fn AUTDTransducerDirectionY(tr: TransducerPtr, dir: *mut f
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerDirectionZ(tr: TransducerPtr, dir: *mut float) {
-    let d = cast!(tr.0, Tr).z_direction();
+    let d = cast!(tr.0, Transducer).z_direction();
     dir.add(0).write(d.x);
     dir.add(1).write(d.y);
     dir.add(2).write(d.z);
@@ -66,75 +64,41 @@ pub unsafe extern "C" fn AUTDTransducerDirectionZ(tr: TransducerPtr, dir: *mut f
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDTransducerFrequencyGet(tr: TransducerPtr) -> float {
-    cast!(tr.0, Tr).frequency()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerFrequencySet(
-    tr: TransducerPtr,
-    value: float,
-    err: *mut c_char,
-) -> bool {
-    try_or_return!(cast_mut!(tr.0, Tr).set_frequency(value), err, false);
-    true
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerCycleGet(tr: TransducerPtr) -> u16 {
-    cast!(tr.0, Tr).cycle()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerCycleSet(
-    tr: TransducerPtr,
-    value: u16,
-    err: *mut c_char,
-) -> bool {
-    try_or_return!(cast_mut!(tr.0, Tr).set_cycle(value), err, false);
-    true
-}
-
-#[no_mangle]
-#[must_use]
 pub unsafe extern "C" fn AUTDTransducerWavelength(tr: TransducerPtr, sound_speed: float) -> float {
-    cast!(tr.0, Tr).wavelength(sound_speed)
+    cast!(tr.0, Transducer).wavelength(sound_speed)
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerModDelayGet(tr: TransducerPtr) -> u16 {
-    cast!(tr.0, Tr).mod_delay()
+    cast!(tr.0, Transducer).mod_delay()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerModDelaySet(tr: TransducerPtr, delay: u16) {
-    cast_mut!(tr.0, Tr).set_mod_delay(delay)
+    cast_mut!(tr.0, Transducer).set_mod_delay(delay)
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerAmpFilterGet(tr: TransducerPtr) -> float {
-    cast!(tr.0, Tr).amp_filter()
+    cast!(tr.0, Transducer).amp_filter()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerAmpFilterSet(tr: TransducerPtr, value: float) {
-    cast_mut!(tr.0, Tr).set_amp_filter(value)
+    cast_mut!(tr.0, Transducer).set_amp_filter(value)
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerPhaseFilterGet(tr: TransducerPtr) -> float {
-    cast!(tr.0, Tr).phase_filter()
+    cast!(tr.0, Transducer).phase_filter()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerPhaseFilterSet(tr: TransducerPtr, value: float) {
-    cast_mut!(tr.0, Tr).set_phase_filter(value)
+    cast_mut!(tr.0, Transducer).set_phase_filter(value)
 }
 
 #[cfg(test)]
@@ -157,16 +121,6 @@ mod tests {
             let dev = AUTDDevice(geo, 0);
 
             let tr = AUTDTransducer(dev, 0);
-
-            let mut err = vec![c_char::default(); 256];
-
-            let f = 70e3;
-            assert!(AUTDTransducerFrequencySet(tr, f, err.as_mut_ptr()));
-            assert_eq!(AUTDTransducerFrequencyGet(tr), 69987.18496369073);
-
-            let f = 4096;
-            assert!(AUTDTransducerCycleSet(tr, f, err.as_mut_ptr()));
-            assert_eq!(AUTDTransducerCycleGet(tr), f);
 
             assert_approx_eq::assert_approx_eq!(AUTDTransducerWavelength(tr, 340.), 340.0 / 40e3);
 
