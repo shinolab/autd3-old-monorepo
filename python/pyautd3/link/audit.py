@@ -72,9 +72,6 @@ class Audit(Link):
     def fpga_flags(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_cpu_fpga_flags(self._ptr, idx))
 
-    def is_legacy(self: "Audit", idx: int) -> bool:
-        return bool(LinkAudit().link_audit_fpga_is_legacy_mode(self._ptr, idx))
-
     def silencer_step(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_fpga_silencer_step(self._ptr, idx))
 
@@ -92,12 +89,6 @@ class Audit(Link):
 
     def modulation_frequency_division(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_fpga_modulation_frequency_division(self._ptr, idx))
-
-    def cycles(self: "Audit", idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
-        buf = np.zeros([n]).astype(ctypes.c_uint16)
-        LinkAudit().link_audit_fpga_cycles(self._ptr, idx, np.ctypeslib.as_ctypes(buf))
-        return buf
 
     def mod_delays(self: "Audit", idx: int) -> np.ndarray:
         n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))

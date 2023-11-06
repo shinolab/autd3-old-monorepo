@@ -12,14 +12,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from typing import Dict
-
 import numpy as np
 
-from pyautd3 import Drive, Geometry
+from pyautd3 import Device, Drive, Geometry, Transducer
 from pyautd3.gain import Gain
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 class Uniform(Gain):
@@ -27,13 +24,13 @@ class Uniform(Gain):
     _phase: float
     check: np.ndarray
 
-    def __init__(self, amp, phase, check):
+    def __init__(self: "Uniform", amp: float, phase: float, check: np.ndarray) -> None:
         self._amp = amp
         self._phase = phase
         self.check = check
 
-    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        def f(dev, tr):
+    def calc(self: "Uniform", geometry: Geometry) -> dict[int, np.ndarray]:
+        def f(dev: Device, _tr: Transducer) -> Drive:
             self.check[dev.idx] = True
             return Drive(
                 self._phase,
@@ -51,8 +48,8 @@ def test_gain():
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 680)
-        assert np.all(phases == 2048)
+        assert np.all(duties == 85)
+        assert np.all(phases == 256)
 
 
 def test_gain_check_only_for_enabled():
@@ -71,5 +68,5 @@ def test_gain_check_only_for_enabled():
     assert np.all(phases == 0)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256)

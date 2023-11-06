@@ -232,26 +232,6 @@ def test_transducer_z_direction():
             assert np.allclose(tr.z_direction, [0.0, 0.0, 1.0])
 
 
-def test_transducer_frequency():
-    autd = create_controller()
-
-    for dev in autd.geometry:
-        for tr in dev:
-            assert tr.frequency == 40e3
-            tr.frequency = 69.98718496369073e3
-            assert tr.frequency == 69.98718496369073e3
-
-
-def test_transducer_cycle():
-    autd = create_controller()
-
-    for dev in autd.geometry:
-        for tr in dev:
-            assert tr.cycle == 4096
-            tr.cycle = 3000
-            assert tr.cycle == 3000
-
-
 def test_transducer_mod_delay():
     autd = create_controller()
 

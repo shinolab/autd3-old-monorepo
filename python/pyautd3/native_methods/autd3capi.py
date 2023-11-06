@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, STMPropsPtr, TransMode, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, STMPropsPtr, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -174,18 +174,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDTransducerDirectionZ.argtypes = [TransducerPtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransducerDirectionZ.restype = None
 
-        self.dll.AUTDTransducerFrequencyGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerFrequencyGet.restype = ctypes.c_double
-
-        self.dll.AUTDTransducerFrequencySet.argtypes = [TransducerPtr, ctypes.c_double, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDTransducerFrequencySet.restype = ctypes.c_bool
-
-        self.dll.AUTDTransducerCycleGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerCycleGet.restype = ctypes.c_uint16
-
-        self.dll.AUTDTransducerCycleSet.argtypes = [TransducerPtr, ctypes.c_uint16, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDTransducerCycleSet.restype = ctypes.c_bool
-
         self.dll.AUTDTransducerWavelength.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDTransducerWavelength.restype = ctypes.c_double
 
@@ -264,22 +252,19 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = DatagramPtr
 
-        self.dll.AUTDDatagramAmplitudes.argtypes = [ctypes.c_double] 
-        self.dll.AUTDDatagramAmplitudes.restype = DatagramPtr
-
-        self.dll.AUTDControllerSend.argtypes = [ControllerPtr, TransMode, DatagramPtr, DatagramPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerSend.argtypes = [ControllerPtr, DatagramPtr, DatagramPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerSend.restype = ctypes.c_int32
 
-        self.dll.AUTDControllerSendSpecial.argtypes = [ControllerPtr, TransMode, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerSendSpecial.argtypes = [ControllerPtr, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerSendSpecial.restype = ctypes.c_int32
 
         self.dll.AUTDControllerGroupCreateKVMap.argtypes = [] 
         self.dll.AUTDControllerGroupCreateKVMap.restype = GroupKVMapPtr
 
-        self.dll.AUTDControllerGroupKVMapSet.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramPtr, DatagramPtr, TransMode, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerGroupKVMapSet.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramPtr, DatagramPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerGroupKVMapSet.restype = GroupKVMapPtr
 
-        self.dll.AUTDControllerGroupKVMapSetSpecial.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramSpecialPtr, TransMode, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerGroupKVMapSetSpecial.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerGroupKVMapSetSpecial.restype = GroupKVMapPtr
 
         self.dll.AUTDControllerGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr, ctypes.c_char_p]  # type: ignore 
@@ -339,9 +324,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkAuditFpgaDeassertThermalSensor.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaDeassertThermalSensor.restype = None
 
-        self.dll.AUTDLinkAuditFpgaIsLegacyMode.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDLinkAuditFpgaIsLegacyMode.restype = ctypes.c_bool
-
         self.dll.AUTDLinkAuditFpgaIsForceFan.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaIsForceFan.restype = ctypes.c_bool
 
@@ -353,9 +335,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkAuditFpgaSilencerStep.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaSilencerStep.restype = ctypes.c_uint16
-
-        self.dll.AUTDLinkAuditFpgaCycles.argtypes = [LinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
-        self.dll.AUTDLinkAuditFpgaCycles.restype = None
 
         self.dll.AUTDLinkAuditFpgaModDelays.argtypes = [LinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaModDelays.restype = None
@@ -672,18 +651,6 @@ class NativeMethods(metaclass=Singleton):
     def transducer_direction_z(self, tr: TransducerPtr, dir: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerDirectionZ(tr, dir)
 
-    def transducer_frequency_get(self, tr: TransducerPtr) -> ctypes.c_double:
-        return self.dll.AUTDTransducerFrequencyGet(tr)
-
-    def transducer_frequency_set(self, tr: TransducerPtr, value: float, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
-        return self.dll.AUTDTransducerFrequencySet(tr, value, err)
-
-    def transducer_cycle_get(self, tr: TransducerPtr) -> ctypes.c_uint16:
-        return self.dll.AUTDTransducerCycleGet(tr)
-
-    def transducer_cycle_set(self, tr: TransducerPtr, value: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
-        return self.dll.AUTDTransducerCycleSet(tr, value, err)
-
     def transducer_wavelength(self, tr: TransducerPtr, sound_speed: float) -> ctypes.c_double:
         return self.dll.AUTDTransducerWavelength(tr, sound_speed)
 
@@ -762,23 +729,20 @@ class NativeMethods(metaclass=Singleton):
     def datagram_silencer(self, step: int) -> DatagramPtr:
         return self.dll.AUTDDatagramSilencer(step)
 
-    def datagram_amplitudes(self, amp: float) -> DatagramPtr:
-        return self.dll.AUTDDatagramAmplitudes(amp)
+    def controller_send(self, cnt: ControllerPtr, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
+        return self.dll.AUTDControllerSend(cnt, d1, d2, timeout_ns, err)
 
-    def controller_send(self, cnt: ControllerPtr, mode: TransMode, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDControllerSend(cnt, mode, d1, d2, timeout_ns, err)
-
-    def controller_send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDControllerSendSpecial(cnt, mode, special, timeout_ns, err)
+    def controller_send_special(self, cnt: ControllerPtr, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
+        return self.dll.AUTDControllerSendSpecial(cnt, special, timeout_ns, err)
 
     def controller_group_create_kv_map(self) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupCreateKVMap()
 
-    def controller_group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
-        return self.dll.AUTDControllerGroupKVMapSet(map, key, d1, d2, mode, timeout_ns, err)
+    def controller_group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
+        return self.dll.AUTDControllerGroupKVMapSet(map, key, d1, d2, timeout_ns, err)
 
-    def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, mode: TransMode, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
-        return self.dll.AUTDControllerGroupKVMapSetSpecial(map, key, special, mode, timeout_ns, err)
+    def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
+        return self.dll.AUTDControllerGroupKVMapSetSpecial(map, key, special, timeout_ns, err)
 
     def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
         return self.dll.AUTDControllerGroup(cnt, map, kv_map, err)
@@ -837,9 +801,6 @@ class NativeMethods(metaclass=Singleton):
     def link_audit_fpga_deassert_thermal_sensor(self, audit: LinkPtr, idx: int) -> None:
         return self.dll.AUTDLinkAuditFpgaDeassertThermalSensor(audit, idx)
 
-    def link_audit_fpga_is_legacy_mode(self, audit: LinkPtr, idx: int) -> ctypes.c_bool:
-        return self.dll.AUTDLinkAuditFpgaIsLegacyMode(audit, idx)
-
     def link_audit_fpga_is_force_fan(self, audit: LinkPtr, idx: int) -> ctypes.c_bool:
         return self.dll.AUTDLinkAuditFpgaIsForceFan(audit, idx)
 
@@ -851,9 +812,6 @@ class NativeMethods(metaclass=Singleton):
 
     def link_audit_fpga_silencer_step(self, audit: LinkPtr, idx: int) -> ctypes.c_uint16:
         return self.dll.AUTDLinkAuditFpgaSilencerStep(audit, idx)
-
-    def link_audit_fpga_cycles(self, audit: LinkPtr, idx: int, cycles: ctypes.Array[ctypes.c_uint16] | None) -> None:
-        return self.dll.AUTDLinkAuditFpgaCycles(audit, idx, cycles)
 
     def link_audit_fpga_mod_delays(self, audit: LinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaModDelays(audit, idx, delay)

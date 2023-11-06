@@ -13,11 +13,12 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
+from pyautd3 import Device, Transducer
 from pyautd3.autd_error import AUTDError
 from pyautd3.gain import Group, Null, Uniform
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_group():
@@ -26,44 +27,34 @@ def test_group():
     cx = autd.geometry.center[0]
 
     assert autd.send(
-        Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null())
+        Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null")
+        .set_gain("uniform", Uniform(0.5).with_phase(np.pi))
+        .set_gain("null", Null()),
     )
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         for tr in dev:
             if tr.position[0] < cx:
-                assert np.all(duties[tr.local_idx] == 680)
-                assert np.all(phases[tr.local_idx] == 2048)
+                assert np.all(duties[tr.local_idx] == 85)
+                assert np.all(phases[tr.local_idx] == 256)
             else:
-                assert np.all(duties[tr.local_idx] == 8)
+                assert np.all(duties[tr.local_idx] == 0)
                 assert np.all(phases[tr.local_idx] == 0)
 
 
 def test_group_unknown_key():
     autd = create_controller()
 
-    caught_err = False
-    try:
-        autd.send(Group(lambda _, tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
-    except AUTDError as e:
-        caught_err = True
-        assert e.msg == "Unknown group key"
-
-    assert caught_err
+    with pytest.raises(AUTDError, match="Unknown group key"):
+        autd.send(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
 
 
 def test_group_unspecified_key():
     autd = create_controller()
 
-    caught_err = False
-    try:
-        autd.send(Group(lambda _, tr: "null"))
-    except AUTDError as e:
-        caught_err = True
-        assert e.msg == "Unspecified group key"
-
-    assert caught_err
+    with pytest.raises(AUTDError, match="Unspecified group key"):
+        autd.send(Group(lambda _, _tr: "null"))
 
 
 def test_group_check_only_for_enabled():
@@ -72,7 +63,7 @@ def test_group_check_only_for_enabled():
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
 
-    def f(dev, tr):
+    def f(dev: Device, _tr: Transducer) -> int:
         check[dev.idx] = True
         return 0
 
@@ -86,5 +77,5 @@ def test_group_check_only_for_enabled():
     assert np.all(phases == 0)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256)

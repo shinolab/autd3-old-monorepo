@@ -15,8 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3.modulation import Modulation, Sine
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_cache():
@@ -111,17 +110,17 @@ def test_cache():
             63,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
 
 class CacheTest(Modulation):
     calc_cnt: int
 
-    def __init__(self, freq_div: int = 5120):
+    def __init__(self: "CacheTest", freq_div: int = 5120) -> None:
         super().__init__(freq_div)
         self.calc_cnt = 0
 
-    def calc(self):
+    def calc(self: "CacheTest"):
         self.calc_cnt += 1
         return np.ones(2, dtype=np.float64)
 
@@ -147,7 +146,7 @@ def test_cache_check_once():
 def test_transform():
     autd = create_controller()
 
-    m = Sine(150).with_transform(lambda i, v: v / 2)
+    m = Sine(150).with_transform(lambda _i, v: v / 2)
 
     assert autd.send(m)
 
@@ -236,7 +235,7 @@ def test_transform():
             31,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
 
 def test_radiation_pressure():
@@ -331,4 +330,4 @@ def test_radiation_pressure():
             108,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120

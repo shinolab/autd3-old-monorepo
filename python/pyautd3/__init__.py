@@ -13,7 +13,6 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from pyautd3.autd import (
-    Amplitudes,
     Clear,
     ConfigureAmpFilter,
     ConfigureModDelay,
@@ -38,7 +37,6 @@ __all__ = [
     "Transducer",
     "Drive",
     "FirmwareInfo",
-    "Amplitudes",
     "Clear",
     "UpdateFlags",
     "Synchronize",

@@ -17,8 +17,7 @@ from datetime import timedelta
 import numpy as np
 
 from pyautd3.modulation import Sine
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_sine():
@@ -111,16 +110,16 @@ def test_sine():
             83,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert autd.send(Sine(150).with_sampling_frequency_division(4096 // 8))
+    assert autd.send(Sine(150).with_sampling_frequency_division(512))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 4096
+        assert autd.link.modulation_frequency_division(dev.idx) == 512
 
     assert autd.send(Sine(150).with_sampling_frequency(8e3))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 20480
+        assert autd.link.modulation_frequency_division(dev.idx) == 2560
 
     assert autd.send(Sine(150).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 16384
+        assert autd.link.modulation_frequency_division(dev.idx) == 2048

@@ -15,8 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3.gain import TransducerTest
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_transtest():
@@ -25,13 +24,13 @@ def test_transtest():
     assert autd.send(TransducerTest().set_drive(0, 0, np.pi, 0.5).set_drive(1, 248, np.pi, 0.5))
 
     duties, phases = autd.link.duties_and_phases(0, 0)
-    assert duties[0] == 680
-    assert phases[0] == 2048
-    assert np.all(duties[1:-1] == 8)
+    assert duties[0] == 85
+    assert phases[0] == 256
+    assert np.all(duties[1:-1] == 0)
     assert np.all(phases[1:-1] == 0)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert duties[-1] == 680
-    assert phases[-1] == 2048
-    assert np.all(duties[:-1] == 8)
+    assert duties[-1] == 85
+    assert phases[-1] == 256
+    assert np.all(duties[:-1] == 0)
     assert np.all(phases[:-1] == 0)

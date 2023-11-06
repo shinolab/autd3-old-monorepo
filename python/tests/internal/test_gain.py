@@ -12,14 +12,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from typing import Dict
-
 import numpy as np
 
-from pyautd3 import Drive, Geometry
+from pyautd3 import Device, Drive, Geometry, Transducer
 from pyautd3.gain import Gain, Uniform
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_cache():
@@ -29,21 +26,21 @@ def test_cache():
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 680)
-        assert np.all(phases == 2048)
+        assert np.all(duties == 85)
+        assert np.all(phases == 256)
 
 
 class CacheTest(Gain):
     calc_cnt: int
 
-    def __init__(self):
+    def __init__(self: "CacheTest") -> None:
         self.calc_cnt = 0
 
-    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
+    def calc(self: "CacheTest", geometry: Geometry) -> dict[int, np.ndarray]:
         self.calc_cnt += 1
         return Gain._transform(
             geometry,
-            lambda dev, tr: Drive(
+            lambda _dev, _tr: Drive(
                 np.pi,
                 0.5,
             ),
@@ -83,28 +80,28 @@ def test_cache_check_only_for_enabled():
     assert np.all(phases == 0)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256)
 
 
 def test_transform():
     autd = create_controller()
 
-    def transform(dev, tr, d) -> Drive:
+    def transform(dev: Device, _tr: Transducer, d: Drive) -> Drive:
         if dev.idx == 0:
             return Drive(d.phase + np.pi / 4, d.amp)
-        else:
-            return Drive(d.phase - np.pi / 4, d.amp)
+
+        return Drive(d.phase - np.pi / 4, d.amp)
 
     assert autd.send(Uniform(0.5).with_phase(np.pi).with_transform(transform))
 
     duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048 + 512)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256 + 64)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048 - 512)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256 - 64)
 
 
 def test_transform_check_only_for_enabled():
@@ -113,7 +110,7 @@ def test_transform_check_only_for_enabled():
 
     check = np.zeros(2, dtype=bool)
 
-    def transform(dev, tr, d) -> Drive:
+    def transform(dev: Device, _tr: Transducer, d: Drive) -> Drive:
         check[dev.idx] = True
         return d
 
@@ -127,5 +124,5 @@ def test_transform_check_only_for_enabled():
     assert np.all(phases == 0)
 
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
+    assert np.all(duties == 85)
+    assert np.all(phases == 256)

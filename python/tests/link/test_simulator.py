@@ -20,7 +20,7 @@ from pyautd3 import AUTD3, Controller
 from pyautd3.link.simulator import Simulator
 
 
-@pytest.mark.simulator
+@pytest.mark.simulator()
 def test_simulator():
     autd = (
         Controller.builder()
