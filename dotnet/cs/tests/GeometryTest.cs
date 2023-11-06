@@ -28,7 +28,6 @@ public class GeometryTest
         Assert.Equal(14, AUTD3.NumTransInY);
         Assert.Equal(249, AUTD3.NumTransInUnit);
 
-        Assert.Equal(163.84e6, AUTD3.FPGAClkFreq);
         Assert.Equal(20.48e6, AUTD3.FPGAClkFreq);
     }
 
@@ -277,36 +276,6 @@ public class GeometryTest
             foreach (var tr in dev)
             {
                 Assert.Equal(tr.ZDirection, new Vector3d(0.0, 0.0, 1.0));
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerFrequency()
-    {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(40e3, tr.Frequency);
-                tr.Frequency = 69.98718496369073e3;
-                Assert.Equal(69.98718496369073e3, tr.Frequency);
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerCycle()
-    {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(4096, tr.Cycle);
-                tr.Cycle = 3000;
-                Assert.Equal(3000, tr.Cycle);
             }
         }
     }

@@ -174,7 +174,6 @@ namespace AUTD3Sharp
 
         private bool _isDisposed;
         internal ControllerPtr Ptr;
-        private readonly TransMode _mode;
         private readonly object? _linkProps;
 
         #endregion
@@ -185,7 +184,6 @@ namespace AUTD3Sharp
         {
 
             private ControllerBuilderPtr _ptr;
-            private TransMode _mode;
 
             /// <summary>
             /// Add device
@@ -203,39 +201,6 @@ namespace AUTD3Sharp
                 return this;
             }
 
-
-            /// <summary>
-            /// Create Controller builder (Legacy mode)
-            /// </summary>
-            /// <returns>ControllerBuilder</returns>
-            public ControllerBuilder Legacy()
-            {
-                _mode = TransMode.Legacy;
-                return this;
-            }
-
-            /// <summary>
-            /// Create Controller builder (Advanced mode)
-            /// </summary>
-            /// <returns>ControllerBuilder</returns>
-            public ControllerBuilder Advanced()
-            {
-                _mode = TransMode.Advanced;
-                return this;
-            }
-
-
-
-            /// <summary>
-            /// Create Controller builder (AdvancedPhase mode)
-            /// </summary>
-            /// <returns>ControllerBuilder</returns>
-            public ControllerBuilder AdvancedPhase()
-            {
-                _mode = TransMode.AdvancedPhase;
-                return this;
-            }
-
             /// <summary>
             /// Open controller
             /// </summary>
@@ -248,15 +213,14 @@ namespace AUTD3Sharp
                 if (ptr._0 == IntPtr.Zero)
                     throw new AUTDException(err);
 
-                var geometry = new Geometry(Base.AUTDGeometry(ptr), _mode);
+                var geometry = new Geometry(Base.AUTDGeometry(ptr));
 
-                return new Controller(geometry, ptr, _mode, link.Props());
+                return new Controller(geometry, ptr, link.Props());
             }
 
             internal ControllerBuilder()
             {
                 _ptr = Base.AUTDControllerBuilder();
-                _mode = TransMode.Legacy;
             }
         }
 
@@ -269,11 +233,10 @@ namespace AUTD3Sharp
             return new ControllerBuilder();
         }
 
-        private Controller(Geometry geometry, ControllerPtr ptr, TransMode mode, object? linkProps)
+        private Controller(Geometry geometry, ControllerPtr ptr, object? linkProps)
         {
             Ptr = ptr;
             Geometry = geometry;
-            _mode = mode;
             _linkProps = linkProps;
         }
 
@@ -367,7 +330,7 @@ namespace AUTD3Sharp
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
-            var res = Base.AUTDControllerSendSpecial(Ptr, _mode, special.Ptr(),
+            var res = Base.AUTDControllerSendSpecial(Ptr, special.Ptr(),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
@@ -404,7 +367,7 @@ namespace AUTD3Sharp
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var res = Base.AUTDControllerSend(Ptr, _mode, data1.Ptr(Geometry), data2.Ptr(Geometry),
+            var res = Base.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Def.Autd3Err)
             {
@@ -458,7 +421,7 @@ namespace AUTD3Sharp
                 var ptr2 = data2.Ptr(_controller.Geometry);
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, _controller._mode, timeoutNs, err);
+                _kvMap = Base.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs, err);
                 if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
@@ -482,7 +445,7 @@ namespace AUTD3Sharp
                 var ptr = data.Ptr();
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, _controller._mode, timeoutNs, err);
+                _kvMap = Base.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs, err);
                 if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
@@ -590,23 +553,6 @@ namespace AUTD3Sharp
         {
             return new Silencer(0xFFFF);
         }
-    }
-
-    /// <summary>
-    /// Amplitudes settings for advanced phase mode
-    /// </summary>
-    public sealed class Amplitudes : IDatagram
-    {
-        private readonly float_t _amp;
-
-        public static Amplitudes Uniform(float_t amp = 1) => new Amplitudes(amp);
-
-        public Amplitudes(float_t amp = 1)
-        {
-            _amp = amp;
-        }
-
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramAmplitudes(_amp);
     }
 }
 

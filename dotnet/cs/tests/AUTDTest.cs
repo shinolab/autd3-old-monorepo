@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -209,7 +209,7 @@ public class AUTDTest
             var m = autd.Link<Audit>().Modulation(dev.Idx);
             Assert.All(m, d => Assert.Equal(0xFF, d));
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
+            Assert.All(duties, d => Assert.Equal(256, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
 
@@ -229,7 +229,7 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             var (duties, _) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
+            Assert.All(duties, d => Assert.Equal(256, d));
         }
         Assert.True(autd.Send(new Stop()));
 
@@ -260,14 +260,14 @@ public class AUTDTest
             Assert.Equal(2, m.Length);
             Assert.All(m, d => Assert.Equal(0xFF, d));
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(8, d));
+            Assert.All(duties, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
             var m = autd.Link<Audit>().Modulation(1);
             Assert.Equal(80, m.Length);
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
+            Assert.All(duties, d => Assert.Equal(256, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
 
@@ -280,7 +280,7 @@ public class AUTDTest
             var m = autd.Link<Audit>().Modulation(0);
             Assert.Equal(80, m.Length);
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
+            Assert.All(duties, d => Assert.Equal(256, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
@@ -314,44 +314,8 @@ public class AUTDTest
         }
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
-        }
-    }
-
-    [Fact]
-    public void TestAmplitudes()
-    {
-        var autd = Controller.Builder().AdvancedPhase().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-            .OpenWith(Audit.Builder());
-
-        foreach (var dev in autd.Geometry)
-        {
-            var m = autd.Link<Audit>().Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
-            Assert.All(phases, p => Assert.Equal(0, p));
-        }
-
-        Assert.True(autd.Send(new Uniform(1).WithPhase(Math.PI)));
-        foreach (var dev in autd.Geometry)
-        {
-            var m = autd.Link<Audit>().Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
-        }
-
-        Assert.True(autd.Send(new Amplitudes()));
-        foreach (var dev in autd.Geometry)
-        {
-            var m = autd.Link<Audit>().Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
+            Assert.All(duties, d => Assert.Equal(85, d));
+            Assert.All(phases, p => Assert.Equal(256, p));
         }
     }
 
@@ -365,8 +329,8 @@ public class AUTDTest
             var m = autd.Link<Audit>().Modulation(dev.Idx);
             Assert.All(m, d => Assert.Equal(0, d));
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
+            Assert.All(duties, d => Assert.Equal(256, d));
+            Assert.All(phases, p => Assert.Equal(256, p));
         }
 
         Assert.True(autd.Send(new Clear()));
@@ -388,8 +352,8 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(2048, d));
-            Assert.All(phases, p => Assert.Equal(2048, p));
+            Assert.All(duties, d => Assert.Equal(256, d));
+            Assert.All(phases, p => Assert.Equal(256, p));
         }
 
         Assert.True(autd.Send(new Stop()));
@@ -420,22 +384,10 @@ public class AUTDTest
     [Fact]
     public void TestSynchronize()
     {
-        var autd = Controller.Builder().Advanced().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
             .OpenWith(Audit.Builder());
 
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link<Audit>().Cycles(dev.Idx), c => Assert.Equal(4096, c));
-            foreach (var tr in dev)
-                tr.Cycle = 4000;
-            Assert.All(autd.Link<Audit>().Cycles(dev.Idx), c => Assert.Equal(4096, c));
-        }
-
         Assert.True(autd.Send(new Synchronize()));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link<Audit>().Cycles(dev.Idx), c => Assert.Equal(4000, c));
-        }
     }
 
     [Fact]
@@ -474,7 +426,7 @@ public class AUTDTest
         Assert.True(autd.Send(new ConfigureAmpFilter()));
         foreach (var dev in autd.Geometry)
         {
-            Assert.All(autd.Link<Audit>().DutyFilters(dev.Idx), d => Assert.Equal(-2048, d));
+            Assert.All(autd.Link<Audit>().DutyFilters(dev.Idx), d => Assert.Equal(-256, d));
         }
     }
 
@@ -494,49 +446,7 @@ public class AUTDTest
         Assert.True(autd.Send(new ConfigurePhaseFilter()));
         foreach (var dev in autd.Geometry)
         {
-            Assert.All(autd.Link<Audit>().PhaseFilters(dev.Idx), d => Assert.Equal(-2048, d));
-        }
-    }
-
-    [Fact]
-    public void TestLegacy()
-    {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-            .OpenWith(Audit.Builder());
-
-        Assert.True(autd.Send(new Uniform(1)));
-
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.True(autd.Link<Audit>().IsLegacy(dev.Idx));
-        }
-    }
-
-    [Fact]
-    public void TestAdvanced()
-    {
-        var autd = Controller.Builder().Advanced().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-            .OpenWith(Audit.Builder());
-
-        Assert.True(autd.Send(new Uniform(1)));
-
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.False(autd.Link<Audit>().IsLegacy(dev.Idx));
-        }
-    }
-
-    [Fact]
-    public void TestAdvancedPhase()
-    {
-        var autd = Controller.Builder().AdvancedPhase().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-            .OpenWith(Audit.Builder());
-
-        Assert.True(autd.Send(new Uniform(1)));
-
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.False(autd.Link<Audit>().IsLegacy(dev.Idx));
+            Assert.All(autd.Link<Audit>().PhaseFilters(dev.Idx), d => Assert.Equal(-256, d));
         }
     }
 }

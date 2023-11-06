@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ public class ConstraintTest
         foreach (var dev in autd.Geometry)
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
+            Assert.All(duties, d => Assert.Equal(85, d));
             Assert.Contains(phases, p => p != 0);
         }
     }
@@ -75,8 +75,8 @@ public class ConstraintTest
         foreach (var dev in autd.Geometry)
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.True(536 <= d));
-            Assert.All(duties, d => Assert.True(d <= 680));
+            Assert.All(duties, d => Assert.True(67 <= d));
+            Assert.All(duties, d => Assert.True(d <= 85));
             Assert.Contains(phases, p => p != 0);
         }
     }
@@ -88,8 +88,8 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5.0)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5.0)
             .WithConstraint(new DontCare());
 
         Assert.True(autd.Send(g));

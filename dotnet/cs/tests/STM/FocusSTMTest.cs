@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(81920000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(10240000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         Assert.Null(stm.StartIdx);
@@ -80,7 +80,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(512u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = FocusSTM.WithSamplingFrequency(20e3).AddFocus(center).AddFocus(center);
@@ -91,7 +91,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u * 2, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(1024u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
         stm = FocusSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddFocus(center).AddFocus(center);
@@ -102,7 +102,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(4096u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(512u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
 

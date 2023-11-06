@@ -28,6 +28,8 @@ namespace AUTD3Sharp
 
             public const uint FpgaClkFreq = 20480000;
 
+            public const float UltrasoundFrequency = 40000.0f;
+
             public const int Autd3Err = -1;
 
             public const int Autd3True = 1;
@@ -41,13 +43,6 @@ namespace AUTD3Sharp
         PhaseDutyFull = 0,
         PhaseFull = 1,
         PhaseHalf = 2,
-    }
-
-    public enum TransMode : byte
-    {
-        Legacy = 0,
-        Advanced = 1,
-        AdvancedPhase = 2,
     }
 
     public enum TimerStrategy : byte
