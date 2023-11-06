@@ -11,11 +11,11 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
+serde = { version = "1.0.188", features = ["derive"], optional = true }
 bitflags = "2.0.2"
 thiserror = "1.0.31"
 nalgebra = { version = "0.32.3", default-features = false, features = ["std"] }
 bitvec = "1.0.1"
-serde = { version = "1.0.188", features = ["derive"] }
 async-trait = "0.1.74"
 tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"], optional = true }
 
@@ -37,4 +37,5 @@ tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
 default = []
 single_float = []
 use_meter = []
+serde = ["dep:serde"]
 sync = ["tokio"]
