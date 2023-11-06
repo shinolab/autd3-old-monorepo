@@ -47,7 +47,6 @@
   - [上級者向けサンプル](./Users_Manual/advanced_examples/advanced_examples.md)
     - [Gainの自作](./Users_Manual/advanced_examples/custom_gain.md)
     - [Modulationの自作](./Users_Manual/advanced_examples/custom_modulation.md)
-    - [Mode/周波数の設定](./Users_Manual/advanced_examples/freq_config.md)
   - [シミュレータ](./Users_Manual/Simulator/simulator.md)
   - [FAQ](./Users_Manual/FAQ/faq.md)
   - [引用](./Users_Manual/Citation/citation.md)

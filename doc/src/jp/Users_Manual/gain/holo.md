@@ -20,12 +20,14 @@ SDKには以下の`Backend`が用意されている
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
@@ -82,12 +84,14 @@ g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
 use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let x1 = 0.;
 # let y1 = 0.;
 # let z1 = 0.;
@@ -125,11 +129,13 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
 - e.g.,
     ```rust,edition2021
     # extern crate autd3;
+    # extern crate tokio;
     # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
     # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
     # #[allow(unused_variables)]
-    # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    # #[tokio::main]
+    # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     # let x1 = 0.;
     # let y1 = 0.;
     # let z1 = 0.;

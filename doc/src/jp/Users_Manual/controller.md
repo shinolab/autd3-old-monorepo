@@ -12,12 +12,14 @@ FPGAの状態を取得する.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].reads_fpga_info = true;
-autd.send(UpdateFlags::new())?;
+autd.send(UpdateFlags::new()).await?;
 
 let info = autd.fpga_info();
 # Ok(())
@@ -63,13 +65,15 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 # let m = Static::new();
 # let g = Null::new();
-autd.send((m, g).with_timeout(std::time::Duration::from_millis(20)))?;
+autd.send((m, g).with_timeout(std::time::Duration::from_millis(20))).await?;
 # Ok(())
 # }
 ```
@@ -109,10 +113,12 @@ autd.send((m, g), timeout=timedelta(milliseconds=20))
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;
@@ -123,7 +129,7 @@ autd.group(|dev| match dev.idx() {
 })
 .set("null", Null::new())?
 .set("focus", Focus::new(Vector3::new(x, y, z)))?
-.send()?;
+.send().await?;
 # Ok(())
 # }
 ```

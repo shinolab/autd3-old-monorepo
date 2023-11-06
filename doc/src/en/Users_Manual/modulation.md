@@ -12,7 +12,7 @@ For example, if you use `Sine` with $\SI{1}{kHz}$, the sound pressure amplitude 
 Currently, `Modulation` has the following restrictions.
 
 - The buffer size is up to 65536.
-- The sampling rate is $\clklf/N$, where $N$ is a 32-bit unsigned integer and must be at least 512.
+- The sampling rate is $\clkf/N$, where $N$ is a 32-bit unsigned integer and must be at least 512.
 - Modulation automatically loops. It is not possible to control only one loop, etc.
 - The start/end timing of Modulation cannot be controlled.
 
@@ -40,7 +40,7 @@ You can get the sampling frequency with `sampling_frequency`.
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() {
 # let m = autd3::modulation::SineLegacy::new(150.);
 let fs = m.sampling_frequency();
 # }
@@ -66,7 +66,7 @@ However, due to the constraints of `Modulation`, the sampling frequency may not 
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main()  {
+  # fn main() {
   let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
   # }
   ```
@@ -91,7 +91,7 @@ You can get the sampling frequency division $N$ with `sampling_frequency_divisio
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() {
 # let m = autd3::modulation::SineLegacy::new(150.);
 let div = m.sampling_frequency_division();
 # }
@@ -116,7 +116,7 @@ Some `Modulation` can set the sampling frequency division with `with_sampling_fr
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main()  {
+  # fn main() {
   let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
   # }
   ```
@@ -172,12 +172,14 @@ The following example shows how to set the delay of the $0$-th transducer of $0$
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0][0].set_mod_delay(1);
-autd.send(ConfigureModDelay::new())?;
+autd.send(ConfigureModDelay::new()).await?;
 # Ok(())
 # }
 ```

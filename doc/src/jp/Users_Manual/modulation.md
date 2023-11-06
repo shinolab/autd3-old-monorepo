@@ -13,7 +13,7 @@ Modulationは音圧振幅に掛け合わされる.
 
 * バッファサイズは最大で65536
 * Modulationデータは内部で8-bit符号なし整数に変換され, 超音波PWM信号のDuty比と掛け合わされる
-* サンプリングレートは$\clklf/N$で, $N$は32-bit符号なし整数であり, $512$以上の値である必要がある
+* サンプリングレートは$\clkf/N$で, $N$は32-bit符号なし整数であり, $512$以上の値である必要がある
 * Modulationは自動でループする. 1ループだけ, 等の制御は不可能
 * Modulationの開始/終了タイミングは制御できない
 
@@ -42,7 +42,7 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() {
 # let m = autd3::modulation::SineLegacy::new(150.);
 let fs = m.sampling_frequency();
 # }
@@ -68,7 +68,7 @@ fs = m.sampling_frequency
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main()  {
+  # fn main() {
   let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
   # }
   ```
@@ -89,13 +89,13 @@ fs = m.sampling_frequency
 
 `sampling_frequency_division`でサンプリング周波数の分周比$N$を取得できる.
 
-サンプリング周波数の基本周波数は$\clklf$である.
+サンプリング周波数の基本周波数は$\clkf$である.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() {
 # let m = autd3::modulation::SineLegacy::new(150.);
 let div = m.sampling_frequency_division();
 # }
@@ -120,7 +120,7 @@ div = m.sampling_frequency_division
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main()  {
+  # fn main() {
   let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
   # }
   ```
@@ -175,12 +175,14 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0][0].set_mod_delay(1);
-autd.send(ConfigureModDelay::new())?;
+autd.send(ConfigureModDelay::new()).await?;
 # Ok(())
 # }
 ```

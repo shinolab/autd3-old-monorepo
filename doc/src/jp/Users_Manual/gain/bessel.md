@@ -5,6 +5,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -47,6 +48,7 @@ $\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち,
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {

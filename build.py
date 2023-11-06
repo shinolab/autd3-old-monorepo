@@ -31,7 +31,9 @@ from packaging import version
 def fetch_submodule():
     if shutil.which("git") is not None:
         with working_dir(os.path.dirname(os.path.abspath(__file__))):
-            subprocess.run(["git", "submodule", "update", "--init", "--recursive"]).check_returncode()
+            subprocess.run(
+                ["git", "submodule", "update", "--init", "--recursive"]
+            ).check_returncode()
     else:
         err("git is not installed. Skip fetching submodules.")
 
@@ -76,12 +78,17 @@ def rmtree_f(path):
 
 
 def glob_norm(path, recursive):
-    return list(map(lambda p: os.path.normpath(p), glob.glob(path, recursive=recursive)))
+    return list(
+        map(lambda p: os.path.normpath(p), glob.glob(path, recursive=recursive))
+    )
 
 
 def rm_glob_f(path, exclude=None, recursive=True):
     if exclude is not None:
-        for f in list(set(glob_norm(path, recursive=recursive)) - set(glob_norm(exclude, recursive=recursive))):
+        for f in list(
+            set(glob_norm(path, recursive=recursive))
+            - set(glob_norm(exclude, recursive=recursive))
+        ):
             rm_f(f)
     else:
         for f in glob.glob(path, recursive=recursive):
@@ -143,7 +150,11 @@ class Config:
         self.universal = hasattr(args, "universal") and args.universal
         self.skip_cuda = hasattr(args, "skip_cuda") and args.skip_cuda
         self.no_examples = hasattr(args, "no_examples") and args.no_examples
-        self.cmake_extra = args.cmake_extra.split(" ") if hasattr(args, "cmake_extra") and args.cmake_extra is not None else None
+        self.cmake_extra = (
+            args.cmake_extra.split(" ")
+            if hasattr(args, "cmake_extra") and args.cmake_extra is not None
+            else None
+        )
 
         if self.is_macos():
             self.cuda = False
@@ -327,7 +338,9 @@ class Config:
         return env_exists("AF_PATH")
 
     def is_shaderc_available(self):
-        shaderc_lib_name = "shaderc_combined.lib" if self.is_windows() else "libshaderc_combined.a"
+        shaderc_lib_name = (
+            "shaderc_combined.lib" if self.is_windows() else "libshaderc_combined.a"
+        )
         if env_exists("SHADERC_LIB_DIR"):
             if os.path.isfile(f"{os.environ['SHADERC_LIB_DIR']}/{shaderc_lib_name}"):
                 return True
@@ -450,8 +463,16 @@ def copy_dll(config: Config, dst: str):
             shutil.copy(dll, dst)
     elif config.is_macos():
         if config.universal:
-            target = "capi/target/x86_64-apple-darwin/release" if config.release else "capi/target/x86_64-apple-darwin/debug"
-            target_aarch64 = "capi/target/aarch64-apple-darwin/release" if config.release else "capi/target/aarch64-apple-darwin/debug"
+            target = (
+                "capi/target/x86_64-apple-darwin/release"
+                if config.release
+                else "capi/target/x86_64-apple-darwin/debug"
+            )
+            target_aarch64 = (
+                "capi/target/aarch64-apple-darwin/release"
+                if config.release
+                else "capi/target/aarch64-apple-darwin/debug"
+            )
             for x64_lib in glob.glob(f"{target}/*.dylib"):
                 base_name = os.path.basename(x64_lib)
                 subprocess.run(
@@ -473,7 +494,11 @@ def copy_dll(config: Config, dst: str):
         if config.target is None:
             target = "capi/target/release" if config.release else "capi/target/debug"
         else:
-            target = f"capi/target/{config.target}/release" if config.release else f"capi/target/{config.target}/debug"
+            target = (
+                f"capi/target/{config.target}/release"
+                if config.release
+                else f"capi/target/{config.target}/debug"
+            )
         for lib in glob.glob(f"{target}/*.so"):
             shutil.copy(lib, dst)
 
@@ -546,7 +571,9 @@ def cpp_test(args):
             target_dir = "."
             if config.is_windows():
                 target_dir = "Release" if config.release else "Debug"
-            subprocess.run([f"{target_dir}/test_autd3{config.exe_ext()}"]).check_returncode()
+            subprocess.run(
+                [f"{target_dir}/test_autd3{config.exe_ext()}"]
+            ).check_returncode()
 
 
 def cpp_run(args):
@@ -559,7 +586,9 @@ def cpp_run(args):
     else:
         target_dir = "."
 
-    subprocess.run([f"cpp/examples/build/{target_dir}/{args.target}{config.exe_ext()}"]).check_returncode()
+    subprocess.run(
+        [f"cpp/examples/build/{target_dir}/{args.target}{config.exe_ext()}"]
+    ).check_returncode()
 
 
 def cpp_clear(_):
@@ -756,7 +785,11 @@ def unity_build(args):
                 commands.append("left_handed use_meter")
                 subprocess.run(commands).check_returncode()
 
-            simulator_src = "server/src-tauri/target/release/simulator.exe" if config.release else "server/src-tauri/target/debug/simulator.exe"
+            simulator_src = (
+                "server/src-tauri/target/release/simulator.exe"
+                if config.release
+                else "server/src-tauri/target/debug/simulator.exe"
+            )
             shutil.copy(simulator_src, f"{unity_dir}/Assets/Editor/autd_simulator.exe")
             os.makedirs(f"{unity_dir}/Assets/Editor/assets", exist_ok=True)
             shutil.copy(
@@ -766,7 +799,9 @@ def unity_build(args):
 
             with open("server/simulator/ThirdPartyNotice.txt", "r") as notice:
                 with open(f"{unity_dir}/Assets/LICENSE.md", "a") as f:
-                    f.write("\n=========================================================\n")
+                    f.write(
+                        "\n=========================================================\n"
+                    )
                     f.write("AUTD SIMULATOR ")
                     f.write(notice.read())
         else:
@@ -793,7 +828,10 @@ def unity_clear(_):
                 rmtree_f("Packages")
                 rmtree_f("ProjectSettings")
                 rmtree_f("UserSettings")
-                rm_glob_f("Assets/Scripts/**/*.cs", exclude="Assets/Scripts/NativeMethods/*.cs")
+                rm_glob_f(
+                    "Assets/Scripts/**/*.cs",
+                    exclude="Assets/Scripts/NativeMethods/*.cs",
+                )
 
         rm_glob_f("unity/Assets/Plugins/x86_64/*.dll")
         rm_glob_f("unity-mac/Assets/Plugins/aarch64/*.dylib")
@@ -843,7 +881,9 @@ def build_wheel(config: Config):
         if config.is_windows():
             with open("setup.cfg.template", "r") as setup:
                 content = setup.read()
-                content = content.replace(r"${classifiers_os}", "Operating System :: Microsoft :: Windows")
+                content = content.replace(
+                    r"${classifiers_os}", "Operating System :: Microsoft :: Windows"
+                )
                 content = content.replace(r"${plat_name}", "win-amd64")
                 with open("setup.cfg", "w") as f:
                     f.write(content)
@@ -852,14 +892,18 @@ def build_wheel(config: Config):
             if config.universal:
                 with open("setup.cfg.template", "r") as setup:
                     content = setup.read()
-                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    content = content.replace(
+                        r"${classifiers_os}", "Operating System :: MacOS :: MacOS X"
+                    )
                     content = content.replace(r"${plat_name}", "macosx-10-13-x86_64")
                     with open("setup.cfg", "w") as f:
                         f.write(content)
                 subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
                 with open("setup.cfg.template", "r") as setup:
                     content = setup.read()
-                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    content = content.replace(
+                        r"${classifiers_os}", "Operating System :: MacOS :: MacOS X"
+                    )
                     content = content.replace(r"${plat_name}", "macosx-11-0-arm64")
                     with open("setup.cfg", "w") as f:
                         f.write(content)
@@ -867,7 +911,9 @@ def build_wheel(config: Config):
             else:
                 with open("setup.cfg.template", "r") as setup:
                     content = setup.read()
-                    content = content.replace(r"${classifiers_os}", "Operating System :: MacOS :: MacOS X")
+                    content = content.replace(
+                        r"${classifiers_os}", "Operating System :: MacOS :: MacOS X"
+                    )
                     plat_name = ""
                     if platform.machine() in ["ADM64", "x86_64"]:
                         plat_name = "macosx-10-13-x86_64"
@@ -880,7 +926,9 @@ def build_wheel(config: Config):
         elif config.is_linux():
             with open("setup.cfg.template", "r") as setup:
                 content = setup.read()
-                content = content.replace(r"${classifiers_os}", "Operating System :: POSIX")
+                content = content.replace(
+                    r"${classifiers_os}", "Operating System :: POSIX"
+                )
                 plat_name = ""
                 if config.target is not None:
                     match config.target:
@@ -947,7 +995,9 @@ def py_build(args):
                 elif platform.machine() in ["aarch64"]:
                     plat_name = "manylinux2014_aarch64"
             else:
-                err(f'platform "{platform.system()}/{platform.machine()}" is not supported.')
+                err(
+                    f'platform "{platform.system()}/{platform.machine()}" is not supported.'
+                )
                 sys.exit(-1)
             command.append(f"dist/pyautd3-{version}-py3-none-{plat_name}.whl")
             command.append("--force")
@@ -1019,8 +1069,18 @@ def server_build(args):
             subprocess.run(["npm", "install"]).check_returncode()
 
         if config.is_macos():
-            command_x86 = ["cargo", "build", "--release", "--target=x86_64-apple-darwin"]
-            command_aarch64 = ["cargo", "build", "--release", "--target=aarch64-apple-darwin"]
+            command_x86 = [
+                "cargo",
+                "build",
+                "--release",
+                "--target=x86_64-apple-darwin",
+            ]
+            command_aarch64 = [
+                "cargo",
+                "build",
+                "--release",
+                "--target=aarch64-apple-darwin",
+            ]
 
             with working_dir("simulator"):
                 subprocess.run(command_x86).check_returncode()
@@ -1053,7 +1113,9 @@ def server_build(args):
 
             if not args.external_only:
                 if config.is_windows():
-                    subprocess.run(["npm", "run", "tauri", "build"], shell=True).check_returncode()
+                    subprocess.run(
+                        ["npm", "run", "tauri", "build"], shell=True
+                    ).check_returncode()
                 else:
                     subprocess.run(["npm", "run", "tauri", "build"]).check_returncode()
 
@@ -1063,7 +1125,9 @@ def server_clear(args):
 
     with working_dir("server"):
         if config.is_windows():
-            subprocess.run(["npm", "cache", "clean", "--force"], shell=True).check_returncode()
+            subprocess.run(
+                ["npm", "cache", "clean", "--force"], shell=True
+            ).check_returncode()
         else:
             subprocess.run(["npm", "cache", "clean", "--force"]).check_returncode()
         rmtree_f("node_modules")
@@ -1091,12 +1155,30 @@ def doc_test(args):
     rust_clear(args)
 
     with working_dir("src"):
-        command = ["cargo", "build", "--all", "--features", "remote", "--exclude", "autd3-backend-arrayfire", "--exclude", "autd3-backend-cuda"]
+        command = [
+            "cargo",
+            "test",
+            "--all",
+            "--features",
+            "remote",
+            "--exclude",
+            "autd3-backend-arrayfire",
+            "--exclude",
+            "autd3-backend-cuda",
+            "--no-run",
+        ]
         subprocess.run(command).check_returncode()
 
     with working_dir("doc"):
         for t in args.target.split(","):
-            command = ["mdbook", "test", "--dest-dir", f"book/{t}", "-L", "./../src/target/debug/deps"]
+            command = [
+                "mdbook",
+                "test",
+                "--dest-dir",
+                f"book/{t}",
+                "-L",
+                "./../src/target/debug/deps",
+            ]
             with set_env("MDBOOK_BOOK__src", f"src/{t}"):
                 subprocess.run(command).check_returncode()
 
@@ -1110,8 +1192,18 @@ def util_update_ver(args):
         for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
             with open(toml, "r") as f:
                 content = f.read()
-                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
-                content = re.sub(r'^autd3(.*)version = "(.*)"', f'autd3\\1version = "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'^version = "(.*)"',
+                    f'version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r'^autd3(.*)version = "(.*)"',
+                    f'autd3\\1version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open(toml, "w") as f:
                 f.write(content)
 
@@ -1119,16 +1211,41 @@ def util_update_ver(args):
         for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
             with open(toml, "r") as f:
                 content = f.read()
-                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'^version = "(.*)"',
+                    f'version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open(toml, "w") as f:
                 f.write(content)
 
         with open("ThirdPartyNotice.txt", "r") as f:
             content = f.read()
-            content = re.sub(r"^autd3(.*) (.*) \((.*)\)", f"autd3\\1 {version} (MIT)", content, flags=re.MULTILINE)
-            content = re.sub(r"^autd3-link-soem (.*)", f"autd3-link-soem {version}", content, flags=re.MULTILINE)
-            content = re.sub(r"^autd3-link-twincat (.*)", f"autd3-link-twincat {version}", content, flags=re.MULTILINE)
-            content = re.sub(r"^wrapper-generator (.*) \(MIT\)", f"wrapper-generator {version} (MIT)", content, flags=re.MULTILINE)
+            content = re.sub(
+                r"^autd3(.*) (.*) \((.*)\)",
+                f"autd3\\1 {version} (MIT)",
+                content,
+                flags=re.MULTILINE,
+            )
+            content = re.sub(
+                r"^autd3-link-soem (.*)",
+                f"autd3-link-soem {version}",
+                content,
+                flags=re.MULTILINE,
+            )
+            content = re.sub(
+                r"^autd3-link-twincat (.*)",
+                f"autd3-link-twincat {version}",
+                content,
+                flags=re.MULTILINE,
+            )
+            content = re.sub(
+                r"^wrapper-generator (.*) \(MIT\)",
+                f"wrapper-generator {version} (MIT)",
+                content,
+                flags=re.MULTILINE,
+            )
         with open("ThirdPartyNotice.txt", "w") as f:
             f.write(content)
 
@@ -1137,28 +1254,46 @@ def util_update_ver(args):
     with working_dir("cpp"):
         with open("CMakeLists.txt", "r") as f:
             content = f.read()
-            content = re.sub(r"^project\(autd3 VERSION (.*)\)", f"project(autd3 VERSION {version})", content, flags=re.MULTILINE)
+            content = re.sub(
+                r"^project\(autd3 VERSION (.*)\)",
+                f"project(autd3 VERSION {version})",
+                content,
+                flags=re.MULTILINE,
+            )
         with open("CMakeLists.txt", "w") as f:
             f.write(content)
 
         with open("include/autd3.hpp", "r") as f:
             content = f.read()
             content = re.sub(
-                r'^static inline std::string version = "(.*)";', f'static inline std::string version = "{version}";', content, flags=re.MULTILINE
+                r'^static inline std::string version = "(.*)";',
+                f'static inline std::string version = "{version}";',
+                content,
+                flags=re.MULTILINE,
             )
         with open("include/autd3.hpp", "w") as f:
             f.write(content)
 
         with open("examples/CMakeLists.txt", "r") as f:
             content = f.read()
-            content = re.sub(r"v(.*)/autd3-v(.*)", f"v{version}/autd3-v{version}", content, flags=re.MULTILINE)
+            content = re.sub(
+                r"v(.*)/autd3-v(.*)",
+                f"v{version}/autd3-v{version}",
+                content,
+                flags=re.MULTILINE,
+            )
         with open("examples/CMakeLists.txt", "w") as f:
             f.write(content)
 
     with working_dir("doc"):
         with open("samples/cpp/CMakeLists.txt", "r") as f:
             content = f.read()
-            content = re.sub(r"v(.*)/autd3-v(.*)", f"v{version}/autd3-v{version}", content, flags=re.MULTILINE)
+            content = re.sub(
+                r"v(.*)/autd3-v(.*)",
+                f"v{version}/autd3-v{version}",
+                content,
+                flags=re.MULTILINE,
+            )
         with open("samples/cpp/CMakeLists.txt", "w") as f:
             f.write(content)
 
@@ -1190,14 +1325,22 @@ def util_update_ver(args):
 
         with open("samples/cs/cs.csproj", "r") as f:
             content = f.read()
-            content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+            content = re.sub(
+                r'"AUTD3Sharp" Version="(.*)"',
+                f'"AUTD3Sharp" Version="{version}"',
+                content,
+                flags=re.MULTILINE,
+            )
         with open("samples/cs/cs.csproj", "w") as f:
             f.write(content)
 
         with open("book.toml", "r") as f:
             content = f.read()
             content = re.sub(
-                r'^title = "AUTD3 Developers Manual v(.*)"', f'title = "AUTD3 Developers Manual v{version}"', content, flags=re.MULTILINE
+                r'^title = "AUTD3 Developers Manual v(.*)"',
+                f'title = "AUTD3 Developers Manual v{version}"',
+                content,
+                flags=re.MULTILINE,
             )
         with open("book.toml", "w") as f:
             f.write(content)
@@ -1207,13 +1350,23 @@ def util_update_ver(args):
             for proj in glob.glob("example/**/*.csproj", recursive=True):
                 with open(proj, "r") as f:
                     content = f.read()
-                    content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+                    content = re.sub(
+                        r'"AUTD3Sharp" Version="(.*)"',
+                        f'"AUTD3Sharp" Version="{version}"',
+                        content,
+                        flags=re.MULTILINE,
+                    )
                 with open(proj, "w") as f:
                     f.write(content)
 
             with open("src/AUTD3Sharp.csproj", "r") as f:
                 content = f.read()
-                content = re.sub(r"<Version>(.*)</Version>", f"<Version>{version}</Version>", content, flags=re.MULTILINE)
+                content = re.sub(
+                    r"<Version>(.*)</Version>",
+                    f"<Version>{version}</Version>",
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open("src/AUTD3Sharp.csproj", "w") as f:
                 f.write(content)
 
@@ -1221,41 +1374,68 @@ def util_update_ver(args):
             for proj in glob.glob("example/**/*.fsproj", recursive=True):
                 with open(proj, "r") as f:
                     content = f.read()
-                    content = re.sub(r'"AUTD3Sharp" Version="(.*)"', f'"AUTD3Sharp" Version="{version}"', content, flags=re.MULTILINE)
+                    content = re.sub(
+                        r'"AUTD3Sharp" Version="(.*)"',
+                        f'"AUTD3Sharp" Version="{version}"',
+                        content,
+                        flags=re.MULTILINE,
+                    )
                 with open(proj, "w") as f:
                     f.write(content)
 
         with working_dir("unity"):
             with open("Assets/package.json", "r") as f:
                 content = f.read()
-                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'"version": "(.*)"',
+                    f'"version": "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open("Assets/package.json", "w") as f:
                 f.write(content)
 
         with working_dir("unity-mac"):
             with open("Assets/package.json", "r") as f:
                 content = f.read()
-                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'"version": "(.*)"',
+                    f'"version": "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open("Assets/package.json", "w") as f:
                 f.write(content)
 
         with working_dir("unity-linux"):
             with open("Assets/package.json", "r") as f:
                 content = f.read()
-                content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'"version": "(.*)"',
+                    f'"version": "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open("Assets/package.json", "w") as f:
                 f.write(content)
 
     with working_dir("python"):
         with open("pyautd3/__init__.py", "r") as f:
             content = f.read()
-            content = re.sub(r'__version__ = "(.*)"', f'__version__ = "{version}"', content, flags=re.MULTILINE)
+            content = re.sub(
+                r'__version__ = "(.*)"',
+                f'__version__ = "{version}"',
+                content,
+                flags=re.MULTILINE,
+            )
         with open("pyautd3/__init__.py", "w") as f:
             f.write(content)
 
         with open("setup.cfg.template", "r") as f:
             content = f.read()
-            content = re.sub(r"version = (.*)", f"version = {version}", content, flags=re.MULTILINE)
+            content = re.sub(
+                r"version = (.*)", f"version = {version}", content, flags=re.MULTILINE
+            )
         with open("setup.cfg.template", "w") as f:
             f.write(content)
 
@@ -1263,32 +1443,82 @@ def util_update_ver(args):
         for toml in glob.glob("./**/*/Cargo.toml", recursive=True):
             with open(toml, "r") as f:
                 content = f.read()
-                content = re.sub(r'^version = "(.*)"', f'version = "{version}"', content, flags=re.MULTILINE)
-                content = re.sub(r'^autd3(.*)version = "(.*)"', f'autd3\\1version = "{version}"', content, flags=re.MULTILINE)
+                content = re.sub(
+                    r'^version = "(.*)"',
+                    f'version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r'^autd3(.*)version = "(.*)"',
+                    f'autd3\\1version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open(toml, "w") as f:
                 f.write(content)
 
         for notice in glob.glob("./**/*/ThirdPartyNotice.txt", recursive=True):
             with open(notice, "r") as f:
                 content = f.read()
-                content = re.sub(r"^autd3(.*) (.*) \((.*)\)", f"autd3\\1 {version} (MIT)", content, flags=re.MULTILINE)
-                content = re.sub(r"^autd3-link-soem (.*)", f"autd3-link-soem {version}", content, flags=re.MULTILINE)
-                content = re.sub(r"^autd3-link-twincat (.*)", f"autd3-link-twincat {version}", content, flags=re.MULTILINE)
-                content = re.sub(r"^SOEMAUTDServer (.*) \(MIT\)", f"SOEMAUTDServer {version} (MIT)", content, flags=re.MULTILINE)
-                content = re.sub(r"^simulator (.*) \(MIT\)", f"simulator {version} (MIT)", content, flags=re.MULTILINE)
+                content = re.sub(
+                    r"^autd3(.*) (.*) \((.*)\)",
+                    f"autd3\\1 {version} (MIT)",
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r"^autd3-link-soem (.*)",
+                    f"autd3-link-soem {version}",
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r"^autd3-link-twincat (.*)",
+                    f"autd3-link-twincat {version}",
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r"^SOEMAUTDServer (.*) \(MIT\)",
+                    f"SOEMAUTDServer {version} (MIT)",
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r"^simulator (.*) \(MIT\)",
+                    f"simulator {version} (MIT)",
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open(notice, "w") as f:
                 f.write(content)
 
         with open("package.json", "r") as f:
             content = f.read()
-            content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
+            content = re.sub(
+                r'"version": "(.*)"',
+                f'"version": "{version}"',
+                content,
+                flags=re.MULTILINE,
+            )
         with open("package.json", "w") as f:
             f.write(content)
 
         with open("src-tauri/tauri.conf.json", "r") as f:
             content = f.read()
-            content = re.sub(r'"version": "(.*)"', f'"version": "{version}"', content, flags=re.MULTILINE)
-            content = re.sub(r'"title": "AUTD Server v(.*)"', f'"title": "AUTD Server v{version}"', content, flags=re.MULTILINE)
+            content = re.sub(
+                r'"version": "(.*)"',
+                f'"version": "{version}"',
+                content,
+                flags=re.MULTILINE,
+            )
+            content = re.sub(
+                r'"title": "AUTD Server v(.*)"',
+                f'"title": "AUTD Server v{version}"',
+                content,
+                flags=re.MULTILINE,
+            )
         with open("src-tauri/tauri.conf.json", "w") as f:
             f.write(content)
 
@@ -1321,10 +1551,20 @@ if __name__ == "__main__":
         # build (rust)
         parser_build = subparsers.add_parser("build", help="see `build -h`")
         parser_build.add_argument("--all", action="store_true", help="build all crates")
-        parser_build.add_argument("--release", action="store_true", help="release build")
-        parser_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
-        parser_build.add_argument("--no-examples", action="store_true", help="skip building examples")
-        parser_build.add_argument("--skip-cuda", action="store_true", help="force disable cuda features in examples")
+        parser_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_build.add_argument(
+            "--arch", help="cross-compile for specific architecture (for Linux)"
+        )
+        parser_build.add_argument(
+            "--no-examples", action="store_true", help="skip building examples"
+        )
+        parser_build.add_argument(
+            "--skip-cuda",
+            action="store_true",
+            help="force disable cuda features in examples",
+        )
         parser_build.set_defaults(handler=rust_build)
 
         # lint (rust)
@@ -1336,7 +1576,9 @@ if __name__ == "__main__":
         # test (rust)
         parser_test = subparsers.add_parser("test", help="see `test -h`")
         parser_test.add_argument("--all", action="store_true", help="test all crates")
-        parser_test.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
+        parser_test.add_argument(
+            "--skip-cuda", action="store_true", help="force skip cuda test"
+        )
         parser_test.add_argument("--release", action="store_true", help="release build")
         parser_test.set_defaults(handler=rust_test)
 
@@ -1353,7 +1595,9 @@ if __name__ == "__main__":
         # coverage (rust)
         parser_cov = subparsers.add_parser("cov", help="see `cov -h`")
         parser_cov.add_argument("--release", action="store_true", help="release build")
-        parser_cov.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
+        parser_cov.add_argument(
+            "--skip-cuda", action="store_true", help="force skip cuda test"
+        )
         parser_cov.set_defaults(handler=rust_coverage)
 
         # capi
@@ -1361,7 +1605,9 @@ if __name__ == "__main__":
         subparsers_capi = parser_capi.add_subparsers()
 
         # capi clear
-        parser_capi_clear = subparsers_capi.add_parser("clear", help="see `capi clear -h`")
+        parser_capi_clear = subparsers_capi.add_parser(
+            "clear", help="see `capi clear -h`"
+        )
         parser_capi_clear.set_defaults(handler=capi_clear)
 
         # cpp
@@ -1370,21 +1616,31 @@ if __name__ == "__main__":
 
         # cpp build
         parser_cpp_build = subparsers_cpp.add_parser("build", help="see `cpp build -h`")
-        parser_cpp_build.add_argument("--release", action="store_true", help="release build")
+        parser_cpp_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cpp_build.add_argument(
             "--universal",
             action="store_true",
             help="build universal binary (for macOS)",
         )
-        parser_cpp_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
-        parser_cpp_build.add_argument("--no-examples", action="store_true", help="skip building examples")
+        parser_cpp_build.add_argument(
+            "--arch", help="cross-compile for specific architecture (for Linux)"
+        )
+        parser_cpp_build.add_argument(
+            "--no-examples", action="store_true", help="skip building examples"
+        )
         parser_cpp_build.add_argument("--cmake-extra", help="cmake extra args")
         parser_cpp_build.set_defaults(handler=cpp_build)
 
         # cpp test
         parser_cpp_test = subparsers_cpp.add_parser("test", help="see `cpp test -h`")
-        parser_cpp_test.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
-        parser_cpp_test.add_argument("--release", action="store_true", help="release build")
+        parser_cpp_test.add_argument(
+            "--skip-cuda", action="store_true", help="force skip cuda test"
+        )
+        parser_cpp_test.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cpp_test.add_argument(
             "--universal",
             action="store_true",
@@ -1396,7 +1652,9 @@ if __name__ == "__main__":
         # cpp run
         parser_cpp_run = subparsers_cpp.add_parser("run", help="see `cpp run -h`")
         parser_cpp_run.add_argument("target", help="binary target")
-        parser_cpp_run.add_argument("--release", action="store_true", help="release build")
+        parser_cpp_run.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cpp_run.set_defaults(handler=cpp_run)
 
         # cpp clear
@@ -1409,19 +1667,27 @@ if __name__ == "__main__":
 
         # cs build
         parser_cs_build = subparsers_cs.add_parser("build", help="see `cs build -h`")
-        parser_cs_build.add_argument("--release", action="store_true", help="release build")
+        parser_cs_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cs_build.add_argument(
             "--universal",
             action="store_true",
             help="build universal binary (for macOS)",
         )
-        parser_cs_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
-        parser_cs_build.add_argument("--no-examples", action="store_true", help="skip building examples")
+        parser_cs_build.add_argument(
+            "--arch", help="cross-compile for specific architecture (for Linux)"
+        )
+        parser_cs_build.add_argument(
+            "--no-examples", action="store_true", help="skip building examples"
+        )
         parser_cs_build.set_defaults(handler=cs_build)
 
         # cs test
         parser_cs_test = subparsers_cs.add_parser("test", help="see `cs test -h`")
-        parser_cs_test.add_argument("--release", action="store_true", help="release build")
+        parser_cs_test.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cs_test.add_argument(
             "--universal",
             action="store_true",
@@ -1432,7 +1698,9 @@ if __name__ == "__main__":
         # cs run
         parser_cs_run = subparsers_cs.add_parser("run", help="see `cs run -h`")
         parser_cs_run.add_argument("target", help="binary target")
-        parser_cs_run.add_argument("--release", action="store_true", help="release build")
+        parser_cs_run.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_cs_run.set_defaults(handler=cs_run)
 
         # cs clear
@@ -1444,12 +1712,18 @@ if __name__ == "__main__":
         subparsers_unity = parser_unity.add_subparsers()
 
         # unity build
-        parser_unity_build = subparsers_unity.add_parser("build", help="see `unity build -h`")
-        parser_unity_build.add_argument("--release", action="store_true", help="release build")
+        parser_unity_build = subparsers_unity.add_parser(
+            "build", help="see `unity build -h`"
+        )
+        parser_unity_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_unity_build.set_defaults(handler=unity_build)
 
         # unity clear
-        parser_unity_clear = subparsers_unity.add_parser("clear", help="see `unity clear -h`")
+        parser_unity_clear = subparsers_unity.add_parser(
+            "clear", help="see `unity clear -h`"
+        )
         parser_unity_clear.set_defaults(handler=unity_clear)
 
         # fs
@@ -1458,15 +1732,23 @@ if __name__ == "__main__":
 
         # fs build
         parser_fs_build = subparsers_fs.add_parser("build", help="see `fs build -h`")
-        parser_fs_build.add_argument("--release", action="store_true", help="release build")
-        parser_fs_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
-        parser_fs_build.add_argument("--no-examples", action="store_true", help="skip building examples")
+        parser_fs_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_fs_build.add_argument(
+            "--arch", help="cross-compile for specific architecture (for Linux)"
+        )
+        parser_fs_build.add_argument(
+            "--no-examples", action="store_true", help="skip building examples"
+        )
         parser_fs_build.set_defaults(handler=fs_build)
 
         # fs run
         parser_fs_run = subparsers_fs.add_parser("run", help="see `fs run -h`")
         parser_fs_run.add_argument("target", help="binary target")
-        parser_fs_run.add_argument("--release", action="store_true", help="release build")
+        parser_fs_run.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_fs_run.set_defaults(handler=fs_run)
 
         # fs clear
@@ -1478,25 +1760,39 @@ if __name__ == "__main__":
         subparsers_py = parser_py.add_subparsers()
 
         # python build
-        parser_py_build = subparsers_py.add_parser("build", help="see `python build -h`")
-        parser_py_build.add_argument("--release", action="store_true", help="release build")
+        parser_py_build = subparsers_py.add_parser(
+            "build", help="see `python build -h`"
+        )
+        parser_py_build.add_argument(
+            "--release", action="store_true", help="release build"
+        )
         parser_py_build.add_argument(
             "--universal",
             action="store_true",
             help="build universal binary (for macOS)",
         )
-        parser_py_build.add_argument("--arch", help="cross-compile for specific architecture (for Linux)")
-        parser_py_build.add_argument("--no-install", action="store_true", help="skip install python package")
+        parser_py_build.add_argument(
+            "--arch", help="cross-compile for specific architecture (for Linux)"
+        )
+        parser_py_build.add_argument(
+            "--no-install", action="store_true", help="skip install python package"
+        )
         parser_py_build.set_defaults(handler=py_build)
 
         # python test
         parser_py_test = subparsers_py.add_parser("test", help="see `python test -h`")
-        parser_py_test.add_argument("--release", action="store_true", help="release build")
-        parser_py_test.add_argument("--skip-cuda", action="store_true", help="force skip cuda test")
+        parser_py_test.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_py_test.add_argument(
+            "--skip-cuda", action="store_true", help="force skip cuda test"
+        )
         parser_py_test.set_defaults(handler=py_test)
 
         # python clear
-        parser_py_clear = subparsers_py.add_parser("clear", help="see `python clear -h`")
+        parser_py_clear = subparsers_py.add_parser(
+            "clear", help="see `python clear -h`"
+        )
         parser_py_clear.set_defaults(handler=py_clear)
 
         # server
@@ -1504,7 +1800,9 @@ if __name__ == "__main__":
         subparsers_server = parser_server.add_subparsers()
 
         # server build
-        parser_server_build = subparsers_server.add_parser("build", help="see `server build -h`")
+        parser_server_build = subparsers_server.add_parser(
+            "build", help="see `server build -h`"
+        )
         parser_server_build.add_argument(
             "--external-only",
             action="store_true",
@@ -1513,7 +1811,9 @@ if __name__ == "__main__":
         parser_server_build.set_defaults(handler=server_build)
 
         # server clear
-        parser_server_clear = subparsers_server.add_parser("clear", help="see `server clear -h`")
+        parser_server_clear = subparsers_server.add_parser(
+            "clear", help="see `server clear -h`"
+        )
         parser_server_clear.set_defaults(handler=server_clear)
 
         # doc
@@ -1523,7 +1823,9 @@ if __name__ == "__main__":
         # doc build
         parser_doc_build = subparsers_doc.add_parser("build", help="see `doc build -h`")
         parser_doc_build.add_argument("target", help="build target [jp|en]")
-        parser_doc_build.add_argument("--open", help="open browser after build", action="store_true")
+        parser_doc_build.add_argument(
+            "--open", help="open browser after build", action="store_true"
+        )
         parser_doc_build.set_defaults(handler=doc_build)
 
         # doc test
@@ -1536,7 +1838,9 @@ if __name__ == "__main__":
         subparsers_util = parser_util.add_subparsers()
 
         # util update version
-        parser_util_upver = subparsers_util.add_parser("upver", help="see `util upver -h`")
+        parser_util_upver = subparsers_util.add_parser(
+            "upver", help="see `util upver -h`"
+        )
         parser_util_upver.add_argument("version", help="version")
         parser_util_upver.set_defaults(handler=util_update_ver)
 

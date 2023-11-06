@@ -23,18 +23,20 @@ You can specify the network interface on which the AUTD3 device is connected wit
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_ifname("")
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -68,12 +70,14 @@ The interval of error status check is specified by `with_state_check_interval` f
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
@@ -82,7 +86,7 @@ SOEM::builder()
     .with_on_err(|msg| {
             eprintln!("Unrecoverable error occurred: {msg}");
         })
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -131,12 +135,14 @@ The callback take an error message as an argument.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
@@ -145,7 +151,7 @@ SOEM::builder()
             eprintln!("Unrecoverable error occurred: {msg}");
             std::process::exit(-1);
         })
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -194,19 +200,21 @@ In this case, use the `with_sync0_cycle` and `with_send_cycle` functions to incr
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync0_cycle(2)
     .with_send_cycle(2)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -242,18 +250,20 @@ You can specify how to send these periodic frames with `timer_strategy`.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::SOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_timer_strategy(TimerStrategy::BusyWait)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -294,18 +304,20 @@ You can set the EtherCAT sync mode (`DC` or `FreeRun`) with `with_sync_mode`.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::{SOEM, SyncMode};
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync_mode(SyncMode::DC)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```
@@ -365,17 +377,19 @@ Set port number and click "Run" button.
 
 ```rust,should_panic,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_link_soem;
 # use autd3::prelude::*;
 use autd3_link_soem::RemoteSOEM;
 
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
 #     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
 #            .open_with(
 RemoteSOEM::builder("172.16.99.104:8080".parse()?)
-# )?;
+# ).await?;
 # Ok(())
 # }
 ```

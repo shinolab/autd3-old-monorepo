@@ -5,6 +5,7 @@ This `Gain` is based on the paper by Hasegawa et al [^hasegawa2017].
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -47,6 +48,7 @@ The amplitude is normalized to 0-1 (1 by default).
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {

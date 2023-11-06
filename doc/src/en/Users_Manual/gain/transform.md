@@ -4,11 +4,12 @@ You can use `Transform` to apply some post-processing to `Gain`.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let g = Uniform::new(1.0).with_transform(|dev, tr: &LegacyTransducer, d| Drive {
+let g = Uniform::new(1.0).with_transform(|dev, tr, d| Drive {
     amp: Amplitude::new_clamped(d.amp.value() - 0.5),
     phase: d.phase + PI,
 });
@@ -41,4 +42,4 @@ def f(dev, tr, d):
 g = Uniform(1.0).with_transform(f)
 ```
 
-The argument of `with_transform` is `Fn(&Device<T>, &T, &Drive) -> Drive`.
+The argument of `with_transform` is `Fn(&Device, &Transducer, &Drive) -> Drive`.

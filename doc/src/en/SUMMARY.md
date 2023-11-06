@@ -47,7 +47,6 @@
   - [Advanced examples](./Users_Manual/advanced_examples/advanced_examples.md)
     - [Custom Gain](./Users_Manual/advanced_examples/custom_gain.md)
     - [Custom Modulation](./Users_Manual/advanced_examples/custom_modulation.md)
-    - [Mode configuration / Changing the frequency](./Users_Manual/advanced_examples/freq_config.md)
   - [Simulaotr](./Users_Manual/Simulator/simulator.md)
   - [FAQ](./Users_Manual/FAQ/faq.md)
   - [Citation](./Users_Manual/Citation/citation.md)
