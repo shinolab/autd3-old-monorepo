@@ -94,7 +94,7 @@ class Geometry {
   };
 
  public:
-  Geometry(const native_methods::GeometryPtr ptr, const native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {
+  Geometry(const native_methods::GeometryPtr ptr) : _ptr(ptr) {
     const auto size = AUTDGeometryNumDevices(_ptr);
     _devices.clear();
     _devices.reserve(size);
@@ -106,11 +106,6 @@ class Geometry {
   Geometry& operator=(const Geometry& obj) = default;
   Geometry(Geometry&& obj) = default;
   Geometry& operator=(Geometry&& obj) = default;
-
-  /**
-   * @brief Only for internal use
-   */
-  [[nodiscard]] native_methods::TransMode mode() const { return _mode; }
 
   /**
    * @brief Get the number of devices
@@ -175,7 +170,6 @@ class Geometry {
   [[nodiscard]] native_methods::GeometryPtr ptr() const noexcept { return _ptr; }
 
  private:
-  native_methods::TransMode _mode;
   native_methods::GeometryPtr _ptr;
   std::vector<Device> _devices{};
 };

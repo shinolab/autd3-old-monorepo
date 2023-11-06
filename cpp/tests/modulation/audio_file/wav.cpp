@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,6 @@ TEST(Modulation, Wav) {
                                     85,  64,  45,  29,  16,  7,   1,   1,   5,   12,  24,  39,  57,  78,  99,  123, 148, 174, 200, 226,
                                     255, 226, 200, 174, 148, 123, 99,  78,  57,  39,  24,  12,  5,   1,   1,   7,   16,  29,  45,  64};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
-    ASSERT_EQ(40960, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
+    ASSERT_EQ(5120, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
   }
 }

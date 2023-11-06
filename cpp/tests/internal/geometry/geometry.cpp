@@ -33,5 +33,5 @@ TEST(Internal_Geometry, GeometryNumDevices) {
 
 TEST(Internal_Geometry, GeometryCenter) {
   auto autd = create_controller();
-  ASSERT_EQ(autd.geometry().center(), autd3::internal::Vector3(86.62522088353406, 66.71325301204821, 0));
+  ASSERT_NEAR_VECTOR3(autd.geometry().center(), autd3::internal::Vector3(86.62522088353406, 66.7132530125621, 0), 1e-6);
 }

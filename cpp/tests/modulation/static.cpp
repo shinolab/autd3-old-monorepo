@@ -3,14 +3,15 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
-#include <autd3/modulation/static.hpp>
 #include <gtest/gtest.h>
+
+#include <autd3/modulation/static.hpp>
 
 #include "utils.hpp"
 
@@ -23,6 +24,6 @@ TEST(Modulation, Static) {
     auto mod = autd.link<autd3::link::Audit>().modulation(dev.idx());
     std::vector<uint8_t> mod_expect{32, 32};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
-    ASSERT_EQ(40960, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
+    ASSERT_EQ(5120, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
   }
 }

@@ -1,5 +1,4 @@
 target_sources(test_autd3 PRIVATE
-  amplitudes.cpp
   controller.cpp
   datagram.cpp
   firmware_info.cpp

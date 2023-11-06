@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,8 +39,8 @@ TEST(Internal, Clear) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 2048; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256; }));
   }
 
   ASSERT_TRUE(autd.send(autd3::internal::Clear()));
@@ -69,21 +69,11 @@ TEST(Internal, UpdateFlags) {
 
 TEST(Internal, Synchronize) {
   auto autd = autd3::internal::Controller::builder()
-                  .advanced()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
                   .open_with(autd3::link::Audit::builder());
 
-  for (auto& dev : autd.geometry()) {
-    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().cycles(dev.idx()), [](auto c) { return c == 4096; }));
-    for (auto& tr : dev) tr.set_cycle(4000);
-    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().cycles(dev.idx()), [](auto c) { return c == 4096; }));
-  }
-
   ASSERT_TRUE(autd.send(autd3::internal::Synchronize()));
-  for (auto& dev : autd.geometry()) {
-    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().cycles(dev.idx()), [](auto c) { return c == 4000; }));
-  }
 }
 
 TEST(Internal, ConfigureModDelay) {
@@ -112,7 +102,7 @@ TEST(Internal, ConfigureAmpFilter) {
 
   ASSERT_TRUE(autd.send(autd3::internal::ConfigureAmpFilter()));
   for (auto& dev : autd.geometry()) {
-    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().duty_filters(dev.idx()), [](auto d) { return d == -2048; }));
+    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().duty_filters(dev.idx()), [](auto d) { return d == -256; }));
   }
 }
 
@@ -127,6 +117,6 @@ TEST(Internal, ConfigurePhaseFilter) {
 
   ASSERT_TRUE(autd.send(autd3::internal::ConfigurePhaseFilter()));
   for (auto& dev : autd.geometry()) {
-    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().phase_filters(dev.idx()), [](auto d) { return d == -2048; }));
+    ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().phase_filters(dev.idx()), [](auto d) { return d == -256; }));
   }
 }

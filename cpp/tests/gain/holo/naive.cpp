@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,8 @@ TEST(Gain_Holo, Naive) {
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
+    std::cout << duties[0] << std::endl;
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
 }
@@ -63,7 +64,7 @@ TEST(Gain_Holo, NaiveWithCUDA) {
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
+    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
 }

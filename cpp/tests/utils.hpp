@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,3 +20,10 @@ static inline autd3::internal::Controller create_controller() {
       .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
       .open_with(autd3::link::Audit::builder());
 }
+
+#define ASSERT_NEAR_VECTOR3(val1, val2, abs_error) \
+  do {                                             \
+    ASSERT_NEAR(val1.x(), val2.x(), abs_error);    \
+    ASSERT_NEAR(val1.y(), val2.y(), abs_error);    \
+    ASSERT_NEAR(val1.z(), val2.z(), abs_error);    \
+  } while (false)

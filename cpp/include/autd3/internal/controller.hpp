@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,21 +55,6 @@ class Controller {
       return *this;
     }
 
-    Builder legacy() {
-      _mode = native_methods::TransMode::Legacy;
-      return *this;
-    }
-
-    Builder advanced() {
-      _mode = native_methods::TransMode::Advanced;
-      return *this;
-    }
-
-    Builder advanced_phase() {
-      _mode = native_methods::TransMode::AdvancedPhase;
-      return *this;
-    }
-
     /**
      * @brief Open controller
      *
@@ -86,20 +71,19 @@ class Controller {
       const auto ptr = AUTDControllerOpenWith(_ptr, link.ptr(), err);
       if (ptr._0 == nullptr) throw AUTDException(err);
 
-      Geometry geometry(AUTDGeometry(ptr), _mode);
+      Geometry geometry(AUTDGeometry(ptr));
 
-      return {std::move(geometry), ptr, _mode, link.props()};
+      return {std::move(geometry), ptr, link.props()};
     }
 
    private:
-    explicit Builder() : _ptr(native_methods::AUTDControllerBuilder()), _mode(native_methods::TransMode::Legacy) {}
+    explicit Builder() : _ptr(native_methods::AUTDControllerBuilder()) {}
 
     native_methods::ControllerBuilderPtr _ptr;
-    native_methods::TransMode _mode;
   };
 
   /**
-   * @brief Create Controller builder (legacy mode)
+   * @brief Create Controller builder
    *
    * @return Builder
    */
@@ -108,8 +92,7 @@ class Controller {
   Controller() = delete;
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) noexcept
-      : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _mode(obj._mode), _link_props(std::move(obj._link_props)) {
+  Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _link_props(std::move(obj._link_props)) {
     obj._ptr._0 = nullptr;
   }
   Controller& operator=(Controller&& obj) noexcept {
@@ -118,7 +101,6 @@ class Controller {
 
       _geometry = std::move(obj._geometry);
       _ptr = obj._ptr;
-      _mode = obj._mode;
       _link_props = std::move(obj._link_props);
 
       obj._ptr._0 = nullptr;
@@ -288,7 +270,7 @@ class Controller {
     char err[256]{};
     const int64_t timeout_ns =
         timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
-    const auto res = native_methods::AUTDControllerSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
+    const auto res = native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
   }
@@ -309,8 +291,7 @@ class Controller {
       const auto ptr = data.ptr(_controller._geometry);
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, _controller._mode,
-                                                            timeout_ns, err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
@@ -329,7 +310,7 @@ class Controller {
       const auto ptr2 = data2.ptr(_controller._geometry);
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, _controller._mode, timeout_ns, err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
@@ -348,7 +329,7 @@ class Controller {
       const auto ptr = data.ptr();
       _keymap[key] = _k++;
       char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, _controller._mode, timeout_ns, err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, timeout_ns, err);
       if (_kv_map._0 == nullptr) throw AUTDException(err);
       return std::move(*this);
     }
@@ -383,20 +364,19 @@ class Controller {
   }
 
  private:
-  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, const native_methods::TransMode mode, std::shared_ptr<void> link_props)
-      : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode), _link_props(std::move(link_props)) {}
+  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, std::shared_ptr<void> link_props)
+      : _geometry(std::move(geometry)), _ptr(ptr), _link_props(std::move(link_props)) {}
 
   bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
-    const auto res = AUTDControllerSend(_ptr, _mode, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
+    const auto res = AUTDControllerSend(_ptr, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
     if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
     return res == native_methods::AUTD3_TRUE;
   }
 
   Geometry _geometry;
   native_methods::ControllerPtr _ptr;
-  native_methods::TransMode _mode;
   std::shared_ptr<void> _link_props;
 };
 

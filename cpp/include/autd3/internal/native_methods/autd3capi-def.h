@@ -32,12 +32,6 @@ enum class TimerStrategy : uint8_t {
   NativeTimer = 2,
 };
 
-enum class TransMode : uint8_t {
-  Legacy = 0,
-  Advanced = 1,
-  AdvancedPhase = 2,
-};
-
 struct ControllerPtr {
   void* _0;
 };
@@ -107,5 +101,7 @@ constexpr const double TRANS_SPACING_MM = 10.16;
 constexpr const double DEVICE_HEIGHT_MM = 151.4;
 
 constexpr const double DEVICE_WIDTH_MM = 192.0;
+
+constexpr const double ULTRASOUND_FREQUENCY = 40000.0;
 
 } // namespace autd3::internal::native_methods
