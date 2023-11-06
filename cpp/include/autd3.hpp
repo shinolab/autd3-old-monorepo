@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,6 @@
 #include "autd3/gain/trans_test.hpp"
 #include "autd3/gain/transform.hpp"
 #include "autd3/gain/uniform.hpp"
-#include "autd3/internal/amplitudes.hpp"
 #include "autd3/internal/controller.hpp"
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
@@ -57,7 +56,6 @@ static inline std::string version = "17.0.0";
 using internal::Device;
 using internal::Geometry;
 using internal::Transducer;
-using Mode = internal::native_methods::TransMode;
 
 using internal::AUTD3;
 
@@ -87,8 +85,6 @@ using internal::Quaternion;
 using internal::Vector3;
 
 using internal::Controller;
-
-using internal::Amplitudes;
 
 using internal::native_methods::TimerStrategy;
 
