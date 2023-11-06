@@ -182,7 +182,6 @@ dependencies = [
  "bitvec",
  "libc",
  "nalgebra",
- "serde",
  "thiserror",
  "tokio",
  "windows",
