@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,13 +27,13 @@ use super::{
     transtest::*,
 };
 
-pub async fn run<T: Transducer + 'static, L: Link>(
-    mut autd: Controller<T, L>,
+pub async fn run<L: Link>(
+    mut autd: Controller<L>,
 ) -> anyhow::Result<()> {
-    type Test<T, L> = (
+    type Test<L> = (
         &'static str,
         fn(
-            &'_ mut Controller<T, L>,
+            &'_ mut Controller<L>,
         )
             -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<bool>> + '_>>,
     );
@@ -44,7 +44,7 @@ pub async fn run<T: Transducer + 'static, L: Link>(
     });
     println!("============================================");
 
-    let mut examples: Vec<Test<_, _>> = vec![
+    let mut examples: Vec<Test<_>> = vec![
         ("Single focus test", |autd| Box::pin(focus(autd))),
         ("Bessel beam test", |autd| Box::pin(bessel(autd))),
         ("Plane wave test", |autd| Box::pin(plane(autd))),

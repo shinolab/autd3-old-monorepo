@@ -21,7 +21,7 @@ use std::{
 
 use autd3::prelude::*;
 
-pub async fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
+pub async fn flag<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.geometry
         .iter_mut()
         .for_each(|dev| dev.reads_fpga_info = true);

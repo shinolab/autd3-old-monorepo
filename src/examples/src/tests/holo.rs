@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use super::test_runner::Backend;
 use colored::*;
 use std::io::{self, Write};
 
-pub async fn holo<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
+pub async fn holo<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default()).await?;
 
     let m = Sine::new(150);

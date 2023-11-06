@@ -4,7 +4,7 @@
  * Created Date: 15/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 use autd3::prelude::*;
 
-pub async fn group<T: Transducer + 'static, L: Link>(
-    autd: &mut Controller<T, L>,
+pub async fn group<L: Link>(
+    autd: &mut Controller<L>,
 ) -> anyhow::Result<bool> {
     let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
