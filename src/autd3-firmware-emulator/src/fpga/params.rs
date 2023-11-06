@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,13 +46,11 @@ pub const ADDR_SOUND_SPEED_0: usize = 0x0054;
 pub const ADDR_SOUND_SPEED_1: usize = 0x0055;
 pub const ADDR_STM_START_IDX: usize = 0x0056;
 pub const ADDR_STM_FINISH_IDX: usize = 0x0057;
-pub const ADDR_CYCLE_BASE: usize = 0x0100;
 pub const ADDR_MOD_DELAY_BASE: usize = 0x0200;
 pub const ADDR_FILTER_DUTY_BASE: usize = 0x0300;
 pub const ADDR_FILTER_PHASE_BASE: usize = 0x0400;
 
 pub const CTL_REG_FORCE_FAN_BIT: u16 = 0;
-pub const CTL_REG_LEGACY_MODE_BIT: u16 = 8;
 pub const CTL_REG_OP_MODE_BIT: u16 = 9;
 pub const CTL_REG_STM_GAIN_MODE_BIT: u16 = 10;
 pub const CTL_FLAG_USE_STM_FINISH_IDX_BIT: u16 = 11;

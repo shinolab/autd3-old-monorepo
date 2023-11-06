@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -129,10 +129,6 @@ impl FPGAEmulator {
         self.controller_bram[ADDR_FPGA_INFO] &= !0x0001;
     }
 
-    pub fn is_legacy_mode(&self) -> bool {
-        (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_LEGACY_MODE_BIT)) != 0
-    }
-
     pub fn is_force_fan(&self) -> bool {
         (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_FORCE_FAN_BIT)) != 0
     }
@@ -147,14 +143,6 @@ impl FPGAEmulator {
 
     pub fn silencer_step(&self) -> u16 {
         self.controller_bram[ADDR_SILENT_STEP]
-    }
-
-    pub fn cycles(&self) -> Vec<u16> {
-        self.controller_bram[ADDR_CYCLE_BASE..]
-            .iter()
-            .take(self.num_transducers)
-            .copied()
-            .collect()
     }
 
     pub fn mod_delays(&self) -> Vec<u16> {
@@ -249,12 +237,7 @@ impl FPGAEmulator {
             return false;
         }
         if !self.is_stm_mode() {
-            let drives = self.duties_and_phases(0);
-            return if self.is_legacy_mode() {
-                drives.iter().any(|&d| d.0 > 8)
-            } else {
-                drives.iter().any(|&d| d.0 != 0)
-            };
+            return self.duties_and_phases(0).iter().any(|&d| d.0 != 0);
         }
         true
     }
@@ -262,70 +245,45 @@ impl FPGAEmulator {
     pub fn duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
         if self.is_stm_mode() {
             if self.is_stm_gain_mode() {
-                if self.is_legacy_mode() {
-                    self.gain_stm_legacy_duties_and_phases(idx)
-                } else {
-                    self.gain_stm_advanced_duties_and_phases(idx)
-                }
+                self.gain_stm_duties_and_phases(idx)
             } else {
                 self.focus_stm_duties_and_phases(idx)
             }
-        } else if self.is_legacy_mode() {
-            self.legacy_duties_and_phases()
         } else {
-            self.advanced_duties_and_phases()
+            self.normal_duties_and_phases()
         }
     }
 
-    fn legacy_duties_and_phases(&self) -> Vec<(u16, u16)> {
+    fn normal_duties_and_phases(&self) -> Vec<(u16, u16)> {
         self.normal_op_bram
             .iter()
-            .step_by(2)
             .take(self.num_transducers)
             .map(|d| {
                 let duty = (d >> 8) & 0xFF;
-                let duty = ((duty << 3) | 0x07) + 1;
+                let duty = if duty == 0 { 0 } else { duty + 1 };
                 let phase = d & 0xFF;
-                let phase = phase << 4;
+                let phase = phase << 1;
                 (duty, phase)
             })
             .collect()
     }
 
-    fn advanced_duties_and_phases(&self) -> Vec<(u16, u16)> {
-        self.normal_op_bram
-            .chunks(2)
-            .take(self.num_transducers)
-            .map(|x| (x[1], x[0]))
-            .collect()
-    }
-
-    fn gain_stm_advanced_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
-        self.stm_op_bram
-            .chunks(2)
-            .skip(256 * idx)
-            .take(self.num_transducers)
-            .map(|x| (x[1], x[0]))
-            .collect()
-    }
-
-    fn gain_stm_legacy_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+    fn gain_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
         self.stm_op_bram
             .iter()
             .skip(256 * idx)
             .take(self.num_transducers)
             .map(|&d| {
                 let duty = (d >> 8) & 0xFF;
-                let duty = ((duty << 3) | 0x07) + 1;
+                let duty = if duty == 0 { 0 } else { duty + 1 };
                 let phase = d & 0xFF;
-                let phase = phase << 4;
+                let phase = phase << 1;
                 (duty, phase)
             })
             .collect()
     }
 
     fn focus_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
-        let ultrasound_cycles = self.cycles();
         let sound_speed = self.sound_speed() as u64;
         let duty_shift = (self.stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
 
@@ -352,17 +310,16 @@ impl FPGAEmulator {
         };
         self.tr_pos
             .iter()
-            .zip(ultrasound_cycles.iter())
-            .map(|(&tr, &cycle)| {
+            .map(|&tr| {
                 let tr_z = ((tr >> 32) & 0xFFFF) as i16 as i32;
                 let tr_x = ((tr >> 16) & 0xFFFF) as i16 as i32;
                 let tr_y = (tr & 0xFFFF) as i16 as i32;
                 let d2 =
                     (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
                 let dist = d2.sqrt() as u64;
-                let q = (dist << 22) / sound_speed;
-                let p = q % cycle as u64;
-                (cycle >> duty_shift, p as u16)
+                let q = (dist << 19) / sound_speed;
+                let p = (q & 0x1FF) as u64;
+                (0x1FF >> duty_shift, p as u16)
             })
             .collect()
     }
