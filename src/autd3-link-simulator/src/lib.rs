@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@ use std::{
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::Transducer,
     link::{Link, LinkBuilder},
 };
 
@@ -46,12 +45,12 @@ pub struct SimulatorBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for SimulatorBuilder {
+impl LinkBuilder for SimulatorBuilder {
     type L = Simulator;
 
     async fn open(
         self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
         let mut client = simulator_client::SimulatorClient::connect(format!(
             "http://{}",
@@ -173,9 +172,9 @@ impl Link for Simulator {
 }
 
 impl Simulator {
-    pub async fn update_geometry<T: Transducer>(
+    pub async fn update_geometry(
         &mut self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<(), AUTDInternalError> {
         if self.client.update_geomety(geometry.to_msg()).await.is_err() {
             return Err(
@@ -188,9 +187,9 @@ impl Simulator {
 
 #[cfg(feature = "sync")]
 impl SimulatorSync {
-    pub fn update_geometry<T: Transducer>(
+    pub fn update_geometry(
         &mut self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<(), AUTDInternalError> {
         if self
             .runtime

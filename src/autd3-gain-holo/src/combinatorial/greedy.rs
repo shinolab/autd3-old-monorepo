@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -55,15 +55,15 @@ impl Greedy {
         Self { phase_div, ..self }
     }
 
-    fn transfer_foci<T: Transducer>(
-        trans: &T,
+    fn transfer_foci(
+        trans: &Transducer,
         sound_speed: float,
         attenuation: float,
         foci: &[Vector3],
         res: &mut [Complex],
     ) {
         res.iter_mut().zip(foci.iter()).for_each(|(r, f)| {
-            *r = propagate::<Sphere, T>(trans, attenuation, sound_speed, f);
+            *r = propagate::<Sphere>(trans, attenuation, sound_speed, f);
         });
     }
 
@@ -72,10 +72,10 @@ impl Greedy {
     }
 }
 
-impl<T: Transducer> Gain<T> for Greedy {
+impl Gain for Greedy {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)

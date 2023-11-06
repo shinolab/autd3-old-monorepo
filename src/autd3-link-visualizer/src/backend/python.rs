@@ -4,7 +4,7 @@
  * Created Date: 16/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use crate::{error::VisualizerError, Backend};
 
 use autd3_driver::{
     defined::{float, Complex},
-    geometry::{Geometry, Transducer},
+    geometry::Geometry,
 };
 
 #[pyclass]
@@ -295,9 +295,9 @@ def plot(modulation, config):
         Ok(())
     }
 
-    fn plot_phase<T: Transducer>(
+    fn plot_phase(
         config: Self::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         phases: Vec<float>,
     ) -> Result<(), VisualizerError> {
         let trans_x = geometry

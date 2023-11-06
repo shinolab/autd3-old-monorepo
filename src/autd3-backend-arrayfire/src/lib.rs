@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -81,9 +81,9 @@ impl LinAlgBackend for ArrayFireBackend {
         Ok(Rc::new(Self {}))
     }
 
-    fn generate_propagation_matrix<T: autd3_driver::geometry::Transducer>(
+    fn generate_propagation_matrix(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         foci: &[autd3_driver::geometry::Vector3],
         filter: &GainFilter,
     ) -> Result<Self::MatrixXc, HoloError> {
@@ -93,7 +93,7 @@ impl LinAlgBackend for ArrayFireBackend {
                 .flat_map(|dev| {
                     dev.iter().flat_map(move |tr| {
                         foci.iter().map(move |fp| {
-                            propagate::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
+                            propagate::<Sphere>(tr, dev.attenuation, dev.sound_speed, fp)
                         })
                     })
                 })
@@ -105,7 +105,7 @@ impl LinAlgBackend for ArrayFireBackend {
                         if let Some(filter) = filter.get(&dev.idx()) {
                             if filter[tr.local_idx()] {
                                 Some(foci.iter().map(move |fp| {
-                                    propagate::<Sphere, T>(tr, dev.attenuation, dev.sound_speed, fp)
+                                    propagate::<Sphere>(tr, dev.attenuation, dev.sound_speed, fp)
                                 }))
                             } else {
                                 None

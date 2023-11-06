@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,6 @@ use autd3_derive::LinkSync;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::Transducer,
     link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
@@ -48,12 +47,12 @@ impl AuditBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for AuditBuilder {
+impl LinkBuilder for AuditBuilder {
     type L = Audit;
 
     async fn open(
         self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
         Ok(Audit {
             is_open: true,

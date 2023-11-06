@@ -5,9 +5,9 @@ use std::prelude::rust_2021::*;
 extern crate std;
 mod error {
     use autd3_driver::error::AUTDInternalError;
-    use thiserror::Error;
     #[cfg(feature = "plotters")]
     use plotters::drawing::DrawingAreaErrorKind;
+    use thiserror::Error;
     pub enum VisualizerError {
         #[error("Plot range is invalid")]
         InvalidPlotRange,
@@ -66,11 +66,7 @@ mod error {
                     ::core::fmt::Formatter::write_str(f, "NotSupported")
                 }
                 VisualizerError::IoError(__self_0) => {
-                    ::core::fmt::Formatter::debug_tuple_field1_finish(
-                        f,
-                        "IoError",
-                        &__self_0,
-                    )
+                    ::core::fmt::Formatter::debug_tuple_field1_finish(f, "IoError", &__self_0)
                 }
                 VisualizerError::BitMapBackendError(__self_0) => {
                     ::core::fmt::Formatter::debug_tuple_field1_finish(
@@ -88,8 +84,7 @@ mod error {
         }
     }
     #[cfg(feature = "plotters")]
-    impl<E: std::error::Error + Send + Sync> From<DrawingAreaErrorKind<E>>
-    for VisualizerError {
+    impl<E: std::error::Error + Send + Sync> From<DrawingAreaErrorKind<E>> for VisualizerError {
         fn from(value: DrawingAreaErrorKind<E>) -> Self {
             Self::DrawingAreaError(value.to_string())
         }
@@ -149,7 +144,7 @@ mod backend {
             }
             fn plot_phase<T: autd3_driver::geometry::Transducer>(
                 _config: Self::PlotConfig,
-                _geometry: &autd3_driver::geometry::Geometry<T>,
+                _geometry: &autd3_driver::geometry::Geometry,
                 _phases: Vec<float>,
             ) -> Result<(), crate::error::VisualizerError> {
                 Err(crate::error::VisualizerError::NotSupported)
@@ -158,11 +153,11 @@ mod backend {
     }
     #[cfg(feature = "plotters")]
     mod plotters {
-        use std::ffi::OsString;
-        use plotters::{coord::Shift, prelude::*};
-        use scarlet::colormap::{ColorMap, ListedColorMap};
         use crate::{colormap, error::VisualizerError, Backend};
         use autd3_driver::{autd3_device::AUTD3, defined::float, geometry::Geometry};
+        use plotters::{coord::Shift, prelude::*};
+        use scarlet::colormap::{ColorMap, ListedColorMap};
+        use std::ffi::OsString;
         pub struct PlotConfig {
             pub figsize: (u32, u32),
             pub cbar_size: float,
@@ -212,12 +207,7 @@ mod backend {
                     &self.cmap,
                     &&self.fname,
                 ];
-                ::core::fmt::Formatter::debug_struct_fields_finish(
-                    f,
-                    "PlotConfig",
-                    names,
-                    values,
-                )
+                ::core::fmt::Formatter::debug_struct_fields_finish(f, "PlotConfig", names, values)
             }
         }
         impl Default for PlotConfig {
@@ -243,41 +233,31 @@ mod backend {
                 config: &PlotConfig,
             ) -> Result<(), crate::error::VisualizerError>
             where
-                VisualizerError: From<
-                    DrawingAreaErrorKind<
-                        <B as plotters::backend::DrawingBackend>::ErrorType,
-                    >,
-                >,
+                VisualizerError:
+                    From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
             {
                 root.fill(&WHITE)?;
                 let mut chart = ChartBuilder::on(&root)
                     .margin(config.margin)
                     .x_label_area_size(config.label_area_size)
                     .y_label_area_size(config.label_area_size)
-                    .build_cartesian_2d::<
-                        _,
-                        std::ops::Range<float>,
-                    >(0..modulation.len(), 0.0..1.0)?;
+                    .build_cartesian_2d::<_, std::ops::Range<float>>(
+                        0..modulation.len(),
+                        0.0..1.0,
+                    )?;
                 chart
                     .configure_mesh()
                     .disable_x_mesh()
                     .disable_y_mesh()
-                    .x_label_style(
-                        ("sans-serif", config.font_size).into_text_style(&root),
-                    )
-                    .y_label_style(
-                        ("sans-serif", config.font_size).into_text_style(&root),
-                    )
+                    .x_label_style(("sans-serif", config.font_size).into_text_style(&root))
+                    .y_label_style(("sans-serif", config.font_size).into_text_style(&root))
                     .x_desc("Index")
                     .y_desc("Modulation")
                     .draw()?;
-                chart
-                    .draw_series(
-                        LineSeries::new(
-                            modulation.iter().enumerate().map(|(i, &v)| (i, v)),
-                            BLUE.stroke_width(2),
-                        ),
-                    )?;
+                chart.draw_series(LineSeries::new(
+                    modulation.iter().enumerate().map(|(i, &v)| (i, v)),
+                    BLUE.stroke_width(2),
+                ))?;
                 root.present()?;
                 Ok(())
             }
@@ -290,21 +270,16 @@ mod backend {
                 config: &PlotConfig,
             ) -> Result<(), crate::error::VisualizerError>
             where
-                VisualizerError: From<
-                    DrawingAreaErrorKind<
-                        <B as plotters::backend::DrawingBackend>::ErrorType,
-                    >,
-                >,
+                VisualizerError:
+                    From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
             {
                 root.fill(&WHITE)?;
                 let xrange = observe_points
                     .iter()
-                    .fold(
-                        (float::MAX, float::MIN),
-                        |acc, &x| { (acc.0.min(x), acc.1.max(x)) },
-                    );
-                let x_labels = ((xrange.1 - xrange.0).floor() / config.ticks_step)
-                    as usize + 1;
+                    .fold((float::MAX, float::MIN), |acc, &x| {
+                        (acc.0.min(x), acc.1.max(x))
+                    });
+                let x_labels = ((xrange.1 - xrange.0).floor() / config.ticks_step) as usize + 1;
                 let mut chart = ChartBuilder::on(root)
                     .margin(config.margin)
                     .x_label_area_size(config.label_area_size)
@@ -315,25 +290,18 @@ mod backend {
                     .disable_x_mesh()
                     .disable_y_mesh()
                     .x_labels(x_labels)
-                    .x_label_style(
-                        ("sans-serif", config.font_size).into_text_style(root),
-                    )
-                    .y_label_style(
-                        ("sans-serif", config.font_size).into_text_style(root),
-                    )
+                    .x_label_style(("sans-serif", config.font_size).into_text_style(root))
+                    .y_label_style(("sans-serif", config.font_size).into_text_style(root))
                     .x_desc(x_label)
                     .y_desc("Amplitude [-]")
                     .draw()?;
-                chart
-                    .draw_series(
-                        LineSeries::new(
-                            observe_points
-                                .iter()
-                                .zip(acoustic_pressures.iter())
-                                .map(|(&x, v)| (x, v.norm())),
-                            BLUE.stroke_width(2),
-                        ),
-                    )?;
+                chart.draw_series(LineSeries::new(
+                    observe_points
+                        .iter()
+                        .zip(acoustic_pressures.iter())
+                        .map(|(&x, v)| (x, v.norm())),
+                    BLUE.stroke_width(2),
+                ))?;
                 root.present()?;
                 Ok(())
             }
@@ -350,65 +318,56 @@ mod backend {
                 config: &PlotConfig,
             ) -> Result<(), crate::error::VisualizerError>
             where
-                VisualizerError: From<
-                    DrawingAreaErrorKind<
-                        <B as plotters::backend::DrawingBackend>::ErrorType,
-                    >,
-                >,
+                VisualizerError:
+                    From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
             {
                 root.fill(&WHITE)?;
-                let main_area_size_x = (config.figsize.0 as float
-                    * (1.0 - config.cbar_size)) as u32;
+                let main_area_size_x =
+                    (config.figsize.0 as float * (1.0 - config.cbar_size)) as u32;
                 let (main_area, cbar_area) = root.split_horizontally(main_area_size_x);
                 let color_map_size = 1000;
                 let cmap: Vec<scarlet::color::RGBColor> = config
                     .cmap
-                    .transform(
-                        (0..=color_map_size).map(|x| x as f64 / color_map_size as f64),
-                    );
+                    .transform((0..=color_map_size).map(|x| x as f64 / color_map_size as f64));
                 {
                     let xrange = observe_points_x
                         .iter()
-                        .fold(
-                            (float::MAX, float::MIN),
-                            |acc, &x| { (acc.0.min(x), acc.1.max(x)) },
-                        );
+                        .fold((float::MAX, float::MIN), |acc, &x| {
+                            (acc.0.min(x), acc.1.max(x))
+                        });
                     let yrange = observe_points_y
                         .iter()
-                        .fold(
-                            (float::MAX, float::MIN),
-                            |acc, &x| { (acc.0.min(x), acc.1.max(x)) },
-                        );
+                        .fold((float::MAX, float::MIN), |acc, &x| {
+                            (acc.0.min(x), acc.1.max(x))
+                        });
                     let plot_range_x = xrange.1 - xrange.0;
                     let plot_range_y = yrange.1 - yrange.0;
-                    let x_labels = (plot_range_x.floor() / config.ticks_step) as usize
-                        + 1;
-                    let y_labels = (plot_range_y.floor() / config.ticks_step) as usize
-                        + 1;
-                    let available_size_x = main_area_size_x - config.label_area_size
-                        - config.margin;
-                    let available_size_y = config.figsize.1 - config.label_area_size
-                        - config.margin * 2;
+                    let x_labels = (plot_range_x.floor() / config.ticks_step) as usize + 1;
+                    let y_labels = (plot_range_y.floor() / config.ticks_step) as usize + 1;
+                    let available_size_x =
+                        main_area_size_x - config.label_area_size - config.margin;
+                    let available_size_y =
+                        config.figsize.1 - config.label_area_size - config.margin * 2;
                     let px_per_ps = (available_size_x as float / plot_range_x)
                         .min(available_size_y as float / plot_range_y);
                     let plot_size_x = (plot_range_x * px_per_ps) as u32;
                     let plot_size_y = (plot_range_y * px_per_ps) as u32;
                     let left_margin = config.margin
-                        + (main_area_size_x - plot_size_x - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (main_area_size_x - plot_size_x - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let right_margin = config.margin
-                        + (main_area_size_x - plot_size_x - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (main_area_size_x - plot_size_x - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let top_margin = config.margin
-                        + (config.figsize.1 - plot_size_y - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (config.figsize.1 - plot_size_y - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let bottom_margin = config.margin
-                        + (config.figsize.1 - plot_size_y - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (config.figsize.1 - plot_size_y - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let mut chart = ChartBuilder::on(&main_area)
                         .margin_left(left_margin)
                         .margin_top(top_margin)
@@ -427,30 +386,23 @@ mod backend {
                         .x_desc(x_label)
                         .y_desc(y_label)
                         .draw()?;
-                    chart
-                        .draw_series(
-                            ::itertools::Itertools::cartesian_product(
-                                    ::itertools::__std_iter::IntoIterator::into_iter(
-                                        observe_points_y,
-                                    ),
-                                    ::itertools::__std_iter::IntoIterator::into_iter(
-                                        observe_points_x,
-                                    ),
-                                )
-                                .zip(acoustic_pressures.iter())
-                                .map(|((&y, &x), c)| {
-                                    #[allow(clippy::unnecessary_cast)]
-                                    let c: scarlet::color::RGBColor = config
-                                        .cmap
-                                        .transform_single(
-                                            ((c.norm() - zrange.0) / (zrange.1 - zrange.0)) as f64,
-                                        );
-                                    Rectangle::new(
-                                        [(x, y), (x + resolution, y + resolution)],
-                                        RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
-                                    )
-                                }),
-                        )?;
+                    chart.draw_series(
+                        ::itertools::Itertools::cartesian_product(
+                            ::itertools::__std_iter::IntoIterator::into_iter(observe_points_y),
+                            ::itertools::__std_iter::IntoIterator::into_iter(observe_points_x),
+                        )
+                        .zip(acoustic_pressures.iter())
+                        .map(|((&y, &x), c)| {
+                            #[allow(clippy::unnecessary_cast)]
+                            let c: scarlet::color::RGBColor = config.cmap.transform_single(
+                                ((c.norm() - zrange.0) / (zrange.1 - zrange.0)) as f64,
+                            );
+                            Rectangle::new(
+                                [(x, y), (x + resolution, y + resolution)],
+                                RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
+                            )
+                        }),
+                    )?;
                 }
                 {
                     let mut chart = ChartBuilder::on(&cbar_area)
@@ -471,40 +423,27 @@ mod backend {
                         .label_style(("sans-serif", config.font_size))
                         .y_label_formatter(
                             &(|&v| {
-                                {
-                                    let res = ::alloc::fmt::format(
-                                        format_args!(
-                                            "{0:.2}",
-                                            zrange.0
-                                                + (zrange.1 - zrange.0) * v as float
-                                                    / color_map_size as float,
-                                        ),
-                                    );
-                                    res
-                                }
+                                let res = ::alloc::fmt::format(format_args!(
+                                    "{0:.2}",
+                                    zrange.0
+                                        + (zrange.1 - zrange.0) * v as float
+                                            / color_map_size as float,
+                                ));
+                                res
                             }),
                         )
                         .y_desc("Amplitude [-]")
                         .draw()?;
-                    chart
-                        .draw_series(
-                            cmap
-                                .iter()
-                                .enumerate()
-                                .map(|(i, c)| {
-                                    Rectangle::new(
-                                        [(0, i as i32), (1, i as i32 + 1)],
-                                        RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
-                                    )
-                                }),
-                        )?;
-                    chart
-                        .draw_series([
-                            Rectangle::new(
-                                [(0, 0), (1, color_map_size + 1)],
-                                BLACK.stroke_width(1),
-                            ),
-                        ])?;
+                    chart.draw_series(cmap.iter().enumerate().map(|(i, c)| {
+                        Rectangle::new(
+                            [(0, i as i32), (1, i as i32 + 1)],
+                            RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
+                        )
+                    }))?;
+                    chart.draw_series([Rectangle::new(
+                        [(0, 0), (1, color_map_size + 1)],
+                        BLACK.stroke_width(1),
+                    )])?;
                 }
                 root.present()?;
                 Ok(())
@@ -515,32 +454,25 @@ mod backend {
             >(
                 root: DrawingArea<B, Shift>,
                 config: &PlotConfig,
-                geometry: &Geometry<T>,
+                geometry: &Geometry,
                 phases: Vec<float>,
             ) -> Result<(), crate::error::VisualizerError>
             where
-                VisualizerError: From<
-                    DrawingAreaErrorKind<
-                        <B as plotters::backend::DrawingBackend>::ErrorType,
-                    >,
-                >,
+                VisualizerError:
+                    From<DrawingAreaErrorKind<<B as plotters::backend::DrawingBackend>::ErrorType>>,
             {
                 root.fill(&WHITE)?;
-                let main_area_size_x = (config.figsize.0 as float
-                    * (1.0 - config.cbar_size)) as u32;
+                let main_area_size_x =
+                    (config.figsize.0 as float * (1.0 - config.cbar_size)) as u32;
                 let (main_area, cbar_area) = root.split_horizontally(main_area_size_x);
                 let color_map_size = 1000;
                 let cmap: Vec<scarlet::color::RGBColor> = config
                     .cmap
-                    .transform(
-                        (0..=color_map_size).map(|x| x as f64 / color_map_size as f64),
-                    );
+                    .transform((0..=color_map_size).map(|x| x as f64 / color_map_size as f64));
                 {
                     let p = geometry
                         .iter()
-                        .flat_map(|dev| {
-                            dev.iter().map(|t| (t.position().x, t.position().y))
-                        })
+                        .flat_map(|dev| dev.iter().map(|t| (t.position().x, t.position().y)))
                         .collect::<Vec<_>>();
                     let min_x = p.iter().fold(float::MAX, |acc, &(x, _)| acc.min(x))
                         - AUTD3::TRANS_SPACING / 2.0;
@@ -552,30 +484,30 @@ mod backend {
                         + AUTD3::TRANS_SPACING / 2.0;
                     let plot_range_x = max_x - min_x;
                     let plot_range_y = max_y - min_y;
-                    let available_size_x = main_area_size_x - config.label_area_size
-                        - config.margin;
-                    let available_size_y = config.figsize.1 - config.label_area_size
-                        - config.margin * 2;
+                    let available_size_x =
+                        main_area_size_x - config.label_area_size - config.margin;
+                    let available_size_y =
+                        config.figsize.1 - config.label_area_size - config.margin * 2;
                     let px_per_ps = (available_size_x as float / plot_range_x)
                         .min(available_size_y as float / plot_range_y);
                     let plot_size_x = (plot_range_x * px_per_ps) as u32;
                     let plot_size_y = (plot_range_y * px_per_ps) as u32;
                     let left_margin = config.margin
-                        + (main_area_size_x - plot_size_x - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (main_area_size_x - plot_size_x - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let right_margin = config.margin
-                        + (main_area_size_x - plot_size_x - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (main_area_size_x - plot_size_x - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let top_margin = config.margin
-                        + (config.figsize.1 - plot_size_y - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (config.figsize.1 - plot_size_y - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let bottom_margin = config.margin
-                        + (config.figsize.1 - plot_size_y - config.label_area_size
-                            - config.margin)
-                            .max(0) / 2;
+                        + (config.figsize.1 - plot_size_y - config.label_area_size - config.margin)
+                            .max(0)
+                            / 2;
                     let mut scatter_ctx = ChartBuilder::on(&main_area)
                         .margin_left(left_margin)
                         .margin_right(right_margin)
@@ -600,33 +532,23 @@ mod backend {
                                 res
                             }),
                         )
-                        .x_label_style(
-                            ("sans-serif", config.font_size).into_text_style(&main_area),
-                        )
-                        .y_label_style(
-                            ("sans-serif", config.font_size).into_text_style(&main_area),
-                        )
+                        .x_label_style(("sans-serif", config.font_size).into_text_style(&main_area))
+                        .y_label_style(("sans-serif", config.font_size).into_text_style(&main_area))
                         .x_desc("x [mm]")
                         .y_desc("y [mm]")
                         .draw()?;
-                    scatter_ctx
-                        .draw_series(
-                            p
-                                .iter()
-                                .zip(phases.iter())
-                                .map(|(&(x, y), &p)| {
-                                    let v = (p / (2.0 * autd3_driver::defined::PI)) % 1.;
-                                    let c = cmap[((v * color_map_size as float) as usize)
-                                        .clamp(0, cmap.len() - 1)];
-                                    Circle::new(
-                                        (x, y),
-                                        AUTD3::TRANS_SPACING * px_per_ps / 2.0,
-                                        RGBColor(c.int_r(), c.int_g(), c.int_b())
-                                            .filled()
-                                            .stroke_width(0),
-                                    )
-                                }),
-                        )?;
+                    scatter_ctx.draw_series(p.iter().zip(phases.iter()).map(|(&(x, y), &p)| {
+                        let v = (p / (2.0 * autd3_driver::defined::PI)) % 1.;
+                        let c =
+                            cmap[((v * color_map_size as float) as usize).clamp(0, cmap.len() - 1)];
+                        Circle::new(
+                            (x, y),
+                            AUTD3::TRANS_SPACING * px_per_ps / 2.0,
+                            RGBColor(c.int_r(), c.int_g(), c.int_b())
+                                .filled()
+                                .stroke_width(0),
+                        )
+                    }))?;
                 }
                 {
                     let mut chart = ChartBuilder::on(&cbar_area)
@@ -658,25 +580,16 @@ mod backend {
                             }),
                         )
                         .draw()?;
-                    chart
-                        .draw_series(
-                            cmap
-                                .iter()
-                                .enumerate()
-                                .map(|(i, c)| {
-                                    Rectangle::new(
-                                        [(0, i as i32), (1, i as i32 + 1)],
-                                        RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
-                                    )
-                                }),
-                        )?;
-                    chart
-                        .draw_series([
-                            Rectangle::new(
-                                [(0, 0), (1, color_map_size + 1)],
-                                BLACK.stroke_width(1),
-                            ),
-                        ])?;
+                    chart.draw_series(cmap.iter().enumerate().map(|(i, c)| {
+                        Rectangle::new(
+                            [(0, i as i32), (1, i as i32 + 1)],
+                            RGBAColor(c.int_r(), c.int_g(), c.int_b(), 1.0).filled(),
+                        )
+                    }))?;
+                    chart.draw_series([Rectangle::new(
+                        [(0, 0), (1, color_map_size + 1)],
+                        BLACK.stroke_width(1),
+                    )])?;
                 }
                 root.present()?;
                 Ok(())
@@ -703,14 +616,12 @@ mod backend {
                 }
                 let yrange = acoustic_pressures
                     .iter()
-                    .fold(
-                        (float::MAX, float::MIN),
-                        |acc, &x| { (acc.0.min(x.norm()), acc.1.max(x.norm())) },
-                    );
+                    .fold((float::MAX, float::MIN), |acc, &x| {
+                        (acc.0.min(x.norm()), acc.1.max(x.norm()))
+                    });
                 if path.extension().map_or(false, |e| e == "svg") {
                     Self::plot_1d_impl(
-                        &SVGBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        &SVGBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &observe_points,
                         &acoustic_pressures,
                         x_label,
@@ -719,8 +630,7 @@ mod backend {
                     )
                 } else {
                     Self::plot_1d_impl(
-                        &BitMapBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        &BitMapBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &observe_points,
                         &acoustic_pressures,
                         x_label,
@@ -744,14 +654,12 @@ mod backend {
                 }
                 let zrange = acoustic_pressures
                     .iter()
-                    .fold(
-                        (float::MAX, float::MIN),
-                        |acc, &x| { (acc.0.min(x.norm()), acc.1.max(x.norm())) },
-                    );
+                    .fold((float::MAX, float::MIN), |acc, &x| {
+                        (acc.0.min(x.norm()), acc.1.max(x.norm()))
+                    });
                 if path.extension().map_or(false, |e| e == "svg") {
                     Self::plot_2d_impl(
-                        &SVGBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        &SVGBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &observe_x,
                         &observe_y,
                         &acoustic_pressures,
@@ -763,8 +671,7 @@ mod backend {
                     )
                 } else {
                     Self::plot_2d_impl(
-                        &BitMapBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        &BitMapBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &observe_x,
                         &observe_y,
                         &acoustic_pressures,
@@ -786,15 +693,13 @@ mod backend {
                 }
                 if path.extension().map_or(false, |e| e == "svg") {
                     Self::plot_modulation_impl(
-                        SVGBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        SVGBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         modulation,
                         &config,
                     )
                 } else {
                     Self::plot_modulation_impl(
-                        BitMapBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        BitMapBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         modulation,
                         &config,
                     )
@@ -802,7 +707,7 @@ mod backend {
             }
             fn plot_phase<T: autd3_driver::geometry::Transducer>(
                 config: Self::PlotConfig,
-                geometry: &autd3_driver::geometry::Geometry<T>,
+                geometry: &autd3_driver::geometry::Geometry,
                 phases: Vec<float>,
             ) -> Result<(), crate::error::VisualizerError> {
                 let path = std::path::Path::new(&config.fname);
@@ -811,16 +716,14 @@ mod backend {
                 }
                 if path.extension().map_or(false, |e| e == "svg") {
                     Self::plot_phase_impl(
-                        SVGBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        SVGBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &config,
                         geometry,
                         phases,
                     )
                 } else {
                     Self::plot_phase_impl(
-                        BitMapBackend::new(&config.fname, config.figsize)
-                            .into_drawing_area(),
+                        BitMapBackend::new(&config.fname, config.figsize).into_drawing_area(),
                         &config,
                         geometry,
                         phases,
@@ -860,9 +763,9 @@ mod backend {
             modulation: Vec<float>,
             config: Self::PlotConfig,
         ) -> Result<(), VisualizerError>;
-        fn plot_phase<T: Transducer>(
+        fn plot_phase(
             config: Self::PlotConfig,
-            geometry: &Geometry<T>,
+            geometry: &Geometry,
             phases: Vec<float>,
         ) -> Result<(), VisualizerError>;
     }
@@ -1136,11 +1039,10 @@ pub mod colormap {
                 [0.517825311942959, 0.0, 0.0],
                 [0.5, 0.0, 0.0],
             ]
-                .into_iter(),
+            .into_iter(),
         )
     }
 }
-use std::{marker::PhantomData, time::Duration};
 use autd3_driver::{
     acoustics::{
         directivity::{Directivity, Sphere},
@@ -1148,13 +1050,15 @@ use autd3_driver::{
     },
     cpu::{RxMessage, TxDatagram},
     defined::{float, Complex, PI},
-    error::AUTDInternalError, geometry::{Geometry, Transducer, Vector3},
+    error::AUTDInternalError,
+    geometry::{Geometry, Transducer, Vector3},
     link::{Link, LinkBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
+use error::VisualizerError;
 #[cfg(feature = "plotters")]
 pub use scarlet::colormap::ListedColorMap;
-use error::VisualizerError;
+use std::{marker::PhantomData, time::Duration};
 /// Link to monitoring the status of AUTD and acoustic field
 pub struct Visualizer<D, B>
 where
@@ -1218,7 +1122,8 @@ where
         rx: &mut [autd3_driver::cpu::RxMessage],
         timeout: Option<std::time::Duration>,
     ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
-        self.runtime.block_on(self.inner.send_receive(tx, rx, timeout))
+        self.runtime
+            .block_on(self.inner.send_receive(tx, rx, timeout))
     }
     fn wait_msg_processed(
         &mut self,
@@ -1226,12 +1131,13 @@ where
         rx: &mut [autd3_driver::cpu::RxMessage],
         timeout: std::time::Duration,
     ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
-        self.runtime.block_on(self.inner.wait_msg_processed(tx, rx, timeout))
+        self.runtime
+            .block_on(self.inner.wait_msg_processed(tx, rx, timeout))
     }
 }
 #[cfg(feature = "sync")]
 impl<D, B, T: autd3_driver::geometry::Transducer> autd3_driver::link::LinkSyncBuilder<T>
-for VisualizerSyncBuilder<D, B>
+    for VisualizerSyncBuilder<D, B>
 where
     D: Directivity,
     B: Backend,
@@ -1239,7 +1145,7 @@ where
     type L = VisualizerSync<D, B>;
     fn open(
         self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, autd3_driver::error::AUTDInternalError> {
         let Self { inner, runtime } = self;
         let inner = runtime.block_on(inner.open(geometry))?;
@@ -1271,8 +1177,7 @@ where
     timeout: Duration,
     _d: PhantomData<D>,
 }
-impl<T: Transducer, D: Directivity, B: Backend> LinkBuilder<T>
-for VisualizerBuilder<D, B> {
+impl<D: Directivity, B: Backend> LinkBuilder for VisualizerBuilder<D, B> {
     type L = Visualizer<D, B>;
     #[allow(unused_mut)]
     #[allow(
@@ -1287,12 +1192,12 @@ for VisualizerBuilder<D, B> {
     )]
     fn open<'life0, 'async_trait>(
         self,
-        geometry: &'life0 Geometry<T>,
+        geometry: &'life0 Geometry,
     ) -> ::core::pin::Pin<
         Box<
-            dyn ::core::future::Future<
-                Output = Result<Self::L, AUTDInternalError>,
-            > + ::core::marker::Send + 'async_trait,
+            dyn ::core::future::Future<Output = Result<Self::L, AUTDInternalError>>
+                + ::core::marker::Send
+                + 'async_trait,
         >,
     >
     where
@@ -1300,14 +1205,18 @@ for VisualizerBuilder<D, B> {
         Self: 'async_trait,
     {
         Box::pin(async move {
-            if let ::core::option::Option::Some(__ret) = ::core::option::Option::None::<
-                Result<Self::L, AUTDInternalError>,
-            > {
+            if let ::core::option::Option::Some(__ret) =
+                ::core::option::Option::None::<Result<Self::L, AUTDInternalError>>
+            {
                 return __ret;
             }
             let mut __self = self;
             let __ret: Result<Self::L, AUTDInternalError> = {
-                let VisualizerBuilder { mut backend, timeout, .. } = __self;
+                let VisualizerBuilder {
+                    mut backend,
+                    timeout,
+                    ..
+                } = __self;
                 backend.initialize()?;
                 Ok(Self::L {
                     is_open: true,
@@ -1325,7 +1234,8 @@ for VisualizerBuilder<D, B> {
                     _b: PhantomData,
                 })
             };
-            #[allow(unreachable_code)] __ret
+            #[allow(unreachable_code)]
+            __ret
         })
     }
 }
@@ -1406,81 +1316,50 @@ impl PlotRange {
     }
     fn observe_points(&self) -> Vec<Vector3> {
         match (self.nx(), self.ny(), self.nz()) {
-            (_, 1, 1) => {
-                self.observe_x()
-                    .iter()
-                    .map(|&x| Vector3::new(x, self.y_range.start, self.z_range.start))
-                    .collect()
-            }
-            (1, _, 1) => {
-                self.observe_y()
-                    .iter()
-                    .map(|&y| Vector3::new(self.x_range.start, y, self.z_range.start))
-                    .collect()
-            }
-            (1, 1, _) => {
-                self.observe_z()
-                    .iter()
-                    .map(|&z| Vector3::new(self.x_range.start, self.y_range.start, z))
-                    .collect()
-            }
-            (_, _, 1) => {
-                ::itertools::Itertools::cartesian_product(
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_y(),
-                        ),
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_x(),
-                        ),
-                    )
-                    .map(|(y, x)| Vector3::new(x, y, self.z_range.start))
-                    .collect()
-            }
-            (_, 1, _) => {
-                ::itertools::Itertools::cartesian_product(
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_x(),
-                        ),
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_z(),
-                        ),
-                    )
-                    .map(|(x, z)| Vector3::new(x, self.y_range.start, z))
-                    .collect()
-            }
-            (1, _, _) => {
-                ::itertools::Itertools::cartesian_product(
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_z(),
-                        ),
-                        ::itertools::__std_iter::IntoIterator::into_iter(
-                            self.observe_y(),
-                        ),
-                    )
-                    .map(|(z, y)| Vector3::new(self.x_range.start, y, z))
-                    .collect()
-            }
-            (_, _, _) => {
-                ::itertools::cons_tuples(
-                        ::itertools::Itertools::cartesian_product(
-                            ::itertools::__std_iter::IntoIterator::into_iter(
-                                ::itertools::Itertools::cartesian_product(
-                                    ::itertools::__std_iter::IntoIterator::into_iter(
-                                        self.observe_z(),
-                                    ),
-                                    ::itertools::__std_iter::IntoIterator::into_iter(
-                                        self.observe_y(),
-                                    ),
-                                ),
-                            ),
-                            ::itertools::__std_iter::IntoIterator::into_iter(
-                                self.observe_x(),
-                            ),
-                        ),
-                    )
-                    .map(|(z, y, x)| Vector3::new(x, y, z))
-                    .collect()
-            }
+            (_, 1, 1) => self
+                .observe_x()
+                .iter()
+                .map(|&x| Vector3::new(x, self.y_range.start, self.z_range.start))
+                .collect(),
+            (1, _, 1) => self
+                .observe_y()
+                .iter()
+                .map(|&y| Vector3::new(self.x_range.start, y, self.z_range.start))
+                .collect(),
+            (1, 1, _) => self
+                .observe_z()
+                .iter()
+                .map(|&z| Vector3::new(self.x_range.start, self.y_range.start, z))
+                .collect(),
+            (_, _, 1) => ::itertools::Itertools::cartesian_product(
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_y()),
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_x()),
+            )
+            .map(|(y, x)| Vector3::new(x, y, self.z_range.start))
+            .collect(),
+            (_, 1, _) => ::itertools::Itertools::cartesian_product(
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_x()),
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_z()),
+            )
+            .map(|(x, z)| Vector3::new(x, self.y_range.start, z))
+            .collect(),
+            (1, _, _) => ::itertools::Itertools::cartesian_product(
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_z()),
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_y()),
+            )
+            .map(|(z, y)| Vector3::new(self.x_range.start, y, z))
+            .collect(),
+            (_, _, _) => ::itertools::cons_tuples(::itertools::Itertools::cartesian_product(
+                ::itertools::__std_iter::IntoIterator::into_iter(
+                    ::itertools::Itertools::cartesian_product(
+                        ::itertools::__std_iter::IntoIterator::into_iter(self.observe_z()),
+                        ::itertools::__std_iter::IntoIterator::into_iter(self.observe_y()),
+                    ),
+                ),
+                ::itertools::__std_iter::IntoIterator::into_iter(self.observe_x()),
+            ))
+            .map(|(z, y, x)| Vector3::new(x, y, z))
+            .collect(),
         }
     }
 }
@@ -1577,11 +1456,19 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     }
     /// Get raw modulation data
     pub fn modulation_raw(&self) -> Vec<float> {
-        self.cpus[0].fpga().modulation().iter().map(|&x| x as float / 255.).collect()
+        self.cpus[0]
+            .fpga()
+            .modulation()
+            .iter()
+            .map(|&x| x as float / 255.)
+            .collect()
     }
     /// Get modulation data
     pub fn modulation(&self) -> Vec<float> {
-        self.modulation_raw().iter().map(|&x| (0.5 * PI * x).sin()).collect()
+        self.modulation_raw()
+            .iter()
+            .map(|&x| (0.5 * PI * x).sin())
+            .collect()
     }
     /// Calculate acoustic field at specified points
     ///
@@ -1590,10 +1477,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `observe_points` - Observe points iterator
     /// * `geometry` - Geometry
     ///
-    pub fn calc_field<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
+    pub fn calc_field<'a, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Vec<Complex> {
         self.calc_field_of::<T, I>(observe_points, geometry, 0)
     }
@@ -1605,10 +1492,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn calc_field_of<'a, T: Transducer, I: IntoIterator<Item = &'a Vector3>>(
+    pub fn calc_field_of<'a, I: IntoIterator<Item = &'a Vector3>>(
         &self,
         observe_points: I,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Vec<Complex> {
         observe_points
@@ -1617,27 +1504,19 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
                 self.cpus
                     .iter()
                     .enumerate()
-                    .fold(
-                        Complex::new(0., 0.),
-                        |acc, (i, cpu)| {
-                            let sound_speed = geometry[i].sound_speed;
-                            let drives = cpu.fpga().duties_and_phases(idx);
-                            acc
-                                + geometry[i]
-                                    .iter()
-                                    .zip(drives.iter())
-                                    .fold(
-                                        Complex::new(0., 0.),
-                                        |acc, (t, d)| {
-                                            let amp = (PI * d.0 as float / t.cycle() as float).sin();
-                                            let phase = 2. * PI * d.1 as float / t.cycle() as float;
-                                            acc
-                                                + propagate::<D, T>(t, 0.0, sound_speed, target)
-                                                    * Complex::from_polar(amp, phase)
-                                        },
-                                    )
-                        },
-                    )
+                    .fold(Complex::new(0., 0.), |acc, (i, cpu)| {
+                        let sound_speed = geometry[i].sound_speed;
+                        let drives = cpu.fpga().duties_and_phases(idx);
+                        acc + geometry[i].iter().zip(drives.iter()).fold(
+                            Complex::new(0., 0.),
+                            |acc, (t, d)| {
+                                let amp = (PI * d.0 as float / t.cycle() as float).sin();
+                                let phase = 2. * PI * d.1 as float / t.cycle() as float;
+                                acc + propagate::<D, T>(t, 0.0, sound_speed, target)
+                                    * Complex::from_polar(amp, phase)
+                            },
+                        )
+                    })
             })
             .collect()
     }
@@ -1649,11 +1528,11 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `config` - Plot configuration
     /// * `geometry` - Geometry
     ///
-    pub fn plot_field<T: Transducer>(
+    pub fn plot_field(
         &self,
         config: B::PlotConfig,
         range: PlotRange,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<(), VisualizerError> {
         self.plot_field_of(config, range, geometry, 0)
     }
@@ -1666,11 +1545,11 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn plot_field_of<T: Transducer>(
+    pub fn plot_field_of(
         &self,
         config: B::PlotConfig,
         range: PlotRange,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let observe_points = range.observe_points();
@@ -1716,10 +1595,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `config` - Plot configuration
     /// * `geometry` - Geometry
     ///
-    pub fn plot_phase<T: Transducer>(
+    pub fn plot_phase(
         &self,
         config: B::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
     ) -> Result<(), VisualizerError> {
         self.plot_phase_of(config, geometry, 0)
     }
@@ -1731,10 +1610,10 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     /// * `geometry` - Geometry
     /// * `idx` - Index of STM. If you use Gain, this value should be 0.
     ///
-    pub fn plot_phase_of<T: Transducer>(
+    pub fn plot_phase_of(
         &self,
         config: B::PlotConfig,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         idx: usize,
     ) -> Result<(), VisualizerError> {
         let phases = self.phases_of(idx);
@@ -1746,10 +1625,7 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
         Ok(())
     }
     /// Plot raw modulation data
-    pub fn plot_modulation_raw(
-        &self,
-        config: B::PlotConfig,
-    ) -> Result<(), VisualizerError> {
+    pub fn plot_modulation_raw(&self, config: B::PlotConfig) -> Result<(), VisualizerError> {
         B::plot_modulation(self.modulation_raw(), config)?;
         Ok(())
     }
@@ -1769,9 +1645,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         &'life0 mut self,
     ) -> ::core::pin::Pin<
         Box<
-            dyn ::core::future::Future<
-                Output = Result<(), AUTDInternalError>,
-            > + ::core::marker::Send + 'async_trait,
+            dyn ::core::future::Future<Output = Result<(), AUTDInternalError>>
+                + ::core::marker::Send
+                + 'async_trait,
         >,
     >
     where
@@ -1779,9 +1655,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Self: 'async_trait,
     {
         Box::pin(async move {
-            if let ::core::option::Option::Some(__ret) = ::core::option::Option::None::<
-                Result<(), AUTDInternalError>,
-            > {
+            if let ::core::option::Option::Some(__ret) =
+                ::core::option::Option::None::<Result<(), AUTDInternalError>>
+            {
                 return __ret;
             }
             let mut __self = self;
@@ -1792,7 +1668,8 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
                 __self.is_open = false;
                 Ok(())
             };
-            #[allow(unreachable_code)] __ret
+            #[allow(unreachable_code)]
+            __ret
         })
     }
     #[allow(
@@ -1810,9 +1687,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         tx: &'life1 TxDatagram,
     ) -> ::core::pin::Pin<
         Box<
-            dyn ::core::future::Future<
-                Output = Result<bool, AUTDInternalError>,
-            > + ::core::marker::Send + 'async_trait,
+            dyn ::core::future::Future<Output = Result<bool, AUTDInternalError>>
+                + ::core::marker::Send
+                + 'async_trait,
         >,
     >
     where
@@ -1821,9 +1698,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Self: 'async_trait,
     {
         Box::pin(async move {
-            if let ::core::option::Option::Some(__ret) = ::core::option::Option::None::<
-                Result<bool, AUTDInternalError>,
-            > {
+            if let ::core::option::Option::Some(__ret) =
+                ::core::option::Option::None::<Result<bool, AUTDInternalError>>
+            {
                 return __ret;
             }
             let mut __self = self;
@@ -1831,15 +1708,13 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
                 if !__self.is_open {
                     return Ok(false);
                 }
-                __self
-                    .cpus
-                    .iter_mut()
-                    .for_each(|cpu| {
-                        cpu.send(tx);
-                    });
+                __self.cpus.iter_mut().for_each(|cpu| {
+                    cpu.send(tx);
+                });
                 Ok(true)
             };
-            #[allow(unreachable_code)] __ret
+            #[allow(unreachable_code)]
+            __ret
         })
     }
     #[allow(
@@ -1857,9 +1732,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         rx: &'life1 mut [RxMessage],
     ) -> ::core::pin::Pin<
         Box<
-            dyn ::core::future::Future<
-                Output = Result<bool, AUTDInternalError>,
-            > + ::core::marker::Send + 'async_trait,
+            dyn ::core::future::Future<Output = Result<bool, AUTDInternalError>>
+                + ::core::marker::Send
+                + 'async_trait,
         >,
     >
     where
@@ -1868,9 +1743,9 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Self: 'async_trait,
     {
         Box::pin(async move {
-            if let ::core::option::Option::Some(__ret) = ::core::option::Option::None::<
-                Result<bool, AUTDInternalError>,
-            > {
+            if let ::core::option::Option::Some(__ret) =
+                ::core::option::Option::None::<Result<bool, AUTDInternalError>>
+            {
                 return __ret;
             }
             let mut __self = self;
@@ -1878,16 +1753,14 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
                 if !__self.is_open {
                     return Ok(false);
                 }
-                __self
-                    .cpus
-                    .iter_mut()
-                    .for_each(|cpu| {
-                        rx[cpu.idx()].ack = cpu.ack();
-                        rx[cpu.idx()].data = cpu.rx_data();
-                    });
+                __self.cpus.iter_mut().for_each(|cpu| {
+                    rx[cpu.idx()].ack = cpu.ack();
+                    rx[cpu.idx()].data = cpu.rx_data();
+                });
                 Ok(true)
             };
-            #[allow(unreachable_code)] __ret
+            #[allow(unreachable_code)]
+            __ret
         })
     }
     fn is_open(&self) -> bool {

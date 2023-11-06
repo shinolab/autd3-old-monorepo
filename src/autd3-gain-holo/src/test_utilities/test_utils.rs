@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -1823,7 +1823,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_generate_propagation_matrix(&self) -> Result<(), HoloError> {
-        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
         let reference = {
@@ -1840,7 +1840,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
                 .collect::<Vec<_>>();
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
-                    g[(i, j)] = propagate::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                    g[(i, j)] = propagate::<Sphere>(
                         transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,
@@ -1863,10 +1863,9 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_generate_propagation_matrix_with_filter(&self) -> Result<(), HoloError> {
-        use autd3_driver::geometry::Transducer;
         use std::collections::HashMap;
 
-        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
         let filter = geometry
@@ -1897,7 +1896,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
             let mut g = MatrixXc::zeros(foci.len(), transducers.len());
             (0..foci.len()).for_each(|i| {
                 (0..transducers.len()).for_each(|j| {
-                    g[(i, j)] = propagate::<Sphere, autd3_driver::geometry::LegacyTransducer>(
+                    g[(i, j)] = propagate::<Sphere>(
                         transducers[j].1,
                         geometry[transducers[j].0].attenuation,
                         geometry[transducers[j].0].sound_speed,
@@ -1930,7 +1929,7 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
     }
 
     fn test_gen_back_prop(&self) -> Result<(), HoloError> {
-        let geometry = generate_geometry::<autd3_driver::geometry::LegacyTransducer>(4);
+        let geometry = generate_geometry(4);
         let foci = gen_foci(4).map(|(p, _)| p).collect::<Vec<_>>();
 
         let m = geometry

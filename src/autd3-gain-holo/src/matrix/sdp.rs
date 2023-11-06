@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -80,10 +80,10 @@ impl<B: LinAlgBackend + 'static> SDP<B> {
     }
 }
 
-impl<B: LinAlgBackend, T: Transducer> Gain<T> for SDP<B> {
+impl<B: LinAlgBackend> Gain for SDP<B> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let b = self

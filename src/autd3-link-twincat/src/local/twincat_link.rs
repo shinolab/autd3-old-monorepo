@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use lib::Library;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::{Geometry},
     link::{Link, LinkBuilder},
 };
 
@@ -66,10 +66,10 @@ impl TwinCATBuilder {
 }
 
 #[async_trait::async_trait]
-impl<T: Transducer> LinkBuilder<T> for TwinCATBuilder {
+impl LinkBuilder for TwinCATBuilder {
     type L = TwinCAT;
 
-    async fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    async fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {

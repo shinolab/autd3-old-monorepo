@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 use std::rc::Rc;
 
 use crate::pb::*;
-use autd3_driver::geometry::LegacyTransducer;
 
 pub trait ToMessage {
     type Message: prost::Message;
@@ -64,7 +63,7 @@ impl ToMessage for autd3_driver::common::Amplitude {
     }
 }
 
-impl<T: autd3_driver::geometry::Transducer> ToMessage for autd3_driver::geometry::Geometry<T> {
+impl ToMessage for autd3_driver::geometry::Geometry {
     type Message = Geometry;
 
     fn to_msg(&self) -> Self::Message {
@@ -89,7 +88,7 @@ impl<T: autd3_driver::geometry::Transducer> ToMessage for autd3_driver::geometry
     }
 }
 
-impl<T: autd3_driver::geometry::Transducer> ToMessage for &[autd3_driver::geometry::Device<T>] {
+impl ToMessage for &[autd3_driver::geometry::Device] {
     type Message = Geometry;
 
     fn to_msg(&self) -> Self::Message {
@@ -546,19 +545,18 @@ impl FromMessage<Greedy> for autd3_gain_holo::Greedy {
     }
 }
 
-impl FromMessage<Geometry> for autd3_driver::geometry::Geometry<LegacyTransducer> {
+impl FromMessage<Geometry> for autd3_driver::geometry::Geometry {
     fn from_msg(msg: &Geometry) -> Self {
-        use autd3_driver::geometry::Transducer;
         let devices = msg
             .devices
             .iter()
             .map(|dev| {
-                let mut device = autd3_driver::geometry::Device::<LegacyTransducer>::new(
+                let mut device = autd3_driver::geometry::Device::new(
                     dev.idx as usize,
                     dev.transducers
                         .iter()
                         .map(|tr| {
-                            LegacyTransducer::new(
+                            autd3_driver::geometry::Transducer::new(
                                 tr.idx as _,
                                 autd3_driver::geometry::Vector3::from_msg(tr.pos.as_ref().unwrap()),
                                 autd3_driver::geometry::UnitQuaternion::from_msg(

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -63,10 +63,10 @@ impl Plane {
     }
 }
 
-impl<T: Transducer> Gain<T> for Plane {
+impl Gain for Plane {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |dev, tr| {
@@ -85,7 +85,7 @@ mod tests {
 
     use autd3_driver::{
         autd3_device::AUTD3,
-        geometry::{IntoDevice, LegacyTransducer},
+        geometry::{IntoDevice},
     };
 
     use super::*;
@@ -94,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_plane() {
-        let geometry: Geometry<LegacyTransducer> =
+        let geometry: Geometry =
             Geometry::new(vec![
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);

@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_driver::{
     datagram::{Clear, Datagram, Stop, Synchronize, UpdateFlags},
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
-    geometry::{Device, Geometry, LegacyTransducer, Transducer},
+    geometry::{Device, Geometry},
     operation::OperationHandler,
 };
 
@@ -41,31 +41,31 @@ use crate::link::nop::NopSync as Nop;
 use autd3_driver::link::LinkSync as Link;
 
 /// Controller for AUTD
-pub struct Controller<T: Transducer, L: Link> {
+pub struct Controller<L: Link> {
     pub link: L,
-    pub geometry: Geometry<T>,
+    pub geometry: Geometry,
     tx_buf: TxDatagram,
     rx_buf: Vec<RxMessage>,
 }
 
-impl Controller<LegacyTransducer, Nop> {
+impl Controller<Nop> {
     /// Create Controller builder
-    pub fn builder() -> ControllerBuilder<LegacyTransducer> {
-        ControllerBuilder::<LegacyTransducer>::new()
+    pub fn builder() -> ControllerBuilder {
+        ControllerBuilder::new()
     }
 
     /// Create Controller builder
-    pub fn builder_with<T: Transducer>() -> ControllerBuilder<T> {
-        ControllerBuilder::<T>::new()
+    pub fn builder_with() -> ControllerBuilder {
+        ControllerBuilder::new()
     }
 }
 
-impl<T: Transducer, L: Link> Controller<T, L> {
+impl<L: Link> Controller<L> {
     #[must_use]
-    pub fn group<K: Hash + Eq + Clone, F: Fn(&Device<T>) -> Option<K>>(
+    pub fn group<K: Hash + Eq + Clone, F: Fn(&Device) -> Option<K>>(
         &mut self,
         f: F,
-    ) -> GroupGuard<K, T, L, F> {
+    ) -> GroupGuard<K, L, F> {
         GroupGuard {
             cnt: self,
             f,
@@ -76,9 +76,9 @@ impl<T: Transducer, L: Link> Controller<T, L> {
 }
 
 #[cfg(not(feature = "sync"))]
-impl<T: Transducer, L: Link> Controller<T, L> {
+impl<L: Link> Controller<L> {
     #[doc(hidden)]
-    pub async fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+    pub async fn open_impl(geometry: Geometry, link: L) -> Result<Controller<L>, AUTDError> {
         let num_devices = geometry.num_devices();
         let tx_buf = TxDatagram::new(num_devices);
         let mut cnt = Controller {
@@ -95,9 +95,9 @@ impl<T: Transducer, L: Link> Controller<T, L> {
 }
 
 #[cfg(feature = "sync")]
-impl<T: Transducer, L: Link> Controller<T, L> {
+impl<L: Link> Controller<L> {
     #[doc(hidden)]
-    pub fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+    pub fn open_impl(geometry: Geometry, link: L) -> Result<Controller<L>, AUTDError> {
         let num_devices = geometry.num_devices();
         let tx_buf = TxDatagram::new(num_devices);
         let mut cnt = Controller {
@@ -114,7 +114,7 @@ impl<T: Transducer, L: Link> Controller<T, L> {
 }
 
 #[cfg(not(feature = "sync"))]
-impl<T: Transducer, L: Link> Controller<T, L> {
+impl<L: Link> Controller<L> {
     /// Send data to the devices
     ///
     /// # Arguments
@@ -126,7 +126,7 @@ impl<T: Transducer, L: Link> Controller<T, L> {
     /// * `Ok(true)` - It is confirmed that the data has been successfully transmitted
     /// * `Ok(false)` - There are no errors, but it is unclear whether the data has been sent or not
     ///
-    pub async fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+    pub async fn send<S: Datagram>(&mut self, s: S) -> Result<bool, AUTDError> {
         let timeout = s.timeout();
 
         let (mut op1, mut op2) = s.operation()?;
@@ -278,8 +278,8 @@ impl<T: Transducer, L: Link> Controller<T, L> {
 }
 
 #[cfg(feature = "sync")]
-impl<T: Transducer, L: Link> Controller<T, L> {
-    pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+impl<L: Link> Controller<L> {
+    pub fn send<S: Datagram>(&mut self, s: S) -> Result<bool, AUTDError> {
         let timeout = s.timeout();
 
         let (mut op1, mut op2) = s.operation()?;

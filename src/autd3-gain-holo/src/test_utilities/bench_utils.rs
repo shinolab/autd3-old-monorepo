@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3_driver::{
     autd3_device::AUTD3,
     datagram::{Gain, GainFilter},
     defined::{float, PI},
-    geometry::{Geometry, IntoDevice, LegacyTransducer, Transducer, Vector3},
+    geometry::{Geometry, IntoDevice, Vector3},
 };
 
 use crate::*;
@@ -31,7 +31,7 @@ const ENABLE_EVP_BENCH: bool = true;
 const ENABLE_SDP_BENCH: bool = true;
 const ENABLE_LM_BENCH: bool = true;
 
-pub fn generate_geometry<T: Transducer>(size: usize) -> Geometry<T> {
+pub fn generate_geometry(size: usize) -> Geometry {
     Geometry::new(
         (0..size)
             .flat_map(|i| {
@@ -75,7 +75,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_NAIVE_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Naive", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         Naive::new(backend.clone())
@@ -89,7 +89,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GS_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("GS", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         GS::new(backend.clone())
@@ -103,7 +103,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GSPAT_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("GSPAT", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
@@ -117,7 +117,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_EVP_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("EVP", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         EVP::new(backend.clone())
@@ -131,7 +131,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_SDP_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("SDP", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         SDP::new(backend.clone())
@@ -145,7 +145,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_LM_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("LM", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         LM::new(backend.clone())
@@ -159,7 +159,7 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GREEDY_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Greedy", size * size),
-                &generate_geometry::<LegacyTransducer>(size),
+                &generate_geometry(size),
                 |b, geometry| {
                     b.iter(|| {
                         Greedy::new()
@@ -185,7 +185,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_NAIVE_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Naive", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         Naive::new(backend.clone())
@@ -199,7 +199,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GS_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("GS", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         GS::new(backend.clone())
@@ -213,7 +213,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GSPAT_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("GSPAT", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
@@ -227,7 +227,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_EVP_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("EVP", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         EVP::new(backend.clone())
@@ -241,7 +241,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_SDP_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("SDP", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         SDP::new(backend.clone())
@@ -255,7 +255,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_LM_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("LM", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         LM::new(backend.clone())
@@ -269,7 +269,7 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
         if ENABLE_GREEDY_BENCH {
             group.bench_with_input(
                 BenchmarkId::new("Greedy", size),
-                &generate_geometry::<LegacyTransducer>(N),
+                &generate_geometry(N),
                 |b, geometry| {
                     b.iter(|| {
                         Greedy::new()
