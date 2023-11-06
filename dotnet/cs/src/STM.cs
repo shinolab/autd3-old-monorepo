@@ -196,7 +196,7 @@ namespace AUTD3Sharp
         /// <para>The sampling timing is determined by hardware, thus the sampling time is precise.</para>
         /// <para>FocusSTM has following restrictions:</para>
         /// <list>
-        /// <item>The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).</item>
+        /// <item>The maximum number of sampling Gain is 2048.</item>
         /// <item>The sampling frequency is <see cref="AUTD3.FPGAClkFreq">AUTD3.FPGAClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
         /// </list></remarks>
         public sealed class GainSTM : STM
