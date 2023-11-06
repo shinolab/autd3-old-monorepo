@@ -308,6 +308,16 @@ class Config:
         else:
             return [command]
 
+    def cargo_test_capi_command(self):
+        command = self.cargo_command_base("test")
+        if self._all:
+            command.append("--all")
+            if not self.cuda:
+                command.append("--exclude=autd3capi-backend-cuda")
+            if not self.is_built_autd3capi_link_visualizer():
+                command.append("--exclude=autd3capi-link-visualizer")
+        return command
+
     def cargo_clippy_capi_command(self):
         command = self.cargo_build_capi_command()[0]
         command[1] = "clippy"
@@ -393,6 +403,9 @@ def rust_test(args):
 
     with working_dir("src"):
         subprocess.run(config.cargo_test_command()).check_returncode()
+
+    with working_dir("capi"):
+        subprocess.run(config.cargo_test_capi_command()).check_returncode()
 
 
 def rust_run(args):

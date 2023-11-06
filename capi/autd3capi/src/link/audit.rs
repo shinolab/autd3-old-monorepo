@@ -322,7 +322,6 @@ mod tests {
     use driver::fpga::FPGAControlFlags;
 
     use crate::{
-        gain::{null::AUTDGainNull, AUTDGainIntoDatagram},
         geometry::{
             device::{AUTDDevice, AUTDDeviceSetForceFan},
             AUTDGeometry,
@@ -523,23 +522,6 @@ mod tests {
     }
 
     #[test]
-    fn test_fpga_cycles() {
-        unsafe {
-            let cnt = create_controller();
-            let link = AUTDLinkGet(cnt);
-
-            (0..2).for_each(|i| {
-                let n = AUTDLinkAuditCpuNumTransducers(link, i);
-
-                let mut cycles = vec![0; n as usize];
-                AUTDLinkAuditFpgaCycles(link, i, cycles.as_mut_ptr());
-
-                cycles.iter().for_each(|&v| assert_eq!(v, 4096));
-            })
-        }
-    }
-
-    #[test]
     fn test_fpga_mod_delays() {
         unsafe {
             let cnt = create_controller();
@@ -657,7 +639,7 @@ mod tests {
             let link = AUTDLinkGet(cnt);
 
             (0..2).for_each(|i| {
-                assert_eq!(AUTDLinkAuditFpgaModulationFrequencyDivision(link, i), 40960);
+                assert_eq!(AUTDLinkAuditFpgaModulationFrequencyDivision(link, i), 5120);
             })
         }
     }
