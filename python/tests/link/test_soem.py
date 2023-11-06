@@ -27,10 +27,9 @@ def on_lost_f(msg: ctypes.c_char_p):
     os._exit(-1)
 
 
-@pytest.mark.soem
+@pytest.mark.soem()
 def test_soem():
-    list = SOEM.enumerate_adapters()
-    print(list)
+    print(SOEM.enumerate_adapters())
 
     on_lost = OnErrFunc(on_lost_f)
     autd = (
@@ -46,19 +45,19 @@ def test_soem():
             .with_timer_strategy(TimerStrategy.Sleep)
             .with_sync_mode(SyncMode.FreeRun)
             .with_state_check_interval(timedelta(milliseconds=100))
-            .with_timeout(timedelta(milliseconds=200))
+            .with_timeout(timedelta(milliseconds=200)),
         )
     )
 
     autd.close()
 
 
-@pytest.mark.remote_soem
+@pytest.mark.remote_soem()
 def test_remote_soem():
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(RemoteSOEM("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
+        .open_with(RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
     )
 
     autd.close()

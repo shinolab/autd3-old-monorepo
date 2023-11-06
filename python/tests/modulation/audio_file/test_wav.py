@@ -12,20 +12,19 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-import os
 from datetime import timedelta
+from pathlib import Path
 
 import numpy as np
 
 from pyautd3.modulation.audio_file import Wav
-
-from ...test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_wav():
     autd = create_controller()
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")))
+    assert autd.send(Wav(Path(__file__).parent / "sin150.wav"))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -112,16 +111,16 @@ def test_wav():
             64,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_frequency_division(4096 // 8))
+    assert autd.send(Wav(Path(__file__).parent / "sin150.wav").with_sampling_frequency_division(512))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 4096
+        assert autd.link.modulation_frequency_division(dev.idx) == 512
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_frequency(8e3))
+    assert autd.send(Wav(Path(__file__).parent / "sin150.wav").with_sampling_frequency(8e3))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 20480
+        assert autd.link.modulation_frequency_division(dev.idx) == 2560
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_period(timedelta(microseconds=100)))
+    assert autd.send(Wav(Path(__file__).parent / "sin150.wav").with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 16384
+        assert autd.link.modulation_frequency_division(dev.idx) == 2048

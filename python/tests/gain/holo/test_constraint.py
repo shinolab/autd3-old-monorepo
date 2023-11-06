@@ -15,8 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3.gain.holo import AmplitudeConstraint, Naive, NalgebraBackend
-
-from ...test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_constraint():
@@ -32,7 +31,7 @@ def test_constraint():
     assert autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 680)
+        assert np.all(duties == 85)
         assert not np.all(phases == 0)
 
     g = (
@@ -56,14 +55,14 @@ def test_constraint():
     assert autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(536 <= duties)
-        assert np.all(duties <= 680)
+        assert np.all(duties >= 67)
+        assert np.all(duties <= 85)
         assert not np.all(phases == 0)
 
     g = (
         Naive(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5)
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5)
         .with_constraint(AmplitudeConstraint.dont_care())
     )
     assert autd.send(g)

@@ -18,12 +18,12 @@ import pytest
 
 from pyautd3 import (
     AUTD3,
-    Amplitudes,
     Clear,
     ConfigureAmpFilter,
     ConfigureModDelay,
     ConfigurePhaseFilter,
     Controller,
+    Device,
     FirmwareInfo,
     Silencer,
     Stop,
@@ -36,9 +36,10 @@ from pyautd3.link.audit import Audit
 from pyautd3.modulation import Sine, Static
 
 
-def create_controller():
+def create_controller() -> Controller[Audit]:
     return (
-        Controller.builder()
+        Controller[Audit]
+        .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
@@ -98,7 +99,7 @@ def test_fpga_info():
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.fpga_info
+        _ = autd.fpga_info
     assert str(e.value) == "broken"
 
 
@@ -135,7 +136,8 @@ def test_close():
 
 def test_send_timeout():
     autd = (
-        Controller.builder()
+        Controller[Audit]
+        .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=0)))
@@ -158,7 +160,8 @@ def test_send_timeout():
     assert autd.link.last_timeout_ns() == 3000
 
     autd = (
-        Controller.builder()
+        Controller[Audit]
+        .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=10)))
@@ -215,7 +218,7 @@ def test_send_double():
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 2048)
+        assert np.all(duties == 256)
         assert np.all(phases == 0)
 
     autd.link.down()
@@ -235,7 +238,7 @@ def test_send_special():
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 2048)
+        assert np.all(duties == 256)
 
     autd.send(Stop())
 
@@ -261,13 +264,13 @@ def test_group():
     assert len(mod) == 2
     assert np.all(mod == 0xFF)
     duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 8)
+    assert np.all(duties == 0)
     assert np.all(phases == 0)
 
     mod = autd.link.modulation(1)
     assert len(mod) == 80
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 2048)
+    assert np.all(duties == 256)
     assert np.all(phases == 0)
 
     autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(1.0))).send()
@@ -275,7 +278,7 @@ def test_group():
     mod = autd.link.modulation(0)
     assert len(mod) == 80
     duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 2048)
+    assert np.all(duties == 256)
     assert np.all(phases == 0)
 
     mod = autd.link.modulation(1)
@@ -289,7 +292,7 @@ def test_group_check_only_for_enabled():
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
 
-    def f(dev):
+    def f(dev: Device) -> int:
         check[dev.idx] = True
         return 0
 
@@ -306,42 +309,8 @@ def test_group_check_only_for_enabled():
     mod = autd.link.modulation(1)
     assert len(mod) == 80
     duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
-
-
-def test_amplitudes():
-    autd = (
-        Controller.builder()
-        .advanced_phase()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with(Audit.builder())
-    )
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
-        assert np.all(phases == 0)
-
-    assert autd.send(Uniform(1.0).with_phase(np.pi))
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
-        assert np.all(phases == 2048)
-
-    assert autd.send(Amplitudes(1.0))
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 2048)
-        assert np.all(phases == 2048)
-
-    assert autd.send(Amplitudes(1.0))
+    assert np.all(duties == 85)
+    assert np.all(phases == 256)
 
 
 def test_clear():
@@ -352,8 +321,8 @@ def test_clear():
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 2048)
-        assert np.all(phases == 2048)
+        assert np.all(duties == 256)
+        assert np.all(phases == 256)
 
     autd.send(Clear())
 
@@ -372,7 +341,7 @@ def test_stop():
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 2048)
+        assert np.all(duties == 256)
 
     autd.send(Stop())
 
@@ -397,23 +366,12 @@ def test_update_flags():
 def test_synchronize():
     autd = (
         Controller.builder()
-        .advanced()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())
     )
 
-    for dev in autd.geometry:
-        assert np.all(autd.link.cycles(dev.idx) == 4096)
-
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.cycle = 4000
-
     assert autd.send(Synchronize())
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.cycles(dev.idx) == 4000)
 
 
 def test_configure_mod_delay():
@@ -445,7 +403,7 @@ def test_configure_amp_filter():
     assert autd.send(ConfigureAmpFilter())
 
     for dev in autd.geometry:
-        assert np.all(autd.link.duty_filters(dev.idx) == -2048)
+        assert np.all(autd.link.duty_filters(dev.idx) == -256)
 
 
 def test_configure_phase_filter():
@@ -461,48 +419,4 @@ def test_configure_phase_filter():
     assert autd.send(ConfigurePhaseFilter())
 
     for dev in autd.geometry:
-        assert np.all(autd.link.phase_filters(dev.idx) == -2048)
-
-
-def test_legacy():
-    autd = (
-        Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with(Audit.builder())
-    )
-
-    assert autd.send(Uniform(1.0))
-
-    for dev in autd.geometry:
-        assert autd.link.is_legacy(dev.idx)
-
-
-def test_advanced():
-    autd = (
-        Controller.builder()
-        .advanced()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with(Audit.builder())
-    )
-
-    assert autd.send(Uniform(1.0))
-
-    for dev in autd.geometry:
-        assert not autd.link.is_legacy(dev.idx)
-
-
-def test_advanced_phase():
-    autd = (
-        Controller.builder()
-        .advanced_phase()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with(Audit.builder())
-    )
-
-    assert autd.send(Uniform(1.0))
-
-    for dev in autd.geometry:
-        assert not autd.link.is_legacy(dev.idx)
+        assert np.all(autd.link.phase_filters(dev.idx) == -256)

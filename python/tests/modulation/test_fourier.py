@@ -15,14 +15,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3.modulation import Fourier, Sine
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_fourier():
     autd = create_controller()
 
-    m = Fourier(Sine(50)).add_components_from_iter(map(lambda x: Sine(x), [100, 150])) + Sine(200)
+    m = Fourier(Sine(50)).add_components_from_iter(Sine(x) for x in [100, 150]) + Sine(200)
     assert autd.send(m)
 
     for dev in autd.geometry:
@@ -110,4 +109,4 @@ def test_fourier():
             67,
         ]
         assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120

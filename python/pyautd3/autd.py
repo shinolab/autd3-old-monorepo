@@ -33,7 +33,6 @@ from .native_methods.autd3capi_def import (
     DatagramPtr,
     DatagramSpecialPtr,
     GroupKVMapPtr,
-    TransMode,
 )
 
 K = TypeVar("K")
@@ -110,26 +109,9 @@ class FirmwareInfo:
 
 class _Builder(Generic[L]):
     _ptr: ControllerBuilderPtr
-    _mode: TransMode
 
     def __init__(self: "_Builder[L]") -> None:
         self._ptr = Base().controller_builder()
-        self._mode = TransMode.Legacy
-
-    def legacy(self: "_Builder[L]") -> "_Builder[L]":
-        """Set legacy mode."""
-        self._mode = TransMode.Legacy
-        return self
-
-    def advanced(self: "_Builder[L]") -> "_Builder[L]":
-        """Set advanced mode."""
-        self._mode = TransMode.Advanced
-        return self
-
-    def advanced_phase(self: "_Builder[L]") -> "_Builder[L]":
-        """Set advanced phase mode."""
-        self._mode = TransMode.AdvancedPhase
-        return self
 
     def add_device(self: "_Builder[L]", device: AUTD3) -> "_Builder[L]":
         """Add device.
@@ -168,7 +150,7 @@ class _Builder(Generic[L]):
         ---------
             link: LinkBuilder
         """
-        return Controller._open_impl(self._ptr, self._mode, link)
+        return Controller._open_impl(self._ptr, link)
 
 
 class Controller(Generic[L]):
@@ -176,13 +158,11 @@ class Controller(Generic[L]):
 
     _geometry: Geometry
     _ptr: ControllerPtr
-    _mode: TransMode
     link: L
 
-    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, mode: TransMode, link: L) -> None:
+    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, link: L) -> None:
         self._geometry = geometry
         self._ptr = ptr
-        self._mode = mode
         self.link = link
 
     @staticmethod
@@ -210,14 +190,14 @@ class Controller(Generic[L]):
         return self._geometry
 
     @staticmethod
-    def _open_impl(builder: ControllerBuilderPtr, mode: TransMode, link_builder: LinkBuilder[L]) -> "Controller[L]":
+    def _open_impl(builder: ControllerBuilderPtr, link_builder: LinkBuilder[L]) -> "Controller[L]":
         err = ctypes.create_string_buffer(256)
         ptr = Base().controller_open_with(builder, link_builder._link_builder_ptr(), err)
         if ptr._0 is None:
             raise AUTDError(err)
-        geometry = Geometry(Base().geometry(ptr), mode)
+        geometry = Geometry(Base().geometry(ptr))
         link = link_builder._resolve_link(ptr)
-        return Controller(geometry, ptr, mode, link)
+        return Controller(geometry, ptr, link)
 
     def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
         """Get firmware information list."""
@@ -283,11 +263,10 @@ class Controller(Generic[L]):
         res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
         match (d1, d2):
             case (SpecialDatagram(), None):
-                res = Base().controller_send_special(self._ptr, self._mode, d1._special_datagram_ptr(), timeout_, err)  # type: ignore[union-attr]
+                res = Base().controller_send_special(self._ptr, d1._special_datagram_ptr(), timeout_, err)  # type: ignore[union-attr]
             case (Datagram(), None):
                 res = Base().controller_send(
                     self._ptr,
-                    self._mode,
                     d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     DatagramPtr(None),
                     timeout_,
@@ -297,7 +276,6 @@ class Controller(Generic[L]):
                 (d11, d12) = d1  # type: ignore[misc]
                 res = Base().controller_send(
                     self._ptr,
-                    self._mode,
                     d11._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     d12._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     timeout_,
@@ -306,7 +284,6 @@ class Controller(Generic[L]):
             case (Datagram(), Datagram()):
                 res = Base().controller_send(
                     self._ptr,
-                    self._mode,
                     d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     d2._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     timeout_,
@@ -355,7 +332,6 @@ class Controller(Generic[L]):
                         self._kv_map,
                         self._k,
                         d1._special_datagram_ptr(),  # type: ignore[union-attr]
-                        self._controller._mode,
                         timeout_ns,
                         err,
                     )
@@ -365,7 +341,6 @@ class Controller(Generic[L]):
                         self._k,
                         d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         DatagramPtr(None),
-                        self._controller._mode,
                         timeout_ns,
                         err,
                     )
@@ -376,7 +351,6 @@ class Controller(Generic[L]):
                         self._k,
                         d11._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         d12._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
-                        self._controller._mode,
                         timeout_ns,
                         err,
                     )
@@ -386,7 +360,6 @@ class Controller(Generic[L]):
                         self._k,
                         d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         d2._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
-                        self._controller._mode,
                         timeout_ns,
                         err,
                     )
@@ -414,25 +387,6 @@ class Controller(Generic[L]):
     def group(self: "Controller", group_map: Callable[[Device], K | None]) -> "Controller._GroupGuard":
         """Grouping data."""
         return Controller._GroupGuard(group_map, self)
-
-
-class Amplitudes(Datagram):
-    """Amplitudes settings for advanced phase mode."""
-
-    _amp: float
-
-    def __init__(self: "Amplitudes", amp: float) -> None:
-        """Constructor.
-
-        Arguments:
-        ---------
-            amp: Amplitude
-        """
-        super().__init__()
-        self._amp = amp
-
-    def _datagram_ptr(self: "Amplitudes", _: Geometry) -> DatagramPtr:
-        return Base().datagram_amplitudes(self._amp)
 
 
 class Clear(Datagram):

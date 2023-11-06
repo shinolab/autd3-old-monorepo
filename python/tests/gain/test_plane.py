@@ -15,8 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3.gain import Plane
-
-from ..test_autd import create_controller
+from tests.test_autd import create_controller
 
 
 def test_plane():
@@ -26,5 +25,5 @@ def test_plane():
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 680)
+        assert np.all(duties == 85)
         assert np.all(phases == 0)

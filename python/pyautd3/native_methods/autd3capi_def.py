@@ -14,16 +14,6 @@ class GainSTMMode(IntEnum):
         return int(obj)
 
 
-class TransMode(IntEnum):
-    Legacy = 0
-    Advanced = 1
-    AdvancedPhase = 2
-
-    @classmethod
-    def from_param(cls, obj):
-        return int(obj)
-
-
 class TimerStrategy(IntEnum):
     Sleep = 0
     BusyWait = 1

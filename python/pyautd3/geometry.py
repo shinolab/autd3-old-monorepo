@@ -13,12 +13,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from collections.abc import Iterator
-from ctypes import c_double, create_string_buffer
+from ctypes import c_double
 from functools import reduce
 
 import numpy as np
 
-from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi_def import (
     DEVICE_HEIGHT_MM,
@@ -31,7 +30,6 @@ from .native_methods.autd3capi_def import (
     DevicePtr,
     GeometryPtr,
     TransducerPtr,
-    TransMode,
 )
 
 
@@ -173,40 +171,6 @@ class Transducer:
         vp = np.ctypeslib.as_ctypes(v)
         Base().transducer_direction_z(self._ptr, vp)
         return v
-
-    @property
-    def frequency(self: "Transducer") -> float:
-        """Get the frequency of the transducer."""
-        return float(Base().transducer_frequency_get(self._ptr))
-
-    @frequency.setter
-    def frequency(self: "Transducer", freq: float) -> None:
-        """Set ultrasound frequency.
-
-        Arguments:
-        ---------
-            freq: Ultrasound frequency [Hz]. The frequency closest to `freq` from the possible frequencies is set.
-        """
-        err = create_string_buffer(256)
-        if not Base().transducer_frequency_set(self._ptr, freq, err):
-            raise AUTDError(err)
-
-    @property
-    def cycle(self: "Transducer") -> int:
-        """Get the cycle of the transducer."""
-        return int(Base().transducer_cycle_get(self._ptr))
-
-    @cycle.setter
-    def cycle(self: "Transducer", cycle: int) -> None:
-        """Set ultrasound cycle.
-
-        Arguments:
-        ---------
-            cycle: Ultrasound cycle.
-        """
-        err = create_string_buffer(256)
-        if not Base().transducer_cycle_set(self._ptr, cycle, err):
-            raise AUTDError(err)
 
     @property
     def mod_delay(self: "Transducer") -> int:
@@ -394,16 +358,12 @@ class Geometry:
     """Geometry."""
 
     _ptr: GeometryPtr
-    _mode: TransMode
-    _: list[Device]
+    _devices: list[Device]
 
-    def __init__(self: "Geometry", ptr: GeometryPtr, mode: TransMode) -> None:
+    def __init__(self: "Geometry", ptr: GeometryPtr) -> None:
         self._ptr = ptr
-        self._mode = mode
         self._devices = [Device(i, Base().device(self._ptr, i)) for i in range(int(Base().geometry_num_devices(self._ptr)))]
 
-    def _trans_mode(self: "Geometry") -> TransMode:
-        return self._mode
 
     @property
     def center(self: "Geometry") -> np.ndarray:
