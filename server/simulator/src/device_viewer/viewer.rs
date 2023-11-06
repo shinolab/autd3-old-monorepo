@@ -4,7 +4,7 @@
  * Created Date: 23/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::sync::Arc;
 
-use autd3::prelude::{Geometry, Transducer};
+use autd3::prelude::Geometry;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},
     command_buffer::{
@@ -146,7 +146,7 @@ impl DeviceViewer {
         })
     }
 
-    pub fn init<T: Transducer>(&mut self, geometry: &Geometry<T>) {
+    pub fn init(&mut self, geometry: &Geometry) {
         self.pos_rot = geometry
             .iter()
             .map(|dev| {

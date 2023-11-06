@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, MILLIMETER,
 };
-use autd3_driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
+use autd3_driver::{cpu::TxDatagram};
 use autd3_firmware_emulator::CPUEmulator;
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
@@ -291,7 +291,7 @@ impl Simulator {
                         sources.clear();
                         cpus.clear();
 
-                        let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
+                        let geometry = autd3_driver::geometry::Geometry::from_msg(&geometry);
                         geometry.iter().for_each(|dev| {
                             dev.iter().for_each(|tr| {
                                 let p = tr.position();
@@ -345,7 +345,7 @@ impl Simulator {
                         is_initialized = true;
                     }
                     Ok(Signal::UpdateGeometry(geometry)) => {
-                        let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
+                        let geometry = autd3_driver::geometry::Geometry::from_msg(&geometry);
                         geometry
                             .iter()
                             .flat_map(|dev| {
@@ -507,7 +507,6 @@ impl Simulator {
 
                                 if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
                                     cpus.iter().for_each(|cpu| {
-                                        let cycles = cpu.fpga().cycles();
                                         let idx = if cpu.fpga().is_stm_mode() {
                                             ImGuiRenderer::stm_idx(imgui.system_time(), cpu)
                                         } else {
@@ -532,14 +531,14 @@ impl Simulator {
                                                 d.amp = (PI
                                                     * (drives[i].0 as f32 + duty_filter[i] as f32)
                                                     * m
-                                                    / cycles[i] as f32)
+                                                    / 512.0)
                                                     .sin();
                                                 d.phase = 2.
                                                     * PI
                                                     * (drives[i].1 as f32 + phase_filter[i] as f32)
-                                                    / cycles[i] as f32;
+                                                    / 512.0;
                                                 d.set_wave_number(
-                                                    FPGA_CLK_FREQ as f32 / cycles[i] as f32,
+                                                    40e3,
                                                     self.settings.sound_speed,
                                                 );
                                             });

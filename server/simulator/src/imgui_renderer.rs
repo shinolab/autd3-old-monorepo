@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -562,12 +562,8 @@ impl ImGuiRenderer {
                                 sources
                                     .drives_mut()
                                     .skip(body_pointer[cpu.idx()])
-                                    .zip(cpu.fpga().cycles())
-                                    .for_each(|(s, c)| {
-                                        s.set_wave_number(
-                                            FPGA_CLK_FREQ as f32 / c as f32,
-                                            settings.sound_speed,
-                                        );
+                                    .for_each(|s| {
+                                        s.set_wave_number(40e3, settings.sound_speed);
                                     });
                             });
                             update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);

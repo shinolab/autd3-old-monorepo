@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -196,9 +196,7 @@ async fn main_() -> anyhow::Result<()> {
             tracing::info!("Starting SOEM server...");
 
             let soem = f()
-                .open(&autd3_driver::geometry::Geometry::<
-                    autd3_driver::geometry::LegacyTransducer,
-                >::new(vec![]))
+                .open(&autd3_driver::geometry::Geometry::new(vec![]))
                 .await?;
             let num_dev = SOEM::num_devices();
 

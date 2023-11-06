@@ -193,6 +193,7 @@ name = "autd3-link-soem"
 version = "17.0.0"
 dependencies = [
  "async-trait",
+ "autd3-derive",
  "autd3-driver",
  "cc",
  "crossbeam-channel",
