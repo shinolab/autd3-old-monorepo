@@ -92,13 +92,13 @@ public class AUTDTest
     {
         var autd = CreateController();
 
-        Assert.Equal("v3.0.2", FirmwareInfo.LatestVersion);
+        Assert.Equal("v4.0.0", FirmwareInfo.LatestVersion);
 
         {
             var infos = autd.FirmwareInfoList();
             foreach (var (info, i) in infos.Select((info, i) => (info, i)))
             {
-                Assert.Equal(info.Info, $"{i}: CPU = v3.0.2, FPGA = v3.0.2 [Emulator]");
+                Assert.Equal(info.Info, $"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]");
             }
         }
 

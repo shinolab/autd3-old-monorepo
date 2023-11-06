@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })).await?;
 
     // ファームウェアバージョンのチェック
-    // ここで, v3.0.2以外が表示される場合の動作は保証しない
+    // ここで, v4.0.0以外が表示される場合の動作は保証しない
     autd.firmware_infos().await?.iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });

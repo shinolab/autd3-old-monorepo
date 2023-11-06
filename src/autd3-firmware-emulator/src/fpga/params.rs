@@ -13,8 +13,8 @@
 
 use autd3_driver::defined::{float, METER};
 
-pub const VERSION_NUM_MAJOR: u8 = 0x8A;
-pub const VERSION_NUM_MINOR: u8 = 0x02;
+pub const VERSION_NUM_MAJOR: u8 = 0x8B;
+pub const VERSION_NUM_MINOR: u8 = 0x00;
 
 pub const TRANS_SIZE_FIXED_POINT_UNIT: float = 40000. / METER;
 
