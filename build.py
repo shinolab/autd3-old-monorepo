@@ -391,7 +391,6 @@ def rust_run(args):
         "remote_twincat",
         "simulator",
         "visualizer",
-        "freq_config",
     ]
 
     if args.target not in examples:

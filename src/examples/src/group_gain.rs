@@ -4,7 +4,7 @@
  * Created Date: 02/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let cx = autd.geometry.center().x;
     let g1 = Focus::new(autd.geometry[0].center() + Vector3::new(0., 0., 150.0 * MILLIMETER));
     let g2 = Null::new();
-    let g = Group::new(move |_dev, tr: &LegacyTransducer| {
+    let g = Group::new(move |_dev, tr: &Transducer| {
         if tr.position().x < cx {
             Some("focus")
         } else {

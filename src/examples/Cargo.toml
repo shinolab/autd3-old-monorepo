@@ -39,10 +39,6 @@ name = "visualizer"
 path = "src/visualizer.rs"
 required-features = ["visualizer"]
 
-[[bin]]
-name = "freq_config"
-path = "src/freq_config.rs"
-
 [dependencies]
 anyhow = "1.0.72"
 autd3 = { path = "../autd3" }
