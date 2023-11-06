@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/10/2023
+// Last Modified: 06/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ open AUTD3Sharp.Gain
 open AUTD3Sharp.Modulation
 
 let autd = Controller.Builder()
-            .Advanced()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .OpenWith(Nop.Builder());
 
