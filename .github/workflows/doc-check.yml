@@ -39,12 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup mdbook
-        if: needs.check-src.outputs.status
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Test book jp
-        if: needs.check-src.outputs.status
+        if: needs.check.outputs.status
         run: |
           python3 build.py doc test jp
 
@@ -55,11 +55,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup mdbook
-        if: needs.check-src.outputs.status
+        if: needs.check.outputs.status
         uses: ./.github/actions/setup-mdbook
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Test book en
-        if: needs.check-src.outputs.status
+        if: needs.check.outputs.status
         run: |
           python3 build.py doc test en
