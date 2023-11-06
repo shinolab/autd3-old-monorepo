@@ -106,10 +106,10 @@ def test_fpga_info():
 def test_firmware_info():
     autd = create_controller()
 
-    assert FirmwareInfo.latest_version() == "v3.0.2"
+    assert FirmwareInfo.latest_version() == "v4.0.0"
 
     for i, firm in enumerate(autd.firmware_info_list()):
-        assert firm.info == f"{i}: CPU = v3.0.2, FPGA = v3.0.2 [Emulator]"
+        assert firm.info == f"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]"
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:

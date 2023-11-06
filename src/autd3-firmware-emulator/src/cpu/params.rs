@@ -11,8 +11,8 @@
  *
  */
 
-pub const CPU_VERSION_MAJOR: u16 = 0x8A;
-pub const CPU_VERSION_MINOR: u16 = 0x02;
+pub const CPU_VERSION_MAJOR: u16 = 0x8B;
+pub const CPU_VERSION_MINOR: u16 = 0x00;
 
 pub const BRAM_SELECT_CONTROLLER: u8 = 0x0;
 pub const BRAM_SELECT_MOD: u8 = 0x1;
