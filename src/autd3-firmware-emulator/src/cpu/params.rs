@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,6 @@ pub const BRAM_SELECT_MOD: u8 = 0x1;
 pub const BRAM_SELECT_NORMAL: u8 = 0x2;
 pub const BRAM_SELECT_STM: u8 = 0x3;
 
-pub const CTL_REG_LEGACY_MODE: u16 = 1 << 8;
 pub const CTL_FLAG_OP_MODE: u16 = 1 << 9;
 pub const CTL_REG_STM_GAIN_MODE: u16 = 1 << 10;
 pub const CTL_FLAG_USE_STM_FINISH_IDX: u16 = 1 << 11;
@@ -39,7 +38,6 @@ pub const BRAM_ADDR_STM_FREQ_DIV_0: u16 = 0x052;
 pub const BRAM_ADDR_SOUND_SPEED_0: u16 = 0x054;
 pub const BRAM_ADDR_STM_START_IDX: u16 = 0x056;
 pub const BRAM_ADDR_STM_FINISH_IDX: u16 = 0x057;
-pub const BRAM_ADDR_CYCLE_BASE: u16 = 0x100;
 pub const BRAM_ADDR_MOD_DELAY_BASE: u16 = 0x200;
 pub const BRAM_ADDR_FILTER_DUTY_BASE: u16 = 0x300;
 pub const BRAM_ADDR_FILTER_PHASE_BASE: u16 = 0x400;
@@ -50,12 +48,9 @@ pub const MOD_BUF_SEGMENT_SIZE_MASK: u32 = MOD_BUF_SEGMENT_SIZE - 1;
 pub const POINT_STM_BUF_SEGMENT_SIZE_WIDTH: u32 = 11;
 pub const POINT_STM_BUF_SEGMENT_SIZE: u32 = 1 << POINT_STM_BUF_SEGMENT_SIZE_WIDTH;
 pub const POINT_STM_BUF_SEGMENT_SIZE_MASK: u32 = POINT_STM_BUF_SEGMENT_SIZE - 1;
-pub const GAIN_STM_BUF_SEGMENT_SIZE_WIDTH: u32 = 5;
+pub const GAIN_STM_BUF_SEGMENT_SIZE_WIDTH: u32 = 6;
 pub const GAIN_STM_BUF_SEGMENT_SIZE: u32 = 1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH;
 pub const GAIN_STM_BUF_SEGMENT_SIZE_MASK: u32 = GAIN_STM_BUF_SEGMENT_SIZE - 1;
-pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH: u32 = 6;
-pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE: u32 = 1 << GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH;
-pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK: u32 = GAIN_STM_LEGACY_BUF_SEGMENT_SIZE - 1;
 
 pub const TAG_NONE: u8 = 0x00;
 pub const TAG_CLEAR: u8 = 0x01;
@@ -80,16 +75,11 @@ pub const INFO_TYPE_CLEAR: u8 = 0x06;
 pub const MODULATION_FLAG_BEGIN: u8 = 1 << 0;
 pub const MODULATION_FLAG_END: u8 = 1 << 1;
 
-pub const GAIN_FLAG_LEGACY: u8 = 1 << 0;
-pub const GAIN_FLAG_DUTY: u8 = 1 << 1;
-
 pub const FOCUS_STM_FLAG_BEGIN: u8 = 1 << 0;
 pub const FOCUS_STM_FLAG_END: u8 = 1 << 1;
 pub const FOCUS_STM_FLAG_USE_START_IDX: u8 = 1 << 2;
 pub const FOCUS_STM_FLAG_USE_FINISH_IDX: u8 = 1 << 3;
 
-pub const GAIN_STM_FLAG_LEGACY: u8 = 1 << 0;
-pub const GAIN_STM_FLAG_DUTY: u8 = 1 << 1;
 pub const GAIN_STM_FLAG_BEGIN: u8 = 1 << 2;
 pub const GAIN_STM_FLAG_END: u8 = 1 << 3;
 pub const GAIN_STM_FLAG_USE_START_IDX: u8 = 1 << 4;

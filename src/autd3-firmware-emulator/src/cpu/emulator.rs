@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,6 @@ pub struct CPUEmulator {
     stm_cycle: u32,
     gain_stm_mode: u16,
     fpga: FPGAEmulator,
-    cycles: Vec<u16>,
     synchronized: bool,
     num_transducers: usize,
     fpga_flags: FPGAControlFlags,
@@ -47,7 +46,6 @@ impl CPUEmulator {
             stm_cycle: 0,
             gain_stm_mode: 0,
             fpga: FPGAEmulator::new(num_transducers),
-            cycles: vec![0x0000; num_transducers],
             synchronized: false,
             num_transducers,
             fpga_flags: FPGAControlFlags::NONE,
@@ -91,7 +89,6 @@ impl CPUEmulator {
 
     pub fn init(&mut self) {
         self.fpga.init();
-        self.cycles.fill(0x1000);
         self.clear();
     }
 
@@ -139,20 +136,7 @@ impl CPUEmulator {
         })
     }
 
-    fn synchronize(&mut self, data: &[u8]) {
-        let cycles = unsafe {
-            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
-        };
-
-        self.bram_cpy(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_CYCLE_BASE,
-            cycles.as_ptr(),
-            cycles.len(),
-        );
-
-        self.cycles.copy_from_slice(cycles);
-
+    fn synchronize(&mut self) {
         self.synchronized = true;
 
         // Do nothing to sync
@@ -279,26 +263,12 @@ impl CPUEmulator {
     fn write_gain(&mut self, data: &[u8]) {
         self.fpga_flags_internal &= !CTL_FLAG_OP_MODE;
 
-        let flag = data[1];
-
         let data = unsafe {
             std::slice::from_raw_parts(data[2..].as_ptr() as *const u16, (data.len() - 2) >> 1)
         };
 
-        if (flag & GAIN_FLAG_LEGACY) == GAIN_FLAG_LEGACY {
-            (0..self.num_transducers)
-                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as _, data[i]));
-
-            self.fpga_flags_internal |= CTL_REG_LEGACY_MODE;
-        } else if (flag & GAIN_FLAG_DUTY) == GAIN_FLAG_DUTY {
-            (0..self.num_transducers)
-                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16 + 1, data[i]));
-            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
-        } else {
-            (0..self.num_transducers)
-                .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, (i << 1) as u16, data[i]));
-            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
-        }
+        (0..self.num_transducers)
+            .for_each(|i| self.bram_write(BRAM_SELECT_NORMAL, i as _, data[i]));
     }
 
     fn write_focus_stm(&mut self, data: &[u8]) {
@@ -432,15 +402,6 @@ impl CPUEmulator {
 
     fn write_gain_stm(&mut self, data: &[u8]) {
         let flag = data[1];
-        if (flag & GAIN_STM_FLAG_LEGACY) == GAIN_STM_FLAG_LEGACY {
-            self.write_gain_stm_legacy(data);
-        } else {
-            self.write_gain_stm_advanced(data);
-        }
-    }
-
-    fn write_gain_stm_legacy(&mut self, data: &[u8]) {
-        let flag = data[1];
 
         let send = (flag >> 6) + 1;
         let src_base = if (flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN {
@@ -483,7 +444,7 @@ impl CPUEmulator {
         };
 
         let mut src = src_base;
-        let mut dst = ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+        let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
 
         if self.gain_stm_mode == GAIN_STM_MODE_DUTY_PHASE_FULL {
             self.stm_cycle += 1;
@@ -502,8 +463,7 @@ impl CPUEmulator {
 
             if send > 1 {
                 let mut src = src_base;
-                let mut dst =
-                    ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | ((src.read() >> 8) & 0x00FF));
                     dst += 1;
@@ -522,8 +482,7 @@ impl CPUEmulator {
 
             if send > 1 {
                 let mut src = src_base;
-                let mut dst =
-                    ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 4) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -535,8 +494,7 @@ impl CPUEmulator {
 
             if send > 2 {
                 let mut src = src_base;
-                let mut dst =
-                    ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 8) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -548,8 +506,7 @@ impl CPUEmulator {
 
             if send > 3 {
                 let mut src = src_base;
-                let mut dst =
-                    ((self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 12) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -558,97 +515,6 @@ impl CPUEmulator {
                 });
                 self.stm_cycle += 1;
             }
-        }
-
-        if self.stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK == 0 {
-            self.bram_write(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_STM_ADDR_OFFSET,
-                ((self.stm_cycle & !GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK)
-                    >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH) as _,
-            );
-        }
-
-        if (flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END {
-            self.fpga_flags_internal |= CTL_REG_LEGACY_MODE;
-            self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
-            self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
-            self.bram_write(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_STM_CYCLE,
-                (self.stm_cycle.max(1) - 1) as _,
-            );
-        }
-    }
-
-    fn write_gain_stm_advanced(&mut self, data: &[u8]) {
-        let flag = data[1];
-
-        let src_base = if (flag & GAIN_STM_FLAG_BEGIN) == GAIN_STM_FLAG_BEGIN {
-            self.stm_cycle = 0;
-            self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-
-            self.gain_stm_mode = (data[3] as u16) << 8 | data[2] as u16;
-
-            let freq_div = ((data[7] as u32) << 24)
-                | ((data[6] as u32) << 16)
-                | ((data[5] as u32) << 8)
-                | data[4] as u32;
-            self.bram_cpy(
-                BRAM_SELECT_CONTROLLER,
-                BRAM_ADDR_STM_FREQ_DIV_0,
-                &freq_div as *const _ as _,
-                std::mem::size_of::<u32>() >> 1,
-            );
-
-            let start_idx = ((data[9] as u16) << 8) | data[8] as u16;
-            let finish_idx = ((data[11] as u16) << 8) | data[10] as u16;
-
-            self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-            self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
-
-            if (flag & GAIN_STM_FLAG_USE_START_IDX) == GAIN_STM_FLAG_USE_START_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_START_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_START_IDX;
-            }
-            if (flag & GAIN_STM_FLAG_USE_FINISH_IDX) == GAIN_STM_FLAG_USE_FINISH_IDX {
-                self.fpga_flags_internal |= CTL_FLAG_USE_STM_FINISH_IDX;
-            } else {
-                self.fpga_flags_internal &= !CTL_FLAG_USE_STM_FINISH_IDX;
-            }
-
-            unsafe { data.as_ptr().add(12) as *const u16 }
-        } else {
-            unsafe { data.as_ptr().add(2) as *const u16 }
-        };
-
-        let mut src = src_base;
-        let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9) as u16;
-
-        if self.gain_stm_mode == GAIN_STM_MODE_PHASE_HALF {
-            unimplemented!("Phase half mode is not supported in advanced mode")
-        }
-
-        if self.gain_stm_mode == GAIN_STM_MODE_PHASE_FULL {
-            (0..self.num_transducers).for_each(|i| unsafe {
-                self.bram_write(BRAM_SELECT_STM, dst, src.read());
-                dst += 1;
-                self.bram_write(BRAM_SELECT_STM, dst, self.cycles[i] >> 1);
-                dst += 1;
-                src = src.add(1);
-            });
-            self.stm_cycle += 1;
-        } else {
-            if (flag & GAIN_STM_FLAG_DUTY) == GAIN_STM_FLAG_DUTY {
-                dst += 1;
-                self.stm_cycle += 1;
-            }
-            (0..self.num_transducers).for_each(|_| unsafe {
-                self.bram_write(BRAM_SELECT_STM, dst, src.read());
-                dst += 2;
-                src = src.add(1);
-            });
         }
 
         if self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK == 0 {
@@ -661,7 +527,6 @@ impl CPUEmulator {
         }
 
         if (flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END {
-            self.fpga_flags_internal &= !CTL_REG_LEGACY_MODE;
             self.fpga_flags_internal |= CTL_FLAG_OP_MODE;
             self.fpga_flags_internal |= CTL_REG_STM_GAIN_MODE;
             self.bram_write(
@@ -693,7 +558,7 @@ impl CPUEmulator {
     }
 
     fn clear(&mut self) {
-        let freq_div_4k = 40960;
+        let freq_div_4k = 5120;
 
         self.fpga_flags_internal = 0x0000;
         self.fpga_flags = FPGAControlFlags::NONE;
@@ -701,13 +566,6 @@ impl CPUEmulator {
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_CTL_REG,
             self.fpga_flags_internal | self.fpga_flags.bits() as u16,
-        );
-
-        self.bram_cpy(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_CYCLE_BASE,
-            self.cycles.as_ptr(),
-            self.cycles.len(),
         );
 
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
@@ -755,7 +613,7 @@ impl CPUEmulator {
         match tag {
             TAG_NONE => {}
             TAG_CLEAR => self.clear(),
-            TAG_SYNC => self.synchronize(&data[2..]),
+            TAG_SYNC => self.synchronize(),
             TAG_FIRM_INFO => match data[1] {
                 INFO_TYPE_CPU_VERSION_MAJOR => {
                     self.read_fpga_info = false;

@@ -145,14 +145,6 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaDeassertThermalSensor(audit: LinkPtr, 
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaIsLegacyMode(audit: LinkPtr, idx: u32) -> bool {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga()
-        .is_legacy_mode()
-}
-
-#[no_mangle]
-#[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaIsForceFan(audit: LinkPtr, idx: u32) -> bool {
     cast!(audit.0, Box<AuditSync>).inner[idx as usize]
         .fpga()
@@ -181,21 +173,6 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStep(audit: LinkPtr, idx: u32)
     cast!(audit.0, Box<AuditSync>).inner[idx as usize]
         .fpga()
         .silencer_step()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaCycles(audit: LinkPtr, idx: u32, cycles: *mut u16) {
-    std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-            .fpga()
-            .cycles()
-            .as_ptr(),
-        cycles,
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-            .fpga()
-            .cycles()
-            .len(),
-    )
 }
 
 #[no_mangle]
