@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,8 +27,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Sine wave modulation
     /// </summary>
@@ -72,15 +70,15 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            var ptr = Base.AUTDModulationSineLegacy(_freq);
+            var ptr = NativeMethodsBase.AUTDModulationSineLegacy(_freq);
             if (_amp != null)
-                ptr = Base.AUTDModulationSineLegacyWithAmp(ptr, _amp.Value);
+                ptr = NativeMethodsBase.AUTDModulationSineLegacyWithAmp(ptr, _amp.Value);
             if (_offset != null)
-                ptr = Base.AUTDModulationSineLegacyWithOffset(ptr, _offset.Value);
+                ptr = NativeMethodsBase.AUTDModulationSineLegacyWithOffset(ptr, _offset.Value);
             if (FreqDiv != null)
-                ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
+                ptr = NativeMethodsBase.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
             return ptr;
         }
     }

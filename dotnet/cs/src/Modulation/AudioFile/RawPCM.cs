@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@
 #endif
 
 using System;
-using AUTD3Sharp.NativeMethods;
 
 namespace AUTD3Sharp.Modulation.AudioFile
 {
@@ -39,16 +38,24 @@ namespace AUTD3Sharp.Modulation.AudioFile
             _filename = filename;
             _sampleRate = sampleRate;
         }
-    
-        public override ModulationPtr ModulationPtr()
+
+        internal override ModulationPtr ModulationPtr()
         {
             var err = new byte[256];
-            var ptr = ModulationAudioFile.AUTDModulationRawPCM(_filename, _sampleRate, err);
-            if (ptr._0 == IntPtr.Zero)
-                throw new AUTDException(err);
-            if (FreqDiv != null)
-                ptr = ModulationAudioFile.AUTDModulationRawPCMWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
-            return ptr;
+            var filenameBytes = System.Text.Encoding.ASCII.GetBytes(_filename);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                fixed (byte* fp = filenameBytes)
+                {
+                    var ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCM(fp, _sampleRate, ep);
+                    if (ptr.Item1 == IntPtr.Zero)
+                        throw new AUTDException(err);
+                    if (FreqDiv != null)
+                        ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCMWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
+                    return ptr;
+                }
+            }
         }
     }
 }

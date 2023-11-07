@@ -19,20 +19,20 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public interface ISpecialDatagram
     {
-        public DatagramSpecialPtr Ptr();
+        internal DatagramSpecialPtr Ptr();
     }
 
     [ComVisible(false)]
     public interface IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry);
+        internal DatagramPtr Ptr(Geometry geometry);
     }
 
-    public class NullDatagram : IDatagram
+    internal class NullDatagram : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry)
+        DatagramPtr IDatagram.Ptr(Geometry geometry)
         {
-            return new DatagramPtr { _0 = IntPtr.Zero };
+            return new DatagramPtr { Item1 = IntPtr.Zero };
         }
     }
 }

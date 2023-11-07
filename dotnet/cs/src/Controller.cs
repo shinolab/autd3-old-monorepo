@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,6 @@
 #endif
 
 using System;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -45,9 +44,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp
 {
-    using Base = NativeMethods.Base;
-    using Def = NativeMethods.Def;
-
     /// <summary>
     /// AUTD3 device
     /// </summary>
@@ -77,42 +73,42 @@ namespace AUTD3Sharp
         /// <summary>
         /// Number of transducer in an AUTD3 device
         /// </summary>
-        public const int NumTransInUnit = (int)Def.NumTransInUnit;
+        public const int NumTransInUnit = (int)NativeMethodsDef.NUM_TRANS_IN_UNIT;
 
         /// <summary>
         /// Spacing between transducers in mm
         /// </summary>
-        public const float_t TransSpacingMm = Def.TransSpacingMm;
+        public const float_t TransSpacingMm = NativeMethodsDef.TRANS_SPACING_MM;
 
         /// <summary>
         /// Spacing between transducers in m
         /// </summary>
-        public const float_t TransSpacing = Def.TransSpacingMm * Millimeter;
+        public const float_t TransSpacing = NativeMethodsDef.TRANS_SPACING_MM * Millimeter;
 
         /// <summary>
         /// Number of transducer in x-axis of AUTD3 device
         /// </summary>
-        public const int NumTransInX = (int)Def.NumTransInX;
+        public const int NumTransInX = (int)NativeMethodsDef.NUM_TRANS_IN_X;
 
         /// <summary>
         /// Number of transducer in y-axis of AUTD3 device
         /// </summary>
-        public const int NumTransInY = (int)Def.NumTransInY;
+        public const int NumTransInY = (int)NativeMethodsDef.NUM_TRANS_IN_Y;
 
         /// <summary>
         /// FPGA clock frequency
         /// </summary>
-        public const uint FPGAClkFreq = Def.FpgaClkFreq;
+        public const uint FPGAClkFreq = NativeMethodsDef.FPGA_CLK_FREQ;
 
         /// <summary>
         /// Device height including substrate
         /// </summary>
-        public const float_t DeviceHeight = Def.DeviceHeightMm * Millimeter;
+        public const float_t DeviceHeight = NativeMethodsDef.DEVICE_HEIGHT_MM * Millimeter;
 
         /// <summary>
         /// Device width including substrate
         /// </summary>
-        public const float_t DeviceWidth = Def.DeviceWidthMm * Millimeter;
+        public const float_t DeviceWidth = NativeMethodsDef.DEVICE_WIDTH_MM * Millimeter;
 
         #endregion
 
@@ -193,10 +189,10 @@ namespace AUTD3Sharp
             public ControllerBuilder AddDevice(AUTD3 device)
             {
                 if (device.Rot != null)
-                    _ptr = Base.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
+                    _ptr = NativeMethodsBase.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
                         device.Rot.Value.y, device.Rot.Value.z);
                 else if (device.Quat != null)
-                    _ptr = Base.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
+                    _ptr = NativeMethodsBase.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
                         device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
                 return this;
             }
@@ -208,19 +204,25 @@ namespace AUTD3Sharp
             /// <returns>Controller</returns>
             public Controller OpenWith(ILinkBuilder link)
             {
-                var err = new byte[256];
-                var ptr = Base.AUTDControllerOpenWith(_ptr, link.Ptr(), err);
-                if (ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
+                unsafe
+                {
+                    var err = new byte[256];
+                    fixed (byte* ep = err)
+                    {
+                        var ptr = NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr(), ep);
+                        if (ptr.Item1 == IntPtr.Zero)
+                            throw new AUTDException(err);
 
-                var geometry = new Geometry(Base.AUTDGeometry(ptr));
+                        var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
 
-                return new Controller(geometry, ptr, link.Props());
+                        return new Controller(geometry, ptr, link.Props());
+                    }
+                }
             }
 
             internal ControllerBuilder()
             {
-                _ptr = Base.AUTDControllerBuilder();
+                _ptr = NativeMethodsBase.AUTDControllerBuilder();
             }
         }
 
@@ -240,25 +242,45 @@ namespace AUTD3Sharp
             _linkProps = linkProps;
         }
 
+        private FirmwareInfoListPtr GetFirmwareInfoListPtr()
+        {
+            var err = new byte[256];
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ptr = NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr, ep);
+
+                    if (ptr.Item1 == IntPtr.Zero)
+                        throw new AUTDException(err);
+                    return ptr;
+                }
+            }
+        }
+
+        private FirmwareInfo GetFirmwareInfo(FirmwareInfoListPtr handle, uint i)
+        {
+            var info = new byte[256];
+            unsafe
+            {
+                fixed (byte* p = info)
+                {
+                    NativeMethodsBase.AUTDControllerFirmwareInfoGet(handle, i, p);
+                    return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info));
+                }
+            }
+        }
+
         /// <summary>
         /// Get list of FPGA information
         /// </summary>
         /// <exception cref="AUTDException"></exception>
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
         {
-            var err = new byte[256];
-            var handle = Base.AUTDControllerFirmwareInfoListPointer(Ptr, err);
-            if (handle._0 == IntPtr.Zero)
-                throw new AUTDException(err);
-
+            var handle = GetFirmwareInfoListPtr();
             for (uint i = 0; i < Geometry.NumDevices; i++)
-            {
-                var info = new byte[256];
-                Base.AUTDControllerFirmwareInfoGet(handle, i, info);
-                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info));
-            }
-
-            Base.AUTDControllerFirmwareInfoListPointerDelete(handle);
+                yield return GetFirmwareInfo(handle, i);
+            NativeMethodsBase.AUTDControllerFirmwareInfoListPointerDelete(handle);
         }
 
         /// <summary>
@@ -267,18 +289,22 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public void Close()
         {
-            if (Ptr._0 == IntPtr.Zero) return;
+            if (Ptr.Item1 == IntPtr.Zero) return;
             var err = new byte[256];
-            if (!Base.AUTDControllerClose(Ptr, err))
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                    if (!NativeMethodsBase.AUTDControllerClose(Ptr, ep))
+                        throw new AUTDException(err);
+            }
         }
 
         public void Dispose()
         {
             if (_isDisposed) return;
 
-            if (Ptr._0 != IntPtr.Zero) Base.AUTDControllerDelete(Ptr);
-            Ptr._0 = IntPtr.Zero;
+            if (Ptr.Item1 != IntPtr.Zero) NativeMethodsBase.AUTDControllerDelete(Ptr);
+            Ptr.Item1 = IntPtr.Zero;
 
             _isDisposed = true;
             GC.SuppressFinalize(this);
@@ -304,16 +330,21 @@ namespace AUTD3Sharp
             {
                 var infos = new byte[Geometry.NumDevices];
                 var err = new byte[256];
-                if (!Base.AUTDControllerFPGAInfo(Ptr, infos, err))
-                    throw new AUTDException(err);
+                unsafe
+                {
+                    fixed (byte* ptr = infos)
+                    fixed (byte* ep = err)
+                        if (!NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr, ep))
+                            throw new AUTDException(err);
+                }
                 return infos.Select(x => new FPGAInfo(x)).ToArray();
             }
         }
 
         public T Link<T>()
-        where T : ILink<T>, new()
+            where T : ILink<T>, new()
         {
-            return new T().Create(Base.AUTDLinkGet(Ptr), _linkProps);
+            return new T().Create(NativeMethodsBase.AUTDLinkGet(Ptr), _linkProps);
         }
 
         #endregion
@@ -330,14 +361,17 @@ namespace AUTD3Sharp
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
-            var res = Base.AUTDControllerSendSpecial(Ptr, special.Ptr(),
-                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
+            unsafe
             {
-                throw new AUTDException(err);
+                fixed (byte* ep = err)
+                {
+                    var res = NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
+                        (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), ep);
+                    if (res == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                    return res == NativeMethodsDef.AUTD3_TRUE;
+                }
             }
-
-            return res == Def.Autd3True;
         }
 
         /// <summary>
@@ -367,15 +401,20 @@ namespace AUTD3Sharp
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
             var err = new byte[256];
-            var res = Base.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
-                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Def.Autd3Err)
+            unsafe
             {
-                throw new AUTDException(err);
+                fixed (byte* ep = err)
+                {
+                    var res = NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
+                        (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), ep);
+                    if (res == NativeMethodsDef.AUTD3_ERR)
+                    {
+                        throw new AUTDException(err);
+                    }
+
+                    return res == NativeMethodsDef.AUTD3_TRUE;
+                }
             }
-
-            return res == Def.Autd3True;
-
         }
 
         /// <summary>
@@ -405,7 +444,7 @@ namespace AUTD3Sharp
             {
                 _controller = controller;
                 _map = map;
-                _kvMap = Base.AUTDControllerGroupCreateKVMap();
+                _kvMap = NativeMethodsBase.AUTDControllerGroupCreateKVMap();
                 _keymap = new Dictionary<object, int>();
                 _k = 0;
             }
@@ -421,8 +460,12 @@ namespace AUTD3Sharp
                 var ptr2 = data2.Ptr(_controller.Geometry);
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs, err);
-                if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
+                unsafe
+                {
+                    fixed (byte* ep = err)
+                        _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs, ep);
+                }
+                if (_kvMap.Item1 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
 
@@ -445,8 +488,12 @@ namespace AUTD3Sharp
                 var ptr = data.Ptr();
                 _keymap[key] = _k++;
                 var err = new byte[256];
-                _kvMap = Base.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs, err);
-                if (_kvMap._0 == IntPtr.Zero) throw new AUTDException(err);
+                unsafe
+                {
+                    fixed (byte* ep = err)
+                        _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs, ep);
+                }
+                if (_kvMap.Item1 == IntPtr.Zero) throw new AUTDException(err);
                 return this;
             }
 
@@ -459,8 +506,13 @@ namespace AUTD3Sharp
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();
                 var err = new byte[256];
-                if (Base.AUTDControllerGroup(_controller.Ptr, map, _kvMap, err) == Def.Autd3Err)
-                    throw new AUTDException(err);
+                unsafe
+                {
+                    fixed (int* mp = map)
+                    fixed (byte* ep = err)
+                        if (NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap, ep) == NativeMethodsDef.AUTD3_ERR)
+                            throw new AUTDException(err);
+                }
             }
         }
 
@@ -475,7 +527,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class UpdateFlags : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramUpdateFlags();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramUpdateFlags();
     }
 
     /// <summary>
@@ -483,7 +535,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Clear : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramClear();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramClear();
     }
 
     /// <summary>
@@ -491,7 +543,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Synchronize : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramSynchronize();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramSynchronize();
     }
 
     /// <summary>
@@ -499,7 +551,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class Stop : ISpecialDatagram
     {
-        public DatagramSpecialPtr Ptr() => Base.AUTDDatagramStop();
+        DatagramSpecialPtr ISpecialDatagram.Ptr() => NativeMethodsBase.AUTDDatagramStop();
     }
 
     /// <summary>
@@ -507,7 +559,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigureModDelay : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigureModDelay();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureModDelay();
     }
 
     /// <summary>
@@ -515,7 +567,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigureAmpFilter : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigureAmpFilter();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureAmpFilter();
     }
 
 
@@ -524,7 +576,7 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigurePhaseFilter : IDatagram
     {
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramConfigurePhaseFilter();
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigurePhaseFilter();
     }
 
     /// <summary>
@@ -543,7 +595,7 @@ namespace AUTD3Sharp
             _step = step;
         }
 
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDDatagramSilencer(_step);
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramSilencer(_step);
 
         /// <summary>
         /// Disable silencer

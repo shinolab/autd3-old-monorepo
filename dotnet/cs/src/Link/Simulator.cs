@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ namespace AUTD3Sharp.Link
 
             internal SimulatorBuilder(ushort port)
             {
-                _ptr = NativeMethods.LinkSimulator.AUTDLinkSimulator(port);
+                _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulator(port);
             }
 
             /// <summary>
@@ -44,21 +44,30 @@ namespace AUTD3Sharp.Link
             public SimulatorBuilder WithServerIp(IPAddress addr)
             {
                 var err = new byte[256];
-                _ptr = NativeMethods.LinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, addr.ToString(), err);
-                if (_ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
+                var addrStr = addr.ToString();
+                var addrBytes = System.Text.Encoding.UTF8.GetBytes(addrStr);
+                unsafe
+                {
+                    fixed (byte* ep = err)
+                    fixed (byte* ap = addrBytes)
+                    {
+                        _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap, ep);
+                        if (_ptr.Item1 == IntPtr.Zero)
+                            throw new AUTDException(err);
+                    }
+                }
                 return this;
             }
 
             public SimulatorBuilder WithTimeout(TimeSpan timeout)
             {
-                _ptr = NativeMethods.LinkSimulator.AUTDLinkSimulatorWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
             {
-                return NativeMethods.LinkSimulator.AUTDLinkSimulatorIntoBuilder(_ptr);
+                return NativeMethodsLinkSimulator.AUTDLinkSimulatorIntoBuilder(_ptr);
             }
         }
 
@@ -67,16 +76,22 @@ namespace AUTD3Sharp.Link
             return new SimulatorBuilder(port);
         }
 
-        private LinkPtr _ptr = new LinkPtr { _0 = IntPtr.Zero };
+        private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
 
         public void UpdateGeometry(Geometry geometry)
         {
             var err = new byte[256];
-            if (NativeMethods.LinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, err) == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    if (NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, ep) == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                }
+            }
         }
 
-        public Simulator Create(LinkPtr ptr, object? _)
+        Simulator Internal.ILink<Simulator>.Create(LinkPtr ptr, object? _)
         {
             return new Simulator
             {

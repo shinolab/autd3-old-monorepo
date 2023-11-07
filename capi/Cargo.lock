@@ -732,6 +732,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
+name = "csbindgen"
+version = "1.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df2f2752e26ade4753a17512e2b072489b7eb1df357a8c62cbdb464cff809b27"
+dependencies = [
+ "regex",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "csv"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3006,8 +3016,10 @@ dependencies = [
  "anyhow",
  "cbindgen",
  "convert_case",
+ "csbindgen",
  "glob",
  "itertools",
+ "regex",
  "syn 2.0.38",
 ]
 

@@ -22,7 +22,7 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public interface ILinkBuilder
     {
-        LinkBuilderPtr Ptr();
+        internal LinkBuilderPtr Ptr();
 
         internal object? Props()
         {
@@ -33,7 +33,7 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public interface ILink<out T>
     {
-        T Create(LinkPtr ptr, object? props);
+        internal T Create(LinkPtr ptr, object? props);
     }
 }
 

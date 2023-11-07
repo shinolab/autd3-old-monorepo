@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,8 +40,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp
 {
-    using Base = NativeMethods.Base;
-
     namespace STM
     {
         public abstract class STM : IDatagram
@@ -63,34 +61,41 @@ namespace AUTD3Sharp
                 FinishIdxV = -1;
             }
 
-            public DatagramPtr Ptr(Geometry geometry) => STMPtr(geometry);
+            DatagramPtr IDatagram.Ptr(Geometry geometry) => STMPtr(geometry);
 
-            public abstract DatagramPtr STMPtr(Geometry geometry);
+            internal abstract DatagramPtr STMPtr(Geometry geometry);
 
             public ushort? StartIdx => StartIdxV == -1 ? null : (ushort?)StartIdxV;
 
             public ushort? FinishIdx => FinishIdxV == -1 ? null : (ushort?)FinishIdxV;
 
-            protected STMPropsPtr Props()
+            internal STMPropsPtr Props()
             {
                 var ptr = new STMPropsPtr();
                 if (_freq != null)
-                    ptr = Base.AUTDSTMProps(_freq.Value);
+                    ptr = NativeMethodsBase.AUTDSTMProps(_freq.Value);
                 if (_samplingFreq != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreq(_samplingFreq.Value);
+                    ptr = NativeMethodsBase.AUTDSTMPropsWithSamplingFreq(_samplingFreq.Value);
                 if (_samplingFreqDiv != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreqDiv(_samplingFreqDiv.Value);
+                    ptr = NativeMethodsBase.AUTDSTMPropsWithSamplingFreqDiv(_samplingFreqDiv.Value);
                 if (_samplingPeriod != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingPeriod((ulong)(_samplingPeriod.Value.TotalMilliseconds * 1000 * 1000));
-                ptr = Base.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
-                ptr = Base.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
+                    ptr = NativeMethodsBase.AUTDSTMPropsWithSamplingPeriod((ulong)(_samplingPeriod.Value.TotalMilliseconds * 1000 *
+                                                                      1000));
+                ptr = NativeMethodsBase.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
+                ptr = NativeMethodsBase.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
                 return ptr;
             }
 
-            protected float_t FreqFromSize(int size) => Base.AUTDSTMPropsFrequency(Props(), (ulong)size);
-            protected float_t SamplingFreqFromSize(int size) => Base.AUTDSTMPropsSamplingFrequency(Props(), (ulong)size);
-            protected uint SamplingFreqDivFromSize(int size) => Base.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
-            protected TimeSpan SamplingPeriodFromSize(int size) => TimeSpan.FromMilliseconds(Base.AUTDSTMPropsSamplingPeriod(Props(), (ulong)size) / 1000.0 / 1000.0);
+            protected float_t FreqFromSize(int size) => NativeMethodsBase.AUTDSTMPropsFrequency(Props(), (ulong)size);
+
+            protected float_t SamplingFreqFromSize(int size) =>
+                NativeMethodsBase.AUTDSTMPropsSamplingFrequency(Props(), (ulong)size);
+
+            protected uint SamplingFreqDivFromSize(int size) =>
+                NativeMethodsBase.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
+
+            protected TimeSpan SamplingPeriodFromSize(int size) =>
+                TimeSpan.FromMilliseconds(NativeMethodsBase.AUTDSTMPropsSamplingPeriod(Props(), (ulong)size) / 1000.0 / 1000.0);
         }
 
         /// <summary>
@@ -108,7 +113,8 @@ namespace AUTD3Sharp
             private readonly List<float_t> _points;
             private readonly List<byte> _shifts;
 
-            private FocusSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(freq, samplingFreq, sampleFreqDiv, samplePeriod)
+            private FocusSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(
+                freq, samplingFreq, sampleFreqDiv, samplePeriod)
             {
                 _points = new List<float_t>();
                 _shifts = new List<byte>();
@@ -183,9 +189,14 @@ namespace AUTD3Sharp
             public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_shifts.Count);
             public TimeSpan SamplingPeriod => SamplingPeriodFromSize(_shifts.Count);
 
-            public override DatagramPtr STMPtr(Geometry geometry)
+            internal override DatagramPtr STMPtr(Geometry geometry)
             {
-                return Base.AUTDSTMFocus(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
+                unsafe
+                {
+                    fixed (float_t* pp = _points.ToArray())
+                    fixed (byte* ps = _shifts.ToArray())
+                        return NativeMethodsBase.AUTDSTMFocus(Props(), pp, ps, (ulong)_shifts.Count);
+                }
             }
         }
 
@@ -204,7 +215,8 @@ namespace AUTD3Sharp
             private readonly List<Internal.Gain> _gains;
             private GainSTMMode _mode;
 
-            private GainSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(freq, samplingFreq, sampleFreqDiv, samplePeriod)
+            private GainSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(
+                freq, samplingFreq, sampleFreqDiv, samplePeriod)
             {
                 _gains = new List<Internal.Gain>();
                 _mode = GainSTMMode.PhaseDutyFull;
@@ -272,10 +284,14 @@ namespace AUTD3Sharp
             public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_gains.Count);
             public TimeSpan SamplingPeriod => SamplingPeriodFromSize(_gains.Count);
 
-            public override DatagramPtr STMPtr(Geometry geometry)
+            internal override DatagramPtr STMPtr(Geometry geometry)
             {
                 var gains = _gains.Select(g => g.GainPtr(geometry)).ToArray();
-                return Base.AUTDSTMGain(Props(), gains, (uint)gains.Length, _mode);
+                unsafe
+                {
+                    fixed (GainPtr* gp = gains)
+                        return NativeMethodsBase.AUTDSTMGain(Props(), gp, (uint)gains.Length, _mode);
+                }
             }
         }
     }

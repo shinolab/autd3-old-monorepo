@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using AUTD3Sharp.NativeMethods;
 
 #if USE_SINGLE
 using float_t = System.Single;
@@ -30,21 +29,27 @@ namespace AUTD3Sharp.Internal
     [ComVisible(false)]
     public abstract class Modulation : IDatagram
     {
-        public float_t SamplingFrequency => (float_t)Def.FpgaClkFreq / SamplingFrequencyDivision;
-        public uint SamplingFrequencyDivision => Base.AUTDModulationSamplingFrequencyDivision(ModulationPtr());
+        public float_t SamplingFrequency => (float_t)NativeMethodsDef.FPGA_CLK_FREQ / SamplingFrequencyDivision;
+        public uint SamplingFrequencyDivision => NativeMethodsBase.AUTDModulationSamplingFrequencyDivision(ModulationPtr());
 
-        public DatagramPtr Ptr(Geometry geometry) => Base.AUTDModulationIntoDatagram(ModulationPtr());
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDModulationIntoDatagram(ModulationPtr());
 
-        public abstract ModulationPtr ModulationPtr();
+        internal abstract ModulationPtr ModulationPtr();
 
         public int Length
         {
             get
             {
                 var err = new byte[256];
-                var n = Base.AUTDModulationSize(ModulationPtr(), err);
-                if (n < 0) throw new AUTDException(err);
-                return n;
+                unsafe
+                {
+                    fixed (byte* p = err)
+                    {
+                        var n = NativeMethodsBase.AUTDModulationSize(ModulationPtr(), p);
+                        if (n < 0) throw new AUTDException(err);
+                        return n;
+                    }
+                }
             }
         }
     }
@@ -71,7 +76,7 @@ namespace AUTD3Sharp.Internal
         /// <returns></returns>
         public T WithSamplingFrequency(float_t freq)
         {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaClkFreq / freq));
+            return WithSamplingFrequencyDivision((uint)(NativeMethodsDef.FPGA_CLK_FREQ / freq));
         }
 
         /// <summary>
@@ -80,7 +85,7 @@ namespace AUTD3Sharp.Internal
         /// <returns></returns>
         public T WithSamplingPeriod(TimeSpan period)
         {
-            return WithSamplingFrequencyDivision((uint)(Def.FpgaClkFreq / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
+            return WithSamplingFrequencyDivision((uint)(NativeMethodsDef.FPGA_CLK_FREQ / 1000000000.0 * (period.TotalMilliseconds * 1000.0 * 1000.0)));
         }
     }
 }
