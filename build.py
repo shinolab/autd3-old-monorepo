@@ -294,7 +294,7 @@ class Config:
         if features is not None:
             command.append("--features")
             command.append(features)
-        if not self.cuda:
+        if not self.cuda or self.skip_cuda:
             command.append("--exclude=autd3capi-backend-cuda")
         if not self.is_built_autd3capi_link_visualizer():
             command.append("--exclude=autd3capi-link-visualizer")
