@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,8 +23,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Base class for custom modulation
     /// </summary>
@@ -37,10 +35,14 @@ namespace AUTD3Sharp.Modulation
             _freqDiv = freqDiv;
         }
 
-        public sealed override ModulationPtr ModulationPtr()
+        internal sealed override ModulationPtr ModulationPtr()
         {
             var data = Calc();
-            return Base.AUTDModulationCustom(_freqDiv, data, (ulong)data.Length);
+            unsafe
+            {
+                fixed (float_t* ptr = data)
+                    return NativeMethodsBase.AUTDModulationCustom(_freqDiv, ptr, (ulong)data.Length);
+            }
         }
 
         public abstract float_t[] Calc();

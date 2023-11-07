@@ -4,7 +4,7 @@
  * Created Date: 08/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ using float_t = System.Single;
 #else
 using float_t = System.Double;
 #endif
+
 using System;
 using System.Runtime.InteropServices;
 
@@ -38,132 +39,171 @@ namespace AUTD3Sharp.Gain.Holo
         public CUDABackend()
         {
             var err = new byte[256];
-            Ptr = NativeMethods.BackendCUDA.AUTDCUDABackend(err);
-            if (Ptr._0 == IntPtr.Zero)
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    Ptr = NativeMethodsBackendCUDA.AUTDCUDABackend(ep);
+                }
+            }
+            if (Ptr.Item1 == IntPtr.Zero)
                 throw new AUTDException(err);
         }
 
         ~CUDABackend()
         {
-            if (Ptr._0 == IntPtr.Zero) return;
-            NativeMethods.BackendCUDA.AUTDCUDABackendDelete(Ptr);
-            Ptr._0 = IntPtr.Zero;
+            if (Ptr.Item1 == IntPtr.Zero) return;
+            NativeMethodsBackendCUDA.AUTDCUDABackendDelete(Ptr);
+            Ptr.Item1 = IntPtr.Zero;
         }
 
-        public override GainPtr Sdp(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Sdp(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDASDP(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDP(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr SdpWithAlpha(GainPtr ptr, float_t v)
+        internal override GainPtr SdpWithAlpha(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDASDPWithAlpha(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithAlpha(ptr, v);
         }
 
-        public override GainPtr SdpWithRepeat(GainPtr ptr, uint v)
+        internal override GainPtr SdpWithRepeat(GainPtr ptr, uint v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDASDPWithRepeat(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithRepeat(ptr, v);
         }
 
-        public override GainPtr SdpWithLambda(GainPtr ptr, float_t v)
+        internal override GainPtr SdpWithLambda(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDASDPWithLambda(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithLambda(ptr, v);
         }
 
-        public override GainPtr SdpWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr SdpWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDASDPWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithConstraint(ptr, v);
         }
 
-        public override GainPtr Evp(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Evp(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAEVP(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVP(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr EvpWithGamma(GainPtr ptr, float_t v)
+        internal override GainPtr EvpWithGamma(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAEVPWithGamma(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVPWithGamma(ptr, v);
         }
 
-        public override GainPtr EvpWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr EvpWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAEVPWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVPWithConstraint(ptr, v);
         }
 
-        public override GainPtr Gs(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Gs(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGS(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGS(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr GsWithRepeat(GainPtr ptr, uint v)
+        internal override GainPtr GsWithRepeat(GainPtr ptr, uint v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGSWithRepeat(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSWithRepeat(ptr, v);
         }
 
-        public override GainPtr GsWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr GsWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGSWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSWithConstraint(ptr, v);
         }
 
-        public override GainPtr Gspat(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Gspat(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGSPAT(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPAT(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr GspatWithRepeat(GainPtr ptr, uint v)
+        internal override GainPtr GspatWithRepeat(GainPtr ptr, uint v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGSPATWithRepeat(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPATWithRepeat(ptr, v);
         }
 
-        public override GainPtr GspatWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr GspatWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDAGSPATWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPATWithConstraint(ptr, v);
         }
 
-        public override GainPtr Naive(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Naive(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDANaive(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDANaive(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr NaiveWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr NaiveWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDANaiveWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDANaiveWithConstraint(ptr, v);
         }
 
-        public override GainPtr Lm(float_t[]? foci, float_t[]? amps, ulong size)
+        internal override GainPtr Lm(float_t[] foci, float_t[] amps, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALM(Ptr, foci, amps, size);
+            unsafe
+            {
+                fixed (float_t* fp = foci)
+                fixed (float_t* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDALM(Ptr, fp, ap, size);
+            }
         }
 
-        public override GainPtr LmWithEps1(GainPtr ptr, float_t v)
+        internal override GainPtr LmWithEps1(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithEps1(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithEps1(ptr, v);
         }
 
-        public override GainPtr LmWithEps2(GainPtr ptr, float_t v)
+        internal override GainPtr LmWithEps2(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithEps2(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithEps2(ptr, v);
         }
 
-        public override GainPtr LmWithTau(GainPtr ptr, float_t v)
+        internal override GainPtr LmWithTau(GainPtr ptr, float_t v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithTau(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithTau(ptr, v);
         }
 
-        public override GainPtr LmWithKMax(GainPtr ptr, uint v)
+        internal override GainPtr LmWithKMax(GainPtr ptr, uint v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithKMax(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithKMax(ptr, v);
         }
 
-        public override GainPtr LmWithInitial(GainPtr ptr, float_t[]? v,
-                                                                                 ulong size)
+        internal override GainPtr LmWithInitial(GainPtr ptr, float_t[] v, ulong size)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithInitial(ptr, v, size);
+            unsafe
+            {
+                fixed (float_t* vp = v)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithInitial(ptr, vp, size);
+            }
         }
 
-        public override GainPtr LmWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr LmWithConstraint(GainPtr ptr, ConstraintPtr v)
         {
-            return NativeMethods.BackendCUDA.AUTDGainHoloCUDALMWithConstraint(ptr, v);
+            return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithConstraint(ptr, v);
         }
     }
 }

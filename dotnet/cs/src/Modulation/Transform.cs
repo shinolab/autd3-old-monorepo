@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,8 +34,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     public class Transform : Internal.Modulation
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate float_t ModTransformDelegate(IntPtr context, uint i, float_t d);
@@ -49,9 +47,9 @@ namespace AUTD3Sharp.Modulation
             _f = (context, i, d) => f((int)i, d);
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationWithTransform(_m.ModulationPtr(), Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero);
+            return NativeMethodsBase.AUTDModulationWithTransform(_m.ModulationPtr(), Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero);
         }
     }
 

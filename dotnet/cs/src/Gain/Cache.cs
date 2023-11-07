@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using AUTD3Sharp.NativeMethods;
 
 namespace AUTD3Sharp.Gain
 {
@@ -47,27 +46,35 @@ namespace AUTD3Sharp.Gain
             var deviceIndices = geometry.Devices().Select(d => d.Idx).ToArray();
             if (_cache.Count == deviceIndices.Length && deviceIndices.All(i => _cache.ContainsKey(i))) return;
             var err = new byte[256];
-            var res = Base.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, err);
-            if (res._0 == IntPtr.Zero) throw new AUTDException(err);
-            foreach (var dev in geometry.Devices())
+            unsafe
             {
-                var drives = new Drive[dev.NumTransducers];
-                unsafe
+                fixed (byte* ep = err)
                 {
-                    fixed (Drive* p = drives)
+                    var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, ep);
+                    if (res.Item1 == IntPtr.Zero) throw new AUTDException(err);
+                    foreach (var dev in geometry.Devices())
                     {
-                        Base.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                        var drives = new Drive[dev.NumTransducers];
+                        fixed (Drive* p = drives)
+                            NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                        _cache[dev.Idx] = drives;
                     }
+                    NativeMethodsBase.AUTDGainCalcFreeResult(res);
                 }
-                _cache[dev.Idx] = drives;
             }
-            Base.AUTDGainCalcFreeResult(res);
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
             Init(geometry);
-            return geometry.Devices().Aggregate(Base.AUTDGainCustom(), (acc, dev) => Base.AUTDGainCustomSet(acc, (uint)dev.Idx, _cache[dev.Idx], (uint)_cache[dev.Idx].Length));
+            return geometry.Devices().Aggregate(NativeMethodsBase.AUTDGainCustom(), (acc, dev) =>
+            {
+                unsafe
+                {
+                    fixed (Drive* p = _cache[dev.Idx])
+                        return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, p, (uint)_cache[dev.Idx].Length);
+                }
+            });
         }
     }
 

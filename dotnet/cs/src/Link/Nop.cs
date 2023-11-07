@@ -4,11 +4,11 @@
  * Created Date: 10/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 namespace AUTD3Sharp.Link
@@ -20,9 +20,9 @@ namespace AUTD3Sharp.Link
     {
         public sealed class NopBuilder : Internal.ILinkBuilder
         {
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
             {
-                return NativeMethods.Base.AUTDLinkNop();
+                return NativeMethodsBase.AUTDLinkNop();
             }
         }
 

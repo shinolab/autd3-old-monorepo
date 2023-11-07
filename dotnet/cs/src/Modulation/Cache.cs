@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,8 +27,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Modulation to cache the result of calculation
     /// </summary>
@@ -42,12 +40,17 @@ namespace AUTD3Sharp.Modulation
         public Cache(Internal.Modulation m)
         {
             var err = new byte[256];
-            _cache = Base.AUTDModulationWithCache(m.ModulationPtr(), err);
-            if (_cache._0 == IntPtr.Zero) throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                    _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr(), ep);
+                if (_cache.Item1 == IntPtr.Zero) throw new AUTDException(err);
 
-            var n = Base.AUTDModulationCacheGetBufferSize(_cache);
-            _buffer = new float_t[n];
-            Base.AUTDModulationCacheGetBuffer(_cache, _buffer);
+                var n = NativeMethodsBase.AUTDModulationCacheGetBufferSize(_cache);
+                _buffer = new float_t[n];
+                fixed (float_t* p = _buffer)
+                    NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, p);
+            }
         }
 
         ~Cache()
@@ -59,16 +62,16 @@ namespace AUTD3Sharp.Modulation
         {
             if (_isDisposed) return;
 
-            if (_cache._0 != IntPtr.Zero) Base.AUTDModulationCacheDelete(_cache);
-            _cache._0 = IntPtr.Zero;
+            if (_cache.Item1 != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
+            _cache.Item1 = IntPtr.Zero;
 
             _isDisposed = true;
             GC.SuppressFinalize(this);
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationCacheIntoModulation(_cache);
+            return NativeMethodsBase.AUTDModulationCacheIntoModulation(_cache);
         }
 
         public float_t this[int index] => _buffer[index];

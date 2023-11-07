@@ -4,7 +4,7 @@
  * Created Date: 13/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,37 +43,37 @@ namespace AUTD3Sharp.Link
 {
     public interface IBackend
     {
-        Backend Backend();
+        internal Backend Backend();
     }
 
     public sealed class PlottersBackend : IBackend
     {
-        public Backend Backend() => AUTD3Sharp.Backend.Plotters;
+        Backend IBackend.Backend() => Backend.Plotters;
     }
 
     public sealed class PythonBackend : IBackend
     {
-        public Backend Backend() => AUTD3Sharp.Backend.Python;
+        Backend IBackend.Backend() => Backend.Python;
     }
 
     public sealed class NullBackend : IBackend
     {
-        public Backend Backend() => AUTD3Sharp.Backend.Null;
+        Backend IBackend.Backend() => Backend.Null;
     }
 
     public interface IDirectivity
     {
-        Directivity Directivity();
+        internal Directivity Directivity();
     }
 
     public sealed class Sphere : IDirectivity
     {
-        public Directivity Directivity() => AUTD3Sharp.Directivity.Sphere;
+        Directivity IDirectivity.Directivity() => Directivity.Sphere;
     }
 
     public sealed class T4010A1 : IDirectivity
     {
-        public Directivity Directivity() => AUTD3Sharp.Directivity.T4010A1;
+        Directivity IDirectivity.Directivity() => Directivity.T4010A1;
     }
 
     public struct PlotRange
@@ -89,8 +89,8 @@ namespace AUTD3Sharp.Link
 
     public interface IPlotConfig
     {
-        ConfigPtr Ptr();
-        Backend Backend();
+        internal ConfigPtr Ptr();
+        internal Backend Backend();
     }
 
     public sealed class PlotConfig : IPlotConfig
@@ -104,33 +104,45 @@ namespace AUTD3Sharp.Link
         public CMap? Cmap { get; set; }
         public string? Fname { get; set; }
 
-        public ConfigPtr Ptr()
+        ConfigPtr IPlotConfig.Ptr()
         {
             var err = new byte[256];
-            var ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigDefault();
-            if (Figsize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFigSize(ptr, Figsize.Value.Item1, Figsize.Value.Item2);
-            if (CbarSize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithCBarSize(ptr, CbarSize.Value);
-            if (FontSize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFontSize(ptr, FontSize.Value);
-            if (LabelAreaSize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithLabelAreaSize(ptr, LabelAreaSize.Value);
-            if (Margin.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithMargin(ptr, Margin.Value);
-            if (TicksStep.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithTicksStep(ptr, TicksStep.Value);
-            if (Cmap.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithCMap(ptr, Cmap.Value);
-            if (Fname != null) ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotConfigWithFName(ptr, Fname, err);
-            if (ptr._0 == IntPtr.Zero)
-                throw new AUTDException(err);
-            return new ConfigPtr { _0 = ptr._0 };
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigDefault();
+                    if (Figsize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithFigSize(ptr, Figsize.Value.Item1,
+                            Figsize.Value.Item2);
+                    if (CbarSize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithCBarSize(ptr, CbarSize.Value);
+                    if (FontSize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithFontSize(ptr, FontSize.Value);
+                    if (LabelAreaSize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithLabelAreaSize(ptr, LabelAreaSize.Value);
+                    if (Margin.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithMargin(ptr, Margin.Value);
+                    if (TicksStep.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithTicksStep(ptr, TicksStep.Value);
+                    if (Cmap.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithCMap(ptr, Cmap.Value);
+                    if (Fname != null)
+                    {
+                        var fnameBytes = System.Text.Encoding.UTF8.GetBytes(Fname);
+                        fixed (byte* fp = fnameBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotConfigWithFName(ptr, fp, ep);
+                    }
+                    if (ptr.Item1 == IntPtr.Zero)
+                        throw new AUTDException(err);
+                    return new ConfigPtr { Item1 = ptr.Item1 };
+                }
+            }
         }
 
-        public Backend Backend()
+        Backend IPlotConfig.Backend()
         {
-            return AUTD3Sharp.Backend.Plotters;
+            return Backend.Plotters;
         }
     }
 
@@ -147,50 +159,78 @@ namespace AUTD3Sharp.Link
         public bool? Show { get; set; }
         public string? Fname { get; set; }
 
-        public ConfigPtr Ptr()
+        ConfigPtr IPlotConfig.Ptr()
         {
             var err = new byte[256];
-            var ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigDefault();
-            if (Figsize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFigSize(ptr, Figsize.Value.Item1, Figsize.Value.Item2);
-            if (DPI.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithDPI(ptr, DPI.Value);
-            if (CbarPosition != null)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, CbarPosition, err);
-            if (CbarSize != null)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, CbarSize, err);
-            if (CbarPad != null)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, CbarPad, err);
-            if (FontSize.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFontSize(ptr, FontSize.Value);
-            if (TicksStep.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithTicksStep(ptr, TicksStep.Value);
-            if (Cmap != null)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, Cmap, err);
-            if (Show.HasValue)
-                ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithShow(ptr, Show.Value);
-            if (Fname != null) ptr = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFName(ptr, Fname, err);
-            if (ptr._0 == IntPtr.Zero)
-                throw new AUTDException(err);
-            return new ConfigPtr { _0 = ptr._0 };
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigDefault();
+                    if (Figsize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFigSize(ptr, Figsize.Value.Item1,
+                            Figsize.Value.Item2);
+                    if (DPI.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithDPI(ptr, DPI.Value);
+                    if (CbarPosition != null)
+                    {
+                        var cbarPositionBytes = System.Text.Encoding.UTF8.GetBytes(CbarPosition);
+                        fixed (byte* fp = cbarPositionBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, fp, ep);
+                    }
+                    if (CbarSize != null)
+                    {
+                        var cbarPSizeBytes = System.Text.Encoding.UTF8.GetBytes(CbarSize);
+                        fixed (byte* fp = cbarPSizeBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, fp, ep);
+                    }
+                    if (CbarPad != null)
+                    {
+                        var cbarPadBytes = System.Text.Encoding.UTF8.GetBytes(CbarPad);
+                        fixed (byte* fp = cbarPadBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, fp, ep);
+                    }
+                    if (FontSize.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFontSize(ptr, FontSize.Value);
+                    if (TicksStep.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithTicksStep(ptr, TicksStep.Value);
+                    if (Cmap != null)
+                    {
+                        var cmapBytes = System.Text.Encoding.UTF8.GetBytes(Cmap);
+                        fixed (byte* fp = cmapBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, fp, ep);
+                    }
+                    if (Show.HasValue)
+                        ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithShow(ptr, Show.Value);
+                    if (Fname != null)
+                    {
+                        var fnameBytes = System.Text.Encoding.UTF8.GetBytes(Fname);
+                        fixed (byte* fp = fnameBytes)
+                            ptr = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPyPlotConfigWithFName(ptr, fp, ep);
+                    }
+                    if (ptr.Item1 == IntPtr.Zero)
+                        throw new AUTDException(err);
+                    return new ConfigPtr { Item1 = ptr.Item1 };
+                }
+            }
         }
 
-        public Backend Backend()
+        Backend IPlotConfig.Backend()
         {
-            return AUTD3Sharp.Backend.Python;
+            return Backend.Python;
         }
     }
 
     public sealed class NullPlotConfig : IPlotConfig
     {
-        public ConfigPtr Ptr()
+        ConfigPtr IPlotConfig.Ptr()
         {
-            return new ConfigPtr { _0 = NativeMethods.LinkVisualizer.AUTDLinkVisualizerNullPlotConfigDefault()._0 };
+            return new ConfigPtr { Item1 = NativeMethodsLinkVisualizer.AUTDLinkVisualizerNullPlotConfigDefault().Item1 };
         }
 
-        public Backend Backend()
+        Backend IPlotConfig.Backend()
         {
-            return AUTD3Sharp.Backend.Null;
+            return Backend.Null;
         }
     }
 
@@ -220,31 +260,31 @@ namespace AUTD3Sharp.Link
                 };
             }
 
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr ILinkBuilder.Ptr()
             {
                 return _props.Backend switch
                 {
                     Backend.Plotters => _props.Directivity switch
                     {
-                        Directivity.Sphere => NativeMethods.LinkVisualizer.AUTDLinkVisualizerSpherePlotters(
+                        Directivity.Sphere => NativeMethodsLinkVisualizer.AUTDLinkVisualizerSpherePlotters(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
-                        Directivity.T4010A1 => NativeMethods.LinkVisualizer.AUTDLinkVisualizerT4010A1Plotters(
+                        Directivity.T4010A1 => NativeMethodsLinkVisualizer.AUTDLinkVisualizerT4010A1Plotters(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
                         _ => throw new ArgumentOutOfRangeException()
                     },
                     Backend.Python => _props.Directivity switch
                     {
-                        Directivity.Sphere => NativeMethods.LinkVisualizer.AUTDLinkVisualizerSpherePython(
+                        Directivity.Sphere => NativeMethodsLinkVisualizer.AUTDLinkVisualizerSpherePython(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
-                        Directivity.T4010A1 => NativeMethods.LinkVisualizer.AUTDLinkVisualizerT4010A1Python(
+                        Directivity.T4010A1 => NativeMethodsLinkVisualizer.AUTDLinkVisualizerT4010A1Python(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
                         _ => throw new ArgumentOutOfRangeException()
                     },
                     Backend.Null => _props.Directivity switch
                     {
-                        Directivity.Sphere => NativeMethods.LinkVisualizer.AUTDLinkVisualizerSphereNull(
+                        Directivity.Sphere => NativeMethodsLinkVisualizer.AUTDLinkVisualizerSphereNull(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
-                        Directivity.T4010A1 => NativeMethods.LinkVisualizer.AUTDLinkVisualizerT4010A1Null(
+                        Directivity.T4010A1 => NativeMethodsLinkVisualizer.AUTDLinkVisualizerT4010A1Null(
                             _gpuIdx.HasValue, _gpuIdx ?? 0),
                         _ => throw new ArgumentOutOfRangeException()
                     },
@@ -298,18 +338,22 @@ namespace AUTD3Sharp.Link
             return new VisualizerBuilder(Backend.Null);
         }
 
-        private LinkPtr _ptr = new LinkPtr { _0 = IntPtr.Zero };
+        private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
         private Backend _backend;
         private Directivity _directivity;
 
         public float_t[] PhasesOf(int idx)
         {
-            var size = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPhasesOf(_ptr, _backend, _directivity,
-                (uint)(idx), null);
-            var buf = new float_t[size];
-            NativeMethods.LinkVisualizer.AUTDLinkVisualizerPhasesOf(_ptr, _backend, _directivity,
-                               (uint)(idx), buf);
-            return buf;
+            unsafe
+            {
+                var size = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPhasesOf(_ptr, _backend, _directivity,
+                    (uint)(idx), null);
+                var buf = new float_t[size];
+                fixed (float_t* bp = buf)
+                    NativeMethodsLinkVisualizer.AUTDLinkVisualizerPhasesOf(_ptr, _backend, _directivity,
+                        (uint)(idx), bp);
+                return buf;
+            }
         }
 
         public float_t[] Phases()
@@ -319,12 +363,16 @@ namespace AUTD3Sharp.Link
 
         public float_t[] DutiesOf(int idx)
         {
-            var size = NativeMethods.LinkVisualizer.AUTDLinkVisualizerDutiesOf(_ptr, _backend, _directivity,
-                (uint)(idx), null);
-            var buf = new float_t[size];
-            NativeMethods.LinkVisualizer.AUTDLinkVisualizerDutiesOf(_ptr, _backend, _directivity,
-                (uint)(idx), buf);
-            return buf;
+            unsafe
+            {
+                var size = NativeMethodsLinkVisualizer.AUTDLinkVisualizerDutiesOf(_ptr, _backend, _directivity,
+                    (uint)(idx), null);
+                var buf = new float_t[size];
+                fixed (float_t* bp = buf)
+                    NativeMethodsLinkVisualizer.AUTDLinkVisualizerDutiesOf(_ptr, _backend, _directivity,
+                    (uint)(idx), bp);
+                return buf;
+            }
         }
 
         public float_t[] Duties()
@@ -334,33 +382,48 @@ namespace AUTD3Sharp.Link
 
         public float_t[] ModulationRaw()
         {
-            var size = NativeMethods.LinkVisualizer.AUTDLinkVisualizerModulationRaw(_ptr, _backend, _directivity,
-                               null);
-            var buf = new float_t[size];
-            NativeMethods.LinkVisualizer.AUTDLinkVisualizerModulationRaw(_ptr, _backend, _directivity, buf);
-            return buf;
+            unsafe
+            {
+                var size = NativeMethodsLinkVisualizer.AUTDLinkVisualizerModulationRaw(_ptr, _backend, _directivity,
+                    null);
+                var buf = new float_t[size];
+                fixed (float_t* bp = buf)
+                    NativeMethodsLinkVisualizer.AUTDLinkVisualizerModulationRaw(_ptr, _backend, _directivity, bp);
+                return buf;
+            }
         }
 
         public float_t[] Modulation()
         {
-            var size = NativeMethods.LinkVisualizer.AUTDLinkVisualizerModulation(_ptr, _backend, _directivity,
-                                              null);
-            var buf = new float_t[size];
-            NativeMethods.LinkVisualizer.AUTDLinkVisualizerModulation(_ptr, _backend, _directivity, buf);
-            return buf;
+            unsafe
+            {
+                var size = NativeMethodsLinkVisualizer.AUTDLinkVisualizerModulation(_ptr, _backend, _directivity,
+                    null);
+                var buf = new float_t[size];
+                fixed (float_t* bp = buf)
+                    NativeMethodsLinkVisualizer.AUTDLinkVisualizerModulation(_ptr, _backend, _directivity, bp);
+                return buf;
+            }
         }
 
         public System.Numerics.Complex[] CalcFieldOf(IEnumerable<Vector3> pointsIter, Geometry geometry, int idx)
         {
             var points = pointsIter as Vector3[] ?? pointsIter.ToArray();
-            var pointsLen = points.Count();
+            var pointsLen = points.Length;
             var pointsPtr = points.SelectMany(v => new[] { v.x, v.y, v.z }).ToArray();
             var buf = new float_t[pointsLen * 2];
             var err = new byte[256];
-            if (NativeMethods.LinkVisualizer.AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity,
-                               pointsPtr, (uint)pointsLen, geometry.Ptr, (uint)(idx), buf, err) == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
-            return Enumerable.Range(0, pointsLen).Select(i => new System.Numerics.Complex(buf[2 * i], buf[2 * i + 1])).ToArray();
+            unsafe
+            {
+                fixed (byte* ep = err)
+                fixed (float_t* pp = pointsPtr)
+                fixed (float_t* bp = buf)
+                    if (NativeMethodsLinkVisualizer.AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity,
+                            pp, (uint)pointsLen, geometry.Ptr, (uint)idx, bp, ep) == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                return Enumerable.Range(0, pointsLen)
+                    .Select(i => new System.Numerics.Complex(buf[2 * i], buf[2 * i + 1])).ToArray();
+            }
         }
 
         public System.Numerics.Complex[] CalcField(IEnumerable<Vector3> pointsIter, Geometry geometry)
@@ -372,9 +435,17 @@ namespace AUTD3Sharp.Link
         {
             if (config.Backend() != _backend) throw new AUTDException("Invalid plot config type.");
             var err = new byte[256];
-            var ret = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotFieldOf(_ptr, _backend, _directivity, config.Ptr(), NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotRange(range.XStart, range.XEnd, range.YStart, range.YEnd, range.ZStart, range.ZEnd, range.Resolution), geometry.Ptr, (uint)idx, err);
-            if (ret == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ret = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotFieldOf(_ptr, _backend, _directivity, config.Ptr(),
+                        NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotRange(range.XStart, range.XEnd, range.YStart, range.YEnd,
+                            range.ZStart, range.ZEnd, range.Resolution), geometry.Ptr, (uint)idx, ep);
+                    if (ret == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                }
+            }
         }
 
         public void PlotField(IPlotConfig config, PlotRange range, Geometry geometry)
@@ -386,9 +457,16 @@ namespace AUTD3Sharp.Link
         {
             if (config.Backend() != _backend) throw new AUTDException("Invalid plot config type.");
             var err = new byte[256];
-            var ret = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotPhaseOf(_ptr, _backend, _directivity, config.Ptr(), geometry.Ptr, (uint)idx, err);
-            if (ret == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ret = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotPhaseOf(_ptr, _backend, _directivity, config.Ptr(),
+                        geometry.Ptr, (uint)idx, ep);
+                    if (ret == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                }
+            }
         }
 
         public void PlotPhase(IPlotConfig config, Geometry geometry)
@@ -400,21 +478,34 @@ namespace AUTD3Sharp.Link
         {
             if (config.Backend() != _backend) throw new AUTDException("Invalid plot config type.");
             var err = new byte[256];
-            var ret = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotModulationRaw(_ptr, _backend, _directivity, config.Ptr(), err);
-            if (ret == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ret = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotModulationRaw(_ptr, _backend, _directivity,
+                        config.Ptr(), ep);
+                    if (ret == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                }
+            }
         }
 
         public void PlotModulation(IPlotConfig config)
         {
             if (config.Backend() != _backend) throw new AUTDException("Invalid plot config type.");
             var err = new byte[256];
-            var ret = NativeMethods.LinkVisualizer.AUTDLinkVisualizerPlotModulation(_ptr, _backend, _directivity, config.Ptr(), err);
-            if (ret == NativeMethods.Def.Autd3Err)
-                throw new AUTDException(err);
+            unsafe
+            {
+                fixed (byte* ep = err)
+                {
+                    var ret = NativeMethodsLinkVisualizer.AUTDLinkVisualizerPlotModulation(_ptr, _backend, _directivity, config.Ptr(), ep);
+                    if (ret == NativeMethodsDef.AUTD3_ERR)
+                        throw new AUTDException(err);
+                }
+            }
         }
 
-        public Visualizer Create(LinkPtr ptr, object? props)
+        Visualizer ILink<Visualizer>.Create(LinkPtr ptr, object? props)
         {
             var p = (Props)props!;
             return new Visualizer

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -90,14 +90,21 @@ namespace AUTD3Sharp.Gain.Holo
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
-            var ptr = NativeMethods.GainHolo.AUTDGainHoloGreedy(_foci.ToArray(), _amps.ToArray(),
-                (ulong)_amps.Count);
-            if (_phaseDiv.HasValue)
-                ptr = NativeMethods.GainHolo.AUTDGainHoloGreedyWithPhaseDiv(ptr, _phaseDiv.Value);
-            if (_constraint != null) ptr = NativeMethods.GainHolo.AUTDGainHoloGreedyWithConstraint(ptr, _constraint.Ptr());
-            return ptr;
+            unsafe
+            {
+                fixed (float_t* foci = _foci.ToArray())
+                fixed (float_t* amps = _amps.ToArray())
+                {
+                    var ptr = NativeMethodsGainHolo.AUTDGainHoloGreedy(foci, amps, (ulong)_amps.Count);
+                    if (_phaseDiv.HasValue)
+                        ptr = NativeMethodsGainHolo.AUTDGainHoloGreedyWithPhaseDiv(ptr, _phaseDiv.Value);
+                    if (_constraint != null)
+                        ptr = NativeMethodsGainHolo.AUTDGainHoloGreedyWithConstraint(ptr, _constraint.Ptr());
+                    return ptr;
+                }
+            }
         }
     }
 }
