@@ -4,14 +4,14 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
@@ -33,13 +33,13 @@ pub struct GSPAT<B: LinAlgBackend + 'static> {
     amps: Vec<float>,
     repeat: usize,
     constraint: Constraint,
-    backend: Rc<B>,
+    backend: Arc<B>,
 }
 
 impl_holo!(B, GSPAT<B>);
 
 impl<B: LinAlgBackend + 'static> GSPAT<B> {
-    pub fn new(backend: Rc<B>) -> Self {
+    pub fn new(backend: Arc<B>) -> Self {
         Self {
             foci: vec![],
             amps: vec![],

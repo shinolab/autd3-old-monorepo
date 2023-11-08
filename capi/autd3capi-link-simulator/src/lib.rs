@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,12 +13,14 @@
 
 #![allow(clippy::missing_safety_doc)]
 
+use async_ffi::{FfiFuture, FutureExt};
+
 use std::{
     ffi::{c_char, CStr},
     time::Duration,
 };
 
-use autd3capi_def::{common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, AUTD3_ERR, AUTD3_TRUE};
+use autd3capi_def::{common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, Resulti32Wrapper};
 
 use autd3_link_simulator::*;
 
@@ -75,20 +77,16 @@ pub unsafe extern "C" fn AUTDLinkSimulatorWithTimeout(
 pub unsafe extern "C" fn AUTDLinkSimulatorIntoBuilder(
     simulator: LinkSimulatorBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(Box::from_raw(simulator.0 as *mut SimulatorBuilder).blocking())
+    LinkBuilderPtr::new(*Box::from_raw(simulator.0 as *mut SimulatorBuilder))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometry(
+pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometryAsync(
     simulator: LinkPtr,
     geometry: GeometryPtr,
-    err: *mut c_char,
-) -> i32 {
-    try_or_return!(
-        cast_mut!(simulator.0, Box<SimulatorSync>).update_geometry(cast!(geometry.0, Geometry)),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+) -> FfiFuture<Resulti32Wrapper> {
+    let simulator = cast_mut!(simulator, Box<Simulator>);
+    let geometry = cast!(geometry, Geometry);
+    async move { (simulator.update_geometry(geometry).await).into() }.into_ffi()
 }

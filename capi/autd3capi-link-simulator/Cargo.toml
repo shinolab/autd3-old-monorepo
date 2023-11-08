@@ -9,8 +9,9 @@ crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }
-autd3-link-simulator = { path = "../../src/autd3-link-simulator", features = ["sync"] }
+autd3-link-simulator = { path = "../../src/autd3-link-simulator" }
 tokio = { version = "1.33.0", features = ["rt-multi-thread"] }
+async-ffi = "0.5.0"
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }

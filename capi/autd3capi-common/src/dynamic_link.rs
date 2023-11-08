@@ -4,35 +4,55 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{error::AUTDInternalError, geometry::Geometry, link::LinkSyncBuilder};
+use autd3_driver::{error::AUTDInternalError, geometry::Geometry, link::LinkBuilder};
 
 use crate::L;
 
-type LinkBuilderGen = dyn FnOnce(&Geometry) -> Result<Box<L>, AUTDInternalError>;
-
-pub struct DynamicLinkBuilder {
-    link_gen: Box<LinkBuilderGen>,
+#[async_trait::async_trait]
+pub trait DynamicLinkBuilder: Send + Sync {
+    async fn open_dyn(&mut self, geometry: &Geometry) -> Result<Box<L>, AUTDInternalError>;
 }
 
-impl DynamicLinkBuilder {
-    pub fn new<B: LinkSyncBuilder + 'static>(b: B) -> Self {
+pub struct DynamicLinkBuilderWrapper<B: LinkBuilder + Sync + Send>
+where
+    B::L: Send + Sync + 'static,
+{
+    builder: Option<B>,
+}
+
+impl<B: LinkBuilder + Sync + Send> DynamicLinkBuilderWrapper<B>
+where
+    B::L: Send + Sync + 'static,
+{
+    pub fn new(builder: B) -> Self {
         Self {
-            link_gen: Box::new(move |geometry| Ok(Box::new(b.open(geometry)?))),
+            builder: Some(builder),
         }
     }
 }
 
-impl LinkSyncBuilder for DynamicLinkBuilder {
+#[async_trait::async_trait]
+impl<B: LinkBuilder + Sync + Send> DynamicLinkBuilder for DynamicLinkBuilderWrapper<B>
+where
+    B::L: Send + Sync + 'static,
+{
+    async fn open_dyn(&mut self, geometry: &Geometry) -> Result<Box<L>, AUTDInternalError> {
+        Ok(Box::new(self.builder.take().unwrap().open(geometry).await?))
+    }
+}
+
+#[async_trait::async_trait]
+impl LinkBuilder for Box<dyn DynamicLinkBuilder> {
     type L = Box<L>;
 
-    fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
-        (self.link_gen)(geometry)
+    async fn open(mut self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
+        self.open_dyn(geometry).await
     }
 }

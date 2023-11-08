@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,26 +35,26 @@ pub unsafe extern "C" fn AUTDModulationWithCache(
             .with_cache()
             .map(|m| ModulationCachePtr(Box::into_raw(Box::new(m)) as _)),
         err,
-        ModulationCachePtr(std::ptr::null())
+        ModulationCachePtr(NULL)
     )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationCacheGetBufferSize(m: ModulationCachePtr) -> u32 {
-    cast!(m.0, ModulationCache).buffer().len() as u32
+    cast!(m, ModulationCache).buffer().len() as u32
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: ModulationCachePtr, buf: *mut float) {
-    let cache = cast!(m.0, ModulationCache);
+    let cache = cast!(m, ModulationCache);
     std::ptr::copy_nonoverlapping(cache.buffer().as_ptr(), buf, cache.buffer().len());
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: ModulationCachePtr) -> ModulationPtr {
-    ModulationPtr::new(cast!(m.0, ModulationCache).clone())
+    ModulationPtr::new(cast!(m, ModulationCache).clone())
 }
 
 #[no_mangle]

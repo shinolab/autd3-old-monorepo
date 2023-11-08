@@ -4,20 +4,26 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+#![allow(clippy::missing_safety_doc)]
+
+use std::ffi::{c_char, CString};
+
+use async_ffi::FfiFuture;
+
 pub use autd3capi_common as common;
 pub use autd3capi_common::holo;
 
 use autd3capi_common::float;
 use common::{
-    driver::link::LinkSyncBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder, Gain, Modulation,
-    STMProps, G, M,
+    driver::link::LinkBuilder, libc, AUTDError, AUTDInternalError, ConstPtr, DynamicDatagram,
+    DynamicLinkBuilder, DynamicLinkBuilderWrapper, Gain, Modulation, STMProps, G, M,
 };
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
@@ -32,6 +38,124 @@ pub const ULTRASOUND_FREQUENCY: float = 40000.0;
 pub const AUTD3_ERR: i32 = -1;
 pub const AUTD3_TRUE: i32 = 1;
 pub const AUTD3_FALSE: i32 = 0;
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct RuntimePtr(pub ConstPtr);
+
+#[no_mangle]
+pub extern "C" fn AUTDCreateRuntime() -> RuntimePtr {
+    RuntimePtr(Box::into_raw(Box::new(
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap(),
+    )) as _)
+}
+
+#[no_mangle]
+pub extern "C" fn AUTDFreeRuntime(runtime: RuntimePtr) {
+    unsafe {
+        let _ = Box::from_raw(runtime.0 as *mut tokio::runtime::Runtime);
+    }
+}
+
+#[repr(C)]
+pub struct Resulti32Wrapper {
+    pub result: i32,
+    pub err: *const c_char,
+}
+
+impl From<Result<(), AUTDInternalError>> for Resulti32Wrapper {
+    fn from(r: Result<(), AUTDInternalError>) -> Self {
+        match r {
+            Ok(_) => Self {
+                result: AUTD3_TRUE,
+                err: std::ptr::null(),
+            },
+            Err(e) => Self {
+                result: AUTD3_ERR,
+                err: CString::new(e.to_string()).unwrap().into_raw(),
+            },
+        }
+    }
+}
+
+impl From<Result<bool, AUTDError>> for Resulti32Wrapper {
+    fn from(r: Result<bool, AUTDError>) -> Self {
+        match r {
+            Ok(result) => Self {
+                result: if result { AUTD3_TRUE } else { AUTD3_FALSE },
+                err: std::ptr::null(),
+            },
+            Err(e) => Self {
+                result: AUTD3_ERR,
+                err: CString::new(e.to_string()).unwrap().into_raw(),
+            },
+        }
+    }
+}
+
+impl From<Result<bool, AUTDInternalError>> for Resulti32Wrapper {
+    fn from(r: Result<bool, AUTDInternalError>) -> Self {
+        match r {
+            Ok(result) => Self {
+                result: if result { AUTD3_TRUE } else { AUTD3_FALSE },
+                err: std::ptr::null(),
+            },
+            Err(e) => Self {
+                result: AUTD3_ERR,
+                err: CString::new(e.to_string()).unwrap().into_raw(),
+            },
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn AUTDAwaitResulti32(
+    runtime: RuntimePtr,
+    future: FfiFuture<Resulti32Wrapper>,
+) -> Resulti32Wrapper {
+    unsafe {
+        let runtime = (runtime.0 as *const tokio::runtime::Runtime)
+            .as_ref()
+            .unwrap();
+        runtime.block_on(future)
+    }
+}
+
+#[repr(C)]
+pub struct ResultPtrWrapper {
+    pub result: ConstPtr,
+    pub err: *const c_char,
+}
+
+impl From<Result<ConstPtr, AUTDError>> for ResultPtrWrapper {
+    fn from(r: Result<ConstPtr, AUTDError>) -> Self {
+        match r {
+            Ok(ptr) => Self {
+                result: ptr,
+                err: std::ptr::null(),
+            },
+            Err(e) => Self {
+                result: std::ptr::null(),
+                err: CString::new(e.to_string()).unwrap().into_raw(),
+            },
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGetErrMsgi32(result: Resulti32Wrapper, msg: *mut c_char) {
+    let err = CString::from_raw(result.err as *mut c_char);
+    libc::strcpy(msg, err.as_ptr());
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGetErrMsgPtr(result: ResultPtrWrapper, msg: *mut c_char) {
+    let err = CString::from_raw(result.err as *mut c_char);
+    libc::strcpy(msg, err.as_ptr());
+}
 
 #[repr(u8)]
 pub enum GainSTMMode {
@@ -92,8 +216,10 @@ pub struct LinkBuilderPtr(pub ConstPtr);
 pub struct LinkPtr(pub ConstPtr);
 
 impl LinkBuilderPtr {
-    pub fn new<B: LinkSyncBuilder + 'static>(builder: B) -> LinkBuilderPtr {
-        Self(Box::into_raw(Box::new(DynamicLinkBuilder::new(builder))) as _)
+    pub fn new<B: LinkBuilder + Send + Sync + 'static>(builder: B) -> LinkBuilderPtr {
+        let builder: Box<Box<dyn DynamicLinkBuilder>> =
+            Box::new(Box::new(DynamicLinkBuilderWrapper::new(builder)));
+        Self(Box::into_raw(builder) as _)
     }
 }
 
@@ -107,6 +233,9 @@ macro_rules! take_link {
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct DatagramPtr(pub ConstPtr);
+
+unsafe impl Send for DatagramPtr {}
+unsafe impl Sync for DatagramPtr {}
 
 impl DatagramPtr {
     pub fn new<T: DynamicDatagram>(d: T) -> Self {
@@ -176,7 +305,7 @@ impl STMPropsPtr {
 macro_rules! create_holo {
     ($type:tt, $backend_type:tt, $backend:expr, $points:expr, $amps:expr, $size:expr) => {
         GainPtr::new(
-            $type::new(cast!($backend.0, Rc<$backend_type>).clone()).add_foci_from_iter(
+            $type::new(cast!($backend, std::sync::Arc<$backend_type>).clone()).add_foci_from_iter(
                 (0..$size as usize).map(|i| {
                     let p = Vector3::new(
                         $points.add(i * 3).read(),

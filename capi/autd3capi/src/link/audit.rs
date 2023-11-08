@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,97 +48,92 @@ pub unsafe extern "C" fn AUTDLinkAuditWithTimeout(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditIntoBuilder(audit: LinkAuditBuilderPtr) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(Box::from_raw(audit.0 as *mut AuditBuilder).blocking())
+    LinkBuilderPtr::new(*Box::from_raw(audit.0 as *mut AuditBuilder))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditIsOpen(audit: LinkPtr) -> bool {
-    cast!(audit.0, Box<AuditSync>).inner.is_open()
+    cast!(audit, Box<Audit>).is_open()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditTimeoutNs(audit: LinkPtr) -> u64 {
-    cast!(audit.0, Box<AuditSync>).inner.timeout().as_nanos() as _
+    cast!(audit, Box<Audit>).timeout().as_nanos() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditLastTimeoutNs(audit: LinkPtr) -> u64 {
-    cast!(audit.0, Box<AuditSync>)
-        .inner
-        .last_timeout()
-        .as_nanos() as _
+    cast!(audit, Box<Audit>).last_timeout().as_nanos() as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditDown(audit: LinkPtr) {
-    cast_mut!(audit.0, Box<AuditSync>).inner.down()
+    cast_mut!(audit, Box<Audit>).down()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditUp(audit: LinkPtr) {
-    cast_mut!(audit.0, Box<AuditSync>).inner.up()
+    cast_mut!(audit, Box<Audit>).up()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditBreakDown(audit: LinkPtr) {
-    cast_mut!(audit.0, Box<AuditSync>).inner.break_down()
+    cast_mut!(audit, Box<Audit>).break_down()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditRepair(audit: LinkPtr) {
-    cast_mut!(audit.0, Box<AuditSync>).inner.repair()
+    cast_mut!(audit, Box<Audit>).repair()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditCpuUpdate(audit: LinkPtr, idx: u32) {
-    cast_mut!(audit.0, Box<AuditSync>).inner[idx as usize].update()
+    cast_mut!(audit, Box<Audit>)[idx as usize].update()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditCpuIdx(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize].idx() as _
+    cast!(audit, Box<Audit>)[idx as usize].idx() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditCpuNumTransducers(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize].num_transducers() as _
+    cast!(audit, Box<Audit>)[idx as usize].num_transducers() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditCpuAck(audit: LinkPtr, idx: u32) -> u8 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize].ack()
+    cast!(audit, Box<Audit>)[idx as usize].ack()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditCpuRxData(audit: LinkPtr, idx: u32) -> u8 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize].rx_data()
+    cast!(audit, Box<Audit>)[idx as usize].rx_data()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditCpuFpgaFlags(audit: LinkPtr, idx: u32) -> u8 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga_flags()
-        .bits()
+    cast!(audit, Box<Audit>)[idx as usize].fpga_flags().bits()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaAssertThermalSensor(audit: LinkPtr, idx: u32) {
-    cast_mut!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast_mut!(audit, Box<Audit>)[idx as usize]
         .fpga_mut()
         .assert_thermal_sensor()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaDeassertThermalSensor(audit: LinkPtr, idx: u32) {
-    cast_mut!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast_mut!(audit, Box<Audit>)[idx as usize]
         .fpga_mut()
         .deassert_thermal_sensor()
 }
@@ -146,23 +141,19 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaDeassertThermalSensor(audit: LinkPtr, 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaIsForceFan(audit: LinkPtr, idx: u32) -> bool {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga()
-        .is_force_fan()
+    cast!(audit, Box<Audit>)[idx as usize].fpga().is_force_fan()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmMode(audit: LinkPtr, idx: u32) -> bool {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga()
-        .is_stm_mode()
+    cast!(audit, Box<Audit>)[idx as usize].fpga().is_stm_mode()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmGainMode(audit: LinkPtr, idx: u32) -> bool {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .is_stm_gain_mode()
 }
@@ -170,7 +161,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmGainMode(audit: LinkPtr, idx: u32
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStep(audit: LinkPtr, idx: u32) -> u16 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .silencer_step()
 }
@@ -178,12 +169,12 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStep(audit: LinkPtr, idx: u32)
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaModDelays(audit: LinkPtr, idx: u32, delay: *mut u16) {
     std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .mod_delays()
             .as_ptr(),
         delay,
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .mod_delays()
             .len(),
@@ -193,12 +184,12 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModDelays(audit: LinkPtr, idx: u32, de
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaDutyFilters(audit: LinkPtr, idx: u32, filters: *mut i16) {
     std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .duty_filters()
             .as_ptr(),
         filters,
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .duty_filters()
             .len(),
@@ -212,12 +203,12 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaPhaseFilters(
     filters: *mut i16,
 ) {
     std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .phase_filters()
             .as_ptr(),
         filters,
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .phase_filters()
             .len(),
@@ -227,7 +218,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaPhaseFilters(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaStmFrequencyDivision(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .stm_frequency_division()
 }
@@ -235,23 +226,19 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaStmFrequencyDivision(audit: LinkPtr, i
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaStmCycle(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga()
-        .stm_cycle() as _
+    cast!(audit, Box<Audit>)[idx as usize].fpga().stm_cycle() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaSoundSpeed(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
-        .fpga()
-        .sound_speed()
+    cast!(audit, Box<Audit>)[idx as usize].fpga().sound_speed()
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaStmStartIdx(audit: LinkPtr, idx: u32) -> i32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .stm_start_idx()
         .map_or(-1, |v| v as _)
@@ -260,7 +247,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaStmStartIdx(audit: LinkPtr, idx: u32) 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaStmFinishIdx(audit: LinkPtr, idx: u32) -> i32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .stm_finish_idx()
         .map_or(-1, |v| v as _)
@@ -272,7 +259,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationFrequencyDivision(
     audit: LinkPtr,
     idx: u32,
 ) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .modulation_frequency_division()
 }
@@ -280,7 +267,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationFrequencyDivision(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationCycle(audit: LinkPtr, idx: u32) -> u32 {
-    cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .modulation_cycle() as _
 }
@@ -288,12 +275,12 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModulationCycle(audit: LinkPtr, idx: u
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaModulation(audit: LinkPtr, idx: u32, data: *mut u8) {
     std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .modulation()
             .as_ptr(),
         data,
-        cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+        cast!(audit, Box<Audit>)[idx as usize]
             .fpga()
             .modulation()
             .len(),
@@ -308,7 +295,7 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaDutiesAndPhases(
     duties: *mut u16,
     phases: *mut u16,
 ) {
-    let dp = cast!(audit.0, Box<AuditSync>).inner[idx as usize]
+    let dp = cast!(audit, Box<Audit>)[idx as usize]
         .fpga()
         .duties_and_phases(stm_idx as _);
     let d = dp.iter().map(|v| v.0).collect::<Vec<_>>();

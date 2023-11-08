@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }
-autd3-link-soem = { path = "../../src/autd3-link-soem", features = ["local", "remote", "sync"] }
+autd3-link-soem = { path = "../../src/autd3-link-soem", features = ["local", "remote"] }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }
