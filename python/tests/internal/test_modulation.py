@@ -13,17 +13,19 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation import Modulation, Sine
 from tests.test_autd import create_controller
 
 
-def test_cache():
+@pytest.mark.asyncio()
+async def test_cache():
     autd = create_controller()
 
     m = Sine(150).with_cache()
 
-    assert autd.send(m)
+    assert await autd.send(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -125,30 +127,32 @@ class CacheTest(Modulation):
         return np.ones(2, dtype=np.float64)
 
 
-def test_cache_check_once():
+@pytest.mark.asyncio()
+async def test_cache_check_once():
     autd = create_controller()
 
     m = CacheTest()
-    assert autd.send(m)
+    assert await autd.send(m)
     assert m.calc_cnt == 1
-    assert autd.send(m)
+    assert await autd.send(m)
     assert m.calc_cnt == 2
 
     m = CacheTest()
     m_cached = m.with_cache()
 
-    assert autd.send(m_cached)
+    assert await autd.send(m_cached)
     assert m.calc_cnt == 1
-    assert autd.send(m_cached)
+    assert await autd.send(m_cached)
     assert m.calc_cnt == 1
 
 
-def test_transform():
+@pytest.mark.asyncio()
+async def test_transform():
     autd = create_controller()
 
     m = Sine(150).with_transform(lambda _i, v: v / 2)
 
-    assert autd.send(m)
+    assert await autd.send(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -238,12 +242,13 @@ def test_transform():
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
 
-def test_radiation_pressure():
+@pytest.mark.asyncio()
+async def test_radiation_pressure():
     autd = create_controller()
 
     m = Sine(150).with_radiation_pressure()
 
-    assert autd.send(m)
+    assert await autd.send(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

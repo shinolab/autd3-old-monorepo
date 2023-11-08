@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3 import Device, Drive, Geometry, Transducer
 from pyautd3.gain import Gain
@@ -40,11 +41,12 @@ class Uniform(Gain):
         return Gain._transform(geometry, f)
 
 
-def test_gain():
+@pytest.mark.asyncio()
+async def test_gain():
     autd = create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    assert autd.send(Uniform(0.5, np.pi, check))
+    assert await autd.send(Uniform(0.5, np.pi, check))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -52,13 +54,14 @@ def test_gain():
         assert np.all(phases == 256)
 
 
-def test_gain_check_only_for_enabled():
+@pytest.mark.asyncio()
+async def test_gain_check_only_for_enabled():
     autd = create_controller()
     autd.geometry[0].enable = False
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
     g = Uniform(0.5, np.pi, check)
-    assert autd.send(g)
+    assert await autd.send(g)
 
     assert not g.check[0]
     assert g.check[1]

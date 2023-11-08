@@ -46,37 +46,39 @@ def create_controller() -> Controller[Audit]:
     )
 
 
-def test_silencer():
+@pytest.mark.asyncio()
+async def test_silencer():
     autd = create_controller()
 
     for dev in autd.geometry:
         assert autd.link.silencer_step(dev.idx) == 10
 
-    autd.send(Silencer(20))
+    await autd.send(Silencer(20))
 
     for dev in autd.geometry:
         assert autd.link.silencer_step(dev.idx) == 20
 
-    autd.send(Silencer.disable())
+    await autd.send(Silencer.disable())
 
     for dev in autd.geometry:
         assert autd.link.silencer_step(dev.idx) == 0xFFFF
 
-    autd.send(Silencer())
+    await autd.send(Silencer())
 
     for dev in autd.geometry:
         assert autd.link.silencer_step(dev.idx) == 10
 
 
-def test_fpga_info():
+@pytest.mark.asyncio()
+async def test_fpga_info():
     autd = create_controller()
 
     for dev in autd.geometry:
         dev.reads_fpga_info = True
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
-    infos = autd.fpga_info
+    infos = await autd.fpga_info
     for info in infos:
         assert not info.is_thermal_assert()
 
@@ -84,7 +86,7 @@ def test_fpga_info():
     autd.link.update(0)
     autd.link.update(1)
 
-    infos = autd.fpga_info
+    infos = await autd.fpga_info
     assert infos[0].is_thermal_assert()
     assert not infos[1].is_thermal_assert()
 
@@ -93,36 +95,38 @@ def test_fpga_info():
     autd.link.update(0)
     autd.link.update(1)
 
-    infos = autd.fpga_info
+    infos = await autd.fpga_info
     assert not infos[0].is_thermal_assert()
     assert infos[1].is_thermal_assert()
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        _ = autd.fpga_info
+        _ = await autd.fpga_info
     assert str(e.value) == "broken"
 
 
-def test_firmware_info():
+@pytest.mark.asyncio()
+async def test_firmware_info():
     autd = create_controller()
 
     assert FirmwareInfo.latest_version() == "v4.0.0"
 
-    for i, firm in enumerate(autd.firmware_info_list()):
+    for i, firm in enumerate(await autd.firmware_info_list()):
         assert firm.info == f"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]"
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.firmware_info_list()
+        await autd.firmware_info_list()
     assert str(e.value) == "broken"
 
 
-def test_close():
+@pytest.mark.asyncio()
+async def test_close():
     autd = create_controller()
 
     assert autd.link.is_open()
 
-    autd.close()
+    await autd.close()
 
     assert not autd.link.is_open()
 
@@ -130,11 +134,12 @@ def test_close():
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.close()
+        await autd.close()
     assert str(e.value) == "broken"
 
 
-def test_send_timeout():
+@pytest.mark.asyncio()
+async def test_send_timeout():
     autd = (
         Controller[Audit]
         .builder()
@@ -143,19 +148,19 @@ def test_send_timeout():
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=0)))
     )
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.last_timeout_ns() == 0
 
-    autd.send(UpdateFlags(), timeout=timedelta(microseconds=1))
+    await autd.send(UpdateFlags(), timeout=timedelta(microseconds=1))
 
     assert autd.link.last_timeout_ns() == 1000
 
-    autd.send((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
+    await autd.send((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
 
     assert autd.link.last_timeout_ns() == 2000
 
-    autd.send(Stop(), timeout=timedelta(microseconds=3))
+    await autd.send(Stop(), timeout=timedelta(microseconds=3))
 
     assert autd.link.last_timeout_ns() == 3000
 
@@ -167,44 +172,46 @@ def test_send_timeout():
         .open_with(Audit.builder().with_timeout(timeout=timedelta(microseconds=10)))
     )
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.last_timeout_ns() == 10 * 1000
 
-    autd.send(UpdateFlags(), timeout=timedelta(microseconds=1))
+    await autd.send(UpdateFlags(), timeout=timedelta(microseconds=1))
 
     assert autd.link.last_timeout_ns() == 1000
 
-    autd.send((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
+    await autd.send((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
 
     assert autd.link.last_timeout_ns() == 2000
 
-    autd.send(Stop(), timeout=timedelta(microseconds=3))
+    await autd.send(Stop(), timeout=timedelta(microseconds=3))
 
     assert autd.link.last_timeout_ns() == 3000
 
 
-def test_send_single():
+@pytest.mark.asyncio()
+async def test_send_single():
     autd = create_controller()
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0)
 
-    assert autd.send(Static())
+    assert await autd.send(Static())
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
 
     autd.link.down()
-    assert not autd.send(Static())
+    assert not await autd.send(Static())
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.send(Static())
+        print(await autd.send(Static()))
     assert str(e.value) == "broken"
 
 
-def test_send_double():
+@pytest.mark.asyncio()
+async def test_send_double():
     autd = create_controller()
 
     for dev in autd.geometry:
@@ -213,7 +220,7 @@ def test_send_double():
         assert np.all(duties == 0)
         assert np.all(phases == 0)
 
-    assert autd.send((Static(), Uniform(1.0)))
+    assert await autd.send((Static(), Uniform(1.0)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
@@ -222,43 +229,45 @@ def test_send_double():
         assert np.all(phases == 0)
 
     autd.link.down()
-    assert not autd.send((Static(), Uniform(1.0)))
+    assert not await autd.send((Static(), Uniform(1.0)))
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.send((Static(), Uniform(1.0)))
+        await autd.send((Static(), Uniform(1.0)))
     assert str(e.value) == "broken"
 
 
-def test_send_special():
+@pytest.mark.asyncio()
+async def test_send_special():
     autd = create_controller()
 
-    assert autd.send((Static(), Uniform(1.0)))
+    assert await autd.send((Static(), Uniform(1.0)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 256)
 
-    autd.send(Stop())
+    await autd.send(Stop())
 
     for dev in autd.geometry:
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 0)
 
     autd.link.down()
-    assert not autd.send(Stop())
+    assert not await autd.send(Stop())
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        autd.send(Stop())
+        await autd.send(Stop())
     assert str(e.value) == "broken"
 
 
-def test_group():
+@pytest.mark.asyncio()
+async def test_group():
     autd = create_controller()
 
-    autd.group(lambda dev: dev.idx).set_data(0, Static(), Null()).set_data(1, Sine(150), Uniform(1.0)).send()
+    await autd.group(lambda dev: dev.idx).set_data(0, Static(), Null()).set_data(1, Sine(150), Uniform(1.0)).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 2
@@ -273,7 +282,7 @@ def test_group():
     assert np.all(duties == 256)
     assert np.all(phases == 0)
 
-    autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(1.0))).send()
+    await autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(1.0))).send()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 80
@@ -286,7 +295,8 @@ def test_group():
     assert np.all(duties == 0)
 
 
-def test_group_check_only_for_enabled():
+@pytest.mark.asyncio()
+async def test_group_check_only_for_enabled():
     autd = create_controller()
     autd.geometry[0].enable = False
 
@@ -296,7 +306,7 @@ def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    autd.group(f).set_data(0, Sine(150), Uniform(0.5).with_phase(np.pi)).send()
+    await autd.group(f).set_data(0, Sine(150), Uniform(0.5).with_phase(np.pi)).send()
 
     assert not check[0]
     assert check[1]
@@ -313,10 +323,11 @@ def test_group_check_only_for_enabled():
     assert np.all(phases == 256)
 
 
-def test_clear():
+@pytest.mark.asyncio()
+async def test_clear():
     autd = create_controller()
 
-    assert autd.send((Static(), Uniform(1.0).with_phase(np.pi)))
+    assert await autd.send((Static(), Uniform(1.0).with_phase(np.pi)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
@@ -324,7 +335,7 @@ def test_clear():
         assert np.all(duties == 256)
         assert np.all(phases == 256)
 
-    autd.send(Clear())
+    await autd.send(Clear())
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0)
@@ -333,37 +344,40 @@ def test_clear():
         assert np.all(phases == 0)
 
 
-def test_stop():
+@pytest.mark.asyncio()
+async def test_stop():
     autd = create_controller()
 
-    assert autd.send((Static(), Uniform(1.0)))
+    assert await autd.send((Static(), Uniform(1.0)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 256)
 
-    autd.send(Stop())
+    await autd.send(Stop())
 
     for dev in autd.geometry:
         duties, _ = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 0)
 
 
-def test_update_flags():
+@pytest.mark.asyncio()
+async def test_update_flags():
     autd = create_controller()
 
     for dev in autd.geometry:
         dev.force_fan = True
         assert autd.link.fpga_flags(dev.idx) == 0
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     for dev in autd.geometry:
         assert autd.link.fpga_flags(dev.idx) == 1
 
 
-def test_synchronize():
+@pytest.mark.asyncio()
+async def test_synchronize():
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
@@ -371,10 +385,11 @@ def test_synchronize():
         .open_with(Audit.builder())
     )
 
-    assert autd.send(Synchronize())
+    assert await autd.send(Synchronize())
 
 
-def test_configure_mod_delay():
+@pytest.mark.asyncio()
+async def test_configure_mod_delay():
     autd = create_controller()
 
     for dev in autd.geometry:
@@ -384,13 +399,14 @@ def test_configure_mod_delay():
         for tr in dev:
             tr.mod_delay = 1
 
-    assert autd.send(ConfigureModDelay())
+    assert await autd.send(ConfigureModDelay())
 
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 1)
 
 
-def test_configure_amp_filter():
+@pytest.mark.asyncio()
+async def test_configure_amp_filter():
     autd = create_controller()
 
     for dev in autd.geometry:
@@ -400,13 +416,14 @@ def test_configure_amp_filter():
         for tr in dev:
             tr.amp_filter = -1
 
-    assert autd.send(ConfigureAmpFilter())
+    assert await autd.send(ConfigureAmpFilter())
 
     for dev in autd.geometry:
         assert np.all(autd.link.duty_filters(dev.idx) == -256)
 
 
-def test_configure_phase_filter():
+@pytest.mark.asyncio()
+async def test_configure_phase_filter():
     autd = create_controller()
 
     for dev in autd.geometry:
@@ -416,7 +433,7 @@ def test_configure_phase_filter():
         for tr in dev:
             tr.phase_filter = -np.pi
 
-    assert autd.send(ConfigurePhaseFilter())
+    assert await autd.send(ConfigurePhaseFilter())
 
     for dev in autd.geometry:
         assert np.all(autd.link.phase_filters(dev.idx) == -256)

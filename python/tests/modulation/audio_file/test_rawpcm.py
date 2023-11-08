@@ -11,20 +11,21 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
-import os
 from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation.audio_file import RawPCM
 from tests.test_autd import create_controller
 
 
-def test_rawpcm():
+@pytest.mark.asyncio()
+async def test_rawpcm():
     autd = create_controller()
 
-    assert autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000))
+    assert await autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -113,14 +114,14 @@ def test_rawpcm():
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency_division(512))
+    assert await autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency_division(512))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
 
-    assert autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency(8e3))
+    assert await autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency(8e3))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2560
 
-    assert autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_period(timedelta(microseconds=100)))
+    assert await autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2048

@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation import Modulation
 from tests.test_autd import create_controller
@@ -28,7 +29,8 @@ class Burst(Modulation):
         return buf
 
 
-def test_modulation():
+@pytest.mark.asyncio()
+async def test_modulation():
     autd = create_controller()
 
     m = Burst()
@@ -37,7 +39,7 @@ def test_modulation():
     assert m.sampling_frequency == 4000
     assert len(m) == 10
 
-    assert autd.send(m)
+    assert await autd.send(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

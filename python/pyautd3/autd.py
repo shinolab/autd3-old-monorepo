@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
+import asyncio
 import ctypes
 from collections.abc import Callable
 from datetime import timedelta
@@ -27,13 +28,17 @@ from .native_methods.autd3capi import ControllerBuilderPtr
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi_def import (
     AUTD3_ERR,
-    AUTD3_FALSE,
     AUTD3_TRUE,
     ControllerPtr,
     DatagramPtr,
     DatagramSpecialPtr,
+    FfiFuture,
     GroupKVMapPtr,
+    Resulti32Wrapper,
+    ResultPtrWrapper,
+    RuntimePtr,
 )
+from .native_methods.autd3capi_def import NativeMethods as Def
 
 K = TypeVar("K")
 L = TypeVar("L", bound=Link)
@@ -156,11 +161,13 @@ class _Builder(Generic[L]):
 class Controller(Generic[L]):
     """Controller."""
 
+    _runtime: RuntimePtr
     _geometry: Geometry
     _ptr: ControllerPtr
     link: L
 
-    def __init__(self: "Controller", geometry: Geometry, ptr: ControllerPtr, link: L) -> None:
+    def __init__(self: "Controller", runtime: RuntimePtr, geometry: Geometry, ptr: ControllerPtr, link: L) -> None:
+        self._runtime = runtime
         self._geometry = geometry
         self._ptr = ptr
         self.link = link
@@ -177,6 +184,9 @@ class Controller(Generic[L]):
         if self._ptr._0 is not None:
             Base().controller_delete(self._ptr)
             self._ptr._0 = None
+        if self._runtime._0 is not None:
+            Def().free_runtime(self._runtime)
+            self._runtime._0 = None
 
     def __enter__(self: "Controller[L]") -> "Controller[L]":
         return self
@@ -191,19 +201,27 @@ class Controller(Generic[L]):
 
     @staticmethod
     def _open_impl(builder: ControllerBuilderPtr, link_builder: LinkBuilder[L]) -> "Controller[L]":
+        runtime = Def().create_runtime()
         err = ctypes.create_string_buffer(256)
-        ptr = Base().controller_open_with(builder, link_builder._link_builder_ptr(), err)
+        ptr = Base().controller_open_with(runtime, builder, link_builder._link_builder_ptr(), err)
         if ptr._0 is None:
             raise AUTDError(err)
         geometry = Geometry(Base().geometry(ptr))
-        link = link_builder._resolve_link(ptr)
-        return Controller(geometry, ptr, link)
+        link = link_builder._resolve_link(ptr, runtime)
+        return Controller(runtime, geometry, ptr, link)
 
-    def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
+    async def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
         """Get firmware information list."""
-        err = ctypes.create_string_buffer(256)
-        handle = Base().controller_firmware_info_list_pointer(self._ptr, err)
-        if handle._0 is None:
+        future: asyncio.Future = asyncio.Future()
+        ffi_future = Base().controller_firmware_info_list_pointer_async(self._ptr)
+        loop = asyncio.get_event_loop()
+        loop.call_soon(
+            lambda *_: future.set_result(Base().controller_firmware_info_list_pointer_await_result(self._runtime, ffi_future)),
+        )
+        handle: ResultPtrWrapper = await future
+        if handle.result is None:
+            err = ctypes.create_string_buffer(256)
+            Def().get_err_msg_ptr(handle, err)
             raise AUTDError(err)
 
         def get_firmware_info(i: int) -> FirmwareInfo:
@@ -218,23 +236,39 @@ class Controller(Generic[L]):
 
         return res
 
-    def close(self: "Controller") -> None:
+    async def close(self: "Controller") -> None:
         """Close controller."""
-        err = ctypes.create_string_buffer(256)
-        if not Base().controller_close(self._ptr, err):
+        future: asyncio.Future = asyncio.Future()
+        ffi_future = Base().controller_close_async(self._ptr)
+        loop = asyncio.get_event_loop()
+        loop.call_soon(
+            lambda *_: future.set_result(Def().await_resulti_32(self._runtime, ffi_future)),
+        )
+        res: Resulti32Wrapper = await future
+        if res.result == AUTD3_ERR:
+            err = ctypes.create_string_buffer(256)
+            Def().get_err_msgi_32(res, err)
             raise AUTDError(err)
 
     @property
-    def fpga_info(self: "Controller") -> list[FPGAInfo]:
+    async def fpga_info(self: "Controller") -> list[FPGAInfo]:
         """Get FPGA information list."""
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
-        err = ctypes.create_string_buffer(256)
-        if not Base().controller_fpga_info(self._ptr, pinfos, err):
+        future: asyncio.Future = asyncio.Future()
+        ffi_future = Base().controller_fpga_info_async(self._ptr)
+        loop = asyncio.get_event_loop()
+        loop.call_soon(
+            lambda *_: future.set_result(Base().controller_fpga_info_await_result(self._runtime, ffi_future, pinfos)),
+        )
+        res: ResultPtrWrapper = await future
+        if res.result is None:
+            err = ctypes.create_string_buffer(256)
+            Def().get_err_msg_ptr(res, err)
             raise AUTDError(err)
         return [FPGAInfo(x) for x in infos]
 
-    def send(
+    async def send(
         self: "Controller",
         d1: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
         d2: Datagram | None = None,
@@ -259,43 +293,45 @@ class Controller(Generic[L]):
             AUTDError: If an error occurs
         """
         timeout_ = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
-        err = ctypes.create_string_buffer(256)
-        res: ctypes.c_int32 = ctypes.c_int32(AUTD3_FALSE)
+        future: asyncio.Future = asyncio.Future()
+        ffi_future: FfiFuture
         match (d1, d2):
             case (SpecialDatagram(), None):
-                res = Base().controller_send_special(self._ptr, d1._special_datagram_ptr(), timeout_, err)  # type: ignore[union-attr]
+                ffi_future = Base().controller_send_special_async(self._ptr, d1._special_datagram_ptr(), timeout_)  # type: ignore[union-attr]
             case (Datagram(), None):
-                res = Base().controller_send(
+                ffi_future = Base().controller_send_async(
                     self._ptr,
                     d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     DatagramPtr(None),
                     timeout_,
-                    err,
                 )
             case ((Datagram(), Datagram()), None):
                 (d11, d12) = d1  # type: ignore[misc]
-                res = Base().controller_send(
+                ffi_future = Base().controller_send_async(
                     self._ptr,
                     d11._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     d12._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     timeout_,
-                    err,
                 )
             case (Datagram(), Datagram()):
-                res = Base().controller_send(
+                ffi_future = Base().controller_send_async(
                     self._ptr,
                     d1._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     d2._datagram_ptr(self.geometry),  # type: ignore[union-attr]
                     timeout_,
-                    err,
                 )
             case _:
                 raise InvalidDatagramTypeError
-
-        if res == AUTD3_ERR:
+        loop = asyncio.get_event_loop()
+        loop.call_soon(
+            lambda *_: future.set_result(Def().await_resulti_32(self._runtime, ffi_future)),
+        )
+        res: Resulti32Wrapper = await future
+        if res.result == AUTD3_ERR:
+            err = ctypes.create_string_buffer(256)
+            Def().get_err_msgi_32(res, err)
             raise AUTDError(err)
-
-        return res == AUTD3_TRUE
+        return res.result == AUTD3_TRUE
 
     class _GroupGuard(Generic[K]):
         _controller: "Controller"
@@ -373,16 +409,23 @@ class Controller(Generic[L]):
 
             return self
 
-        def send(self: "Controller._GroupGuard") -> bool:
+        async def send(self: "Controller._GroupGuard") -> bool:
+            future: asyncio.Future = asyncio.Future()
             m = np.fromiter(
                 (self._keymap[k] if k is not None else -1 for k in (self._map(dev) if dev.enable else None for dev in self._controller.geometry)),
                 dtype=np.int32,
             )
-            err = ctypes.create_string_buffer(256)
-            res = Base().controller_group(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map, err)
-            if res == AUTD3_ERR:
+            ffi_future = Base().controller_group_async(self._controller._ptr, np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)), self._kv_map)
+            loop = asyncio.get_event_loop()
+            loop.call_soon(
+                lambda *_: future.set_result(Def().await_resulti_32(self._controller._runtime, ffi_future)),
+            )
+            res: Resulti32Wrapper = await future
+            if res.result == AUTD3_ERR:
+                err = ctypes.create_string_buffer(256)
+                Def().get_err_msgi_32(res, err)
                 raise AUTDError(err)
-            return res == AUTD3_TRUE
+            return res.result == AUTD3_TRUE
 
     def group(self: "Controller", group_map: Callable[[Device], K | None]) -> "Controller._GroupGuard":
         """Grouping data."""

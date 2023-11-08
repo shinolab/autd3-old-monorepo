@@ -13,13 +13,15 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3 import AUTD3, Controller
 from pyautd3.gain.holo import AmplitudeConstraint, Greedy
 from pyautd3.link.audit import Audit
 
 
-def test_greedy():
+@pytest.mark.asyncio()
+async def test_greedy():
     autd = Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
 
     g = (
@@ -29,7 +31,7 @@ def test_greedy():
         .with_phase_div(16)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert autd.send(g)
+    assert await autd.send(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

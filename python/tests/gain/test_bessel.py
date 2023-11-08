@@ -12,15 +12,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 import numpy as np
+import pytest
 
 from pyautd3.gain import Bessel
 from tests.test_autd import create_controller
 
 
-def test_bessel():
+@pytest.mark.asyncio()
+async def test_bessel():
     autd = create_controller()
 
-    assert autd.send(Bessel(autd.geometry.center, [0, 0, 1], np.pi / 4).with_amp(0.5))
+    assert await autd.send(Bessel(autd.geometry.center, [0, 0, 1], np.pi / 4).with_amp(0.5))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

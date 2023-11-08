@@ -13,12 +13,14 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.gain.holo import AmplitudeConstraint, Naive, NalgebraBackend
 from tests.test_autd import create_controller
 
 
-def test_constraint():
+@pytest.mark.asyncio()
+async def test_constraint():
     autd = create_controller()
 
     backend = NalgebraBackend()
@@ -28,7 +30,7 @@ def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert autd.send(g)
+    assert await autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 85)
@@ -40,7 +42,7 @@ def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.normalize())
     )
-    assert autd.send(g)
+    assert await autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert not np.all(duties == 0)
@@ -52,7 +54,7 @@ def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.clamp(0.4, 0.5))
     )
-    assert autd.send(g)
+    assert await autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties >= 67)
@@ -65,7 +67,7 @@ def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5)
         .with_constraint(AmplitudeConstraint.dont_care())
     )
-    assert autd.send(g)
+    assert await autd.send(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert not np.all(duties == 0)

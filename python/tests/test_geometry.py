@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3 import AUTD3, UpdateFlags
 
@@ -96,7 +97,8 @@ def test_device_center():
         assert center[2] == 0.0
 
 
-def test_device_force_fan():
+@pytest.mark.asyncio()
+async def test_device_force_fan():
     autd = create_controller()
     for dev in autd.geometry:
         assert autd.link.fpga_flags(dev.idx) == 0
@@ -104,7 +106,7 @@ def test_device_force_fan():
     autd.geometry[0].force_fan = True
     autd.geometry[1].force_fan = False
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 1
     assert autd.link.fpga_flags(1) == 0
@@ -112,13 +114,14 @@ def test_device_force_fan():
     autd.geometry[0].force_fan = False
     autd.geometry[1].force_fan = True
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 0
     assert autd.link.fpga_flags(1) == 1
 
 
-def test_device_reads_fpga_info():
+@pytest.mark.asyncio()
+async def test_device_reads_fpga_info():
     autd = create_controller()
     for dev in autd.geometry:
         assert autd.link.fpga_flags(dev.idx) == 0
@@ -126,7 +129,7 @@ def test_device_reads_fpga_info():
     autd.geometry[0].reads_fpga_info = True
     autd.geometry[1].reads_fpga_info = False
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 2
     assert autd.link.fpga_flags(1) == 0
@@ -134,7 +137,7 @@ def test_device_reads_fpga_info():
     autd.geometry[0].reads_fpga_info = False
     autd.geometry[1].reads_fpga_info = True
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 0
     assert autd.link.fpga_flags(1) == 2

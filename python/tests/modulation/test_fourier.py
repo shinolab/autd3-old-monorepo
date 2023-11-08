@@ -13,16 +13,18 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation import Fourier, Sine
 from tests.test_autd import create_controller
 
 
-def test_fourier():
+@pytest.mark.asyncio()
+async def test_fourier():
     autd = create_controller()
 
     m = Fourier(Sine(50)).add_components_from_iter(Sine(x) for x in [100, 150]) + Sine(200)
-    assert autd.send(m)
+    assert await autd.send(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

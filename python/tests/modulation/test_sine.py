@@ -15,15 +15,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 from datetime import timedelta
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation import Sine
 from tests.test_autd import create_controller
 
 
-def test_sine():
+@pytest.mark.asyncio()
+async def test_sine():
     autd = create_controller()
 
-    assert autd.send(Sine(150).with_amp(0.5).with_offset(0.25).with_phase(np.pi / 2))
+    assert await autd.send(Sine(150).with_amp(0.5).with_offset(0.25).with_phase(np.pi / 2))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -112,14 +114,14 @@ def test_sine():
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert autd.send(Sine(150).with_sampling_frequency_division(512))
+    assert await autd.send(Sine(150).with_sampling_frequency_division(512))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
 
-    assert autd.send(Sine(150).with_sampling_frequency(8e3))
+    assert await autd.send(Sine(150).with_sampling_frequency(8e3))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2560
 
-    assert autd.send(Sine(150).with_sampling_period(timedelta(microseconds=100)))
+    assert await autd.send(Sine(150).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2048

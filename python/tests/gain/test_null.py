@@ -13,15 +13,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.gain import Null
 from tests.test_autd import create_controller
 
 
-def test_null():
+@pytest.mark.asyncio()
+async def test_null():
     autd = create_controller()
 
-    assert autd.send(Null())
+    assert await autd.send(Null())
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

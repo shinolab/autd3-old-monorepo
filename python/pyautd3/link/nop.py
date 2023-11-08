@@ -16,7 +16,7 @@ from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import (
     NativeMethods as LinkNop,
 )
-from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, RuntimePtr
 
 
 class Nop(Link):
@@ -29,7 +29,7 @@ class Nop(Link):
         def _link_builder_ptr(self: "Nop._Builder") -> LinkBuilderPtr:
             return LinkNop().link_nop()
 
-        def _resolve_link(self: "Nop._Builder", _ptr: ControllerPtr) -> "Nop":
+        def _resolve_link(self: "Nop._Builder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> "Nop":
             return Nop(LinkNop().link_get(_ptr))
 
     def __init__(self: "Nop", ptr: LinkPtr) -> None:
