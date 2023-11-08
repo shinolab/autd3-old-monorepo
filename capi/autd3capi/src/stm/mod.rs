@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,8 +16,10 @@
 pub mod focus;
 pub mod gain;
 
-use autd3_driver::datagram::STMProps;
-use autd3capi_def::{common::*, STMPropsPtr};
+use autd3capi_def::{
+    common::{driver::datagram::STMProps, *},
+    STMPropsPtr,
+};
 
 #[no_mangle]
 #[must_use]
@@ -99,7 +101,7 @@ pub unsafe extern "C" fn AUTDSTMPropsSamplingPeriod(props: STMPropsPtr, size: u6
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsStartIdx(props: STMPropsPtr) -> i32 {
-    if let Some(idx) = cast!(props.0, STMProps).start_idx() {
+    if let Some(idx) = cast!(props, STMProps).start_idx() {
         idx as i32
     } else {
         -1
@@ -109,7 +111,7 @@ pub unsafe extern "C" fn AUTDSTMPropsStartIdx(props: STMPropsPtr) -> i32 {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsFinishIdx(props: STMPropsPtr) -> i32 {
-    if let Some(idx) = cast!(props.0, STMProps).finish_idx() {
+    if let Some(idx) = cast!(props, STMProps).finish_idx() {
         idx as i32
     } else {
         -1

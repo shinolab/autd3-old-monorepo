@@ -4,14 +4,14 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{constraint::Constraint, impl_holo, Complex, HoloError, LinAlgBackend, Trans};
 use autd3_derive::Gain;
@@ -39,13 +39,13 @@ pub struct LM<B: LinAlgBackend + 'static> {
     k_max: usize,
     initial: Vec<float>,
     constraint: Constraint,
-    backend: Rc<B>,
+    backend: Arc<B>,
 }
 
 impl_holo!(B, LM<B>);
 
 impl<B: LinAlgBackend> LM<B> {
-    pub fn new(backend: Rc<B>) -> Self {
+    pub fn new(backend: Arc<B>) -> Self {
         Self {
             foci: vec![],
             amps: vec![],

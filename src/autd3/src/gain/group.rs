@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -95,9 +95,9 @@ impl<K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, Bo
 }
 
 impl<
-        K: Hash + Eq + Clone + 'static,
+        K: Hash + Eq + Clone + Send + Sync + 'static,
         G: Gain + 'static,
-        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + Send + Sync + 'static,
     > autd3_driver::datagram::Datagram for Group<K, G, F>
 {
     type O1 = autd3_driver::operation::GainOp<Self>;
@@ -160,9 +160,9 @@ impl<
 }
 
 impl<
-        K: Hash + Eq + Clone + 'static,
+        K: Hash + Eq + Clone + Send + Sync + 'static,
         G: Gain + 'static,
-        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + Send + Sync + 'static,
     > Gain for Group<K, G, F>
 {
     #[allow(clippy::uninit_vec)]

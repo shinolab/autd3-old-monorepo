@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,11 +41,11 @@ pub unsafe extern "C" fn AUTDGainCalc(
     geometry: GeometryPtr,
     err: *mut c_char,
 ) -> GainCalcDrivesMapPtr {
-    let geo = cast!(geometry.0, Geometry);
+    let geo = cast!(geometry, Geometry);
     GainCalcDrivesMapPtr(Box::into_raw(Box::new(try_or_return!(
         Box::from_raw(gain.0 as *mut Box<G>).calc(geo, GainFilter::All),
         err,
-        GainCalcDrivesMapPtr(std::ptr::null())
+        GainCalcDrivesMapPtr(NULL)
     ))) as _)
 }
 
@@ -56,7 +56,7 @@ pub unsafe extern "C" fn AUTDGainCalcGetResult(
     idx: u32,
 ) {
     let idx = idx as usize;
-    let src = cast!(src.0, HashMap<usize, Vec<Drive>>);
+    let src = cast!(src, HashMap<usize, Vec<Drive>>);
     std::ptr::copy_nonoverlapping(src[&idx].as_ptr(), dst, src[&idx].len());
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #![allow(unknown_lints)]
 #![allow(clippy::manual_slice_size_calculation)]
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use arrayfire::*;
 
@@ -77,8 +77,8 @@ impl LinAlgBackend for ArrayFireBackend {
     type VectorXc = Array<AfC>;
     type VectorX = Array<float>;
 
-    fn new() -> Result<Rc<Self>, HoloError> {
-        Ok(Rc::new(Self {}))
+    fn new() -> Result<Arc<Self>, HoloError> {
+        Ok(Arc::new(Self {}))
     }
 
     fn generate_propagation_matrix(

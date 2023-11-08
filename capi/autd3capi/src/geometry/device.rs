@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,24 +18,24 @@ use autd3capi_def::{common::*, DevicePtr, GeometryPtr};
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDevice(geo: GeometryPtr, dev_idx: u32) -> DevicePtr {
-    DevicePtr(&cast!(geo.0, Geometry)[dev_idx as usize] as *const _ as _)
+    DevicePtr(&cast!(geo, Geometry)[dev_idx as usize] as *const _ as _)
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDeviceNumTransducers(dev: DevicePtr) -> u32 {
-    cast!(dev.0, Device).num_transducers() as _
+    cast!(dev, Device).num_transducers() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDeviceGetSoundSpeed(dev: DevicePtr) -> float {
-    cast!(dev.0, Device).sound_speed
+    cast!(dev, Device).sound_speed
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceSetSoundSpeed(dev: DevicePtr, value: float) {
-    cast_mut!(dev.0, Device).sound_speed = value;
+    cast_mut!(dev, Device).sound_speed = value;
 }
 
 #[no_mangle]
@@ -46,23 +46,23 @@ pub unsafe extern "C" fn AUTDDeviceSetSoundSpeedFromTemp(
     r: float,
     m: float,
 ) {
-    cast_mut!(dev.0, Device).set_sound_speed_from_temp_with(temp, k, r, m);
+    cast_mut!(dev, Device).set_sound_speed_from_temp_with(temp, k, r, m);
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDeviceGetAttenuation(dev: DevicePtr) -> float {
-    cast!(dev.0, Device).attenuation
+    cast!(dev, Device).attenuation
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceSetAttenuation(dev: DevicePtr, value: float) {
-    cast_mut!(dev.0, Device).attenuation = value;
+    cast_mut!(dev, Device).attenuation = value;
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceCenter(dev: DevicePtr, center: *mut float) {
-    let c = cast!(dev.0, Device).center();
+    let c = cast!(dev, Device).center();
     center.add(0).write(c.x);
     center.add(1).write(c.y);
     center.add(2).write(c.z);
@@ -70,12 +70,12 @@ pub unsafe extern "C" fn AUTDDeviceCenter(dev: DevicePtr, center: *mut float) {
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceTranslate(dev: DevicePtr, x: float, y: float, z: float) {
-    cast_mut!(dev.0, Device).translate(Vector3::new(x, y, z));
+    cast_mut!(dev, Device).translate(Vector3::new(x, y, z));
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceRotate(dev: DevicePtr, w: float, i: float, j: float, k: float) {
-    cast_mut!(dev.0, Device).rotate(UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)));
+    cast_mut!(dev, Device).rotate(UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)));
 }
 
 #[no_mangle]
@@ -89,7 +89,7 @@ pub unsafe extern "C" fn AUTDDeviceAffine(
     j: float,
     k: float,
 ) {
-    cast_mut!(dev.0, Device).affine(
+    cast_mut!(dev, Device).affine(
         Vector3::new(x, y, z),
         UnitQuaternion::from_quaternion(Quaternion::new(w, i, j, k)),
     );
@@ -97,23 +97,23 @@ pub unsafe extern "C" fn AUTDDeviceAffine(
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceSetReadsFPGAInfo(dev: DevicePtr, value: bool) {
-    cast_mut!(dev.0, Device).reads_fpga_info = value;
+    cast_mut!(dev, Device).reads_fpga_info = value;
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceSetForceFan(dev: DevicePtr, value: bool) {
-    cast_mut!(dev.0, Device).force_fan = value;
+    cast_mut!(dev, Device).force_fan = value;
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceEnableSet(dev: DevicePtr, value: bool) {
-    cast_mut!(dev.0, Device).enable = value;
+    cast_mut!(dev, Device).enable = value;
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDeviceEnableGet(dev: DevicePtr) -> bool {
-    cast_mut!(dev.0, Device).enable
+    cast_mut!(dev, Device).enable
 }
 
 #[cfg(test)]

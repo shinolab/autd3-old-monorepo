@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ pub enum TypeTag {
     Filter = 0x60,
 }
 
-pub trait Operation {
+pub trait Operation: Send + Sync {
     fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError>;
     fn required_size(&self, device: &Device) -> usize;
     fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError>;
