@@ -4,14 +4,14 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 08/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use nalgebra::ComplexField;
 use rand::Rng;
@@ -32,7 +32,7 @@ use crate::{Complex, HoloError, LinAlgBackend, MatrixXc, Trans, VectorX, VectorX
 use super::bench_utils::{gen_foci, generate_geometry};
 
 pub struct LinAlgBackendTestHelper<const N: usize, B: LinAlgBackend> {
-    backend: Rc<B>,
+    backend: Arc<B>,
 }
 
 impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
