@@ -21,12 +21,13 @@ from pyautd3.gain import Group, Null, Uniform
 from tests.test_autd import create_controller
 
 
-def test_group():
+@pytest.mark.asyncio()
+async def test_group():
     autd = create_controller()
 
     cx = autd.geometry.center[0]
 
-    assert autd.send(
+    assert await autd.send(
         Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null")
         .set_gain("uniform", Uniform(0.5).with_phase(np.pi))
         .set_gain("null", Null()),
@@ -43,21 +44,24 @@ def test_group():
                 assert np.all(phases[tr.local_idx] == 0)
 
 
-def test_group_unknown_key():
+@pytest.mark.asyncio()
+async def test_group_unknown_key():
     autd = create_controller()
 
     with pytest.raises(AUTDError, match="Unknown group key"):
-        autd.send(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
+        await autd.send(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
 
 
-def test_group_unspecified_key():
+@pytest.mark.asyncio()
+async def test_group_unspecified_key():
     autd = create_controller()
 
     with pytest.raises(AUTDError, match="Unspecified group key"):
-        autd.send(Group(lambda _, _tr: "null"))
+        await autd.send(Group(lambda _, _tr: "null"))
 
 
-def test_group_check_only_for_enabled():
+@pytest.mark.asyncio()
+async def test_group_check_only_for_enabled():
     autd = create_controller()
     autd.geometry[0].enable = False
 
@@ -67,7 +71,7 @@ def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    assert autd.send(Group(f).set_gain(0, Uniform(0.5).with_phase(np.pi)))
+    assert await autd.send(Group(f).set_gain(0, Uniform(0.5).with_phase(np.pi)))
 
     assert not check[0]
     assert check[1]

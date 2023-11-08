@@ -13,15 +13,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.gain import TransducerTest
 from tests.test_autd import create_controller
 
 
-def test_transtest():
+@pytest.mark.asyncio()
+async def test_transtest():
     autd = create_controller()
 
-    assert autd.send(TransducerTest().set_drive(0, 0, np.pi, 0.5).set_drive(1, 248, np.pi, 0.5))
+    assert await autd.send(TransducerTest().set_drive(0, 0, np.pi, 0.5).set_drive(1, 248, np.pi, 0.5))
 
     duties, phases = autd.link.duties_and_phases(0, 0)
     assert duties[0] == 85

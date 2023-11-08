@@ -13,15 +13,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.modulation import Static
 from tests.test_autd import create_controller
 
 
-def test_static():
+@pytest.mark.asyncio()
+async def test_static():
     autd = create_controller()
 
-    assert autd.send(Static().with_amp(0.2))
+    assert await autd.send(Static().with_amp(0.2))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

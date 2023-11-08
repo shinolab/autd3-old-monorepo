@@ -4,7 +4,7 @@ Project: native_methods
 Created Date: 09/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 13/10/2023
+Last Modified: 08/11/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ import os.path
 import platform
 import sys
 
+from .autd3capi_def import NativeMethods as Def
 from .autd3capi import NativeMethods as Base
 from .autd3capi_gain_holo import NativeMethods as GainHolo
 from .autd3capi_modulation_audio_file import NativeMethods as ModulationAudioFile
@@ -41,6 +42,7 @@ else:
 
 _LIB_PATH = os.path.join(os.path.dirname(__file__), "..", "bin")
 
+Def().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 Base().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 GainHolo().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ModulationAudioFile().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)

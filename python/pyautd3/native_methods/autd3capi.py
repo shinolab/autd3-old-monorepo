@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, STMPropsPtr, TransducerPtr
+from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, FfiFuture, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultPtrWrapper, RuntimePtr, STMPropsPtr, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -204,25 +204,31 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerBuilderAddDeviceQuaternion.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDControllerBuilderAddDeviceQuaternion.restype = ControllerBuilderPtr
 
-        self.dll.AUTDControllerOpenWith.argtypes = [ControllerBuilderPtr, LinkBuilderPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerOpenWith.argtypes = [RuntimePtr, ControllerBuilderPtr, LinkBuilderPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerOpenWith.restype = ControllerPtr
 
-        self.dll.AUTDControllerClose.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerClose.restype = ctypes.c_bool
+        self.dll.AUTDControllerCloseAsync.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDControllerCloseAsync.restype = FfiFuture
 
         self.dll.AUTDControllerDelete.argtypes = [ControllerPtr]  # type: ignore 
         self.dll.AUTDControllerDelete.restype = None
 
-        self.dll.AUTDControllerFPGAInfo.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_uint8), ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerFPGAInfo.restype = ctypes.c_bool
+        self.dll.AUTDControllerFPGAInfoAsync.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDControllerFPGAInfoAsync.restype = FfiFuture
 
-        self.dll.AUTDControllerFirmwareInfoListPointer.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerFirmwareInfoListPointer.restype = FirmwareInfoListPtr
+        self.dll.AUTDControllerFPGAInfoAwaitResult.argtypes = [RuntimePtr, FfiFuture, ctypes.POINTER(ctypes.c_uint8)]  # type: ignore 
+        self.dll.AUTDControllerFPGAInfoAwaitResult.restype = ResultPtrWrapper
 
-        self.dll.AUTDControllerFirmwareInfoGet.argtypes = [FirmwareInfoListPtr, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoListPointerAsync.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoListPointerAsync.restype = FfiFuture
+
+        self.dll.AUTDControllerFirmwareInfoListPointerAwaitResult.argtypes = [RuntimePtr, FfiFuture]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoListPointerAwaitResult.restype = ResultPtrWrapper
+
+        self.dll.AUTDControllerFirmwareInfoGet.argtypes = [ResultPtrWrapper, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoGet.restype = None
 
-        self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [FirmwareInfoListPtr]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [ResultPtrWrapper]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.restype = None
 
         self.dll.AUTDFirmwareLatest.argtypes = [ctypes.c_char_p] 
@@ -252,11 +258,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = DatagramPtr
 
-        self.dll.AUTDControllerSend.argtypes = [ControllerPtr, DatagramPtr, DatagramPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerSend.restype = ctypes.c_int32
+        self.dll.AUTDControllerSendAsync.argtypes = [ControllerPtr, DatagramPtr, DatagramPtr, ctypes.c_int64]  # type: ignore 
+        self.dll.AUTDControllerSendAsync.restype = FfiFuture
 
-        self.dll.AUTDControllerSendSpecial.argtypes = [ControllerPtr, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerSendSpecial.restype = ctypes.c_int32
+        self.dll.AUTDControllerSendSpecialAsync.argtypes = [ControllerPtr, DatagramSpecialPtr, ctypes.c_int64]  # type: ignore 
+        self.dll.AUTDControllerSendSpecialAsync.restype = FfiFuture
 
         self.dll.AUTDControllerGroupCreateKVMap.argtypes = [] 
         self.dll.AUTDControllerGroupCreateKVMap.restype = GroupKVMapPtr
@@ -267,8 +273,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerGroupKVMapSetSpecial.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerGroupKVMapSetSpecial.restype = GroupKVMapPtr
 
-        self.dll.AUTDControllerGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDControllerGroup.restype = ctypes.c_int32
+        self.dll.AUTDControllerGroupAsync.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr]  # type: ignore 
+        self.dll.AUTDControllerGroupAsync.restype = FfiFuture
 
         self.dll.AUTDLinkAudit.argtypes = [] 
         self.dll.AUTDLinkAudit.restype = LinkAuditBuilderPtr
@@ -681,25 +687,31 @@ class NativeMethods(metaclass=Singleton):
     def controller_builder_add_device_quaternion(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilderAddDeviceQuaternion(builder, x, y, z, qw, qx, qy, qz)
 
-    def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char] | None) -> ControllerPtr:
-        return self.dll.AUTDControllerOpenWith(builder, link_builder, err)
+    def controller_open_with(self, runtime: RuntimePtr, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr, err: ctypes.Array[ctypes.c_char] | None) -> ControllerPtr:
+        return self.dll.AUTDControllerOpenWith(runtime, builder, link_builder, err)
 
-    def controller_close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
-        return self.dll.AUTDControllerClose(cnt, err)
+    def controller_close_async(self, cnt: ControllerPtr) -> FfiFuture:
+        return self.dll.AUTDControllerCloseAsync(cnt)
 
     def controller_delete(self, cnt: ControllerPtr) -> None:
         return self.dll.AUTDControllerDelete(cnt)
 
-    def controller_fpga_info(self, cnt: ControllerPtr, out: ctypes.Array[ctypes.c_uint8] | None, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_bool:
-        return self.dll.AUTDControllerFPGAInfo(cnt, out, err)
+    def controller_fpga_info_async(self, cnt: ControllerPtr) -> FfiFuture:
+        return self.dll.AUTDControllerFPGAInfoAsync(cnt)
 
-    def controller_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char] | None) -> FirmwareInfoListPtr:
-        return self.dll.AUTDControllerFirmwareInfoListPointer(cnt, err)
+    def controller_fpga_info_await_result(self, runtime: RuntimePtr, future: FfiFuture, out: ctypes.Array[ctypes.c_uint8] | None) -> ResultPtrWrapper:
+        return self.dll.AUTDControllerFPGAInfoAwaitResult(runtime, future, out)
 
-    def controller_firmware_info_get(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char] | None) -> None:
+    def controller_firmware_info_list_pointer_async(self, cnt: ControllerPtr) -> FfiFuture:
+        return self.dll.AUTDControllerFirmwareInfoListPointerAsync(cnt)
+
+    def controller_firmware_info_list_pointer_await_result(self, runtime: RuntimePtr, future: FfiFuture) -> ResultPtrWrapper:
+        return self.dll.AUTDControllerFirmwareInfoListPointerAwaitResult(runtime, future)
+
+    def controller_firmware_info_get(self, p_info_list: ResultPtrWrapper, idx: int, info: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDControllerFirmwareInfoGet(p_info_list, idx, info)
 
-    def controller_firmware_info_list_pointer_delete(self, p_info_list: FirmwareInfoListPtr) -> None:
+    def controller_firmware_info_list_pointer_delete(self, p_info_list: ResultPtrWrapper) -> None:
         return self.dll.AUTDControllerFirmwareInfoListPointerDelete(p_info_list)
 
     def firmware_latest(self, latest: ctypes.Array[ctypes.c_char] | None) -> None:
@@ -729,11 +741,11 @@ class NativeMethods(metaclass=Singleton):
     def datagram_silencer(self, step: int) -> DatagramPtr:
         return self.dll.AUTDDatagramSilencer(step)
 
-    def controller_send(self, cnt: ControllerPtr, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDControllerSend(cnt, d1, d2, timeout_ns, err)
+    def controller_send_async(self, cnt: ControllerPtr, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int) -> FfiFuture:
+        return self.dll.AUTDControllerSendAsync(cnt, d1, d2, timeout_ns)
 
-    def controller_send_special(self, cnt: ControllerPtr, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDControllerSendSpecial(cnt, special, timeout_ns, err)
+    def controller_send_special_async(self, cnt: ControllerPtr, special: DatagramSpecialPtr, timeout_ns: int) -> FfiFuture:
+        return self.dll.AUTDControllerSendSpecialAsync(cnt, special, timeout_ns)
 
     def controller_group_create_kv_map(self) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupCreateKVMap()
@@ -744,8 +756,8 @@ class NativeMethods(metaclass=Singleton):
     def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char] | None) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupKVMapSetSpecial(map, key, special, timeout_ns, err)
 
-    def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: GroupKVMapPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDControllerGroup(cnt, map, kv_map, err)
+    def controller_group_async(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: GroupKVMapPtr) -> FfiFuture:
+        return self.dll.AUTDControllerGroupAsync(cnt, map, kv_map)
 
     def link_audit(self) -> LinkAuditBuilderPtr:
         return self.dll.AUTDLinkAudit()

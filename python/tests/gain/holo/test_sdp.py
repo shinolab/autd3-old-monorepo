@@ -21,7 +21,8 @@ from pyautd3.gain.holo.backend_cuda import CUDABackend
 from pyautd3.link.audit import Audit
 
 
-def test_sdp():
+@pytest.mark.asyncio()
+async def test_sdp():
     autd = Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
 
     backend = NalgebraBackend()
@@ -34,7 +35,7 @@ def test_sdp():
         .with_repeat(10)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert autd.send(g)
+    assert await autd.send(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -43,7 +44,8 @@ def test_sdp():
 
 
 @pytest.mark.cuda()
-def test_sdp_cuda():
+@pytest.mark.asyncio()
+async def test_sdp_cuda():
     autd = Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
 
     backend = CUDABackend()
@@ -56,7 +58,7 @@ def test_sdp_cuda():
         .with_repeat(10)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert autd.send(g)
+    assert await autd.send(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

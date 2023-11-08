@@ -13,15 +13,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+import pytest
 
 from pyautd3.gain import Uniform
 from tests.test_autd import create_controller
 
 
-def test_uniform():
+@pytest.mark.asyncio()
+async def test_uniform():
     autd = create_controller()
 
-    assert autd.send(Uniform(0.5).with_phase(np.pi))
+    assert await autd.send(Uniform(0.5).with_phase(np.pi))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
