@@ -51,7 +51,7 @@ jobs:
       - name: Install tools
         if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
         run: |
-          python3 -m pip install -U mypy numpy build wheel pytest
+          python3 -m pip install -U mypy numpy build wheel pytest pytest-asyncio
 
       - name: Rust cache
         if: needs.check.outputs.status && !(matrix.os == 'macos-latest' && matrix.python-version == '3.10')
