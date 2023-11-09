@@ -19,11 +19,11 @@ from pyautd3.gain import Bessel
 from pyautd3.modulation import Sine
 
 
-def bessel(autd: Controller) -> None:
+async def bessel(autd: Controller) -> None:
     config = Silencer()
-    autd.send(config)
+    await autd.send(config)
 
     f = Bessel(autd.geometry.center, np.array([0.0, 0.0, 1.0]), 13.0 / 180 * np.pi)
     m = Sine(150)
 
-    autd.send(m, f)
+    await autd.send(m, f)

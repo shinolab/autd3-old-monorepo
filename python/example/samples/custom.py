@@ -46,11 +46,11 @@ class Burst(Modulation):
         return buf
 
 
-def custom(autd: Controller) -> None:
+async def custom(autd: Controller) -> None:
     config = Silencer()
-    autd.send(config)
+    await autd.send(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Burst(4000)
 
-    autd.send(m, f)
+    await autd.send(m, f)

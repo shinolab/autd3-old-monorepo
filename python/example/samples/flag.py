@@ -17,7 +17,7 @@ import threading
 from pyautd3 import Controller, UpdateFlags
 
 
-def flag(autd: Controller) -> None:
+async def flag(autd: Controller) -> None:
     for dev in autd.geometry:
         dev.force_fan = True
         dev.reads_fpga_info = True
@@ -25,15 +25,15 @@ def flag(autd: Controller) -> None:
     print("press any key to run fan...")
     _ = input()
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())
 
     fin = False
 
-    def f() -> None:
+    async def f() -> None:
         prompts = ["-", "/", "|", "\\"]
         prompts_idx = 0
         while not fin:
-            states = autd.fpga_info
+            states = await autd.fpga_info()
             print(f"{prompts[(prompts_idx // 1000) % len(prompts)]} FPGA Status...")
             print("\n".join([str(state) for state in states]))
             print(f"\x1b[{len(states) + 1}A", end="")
@@ -52,4 +52,4 @@ def flag(autd: Controller) -> None:
         dev.force_fan = False
         dev.reads_fpga_info = False
 
-    autd.send(UpdateFlags())
+    await autd.send(UpdateFlags())

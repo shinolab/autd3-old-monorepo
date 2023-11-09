@@ -11,6 +11,8 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
+import asyncio
+
 import numpy as np
 
 from pyautd3 import AUTD3, Controller
@@ -18,9 +20,10 @@ from pyautd3.gain import Focus
 from pyautd3.link.visualizer import PlotRange, PyPlotConfig, PythonBackend, Visualizer
 from pyautd3.modulation import Square
 
-if __name__ == "__main__":
+
+async def main() -> None:
     with (
-        Controller[Visualizer]
+        await Controller[Visualizer]
         .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .open_with(Visualizer.builder().with_backend(PythonBackend()))
@@ -30,7 +33,7 @@ if __name__ == "__main__":
         g = Focus(center)
         m = Square(150)
 
-        autd.send((m, g))
+        await autd.send((m, g))
 
         autd.link.plot_phase(PyPlotConfig(fname="phase.png"), autd.geometry)
 
@@ -97,4 +100,8 @@ if __name__ == "__main__":
         p = autd.link.calc_field(points, autd.geometry)
         print(f"Acoustic pressure at ({center[0]}, {center[1]}, {center[2]}) = {p[0]}")
 
-        autd.close()
+        await autd.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

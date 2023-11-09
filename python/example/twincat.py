@@ -12,11 +12,18 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 """
 
 
+import asyncio
+
 from samples import runner
 
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.twincat import TwinCAT
 
+
+async def main() -> None:
+    with await Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(TwinCAT.builder()) as autd:
+        await runner.run(autd)
+
+
 if __name__ == "__main__":
-    with Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(TwinCAT.builder()) as autd:
-        runner.run(autd)
+    asyncio.run(main())

@@ -11,6 +11,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 """
 
+import asyncio
 import ctypes
 import os
 from typing import NoReturn
@@ -30,10 +31,18 @@ def on_err(msg: ctypes.c_char_p) -> None:
     print(msg.decode("utf-8"), end="")
 
 
-if __name__ == "__main__":
+async def main() -> None:
     on_lost_func = OnErrFunc(on_lost)
     on_err_func = OnErrFunc(on_err)
-    with Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(
-        SOEM.builder().with_on_lost(on_lost_func).with_on_err(on_err_func),
+    with await (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .open_with(
+            SOEM.builder().with_on_lost(on_lost_func).with_on_err(on_err_func),
+        )
     ) as autd:
-        runner.run(autd)
+        await runner.run(autd)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

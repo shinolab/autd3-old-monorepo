@@ -19,9 +19,9 @@ from pyautd3.gain import Focus, Null
 from pyautd3.modulation import Sine, Static
 
 
-def group(autd: Controller) -> None:
+async def group(autd: Controller) -> None:
     config = Silencer()
-    autd.send(config)
+    await autd.send(config)
 
     def grouping(dev: Device) -> str | None:
         match dev.idx:

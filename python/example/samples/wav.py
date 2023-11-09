@@ -21,11 +21,11 @@ from pyautd3.gain import Focus
 from pyautd3.modulation.audio_file import Wav
 
 
-def wav(autd: Controller) -> None:
+async def wav(autd: Controller) -> None:
     config = Silencer()
-    autd.send(config)
+    await autd.send(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Wav(Path(__file__).parent / "sin150.wav")
 
-    autd.send((m, f))
+    await autd.send((m, f))

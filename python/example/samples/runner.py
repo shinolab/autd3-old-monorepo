@@ -16,7 +16,7 @@ from pyautd3 import Controller, Stop
 from . import bessel, custom, flag, focus, group, holo, plane, stm, transtest, wav
 
 
-def run(autd: Controller) -> None:
+async def run(autd: Controller) -> None:
     samples = [
         (focus.simple, "Single focus test"),
         (bessel.bessel, "Bessel beam test"),
@@ -34,7 +34,7 @@ def run(autd: Controller) -> None:
         samples.append((group.group, "Group test"))
 
     print("======== AUTD3 firmware information ========")
-    print("\n".join([str(firm) for firm in autd.firmware_info_list()]))
+    print("\n".join([str(firm) for firm in await autd.firmware_info_list()]))
     print("============================================")
 
     while True:
@@ -47,11 +47,13 @@ def run(autd: Controller) -> None:
             break
 
         (fn, _) = samples[idx]
-        fn(autd)
+        await fn(autd)
 
         print("press enter to finish...")
 
         _ = input()
 
         print("finish.")
-        autd.send(Stop())
+        await autd.send(Stop())
+
+    await autd.close()
