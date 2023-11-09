@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,20 +43,6 @@ pub type M = dyn Modulation;
 pub type Cnt = Controller<Box<L>>;
 
 pub const NULL: ConstPtr = std::ptr::null();
-
-#[macro_export]
-macro_rules! try_or_return {
-    ($expr:expr, $err:ident, $ret:expr) => {
-        match $expr {
-            Ok(v) => v,
-            Err(e) => {
-                let msg = std::ffi::CString::new(e.to_string()).unwrap();
-                libc::strcpy($err, msg.as_ptr());
-                return $ret;
-            }
-        }
-    };
-}
 
 #[macro_export]
 macro_rules! cast {

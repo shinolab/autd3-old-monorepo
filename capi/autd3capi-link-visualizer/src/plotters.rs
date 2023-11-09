@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,6 +55,20 @@ pub unsafe extern "C" fn AUTDLinkVisualizerT4010A1Plotters(
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct PlotConfigPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct ResultPlotConfigPtr {
+    pub result: PlotConfigPtr,
+    pub err_len: u32,
+    pub err: *const c_char,
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDResultPlotConfigPtrGetErr(r: ResultPlotConfigPtr, err: *mut c_char) {
+    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
+    libc::strcpy(err, err_.as_ptr());
+}
 
 #[no_mangle]
 #[must_use]
@@ -209,15 +223,25 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithCMap(
 pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFName(
     config: PlotConfigPtr,
     fname: *const c_char,
-    err: *mut c_char,
-) -> PlotConfigPtr {
-    if config.0.is_null() {
-        return PlotConfigPtr(NULL);
-    }
+) -> ResultPlotConfigPtr {
+    let fname = match CStr::from_ptr(fname).to_str() {
+        Ok(v) => v.to_owned(),
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultPlotConfigPtr {
+                result: PlotConfigPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
-    let fname = try_or_return!(CStr::from_ptr(fname).to_str(), err, PlotConfigPtr(NULL));
-    PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
-        fname: fname.into(),
-        ..config
-    })) as _)
+    ResultPlotConfigPtr {
+        result: PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
+            fname: fname.into(),
+            ..config
+        })) as _),
+        err_len: 0,
+        err: std::ptr::null(),
+    }
 }

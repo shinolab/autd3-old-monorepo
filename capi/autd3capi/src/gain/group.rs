@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,8 +83,6 @@ pub unsafe extern "C" fn AUTDGainGroup(
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::*;
 
     use crate::{
@@ -124,11 +122,8 @@ mod tests {
 
             let g = AUTDGainIntoDatagram(g);
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(cnt, DatagramPtr(std::ptr::null()), g, -1, err.as_mut_ptr(),),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }

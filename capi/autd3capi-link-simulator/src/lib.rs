@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,20 +15,41 @@
 
 use std::{
     ffi::{c_char, CStr},
+    net::Ipv4Addr,
     time::Duration,
 };
 
-use autd3capi_def::{common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, AUTD3_ERR, AUTD3_TRUE};
+use autd3capi_def::{
+    common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32,
+};
 
 use autd3_link_simulator::*;
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct LinkSimulatorBuilderPtr(pub ConstPtr);
 
 impl LinkSimulatorBuilderPtr {
     pub fn new(builder: SimulatorBuilder) -> Self {
         Self(Box::into_raw(Box::new(builder)) as _)
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultLinkSimulatorBuilderPtr {
+    pub result: LinkSimulatorBuilderPtr,
+    pub err_len: u32,
+    pub err: *const c_char,
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDRLinkSimulatorBuilderPtrGetErr(
+    r: ResultLinkSimulatorBuilderPtr,
+    err: *mut c_char,
+) {
+    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
+    libc::strcpy(err, err_.as_ptr());
 }
 
 #[no_mangle]
@@ -42,20 +63,37 @@ pub unsafe extern "C" fn AUTDLinkSimulator(port: u16) -> LinkSimulatorBuilderPtr
 pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
     simulator: LinkSimulatorBuilderPtr,
     addr: *const c_char,
-    err: *mut c_char,
-) -> LinkSimulatorBuilderPtr {
-    LinkSimulatorBuilderPtr::new(
-        Box::from_raw(simulator.0 as *mut SimulatorBuilder).with_server_ip(try_or_return!(
-            try_or_return!(
-                CStr::from_ptr(addr).to_str(),
-                err,
-                LinkSimulatorBuilderPtr(NULL)
-            )
-            .parse(),
-            err,
-            LinkSimulatorBuilderPtr(NULL)
-        )),
-    )
+    _err: *mut c_char,
+) -> ResultLinkSimulatorBuilderPtr {
+    let addr = match CStr::from_ptr(addr).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultLinkSimulatorBuilderPtr {
+                result: LinkSimulatorBuilderPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    let addr = match addr.parse::<Ipv4Addr>() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultLinkSimulatorBuilderPtr {
+                result: LinkSimulatorBuilderPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    ResultLinkSimulatorBuilderPtr {
+        result: LinkSimulatorBuilderPtr::new(
+            Box::from_raw(simulator.0 as *mut SimulatorBuilder).with_server_ip(addr),
+        ),
+        err_len: 0,
+        err: std::ptr::null(),
+    }
 }
 
 #[no_mangle]
@@ -83,12 +121,8 @@ pub unsafe extern "C" fn AUTDLinkSimulatorIntoBuilder(
 pub unsafe extern "C" fn AUTDLinkSimulatorUpdateGeometry(
     simulator: LinkPtr,
     geometry: GeometryPtr,
-    err: *mut c_char,
-) -> i32 {
-    try_or_return!(
-        cast_mut!(simulator.0, Box<SimulatorSync>).update_geometry(cast!(geometry.0, Geometry)),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+) -> ResultI32 {
+    cast_mut!(simulator.0, Box<SimulatorSync>)
+        .update_geometry(cast!(geometry.0, Geometry))
+        .into()
 }

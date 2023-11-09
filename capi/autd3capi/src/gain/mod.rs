@@ -4,19 +4,19 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, ffi::c_char};
+use std::collections::HashMap;
 
 use crate::Drive;
 use autd3capi_def::{
     common::{driver::datagram::GainFilter, *},
-    DatagramPtr, GainCalcDrivesMapPtr, GainPtr, GeometryPtr,
+    DatagramPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMapPtr,
 };
 
 pub mod bessel;
@@ -39,36 +39,31 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramPtr {
 pub unsafe extern "C" fn AUTDGainCalc(
     gain: GainPtr,
     geometry: GeometryPtr,
-    err: *mut c_char,
-) -> GainCalcDrivesMapPtr {
+) -> ResultGainCalcDrivesMapPtr {
     let geo = cast!(geometry.0, Geometry);
-    GainCalcDrivesMapPtr(Box::into_raw(Box::new(try_or_return!(
-        Box::from_raw(gain.0 as *mut Box<G>).calc(geo, GainFilter::All),
-        err,
-        GainCalcDrivesMapPtr(std::ptr::null())
-    ))) as _)
+    Box::from_raw(gain.0 as *mut Box<G>)
+        .calc(geo, GainFilter::All)
+        .into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainCalcGetResult(
-    src: GainCalcDrivesMapPtr,
+    src: ResultGainCalcDrivesMapPtr,
     dst: *mut Drive,
     idx: u32,
 ) {
     let idx = idx as usize;
-    let src = cast!(src.0, HashMap<usize, Vec<Drive>>);
+    let src = cast!(src.result, HashMap<usize, Vec<Drive>>);
     std::ptr::copy_nonoverlapping(src[&idx].as_ptr(), dst, src[&idx].len());
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: GainCalcDrivesMapPtr) {
-    let _ = Box::from_raw(src.0 as *mut HashMap<usize, Vec<Drive>>);
+pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: ResultGainCalcDrivesMapPtr) {
+    let _ = Box::from_raw(src.result as *mut HashMap<usize, Vec<Drive>>);
 }
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::*;
 
     use crate::{
@@ -99,9 +94,8 @@ mod tests {
                 vec![Drive { amp: 0., phase: 0. }; num_trans as _]
             };
 
-            let mut err = vec![c_char::default(); 256];
-            let res = AUTDGainCalc(g, geo, err.as_mut_ptr());
-            assert!(!res.0.is_null());
+            let res = AUTDGainCalc(g, geo);
+            assert!(!res.result.is_null());
 
             AUTDGainCalcGetResult(res, drives0.as_mut_ptr(), 0);
             AUTDGainCalcGetResult(res, drives1.as_mut_ptr(), 1);

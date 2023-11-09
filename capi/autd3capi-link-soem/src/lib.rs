@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 
 use std::{
     ffi::{c_char, CStr},
+    net::SocketAddr,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -217,6 +218,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMIntoBuilder(soem: LinkSOEMBuilderPtr) -> Li
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct LinkRemoteSOEMBuilderPtr(pub ConstPtr);
 
 impl LinkRemoteSOEMBuilderPtr {
@@ -225,22 +227,53 @@ impl LinkRemoteSOEMBuilderPtr {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultLinkRemoteSOEMBuilderPtr {
+    pub result: LinkRemoteSOEMBuilderPtr,
+    pub err_len: u32,
+    pub err: *const c_char,
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDRLinkRemoteSOEMBuilderPtrGetErr(
+    r: ResultLinkRemoteSOEMBuilderPtr,
+    err: *mut c_char,
+) {
+    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
+    libc::strcpy(err, err_.as_ptr());
+}
+
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEM(
-    addr: *const c_char,
-    err: *mut c_char,
-) -> LinkRemoteSOEMBuilderPtr {
-    LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(try_or_return!(
-        try_or_return!(
-            CStr::from_ptr(addr).to_str(),
-            err,
-            LinkRemoteSOEMBuilderPtr(NULL)
-        )
-        .parse(),
-        err,
-        LinkRemoteSOEMBuilderPtr(NULL)
-    )))
+pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char) -> ResultLinkRemoteSOEMBuilderPtr {
+    let addr = match CStr::from_ptr(addr).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultLinkRemoteSOEMBuilderPtr {
+                result: LinkRemoteSOEMBuilderPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    let addr = match addr.parse::<SocketAddr>() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultLinkRemoteSOEMBuilderPtr {
+                result: LinkRemoteSOEMBuilderPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    ResultLinkRemoteSOEMBuilderPtr {
+        result: LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(addr)),
+        err_len: 0,
+        err: std::ptr::null(),
+    }
 }
 
 #[no_mangle]

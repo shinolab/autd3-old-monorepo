@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,6 +58,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCATIntoBuilder(
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct LinkRemoteTwinCATBuilderPtr(pub ConstPtr);
 
 impl LinkRemoteTwinCATBuilderPtr {
@@ -66,17 +67,47 @@ impl LinkRemoteTwinCATBuilderPtr {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultLinkRemoteTwinCATBuilderPtr {
+    pub result: LinkRemoteTwinCATBuilderPtr,
+    pub err_len: u32,
+    pub err: *const c_char,
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDResultLinkRemoteTwinCATBuilderPtrGetErr(
+    r: ResultLinkRemoteTwinCATBuilderPtr,
+    err: *mut c_char,
+) {
+    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
+    libc::strcpy(err, err_.as_ptr());
+}
+
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
     server_ams_net_id: *const c_char,
-    err: *mut c_char,
-) -> LinkRemoteTwinCATBuilderPtr {
-    LinkRemoteTwinCATBuilderPtr::new(RemoteTwinCAT::builder(try_or_return!(
-        CStr::from_ptr(server_ams_net_id).to_str(),
-        err,
-        LinkRemoteTwinCATBuilderPtr(NULL)
-    )))
+    _err: *mut c_char,
+) -> ResultLinkRemoteTwinCATBuilderPtr {
+    match CStr::from_ptr(server_ams_net_id).to_str() {
+        Ok(v) => {
+            let builder = RemoteTwinCAT::builder(v);
+            ResultLinkRemoteTwinCATBuilderPtr {
+                result: LinkRemoteTwinCATBuilderPtr::new(builder),
+                err_len: 0,
+                err: std::ptr::null(),
+            }
+        }
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            ResultLinkRemoteTwinCATBuilderPtr {
+                result: LinkRemoteTwinCATBuilderPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            }
+        }
+    }
 }
 
 #[no_mangle]

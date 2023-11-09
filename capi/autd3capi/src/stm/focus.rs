@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,6 +42,8 @@ pub unsafe extern "C" fn AUTDSTMFocus(
 #[cfg(test)]
 mod tests {
 
+    use autd3capi_def::AUTD3_TRUE;
+
     use super::*;
 
     use crate::{stm::*, tests::*, *};
@@ -59,17 +61,8 @@ mod tests {
 
             let stm = AUTDSTMFocus(props, points.as_ptr(), shifts.as_ptr(), len as _);
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    stm,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, stm, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }
