@@ -312,7 +312,7 @@ class Config:
         command = self.cargo_command_base("test")
         if self._all:
             command.append("--all")
-            if not self.cuda:
+            if not self.cuda or self.skip_cuda:
                 command.append("--exclude=autd3capi-backend-cuda")
             if not self.is_built_autd3capi_link_visualizer():
                 command.append("--exclude=autd3capi-link-visualizer")
