@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,11 +30,19 @@ impl Operation for SyncOp {
 
         tx[0] = TypeTag::Sync as u8;
 
-        Ok(2)
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut u16,
+                device.num_transducers(),
+            );
+            dst.fill(0x1000); // for v3 firmware compatibility
+        }
+
+        Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
     }
 
-    fn required_size(&self, _device: &Device) -> usize {
-        2
+    fn required_size(&self, device: &Device) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
     }
 
     fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
@@ -53,10 +61,9 @@ impl Operation for SyncOp {
 
 #[cfg(test)]
 mod tests {
-    
 
     use super::*;
-    use crate::{geometry::tests::create_geometry};
+    use crate::geometry::tests::create_geometry;
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;

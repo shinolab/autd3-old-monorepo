@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -141,7 +141,7 @@ impl<G: Gain> Operation for GainSTMOp<G> {
         }
         assert!(tx.len() >= offset + device.num_transducers() * std::mem::size_of::<FPGADrive>());
 
-        let mut f = GainSTMControlFlags::NONE;
+        let mut f = GainSTMControlFlags::LEGACY; // For v3 firmware compatibility
         f.set(GainSTMControlFlags::STM_BEGIN, sent == 0);
 
         if sent == 0 {
