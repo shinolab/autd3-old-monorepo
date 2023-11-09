@@ -20,7 +20,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_bessel():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Bessel(autd.geometry.center, [0, 0, 1], np.pi / 4).with_amp(0.5))
 

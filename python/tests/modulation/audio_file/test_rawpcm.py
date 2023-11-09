@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_rawpcm():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(RawPCM(Path(__file__).parent / "sin150.dat", 4000))
 

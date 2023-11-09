@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_uniform():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Uniform(0.5).with_phase(np.pi))
 

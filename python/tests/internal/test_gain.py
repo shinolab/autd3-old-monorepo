@@ -22,7 +22,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_cache():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Uniform(0.5).with_phase(np.pi).with_cache())
 
@@ -51,7 +51,7 @@ class CacheTest(Gain):
 
 @pytest.mark.asyncio()
 async def test_cache_check_once():
-    autd = create_controller()
+    autd = await create_controller()
 
     g = CacheTest()
     assert await autd.send(g)
@@ -69,7 +69,7 @@ async def test_cache_check_once():
 
 @pytest.mark.asyncio()
 async def test_cache_check_only_for_enabled():
-    autd = create_controller()
+    autd = await create_controller()
     autd.geometry[0].enable = False
 
     g = CacheTest()
@@ -90,7 +90,7 @@ async def test_cache_check_only_for_enabled():
 
 @pytest.mark.asyncio()
 async def test_transform():
-    autd = create_controller()
+    autd = await create_controller()
 
     def transform(dev: Device, _tr: Transducer, d: Drive) -> Drive:
         if dev.idx == 0:
@@ -111,7 +111,7 @@ async def test_transform():
 
 @pytest.mark.asyncio()
 async def test_transform_check_only_for_enabled():
-    autd = create_controller()
+    autd = await create_controller()
     autd.geometry[0].enable = False
 
     check = np.zeros(2, dtype=bool)

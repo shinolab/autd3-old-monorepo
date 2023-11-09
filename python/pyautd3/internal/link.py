@@ -14,7 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
-from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, RuntimePtr
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
 
 __all__ = []  # type: ignore[var-annotated]
 
@@ -34,5 +34,5 @@ class LinkBuilder(Generic[L], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _resolve_link(self: "LinkBuilder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> L:
+    def _resolve_link(self: "LinkBuilder", _ptr: ControllerPtr) -> L:
         pass

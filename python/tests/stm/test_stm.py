@@ -25,7 +25,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_focus_stm():
-    autd = create_controller()
+    autd = await create_controller()
 
     radius = 30.0
     size = 2
@@ -105,9 +105,8 @@ async def test_focus_stm():
 
 @pytest.mark.asyncio()
 async def test_gain_stm():
-    autd = (
-        Controller[Audit]
-        .builder()
+    autd: Controller[Audit] = (
+        await Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
         .open_with(Audit.builder())

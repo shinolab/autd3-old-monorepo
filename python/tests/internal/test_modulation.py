@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_cache():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = Sine(150).with_cache()
 
@@ -129,7 +129,7 @@ class CacheTest(Modulation):
 
 @pytest.mark.asyncio()
 async def test_cache_check_once():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = CacheTest()
     assert await autd.send(m)
@@ -148,7 +148,7 @@ async def test_cache_check_once():
 
 @pytest.mark.asyncio()
 async def test_transform():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = Sine(150).with_transform(lambda _i, v: v / 2)
 
@@ -244,7 +244,7 @@ async def test_transform():
 
 @pytest.mark.asyncio()
 async def test_radiation_pressure():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = Sine(150).with_radiation_pressure()
 

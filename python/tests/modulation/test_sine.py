@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_sine():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Sine(150).with_amp(0.5).with_offset(0.25).with_phase(np.pi / 2))
 
