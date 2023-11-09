@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,9 +32,6 @@ pub struct DynamicDatagramPack {
     pub timeout: Option<std::time::Duration>,
 }
 
-unsafe impl Send for DynamicDatagramPack {}
-unsafe impl Sync for DynamicDatagramPack {}
-
 impl Datagram for DynamicDatagramPack {
     type O1 = Box<dyn Operation>;
     type O2 = Box<dyn Operation>;
@@ -58,9 +55,6 @@ pub struct DynamicDatagramPack2 {
     pub d2: Box<Box<dyn DynamicDatagram>>,
     pub timeout: Option<std::time::Duration>,
 }
-
-unsafe impl Send for DynamicDatagramPack2 {}
-unsafe impl Sync for DynamicDatagramPack2 {}
 
 impl Datagram for DynamicDatagramPack2 {
     type O1 = Box<dyn Operation>;

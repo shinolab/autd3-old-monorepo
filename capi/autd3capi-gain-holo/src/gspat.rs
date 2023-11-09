@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 29/09/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 #![allow(clippy::missing_safety_doc)]
+
+use std::rc::Rc;
 
 use autd3capi_def::{
     common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr,

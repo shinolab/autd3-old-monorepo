@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,14 +14,15 @@
 use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
 use std::{
+    cell::{Ref, RefCell, RefMut},
     collections::HashMap,
-    sync::{Arc, Mutex, MutexGuard},
+    rc::Rc,
 };
 
 /// Gain to cache the result of calculation
 pub struct Cache<G: Gain> {
     gain: G,
-    cache: Arc<Mutex<HashMap<usize, Vec<Drive>>>>,
+    cache: Rc<RefCell<HashMap<usize, Vec<Drive>>>>,
 }
 
 pub trait IntoCache<G: Gain> {
@@ -49,36 +50,34 @@ impl<G: Gain> Cache<G> {
     fn new(gain: G) -> Self {
         Self {
             gain,
-            cache: Arc::new(Default::default()),
+            cache: Rc::new(Default::default()),
         }
     }
 
     pub fn init(&self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
-        if self.cache.lock().unwrap().len() != geometry.devices().count()
+        if self.cache.borrow().len() != geometry.devices().count()
             || geometry
                 .devices()
-                .any(|dev| !self.cache.lock().unwrap().contains_key(&dev.idx()))
+                .any(|dev| !self.cache.borrow().contains_key(&dev.idx()))
         {
             self.gain
                 .calc(geometry, GainFilter::All)?
                 .iter()
                 .for_each(|(k, v)| {
-                    self.cache.lock().unwrap().insert(*k, v.clone());
+                    self.cache.borrow_mut().insert(*k, v.clone());
                 });
         }
         Ok(())
     }
 
     /// get cached drives
-    pub fn drives(&self) -> MutexGuard<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
-        self.cache.lock().unwrap()
+    pub fn drives(&self) -> Ref<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
+        self.cache.borrow()
     }
 
     /// get cached drives mutably
-    pub fn drives_mut(
-        &mut self,
-    ) -> MutexGuard<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
-        self.cache.lock().unwrap()
+    pub fn drives_mut(&mut self) -> RefMut<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
+        self.cache.borrow_mut()
     }
 }
 
@@ -107,7 +106,7 @@ impl<G: Gain + 'static> Gain for Cache<G> {
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         self.init(geometry)?;
-        Ok(self.cache.lock().unwrap().clone())
+        Ok(self.cache.borrow().clone())
     }
 }
 
