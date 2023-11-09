@@ -507,8 +507,8 @@ impl LinkSync for SOEM {
         }
 
         match self.sender.try_send(tx.clone()) {
-            Err(TrySendError::Full(_)) => return Ok(false),
-            Err(TrySendError::Disconnected(_)) => return Err(AUTDInternalError::LinkClosed),
+            Err(TrySendError::Full(_)) => Ok(false),
+            Err(TrySendError::Disconnected(_)) => Err(AUTDInternalError::LinkClosed),
             _ => Ok(true),
         }
     }
