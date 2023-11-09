@@ -72,22 +72,31 @@ mod tests {
     fn sync_op() {
         let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut tx = [0x00u8; 2 * NUM_DEVICE];
+        let mut tx =
+            vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
         let mut op = SyncOp::default();
 
         assert!(op.init(&geometry).is_ok());
 
-        geometry
-            .devices()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 2));
+        geometry.devices().for_each(|dev| {
+            assert_eq!(
+                op.required_size(dev),
+                2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()
+            )
+        });
 
         geometry
             .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
         geometry.devices().for_each(|dev| {
-            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            assert!(op
+                .pack(
+                    dev,
+                    &mut tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())..]
+                )
+                .is_ok());
             op.commit(dev);
         });
 
@@ -96,7 +105,17 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
         geometry.devices().for_each(|dev| {
-            assert_eq!(tx[dev.idx() * 2], TypeTag::Sync as u8);
+            assert_eq!(
+                tx[dev.idx() * (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>())],
+                TypeTag::Sync as u8
+            );
+            tx.chunks(2)
+                .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
+                .skip(1)
+                .for_each(|d| {
+                    assert_eq!(d[0], 0x00);
+                    assert_eq!(d[1], 0x10);
+                })
         });
     }
 }
