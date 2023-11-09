@@ -268,7 +268,7 @@ module main #(
   assign GPIO_OUT = gpio_out;
 
   always_ff @(posedge CLK) begin
-    gpio_out <= time_cnt < 9'd320;
+    gpio_out <= time_cnt < 9'd256;
   end
 
 endmodule
