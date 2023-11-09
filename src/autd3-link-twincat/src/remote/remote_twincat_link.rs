@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,14 +16,14 @@ use std::{
     time::Duration,
 };
 
-use autd3_derive::LinkSync;
+use autd3_derive::Link;
 use itertools::Itertools;
 
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
     geometry::Geometry,
-    link::{Link, LinkBuilder},
+    link::{LinkSync, LinkSyncBuilder},
 };
 
 use crate::{error::AdsError, remote::native_methods::*};
@@ -34,7 +34,7 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 /// Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
-#[derive(LinkSync)]
+#[derive(Link)]
 pub struct RemoteTwinCAT {
     port: c_long,
     net_id: AmsNetId,
@@ -48,11 +48,10 @@ pub struct RemoteTwinCATBuilder {
     timeout: Duration,
 }
 
-#[async_trait::async_trait]
-impl LinkBuilder for RemoteTwinCATBuilder {
+impl LinkSyncBuilder for RemoteTwinCATBuilder {
     type L = RemoteTwinCAT;
 
-    async fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
         let RemoteTwinCATBuilder {
             server_ams_net_id,
             mut server_ip,
@@ -156,9 +155,8 @@ impl RemoteTwinCAT {
     }
 }
 
-#[async_trait::async_trait]
-impl Link for RemoteTwinCAT {
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+impl LinkSync for RemoteTwinCAT {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         if self.port == 0 {
             return Ok(());
         }
@@ -174,7 +172,7 @@ impl Link for RemoteTwinCAT {
         Ok(())
     }
 
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         let addr = AmsAddr {
             net_id: self.net_id,
             port: PORT,
@@ -202,7 +200,7 @@ impl Link for RemoteTwinCAT {
         Err(AdsError::SendData(res as _).into())
     }
 
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         let addr = AmsAddr {
             net_id: self.net_id,
             port: PORT,

@@ -4,14 +4,14 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_derive::LinkSync;
+use autd3_derive::Link;
 use libloading as lib;
 
 use std::{ffi::c_void, time::Duration};
@@ -21,8 +21,8 @@ use lib::Library;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry},
-    link::{Link, LinkBuilder},
+    geometry::Geometry,
+    link::{LinkSync, LinkSyncBuilder},
 };
 
 #[repr(C)]
@@ -46,7 +46,7 @@ const PORT: u16 = 301;
 
 /// Link using TwinCAT3
 
-#[derive(LinkSync)]
+#[derive(Link)]
 pub struct TwinCAT {
     port: i32,
     send_addr: AmsAddr,
@@ -65,11 +65,10 @@ impl TwinCATBuilder {
     }
 }
 
-#[async_trait::async_trait]
-impl LinkBuilder for TwinCATBuilder {
+impl LinkSyncBuilder for TwinCATBuilder {
     type L = TwinCAT;
 
-    async fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {
@@ -137,9 +136,8 @@ impl TwinCAT {
     }
 }
 
-#[async_trait::async_trait]
-impl Link for TwinCAT {
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+impl LinkSync for TwinCAT {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             self.port_close()(self.port);
         }
@@ -147,7 +145,7 @@ impl Link for TwinCAT {
         Ok(())
     }
 
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         unsafe {
             let n_err = self.sync_write_req()(
                 self.port,
@@ -166,7 +164,7 @@ impl Link for TwinCAT {
         }
     }
 
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         let mut read_bytes: u32 = 0;
         unsafe {
             let n_err = self.sync_read_req()(

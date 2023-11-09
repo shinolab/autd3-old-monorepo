@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use std::ffi::c_char;
 
 use autd3_link_visualizer::{
     NullBackend, NullPlotConfig, PlotConfig, PlotRange, PlottersBackend, PyPlotConfig,
-    PythonBackend, VisualizerSync,
+    PythonBackend, Visualizer,
 };
 use autd3capi_def::{
     common::{
@@ -56,16 +56,16 @@ macro_rules! match_visualizer {
     ($b:expr, $d:expr, $v: expr, $call:tt,  $( $args:expr ),*) => {
         match $b {
             Backend::Plotters => match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, PlottersBackend>>).inner.$call( $($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, PlottersBackend>>).inner.$call( $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, PlottersBackend>>).$call( $($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, PlottersBackend>>).$call( $($args),*),
             },
             Backend::Python =>  match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, PythonBackend>>).inner.$call($($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, PythonBackend>>).inner.$call( $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, PythonBackend>>).$call($($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, PythonBackend>>).$call( $($args),*),
             },
             Backend::Null =>  match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, NullBackend>>).inner.$call($($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, NullBackend>>).inner.$call( $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, NullBackend>>).$call($($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, NullBackend>>).$call( $($args),*),
             },
         }
     };
@@ -75,16 +75,16 @@ macro_rules! match_visualizer_plot {
     ($b:expr, $d:expr, $v: expr, $call:tt, $config:expr, $( $args:expr ),*) => {
         match $b {
             Backend::Plotters => match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, PlottersBackend>>).inner.$call(*Box::from_raw($config.0 as *mut PlotConfig), $($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, PlottersBackend>>).inner.$call(*Box::from_raw($config.0 as *mut PlotConfig), $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, PlottersBackend>>).$call(*Box::from_raw($config.0 as *mut PlotConfig), $($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, PlottersBackend>>).$call(*Box::from_raw($config.0 as *mut PlotConfig), $($args),*),
             },
             Backend::Python =>  match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, PythonBackend>>).inner.$call(*Box::from_raw($config.0 as *mut PyPlotConfig), $($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, PythonBackend>>).inner.$call(*Box::from_raw($config.0 as *mut PyPlotConfig), $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, PythonBackend>>).$call(*Box::from_raw($config.0 as *mut PyPlotConfig), $($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, PythonBackend>>).$call(*Box::from_raw($config.0 as *mut PyPlotConfig), $($args),*),
             },
             Backend::Null =>  match $d {
-                Directivity::Sphere => cast!($v.0, Box<VisualizerSync<Sphere, NullBackend>>).inner.$call(*Box::from_raw($config.0 as *mut NullPlotConfig), $($args),*),
-                Directivity::T4010A1 => cast!($v.0, Box<VisualizerSync<T4010A1, NullBackend>>).inner.$call(*Box::from_raw($config.0 as *mut NullPlotConfig), $($args),*),
+                Directivity::Sphere => cast!($v.0, Box<Visualizer<Sphere, NullBackend>>).$call(*Box::from_raw($config.0 as *mut NullPlotConfig), $($args),*),
+                Directivity::T4010A1 => cast!($v.0, Box<Visualizer<T4010A1, NullBackend>>).$call(*Box::from_raw($config.0 as *mut NullPlotConfig), $($args),*),
             },
         }
     };

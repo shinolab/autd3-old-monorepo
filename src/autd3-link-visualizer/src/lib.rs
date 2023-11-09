@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ mod gpu;
 
 mod backend;
 
-use autd3_derive::LinkSync;
+use autd3_derive::Link;
 pub use backend::*;
 
 #[cfg(feature = "plotters")]
@@ -35,7 +35,7 @@ use autd3_driver::{
     defined::{float, Complex, PI},
     error::AUTDInternalError,
     geometry::{Geometry, Vector3},
-    link::{Link, LinkBuilder},
+    link::{LinkSync, LinkSyncBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -45,7 +45,7 @@ pub use scarlet::colormap::ListedColorMap;
 use error::VisualizerError;
 
 /// Link to monitoring the status of AUTD and acoustic field
-#[derive(LinkSync)]
+#[derive(Link)]
 pub struct Visualizer<D, B>
 where
     D: Directivity,
@@ -72,12 +72,11 @@ where
     gpu_idx: Option<i32>,
 }
 
-#[async_trait::async_trait]
-impl<D: Directivity, B: Backend> LinkBuilder for VisualizerBuilder<D, B> {
+impl<D: Directivity, B: Backend> LinkSyncBuilder for VisualizerBuilder<D, B> {
     type L = Visualizer<D, B>;
 
     #[allow(unused_mut)]
-    async fn open(mut self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
+    fn open(mut self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
         #[cfg(feature = "gpu")]
         let gpu_compute = if let Some(gpu_idx) = self.gpu_idx {
             Some(gpu::FieldCompute::new(gpu_idx)?)
@@ -546,9 +545,8 @@ impl<D: Directivity, B: Backend> Visualizer<D, B> {
     }
 }
 
-#[async_trait::async_trait]
-impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+impl<D: Directivity, B: Backend> LinkSync for Visualizer<D, B> {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open {
             return Ok(());
         }
@@ -557,7 +555,7 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Ok(())
     }
 
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -569,7 +567,7 @@ impl<D: Directivity, B: Backend> Link for Visualizer<D, B> {
         Ok(true)
     }
 
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }

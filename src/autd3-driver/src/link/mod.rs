@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -94,13 +94,40 @@ pub trait LinkSync {
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Option<Duration>,
-    ) -> Result<bool, AUTDInternalError>;
+    ) -> Result<bool, AUTDInternalError> {
+        let timeout = timeout.unwrap_or(self.timeout());
+        if !self.send(tx)? {
+            return Ok(false);
+        }
+        if timeout.is_zero() {
+            return self.receive(rx);
+        }
+        self.wait_msg_processed(tx, rx, timeout)
+    }
     fn wait_msg_processed(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
         timeout: Duration,
-    ) -> Result<bool, AUTDInternalError>;
+    ) -> Result<bool, AUTDInternalError> {
+        let start = std::time::Instant::now();
+        let _ = self.receive(rx)?;
+        if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
+            return Ok(true);
+        }
+        loop {
+            if start.elapsed() > timeout {
+                return Ok(false);
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            if !self.receive(rx)? {
+                continue;
+            }
+            if tx.headers().zip(rx.iter()).all(|(h, r)| h.msg_id == r.ack) {
+                return Ok(true);
+            }
+        }
+    }
 }
 
 #[async_trait]
