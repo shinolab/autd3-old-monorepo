@@ -4,14 +4,14 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::sync::Arc;
+use std::rc::Rc;
 
 use crate::pb::*;
 
@@ -424,7 +424,7 @@ impl FromMessage<Constraint> for autd3_gain_holo::Constraint {
 impl FromMessage<Sdp> for autd3_gain_holo::SDP<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Sdp) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_alpha(msg.alpha as _)
             .with_lambda(msg.lambda as _)
             .with_repeat(msg.repeat as _)
@@ -443,7 +443,7 @@ impl FromMessage<Sdp> for autd3_gain_holo::SDP<autd3_gain_holo::NalgebraBackend>
 impl FromMessage<Evp> for autd3_gain_holo::EVP<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Evp) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_gamma(msg.gamma as _)
             .with_constraint(autd3_gain_holo::Constraint::from_msg(
                 msg.constraint.as_ref().unwrap(),
@@ -460,7 +460,7 @@ impl FromMessage<Evp> for autd3_gain_holo::EVP<autd3_gain_holo::NalgebraBackend>
 impl FromMessage<Naive> for autd3_gain_holo::Naive<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Naive) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_constraint(autd3_gain_holo::Constraint::from_msg(
                 msg.constraint.as_ref().unwrap(),
             ))
@@ -476,7 +476,7 @@ impl FromMessage<Naive> for autd3_gain_holo::Naive<autd3_gain_holo::NalgebraBack
 impl FromMessage<Gs> for autd3_gain_holo::GS<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Gs) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_repeat(msg.repeat as _)
             .with_constraint(autd3_gain_holo::Constraint::from_msg(
                 msg.constraint.as_ref().unwrap(),
@@ -493,7 +493,7 @@ impl FromMessage<Gs> for autd3_gain_holo::GS<autd3_gain_holo::NalgebraBackend> {
 impl FromMessage<Gspat> for autd3_gain_holo::GSPAT<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Gspat) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_repeat(msg.repeat as _)
             .with_constraint(autd3_gain_holo::Constraint::from_msg(
                 msg.constraint.as_ref().unwrap(),
@@ -510,7 +510,7 @@ impl FromMessage<Gspat> for autd3_gain_holo::GSPAT<autd3_gain_holo::NalgebraBack
 impl FromMessage<Lm> for autd3_gain_holo::LM<autd3_gain_holo::NalgebraBackend> {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &Lm) -> Self {
-        Self::new(Arc::new(autd3_gain_holo::NalgebraBackend::default()))
+        Self::new(Rc::new(autd3_gain_holo::NalgebraBackend::default()))
             .with_eps_1(msg.eps_1 as _)
             .with_eps_2(msg.eps_2 as _)
             .with_tau(msg.tau as _)

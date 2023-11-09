@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 27/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,10 +32,7 @@ pub unsafe extern "C" fn AUTDAdapterPointer() -> ConstPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDAdapterGetSize(adapters: ConstPtr) -> u32 {
-    (adapters as *const EthernetAdapters)
-        .as_ref()
-        .unwrap()
-        .len() as u32
+    cast!(adapters, EthernetAdapters).len() as u32
 }
 
 #[no_mangle]
@@ -45,7 +42,8 @@ pub unsafe extern "C" fn AUTDAdapterGetAdapter(
     desc: *mut c_char,
     name: *mut c_char,
 ) {
-    let adapter = &(adapters as *const EthernetAdapters).as_ref().unwrap()[idx as usize];
+    let adapter = &cast!(adapters, EthernetAdapters)[idx as usize];
+
     let name_ = std::ffi::CString::new(adapter.name().to_string()).unwrap();
     libc::strcpy(name, name_.as_ptr());
     let desc_ = std::ffi::CString::new(adapter.desc().to_string()).unwrap();
@@ -215,7 +213,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMWithTimeout(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMIntoBuilder(soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(*Box::from_raw(soem.0 as *mut SOEMBuilder))
+    LinkBuilderPtr::new(Box::from_raw(soem.0 as *mut SOEMBuilder).blocking())
 }
 
 #[repr(C)]
@@ -262,5 +260,5 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(
 pub unsafe extern "C" fn AUTDLinkRemoteSOEMIntoBuilder(
     soem: LinkRemoteSOEMBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder))
+    LinkBuilderPtr::new((*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder)).blocking())
 }

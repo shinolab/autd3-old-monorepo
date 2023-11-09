@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }
-autd3-link-visualizer = { path = "../../src/autd3-link-visualizer", features = ["plotters", "python", "gpu"] }
+autd3-link-visualizer = { path = "../../src/autd3-link-visualizer", features = ["plotters", "python", "gpu", "sync"] }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }

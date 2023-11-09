@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,12 +19,9 @@ pub mod link;
 pub mod modulation;
 pub mod stm;
 
-use async_ffi::{FfiFuture, FutureExt};
-
 use autd3capi_def::{
-    common::{driver::fpga::FPGAInfo, *},
-    ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
-    ResultPtrWrapper, Resulti32Wrapper, RuntimePtr,
+    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, GroupKVMapPtr, LinkBuilderPtr,
+    AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -90,18 +87,15 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerOpenWith(
-    runtime: RuntimePtr,
     builder: ControllerBuilderPtr,
     link_builder: LinkBuilderPtr,
     err: *mut c_char,
 ) -> ControllerPtr {
-    let runtime = cast!(runtime, tokio::runtime::Runtime);
-    let link_builder: Box<Box<dyn DynamicLinkBuilder>> =
-        Box::from_raw(link_builder.0 as *mut Box<dyn DynamicLinkBuilder>);
-    let cnt_builder =
-        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder);
+    let link_builder: Box<DynamicLinkBuilder> =
+        Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
     let cnt = try_or_return!(
-        runtime.block_on(cnt_builder.open_with(*link_builder)),
+        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder)
+            .open_with(*link_builder),
         err,
         ControllerPtr(NULL)
     );
@@ -110,47 +104,27 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerCloseAsync(
-    cnt: ControllerPtr,
-) -> FfiFuture<Resulti32Wrapper> {
-    let cnt = cast_mut!(cnt, Cnt);
-    async move { cnt.close().await.into() }.into_ffi()
+pub unsafe extern "C" fn AUTDControllerClose(cnt: ControllerPtr, err: *mut c_char) -> bool {
+    try_or_return!(cast_mut!(cnt.0, Cnt).close(), err, false);
+    true
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDControllerDelete(cnt: ControllerPtr) {
-    let _ = Box::from_raw(cnt.0 as *mut Cnt);
+    let mut cnt = Box::from_raw(cnt.0 as *mut Cnt);
+    let _ = cnt.close();
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerFPGAInfoAsync(
+pub unsafe extern "C" fn AUTDControllerFPGAInfo(
     cnt: ControllerPtr,
-) -> FfiFuture<ResultPtrWrapper> {
-    let cnt = cast_mut!(cnt, Cnt);
-    async move {
-        cnt.fpga_info()
-            .await
-            .map(|info| Box::into_raw(Box::new(info)) as *const _)
-            .into()
-    }
-    .into_ffi()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDControllerFPGAInfoAwaitResult(
-    runtime: RuntimePtr,
-    future: FfiFuture<ResultPtrWrapper>,
     out: *mut u8,
-) -> ResultPtrWrapper {
-    let runtime = cast!(runtime, tokio::runtime::Runtime);
-    let res = runtime.block_on(future);
-    if !res.result.is_null() {
-        let info = *Box::from_raw(res.result as *mut Vec<FPGAInfo>);
-        std::ptr::copy_nonoverlapping(info.as_ptr() as _, out, info.len());
-    }
-    res
+    err: *mut c_char,
+) -> bool {
+    let fpga_info = try_or_return!(cast_mut!(cnt.0, Cnt).fpga_info(), err, false);
+    std::ptr::copy_nonoverlapping(fpga_info.as_ptr() as _, out, fpga_info.len());
+    true
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -159,47 +133,34 @@ pub struct FirmwareInfoListPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerAsync(
+pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointer(
     cnt: ControllerPtr,
-) -> FfiFuture<ResultPtrWrapper> {
-    let cnt = cast_mut!(cnt, Cnt);
-    async move {
-        cnt.firmware_infos()
-            .await
-            .map(|firmware_infos| Box::into_raw(Box::new(firmware_infos)) as ConstPtr)
-            .into()
-    }
-    .into_ffi()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerAwaitResult(
-    runtime: RuntimePtr,
-    future: FfiFuture<ResultPtrWrapper>,
-) -> ResultPtrWrapper {
-    let runtime = cast!(runtime, tokio::runtime::Runtime);
-    runtime.block_on(future)
+    err: *mut c_char,
+) -> FirmwareInfoListPtr {
+    let firmware_infos = try_or_return!(
+        cast_mut!(cnt.0, Cnt).firmware_infos(),
+        err,
+        FirmwareInfoListPtr(NULL)
+    );
+    FirmwareInfoListPtr(Box::into_raw(Box::new(firmware_infos)) as _)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDControllerFirmwareInfoGet(
-    p_info_list: ResultPtrWrapper,
+    p_info_list: FirmwareInfoListPtr,
     idx: u32,
     info: *mut c_char,
 ) {
-    let firm_info = &(p_info_list.result as *mut Vec<FirmwareInfo>)
-        .as_ref()
-        .unwrap()[idx as usize];
+    let firm_info = &cast_mut!(p_info_list.0, Vec<FirmwareInfo>)[idx as usize];
     let info_str = std::ffi::CString::new(firm_info.to_string()).unwrap();
     libc::strcpy(info, info_str.as_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(
-    p_info_list: ResultPtrWrapper,
+    p_info_list: FirmwareInfoListPtr,
 ) {
-    let _ = Box::from_raw(p_info_list.result as *mut Vec<FirmwareInfo>);
+    let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
 }
 
 #[no_mangle]
@@ -258,52 +219,73 @@ pub unsafe extern "C" fn AUTDDatagramSilencer(step: u16) -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerSendAsync(
+pub unsafe extern "C" fn AUTDControllerSend(
     cnt: ControllerPtr,
     d1: DatagramPtr,
     d2: DatagramPtr,
     timeout_ns: i64,
-) -> FfiFuture<Resulti32Wrapper> {
+    err: *mut c_char,
+) -> i32 {
     let timeout = if timeout_ns < 0 {
         None
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let cnt = cast_mut!(cnt, Cnt);
-    if !d1.0.is_null() && !d2.0.is_null() {
+    let res = if !d1.0.is_null() && !d2.0.is_null() {
         let d1 = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
         let d2 = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
-        let pack = DynamicDatagramPack2 { d1, d2, timeout };
-        async move { cnt.send(pack).await.into() }.into_ffi()
+        try_or_return!(
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack2 { d1, d2, timeout }),
+            err,
+            AUTD3_ERR
+        )
     } else if !d1.0.is_null() {
         let d = Box::from_raw(d1.0 as *mut Box<dyn DynamicDatagram>);
-        let pack = DynamicDatagramPack { d, timeout };
-        async move { cnt.send(pack).await.into() }.into_ffi()
+        try_or_return!(
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
+            err,
+            AUTD3_ERR
+        )
     } else if !d2.0.is_null() {
         let d = Box::from_raw(d2.0 as *mut Box<dyn DynamicDatagram>);
-        let pack = DynamicDatagramPack { d, timeout };
-        async move { cnt.send(pack).await.into() }.into_ffi()
+        try_or_return!(
+            cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
+            err,
+            AUTD3_ERR
+        )
     } else {
-        async move { Result::<bool, AUTDInternalError>::Ok(false).into() }.into_ffi()
+        return AUTD3_FALSE;
+    };
+    if res {
+        AUTD3_TRUE
+    } else {
+        AUTD3_FALSE
     }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerSendSpecialAsync(
+pub unsafe extern "C" fn AUTDControllerSendSpecial(
     cnt: ControllerPtr,
     special: DatagramSpecialPtr,
     timeout_ns: i64,
-) -> FfiFuture<Resulti32Wrapper> {
+    err: *mut c_char,
+) -> i32 {
     let timeout = if timeout_ns < 0 {
         None
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    let cnt = cast_mut!(cnt, Cnt);
     let d = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
-    let pack = DynamicDatagramPack { d, timeout };
-    async move { cnt.send(pack).await.into() }.into_ffi()
+    if try_or_return!(
+        cast_mut!(cnt.0, Cnt).send(DynamicDatagramPack { d, timeout }),
+        err,
+        AUTD3_ERR
+    ) {
+        AUTD3_TRUE
+    } else {
+        AUTD3_FALSE
+    }
 }
 
 type K = i32;
@@ -342,7 +324,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         let (op1, op2) = try_or_return!(
             DynamicDatagramPack2 { d1, d2, timeout }.operation(),
             err,
-            GroupKVMapPtr(NULL)
+            GroupKVMapPtr(std::ptr::null())
         );
         map.insert(key, (op1, op2, timeout));
     } else if !d1.0.is_null() {
@@ -350,7 +332,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         let (op1, op2) = try_or_return!(
             DynamicDatagramPack { d, timeout }.operation(),
             err,
-            GroupKVMapPtr(NULL)
+            GroupKVMapPtr(std::ptr::null())
         );
         map.insert(key, (op1, op2, timeout));
     } else if !d2.0.is_null() {
@@ -358,7 +340,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         let (op1, op2) = try_or_return!(
             DynamicDatagramPack { d, timeout }.operation(),
             err,
-            GroupKVMapPtr(NULL)
+            GroupKVMapPtr(std::ptr::null())
         );
         map.insert(key, (op1, op2, timeout));
     }
@@ -385,7 +367,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
     let (op1, op2) = try_or_return!(
         DynamicDatagramPack { d, timeout }.operation(),
         err,
-        GroupKVMapPtr(NULL)
+        GroupKVMapPtr(std::ptr::null())
     );
     map.insert(key, (op1, op2, timeout));
 
@@ -394,33 +376,35 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerGroupAsync(
+pub unsafe extern "C" fn AUTDControllerGroup(
     cnt: ControllerPtr,
     map: *const i32,
     kv_map: GroupKVMapPtr,
-) -> FfiFuture<Resulti32Wrapper> {
+    err: *mut c_char,
+) -> i32 {
     let kv_map = Box::from_raw(kv_map.0 as *mut M);
-    let cnt = cast_mut!(cnt, Cnt);
-    let map = cnt
-        .geometry
-        .iter()
-        .map(|dev| map.add(dev.idx()).read())
-        .collect::<Vec<_>>();
-    let group = kv_map.into_iter().try_fold(
-        cnt.group(move |dev| {
-            let k = map[dev.idx()];
-            if k < 0 {
-                None
-            } else {
-                Some(k)
-            }
-        }),
-        |acc, (k, (op1, op2, timeout))| acc.set_boxed_op(k, op1, op2, timeout),
+    try_or_return!(
+        try_or_return!(
+            kv_map.into_iter().try_fold(
+                cast_mut!(cnt.0, Cnt).group(|dev| {
+                    let k = map.add(dev.idx()).read();
+                    if k < 0 {
+                        None
+                    } else {
+                        Some(k)
+                    }
+                }),
+                |acc, (k, (op1, op2, timeout))| { acc.set_boxed_op(k, op1, op2, timeout) }
+            ),
+            err,
+            AUTD3_ERR
+        )
+        .send(),
+        err,
+        AUTD3_ERR
     );
-    match group {
-        Ok(group) => async move { group.send().await.into() }.into_ffi(),
-        Err(e) => async move { Result::<(), AUTDInternalError>::Err(e).into() }.into_ffi(),
-    }
+
+    AUTD3_TRUE
 }
 
 #[cfg(test)]
@@ -451,15 +435,15 @@ mod tests {
     #[test]
     fn drive_test() {
         assert_eq!(
-            std::mem::size_of::<autd3capi_def::common::driver::common::Drive>(),
+            std::mem::size_of::<autd3_driver::common::Drive>(),
             std::mem::size_of::<Drive>()
         );
         assert_eq!(
-            memoffset::offset_of!(autd3capi_def::common::driver::common::Drive, phase),
+            memoffset::offset_of!(autd3_driver::common::Drive, phase),
             memoffset::offset_of!(Drive, phase)
         );
         assert_eq!(
-            memoffset::offset_of!(autd3capi_def::common::driver::common::Drive, amp),
+            memoffset::offset_of!(autd3_driver::common::Drive, amp),
             memoffset::offset_of!(Drive, amp)
         );
     }
@@ -490,19 +474,19 @@ mod tests {
 
             let s = AUTDDatagramSynchronize();
             assert_eq!(
-                AUTDControllerSend(cnt, s, DatagramPtr(NULL()), -1, err.as_mut_ptr()),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramClear();
             assert_eq!(
-                AUTDControllerSend(cnt, s, DatagramPtr(NULL()), -1, err.as_mut_ptr()),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramUpdateFlags();
             assert_eq!(
-                AUTDControllerSend(cnt, s, DatagramPtr(NULL()), -1, err.as_mut_ptr()),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
@@ -514,13 +498,13 @@ mod tests {
 
             let s = AUTDDatagramConfigureModDelay();
             assert_eq!(
-                AUTDControllerSend(cnt, s, DatagramPtr(NULL()), -1, err.as_mut_ptr()),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr()),
                 AUTD3_TRUE
             );
 
             let s = AUTDDatagramSilencer(10);
             assert_eq!(
-                AUTDControllerSend(cnt, s, DatagramPtr(NULL()), -1, err.as_mut_ptr(),),
+                AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1, err.as_mut_ptr(),),
                 AUTD3_TRUE
             );
 

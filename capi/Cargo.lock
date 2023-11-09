@@ -85,12 +85,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c07dab4369547dbe5114677b33fbbf724971019f3818172d59a97a61c774ffd"
 
 [[package]]
-name = "async-ffi"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4de21c0feef7e5a556e51af767c953f0501f7f300ba785cc99c47bdc8081a50"
-
-[[package]]
 name = "async-stream"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -154,6 +148,7 @@ dependencies = [
  "bitvec",
  "num",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -188,6 +183,7 @@ dependencies = [
  "libc",
  "nalgebra",
  "thiserror",
+ "tokio",
  "windows",
 ]
 
@@ -220,6 +216,7 @@ dependencies = [
  "autd3-driver",
  "autd3-protobuf",
  "thiserror",
+ "tokio",
  "tonic",
 ]
 
@@ -236,6 +233,7 @@ dependencies = [
  "glob",
  "thiserror",
  "time",
+ "tokio",
  "tonic",
  "windows",
 ]
@@ -251,6 +249,7 @@ dependencies = [
  "itertools",
  "libloading 0.8.1",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -268,6 +267,7 @@ dependencies = [
  "pyo3",
  "scarlet",
  "thiserror",
+ "tokio",
  "vulkano",
  "vulkano-shaders",
  "which 5.0.0",
@@ -303,10 +303,9 @@ name = "autd3capi"
 version = "17.0.0"
 dependencies = [
  "assert_approx_eq",
- "async-ffi",
+ "autd3-driver",
  "autd3capi-def",
  "memoffset",
- "tokio",
  "wrapper-generator",
 ]
 
@@ -324,7 +323,6 @@ dependencies = [
 name = "autd3capi-common"
 version = "17.0.0"
 dependencies = [
- "async-trait",
  "autd3",
  "autd3-derive",
  "autd3-driver",
@@ -336,9 +334,7 @@ dependencies = [
 name = "autd3capi-def"
 version = "17.0.0"
 dependencies = [
- "async-ffi",
  "autd3capi-common",
- "tokio",
  "wrapper-generator",
 ]
 
@@ -354,7 +350,6 @@ dependencies = [
 name = "autd3capi-link-simulator"
 version = "17.0.0"
 dependencies = [
- "async-ffi",
  "autd3-link-simulator",
  "autd3capi-def",
  "tokio",
@@ -2457,6 +2452,7 @@ dependencies = [
  "num_cpus",
  "pin-project-lite",
  "socket2 0.5.5",
+ "tokio-macros",
  "windows-sys",
 ]
 
@@ -2468,6 +2464,17 @@ checksum = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf"
 dependencies = [
  "pin-project-lite",
  "tokio",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.38",
 ]
 
 [[package]]

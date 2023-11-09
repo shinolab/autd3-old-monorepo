@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 
 mod cusolver;
 
-use std::{ffi::CStr, fmt::Display, sync::Arc};
+use std::{ffi::CStr, fmt::Display, rc::Rc};
 
 use autd3_driver::{datagram::GainFilter, defined::float, geometry::Geometry};
 use autd3_gain_holo::{HoloError, LinAlgBackend, MatrixX, MatrixXc, VectorX, VectorXc};
@@ -329,9 +329,6 @@ pub struct CUDABackend {
     handle_s: cusolver::cusolverDnHandle_t,
 }
 
-unsafe impl Send for CUDABackend {}
-unsafe impl Sync for CUDABackend {}
-
 impl Drop for CUDABackend {
     fn drop(&mut self) {
         unsafe {
@@ -347,7 +344,7 @@ impl LinAlgBackend for CUDABackend {
     type VectorXc = CuVectorXc;
     type VectorX = CuVectorX;
 
-    fn new() -> Result<Arc<Self>, HoloError> {
+    fn new() -> Result<Rc<Self>, HoloError> {
         let mut handle: cuda_sys::cublas::cublasHandle_t = std::ptr::null_mut();
         unsafe {
             cublas_call!(cuda_sys::cublas::cublasCreate_v2(&mut handle as _));
@@ -356,7 +353,7 @@ impl LinAlgBackend for CUDABackend {
         let mut handle_s: cusolver::cusolverDnHandle_t = std::ptr::null_mut();
         unsafe { cusolver_call!(cusolver::cusolverDnCreate(&mut handle_s as _)) }
 
-        Ok(Arc::new(Self { handle, handle_s }))
+        Ok(Rc::new(Self { handle, handle_s }))
     }
 
     fn generate_propagation_matrix(

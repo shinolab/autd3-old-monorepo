@@ -4,14 +4,14 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
@@ -30,13 +30,13 @@ pub struct Naive<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     constraint: Constraint,
-    backend: Arc<B>,
+    backend: Rc<B>,
 }
 
 impl_holo!(B, Naive<B>);
 
 impl<B: LinAlgBackend + 'static> Naive<B> {
-    pub fn new(backend: Arc<B>) -> Self {
+    pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
             amps: vec![],

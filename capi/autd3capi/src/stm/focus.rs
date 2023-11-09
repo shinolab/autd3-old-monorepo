@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,8 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{
-    common::{driver::datagram::STMProps, *},
-    DatagramPtr, STMPropsPtr,
-};
+use autd3_driver::datagram::STMProps;
+use autd3capi_def::{common::*, DatagramPtr, STMPropsPtr};
 
 #[no_mangle]
 #[must_use]

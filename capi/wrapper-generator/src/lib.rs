@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -142,9 +142,9 @@ pub fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
     };
 
     let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
-    let out_file = Path::new(path.as_ref()).join(format!("{}.cs", to_class_name(crate_name)));
+    let out_file = Path::new(path.as_ref()).join(format!("{}.cs", to_class_name(&crate_name)));
     let dll_name = crate_name.replace('-', "_");
-    let class_name = to_class_name(crate_name);
+    let class_name = to_class_name(&crate_name);
 
     glob::glob(&format!(
         "{}/**/*.rs",

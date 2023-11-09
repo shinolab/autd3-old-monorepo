@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ impl<G: Gain> IntoTransform<G> for G {
     }
 }
 
-impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + Send + Sync + 'static>
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static>
     autd3_driver::datagram::Datagram for Transform<G, F>
 where
     autd3_driver::operation::GainOp<Self>: autd3_driver::operation::Operation,
@@ -53,7 +53,7 @@ where
     }
 }
 
-impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + Send + Sync + 'static>
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static>
     autd3_driver::datagram::GainAsAny for Transform<G, F>
 {
     fn as_any(&self) -> &dyn std::any::Any {
@@ -61,7 +61,7 @@ impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + Send + Sy
     }
 }
 
-impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + Send + Sync + 'static> Gain
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static> Gain
     for Transform<G, F>
 {
     fn calc(

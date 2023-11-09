@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ pub trait GainAsAny {
 }
 
 /// Gain controls amplitude and phase of each transducer.
-pub trait Gain: GainAsAny + Sync + Send {
+pub trait Gain: GainAsAny {
     fn calc(
         &self,
         geometry: &Geometry,
