@@ -31,7 +31,7 @@ class Burst(Modulation):
 
 @pytest.mark.asyncio()
 async def test_modulation():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = Burst()
 

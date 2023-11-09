@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_square():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Square(200).with_low(0.2).with_high(0.5).with_duty(0.1))
 

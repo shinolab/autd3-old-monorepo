@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_focus():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Focus(autd.geometry.center).with_amp(0.5))
 

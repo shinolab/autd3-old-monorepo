@@ -18,7 +18,7 @@ from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import (
     NativeMethods as Base,
 )
-from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, RuntimePtr, TimerStrategy
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, TimerStrategy
 from pyautd3.native_methods.autd3capi_link_soem import LinkRemoteSOEMBuilderPtr, LinkSOEMBuilderPtr, SyncMode
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
 
@@ -157,7 +157,7 @@ class SOEM(Link):
         def _link_builder_ptr(self: "SOEM._Builder") -> LinkBuilderPtr:
             return LinkSOEM().link_soem_into_builder(self._builder)
 
-        def _resolve_link(self: "SOEM._Builder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> "SOEM":
+        def _resolve_link(self: "SOEM._Builder", _ptr: ControllerPtr) -> "SOEM":
             return SOEM(Base().link_get(_ptr))
 
     @staticmethod
@@ -212,7 +212,7 @@ class RemoteSOEM(Link):
         def _link_builder_ptr(self: "RemoteSOEM._Builder") -> LinkBuilderPtr:
             return LinkSOEM().link_remote_soem_into_builder(self._builder)
 
-        def _resolve_link(self: "RemoteSOEM._Builder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> "RemoteSOEM":
+        def _resolve_link(self: "RemoteSOEM._Builder", _ptr: ControllerPtr) -> "RemoteSOEM":
             return RemoteSOEM(Base().link_get(_ptr))
 
     def __init__(self: "RemoteSOEM", ptr: LinkPtr) -> None:

@@ -43,7 +43,7 @@ class Uniform(Gain):
 
 @pytest.mark.asyncio()
 async def test_gain():
-    autd = create_controller()
+    autd = await create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
     assert await autd.send(Uniform(0.5, np.pi, check))
@@ -56,7 +56,7 @@ async def test_gain():
 
 @pytest.mark.asyncio()
 async def test_gain_check_only_for_enabled():
-    autd = create_controller()
+    autd = await create_controller()
     autd.geometry[0].enable = False
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)

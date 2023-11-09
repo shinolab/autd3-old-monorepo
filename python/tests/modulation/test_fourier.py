@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_fourier():
-    autd = create_controller()
+    autd = await create_controller()
 
     m = Fourier(Sine(50)).add_components_from_iter(Sine(x) for x in [100, 150]) + Sine(200)
     assert await autd.send(m)

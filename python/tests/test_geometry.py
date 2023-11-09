@@ -30,13 +30,15 @@ def test_autd3_props():
     assert AUTD3.fpga_clk_freq() == 20.48e6
 
 
-def test_geometry_num_devices():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_geometry_num_devices():
+    autd = await create_controller()
     assert autd.geometry.num_devices == 2
 
 
-def test_geometry_center():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_geometry_center():
+    autd = await create_controller()
     center = autd.geometry.center
     assert len(center) == 3
     assert center[0] == 86.62522088353406
@@ -44,51 +46,58 @@ def test_geometry_center():
     assert center[2] == 0.0
 
 
-def test_device_idx():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_idx():
+    autd = await create_controller()
     assert autd.geometry[0].idx == 0
     assert autd.geometry[1].idx == 1
 
 
-def test_device_sound_speed():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_sound_speed():
+    autd = await create_controller()
     for dev in autd.geometry:
         assert dev.sound_speed == 340e3
         dev.sound_speed = 350e3
         assert dev.sound_speed == 350e3
 
 
-def test_device_set_sound_speed_from_temp():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_set_sound_speed_from_temp():
+    autd = await create_controller()
     for dev in autd.geometry:
         dev.set_sound_speed_from_temp(15)
         assert dev.sound_speed == 340.2952640537549e3
 
 
-def test_device_attenuation():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_attenuation():
+    autd = await create_controller()
     for dev in autd.geometry:
         assert dev.attenuation == 0.0
         dev.attenuation = 1.0
         assert dev.attenuation == 1.0
 
 
-def test_device_enable():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_enable():
+    autd = await create_controller()
     for dev in autd.geometry:
         assert dev.enable
         dev.enable = False
         assert not dev.enable
 
 
-def test_device_num_transducers():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_num_transducers():
+    autd = await create_controller()
     for dev in autd.geometry:
         assert dev.num_transducers == 249
 
 
-def test_device_center():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_center():
+    autd = await create_controller()
     for dev in autd.geometry:
         center = dev.center
         assert len(center) == 3
@@ -99,7 +108,7 @@ def test_device_center():
 
 @pytest.mark.asyncio()
 async def test_device_force_fan():
-    autd = create_controller()
+    autd = await create_controller()
     for dev in autd.geometry:
         assert autd.link.fpga_flags(dev.idx) == 0
 
@@ -122,7 +131,7 @@ async def test_device_force_fan():
 
 @pytest.mark.asyncio()
 async def test_device_reads_fpga_info():
-    autd = create_controller()
+    autd = await create_controller()
     for dev in autd.geometry:
         assert autd.link.fpga_flags(dev.idx) == 0
 
@@ -143,8 +152,9 @@ async def test_device_reads_fpga_info():
     assert autd.link.fpga_flags(1) == 2
 
 
-def test_device_translate():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_translate():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         original_pos = [tr.position for tr in dev]
@@ -154,8 +164,9 @@ def test_device_translate():
             assert np.allclose(tr.position, original_pos[tr.local_idx] + t)
 
 
-def test_device_rotate():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_rotate():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         r = [0.70710678, 0.0, 0.0, 0.70710678]
@@ -164,8 +175,9 @@ def test_device_rotate():
             assert np.allclose(tr.rotation, r)
 
 
-def test_device_affine():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_device_affine():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         original_pos = [tr.position for tr in dev]
@@ -179,16 +191,18 @@ def test_device_affine():
             assert np.allclose(tr.rotation, r)
 
 
-def test_transducer_local_idx():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_local_idx():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for i, tr in enumerate(dev):
             assert tr.local_idx == i
 
 
-def test_transducer_position():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_position():
+    autd = await create_controller()
 
     assert np.allclose(autd.geometry[0][0].position, [0.0, 0.0, 0.0])
     assert np.allclose(
@@ -203,40 +217,45 @@ def test_transducer_position():
     )
 
 
-def test_transducer_rotation():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_rotation():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
             assert np.allclose(tr.rotation, [1.0, 0.0, 0.0, 0.0])
 
 
-def test_transducer_x_direction():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_x_direction():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
             assert np.allclose(tr.x_direction, [1.0, 0.0, 0.0])
 
 
-def test_transducer_y_direction():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_y_direction():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
             assert np.allclose(tr.y_direction, [0.0, 1.0, 0.0])
 
 
-def test_transducer_z_direction():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_z_direction():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
             assert np.allclose(tr.z_direction, [0.0, 0.0, 1.0])
 
 
-def test_transducer_mod_delay():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_mod_delay():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
@@ -245,8 +264,9 @@ def test_transducer_mod_delay():
             assert tr.mod_delay == 1
 
 
-def test_transducer_amp_filter():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_amp_filter():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
@@ -255,8 +275,9 @@ def test_transducer_amp_filter():
             assert tr.amp_filter == -1
 
 
-def test_transducer_phase_filter():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_phase_filter():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
@@ -265,16 +286,18 @@ def test_transducer_phase_filter():
             assert tr.phase_filter == -1
 
 
-def test_transducer_wavelength():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_wavelength():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:
             assert tr.wavelength(340e3) == 340e3 / 40e3
 
 
-def test_transducer_wavenum():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_transducer_wavenum():
+    autd = await create_controller()
 
     for dev in autd.geometry:
         for tr in dev:

@@ -19,7 +19,7 @@ from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import (
     NativeMethods as Base,
 )
-from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, RuntimePtr
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_twincat import LinkRemoteTwinCATBuilderPtr, LinkTwinCATBuilderPtr
 from pyautd3.native_methods.autd3capi_link_twincat import NativeMethods as LinkTwinCAT
 
@@ -46,7 +46,7 @@ class TwinCAT(Link):
         def _link_builder_ptr(self: "TwinCAT._Builder") -> LinkBuilderPtr:
             return LinkTwinCAT().link_twin_cat_into_builder(self._builder)
 
-        def _resolve_link(self: "TwinCAT._Builder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> "TwinCAT":
+        def _resolve_link(self: "TwinCAT._Builder", _ptr: ControllerPtr) -> "TwinCAT":
             return TwinCAT(Base().link_get(_ptr))
 
     def __init__(self: "TwinCAT", ptr: LinkPtr) -> None:
@@ -103,7 +103,7 @@ class RemoteTwinCAT(Link):
         def _link_builder_ptr(self: "RemoteTwinCAT._Builder") -> LinkBuilderPtr:
             return LinkTwinCAT().link_remote_twin_cat_into_builder(self._builder)
 
-        def _resolve_link(self: "RemoteTwinCAT._Builder", _ptr: ControllerPtr, _runtime: RuntimePtr) -> "RemoteTwinCAT":
+        def _resolve_link(self: "RemoteTwinCAT._Builder", _ptr: ControllerPtr) -> "RemoteTwinCAT":
             return RemoteTwinCAT(Base().link_get(_ptr))
 
     def __init__(self: "RemoteTwinCAT", ptr: LinkPtr) -> None:

@@ -21,7 +21,7 @@ from pyautd3.autd_error import AUTDError, InvalidPlotConfigError
 from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr, RuntimePtr
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_visualizer import (
     Backend,
     CMap,
@@ -333,7 +333,7 @@ class Visualizer(Link):
                                 self._gpu_idx if self._gpu_idx is not None else 0,
                             )
 
-        def _resolve_link(self: "Visualizer._Builder", ptr: ControllerPtr, _runtime: RuntimePtr) -> "Visualizer":
+        def _resolve_link(self: "Visualizer._Builder", ptr: ControllerPtr) -> "Visualizer":
             return Visualizer(Base().link_get(ptr), self._backend, self._directivity)
 
         def with_gpu(self: "Visualizer._Builder", gpu_idx: int) -> "Visualizer._Builder":

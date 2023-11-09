@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_constraint():
-    autd = create_controller()
+    autd = await create_controller()
 
     backend = NalgebraBackend()
     g = (

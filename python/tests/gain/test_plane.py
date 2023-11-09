@@ -21,7 +21,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_plane():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Plane([0, 0, 1]).with_amp(0.5))
 

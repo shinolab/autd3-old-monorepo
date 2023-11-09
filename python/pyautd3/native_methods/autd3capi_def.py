@@ -4,10 +4,6 @@ import ctypes
 import os
 from enum import IntEnum
 
-class FfiFuture(ctypes.Structure):
-    _fields_ = [("_buf", ctypes.c_byte * 24)]
-
-
 class GainSTMMode(IntEnum):
     PhaseDutyFull = 0
     PhaseFull = 1
@@ -26,10 +22,6 @@ class TimerStrategy(IntEnum):
     @classmethod
     def from_param(cls, obj):
         return int(obj)
-
-
-class RuntimePtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class ControllerPtr(ctypes.Structure):
@@ -96,14 +88,6 @@ class GroupKVMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class Resulti32Wrapper(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_int32), ("err", ctypes.c_char_p)]
-
-
-class ResultPtrWrapper(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_void_p), ("err", ctypes.c_char_p)]
-
-
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14
@@ -115,54 +99,3 @@ ULTRASOUND_FREQUENCY: float = 40000.0
 AUTD3_ERR: int = -1
 AUTD3_TRUE: int = 1
 AUTD3_FALSE: int = 0
-
-
-class Singleton(type):
-    _instances = {}  # type: ignore
-    _lock = threading.Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            with cls._lock:
-                if cls not in cls._instances:
-                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class NativeMethods(metaclass=Singleton):
-
-    def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
-        try:
-            self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_def{bin_ext}'))
-        except Exception:
-            return
-
-        self.dll.AUTDCreateRuntime.argtypes = [] 
-        self.dll.AUTDCreateRuntime.restype = RuntimePtr
-
-        self.dll.AUTDFreeRuntime.argtypes = [RuntimePtr]  # type: ignore 
-        self.dll.AUTDFreeRuntime.restype = None
-
-        self.dll.AUTDAwaitResulti32.argtypes = [RuntimePtr, FfiFuture]  # type: ignore 
-        self.dll.AUTDAwaitResulti32.restype = Resulti32Wrapper
-
-        self.dll.AUTDGetErrMsgi32.argtypes = [Resulti32Wrapper, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDGetErrMsgi32.restype = None
-
-        self.dll.AUTDGetErrMsgPtr.argtypes = [ResultPtrWrapper, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDGetErrMsgPtr.restype = None
-
-    def create_runtime(self) -> RuntimePtr:
-        return self.dll.AUTDCreateRuntime()
-
-    def free_runtime(self, runtime: RuntimePtr) -> None:
-        return self.dll.AUTDFreeRuntime(runtime)
-
-    def await_resulti_32(self, runtime: RuntimePtr, future: FfiFuture) -> Resulti32Wrapper:
-        return self.dll.AUTDAwaitResulti32(runtime, future)
-
-    def get_err_msgi_32(self, result: Resulti32Wrapper, msg: ctypes.Array[ctypes.c_char] | None) -> None:
-        return self.dll.AUTDGetErrMsgi32(result, msg)
-
-    def get_err_msg_ptr(self, result: ResultPtrWrapper, msg: ctypes.Array[ctypes.c_char] | None) -> None:
-        return self.dll.AUTDGetErrMsgPtr(result, msg)

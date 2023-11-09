@@ -24,7 +24,7 @@ from tests.test_autd import create_controller
 
 @pytest.mark.asyncio()
 async def test_wav():
-    autd = create_controller()
+    autd = await create_controller()
 
     assert await autd.send(Wav(Path(__file__).parent / "sin150.wav"))
 

@@ -20,8 +20,7 @@ from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr, Resulti32Wrapper, RuntimePtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_simulator import (
     LinkBuilderPtr,
     LinkSimulatorBuilderPtr,
@@ -35,7 +34,6 @@ class Simulator(Link):
     """Link for Simulator."""
 
     _ptr: LinkPtr
-    _runtime: RuntimePtr
 
     class _Builder(LinkBuilder):
         _builder: LinkSimulatorBuilderPtr
@@ -69,12 +67,11 @@ class Simulator(Link):
         def _link_builder_ptr(self: "Simulator._Builder") -> LinkBuilderPtr:
             return LinkSimulator().link_simulator_into_builder(self._builder)
 
-        def _resolve_link(self: "Simulator._Builder", ptr: ControllerPtr, runtime: RuntimePtr) -> "Simulator":
-            return Simulator(Base().link_get(ptr), runtime)
+        def _resolve_link(self: "Simulator._Builder", ptr: ControllerPtr) -> "Simulator":
+            return Simulator(Base().link_get(ptr))
 
-    def __init__(self: "Simulator", ptr: LinkPtr, runtime: RuntimePtr) -> None:
+    def __init__(self: "Simulator", ptr: LinkPtr) -> None:
         super().__init__(ptr)
-        self._runtime = runtime
 
     @staticmethod
     def builder(port: int) -> _Builder:
@@ -84,12 +81,17 @@ class Simulator(Link):
     async def update_geometry(self: "Simulator", geometry: Geometry) -> None:
         """Update geometry."""
         future: asyncio.Future = asyncio.Future()
-        ffi_future = LinkSimulator().link_simulator_update_geometry_async(self._ptr, geometry._geometry_ptr())
         loop = asyncio.get_event_loop()
+        err = ctypes.create_string_buffer(256)
         loop.call_soon(
-            lambda *_: future.set_result(Def().await_resulti_32(self._runtime, ffi_future)),
+            lambda *_: future.set_result(
+                LinkSimulator().link_simulator_update_geometry(
+                    self._ptr,
+                    geometry._geometry_ptr(),
+                    err,
+                ),
+            ),
         )
-        res: Resulti32Wrapper = await future
-        if res.result == AUTD3_ERR:
-            err = ctypes.create_string_buffer(256)
+        res = int(await future)
+        if res == AUTD3_ERR:
             raise AUTDError(err)

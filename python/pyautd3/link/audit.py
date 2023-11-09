@@ -20,7 +20,7 @@ import numpy as np
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import LinkAuditBuilderPtr
 from pyautd3.native_methods.autd3capi import NativeMethods as LinkAudit
-from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, RuntimePtr
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
 
 __all__ = []  # type: ignore[var-annotated]
 
@@ -41,7 +41,7 @@ class Audit(Link):
         def _link_builder_ptr(self: "Audit._Builder") -> LinkBuilderPtr:
             return LinkAudit().link_audit_into_builder(self._builder)
 
-        def _resolve_link(self: "Audit._Builder", ptr: ControllerPtr, _runtime: RuntimePtr) -> "Audit":
+        def _resolve_link(self: "Audit._Builder", ptr: ControllerPtr) -> "Audit":
             return Audit(LinkAudit().link_get(ptr))
 
     def __init__(self: "Audit", ptr: LinkPtr) -> None:
