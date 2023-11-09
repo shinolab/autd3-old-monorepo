@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,13 +30,10 @@ use crate::error::{AUTDError, ReadFirmwareInfoState};
 use builder::ControllerBuilder;
 use group::GroupGuard;
 
-#[cfg(not(feature = "sync"))]
 use crate::link::nop::Nop;
+
 #[cfg(not(feature = "sync"))]
 use autd3_driver::link::Link;
-
-#[cfg(feature = "sync")]
-use crate::link::nop::NopSync as Nop;
 #[cfg(feature = "sync")]
 use autd3_driver::link::LinkSync as Link;
 

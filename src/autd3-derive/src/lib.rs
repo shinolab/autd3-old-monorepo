@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -140,6 +140,67 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
 
             fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
                 Ok((Self::O1::new(self), Self::O2::default()))
+            }
+        }
+    };
+    gen.into()
+}
+
+#[proc_macro_derive(Link)]
+pub fn link_derive(input: TokenStream) -> TokenStream {
+    let ast: syn::DeriveInput = syn::parse(input).unwrap();
+
+    let name = &ast.ident;
+    let name_builder = quote::format_ident!("{}Builder", name);
+
+    let generics = &ast.generics;
+    let (_, ty_generics_open, where_clause_open) = generics.split_for_impl();
+    let type_params_open = generics.type_params();
+    let (_, ty_generics_impl, where_clause_impl) = generics.split_for_impl();
+    let type_params_impl = generics.type_params();
+
+    let gen = quote! {
+        #[async_trait::async_trait]
+        impl <#(#type_params_impl,)*>  autd3_driver::link::Link for #name #ty_generics_impl #where_clause_impl{
+            async fn close(&mut self) -> Result<(), autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSync>::close(self)
+            }
+            async fn send(&mut self, tx: &autd3_driver::cpu::TxDatagram) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSync>::send(self, tx)
+            }
+            async fn receive(&mut self, rx: &mut [autd3_driver::cpu::RxMessage]) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSync>::receive(self, rx)
+            }
+            fn is_open(&self) -> bool {
+                <Self as autd3_driver::link::LinkSync>::is_open(self)
+            }
+            fn timeout(&self) -> std::time::Duration {
+                <Self as autd3_driver::link::LinkSync>::timeout(self)
+            }
+            async fn send_receive(
+                &mut self,
+                tx: &autd3_driver::cpu::TxDatagram,
+                rx: &mut [autd3_driver::cpu::RxMessage],
+                timeout: Option<std::time::Duration>,
+            ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSync>::send_receive(self, tx, rx, timeout)
+            }
+            async fn wait_msg_processed(
+                &mut self,
+                tx: &autd3_driver::cpu::TxDatagram,
+                rx: &mut [autd3_driver::cpu::RxMessage],
+                timeout: std::time::Duration,
+            ) -> Result<bool, autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSync>::wait_msg_processed(self, tx, rx, timeout)
+            }
+        }
+
+        #[async_trait::async_trait]
+        impl<#(#type_params_open,)*> autd3_driver::link::LinkBuilder for #name_builder #ty_generics_open #where_clause_open {
+            type L = #name #ty_generics_open;
+
+            async fn open(self, geometry: &autd3_driver::geometry::Geometry) -> Result<Self::L, autd3_driver::error::AUTDInternalError> {
+                <Self as autd3_driver::link::LinkSyncBuilder>::open(self, geometry)
             }
         }
     };

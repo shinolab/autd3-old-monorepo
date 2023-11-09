@@ -4,7 +4,7 @@
  * Created Date: 13/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerSpherePython(
     if use_gpu {
         builder = builder.with_gpu(gpu_idx);
     }
-    LinkBuilderPtr::new(builder.blocking())
+    LinkBuilderPtr::new(builder)
 }
 
 #[no_mangle]
@@ -49,7 +49,7 @@ pub unsafe extern "C" fn AUTDLinkVisualizerT4010A1Python(
     if use_gpu {
         builder = builder.with_gpu(gpu_idx);
     }
-    LinkBuilderPtr::new(builder.blocking())
+    LinkBuilderPtr::new(builder)
 }
 
 #[derive(Debug, Clone, Copy)]

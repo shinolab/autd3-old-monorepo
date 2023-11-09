@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,16 +16,16 @@ use std::{
     time::Duration,
 };
 
-use autd3_derive::LinkSync;
+use autd3_derive::Link;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    link::{Link, LinkBuilder},
+    link::{LinkSync, LinkSyncBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link for test
-#[derive(LinkSync)]
+#[derive(Link)]
 pub struct Audit {
     is_open: bool,
     timeout: Duration,
@@ -46,11 +46,11 @@ impl AuditBuilder {
     }
 }
 
-#[async_trait::async_trait]
-impl LinkBuilder for AuditBuilder {
+// #[async_trait::async_trait]
+impl LinkSyncBuilder for AuditBuilder {
     type L = Audit;
 
-    async fn open(
+    fn open(
         self,
         geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
@@ -123,14 +123,13 @@ impl DerefMut for Audit {
     }
 }
 
-#[async_trait::async_trait]
-impl Link for Audit {
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+impl LinkSync for Audit {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
         Ok(())
     }
 
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -150,7 +149,7 @@ impl Link for Audit {
         Ok(true)
     }
 
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Ok(false);
         }
@@ -171,7 +170,7 @@ impl Link for Audit {
         Ok(true)
     }
 
-    async fn send_receive(
+    fn send_receive(
         &mut self,
         tx: &TxDatagram,
         rx: &mut [RxMessage],
@@ -179,13 +178,13 @@ impl Link for Audit {
     ) -> Result<bool, AUTDInternalError> {
         let timeout = timeout.unwrap_or(self.timeout);
         self.last_timeout = timeout;
-        if !self.send(tx).await? {
+        if !self.send(tx)? {
             return Ok(false);
         }
         if timeout.is_zero() {
-            return self.receive(rx).await;
+            return self.receive(rx);
         }
-        self.wait_msg_processed(tx, rx, timeout).await
+        self.wait_msg_processed(tx, rx, timeout)
     }
 
     fn is_open(&self) -> bool {

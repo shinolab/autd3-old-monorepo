@@ -4,24 +4,24 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_derive::LinkSync;
+use autd3_derive::Link;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry},
-    link::{Link, LinkBuilder},
+    geometry::Geometry,
+    link::{LinkSync, LinkSyncBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link to do nothing
-#[derive(LinkSync)]
+#[derive(Link)]
 pub struct Nop {
     is_open: bool,
     cpus: Vec<CPUEmulator>,
@@ -35,11 +35,10 @@ impl NopBuilder {
     }
 }
 
-#[async_trait::async_trait]
-impl LinkBuilder for NopBuilder {
+impl LinkSyncBuilder for NopBuilder {
     type L = Nop;
 
-    async fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
         Ok(Nop {
             is_open: true,
             cpus: geometry
@@ -55,13 +54,12 @@ impl LinkBuilder for NopBuilder {
     }
 }
 
-#[async_trait::async_trait]
-impl Link for Nop {
-    async fn close(&mut self) -> Result<(), AUTDInternalError> {
+impl LinkSync for Nop {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         Ok(())
     }
 
-    async fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }
@@ -73,7 +71,7 @@ impl Link for Nop {
         Ok(true)
     }
 
-    async fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+    fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
         if !self.is_open {
             return Err(AUTDInternalError::LinkClosed);
         }

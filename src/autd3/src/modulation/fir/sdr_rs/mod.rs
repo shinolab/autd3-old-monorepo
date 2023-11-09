@@ -17,4 +17,3 @@ macro_rules! chain_blocks {
 }
 
 pub mod fir;
-pub use fir::FIR;

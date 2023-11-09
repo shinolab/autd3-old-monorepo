@@ -29,7 +29,7 @@ tokio = { version = "1.33.0", features = ["rt-multi-thread"], optional = true }
 windows = { version = "0.51.1", features = ["Win32_Foundation", "Win32_System_Performance", "Win32_Networking_WinSock", "Win32_System_SystemInformation"] }
 
 [features]
-local = ["cc", "glob", "crossbeam-channel", "time", "thiserror"]
+local = ["cc", "glob", "crossbeam-channel", "time", "thiserror", "autd3-driver/sync"]
 sync = ["tokio", "autd3-driver/sync"]
 remote = ["autd3-protobuf", "tonic"]
 default = ["local"]
