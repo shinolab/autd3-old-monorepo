@@ -14,7 +14,7 @@
 localparam int NUM_TRANSDUCERS = 249;
 
 localparam bit [7:0] VERSION_NUM = 8'h8B;
-localparam bit [7:0] VERSION_NUM_MINOR = 8'h00;
+localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
 
 localparam string ENABLE_STM = "TRUE";
 localparam string ENABLE_MODULATOR = "TRUE";
