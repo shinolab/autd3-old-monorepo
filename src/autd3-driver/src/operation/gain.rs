@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -61,6 +61,7 @@ impl<G: Gain> Operation for GainOp<G> {
         assert!(tx.len() >= 2 + d.len() * std::mem::size_of::<FPGADrive>());
 
         tx[0] = TypeTag::Gain as u8;
+        tx[1] = 0x01; // For v3 firmware compatibility
 
         unsafe {
             let dst =

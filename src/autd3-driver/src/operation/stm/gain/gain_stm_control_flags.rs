@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ pub struct GainSTMControlFlags(u8);
 bitflags::bitflags! {
     impl GainSTMControlFlags : u8 {
         const NONE            = 0;
+        const LEGACY          = 1 << 0;
         const STM_BEGIN       = 1 << 2;
         const STM_END         = 1 << 3;
         const USE_START_IDX   = 1 << 4;
