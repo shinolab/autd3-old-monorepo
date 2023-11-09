@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,12 @@ impl FPGADrive {
     }
 
     pub fn to_duty(d: &Drive) -> u8 {
-        (512.0 * d.amp.value().clamp(0.00613588464, 1.).asin() / PI - 1.0).round() as _
+        let d = 512.0 / PI * d.amp.value().asin();
+        if d < 1.0 {
+            0
+        } else {
+            (d - 1.0).round() as _
+        }
     }
 
     pub fn set(&mut self, d: &Drive) {
