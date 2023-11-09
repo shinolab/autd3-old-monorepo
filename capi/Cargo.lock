@@ -293,7 +293,6 @@ dependencies = [
  "h2",
  "prost",
  "thiserror",
- "tokio",
  "tonic",
  "tonic-build",
 ]
