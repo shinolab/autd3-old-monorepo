@@ -4,19 +4,14 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::ffi::c_char;
-
-use autd3capi_def::{
-    common::{*},
-    *,
-};
+use autd3capi_def::{common::*, *};
 
 pub mod cache;
 pub mod custom;
@@ -43,8 +38,8 @@ pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> Datagra
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSize(m: ModulationPtr, err: *mut c_char) -> i32 {
-    try_or_return!(Box::from_raw(m.0 as *mut Box<M>).len(), err, AUTD3_ERR) as i32
+pub unsafe extern "C" fn AUTDModulationSize(m: ModulationPtr) -> ResultI32 {
+    Box::from_raw(m.0 as *mut Box<M>).len().into()
 }
 
 #[cfg(test)]

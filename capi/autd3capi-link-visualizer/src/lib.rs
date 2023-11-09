@@ -4,7 +4,7 @@
  * Created Date: 12/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ pub mod null;
 pub mod plotters;
 pub mod python;
 
-use std::ffi::c_char;
+
 
 use autd3_link_visualizer::{
     NullBackend, NullPlotConfig, PlotConfig, PlotRange, PlottersBackend, PyPlotConfig,
@@ -169,6 +169,26 @@ pub unsafe extern "C" fn AUTDLinkVisualizerModulation(
     m.len() as _
 }
 
+macro_rules! into_result {
+    ($r:expr) => {
+        match $r {
+            Ok(_) => ResultI32 {
+                result: AUTD3_TRUE,
+                err_len: 0,
+                err: std::ptr::null(),
+            },
+            Err(e) => {
+                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                ResultI32 {
+                    result: 0,
+                    err_len: err.as_bytes_with_nul().len() as u32,
+                    err: err.into_raw(),
+                }
+            }
+        }
+    };
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkVisualizerCalcFieldOf(
     visualizer: LinkPtr,
@@ -179,26 +199,23 @@ pub unsafe extern "C" fn AUTDLinkVisualizerCalcFieldOf(
     geometry: GeometryPtr,
     idx: u32,
     buf: *mut float,
-    err: *mut c_char,
-) -> i32 {
+) -> ResultI32 {
     let idx = idx as usize;
     let len = points_len as usize;
     let points = std::slice::from_raw_parts(points as *const Vector3, len);
-    let m = try_or_return!(
-        match_visualizer!(
-            backend,
-            directivity,
-            visualizer,
-            calc_field_of,
-            points.iter(),
-            cast!(geometry.0, Geometry),
-            idx
-        ),
-        err,
-        AUTD3_ERR
-    );
-    std::ptr::copy_nonoverlapping(m.as_ptr(), buf as *mut _, m.len());
-    AUTD3_TRUE
+    into_result!(match_visualizer!(
+        backend,
+        directivity,
+        visualizer,
+        calc_field_of,
+        points.iter(),
+        cast!(geometry.0, Geometry),
+        idx
+    )
+    .and_then(|m| {
+        std::ptr::copy_nonoverlapping(m.as_ptr(), buf as *mut _, m.len());
+        Ok(())
+    }))
 }
 
 #[no_mangle]
@@ -211,24 +228,18 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotFieldOf(
     range: PlotRangePtr,
     geometry: GeometryPtr,
     idx: u32,
-    err: *mut c_char,
-) -> i32 {
+) -> ResultI32 {
     let idx = idx as usize;
-    try_or_return!(
-        match_visualizer_plot!(
-            backend,
-            directivity,
-            visualizer,
-            plot_field_of,
-            config,
-            *Box::from_raw(range.0 as *mut PlotRange),
-            cast!(geometry.0, Geometry),
-            idx
-        ),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+    into_result!(match_visualizer_plot!(
+        backend,
+        directivity,
+        visualizer,
+        plot_field_of,
+        config,
+        *Box::from_raw(range.0 as *mut PlotRange),
+        cast!(geometry.0, Geometry),
+        idx
+    ))
 }
 
 #[no_mangle]
@@ -240,23 +251,17 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotPhaseOf(
     config: ConfigPtr,
     geometry: GeometryPtr,
     idx: u32,
-    err: *mut c_char,
-) -> i32 {
+) -> ResultI32 {
     let idx = idx as usize;
-    try_or_return!(
-        match_visualizer_plot!(
-            backend,
-            directivity,
-            visualizer,
-            plot_phase_of,
-            config,
-            cast!(geometry.0, Geometry),
-            idx
-        ),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+    into_result!(match_visualizer_plot!(
+        backend,
+        directivity,
+        visualizer,
+        plot_phase_of,
+        config,
+        cast!(geometry.0, Geometry),
+        idx
+    ))
 }
 
 #[no_mangle]
@@ -266,20 +271,14 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotModulationRaw(
     backend: Backend,
     directivity: Directivity,
     config: ConfigPtr,
-    err: *mut c_char,
-) -> i32 {
-    try_or_return!(
-        match_visualizer_plot!(
-            backend,
-            directivity,
-            visualizer,
-            plot_modulation_raw,
-            config,
-        ),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+) -> ResultI32 {
+    into_result!(match_visualizer_plot!(
+        backend,
+        directivity,
+        visualizer,
+        plot_modulation_raw,
+        config,
+    ))
 }
 
 #[no_mangle]
@@ -289,12 +288,12 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotModulation(
     backend: Backend,
     directivity: Directivity,
     config: ConfigPtr,
-    err: *mut c_char,
-) -> i32 {
-    try_or_return!(
-        match_visualizer_plot!(backend, directivity, visualizer, plot_modulation, config,),
-        err,
-        AUTD3_ERR
-    );
-    AUTD3_TRUE
+) -> ResultI32 {
+    into_result!(match_visualizer_plot!(
+        backend,
+        directivity,
+        visualizer,
+        plot_modulation,
+        config,
+    ))
 }

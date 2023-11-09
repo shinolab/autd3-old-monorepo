@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -334,10 +334,9 @@ mod tests {
         let audit = AUTDLinkAuditWithTimeout(audit, 0);
         let audit = AUTDLinkAuditIntoBuilder(audit);
 
-        let mut err = vec![c_char::default(); 256];
-        let cnt = AUTDControllerOpenWith(builder, audit, err.as_mut_ptr());
-        assert_ne!(cnt.0, NULL);
-        cnt
+        let cnt = AUTDControllerOpenWith(builder, audit);
+        assert_ne!(cnt.result.0, NULL);
+        cnt.result
     }
 
     #[test]
@@ -380,14 +379,8 @@ mod tests {
             assert_eq!(AUTDLinkAuditCpuAck(link, 1), 3);
 
             let update = AUTDDatagramUpdateFlags();
-            let mut err = vec![c_char::default(); 256];
-            let _ = AUTDControllerSend(
-                cnt,
-                update,
-                DatagramPtr(std::ptr::null()),
-                -1,
-                err.as_mut_ptr(),
-            );
+
+            let _ = AUTDControllerSend(cnt, update, DatagramPtr(std::ptr::null()), -1);
 
             assert_eq!(AUTDLinkAuditCpuAck(link, 0), 4);
             assert_eq!(AUTDLinkAuditCpuAck(link, 1), 4);
@@ -424,14 +417,7 @@ mod tests {
             AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 1), true);
 
             let update = AUTDDatagramUpdateFlags();
-            let mut err = vec![c_char::default(); 256];
-            let _ = AUTDControllerSend(
-                cnt,
-                update,
-                DatagramPtr(std::ptr::null()),
-                -1,
-                err.as_mut_ptr(),
-            );
+            let _ = AUTDControllerSend(cnt, update, DatagramPtr(std::ptr::null()), -1);
 
             assert_eq!(
                 AUTDLinkAuditCpuFpgaFlags(link, 0),
@@ -467,14 +453,7 @@ mod tests {
             AUTDDeviceSetForceFan(AUTDDevice(AUTDGeometry(cnt), 1), true);
 
             let update = AUTDDatagramUpdateFlags();
-            let mut err = vec![c_char::default(); 256];
-            let _ = AUTDControllerSend(
-                cnt,
-                update,
-                DatagramPtr(std::ptr::null()),
-                -1,
-                err.as_mut_ptr(),
-            );
+            let _ = AUTDControllerSend(cnt, update, DatagramPtr(std::ptr::null()), -1);
 
             assert!(AUTDLinkAuditFpgaIsForceFan(link, 0));
             assert!(AUTDLinkAuditFpgaIsForceFan(link, 1));

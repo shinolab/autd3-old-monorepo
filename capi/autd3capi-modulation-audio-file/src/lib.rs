@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,16 +15,39 @@
 
 use std::ffi::{c_char, CStr};
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{common::*, take_mod, ModulationPtr, ResultModulationPtr};
 
 use autd3_modulation_audio_file::{RawPCM, Wav};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char, err: *mut c_char) -> ModulationPtr {
-    let path = try_or_return!(CStr::from_ptr(path).to_str(), err, ModulationPtr(NULL));
-    let m = try_or_return!(Wav::new(path), err, ModulationPtr(NULL));
-    ModulationPtr::new(m)
+pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulationPtr {
+    let path = match CStr::from_ptr(path).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultModulationPtr {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    match Wav::new(path) {
+        Ok(v) => ResultModulationPtr {
+            result: ModulationPtr::new(v),
+            err_len: 0,
+            err: std::ptr::null(),
+        },
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            ResultModulationPtr {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            }
+        }
+    }
 }
 
 #[no_mangle]
@@ -41,11 +64,33 @@ pub unsafe extern "C" fn AUTDModulationWavWithSamplingFrequencyDivision(
 pub unsafe extern "C" fn AUTDModulationRawPCM(
     path: *const c_char,
     sample_rate: u32,
-    err: *mut c_char,
-) -> ModulationPtr {
-    let path = try_or_return!(CStr::from_ptr(path).to_str(), err, ModulationPtr(NULL));
-    let m = try_or_return!(RawPCM::new(path, sample_rate), err, ModulationPtr(NULL));
-    ModulationPtr::new(m)
+) -> ResultModulationPtr {
+    let path = match CStr::from_ptr(path).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            return ResultModulationPtr {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            };
+        }
+    };
+    match RawPCM::new(path, sample_rate) {
+        Ok(v) => ResultModulationPtr {
+            result: ModulationPtr::new(v),
+            err_len: 0,
+            err: std::ptr::null(),
+        },
+        Err(e) => {
+            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            ResultModulationPtr {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes_with_nul().len() as u32,
+                err: err.into_raw(),
+            }
+        }
+    }
 }
 
 #[no_mangle]

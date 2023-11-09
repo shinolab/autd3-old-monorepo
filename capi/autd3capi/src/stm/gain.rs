@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ mod tests {
     use super::*;
 
     use crate::{gain::null::AUTDGainNull, stm::*, tests::*, *};
-    use autd3capi_def::GainSTMMode;
+    use autd3capi_def::{GainSTMMode, AUTD3_TRUE};
 
     #[test]
     fn test_gain_stm() {
@@ -70,17 +70,8 @@ mod tests {
                 GainSTMMode::PhaseDutyFull,
             );
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    stm,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, stm, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }
