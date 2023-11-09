@@ -28,6 +28,8 @@ impl Operation for SyncOp {
     fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
+        assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
+
         tx[0] = TypeTag::Sync as u8;
 
         unsafe {
@@ -112,6 +114,7 @@ mod tests {
             tx.chunks(2)
                 .skip((1 + NUM_TRANS_IN_UNIT) * dev.idx())
                 .skip(1)
+                .take(NUM_TRANS_IN_UNIT)
                 .for_each(|d| {
                     assert_eq!(d[0], 0x00);
                     assert_eq!(d[1], 0x10);
