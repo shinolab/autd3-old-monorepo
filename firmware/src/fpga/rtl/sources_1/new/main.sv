@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,8 @@ module main #(
     cpu_bus_if.mod_port CPU_BUS_MOD,
     input var THERMO,
     output var FORCE_FAN,
-    output var PWM_OUT[DEPTH]
+    output var PWM_OUT[DEPTH],
+    output var GPIO_OUT
 );
 
   `include "params.vh"
@@ -261,5 +262,13 @@ module main #(
       .PHASE(phase_s),
       .PWM_OUT(PWM_OUT)
   );
+
+  bit gpio_out;
+
+  assign GPIO_OUT = gpio_out;
+
+  always_ff @(posedge CLK) begin
+    gpio_out <= time_cnt < 9'd320;
+  end
 
 endmodule
