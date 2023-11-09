@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 #include "utils.h"
 
 #define CPU_VERSION_MAJOR (0x8B) /* v4.0 */
-#define CPU_VERSION_MINOR (0x00)
+#define CPU_VERSION_MINOR (0x01)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
