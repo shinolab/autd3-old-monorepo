@@ -25,11 +25,11 @@ pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulat
     let path = match CStr::from_ptr(path).to_str() {
         Ok(v) => v,
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultModulation {
                 result: ModulationPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -40,11 +40,11 @@ pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulat
             err: std::ptr::null_mut(),
         },
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             ResultModulation {
                 result: ModulationPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             }
         }
     }
@@ -68,11 +68,11 @@ pub unsafe extern "C" fn AUTDModulationRawPCM(
     let path = match CStr::from_ptr(path).to_str() {
         Ok(v) => v,
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultModulation {
                 result: ModulationPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -83,11 +83,11 @@ pub unsafe extern "C" fn AUTDModulationRawPCM(
             err: std::ptr::null_mut(),
         },
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             ResultModulation {
                 result: ModulationPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             }
         }
     }

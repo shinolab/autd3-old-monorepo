@@ -90,11 +90,11 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
             }
         }
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             ResultLinkRemoteTwinCATBuilder {
                 result: LinkRemoteTwinCATBuilderPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             }
         }
     }

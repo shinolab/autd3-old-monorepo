@@ -138,11 +138,11 @@ impl From<Result<Vec<FirmwareInfo>, AUTDError>> for ResultFirmwareInfoList {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: NULL,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -332,11 +332,11 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         match d.operation() {
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 return ResultGroupKVMap {
                     result: std::ptr::null(),
-                    err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 };
             }
         };
@@ -346,11 +346,11 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         match d.operation() {
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 return ResultGroupKVMap {
                     result: std::ptr::null(),
-                    err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 };
             }
         };
@@ -360,11 +360,11 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
         match d.operation() {
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 return ResultGroupKVMap {
                     result: std::ptr::null(),
-                    err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 };
             }
         };
@@ -396,11 +396,11 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
     match d.operation() {
         Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultGroupKVMap {
                 result: std::ptr::null(),
-                err_len: err.as_bytes_with_nul().len() as _,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };

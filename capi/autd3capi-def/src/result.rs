@@ -11,7 +11,10 @@
  *
  */
 
-use std::{collections::HashMap, ffi::c_char};
+use std::{
+    collections::HashMap,
+    ffi::{c_char, CStr, CString},
+};
 
 use autd3capi_common::{libc, AUTDError, AUTDInternalError, ConstPtr, Controller, Drive, L, NULL};
 
@@ -19,8 +22,10 @@ use crate::{ControllerPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE};
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetErr(src: ConstPtr, dst: *mut c_char) {
-    let src = std::ffi::CString::from_raw(src as _);
-    libc::strcpy(dst, src.as_ptr());
+    let src = Box::from_raw(src as *mut String);
+    let c_string: CString = CString::new(src.as_str()).unwrap();
+    let c_str: &CStr = c_string.as_c_str();
+    libc::strcpy(dst, c_str.as_ptr());
 }
 
 #[repr(C)]
@@ -40,11 +45,11 @@ impl From<Result<(), AUTDInternalError>> for ResultI32 {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: AUTD3_ERR,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -60,11 +65,11 @@ impl From<Result<bool, AUTDError>> for ResultI32 {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: AUTD3_ERR,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -80,11 +85,11 @@ impl From<Result<bool, AUTDInternalError>> for ResultI32 {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: AUTD3_ERR,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -100,11 +105,11 @@ impl From<Result<usize, AUTDInternalError>> for ResultI32 {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: AUTD3_ERR,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -128,11 +133,11 @@ impl From<Result<Controller<Box<L>>, AUTDError>> for ResultController {
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: ControllerPtr(NULL),
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }
@@ -156,11 +161,11 @@ impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainC
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
-                let err = std::ffi::CString::new(e.to_string()).unwrap();
+                let err = e.to_string();
                 Self {
                     result: NULL,
-                    err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw() as _,
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
                 }
             }
         }

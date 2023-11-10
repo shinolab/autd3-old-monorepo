@@ -110,11 +110,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPosition(
     let cbar_position = match CStr::from_ptr(cbar_position).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -138,11 +138,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarSize(
     let cbar_size = match CStr::from_ptr(cbar_size).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -166,11 +166,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPad(
     let cbar_pad = match CStr::from_ptr(cbar_pad).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -220,11 +220,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCMap(
     let cmap = match CStr::from_ptr(cmap).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
@@ -258,11 +258,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithFName(
     let fname = match CStr::from_ptr(fname).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
