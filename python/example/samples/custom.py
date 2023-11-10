@@ -48,9 +48,9 @@ class Burst(Modulation):
 
 async def custom(autd: Controller) -> None:
     config = Silencer()
-    await autd.send(config)
+    await autd.send_async(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Burst(4000)
 
-    await autd.send(m, f)
+    await autd.send_async(m, f)

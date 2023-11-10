@@ -23,7 +23,7 @@ from pyautd3.link.audit import Audit
 
 @pytest.mark.asyncio()
 async def test_gspat():
-    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
+    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     backend = NalgebraBackend()
     g = (
@@ -33,7 +33,7 @@ async def test_gspat():
         .with_repeat(100)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -44,7 +44,7 @@ async def test_gspat():
 @pytest.mark.cuda()
 @pytest.mark.asyncio()
 async def test_gspat_cuda():
-    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
+    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     backend = CUDABackend()
     g = (
@@ -54,7 +54,7 @@ async def test_gspat_cuda():
         .with_repeat(100)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

@@ -26,14 +26,14 @@ async def main() -> None:
         await Controller[Visualizer]
         .builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(Visualizer.builder().with_backend(PythonBackend()))
+        .open_with_async(Visualizer.builder().with_backend(PythonBackend()))
     ) as autd:
         center = autd.geometry.center + np.array([0, 0, 150])
 
         g = Focus(center)
         m = Square(150)
 
-        await autd.send((m, g))
+        await autd.send_async((m, g))
 
         autd.link.plot_phase(PyPlotConfig(fname="phase.png"), autd.geometry)
 
@@ -100,7 +100,7 @@ async def main() -> None:
         p = autd.link.calc_field(points, autd.geometry)
         print(f"Acoustic pressure at ({center[0]}, {center[1]}, {center[2]}) = {p[0]}")
 
-        await autd.close()
+        await autd.close_async()
 
 
 if __name__ == "__main__":

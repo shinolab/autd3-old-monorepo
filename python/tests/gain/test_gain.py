@@ -46,7 +46,7 @@ async def test_gain():
     autd = await create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    assert await autd.send(Uniform(0.5, np.pi, check))
+    assert await autd.send_async(Uniform(0.5, np.pi, check))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -61,7 +61,7 @@ async def test_gain_check_only_for_enabled():
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
     g = Uniform(0.5, np.pi, check)
-    assert await autd.send(g)
+    assert await autd.send_async(g)
 
     assert not g.check[0]
     assert g.check[1]

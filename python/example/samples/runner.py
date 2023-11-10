@@ -34,7 +34,7 @@ async def run(autd: Controller) -> None:
         samples.append((group.group, "Group test"))
 
     print("======== AUTD3 firmware information ========")
-    print("\n".join([str(firm) for firm in await autd.firmware_info_list()]))
+    print("\n".join([str(firm) for firm in await autd.firmware_info_list_async()]))
     print("============================================")
 
     while True:
@@ -54,6 +54,6 @@ async def run(autd: Controller) -> None:
         _ = input()
 
         print("finish.")
-        await autd.send(Stop())
+        await autd.send_async(Stop())
 
-    await autd.close()
+    await autd.close_async()

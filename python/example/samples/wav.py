@@ -23,9 +23,9 @@ from pyautd3.modulation.audio_file import Wav
 
 async def wav(autd: Controller) -> None:
     config = Silencer()
-    await autd.send(config)
+    await autd.send_async(config)
 
     f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Wav(Path(__file__).parent / "sin150.wav")
 
-    await autd.send((m, f))
+    await autd.send_async((m, f))

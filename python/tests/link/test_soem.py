@@ -35,11 +35,11 @@ def test_soem():
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(
+        .open_with_async(
             SOEM.builder()
             .with_ifname("")
             .with_buf_size(32)
-            .with_send_cycle(2)
+            .with_send_async_cycle(2)
             .with_sync0_cycle(2)
             .with_on_lost(on_lost)
             .with_timer_strategy(TimerStrategy.Sleep)
@@ -49,7 +49,7 @@ def test_soem():
         )
     )
 
-    autd.close()
+    autd.close_async()
 
 
 @pytest.mark.remote_soem()
@@ -57,7 +57,7 @@ def test_remote_soem():
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
+        .open_with_async(RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
     )
 
-    autd.close()
+    autd.close_async()

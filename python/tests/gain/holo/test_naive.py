@@ -23,7 +23,7 @@ from pyautd3.link.audit import Audit
 
 @pytest.mark.asyncio()
 async def test_naive():
-    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
+    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     backend = NalgebraBackend()
     g = (
@@ -32,7 +32,7 @@ async def test_naive():
         .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 0.5) for x in [-30])
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -43,7 +43,7 @@ async def test_naive():
 @pytest.mark.cuda()
 @pytest.mark.asyncio()
 async def test_naive_cuda():
-    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Audit.builder())
+    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     backend = CUDABackend()
     g = (
@@ -52,7 +52,7 @@ async def test_naive_cuda():
         .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 0.5) for x in [-30])
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

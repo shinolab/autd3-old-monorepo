@@ -145,7 +145,7 @@ class _Builder(Generic[L]):
             )
         return self
 
-    async def open_with(self: "_Builder[L]", link: LinkBuilder[L]) -> "Controller[L]":
+    async def open_with_async(self: "_Builder[L]", link: LinkBuilder[L]) -> "Controller[L]":
         """Open controller.
 
         Arguments:
@@ -213,7 +213,7 @@ class Controller(Generic[L]):
         link = link_builder._resolve_link(ptr)
         return Controller(geometry, ptr, link)
 
-    async def firmware_info_list(self: "Controller") -> list[FirmwareInfo]:
+    async def firmware_info_list_async(self: "Controller") -> list[FirmwareInfo]:
         """Get firmware information list."""
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
@@ -239,7 +239,7 @@ class Controller(Generic[L]):
 
         return res
 
-    async def close(self: "Controller") -> None:
+    async def close_async(self: "Controller") -> None:
         """Close controller."""
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
@@ -256,7 +256,7 @@ class Controller(Generic[L]):
             Def().get_err(res.err, err)
             raise AUTDError(err)
 
-    async def fpga_info(self: "Controller") -> list[FPGAInfo]:
+    async def fpga_info_async(self: "Controller") -> list[FPGAInfo]:
         """Get FPGA information list."""
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
@@ -277,7 +277,7 @@ class Controller(Generic[L]):
             raise AUTDError(err)
         return [FPGAInfo(x) for x in infos]
 
-    async def send(
+    async def send_async(
         self: "Controller",
         d1: SpecialDatagram | Datagram | tuple[Datagram, Datagram],
         d2: Datagram | None = None,
@@ -438,7 +438,7 @@ class Controller(Generic[L]):
 
             return self
 
-        async def send(self: "Controller._GroupGuard") -> bool:
+        async def send_async(self: "Controller._GroupGuard") -> bool:
             m = np.fromiter(
                 (self._keymap[k] if k is not None else -1 for k in (self._map(dev) if dev.enable else None for dev in self._controller.geometry)),
                 dtype=np.int32,

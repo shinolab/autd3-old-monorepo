@@ -115,7 +115,7 @@ async def test_device_force_fan():
     autd.geometry[0].force_fan = True
     autd.geometry[1].force_fan = False
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 1
     assert autd.link.fpga_flags(1) == 0
@@ -123,7 +123,7 @@ async def test_device_force_fan():
     autd.geometry[0].force_fan = False
     autd.geometry[1].force_fan = True
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 0
     assert autd.link.fpga_flags(1) == 1
@@ -138,7 +138,7 @@ async def test_device_reads_fpga_info():
     autd.geometry[0].reads_fpga_info = True
     autd.geometry[1].reads_fpga_info = False
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 2
     assert autd.link.fpga_flags(1) == 0
@@ -146,7 +146,7 @@ async def test_device_reads_fpga_info():
     autd.geometry[0].reads_fpga_info = False
     autd.geometry[1].reads_fpga_info = True
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())
 
     assert autd.link.fpga_flags(0) == 0
     assert autd.link.fpga_flags(1) == 2

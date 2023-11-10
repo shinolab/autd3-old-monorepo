@@ -24,7 +24,7 @@ from tests.test_autd import create_controller
 async def test_cache():
     autd = await create_controller()
 
-    assert await autd.send(Uniform(0.5).with_phase(np.pi).with_cache())
+    assert await autd.send_async(Uniform(0.5).with_phase(np.pi).with_cache())
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
@@ -54,16 +54,16 @@ async def test_cache_check_once():
     autd = await create_controller()
 
     g = CacheTest()
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     assert g.calc_cnt == 1
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     assert g.calc_cnt == 2
 
     g = CacheTest()
     g_cached = g.with_cache()
-    assert await autd.send(g_cached)
+    assert await autd.send_async(g_cached)
     assert g.calc_cnt == 1
-    assert await autd.send(g_cached)
+    assert await autd.send_async(g_cached)
     assert g.calc_cnt == 1
 
 
@@ -74,7 +74,7 @@ async def test_cache_check_only_for_enabled():
 
     g = CacheTest()
     g_cached = g.with_cache()
-    assert await autd.send(g_cached)
+    assert await autd.send_async(g_cached)
 
     assert 0 not in g_cached.drives()
     assert 1 in g_cached.drives()
@@ -98,7 +98,7 @@ async def test_transform():
 
         return Drive(d.phase - np.pi / 4, d.amp)
 
-    assert await autd.send(Uniform(0.5).with_phase(np.pi).with_transform(transform))
+    assert await autd.send_async(Uniform(0.5).with_phase(np.pi).with_transform(transform))
 
     duties, phases = autd.link.duties_and_phases(0, 0)
     assert np.all(duties == 85)
@@ -120,7 +120,7 @@ async def test_transform_check_only_for_enabled():
         check[dev.idx] = True
         return d
 
-    assert await autd.send(Uniform(0.5).with_phase(np.pi).with_transform(transform))
+    assert await autd.send_async(Uniform(0.5).with_phase(np.pi).with_transform(transform))
 
     assert not check[0]
     assert check[1]

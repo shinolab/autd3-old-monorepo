@@ -22,7 +22,7 @@ from pyautd3.modulation import Sine
 
 
 async def main() -> None:
-    with await Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with(Nop.builder()) as autd:
+    with await Controller.builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Nop.builder()) as autd:
         cx = autd.geometry.center[0]
         g1 = Focus(autd.geometry.center + np.array([0, 0, 150]))
         g2 = Null()
@@ -31,9 +31,9 @@ async def main() -> None:
 
         m = Sine(150)
 
-        await autd.send((m, g))
+        await autd.send_async((m, g))
 
-        await autd.close()
+        await autd.close_async()
 
 
 if __name__ == "__main__":

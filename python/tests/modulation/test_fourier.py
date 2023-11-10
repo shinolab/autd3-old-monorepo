@@ -24,7 +24,7 @@ async def test_fourier():
     autd = await create_controller()
 
     m = Fourier(Sine(50)).add_components_from_iter(Sine(x) for x in [100, 150]) + Sine(200)
-    assert await autd.send(m)
+    assert await autd.send_async(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

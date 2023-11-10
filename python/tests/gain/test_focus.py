@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 async def test_focus():
     autd = await create_controller()
 
-    assert await autd.send(Focus(autd.geometry.center).with_amp(0.5))
+    assert await autd.send_async(Focus(autd.geometry.center).with_amp(0.5))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

@@ -21,11 +21,11 @@ from pyautd3.modulation import Sine
 
 async def holo(autd: Controller) -> None:
     config = Silencer()
-    await autd.send(config)
+    await autd.send_async(config)
 
     center = autd.geometry.center + np.array([0.0, 0.0, 150.0])
     backend = NalgebraBackend()
     f = GSPAT(backend).add_focus(center - np.array([30.0, 0.0, 0.0]), 1.0).add_focus(center + np.array([30.0, 0.0, 0.0]), 1.0)
     m = Sine(150)
 
-    await autd.send(m, f)
+    await autd.send_async(m, f)

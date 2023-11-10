@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 async def test_null():
     autd = await create_controller()
 
-    assert await autd.send(Null())
+    assert await autd.send_async(Null())
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

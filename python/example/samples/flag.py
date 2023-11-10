@@ -26,7 +26,7 @@ async def flag(autd: Controller) -> None:
     print("press any key to run fan...")
     _ = input()
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())
 
     fin = False
 
@@ -42,7 +42,7 @@ async def flag(autd: Controller) -> None:
     prompts = ["-", "/", "|", "\\"]
     prompts_idx = 0
     while not fin:
-        states = await autd.fpga_info()
+        states = await autd.fpga_info_async()
         print(f"{prompts[(prompts_idx // 1000) % len(prompts)]} FPGA Status...")
         print("\n".join([f"\x1b[0K[{i}]: thermo = {state.is_thermal_assert()}" for i, state in enumerate(states)]))
         print(f"\x1b[{len(states) + 1}A", end="")
@@ -55,4 +55,4 @@ async def flag(autd: Controller) -> None:
         dev.force_fan = False
         dev.reads_fpga_info = False
 
-    await autd.send(UpdateFlags())
+    await autd.send_async(UpdateFlags())

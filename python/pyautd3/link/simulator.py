@@ -81,7 +81,7 @@ class Simulator(Link):
         """Create Simulator link builder."""
         return Simulator._Builder(port)
 
-    async def update_geometry(self: "Simulator", geometry: Geometry) -> None:
+    async def update_geometry_async(self: "Simulator", geometry: Geometry) -> None:
         """Update geometry."""
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
