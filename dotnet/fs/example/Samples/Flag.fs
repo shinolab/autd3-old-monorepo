@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/09/2023
+// Last Modified: 10/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ module FlagTest =
         printfn "press any key to run fan..."
         System.Console.ReadKey true |> ignore;
 
-        (new UpdateFlags()) |> autd.Send |> ignore;
+        (new UpdateFlags()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         let mutable fin = false;
         let th : Task =
@@ -34,7 +34,7 @@ module FlagTest =
                 let prompts = [|'-'; '/'; '|'; '\\'|]
                 let mutable promptsIdx = 0;
                 while not fin do
-                    let states = autd.FPGAInfo
+                    let states = autd.FPGAInfoAsync() |> Async.AwaitTask |> Async.RunSynchronously
                     printfn "%c FPGA Status..." prompts.[promptsIdx / 1000 % prompts.Length]
                     printfn "%s" (String.Join("\n", states))
                     printf "\x1b[%dA" (states.Length + 1)
@@ -54,4 +54,4 @@ module FlagTest =
                 dev.ReadsFPGAInfo <- false
                )
 
-        (new UpdateFlags()) |> autd.Send |> ignore;
+        (new UpdateFlags()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;

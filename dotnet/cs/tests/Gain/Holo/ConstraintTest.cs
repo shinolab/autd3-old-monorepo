@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,9 +18,9 @@ namespace tests.Gain.Holo;
 public class ConstraintTest
 {
     [Fact]
-    public void Uniform()
+    public async Task Uniform()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -28,7 +28,7 @@ public class ConstraintTest
             .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
@@ -39,9 +39,9 @@ public class ConstraintTest
     }
 
     [Fact]
-    public void Normalize()
+    public async Task Normalize()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -49,7 +49,7 @@ public class ConstraintTest
             .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
             .WithConstraint(new Normalize());
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
@@ -60,9 +60,9 @@ public class ConstraintTest
     }
 
     [Fact]
-    public void Clamp()
+    public async Task Clamp()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -70,7 +70,7 @@ public class ConstraintTest
             .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
             .WithConstraint(new Clamp(0.4, 0.5));
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
@@ -82,9 +82,9 @@ public class ConstraintTest
     }
 
     [Fact]
-    public void DontCare()
+    public async Task DontCare()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -92,7 +92,7 @@ public class ConstraintTest
             .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5.0)
             .WithConstraint(new DontCare());
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {

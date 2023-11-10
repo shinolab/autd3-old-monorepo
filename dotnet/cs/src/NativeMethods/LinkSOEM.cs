@@ -65,7 +65,7 @@ namespace AUTD3Sharp
         public static extern LinkBuilderPtr AUTDLinkSOEMIntoBuilder(LinkSOEMBuilderPtr soem);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkRemoteSOEM", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEM(byte* addr, byte* err);
+        public static extern ResultLinkRemoteSOEMBuilder AUTDLinkRemoteSOEM(byte* addr);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkRemoteSOEMWithTimeout", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEMWithTimeout(LinkRemoteSOEMBuilderPtr soem, ulong timeout_ns);
@@ -86,6 +86,14 @@ namespace AUTD3Sharp
     internal unsafe partial struct LinkRemoteSOEMBuilderPtr
     {
         public IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct ResultLinkRemoteSOEMBuilder
+    {
+        public LinkRemoteSOEMBuilderPtr result;
+        public uint err_len;
+        public IntPtr err;
     }
 
 

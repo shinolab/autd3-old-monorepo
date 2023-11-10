@@ -64,17 +64,22 @@ namespace AUTD3Sharp.Link
             /// <exception cref="AUTDException"></exception>
             public RemoteTwinCATBuilder(string serverAmsNetId)
             {
-                var err = new byte[256];
                 var serverAmsNetIdBytes = System.Text.Encoding.UTF8.GetBytes(serverAmsNetId);
                 unsafe
                 {
-                    fixed (byte* ep = err)
                     fixed (byte* ap = serverAmsNetIdBytes)
-                        _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCAT(ap, ep);
+                    {
+                        var res = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCAT(ap);
+                        if (res.result.Item1 == IntPtr.Zero)
+                        {
+                            var err = new byte[res.err_len];
+                            fixed (byte* ep = err)
+                                NativeMethodsDef.AUTDGetErr(res.err, ep);
+                            throw new AUTDException(err);
+                        }
+                        _ptr = res.result;
+                    }
                 }
-
-                if (_ptr.Item1 == IntPtr.Zero)
-                    throw new AUTDException(err);
             }
 
             /// <summary>

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Gain;
 public class TransformTest
 {
     [Fact]
-    public void Transform()
+    public async Task Transform()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
-        Assert.True(autd.Send(new Uniform(0.5).WithPhase(Math.PI).WithTransform((dev, _, d) =>
+        Assert.True(await autd.SendAsync(new Uniform(0.5).WithPhase(Math.PI).WithTransform((dev, _, d) =>
             dev.Idx == 0 ? d with { Phase = d.Phase + Math.PI / 4 } : d with { Phase = d.Phase - Math.PI / 4 })));
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(0, 0);
@@ -36,13 +36,13 @@ public class TransformTest
     }
 
     [Fact]
-    public void TransformCheckOnlyForEnabled()
+    public async Task TransformCheckOnlyForEnabled()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(autd.Send(new Uniform(0.5).WithPhase(Math.PI)
+        Assert.True(await autd.SendAsync(new Uniform(0.5).WithPhase(Math.PI)
         .WithTransform((dev, _, d) =>
         {
             check[dev.Idx] = true;

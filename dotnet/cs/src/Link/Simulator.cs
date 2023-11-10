@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 
 using System;
 using System.Net;
+using System.Threading.Tasks;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -43,20 +44,20 @@ namespace AUTD3Sharp.Link
             /// <exception cref="AUTDException"></exception>
             public SimulatorBuilder WithServerIp(IPAddress addr)
             {
-                var err = new byte[256];
                 var addrStr = addr.ToString();
                 var addrBytes = System.Text.Encoding.UTF8.GetBytes(addrStr);
                 unsafe
                 {
-                    fixed (byte* ep = err)
                     fixed (byte* ap = addrBytes)
                     {
-                        _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap, ep);
-                        if (_ptr.Item1 == IntPtr.Zero)
-                            throw new AUTDException(err);
+                        var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap);
+                        if (res.result.Item1 != IntPtr.Zero) return this;
+                        var err = new byte[res.err_len];
+                        fixed (byte* ep = err)
+                            NativeMethodsDef.AUTDGetErr(res.err, ep);
+                        throw new AUTDException(err);
                     }
                 }
-                return this;
             }
 
             public SimulatorBuilder WithTimeout(TimeSpan timeout)
@@ -78,16 +79,16 @@ namespace AUTD3Sharp.Link
 
         private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
 
-        public void UpdateGeometry(Geometry geometry)
+        public async Task UpdateGeometryAsync(Geometry geometry)
         {
-            var err = new byte[256];
+            var res = await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr));
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
+            var err = new byte[res.errLen];
             unsafe
             {
-                fixed (byte* ep = err)
-                {
-                    if (NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr, ep) == NativeMethodsDef.AUTD3_ERR)
-                        throw new AUTDException(err);
-                }
+                fixed (byte* p = err)
+                    NativeMethodsDef.AUTDGetErr(res.err, p);
+                throw new AUTDException(err);
             }
         }
 

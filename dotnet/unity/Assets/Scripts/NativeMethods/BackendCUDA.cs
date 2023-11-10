@@ -17,7 +17,7 @@ namespace AUTD3Sharp
 
 
         [DllImport(__DllName, EntryPoint = "AUTDCUDABackend", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern BackendPtr AUTDCUDABackend(byte* err);
+        public static extern ResultBackend AUTDCUDABackend();
 
         [DllImport(__DllName, EntryPoint = "AUTDCUDABackendDelete", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDCUDABackendDelete(BackendPtr backend);

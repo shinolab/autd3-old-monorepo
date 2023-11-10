@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 10/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@ open AUTD3Sharp.Gain
 open AUTD3Sharp.Modulation
 
 let autd = Controller.Builder()
-            .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-            .OpenWith(Nop.Builder());
+                .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+                .OpenWithAsync(Nop.Builder()) |> Async.AwaitTask |> Async.RunSynchronously
 
 let cx = autd.Geometry.Center.x;
 let g1 = new Focus(autd.Geometry.Center + Vector3d(0., 0., 150.));
@@ -28,4 +28,4 @@ let grouping (dev: Device) (tr: Transducer) =
 let g = (new Group(grouping)).Set("focus", g1).Set("null", g2);
 let m = new Sine(150);
 
-(m, g) |> autd.Send |> ignore;
+(m, g) |> autd.SendAsync  |> Async.AwaitTask |> Async.RunSynchronously |> ignore;

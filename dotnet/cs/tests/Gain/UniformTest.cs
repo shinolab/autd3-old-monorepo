@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Gain;
 public class UniformTest
 {
     [Fact]
-    public void Uniform()
+    public async Task Uniform()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
-        Assert.True(autd.Send(new Uniform(0.5).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(0.5).WithPhase(Math.PI)));
 
         foreach (var dev in autd.Geometry)
         {

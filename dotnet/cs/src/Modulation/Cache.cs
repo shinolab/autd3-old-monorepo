@@ -34,20 +34,22 @@ namespace AUTD3Sharp.Modulation
     {
         private bool _isDisposed;
 
-        private ModulationCachePtr _cache;
+        private ResultCache _cache;
         private readonly float_t[] _buffer;
 
         public Cache(Internal.Modulation m)
         {
-            var err = new byte[256];
             unsafe
             {
-                fixed (byte* ep = err)
-                    _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr(), ep);
-                if (_cache.Item1 == IntPtr.Zero) throw new AUTDException(err);
-
-                var n = NativeMethodsBase.AUTDModulationCacheGetBufferSize(_cache);
-                _buffer = new float_t[n];
+                _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr());
+                if (_cache.result == IntPtr.Zero)
+                {
+                    var err = new byte[_cache.err_len];
+                    fixed (byte* p = err)
+                        NativeMethodsDef.AUTDGetErr(_cache.err, p);
+                    throw new AUTDException(err);
+                }
+                _buffer = new float_t[_cache.buffer_len];
                 fixed (float_t* p = _buffer)
                     NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, p);
             }
@@ -62,8 +64,8 @@ namespace AUTD3Sharp.Modulation
         {
             if (_isDisposed) return;
 
-            if (_cache.Item1 != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
-            _cache.Item1 = IntPtr.Zero;
+            if (_cache.result != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
+            _cache.result = IntPtr.Zero;
 
             _isDisposed = true;
             GC.SuppressFinalize(this);

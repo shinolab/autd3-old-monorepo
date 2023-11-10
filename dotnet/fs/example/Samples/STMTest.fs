@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2023
+// Last Modified: 10/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ open System.Threading.Tasks
 
 module STMTest =
     let GainSTMTest (autd : Controller) = 
-        (Silencer.Disable()) |> autd.Send |> ignore;
+        (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
-        (new Static()) |> autd.Send |> ignore;
+        (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let stm = 
@@ -34,12 +34,12 @@ module STMTest =
             |> List.fold (fun (acc: GainSTM) v -> acc.AddGain v) (new GainSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
-        (stm )|> autd.Send |> ignore
+        (stm )|> autd.SendAsync  |> Async.AwaitTask|> ignore
 
     let FocusSTMTest (autd : Controller) = 
-        (Silencer.Disable()) |> autd.Send |> ignore;
+        (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
-        (new Static()) |> autd.Send |> ignore;
+        (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let stm = 
@@ -49,4 +49,4 @@ module STMTest =
             |> List.fold (fun (acc: FocusSTM) v -> acc.AddFocus v) (new FocusSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
-        (stm)|> autd.Send |> ignore
+        (stm)|> autd.SendAsync  |> Async.AwaitTask|> ignore

@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,10 +21,10 @@ namespace Samples;
 
 internal static class BesselBeamTest
 {
-    public static void Test(Controller autd)
+    public static async Task Test(Controller autd)
     {
         var config = new Silencer();
-        autd.Send(config);
+        await autd.SendAsync(config);
 
         var m = new Sine(150); // AM sin 150 Hz
 
@@ -32,6 +32,6 @@ internal static class BesselBeamTest
         var dir = Vector3d.UnitZ;
         var g = new Bessel(start, dir, 13.0 / 180.0 * AUTD3.Pi); // BesselBeam from (x, y, 0), theta = 13 deg
 
-        autd.Send((m, g));
+        await autd.SendAsync((m, g));
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Modulation;
 public class SineTest
 {
     [Fact]
-    public void Sine()
+    public async Task Sine()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        Assert.True(autd.Send(new Sine(150).WithAmp(0.5).WithOffset(0.25).WithPhase(Math.PI / 2.0)));
+        Assert.True(await autd.SendAsync(new Sine(150).WithAmp(0.5).WithOffset(0.25).WithPhase(Math.PI / 2.0)));
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link<Audit>().Modulation(dev.Idx);
@@ -110,19 +110,19 @@ public class SineTest
         }
 
 
-        Assert.True(autd.Send(new Sine(150).WithSamplingFrequencyDivision(512)));
+        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingFrequencyDivision(512)));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link<Audit>().ModulationFrequencyDivision(dev.Idx));
         }
 
-        Assert.True(autd.Send(new Sine(150).WithSamplingFrequency(8e3)));
+        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingFrequency(8e3)));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(2560u, autd.Link<Audit>().ModulationFrequencyDivision(dev.Idx));
         }
 
-        Assert.True(autd.Send(new Sine(150).WithSamplingPeriod(TimeSpan.FromMicroseconds(100))));
+        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingPeriod(TimeSpan.FromMicroseconds(100))));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(2048u, autd.Link<Audit>().ModulationFrequencyDivision(dev.Idx));

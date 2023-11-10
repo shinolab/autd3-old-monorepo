@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,13 +16,13 @@ namespace tests.Gain;
 public class GroupTest
 {
     [Fact]
-    public void Group()
+    public async Task Group()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var cx = autd.Geometry.Center.x;
 
-        Assert.True(autd.Send(new Group((_, tr) => tr.Position.x switch
+        Assert.True(await autd.SendAsync(new Group((_, tr) => tr.Position.x switch
         {
             var x when x < cx => "uniform",
             _ => "null"
@@ -48,13 +48,13 @@ public class GroupTest
     }
 
     [Fact]
-    public void GroupUnknownKey()
+    public async Task GroupUnknownKey()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
-        var exception = Record.Exception(() =>
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            autd.Send(new Group((_, _) => "null").Set("uniform", new Uniform(0.5).WithPhase(Math.PI)).Set("null", new Null()));
+            await autd.SendAsync(new Group((_, _) => "null").Set("uniform", new Uniform(0.5).WithPhase(Math.PI)).Set("null", new Null()));
         });
 
         if (exception == null) Assert.Fail("Exception is expected");
@@ -63,13 +63,13 @@ public class GroupTest
     }
 
     [Fact]
-    public void GroupUnspecifiedKey()
+    public async Task GroupUnspecifiedKey()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
-        var exception = Record.Exception(() =>
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            autd.Send(new Group((_, _) => "null"));
+            await autd.SendAsync(new Group((_, _) => "null"));
         });
 
         if (exception == null) Assert.Fail("Exception is expected");
@@ -78,13 +78,13 @@ public class GroupTest
     }
 
     [Fact]
-    public void GroupCheckOnlyForEnabled()
+    public async Task GroupCheckOnlyForEnabled()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(autd.Send(new Group((dev, _) =>
+        Assert.True(await autd.SendAsync(new Group((dev, _) =>
         {
             check[dev.Idx] = true;
             return "uniform";

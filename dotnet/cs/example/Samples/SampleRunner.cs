@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ using AUTD3Sharp;
 
 namespace Samples;
 
-internal delegate void TestFn(Controller autd);
+internal delegate Task TestFn(Controller autd);
 
 public class SampleRunner
 {
-    public static void Run(Controller autd)
+    public static async Task Run(Controller autd)
     {
         var examples = new List<(TestFn, string)> { (FocusTest.Test, "Single focus test"),
             (BesselBeamTest.Test, "Bessel beam test"),
@@ -36,7 +36,7 @@ public class SampleRunner
         if (autd.Geometry.NumDevices >= 2) examples.Add((GroupTest.Test, "Group test"));
 
         Console.WriteLine("======== AUTD3 firmware information ========");
-        Console.WriteLine(string.Join("\n", autd.FirmwareInfoList()));
+        Console.WriteLine(string.Join("\n", await autd.FirmwareInfoListAsync()));
         Console.WriteLine("============================================");
 
         while (true)
@@ -48,16 +48,15 @@ public class SampleRunner
             if (!int.TryParse(Console.ReadLine(), out var idx) || idx >= examples.Count) break;
 
             var fn = examples[idx].Item1;
-            fn(autd);
+            await fn(autd);
 
             Console.WriteLine("press any key to finish...");
             Console.ReadKey(true);
 
             Console.WriteLine("finish.");
-            autd.Send(new Stop());
+            await autd.SendAsync(new Stop());
         }
 
-        autd.Close();
-        autd.Dispose();
+        await autd.CloseAsync();
     }
 }

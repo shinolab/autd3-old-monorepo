@@ -31,35 +31,40 @@ namespace AUTD3Sharp.Gain
 
         internal override GainPtr GainPtr(Geometry geometry)
         {
-            var err = new byte[256];
-            unsafe
+            var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr);
+            if (res.result == IntPtr.Zero)
             {
-                fixed (byte* ep = err)
+                var err = new byte[res.errLen];
+                unsafe
                 {
-                    var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, ep);
-                    if (res.Item1 == IntPtr.Zero) throw new AUTDException(err);
-
-                    var drives = new Dictionary<int, Drive[]>();
-                    foreach (var dev in geometry.Devices())
-                    {
-                        var d = new Drive[dev.NumTransducers];
-                        fixed (Drive* p = d)
-                            NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
-
-                        foreach (var tr in dev)
-                            d[tr.LocalIdx] = _f(dev, tr, d[tr.LocalIdx]);
-                        drives[dev.Idx] = d;
-                    }
-
-                    NativeMethodsBase.AUTDGainCalcFreeResult(res);
-                    return geometry.Devices().Aggregate(NativeMethodsBase.AUTDGainCustom(),
-                        (acc, dev) =>
-                        {
-                            fixed (Drive* p = drives[dev.Idx])
-                                return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, p, (uint)drives[dev.Idx].Length);
-                        });
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
+                throw new AUTDException(err);
             }
+
+            var drives = new Dictionary<int, Drive[]>();
+            foreach (var dev in geometry.Devices())
+            {
+                var d = new Drive[dev.NumTransducers];
+                unsafe
+                {
+                    fixed (Drive* p = d) NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                }
+
+                foreach (var tr in dev)
+                    d[tr.LocalIdx] = _f(dev, tr, d[tr.LocalIdx]);
+                drives[dev.Idx] = d;
+            }
+
+            NativeMethodsBase.AUTDGainCalcFreeResult(res);
+            return geometry.Devices().Aggregate(NativeMethodsBase.AUTDGainCustom(),
+                (acc, dev) =>
+                {
+                    unsafe
+                    {
+                        fixed (Drive* p = drives[dev.Idx]) return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, p, (uint)drives[dev.Idx].Length);
+                    }
+                });
         }
     }
 

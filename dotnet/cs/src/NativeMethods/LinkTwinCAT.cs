@@ -26,7 +26,7 @@ namespace AUTD3Sharp
         public static extern LinkBuilderPtr AUTDLinkTwinCATIntoBuilder(LinkTwinCATBuilderPtr twincat);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkRemoteTwinCAT", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCAT(byte* server_ams_net_id, byte* err);
+        public static extern ResultLinkRemoteTwinCATBuilder AUTDLinkRemoteTwinCAT(byte* server_ams_net_id);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkRemoteTwinCATWithServerIP", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCATWithServerIP(LinkRemoteTwinCATBuilderPtr twincat, byte* addr);
@@ -53,6 +53,14 @@ namespace AUTD3Sharp
     internal unsafe partial struct LinkRemoteTwinCATBuilderPtr
     {
         public IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct ResultLinkRemoteTwinCATBuilder
+    {
+        public LinkRemoteTwinCATBuilderPtr result;
+        public uint err_len;
+        public IntPtr err;
     }
 
 
