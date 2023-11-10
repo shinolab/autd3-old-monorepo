@@ -177,7 +177,7 @@ namespace AUTD3Sharp
         public static extern ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder, float x, float y, float z, float qw, float qx, float qy, float qz);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerOpenWith", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultController AUTDControllerOpenWithAsync(ControllerBuilderPtr builder, LinkBuilderPtr link_builder);
+        public static extern ResultController AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkBuilderPtr link_builder);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerClose", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultI32 AUTDControllerClose(ControllerPtr cnt);
@@ -545,3 +545,4 @@ namespace AUTD3Sharp
 
 
 }
+    
