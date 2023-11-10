@@ -21,6 +21,7 @@ from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_link_simulator import (
     LinkBuilderPtr,
     LinkSimulatorBuilderPtr,
@@ -48,10 +49,12 @@ class Simulator(Link):
             ---------
                 addr: Server IP address
             """
-            err = ctypes.create_string_buffer(256)
-            self._builder = LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8"), err)
-            if self._builder._0 is None:
+            result = LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8"))
+            if result.result is None:
+                err = ctypes.create_string_buffer(int(result.err_len))
+                Def().get_err(result.err, err)
                 raise AUTDError(err)
+            self._builder = result.result
             return self
 
         def with_timeout(self: "Simulator._Builder", timeout: timedelta) -> "Simulator._Builder":
@@ -82,16 +85,17 @@ class Simulator(Link):
         """Update geometry."""
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
-        err = ctypes.create_string_buffer(256)
         loop.call_soon(
             lambda *_: future.set_result(
                 LinkSimulator().link_simulator_update_geometry(
                     self._ptr,
                     geometry._geometry_ptr(),
-                    err,
                 ),
             ),
         )
-        res = int(await future)
-        if res == AUTD3_ERR:
+        res = await future
+        result = int(res.result)
+        if result == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)

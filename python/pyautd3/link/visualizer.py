@@ -22,6 +22,7 @@ from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_link_visualizer import (
     Backend,
     CMap,
@@ -171,7 +172,6 @@ class PlotConfig(IPlotConfig):
         self.fname = fname
 
     def _config_ptr(self: "PlotConfig") -> ConfigPtr:
-        err = ctypes.create_string_buffer(256)
         ptr = LinkVisualizer().link_visualizer_plot_config_default()
         if self.figsize is not None:
             ptr = LinkVisualizer().link_visualizer_plot_config_with_fig_size(ptr, self.figsize[0], self.figsize[1])
@@ -188,9 +188,11 @@ class PlotConfig(IPlotConfig):
         if self.cmap is not None:
             ptr = LinkVisualizer().link_visualizer_plot_config_with_c_map(ptr, self.cmap)
         if self.fname is not None:
-            ptr = LinkVisualizer().link_visualizer_plot_config_with_f_name(ptr, self.fname.encode("utf-8"), err)
-        if ptr._0 is None:
-            raise AUTDError(err)
+            result = LinkVisualizer().link_visualizer_plot_config_with_f_name(ptr, self.fname.encode("utf-8"))
+            if result.result is None:
+                err = ctypes.create_string_buffer(int(result.err_len))
+                Def().get_err(result.err, err)
+                raise AUTDError(err)
         return ConfigPtr(ptr._0)
 
     def _backend(self: "PlotConfig") -> Backend:
@@ -236,31 +238,53 @@ class PyPlotConfig(IPlotConfig):
         self.show = show
         self.fname = fname
 
-    def _config_ptr(self: "PyPlotConfig") -> ConfigPtr:
-        err = ctypes.create_string_buffer(256)
+    def _config_ptr(self: "PyPlotConfig") -> ConfigPtr:  # noqa: PLR0912
         ptr = LinkVisualizer().link_visualizer_py_plot_config_default()
         if self.figsize is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_fig_size(ptr, self.figsize[0], self.figsize[1])
         if self.dpi is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_dpi(ptr, self.dpi)
         if self.cbar_position is not None:
-            ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_position(ptr, self.cbar_position.encode("utf-8"), err)
+            res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_position(ptr, self.cbar_position.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
+                raise AUTDError(err)
+            ptr = res.result
         if self.cbar_size is not None:
-            ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_size(ptr, self.cbar_size.encode("utf-8"), err)
+            res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_size(ptr, self.cbar_size.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
+                raise AUTDError(err)
+            ptr = res.result
         if self.cbar_pad is not None:
-            ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_pad(ptr, self.cbar_pad.encode("utf-8"), err)
+            res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_pad(ptr, self.cbar_pad.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
+                raise AUTDError(err)
+            ptr = res.result
         if self.fontsize is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_font_size(ptr, self.fontsize)
         if self.ticks_step is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_ticks_step(ptr, self.ticks_step)
         if self.cmap is not None:
-            ptr = LinkVisualizer().link_visualizer_py_plot_config_with_c_map(ptr, self.cmap.encode("utf-8"), err)
+            res = LinkVisualizer().link_visualizer_py_plot_config_with_c_map(ptr, self.cmap.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
+                raise AUTDError(err)
+            ptr = res.result
         if self.show is not None:
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_show(ptr, self.show)
         if self.fname is not None:
-            ptr = LinkVisualizer().link_visualizer_py_plot_config_with_f_name(ptr, self.fname.encode("utf-8"), err)
-        if ptr._0 is None:
-            raise AUTDError(err)
+            res = LinkVisualizer().link_visualizer_py_plot_config_with_f_name(ptr, self.fname.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
+                raise AUTDError(err)
+            ptr = res.result
         return ConfigPtr(ptr._0)
 
     def _backend(self: "PyPlotConfig") -> Backend:
@@ -433,21 +457,19 @@ class Visualizer(Link):
         points_len = len(points)
         points = np.ravel(np.stack(points))  # type: ignore[call-overload]
         buf = np.zeros(points_len * 2).astype(ctypes.c_double)
-        err = ctypes.create_string_buffer(256)
-        if (
-            LinkVisualizer().link_visualizer_calc_field_of(
-                self._ptr,
-                self._backend,
-                self._directivity,
-                np.ctypeslib.as_ctypes(points),
-                points_len,
-                geometry._geometry_ptr(),
-                idx,
-                np.ctypeslib.as_ctypes(buf),
-                err,
-            )
-            == AUTD3_ERR
-        ):
+        res = LinkVisualizer().link_visualizer_calc_field_of(
+            self._ptr,
+            self._backend,
+            self._directivity,
+            np.ctypeslib.as_ctypes(points),
+            points_len,
+            geometry._geometry_ptr(),
+            idx,
+            np.ctypeslib.as_ctypes(buf),
+        )
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
         return np.fromiter([buf[2 * i] + buf[2 * i + 1] * 1j for i in range(points_len)], dtype=np.complex128, count=points_len)
 
@@ -459,28 +481,26 @@ class Visualizer(Link):
         """Plot field of specific STM index."""
         if self._backend != config._backend():
             raise InvalidPlotConfigError
-        err = ctypes.create_string_buffer(256)
-        if (
-            LinkVisualizer().link_visualizer_plot_field_of(
-                self._ptr,
-                self._backend,
-                self._directivity,
-                config._config_ptr(),
-                LinkVisualizer().link_visualizer_plot_range(
-                    plot_range.x_start,
-                    plot_range.x_end,
-                    plot_range.y_start,
-                    plot_range.y_end,
-                    plot_range.z_start,
-                    plot_range.z_end,
-                    plot_range.resolution,
-                ),
-                geometry._geometry_ptr(),
-                idx,
-                err,
-            )
-            == AUTD3_ERR
-        ):
+        res = LinkVisualizer().link_visualizer_plot_field_of(
+            self._ptr,
+            self._backend,
+            self._directivity,
+            config._config_ptr(),
+            LinkVisualizer().link_visualizer_plot_range(
+                plot_range.x_start,
+                plot_range.x_end,
+                plot_range.y_start,
+                plot_range.y_end,
+                plot_range.z_start,
+                plot_range.z_end,
+                plot_range.resolution,
+            ),
+            geometry._geometry_ptr(),
+            idx,
+        )
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
 
     def plot_field(self: "Visualizer", config: IPlotConfig, plot_range: PlotRange, geometry: Geometry) -> None:
@@ -491,19 +511,17 @@ class Visualizer(Link):
         """Plot phase of specific STM index."""
         if self._backend != config._backend():
             raise InvalidPlotConfigError
-        err = ctypes.create_string_buffer(256)
-        if (
-            LinkVisualizer().link_visualizer_plot_phase_of(
-                self._ptr,
-                self._backend,
-                self._directivity,
-                config._config_ptr(),
-                geometry._geometry_ptr(),
-                idx,
-                err,
-            )
-            == AUTD3_ERR
-        ):
+        res = LinkVisualizer().link_visualizer_plot_phase_of(
+            self._ptr,
+            self._backend,
+            self._directivity,
+            config._config_ptr(),
+            geometry._geometry_ptr(),
+            idx,
+        )
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
 
     def plot_phase(self: "Visualizer", config: IPlotConfig, geometry: Geometry) -> None:
@@ -514,14 +532,18 @@ class Visualizer(Link):
         """Plot raw modulation."""
         if self._backend != config._backend():
             raise InvalidPlotConfigError
-        err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_modulation_raw(self._ptr, self._backend, self._directivity, config._config_ptr(), err) == AUTD3_ERR:
+        res = LinkVisualizer().link_visualizer_plot_modulation_raw(self._ptr, self._backend, self._directivity, config._config_ptr())
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
 
     def plot_modulation(self: "Visualizer", config: IPlotConfig) -> None:
         """Plot modulation."""
         if self._backend != config._backend():
             raise InvalidPlotConfigError
-        err = ctypes.create_string_buffer(256)
-        if LinkVisualizer().link_visualizer_plot_modulation(self._ptr, self._backend, self._directivity, config._config_ptr(), err) == AUTD3_ERR:
+        res = LinkVisualizer().link_visualizer_plot_modulation(self._ptr, self._backend, self._directivity, config._config_ptr())
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)

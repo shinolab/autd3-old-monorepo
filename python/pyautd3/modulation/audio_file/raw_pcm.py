@@ -18,6 +18,7 @@ from pathlib import Path
 from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulationWithFreqDiv
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
     NativeMethods as ModulationAudioFile,
 )
@@ -47,10 +48,12 @@ class RawPCM(IModulationWithFreqDiv):
         self._sample_rate = sample_rate
 
     def _modulation_ptr(self: "RawPCM") -> ModulationPtr:
-        err = ctypes.create_string_buffer(256)
-        ptr = ModulationAudioFile().modulation_raw_pcm(str(self._path).encode("utf-8"), self._sample_rate, err)
-        if ptr._0 is None:
+        res = ModulationAudioFile().modulation_raw_pcm(str(self._path).encode("utf-8"), self._sample_rate)
+        if res.result is None:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
+        ptr = res.result
         if self._freq_div is not None:
             ptr = ModulationAudioFile().modulation_raw_pcm_with_sampling_frequency_division(ptr, self._freq_div)
         return ptr

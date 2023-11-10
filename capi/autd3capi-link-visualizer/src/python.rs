@@ -58,19 +58,10 @@ pub struct PyPlotConfigPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct ResultPyPlotConfigPtr {
+pub struct ResultPyPlotConfig {
     pub result: PyPlotConfigPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultPyPlotConfigPtrGetErr(
-    r: ResultPyPlotConfigPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
@@ -115,26 +106,26 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithDPI(
 pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPosition(
     config: PyPlotConfigPtr,
     cbar_position: *const c_char,
-) -> ResultPyPlotConfigPtr {
+) -> ResultPyPlotConfig {
     let cbar_position = match CStr::from_ptr(cbar_position).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPyPlotConfigPtr {
+            return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
-    ResultPyPlotConfigPtr {
+    ResultPyPlotConfig {
         result: PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {
             cbar_position,
             ..config
         })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
@@ -143,26 +134,26 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPosition(
 pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarSize(
     config: PyPlotConfigPtr,
     cbar_size: *const c_char,
-) -> ResultPyPlotConfigPtr {
+) -> ResultPyPlotConfig {
     let cbar_size = match CStr::from_ptr(cbar_size).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPyPlotConfigPtr {
+            return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
-    ResultPyPlotConfigPtr {
+    ResultPyPlotConfig {
         result: PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {
             cbar_size,
             ..config
         })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
@@ -171,23 +162,23 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarSize(
 pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCBarPad(
     config: PyPlotConfigPtr,
     cbar_pad: *const c_char,
-) -> ResultPyPlotConfigPtr {
+) -> ResultPyPlotConfig {
     let cbar_pad = match CStr::from_ptr(cbar_pad).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPyPlotConfigPtr {
+            return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
-    ResultPyPlotConfigPtr {
+    ResultPyPlotConfig {
         result: PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { cbar_pad, ..config })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
@@ -225,23 +216,23 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithTicksStep(
 pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithCMap(
     config: PyPlotConfigPtr,
     cmap: *const c_char,
-) -> ResultPyPlotConfigPtr {
+) -> ResultPyPlotConfig {
     let cmap = match CStr::from_ptr(cmap).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPyPlotConfigPtr {
+            return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
-    ResultPyPlotConfigPtr {
+    ResultPyPlotConfig {
         result: PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig { cmap, ..config })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
@@ -263,25 +254,25 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithShow(
 pub unsafe extern "C" fn AUTDLinkVisualizerPyPlotConfigWithFName(
     config: PyPlotConfigPtr,
     fname: *const c_char,
-) -> ResultPyPlotConfigPtr {
+) -> ResultPyPlotConfig {
     let fname = match CStr::from_ptr(fname).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPyPlotConfigPtr {
+            return ResultPyPlotConfig {
                 result: PyPlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PyPlotConfig);
-    ResultPyPlotConfigPtr {
+    ResultPyPlotConfig {
         result: PyPlotConfigPtr(Box::into_raw(Box::new(PyPlotConfig {
             fname: fname.into(),
             ..config
         })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }

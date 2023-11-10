@@ -76,16 +76,24 @@ class ConstraintPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class GainCalcDrivesMapPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
-
-
 class GroupGainMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class GroupKVMapPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+class ResultI32(ctypes.Structure):
+    _fields_ = [("result", ctypes.c_int32), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultController(ctypes.Structure):
+    _fields_ = [("result", ControllerPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultGainCalcDrivesMap(ctypes.Structure):
+    _fields_ = [("result", ctypes.c_void_p), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultModulation(ctypes.Structure):
+    _fields_ = [("result", ModulationPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 NUM_TRANS_IN_UNIT: int = 249
@@ -99,3 +107,29 @@ ULTRASOUND_FREQUENCY: float = 40000.0
 AUTD3_ERR: int = -1
 AUTD3_TRUE: int = 1
 AUTD3_FALSE: int = 0
+
+class Singleton(type):
+    _instances = {}  # type: ignore
+    _lock = threading.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with cls._lock:
+                if cls not in cls._instances:
+                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class NativeMethods(metaclass=Singleton):
+
+    def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
+        try:
+            self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_def{bin_ext}'))
+        except Exception:
+            return
+
+        self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDGetErr.restype = None
+
+    def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
+        return self.dll.AUTDGetErr(src, dst)

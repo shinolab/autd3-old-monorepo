@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr
+from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32
 
 from enum import IntEnum
 
@@ -65,6 +65,14 @@ class PyPlotConfigPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class ResultPlotConfig(ctypes.Structure):
+    _fields_ = [("result", PlotConfigPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultPyPlotConfig(ctypes.Structure):
+    _fields_ = [("result", PyPlotConfigPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
 class Singleton(type):
     _instances = {}  # type: ignore
     _lock = threading.Lock()
@@ -100,20 +108,20 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkVisualizerModulation.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDLinkVisualizerModulation.restype = ctypes.c_uint32
 
-        self.dll.AUTDLinkVisualizerCalcFieldOf.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32, GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerCalcFieldOf.restype = ctypes.c_int32
+        self.dll.AUTDLinkVisualizerCalcFieldOf.argtypes = [LinkPtr, Backend, Directivity, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32, GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDLinkVisualizerCalcFieldOf.restype = ResultI32
 
-        self.dll.AUTDLinkVisualizerPlotFieldOf.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, PlotRangePtr, GeometryPtr, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPlotFieldOf.restype = ctypes.c_int32
+        self.dll.AUTDLinkVisualizerPlotFieldOf.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, PlotRangePtr, GeometryPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPlotFieldOf.restype = ResultI32
 
-        self.dll.AUTDLinkVisualizerPlotPhaseOf.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, GeometryPtr, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPlotPhaseOf.restype = ctypes.c_int32
+        self.dll.AUTDLinkVisualizerPlotPhaseOf.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, GeometryPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPlotPhaseOf.restype = ResultI32
 
-        self.dll.AUTDLinkVisualizerPlotModulationRaw.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPlotModulationRaw.restype = ctypes.c_int32
+        self.dll.AUTDLinkVisualizerPlotModulationRaw.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPlotModulationRaw.restype = ResultI32
 
-        self.dll.AUTDLinkVisualizerPlotModulation.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPlotModulation.restype = ctypes.c_int32
+        self.dll.AUTDLinkVisualizerPlotModulation.argtypes = [LinkPtr, Backend, Directivity, ConfigPtr]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPlotModulation.restype = ResultI32
 
         self.dll.AUTDLinkVisualizerSphereNull.argtypes = [ctypes.c_bool, ctypes.c_int32] 
         self.dll.AUTDLinkVisualizerSphereNull.restype = LinkBuilderPtr
@@ -154,8 +162,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkVisualizerPlotConfigWithCMap.argtypes = [PlotConfigPtr, CMap]  # type: ignore 
         self.dll.AUTDLinkVisualizerPlotConfigWithCMap.restype = PlotConfigPtr
 
-        self.dll.AUTDLinkVisualizerPlotConfigWithFName.argtypes = [PlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPlotConfigWithFName.restype = PlotConfigPtr
+        self.dll.AUTDLinkVisualizerPlotConfigWithFName.argtypes = [PlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPlotConfigWithFName.restype = ResultPlotConfig
 
         self.dll.AUTDLinkVisualizerSpherePython.argtypes = [ctypes.c_bool, ctypes.c_int32] 
         self.dll.AUTDLinkVisualizerSpherePython.restype = LinkBuilderPtr
@@ -172,14 +180,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkVisualizerPyPlotConfigWithDPI.argtypes = [PyPlotConfigPtr, ctypes.c_int32]  # type: ignore 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithDPI.restype = PyPlotConfigPtr
 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition.argtypes = [PyPlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition.restype = PyPlotConfigPtr
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition.argtypes = [PyPlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition.restype = ResultPyPlotConfig
 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize.argtypes = [PyPlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize.restype = PyPlotConfigPtr
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize.argtypes = [PyPlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize.restype = ResultPyPlotConfig
 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad.argtypes = [PyPlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad.restype = PyPlotConfigPtr
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad.argtypes = [PyPlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad.restype = ResultPyPlotConfig
 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithFontSize.argtypes = [PyPlotConfigPtr, ctypes.c_int32]  # type: ignore 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithFontSize.restype = PyPlotConfigPtr
@@ -187,14 +195,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkVisualizerPyPlotConfigWithTicksStep.argtypes = [PyPlotConfigPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithTicksStep.restype = PyPlotConfigPtr
 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap.argtypes = [PyPlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap.restype = PyPlotConfigPtr
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap.argtypes = [PyPlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap.restype = ResultPyPlotConfig
 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithShow.argtypes = [PyPlotConfigPtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDLinkVisualizerPyPlotConfigWithShow.restype = PyPlotConfigPtr
 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithFName.argtypes = [PyPlotConfigPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkVisualizerPyPlotConfigWithFName.restype = PyPlotConfigPtr
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithFName.argtypes = [PyPlotConfigPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkVisualizerPyPlotConfigWithFName.restype = ResultPyPlotConfig
 
     def link_visualizer_plot_range(self, x_min: float, x_max: float, y_min: float, y_max: float, z_min: float, z_max: float, resolution: float) -> PlotRangePtr:
         return self.dll.AUTDLinkVisualizerPlotRange(x_min, x_max, y_min, y_max, z_min, z_max, resolution)
@@ -211,20 +219,20 @@ class NativeMethods(metaclass=Singleton):
     def link_visualizer_modulation(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, buf: ctypes.Array[ctypes.c_double] | None) -> ctypes.c_uint32:
         return self.dll.AUTDLinkVisualizerModulation(visualizer, backend, directivity, buf)
 
-    def link_visualizer_calc_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, points: ctypes.Array[ctypes.c_double] | None, points_len: int, geometry: GeometryPtr, idx: int, buf: ctypes.Array[ctypes.c_double] | None, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDLinkVisualizerCalcFieldOf(visualizer, backend, directivity, points, points_len, geometry, idx, buf, err)
+    def link_visualizer_calc_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, points: ctypes.Array[ctypes.c_double] | None, points_len: int, geometry: GeometryPtr, idx: int, buf: ctypes.Array[ctypes.c_double] | None) -> ResultI32:
+        return self.dll.AUTDLinkVisualizerCalcFieldOf(visualizer, backend, directivity, points, points_len, geometry, idx, buf)
 
-    def link_visualizer_plot_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, range: PlotRangePtr, geometry: GeometryPtr, idx: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDLinkVisualizerPlotFieldOf(visualizer, backend, directivity, config, range, geometry, idx, err)
+    def link_visualizer_plot_field_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, range: PlotRangePtr, geometry: GeometryPtr, idx: int) -> ResultI32:
+        return self.dll.AUTDLinkVisualizerPlotFieldOf(visualizer, backend, directivity, config, range, geometry, idx)
 
-    def link_visualizer_plot_phase_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, geometry: GeometryPtr, idx: int, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDLinkVisualizerPlotPhaseOf(visualizer, backend, directivity, config, geometry, idx, err)
+    def link_visualizer_plot_phase_of(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, geometry: GeometryPtr, idx: int) -> ResultI32:
+        return self.dll.AUTDLinkVisualizerPlotPhaseOf(visualizer, backend, directivity, config, geometry, idx)
 
-    def link_visualizer_plot_modulation_raw(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDLinkVisualizerPlotModulationRaw(visualizer, backend, directivity, config, err)
+    def link_visualizer_plot_modulation_raw(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr) -> ResultI32:
+        return self.dll.AUTDLinkVisualizerPlotModulationRaw(visualizer, backend, directivity, config)
 
-    def link_visualizer_plot_modulation(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr, err: ctypes.Array[ctypes.c_char] | None) -> ctypes.c_int32:
-        return self.dll.AUTDLinkVisualizerPlotModulation(visualizer, backend, directivity, config, err)
+    def link_visualizer_plot_modulation(self, visualizer: LinkPtr, backend: Backend, directivity: Directivity, config: ConfigPtr) -> ResultI32:
+        return self.dll.AUTDLinkVisualizerPlotModulation(visualizer, backend, directivity, config)
 
     def link_visualizer_sphere_null(self, use_gpu: bool, gpu_idx: int) -> LinkBuilderPtr:
         return self.dll.AUTDLinkVisualizerSphereNull(use_gpu, gpu_idx)
@@ -265,8 +273,8 @@ class NativeMethods(metaclass=Singleton):
     def link_visualizer_plot_config_with_c_map(self, config: PlotConfigPtr, cmap: CMap) -> PlotConfigPtr:
         return self.dll.AUTDLinkVisualizerPlotConfigWithCMap(config, cmap)
 
-    def link_visualizer_plot_config_with_f_name(self, config: PlotConfigPtr, fname: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPlotConfigWithFName(config, fname, err)
+    def link_visualizer_plot_config_with_f_name(self, config: PlotConfigPtr, fname: bytes) -> ResultPlotConfig:
+        return self.dll.AUTDLinkVisualizerPlotConfigWithFName(config, fname)
 
     def link_visualizer_sphere_python(self, use_gpu: bool, gpu_idx: int) -> LinkBuilderPtr:
         return self.dll.AUTDLinkVisualizerSpherePython(use_gpu, gpu_idx)
@@ -283,14 +291,14 @@ class NativeMethods(metaclass=Singleton):
     def link_visualizer_py_plot_config_with_dpi(self, config: PyPlotConfigPtr, dpi: int) -> PyPlotConfigPtr:
         return self.dll.AUTDLinkVisualizerPyPlotConfigWithDPI(config, dpi)
 
-    def link_visualizer_py_plot_config_with_c_bar_position(self, config: PyPlotConfigPtr, cbar_position: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PyPlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition(config, cbar_position, err)
+    def link_visualizer_py_plot_config_with_c_bar_position(self, config: PyPlotConfigPtr, cbar_position: bytes) -> ResultPyPlotConfig:
+        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPosition(config, cbar_position)
 
-    def link_visualizer_py_plot_config_with_c_bar_size(self, config: PyPlotConfigPtr, cbar_size: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PyPlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize(config, cbar_size, err)
+    def link_visualizer_py_plot_config_with_c_bar_size(self, config: PyPlotConfigPtr, cbar_size: bytes) -> ResultPyPlotConfig:
+        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarSize(config, cbar_size)
 
-    def link_visualizer_py_plot_config_with_c_bar_pad(self, config: PyPlotConfigPtr, cbar_pad: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PyPlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad(config, cbar_pad, err)
+    def link_visualizer_py_plot_config_with_c_bar_pad(self, config: PyPlotConfigPtr, cbar_pad: bytes) -> ResultPyPlotConfig:
+        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCBarPad(config, cbar_pad)
 
     def link_visualizer_py_plot_config_with_font_size(self, config: PyPlotConfigPtr, fontsize: int) -> PyPlotConfigPtr:
         return self.dll.AUTDLinkVisualizerPyPlotConfigWithFontSize(config, fontsize)
@@ -298,11 +306,11 @@ class NativeMethods(metaclass=Singleton):
     def link_visualizer_py_plot_config_with_ticks_step(self, config: PyPlotConfigPtr, ticks_step: float) -> PyPlotConfigPtr:
         return self.dll.AUTDLinkVisualizerPyPlotConfigWithTicksStep(config, ticks_step)
 
-    def link_visualizer_py_plot_config_with_c_map(self, config: PyPlotConfigPtr, cmap: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PyPlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap(config, cmap, err)
+    def link_visualizer_py_plot_config_with_c_map(self, config: PyPlotConfigPtr, cmap: bytes) -> ResultPyPlotConfig:
+        return self.dll.AUTDLinkVisualizerPyPlotConfigWithCMap(config, cmap)
 
     def link_visualizer_py_plot_config_with_show(self, config: PyPlotConfigPtr, show: bool) -> PyPlotConfigPtr:
         return self.dll.AUTDLinkVisualizerPyPlotConfigWithShow(config, show)
 
-    def link_visualizer_py_plot_config_with_f_name(self, config: PyPlotConfigPtr, fname: bytes, err: ctypes.Array[ctypes.c_char] | None) -> PyPlotConfigPtr:
-        return self.dll.AUTDLinkVisualizerPyPlotConfigWithFName(config, fname, err)
+    def link_visualizer_py_plot_config_with_f_name(self, config: PyPlotConfigPtr, fname: bytes) -> ResultPyPlotConfig:
+        return self.dll.AUTDLinkVisualizerPyPlotConfigWithFName(config, fname)

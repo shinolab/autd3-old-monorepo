@@ -22,7 +22,8 @@ from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import AUTD3, Geometry
 from pyautd3.internal.datagram import Datagram
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 if TYPE_CHECKING:
     from pyautd3.modulation.cache import Cache
@@ -52,9 +53,11 @@ class IModulation(Datagram, metaclass=ABCMeta):
         return AUTD3.fpga_clk_freq() / self.sampling_frequency_division
 
     def __len__(self: "IModulation") -> int:
-        err = create_string_buffer(256)
-        n = int(Base().modulation_size(self._modulation_ptr(), err))
-        if n < 0:
+        res = Base().modulation_size(self._modulation_ptr())
+        n = int(res.result)
+        if n == AUTD3_ERR:
+            err = create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
         return n
 

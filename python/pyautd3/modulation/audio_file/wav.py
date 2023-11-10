@@ -17,6 +17,7 @@ from pathlib import Path
 from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulationWithFreqDiv
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
     NativeMethods as ModulationAudioFile,
 )
@@ -41,10 +42,12 @@ class Wav(IModulationWithFreqDiv):
         self._path = path
 
     def _modulation_ptr(self: "Wav") -> ModulationPtr:
-        err = ctypes.create_string_buffer(256)
-        ptr = ModulationAudioFile().modulation_wav(str(self._path).encode("utf-8"), err)
-        if ptr._0 is None:
+        res = ModulationAudioFile().modulation_wav(str(self._path).encode("utf-8"))
+        if res.result is None:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
+        ptr = res.result
         if self._freq_div is not None:
             ptr = ModulationAudioFile().modulation_wav_with_sampling_frequency_division(ptr, self._freq_div)
         return ptr

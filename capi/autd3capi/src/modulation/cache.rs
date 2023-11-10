@@ -13,8 +13,6 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use std::ffi::c_char;
-
 use autd3capi_def::{
     common::{autd3::modulation::ModulationCache, *},
     ModulationPtr,
@@ -22,15 +20,15 @@ use autd3capi_def::{
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultCachePtr {
+pub struct ResultCache {
     pub result: ConstPtr,
     pub buffer_len: u32,
     pub err_len: u32,
-    pub err: *const c_char,
+    pub err: ConstPtr,
 }
 
 impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>>
-    for ResultCachePtr
+    for ResultCache
 {
     fn from(
         r: Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>,
@@ -40,7 +38,7 @@ impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTD
                 buffer_len: v.buffer().len() as u32,
                 result: Box::into_raw(Box::new(v)) as _,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
@@ -48,7 +46,7 @@ impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTD
                     result: NULL,
                     buffer_len: 0,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
@@ -56,31 +54,25 @@ impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTD
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDResultCachePtrGetErr(r: ResultCachePtr, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
-}
-
-#[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationWithCache(m: ModulationPtr) -> ResultCachePtr {
+pub unsafe extern "C" fn AUTDModulationWithCache(m: ModulationPtr) -> ResultCache {
     Box::from_raw(m.0 as *mut Box<M>).with_cache().into()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: ResultCachePtr, buf: *mut float) {
+pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: ResultCache, buf: *mut float) {
     let cache = cast!(m.result, ModulationCache);
     std::ptr::copy_nonoverlapping(cache.buffer().as_ptr(), buf, cache.buffer().len());
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: ResultCachePtr) -> ModulationPtr {
+pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: ResultCache) -> ModulationPtr {
     ModulationPtr::new(cast!(m.result, ModulationCache).clone())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheDelete(m: ResultCachePtr) {
+pub unsafe extern "C" fn AUTDModulationCacheDelete(m: ResultCache) {
     let _ = Box::from_raw(m.result as *mut ModulationCache);
 }
 

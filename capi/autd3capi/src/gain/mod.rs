@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::Drive;
 use autd3capi_def::{
     common::{driver::datagram::GainFilter, *},
-    DatagramPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMapPtr,
+    DatagramPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMap,
 };
 
 pub mod bessel;
@@ -39,7 +39,7 @@ pub unsafe extern "C" fn AUTDGainIntoDatagram(gain: GainPtr) -> DatagramPtr {
 pub unsafe extern "C" fn AUTDGainCalc(
     gain: GainPtr,
     geometry: GeometryPtr,
-) -> ResultGainCalcDrivesMapPtr {
+) -> ResultGainCalcDrivesMap {
     let geo = cast!(geometry.0, Geometry);
     Box::from_raw(gain.0 as *mut Box<G>)
         .calc(geo, GainFilter::All)
@@ -48,7 +48,7 @@ pub unsafe extern "C" fn AUTDGainCalc(
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainCalcGetResult(
-    src: ResultGainCalcDrivesMapPtr,
+    src: ResultGainCalcDrivesMap,
     dst: *mut Drive,
     idx: u32,
 ) {
@@ -58,7 +58,7 @@ pub unsafe extern "C" fn AUTDGainCalcGetResult(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: ResultGainCalcDrivesMapPtr) {
+pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: ResultGainCalcDrivesMap) {
     let _ = Box::from_raw(src.result as *mut HashMap<usize, Vec<Drive>>);
 }
 

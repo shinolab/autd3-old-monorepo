@@ -23,6 +23,10 @@ class LinkRemoteSOEMBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class ResultLinkRemoteSOEMBuilder(ctypes.Structure):
+    _fields_ = [("result", LinkRemoteSOEMBuilderPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
 class Singleton(type):
     _instances = {}  # type: ignore
     _lock = threading.Lock()
@@ -91,8 +95,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkSOEMIntoBuilder.argtypes = [LinkSOEMBuilderPtr]  # type: ignore 
         self.dll.AUTDLinkSOEMIntoBuilder.restype = LinkBuilderPtr
 
-        self.dll.AUTDLinkRemoteSOEM.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteSOEM.restype = LinkRemoteSOEMBuilderPtr
+        self.dll.AUTDLinkRemoteSOEM.argtypes = [ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteSOEM.restype = ResultLinkRemoteSOEMBuilder
 
         self.dll.AUTDLinkRemoteSOEMWithTimeout.argtypes = [LinkRemoteSOEMBuilderPtr, ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDLinkRemoteSOEMWithTimeout.restype = LinkRemoteSOEMBuilderPtr
@@ -148,8 +152,8 @@ class NativeMethods(metaclass=Singleton):
     def link_soem_into_builder(self, soem: LinkSOEMBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSOEMIntoBuilder(soem)
 
-    def link_remote_soem(self, addr: bytes, err: ctypes.Array[ctypes.c_char] | None) -> LinkRemoteSOEMBuilderPtr:
-        return self.dll.AUTDLinkRemoteSOEM(addr, err)
+    def link_remote_soem(self, addr: bytes) -> ResultLinkRemoteSOEMBuilder:
+        return self.dll.AUTDLinkRemoteSOEM(addr)
 
     def link_remote_soem_with_timeout(self, soem: LinkRemoteSOEMBuilderPtr, timeout_ns: int) -> LinkRemoteSOEMBuilderPtr:
         return self.dll.AUTDLinkRemoteSOEMWithTimeout(soem, timeout_ns)

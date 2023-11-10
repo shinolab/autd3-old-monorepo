@@ -58,16 +58,10 @@ pub struct PlotConfigPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct ResultPlotConfigPtr {
+pub struct ResultPlotConfig {
     pub result: PlotConfigPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultPlotConfigPtrGetErr(r: ResultPlotConfigPtr, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
@@ -223,25 +217,25 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithCMap(
 pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFName(
     config: PlotConfigPtr,
     fname: *const c_char,
-) -> ResultPlotConfigPtr {
+) -> ResultPlotConfig {
     let fname = match CStr::from_ptr(fname).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultPlotConfigPtr {
+            return ResultPlotConfig {
                 result: PlotConfigPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     let config = *Box::from_raw(config.0 as *mut PlotConfig);
-    ResultPlotConfigPtr {
+    ResultPlotConfig {
         result: PlotConfigPtr(Box::into_raw(Box::new(PlotConfig {
             fname: fname.into(),
             ..config
         })) as _),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
