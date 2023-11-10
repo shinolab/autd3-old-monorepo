@@ -96,6 +96,10 @@ class ResultModulation(ctypes.Structure):
     _fields_ = [("result", ModulationPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
+class ResultBackend(ctypes.Structure):
+    _fields_ = [("result", BackendPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14

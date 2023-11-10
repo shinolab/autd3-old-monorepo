@@ -67,7 +67,7 @@ class RemoteTwinCAT(Link):
 
         def __init__(self: "RemoteTwinCAT._Builder", server_ams_net_id: str) -> None:
             res = LinkTwinCAT().link_remote_twin_cat(server_ams_net_id.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)

@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import BackendPtr, ConstraintPtr, GainPtr
+from .autd3capi_def import BackendPtr, ConstraintPtr, GainPtr, ResultBackend
 
 
 class Singleton(type):
@@ -25,8 +25,8 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDCUDABackend.argtypes = [ctypes.c_char_p] 
-        self.dll.AUTDCUDABackend.restype = BackendPtr
+        self.dll.AUTDCUDABackend.argtypes = [] 
+        self.dll.AUTDCUDABackend.restype = ResultBackend
 
         self.dll.AUTDCUDABackendDelete.argtypes = [BackendPtr]  # type: ignore 
         self.dll.AUTDCUDABackendDelete.restype = None
@@ -109,8 +109,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloCUDALMWithInitial.argtypes = [GainPtr, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDGainHoloCUDALMWithInitial.restype = GainPtr
 
-    def cuda_backend(self, err: ctypes.Array[ctypes.c_char] | None) -> BackendPtr:
-        return self.dll.AUTDCUDABackend(err)
+    def cuda_backend(self) -> ResultBackend:
+        return self.dll.AUTDCUDABackend()
 
     def cuda_backend_delete(self, backend: BackendPtr) -> None:
         return self.dll.AUTDCUDABackendDelete(backend)

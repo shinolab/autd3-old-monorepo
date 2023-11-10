@@ -189,7 +189,7 @@ class PlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_plot_config_with_c_map(ptr, self.cmap)
         if self.fname is not None:
             result = LinkVisualizer().link_visualizer_plot_config_with_f_name(ptr, self.fname.encode("utf-8"))
-            if result.result is None:
+            if result.result._0 is None:
                 err = ctypes.create_string_buffer(int(result.err_len))
                 Def().get_err(result.err, err)
                 raise AUTDError(err)
@@ -246,21 +246,21 @@ class PyPlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_dpi(ptr, self.dpi)
         if self.cbar_position is not None:
             res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_position(ptr, self.cbar_position.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)
             ptr = res.result
         if self.cbar_size is not None:
             res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_size(ptr, self.cbar_size.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)
             ptr = res.result
         if self.cbar_pad is not None:
             res = LinkVisualizer().link_visualizer_py_plot_config_with_c_bar_pad(ptr, self.cbar_pad.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)
@@ -271,7 +271,7 @@ class PyPlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_ticks_step(ptr, self.ticks_step)
         if self.cmap is not None:
             res = LinkVisualizer().link_visualizer_py_plot_config_with_c_map(ptr, self.cmap.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)
@@ -280,7 +280,7 @@ class PyPlotConfig(IPlotConfig):
             ptr = LinkVisualizer().link_visualizer_py_plot_config_with_show(ptr, self.show)
         if self.fname is not None:
             res = LinkVisualizer().link_visualizer_py_plot_config_with_f_name(ptr, self.fname.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)

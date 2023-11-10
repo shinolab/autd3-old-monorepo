@@ -50,7 +50,7 @@ class Simulator(Link):
                 addr: Server IP address
             """
             result = LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8"))
-            if result.result is None:
+            if result.result._0 is None:
                 err = ctypes.create_string_buffer(int(result.err_len))
                 Def().get_err(result.err, err)
                 raise AUTDError(err)
