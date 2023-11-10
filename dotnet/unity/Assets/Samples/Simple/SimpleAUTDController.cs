@@ -49,11 +49,11 @@ public class SimpleAUTDController : MonoBehaviour
 
     private readonly AUTD3Sharp.Link.SOEM.OnErrCallbackDelegate _onLost = new(OnLost);
 
-    private void Awake()
+    private async void Awake()
     {
         try
         {
-            _autd = Controller.Builder()
+            _autd = await Controller.Builder()
                 .AddDevice(new AUTD3(gameObject.transform.position, gameObject.transform.rotation))
                 .OpenWithAsync(AUTD3Sharp.Link.SOEM.Builder().WithOnLost(_onLost));
         }
@@ -67,14 +67,14 @@ public class SimpleAUTDController : MonoBehaviour
 #endif
         }
 
-        _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
+        await _autd!.SendAsync(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 
         if (Target == null) return;
-        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        await _autd!.SendAsync(new AUTD3Sharp.Gain.Focus(Target.transform.position));
         _oldPosition = Target.transform.position;
     }
 
-    private void Update()
+    private async void Update()
     {
 #if UNITY_EDITOR
         if (!_isPlaying)
@@ -83,9 +83,10 @@ public class SimpleAUTDController : MonoBehaviour
             return;
         }
 #endif
+        if (_autd == null) return;
 
         if (Target == null || Target.transform.position == _oldPosition) return;
-        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        await _autd.SendAsync(new AUTD3Sharp.Gain.Focus(Target.transform.position));
         _oldPosition = Target.transform.position;
     }
 
