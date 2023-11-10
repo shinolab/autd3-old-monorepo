@@ -204,7 +204,7 @@ namespace AUTD3Sharp
             /// <returns>Controller</returns>
             public async Task<Controller> OpenWithAsync(ILinkBuilder link)
             {
-                var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWithAsync(_ptr, link.Ptr()));
+                var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr()));
                 if (result.result.Item1 == IntPtr.Zero)
                 {
                     var err = new byte[result.errLen];
