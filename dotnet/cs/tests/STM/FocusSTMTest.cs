@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,9 +18,9 @@ namespace tests.STM;
 public class FocusSTMTest
 {
     [Fact]
-    public void TestFocusSTM()
+    public async Task TestFocusSTM()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         const double radius = 30.0;
         const int size = 2;
@@ -28,7 +28,7 @@ public class FocusSTMTest
         var stm = new FocusSTM(1)
             .AddFociFromIter(Enumerable.Range(0, size).Select(i => 2 * Math.PI * i / size).Select(theta =>
                 (center + radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0), (byte)0)));
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
 
         foreach (var dev in autd.Geometry)
         {
@@ -53,7 +53,7 @@ public class FocusSTMTest
         }
 
         stm = stm.WithStartIdx(0);
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
         Assert.Equal((ushort)0, stm.StartIdx);
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
@@ -63,7 +63,7 @@ public class FocusSTMTest
         }
 
         stm = stm.WithStartIdx(null).WithFinishIdx(0);
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
         Assert.Null(stm.StartIdx);
         Assert.Equal((ushort)0, stm.FinishIdx);
         foreach (var dev in autd.Geometry)
@@ -73,7 +73,7 @@ public class FocusSTMTest
         }
 
         stm = FocusSTM.WithSamplingFrequencyDivision(512).AddFocus(center).AddFocus(center);
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingFrequency);
         Assert.Equal(512u, stm.SamplingFrequencyDivision);
@@ -84,7 +84,7 @@ public class FocusSTMTest
         }
 
         stm = FocusSTM.WithSamplingFrequency(20e3).AddFocus(center).AddFocus(center);
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
         Assert.Equal(10000, stm.Frequency);
         Assert.Equal(2 * 10000, stm.SamplingFrequency);
         Assert.Equal(1024u, stm.SamplingFrequencyDivision);
@@ -95,7 +95,7 @@ public class FocusSTMTest
         }
 
         stm = FocusSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddFocus(center).AddFocus(center);
-        Assert.True(autd.Send(stm));
+        Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingFrequency);
         Assert.Equal(512u, stm.SamplingFrequencyDivision);

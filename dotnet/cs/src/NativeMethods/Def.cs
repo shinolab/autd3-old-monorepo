@@ -26,6 +26,9 @@ namespace AUTD3Sharp
         internal const int AUTD3_FALSE = 0;
 
 
+        [DllImport(__DllName, EntryPoint = "AUTDGetErr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void AUTDGetErr(IntPtr src, byte* dst);
+
 
     }
 

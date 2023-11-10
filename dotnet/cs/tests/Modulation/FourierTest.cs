@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,14 +16,14 @@ namespace tests.Modulation;
 public class FourierTest
 {
     [Fact]
-    public void Fourier()
+    public async Task Fourier()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var m = (new Sine(50) + new Sine(100)).AddComponent(new Sine(150))
             .AddComponentsFromIter(new[] { 200 }.Select(x => new Sine(x))) + new Sine(250);
 
-        Assert.True(autd.Send(m));
+        Assert.True(await autd.SendAsync(m));
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link<Audit>().Modulation(dev.Idx);

@@ -17,13 +17,13 @@ namespace AUTD3Sharp
 
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationWav", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationWav(byte* path, byte* err);
+        public static extern ResultModulation AUTDModulationWav(byte* path);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationWavWithSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m, uint div);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationRawPCM", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationRawPCM(byte* path, uint sample_rate, byte* err);
+        public static extern ResultModulation AUTDModulationRawPCM(byte* path, uint sample_rate);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationRawPCMWithSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationRawPCMWithSamplingFrequencyDivision(ModulationPtr m, uint div);

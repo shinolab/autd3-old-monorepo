@@ -41,16 +41,20 @@ namespace AUTD3Sharp.Modulation.AudioFile
 
         internal override ModulationPtr ModulationPtr()
         {
-            var err = new byte[256];
             var filenameBytes = System.Text.Encoding.ASCII.GetBytes(_filename);
             unsafe
             {
-                fixed (byte* ep = err)
                 fixed (byte* fp = filenameBytes)
                 {
-                    var ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCM(fp, _sampleRate, ep);
-                    if (ptr.Item1 == IntPtr.Zero)
+                    var res = NativeMethodsModulationAudioFile.AUTDModulationRawPCM(fp, _sampleRate);
+                    if (res.result.Item1 == IntPtr.Zero)
+                    {
+                        var err = new byte[res.errLen];
+                        fixed (byte* p = err)
+                            NativeMethodsDef.AUTDGetErr(res.err, p);
                         throw new AUTDException(err);
+                    }
+                    var ptr = res.result;
                     if (FreqDiv != null)
                         ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCMWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
                     return ptr;

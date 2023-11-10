@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,9 +18,9 @@ namespace tests.Gain.Holo;
 public class GSTest
 {
     [Fact]
-    public void GS()
+    public async Task GS()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new GS<NalgebraBackend>(backend)
@@ -29,7 +29,7 @@ public class GSTest
             .WithRepeat(100)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
@@ -40,9 +40,9 @@ public class GSTest
     }
 
     [IgnoreIfCUDAIsNotFoundFact]
-    public void GSWithCUDA()
+    public async Task GSWithCUDA()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new CUDABackend();
         var g = new GS<CUDABackend>(backend)
@@ -51,7 +51,7 @@ public class GSTest
             .WithRepeat(100)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
 
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {

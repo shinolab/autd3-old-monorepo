@@ -15,4 +15,4 @@ open AUTD3Sharp
 open AUTD3Sharp.Link
 open Samples
 
-Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(TwinCAT.Builder()) |> SampleRunner.Run
+Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(TwinCAT.Builder()) |> Async.AwaitTask |> Async.RunSynchronously |> SampleRunner.Run

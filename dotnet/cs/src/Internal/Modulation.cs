@@ -40,16 +40,15 @@ namespace AUTD3Sharp.Internal
         {
             get
             {
-                var err = new byte[256];
+                var res = NativeMethodsBase.AUTDModulationSize(ModulationPtr());
+                if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result;
+                var err = new byte[res.errLen];
                 unsafe
                 {
                     fixed (byte* p = err)
-                    {
-                        var n = NativeMethodsBase.AUTDModulationSize(ModulationPtr(), p);
-                        if (n < 0) throw new AUTDException(err);
-                        return n;
-                    }
+                        NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
+                throw new AUTDException(err);
             }
         }
     }

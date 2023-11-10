@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 using AUTD3Sharp.Internal;
 
 #if UNITY_2018_3_OR_NEWER
@@ -202,22 +202,21 @@ namespace AUTD3Sharp
             /// </summary>
             /// <param name="link">link</param>
             /// <returns>Controller</returns>
-            public Controller OpenWith(ILinkBuilder link)
+            public async Task<Controller> OpenWithAsync(ILinkBuilder link)
             {
-                unsafe
+                var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWithAsync(_ptr, link.Ptr()));
+                if (result.result.Item1 == IntPtr.Zero)
                 {
-                    var err = new byte[256];
-                    fixed (byte* ep = err)
+                    var err = new byte[result.errLen];
+                    unsafe
                     {
-                        var ptr = NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr(), ep);
-                        if (ptr.Item1 == IntPtr.Zero)
-                            throw new AUTDException(err);
-
-                        var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
-
-                        return new Controller(geometry, ptr, link.Props());
+                        fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
+                        throw new AUTDException(err);
                     }
                 }
+                var ptr = result.result;
+                var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
+                return new Controller(geometry, ptr, link.Props());
             }
 
             internal ControllerBuilder()
@@ -242,23 +241,20 @@ namespace AUTD3Sharp
             _linkProps = linkProps;
         }
 
-        private FirmwareInfoListPtr GetFirmwareInfoListPtr()
+        private ResultFirmwareInfoList GetFirmwareInfoListPtr()
         {
-            var err = new byte[256];
+
+            var res = NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr);
+            if (res.result != IntPtr.Zero) return res;
             unsafe
             {
-                fixed (byte* ep = err)
-                {
-                    var ptr = NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr, ep);
-
-                    if (ptr.Item1 == IntPtr.Zero)
-                        throw new AUTDException(err);
-                    return ptr;
-                }
+                var err = new byte[res.err_len];
+                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                throw new AUTDException(err);
             }
         }
 
-        private FirmwareInfo GetFirmwareInfo(FirmwareInfoListPtr handle, uint i)
+        private static FirmwareInfo GetFirmwareInfo(ResultFirmwareInfoList handle, uint i)
         {
             var info = new byte[256];
             unsafe
@@ -275,27 +271,28 @@ namespace AUTD3Sharp
         /// Get list of FPGA information
         /// </summary>
         /// <exception cref="AUTDException"></exception>
-        public IEnumerable<FirmwareInfo> FirmwareInfoList()
+        public async Task<FirmwareInfo[]> FirmwareInfoListAsync()
         {
-            var handle = GetFirmwareInfoListPtr();
-            for (uint i = 0; i < Geometry.NumDevices; i++)
-                yield return GetFirmwareInfo(handle, i);
+            var handle = await Task.Run(GetFirmwareInfoListPtr);
+            var result = Enumerable.Range(0, Geometry.NumDevices).Select(i => GetFirmwareInfo(handle, (uint)i)).ToArray();
             NativeMethodsBase.AUTDControllerFirmwareInfoListPointerDelete(handle);
+            return result;
         }
 
         /// <summary>
         /// Close connection
         /// </summary>
         /// <exception cref="AUTDException"></exception>
-        public void Close()
+        public async Task CloseAsync()
         {
             if (Ptr.Item1 == IntPtr.Zero) return;
-            var err = new byte[256];
+            var res = await Task.Run(() => NativeMethodsBase.AUTDControllerClose(Ptr));
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
+            var err = new byte[res.errLen];
             unsafe
             {
-                fixed (byte* ep = err)
-                    if (!NativeMethodsBase.AUTDControllerClose(Ptr, ep))
-                        throw new AUTDException(err);
+                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                throw new AUTDException(err);
             }
         }
 
@@ -324,20 +321,23 @@ namespace AUTD3Sharp
         /// <summary>
         /// List of FPGA information
         /// </summary>
-        public FPGAInfo[] FPGAInfo
+        public async Task<FPGAInfo[]> FPGAInfoAsync()
         {
-            get
+            var infos = new byte[Geometry.NumDevices];
+            var res = await Task.Run(() =>
             {
-                var infos = new byte[Geometry.NumDevices];
-                var err = new byte[256];
                 unsafe
                 {
                     fixed (byte* ptr = infos)
-                    fixed (byte* ep = err)
-                        if (!NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr, ep))
-                            throw new AUTDException(err);
+                        return NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr);
                 }
-                return infos.Select(x => new FPGAInfo(x)).ToArray();
+            });
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return infos.Select(x => new FPGAInfo(x)).ToArray();
+            var err = new byte[res.errLen];
+            unsafe
+            {
+                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                throw new AUTDException(err);
             }
         }
 
@@ -357,20 +357,19 @@ namespace AUTD3Sharp
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(ISpecialDatagram special, TimeSpan? timeout = null)
+        public async Task<bool> SendAsync(ISpecialDatagram special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
-            var err = new byte[256];
+
+            var res = await Task.Run(() =>
+                NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
+                    (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
+            var err = new byte[res.errLen];
             unsafe
             {
-                fixed (byte* ep = err)
-                {
-                    var res = NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
-                        (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), ep);
-                    if (res == NativeMethodsDef.AUTD3_ERR)
-                        throw new AUTDException(err);
-                    return res == NativeMethodsDef.AUTD3_TRUE;
-                }
+                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                throw new AUTDException(err);
             }
         }
 
@@ -382,9 +381,9 @@ namespace AUTD3Sharp
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(IDatagram data, TimeSpan? timeout = null)
+        public async Task<bool> SendAsync(IDatagram data, TimeSpan? timeout = null)
         {
-            return Send(data, new NullDatagram(), timeout);
+            return await SendAsync(data, new NullDatagram(), timeout);
         }
 
         /// <summary>
@@ -396,24 +395,19 @@ namespace AUTD3Sharp
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send(IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
+        public async Task<bool> SendAsync(IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
         {
             if (data1 == null) throw new ArgumentNullException(nameof(data1));
             if (data2 == null) throw new ArgumentNullException(nameof(data2));
-            var err = new byte[256];
+
+            var res = await Task.Run(() => NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
+                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
+            var err = new byte[res.errLen];
             unsafe
             {
-                fixed (byte* ep = err)
-                {
-                    var res = NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
-                        (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), ep);
-                    if (res == NativeMethodsDef.AUTD3_ERR)
-                    {
-                        throw new AUTDException(err);
-                    }
-
-                    return res == NativeMethodsDef.AUTD3_TRUE;
-                }
+                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                throw new AUTDException(err);
             }
         }
 
@@ -425,18 +419,17 @@ namespace AUTD3Sharp
         /// <returns> If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the data has been sent reliably or not.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="AUTDException"></exception>
-        public bool Send((IDatagram, IDatagram) data, TimeSpan? timeout = null)
+        public async Task<bool> SendAsync((IDatagram, IDatagram) data, TimeSpan? timeout = null)
         {
             var (data1, data2) = data;
-            return Send(data1, data2, timeout);
+            return await SendAsync(data1, data2, timeout);
         }
 
         public sealed class GroupGuard
         {
-
             private readonly Controller _controller;
             private readonly Func<Device, object?> _map;
-            private GroupKVMapPtr _kvMap;
+            private ResultGroupKVMap _kvMap;
             private readonly IDictionary<object, int> _keymap;
             private int _k;
 
@@ -459,14 +452,14 @@ namespace AUTD3Sharp
                 var ptr1 = data1.Ptr(_controller.Geometry);
                 var ptr2 = data2.Ptr(_controller.Geometry);
                 _keymap[key] = _k++;
-                var err = new byte[256];
+                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs);
+                if (_kvMap.result != IntPtr.Zero) return this;
+                var err = new byte[_kvMap.err_len];
                 unsafe
                 {
-                    fixed (byte* ep = err)
-                        _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs, ep);
+                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(_kvMap.err, ep);
+                    throw new AUTDException(err);
                 }
-                if (_kvMap.Item1 == IntPtr.Zero) throw new AUTDException(err);
-                return this;
             }
 
             public GroupGuard Set(object key, IDatagram data, TimeSpan? timeout = null)
@@ -487,17 +480,17 @@ namespace AUTD3Sharp
                 var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
                 var ptr = data.Ptr();
                 _keymap[key] = _k++;
-                var err = new byte[256];
+                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs);
+                if (_kvMap.result != IntPtr.Zero) return this;
+                var err = new byte[_kvMap.err_len];
                 unsafe
                 {
-                    fixed (byte* ep = err)
-                        _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs, ep);
+                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(_kvMap.err, ep);
+                    throw new AUTDException(err);
                 }
-                if (_kvMap.Item1 == IntPtr.Zero) throw new AUTDException(err);
-                return this;
             }
 
-            public void Send()
+            public async Task SendAsync()
             {
                 var map = _controller.Geometry.Select(dev =>
                 {
@@ -505,13 +498,21 @@ namespace AUTD3Sharp
                     var k = _map(dev);
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();
-                var err = new byte[256];
+
+                var res = await Task.Run(() =>
+                {
+                    unsafe
+                    {
+                        fixed (int* mp = map)
+                            return NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap);
+                    }
+                });
+                if (res.result != NativeMethodsDef.AUTD3_ERR) return;
+                var err = new byte[res.errLen];
                 unsafe
                 {
-                    fixed (int* mp = map)
-                    fixed (byte* ep = err)
-                        if (NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap, ep) == NativeMethodsDef.AUTD3_ERR)
-                            throw new AUTDException(err);
+                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
+                    throw new AUTDException(err);
                 }
             }
         }

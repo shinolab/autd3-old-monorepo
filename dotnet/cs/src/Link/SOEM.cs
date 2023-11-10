@@ -204,17 +204,23 @@ namespace AUTD3Sharp.Link
             /// <exception cref="AUTDException"></exception>
             internal RemoteSOEMBuilder(IPEndPoint ip)
             {
-                var err = new byte[256];
                 var ipStr = ip.ToString();
                 var ipBytes = System.Text.Encoding.UTF8.GetBytes(ipStr);
                 unsafe
                 {
-                    fixed (byte* ep = err)
                     fixed (byte* ipPtr = ipBytes)
-                        _ptr = NativeMethodsLinkSOEM.AUTDLinkRemoteSOEM(ipPtr, ep);
+                    {
+                        var res = NativeMethodsLinkSOEM.AUTDLinkRemoteSOEM(ipPtr);
+                        if (res.result.Item1 == IntPtr.Zero)
+                        {
+                            var err = new byte[res.err_len];
+                            fixed (byte* ep = err)
+                                NativeMethodsDef.AUTDGetErr(res.err, ep);
+                            throw new AUTDException(err);
+                        }
+                        _ptr = res.result;
+                    }
                 }
-                if (_ptr.Item1 == IntPtr.Zero)
-                    throw new AUTDException(err);
             }
 
             public RemoteSOEMBuilder WithTimeout(TimeSpan timeout)

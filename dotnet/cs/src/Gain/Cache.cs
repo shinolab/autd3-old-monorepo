@@ -45,23 +45,28 @@ namespace AUTD3Sharp.Gain
         {
             var deviceIndices = geometry.Devices().Select(d => d.Idx).ToArray();
             if (_cache.Count == deviceIndices.Length && deviceIndices.All(i => _cache.ContainsKey(i))) return;
-            var err = new byte[256];
-            unsafe
+            var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr);
+            if (res.result == IntPtr.Zero)
             {
-                fixed (byte* ep = err)
+                var err = new byte[res.errLen];
+                unsafe
                 {
-                    var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr, ep);
-                    if (res.Item1 == IntPtr.Zero) throw new AUTDException(err);
-                    foreach (var dev in geometry.Devices())
-                    {
-                        var drives = new Drive[dev.NumTransducers];
-                        fixed (Drive* p = drives)
-                            NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
-                        _cache[dev.Idx] = drives;
-                    }
-                    NativeMethodsBase.AUTDGainCalcFreeResult(res);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
+                throw new AUTDException(err);
             }
+
+            foreach (var dev in geometry.Devices())
+            {
+                var drives = new Drive[dev.NumTransducers];
+                unsafe
+                {
+                    fixed (Drive* p = drives)
+                        NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                }
+                _cache[dev.Idx] = drives;
+            }
+            NativeMethodsBase.AUTDGainCalcFreeResult(res);
         }
 
         internal override GainPtr GainPtr(Geometry geometry)

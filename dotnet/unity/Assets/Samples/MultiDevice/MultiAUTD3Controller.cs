@@ -4,7 +4,7 @@
  * Created Date: 27/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ public class MultiAUTD3Controller : MonoBehaviour
 
         try
         {
-            _autd = builder.OpenWith(AUTD3Sharp.Link.Simulator.Builder(8080));
+            _autd = builder.OpenWithAsync(AUTD3Sharp.Link.Simulator.Builder(8080));
         }
         catch (Exception)
         {

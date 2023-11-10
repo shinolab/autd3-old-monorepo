@@ -4,7 +4,7 @@
  * Created Date: 15/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/09/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,12 +20,12 @@ namespace Samples;
 
 internal static class GroupTest
 {
-    public static void Test(Controller autd)
+    public static async Task Test(Controller autd)
     {
         var config = new Silencer();
-        autd.Send(config);
+        await autd.SendAsync(config);
 
-        autd.Group(dev =>
+        await autd.Group(dev =>
             {
                 return dev.Idx switch
                 {
@@ -36,6 +36,6 @@ internal static class GroupTest
             })
             .Set("null", (new Static(), new Null()))
             .Set("focus", (new Sine(150), new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150))))
-            .Send();
+            .SendAsync();
     }
 }

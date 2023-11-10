@@ -20,7 +20,7 @@ namespace AUTD3Sharp
         public static extern LinkSimulatorBuilderPtr AUTDLinkSimulator(ushort port);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkSimulatorWithAddr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern LinkSimulatorBuilderPtr AUTDLinkSimulatorWithAddr(LinkSimulatorBuilderPtr simulator, byte* addr, byte* err);
+        public static extern ResultLinkSimulatorBuilder AUTDLinkSimulatorWithAddr(LinkSimulatorBuilderPtr simulator, byte* addr);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkSimulatorWithTimeout", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr simulator, ulong timeout_ns);
@@ -29,7 +29,7 @@ namespace AUTD3Sharp
         public static extern LinkBuilderPtr AUTDLinkSimulatorIntoBuilder(LinkSimulatorBuilderPtr simulator);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkSimulatorUpdateGeometry", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator, GeometryPtr geometry, byte* err);
+        public static extern ResultI32 AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator, GeometryPtr geometry);
 
 
     }
@@ -38,6 +38,14 @@ namespace AUTD3Sharp
     internal unsafe partial struct LinkSimulatorBuilderPtr
     {
         public IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct ResultLinkSimulatorBuilder
+    {
+        public LinkSimulatorBuilderPtr result;
+        public uint err_len;
+        public IntPtr err;
     }
 
 

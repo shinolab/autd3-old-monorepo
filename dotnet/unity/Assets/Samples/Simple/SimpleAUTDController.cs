@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ public class SimpleAUTDController : MonoBehaviour
         {
             _autd = Controller.Builder()
                 .AddDevice(new AUTD3(gameObject.transform.position, gameObject.transform.rotation))
-                .OpenWith(AUTD3Sharp.Link.SOEM.Builder().WithOnLost(_onLost));
+                .OpenWithAsync(AUTD3Sharp.Link.SOEM.Builder().WithOnLost(_onLost));
         }
         catch (Exception)
         {

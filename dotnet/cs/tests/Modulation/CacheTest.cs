@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Modulation;
 public class CacheTest
 {
     [Fact]
-    public void Cache()
+    public async Task Cache()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        Assert.True(autd.Send(new Sine(150).WithCache()));
+        Assert.True(await autd.SendAsync(new Sine(150).WithCache()));
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link<Audit>().Modulation(dev.Idx);
@@ -127,24 +127,24 @@ public class CacheTest
     }
 
     [Fact]
-    public void CacheCheckOnce()
+    public async Task CacheCheckOnce()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         {
             var m = new ForCacheTest();
-            Assert.True(autd.Send(m));
+            Assert.True(await autd.SendAsync(m));
             Assert.Equal(1, m.CalcCnt);
-            Assert.True(autd.Send(m));
+            Assert.True(await autd.SendAsync(m));
             Assert.Equal(2, m.CalcCnt);
         }
 
         {
             var m = new ForCacheTest();
             var mc = m.WithCache();
-            Assert.True(autd.Send(mc));
+            Assert.True(await autd.SendAsync(mc));
             Assert.Equal(1, m.CalcCnt);
-            Assert.True(autd.Send(mc));
+            Assert.True(await autd.SendAsync(mc));
             Assert.Equal(1, m.CalcCnt);
         }
     }
@@ -152,16 +152,16 @@ public class CacheTest
 
 
     [Fact]
-    public void CacheCheckFree()
+    public async Task CacheCheckFree()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var mc = new ForCacheTest().WithCache();
         {
             var mc2 = mc;
-            Assert.True(autd.Send(mc2));
+            Assert.True(await autd.SendAsync(mc2));
         }
 
-        Assert.True(autd.Send(mc));
+        Assert.True(await autd.SendAsync(mc));
     }
 }

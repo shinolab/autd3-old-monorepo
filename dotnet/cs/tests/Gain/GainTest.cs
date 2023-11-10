@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,12 +39,12 @@ public class GainTest
     }
 
     [Fact]
-    public void Gain()
+    public async Task Gain()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(autd.Send(new MyUniform(0.5, Math.PI, check)));
+        Assert.True(await autd.SendAsync(new MyUniform(0.5, Math.PI, check)));
 
         foreach (var dev in autd.Geometry)
         {
@@ -55,13 +55,13 @@ public class GainTest
     }
 
     [Fact]
-    public void GainCheckOnlyForEnabled()
+    public async Task GainCheckOnlyForEnabled()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(autd.Send(new MyUniform(0.5, Math.PI, check)));
+        Assert.True(await autd.SendAsync(new MyUniform(0.5, Math.PI, check)));
 
         Assert.False(check[0]);
         Assert.True(check[1]);

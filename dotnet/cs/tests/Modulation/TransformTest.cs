@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Modulation;
 public class TransformTest
 {
     [Fact]
-    public void Transform()
+    public async Task Transform()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        Assert.True(autd.Send(new Sine(150).WithTransform((_, v) => v / 2)));
+        Assert.True(await autd.SendAsync(new Sine(150).WithTransform((_, v) => v / 2)));
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link<Audit>().Modulation(dev.Idx);

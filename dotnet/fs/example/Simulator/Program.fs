@@ -18,6 +18,6 @@ open Samples
 let autd = Controller.Builder()
                 .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
                 .AddDevice(new AUTD3(Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
-                .OpenWith(Simulator.Builder 8080us)
+                .OpenWithAsync(Simulator.Builder 8080us) |> Async.AwaitTask |> Async.RunSynchronously 
 
 SampleRunner.Run autd

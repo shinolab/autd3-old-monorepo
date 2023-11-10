@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,44 +16,44 @@ namespace tests;
 public class AUTDTest
 {
 
-    public static Controller CreateController()
+    public static async Task<Controller> CreateController()
     {
-        return Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity)).OpenWith(Audit.Builder());
+        return await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity)).OpenWithAsync(Audit.Builder());
     }
 
     [Fact]
-    public void TestSilencer()
+    public async Task TestSilencer()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
             Assert.Equal(10, autd.Link<Audit>().SilencerStep(dev.Idx));
 
-        Assert.True(autd.Send(new Silencer(20)));
+        Assert.True(await autd.SendAsync(new Silencer(20)));
         foreach (var dev in autd.Geometry)
             Assert.Equal(20, autd.Link<Audit>().SilencerStep(dev.Idx));
 
-        Assert.True(autd.Send(Silencer.Disable()));
+        Assert.True(await autd.SendAsync(Silencer.Disable()));
         foreach (var dev in autd.Geometry)
             Assert.Equal(0xFFFF, autd.Link<Audit>().SilencerStep(dev.Idx));
 
-        Assert.True(autd.Send(new Silencer()));
+        Assert.True(await autd.SendAsync(new Silencer()));
         foreach (var dev in autd.Geometry)
             Assert.Equal(10, autd.Link<Audit>().SilencerStep(dev.Idx));
     }
 
     [Fact]
-    public void TestFPGAInfo()
+    public async Task TestFPGAInfo()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
             dev.ReadsFPGAInfo = true;
 
-        Assert.True(autd.Send(new UpdateFlags()));
+        Assert.True(await autd.SendAsync(new UpdateFlags()));
 
         {
-            var infos = autd.FPGAInfo;
+            var infos = await autd.FPGAInfoAsync();
             foreach (var info in infos)
             {
                 Assert.False(info.IsThermalAssert);
@@ -65,7 +65,7 @@ public class AUTDTest
             autd.Link<Audit>().Update(0);
             autd.Link<Audit>().Update(1);
 
-            var infos = autd.FPGAInfo;
+            var infos = await autd.FPGAInfoAsync();
             Assert.True(infos[0].IsThermalAssert);
             Assert.False(infos[1].IsThermalAssert);
         }
@@ -76,27 +76,26 @@ public class AUTDTest
             autd.Link<Audit>().Update(0);
             autd.Link<Audit>().Update(1);
 
-            var infos = autd.FPGAInfo;
+            var infos = await autd.FPGAInfoAsync();
             Assert.False(infos[0].IsThermalAssert);
             Assert.True(infos[1].IsThermalAssert);
         }
 
         {
             autd.Link<Audit>().BreakDown();
-            Assert.Throws<AUTDException>(() => _ = autd.FPGAInfo);
+            await Assert.ThrowsAsync<AUTDException>(async () => _ = await autd.FPGAInfoAsync());
         }
     }
 
     [Fact]
-    public void TestFirmwareInfoList()
+    public async Task TestFirmwareInfoList()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         Assert.Equal("v4.0.0", FirmwareInfo.LatestVersion);
 
         {
-            var infos = autd.FirmwareInfoList();
-            foreach (var (info, i) in infos.Select((info, i) => (info, i)))
+            foreach (var (info, i) in (await autd.FirmwareInfoListAsync()).Select((info, i) => (info, i)))
             {
                 Assert.Equal(info.Info, $"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]");
             }
@@ -104,78 +103,78 @@ public class AUTDTest
 
         {
             autd.Link<Audit>().BreakDown();
-            Assert.Throws<AUTDException>(() => _ = autd.FirmwareInfoList().Last());
+            await Assert.ThrowsAsync<AUTDException>(async () => _ = (await autd.FirmwareInfoListAsync()).Last());
         }
     }
 
     [Fact]
-    public void TestClose()
+    public async Task TestClose()
     {
         {
-            var autd = CreateController();
+            var autd = await CreateController();
             Assert.True(autd.Link<Audit>().IsOpen());
 
-            autd.Close();
+            await autd.CloseAsync();
             Assert.False(autd.Link<Audit>().IsOpen());
         }
 
         {
-            var autd = CreateController();
+            var autd = await CreateController();
 
             autd.Link<Audit>().BreakDown();
-            Assert.Throws<AUTDException>(() => autd.Close());
+            await Assert.ThrowsAsync<AUTDException>(async () => await autd.CloseAsync());
         }
     }
 
     [Fact]
-    public void TestSendTimeout()
+    public async Task TestSendTimeout()
     {
         {
-            var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-                .OpenWith(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(0)));
+            var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+                .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(0)));
 
-            autd.Send(new UpdateFlags());
+            await autd.SendAsync(new UpdateFlags());
             Assert.Equal(0ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            await autd.SendAsync(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            await autd.SendAsync((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send(new Stop(), TimeSpan.FromMicroseconds(3));
+            await autd.SendAsync(new Stop(), TimeSpan.FromMicroseconds(3));
             Assert.Equal(3000ul, autd.Link<Audit>().LastTimeoutNs());
         }
 
         {
-            var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-                .OpenWith(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(10)));
+            var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+                .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(10)));
 
-            autd.Send(new UpdateFlags());
+            await autd.SendAsync(new UpdateFlags());
             Assert.Equal(10000ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            await autd.SendAsync(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            await autd.SendAsync((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link<Audit>().LastTimeoutNs());
 
-            autd.Send(new Stop(), TimeSpan.FromMicroseconds(3));
+            await autd.SendAsync(new Stop(), TimeSpan.FromMicroseconds(3));
             Assert.Equal(3000ul, autd.Link<Audit>().LastTimeoutNs());
         }
     }
 
     [Fact]
-    public void TestSendSingle()
+    public async Task TestSendSingle()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
             Assert.All(m, d => Assert.Equal(0, d));
         }
-        Assert.True(autd.Send(new Static()));
+        Assert.True(await autd.SendAsync(new Static()));
 
         foreach (var dev in autd.Geometry)
         {
@@ -184,16 +183,16 @@ public class AUTDTest
         }
 
         autd.Link<Audit>().Down();
-        Assert.False(autd.Send(new Static()));
+        Assert.False(await autd.SendAsync(new Static()));
 
         autd.Link<Audit>().BreakDown();
-        Assert.Throws<AUTDException>(() => autd.Send(new Static()));
+        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static()));
     }
 
     [Fact]
-    public void TestSendDouble()
+    public async Task TestSendDouble()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -203,7 +202,7 @@ public class AUTDTest
             Assert.All(duties, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
-        Assert.True(autd.Send(new Static(), new Uniform(1)));
+        Assert.True(await autd.SendAsync(new Static(), new Uniform(1)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
@@ -214,24 +213,24 @@ public class AUTDTest
         }
 
         autd.Link<Audit>().Down();
-        Assert.False(autd.Send((new Static(), new Uniform(1))));
+        Assert.False(await autd.SendAsync((new Static(), new Uniform(1))));
 
         autd.Link<Audit>().BreakDown();
-        Assert.Throws<AUTDException>(() => autd.Send(new Static(), new Uniform(1)));
+        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static(), new Uniform(1)));
     }
 
     [Fact]
-    public void TestSendSpecial()
+    public async Task TestSendSpecial()
     {
-        var autd = CreateController();
-        Assert.True(autd.Send(new Uniform(1.0)));
+        var autd = await CreateController();
+        Assert.True(await autd.SendAsync(new Uniform(1.0)));
 
         foreach (var dev in autd.Geometry)
         {
             var (duties, _) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
             Assert.All(duties, d => Assert.Equal(256, d));
         }
-        Assert.True(autd.Send(new Stop()));
+        Assert.True(await autd.SendAsync(new Stop()));
 
         foreach (var dev in autd.Geometry)
         {
@@ -240,21 +239,21 @@ public class AUTDTest
         }
 
         autd.Link<Audit>().Down();
-        Assert.False(autd.Send(new Stop()));
+        Assert.False(await autd.SendAsync(new Stop()));
 
         autd.Link<Audit>().BreakDown();
-        Assert.Throws<AUTDException>(() => autd.Send(new Stop()));
+        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Stop()));
     }
 
     [Fact]
-    public void TestGroup()
+    public async Task TestGroup()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
-        autd.Group(dev => dev.Idx.ToString())
-            .Set("0", (new Static(), new Null()))
-            .Set("1", new Sine(150), new Uniform(1))
-            .Send();
+        await autd.Group(dev => dev.Idx.ToString())
+             .Set("0", (new Static(), new Null()))
+             .Set("1", new Sine(150), new Uniform(1))
+             .SendAsync();
         {
             var m = autd.Link<Audit>().Modulation(0);
             Assert.Equal(2, m.Length);
@@ -272,10 +271,10 @@ public class AUTDTest
         }
 
 
-        autd.Group(dev => dev.Idx.ToString())
-            .Set("1", new Stop())
-            .Set("0", (new Sine(150), new Uniform(1)))
-            .Send();
+        await autd.Group(dev => dev.Idx.ToString())
+             .Set("1", new Stop())
+             .Set("0", (new Sine(150), new Uniform(1)))
+             .SendAsync();
         {
             var m = autd.Link<Audit>().Modulation(0);
             Assert.Equal(80, m.Length);
@@ -290,19 +289,19 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestGroupCheckOnlyForEnabled()
+    public async Task TestGroupCheckOnlyForEnabled()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        autd.Group(dev =>
+        await autd.Group(dev =>
         {
             check[dev.Idx] = true;
             return "0";
         })
                  .Set("0", new Sine(150), new Uniform(0.5).WithPhase(Math.PI))
-                 .Send();
+                 .SendAsync();
 
         Assert.False(check[0]);
         Assert.True(check[1]);
@@ -320,10 +319,10 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestClear()
+    public async Task TestClear()
     {
-        var autd = CreateController();
-        Assert.True(autd.Send(new Uniform(1).WithPhase(Math.PI)));
+        var autd = await CreateController();
+        Assert.True(await autd.SendAsync(new Uniform(1).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
@@ -333,7 +332,7 @@ public class AUTDTest
             Assert.All(phases, p => Assert.Equal(256, p));
         }
 
-        Assert.True(autd.Send(new Clear()));
+        Assert.True(await autd.SendAsync(new Clear()));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
@@ -345,10 +344,10 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestStop()
+    public async Task TestStop()
     {
-        var autd = CreateController();
-        Assert.True(autd.Send(new Uniform(1).WithPhase(Math.PI)));
+        var autd = await CreateController();
+        Assert.True(await autd.SendAsync(new Uniform(1).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
@@ -356,7 +355,7 @@ public class AUTDTest
             Assert.All(phases, p => Assert.Equal(256, p));
         }
 
-        Assert.True(autd.Send(new Stop()));
+        Assert.True(await autd.SendAsync(new Stop()));
         foreach (var dev in autd.Geometry)
         {
             var (duties, _) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
@@ -365,16 +364,16 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestUpdateFlags()
+    public async Task TestUpdateFlags()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
         foreach (var dev in autd.Geometry)
         {
             dev.ForceFan = true;
             Assert.Equal(0, autd.Link<Audit>().FpgaFlags(dev.Idx));
         }
 
-        Assert.True(autd.Send(new UpdateFlags()));
+        Assert.True(await autd.SendAsync(new UpdateFlags()));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(1, autd.Link<Audit>().FpgaFlags(dev.Idx));
@@ -382,18 +381,18 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestSynchronize()
+    public async Task TestSynchronize()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
-            .OpenWith(Audit.Builder());
+        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+            .OpenWithAsync(Audit.Builder());
 
-        Assert.True(autd.Send(new Synchronize()));
+        Assert.True(await autd.SendAsync(new Synchronize()));
     }
 
     [Fact]
-    public void TestConfigureModDelay()
+    public async Task TestConfigureModDelay()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -403,7 +402,7 @@ public class AUTDTest
             Assert.All(autd.Link<Audit>().ModDelays(dev.Idx), d => Assert.Equal(0, d));
         }
 
-        Assert.True(autd.Send(new ConfigureModDelay()));
+        Assert.True(await autd.SendAsync(new ConfigureModDelay()));
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link<Audit>().ModDelays(dev.Idx), d => Assert.Equal(1, d));
@@ -411,9 +410,9 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestConfigureAmpFilter()
+    public async Task TestConfigureAmpFilter()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -423,7 +422,7 @@ public class AUTDTest
             Assert.All(autd.Link<Audit>().DutyFilters(dev.Idx), d => Assert.Equal(0, d));
         }
 
-        Assert.True(autd.Send(new ConfigureAmpFilter()));
+        Assert.True(await autd.SendAsync(new ConfigureAmpFilter()));
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link<Audit>().DutyFilters(dev.Idx), d => Assert.Equal(-256, d));
@@ -431,9 +430,9 @@ public class AUTDTest
     }
 
     [Fact]
-    public void TestConfigurePhaseFilter()
+    public async Task TestConfigurePhaseFilter()
     {
-        var autd = CreateController();
+        var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -443,7 +442,7 @@ public class AUTDTest
             Assert.All(autd.Link<Audit>().PhaseFilters(dev.Idx), d => Assert.Equal(0, d));
         }
 
-        Assert.True(autd.Send(new ConfigurePhaseFilter()));
+        Assert.True(await autd.SendAsync(new ConfigurePhaseFilter()));
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link<Audit>().PhaseFilters(dev.Idx), d => Assert.Equal(-256, d));

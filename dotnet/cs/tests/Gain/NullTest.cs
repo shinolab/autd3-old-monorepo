@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ namespace tests.Gain;
 public class NullTest
 {
     [Fact]
-    public void Null()
+    public async Task Null()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
 
-        Assert.True(autd.Send(new Null()));
+        Assert.True(await autd.SendAsync(new Null()));
 
         foreach (var dev in autd.Geometry)
         {

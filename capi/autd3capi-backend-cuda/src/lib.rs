@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,19 +15,26 @@
 
 use autd3_backend_cuda::*;
 use autd3capi_def::{
-    common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr,
+    common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr, ResultBackend,
 };
-use std::{ffi::c_char, rc::Rc};
+use std::rc::Rc;
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDCUDABackend(err: *mut c_char) -> BackendPtr {
+pub unsafe extern "C" fn AUTDCUDABackend() -> ResultBackend {
     match CUDABackend::new() {
-        Ok(b) => BackendPtr(Box::into_raw(Box::new(b)) as _),
+        Ok(b) => ResultBackend {
+            result: BackendPtr(Box::into_raw(Box::new(b)) as _),
+            err_len: 0,
+            err: std::ptr::null_mut(),
+        },
         Err(e) => {
-            let msg = std::ffi::CString::new(e.to_string()).unwrap();
-            libc::strcpy(err, msg.as_ptr());
-            BackendPtr(std::ptr::null_mut())
+            let err = e.to_string();
+            ResultBackend {
+                result: BackendPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            }
         }
     }
 }

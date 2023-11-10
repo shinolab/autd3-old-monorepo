@@ -18,7 +18,7 @@ use std::{
 
 use autd3capi_common::{libc, AUTDError, AUTDInternalError, ConstPtr, Controller, Drive, L, NULL};
 
-use crate::{ControllerPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE};
+use crate::{BackendPtr, ControllerPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE};
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetErr(src: ConstPtr, dst: *mut c_char) {
@@ -176,6 +176,14 @@ impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainC
 #[derive(Debug, Clone, Copy)]
 pub struct ResultModulation {
     pub result: ModulationPtr,
+    pub err_len: u32,
+    pub err: ConstPtr,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultBackend {
+    pub result: BackendPtr,
     pub err_len: u32,
     pub err: ConstPtr,
 }
