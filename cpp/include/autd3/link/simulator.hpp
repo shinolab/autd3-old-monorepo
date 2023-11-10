@@ -3,7 +3,7 @@
 // Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <chrono>
+#include <future>
 #include <string>
 
 #include "autd3/internal/exception.hpp"
@@ -46,9 +47,13 @@ class Simulator final {
      * @return Simulator
      */
     Builder with_server_ip(const std::string& ip) {
-      char err[256];
-      _ptr = AUTDLinkSimulatorWithAddr(_ptr, ip.c_str(), err);
-      if (_ptr._0 == nullptr) throw internal::AUTDException(err);
+      auto [result, err_len, err] = AUTDLinkSimulatorWithAddr(_ptr, ip.c_str());
+      if (result._0 == nullptr) {
+        const std::string err_str(err_len, ' ');
+        internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw internal::AUTDException(err_str);
+      }
+      _ptr = result;
       return *this;
     }
 
@@ -66,9 +71,14 @@ class Simulator final {
 
   explicit Simulator(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
-  void update_geometry(const internal::Geometry& geometry) const {
-    if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+  [[nodiscard]] std::future<void> update_geometry_async(const internal::Geometry& geometry) const {
+    return std::async(std::launch::async, [this, geometry]() {
+      if (const auto [result, err_len, err] = AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr()); result == internal::native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw internal::AUTDException(err_str);
+      }
+    });
   }
 };
 

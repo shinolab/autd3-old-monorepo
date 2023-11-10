@@ -84,16 +84,38 @@ struct GroupGainMapPtr {
   void* _0;
 };
 
-struct GroupKVMapPtr {
-  void* _0;
-};
-
-struct GainCalcDrivesMapPtr {
-  void* _0;
-};
-
 struct LinkBuilderPtr {
   void* _0;
+};
+
+struct ResultI32 {
+  int32_t result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultModulation {
+  ModulationPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultBackend {
+  BackendPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultController {
+  ControllerPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultGainCalcDrivesMap {
+  void* result;
+  uint32_t err_len;
+  void* err;
 };
 
 constexpr const double TRANS_SPACING_MM = 10.16;
@@ -103,5 +125,11 @@ constexpr const double DEVICE_HEIGHT_MM = 151.4;
 constexpr const double DEVICE_WIDTH_MM = 192.0;
 
 constexpr const double ULTRASOUND_FREQUENCY = 40000.0;
+
+extern "C" {
+
+void AUTDGetErr(void* src, char *dst);
+
+} // extern "C"
 
 } // namespace autd3::internal::native_methods

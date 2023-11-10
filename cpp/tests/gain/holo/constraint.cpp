@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ TEST(Gain_Holo, ConstraintUniform) {
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 0.5)
                .with_constraint(autd3::gain::holo::AmplitudeConstraint::uniform(0.5));
 
-  ASSERT_TRUE(autd.send(g));
+  ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
@@ -41,7 +41,7 @@ TEST(Gain_Holo, ConstraintNormalize) {
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 0.5)
                .with_constraint(autd3::gain::holo::AmplitudeConstraint::normalize());
 
-  ASSERT_TRUE(autd.send(g));
+  ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
@@ -59,7 +59,7 @@ TEST(Gain_Holo, ConstraintClamp) {
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 0.5)
                .with_constraint(autd3::gain::holo::AmplitudeConstraint::clamp(0.4, 0.5));
 
-  ASSERT_TRUE(autd.send(g));
+  ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
@@ -77,7 +77,7 @@ TEST(Gain_Holo, ConstraintDontCare) {
                .add_focus(autd.geometry().center() + autd3::internal::Vector3(30, 0, 150), 5)
                .with_constraint(autd3::gain::holo::AmplitudeConstraint::dont_care());
 
-  ASSERT_TRUE(autd.send(g));
+  ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);

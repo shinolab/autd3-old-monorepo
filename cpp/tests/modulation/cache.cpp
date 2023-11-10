@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 TEST(Modulation, Cache) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send(autd3::modulation::Sine(150).with_cache()));
+  ASSERT_TRUE(autd.send_async(autd3::modulation::Sine(150).with_cache()).get());
 
   for (auto& dev : autd.geometry()) {
     auto mod = autd.link<autd3::link::Audit>().modulation(dev.idx());
@@ -51,9 +51,9 @@ TEST(Modulation, CacheCheckOnce) {
   {
     size_t cnt = 0;
     ForModulationCacheTest m(&cnt);
-    ASSERT_TRUE(autd.send(m));
+    ASSERT_TRUE(autd.send_async(m).get());
     ASSERT_EQ(cnt, 1);
-    ASSERT_TRUE(autd.send(m));
+    ASSERT_TRUE(autd.send_async(m).get());
     ASSERT_EQ(cnt, 2);
   }
 
@@ -61,9 +61,9 @@ TEST(Modulation, CacheCheckOnce) {
     size_t cnt = 0;
     ForModulationCacheTest g(&cnt);
     auto gc = g.with_cache();
-    ASSERT_TRUE(autd.send(gc));
+    ASSERT_TRUE(autd.send_async(gc).get());
     ASSERT_EQ(cnt, 1);
-    ASSERT_TRUE(autd.send(gc));
+    ASSERT_TRUE(autd.send_async(gc).get());
     ASSERT_EQ(cnt, 1);
   }
 }

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -94,7 +94,7 @@ class Geometry {
   };
 
  public:
-  Geometry(const native_methods::GeometryPtr ptr) : _ptr(ptr) {
+  explicit Geometry(const native_methods::GeometryPtr ptr) : _ptr(ptr) {
     const auto size = AUTDGeometryNumDevices(_ptr);
     _devices.clear();
     _devices.reserve(size);

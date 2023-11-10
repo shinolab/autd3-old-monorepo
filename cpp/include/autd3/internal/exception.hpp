@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,6 +22,7 @@ namespace autd3::internal {
 class AUTDException final : public std::runtime_error {
  public:
   explicit AUTDException(const char* message) : runtime_error(message) {}
+  explicit AUTDException(const std::string& message) : runtime_error(message) {}
 };
 
 #define FORCE_CODEPAGE_UTF8_WIN                       \

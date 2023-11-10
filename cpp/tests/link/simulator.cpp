@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ TEST(Link, Simulator) {
 #ifdef RUN_LINK_SIMULATOR
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                  .open_with(std::move(link));
+                  .open_with_async(std::move(link)).get();
 
   autd.close();
 #else

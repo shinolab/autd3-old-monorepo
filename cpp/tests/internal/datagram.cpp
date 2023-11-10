@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,20 +21,20 @@ TEST(Internal, Silencer) {
 
   for (auto& dev : autd.geometry()) ASSERT_EQ(10, autd.link<autd3::link::Audit>().silencer_step(dev.idx()));
 
-  ASSERT_TRUE(autd.send(autd3::internal::Silencer(20)));
+  ASSERT_TRUE(autd.send_async(autd3::internal::Silencer(20)).get());
   for (auto& dev : autd.geometry()) ASSERT_EQ(20, autd.link<autd3::link::Audit>().silencer_step(dev.idx()));
 
-  ASSERT_TRUE(autd.send(autd3::internal::Silencer::disable()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::Silencer::disable()).get());
   for (auto& dev : autd.geometry()) ASSERT_EQ(0xFFFF, autd.link<autd3::link::Audit>().silencer_step(dev.idx()));
 
-  ASSERT_TRUE(autd.send(autd3::internal::Silencer()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::Silencer()).get());
   for (auto& dev : autd.geometry()) ASSERT_EQ(10, autd.link<autd3::link::Audit>().silencer_step(dev.idx()));
 }
 
 TEST(Internal, Clear) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send(autd3::gain::Uniform(1).with_phase(autd3::internal::pi)));
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(1).with_phase(autd3::internal::pi)).get());
   for (auto& dev : autd.geometry()) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));
@@ -43,7 +43,7 @@ TEST(Internal, Clear) {
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256; }));
   }
 
-  ASSERT_TRUE(autd.send(autd3::internal::Clear()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::Clear()).get());
   for (auto& dev : autd.geometry()) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));
@@ -61,7 +61,7 @@ TEST(Internal, UpdateFlags) {
     ASSERT_EQ(0, autd.link<autd3::link::Audit>().fpga_flags(dev.idx()));
   }
 
-  ASSERT_TRUE(autd.send(autd3::internal::UpdateFlags()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::UpdateFlags()).get());
   for (auto& dev : autd.geometry()) {
     ASSERT_EQ(1, autd.link<autd3::link::Audit>().fpga_flags(dev.idx()));
   }
@@ -71,9 +71,10 @@ TEST(Internal, Synchronize) {
   auto autd = autd3::internal::Controller::builder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
-                  .open_with(autd3::link::Audit::builder());
+                  .open_with_async(autd3::link::Audit::builder())
+                  .get();
 
-  ASSERT_TRUE(autd.send(autd3::internal::Synchronize()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::Synchronize()).get());
 }
 
 TEST(Internal, ConfigureModDelay) {
@@ -85,7 +86,7 @@ TEST(Internal, ConfigureModDelay) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().mod_delays(dev.idx()), [](auto d) { return d == 0; }));
   }
 
-  ASSERT_TRUE(autd.send(autd3::internal::ConfigureModDelay()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::ConfigureModDelay()).get());
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().mod_delays(dev.idx()), [](auto d) { return d == 1; }));
   }
@@ -100,7 +101,7 @@ TEST(Internal, ConfigureAmpFilter) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().duty_filters(dev.idx()), [](auto d) { return d == 0; }));
   }
 
-  ASSERT_TRUE(autd.send(autd3::internal::ConfigureAmpFilter()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::ConfigureAmpFilter()).get());
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().duty_filters(dev.idx()), [](auto d) { return d == -256; }));
   }
@@ -115,7 +116,7 @@ TEST(Internal, ConfigurePhaseFilter) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().phase_filters(dev.idx()), [](auto d) { return d == 0; }));
   }
 
-  ASSERT_TRUE(autd.send(autd3::internal::ConfigurePhaseFilter()));
+  ASSERT_TRUE(autd.send_async(autd3::internal::ConfigurePhaseFilter()).get());
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link<autd3::link::Audit>().phase_filters(dev.idx()), [](auto d) { return d == -256; }));
   }

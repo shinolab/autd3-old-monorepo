@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,9 +41,13 @@ class RawPCM final : public internal::ModulationWithFreqDiv<RawPCM>,
   explicit RawPCM(std::filesystem::path path, const uint32_t sample_rate) : _sample_rate(sample_rate), _path(std::move(path)) {}
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    char err[256]{};
-    auto ptr = internal::native_methods::AUTDModulationRawPCM(_path.string().c_str(), _sample_rate, err);
-    if (ptr._0 == nullptr) throw internal::AUTDException(err);
+    auto [result, err_len, err] = internal::native_methods::AUTDModulationRawPCM(_path.string().c_str(), _sample_rate);
+    if (result._0 == nullptr) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
+    auto ptr = result;
     if (_freq_div.has_value()) ptr = AUTDModulationRawPCMWithSamplingFrequencyDivision(ptr, _freq_div.value());
     return ptr;
   }

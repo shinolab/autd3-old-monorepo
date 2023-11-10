@@ -8,7 +8,7 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] BackendPtr AUTDCUDABackend(char *err);
+[[nodiscard]] ResultBackend AUTDCUDABackend();
 
 void AUTDCUDABackendDelete(BackendPtr backend);
 

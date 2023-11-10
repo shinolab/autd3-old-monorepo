@@ -3,7 +3,7 @@
 // Created Date: 12/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,9 +24,11 @@ int main() try {
   auto autd = autd3::Controller::builder()
                   .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
 #ifdef USE_PYTHON
-                  .open_with(autd3::link::Visualizer::builder().with_backend<autd3::link::PythonBackend>());
+                  .open_with_async(autd3::link::Visualizer::builder().with_backend<autd3::link::PythonBackend>())
+                  .get();
 #else
-                  .open_with(autd3::link::Visualizer::builder());
+                  .open_with_async(autd3::link::Visualizer::builder())
+                  .get();
 #endif
 
   autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0, 0, 150);
@@ -34,7 +36,7 @@ int main() try {
   autd3::gain::Focus g(center);
   autd3::modulation::Square m(150);
 
-  autd.send(m, g);
+  autd.send_async(m, g).get();
 
   PlotConfig config;
   config.fname = "phase.png";
@@ -64,7 +66,7 @@ int main() try {
   const auto p = autd.link<autd3::link::Visualizer>().calc_field(points, autd.geometry());
   std::cout << "Acoustic pressure at (" << center.x() << ", " << center.y() << ", " << center.z() << ") = " << p[0] << std::endl;
 
-  autd.close();
+  autd.close_async().get();
 
   return 0;
 } catch (std::exception& e) {

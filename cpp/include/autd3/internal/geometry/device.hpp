@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,8 +42,8 @@ class Device {
   }
 
   ~Device() = default;
-  Device(const Device& v) noexcept = delete;
-  Device& operator=(const Device& obj) = delete;
+  Device(const Device& v) noexcept = default;
+  Device& operator=(const Device& obj) = default;
   Device(Device&& obj) = default;
   Device& operator=(Device&& obj) = default;
 

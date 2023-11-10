@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,10 @@
 #include "util.hpp"
 
 int main() try {
-  auto autd =
-      autd3::Controller::builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).open_with(autd3::link::Nop::builder());
+  auto autd = autd3::Controller::builder()
+                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                  .open_with_async(autd3::link::Nop::builder())
+                  .get();
 
   const auto cx = autd.geometry().center().x();
   autd3::gain::Focus g1(autd.geometry().center() + autd3::Vector3(0, 0, 150));
@@ -30,9 +32,9 @@ int main() try {
                      .set("null", g2);
 
   autd3::modulation::Sine m(150);
-  autd.send(m, g);
+  autd.send_async(m, g).get();
 
-  autd.close();
+  autd.close_async().get();
 
   return 0;
 
