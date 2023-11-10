@@ -49,7 +49,7 @@ class RawPCM(IModulationWithFreqDiv):
 
     def _modulation_ptr(self: "RawPCM") -> ModulationPtr:
         res = ModulationAudioFile().modulation_raw_pcm(str(self._path).encode("utf-8"), self._sample_rate)
-        if res.result is None:
+        if res.result._0 is None:
             err = ctypes.create_string_buffer(int(res.err_len))
             Def().get_err(res.err, err)
             raise AUTDError(err)

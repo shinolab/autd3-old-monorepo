@@ -197,7 +197,7 @@ class RemoteSOEM(Link):
 
         def __init__(self: "RemoteSOEM._Builder", addr: str) -> None:
             res = LinkSOEM().link_remote_soem(addr.encode("utf-8"))
-            if res.result is None:
+            if res.result._0 is None:
                 err = ctypes.create_string_buffer(int(res.err_len))
                 Def().get_err(res.err, err)
                 raise AUTDError(err)

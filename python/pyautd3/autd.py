@@ -204,7 +204,7 @@ class Controller(Generic[L]):
             ),
         )
         result: ResultController = await future
-        if result.result is None:
+        if result.result._0 is None:
             err = ctypes.create_string_buffer(int(result.err_len))
             Def().get_err(result.err, err)
             raise AUTDError(err)
@@ -251,7 +251,7 @@ class Controller(Generic[L]):
             ),
         )
         res: ResultI32 = await future
-        if res.result == AUTD3_ERR:
+        if int(res.result) == AUTD3_ERR:
             err = ctypes.create_string_buffer(int(res.err_len))
             Def().get_err(res.err, err)
             raise AUTDError(err)
