@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -166,9 +166,13 @@ class RemoteSOEM final {
     internal::native_methods::LinkRemoteSOEMBuilderPtr _ptr;
 
     explicit Builder(const std::string& addr) : LinkBuilder() {
-      char err[256];
-      _ptr = internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str(), err);
-      if (_ptr._0 == nullptr) throw internal::AUTDException(err);
+      auto [result, err_len, err] = internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str());
+      if (result._0 == nullptr) {
+        const std::string err_str(err_len, ' ');
+        internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw internal::AUTDException(err_str);
+      }
+      _ptr = result;
     }
 
    public:

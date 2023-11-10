@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include "autd3/internal/def.hpp"
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {

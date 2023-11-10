@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ TEST(Gain, Gain) {
   auto autd = create_controller();
 
   std::vector cnt(autd.geometry().num_devices(), false);
-  ASSERT_TRUE(autd.send(Uniform(0.5, autd3::internal::pi, &cnt)));
+  ASSERT_TRUE(autd.send_async(Uniform(0.5, autd3::internal::pi, &cnt)).get());
 
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
@@ -51,7 +51,7 @@ TEST(Gain, GainCheckOnlyForEnabled) {
   autd.geometry()[0].set_enable(false);
 
   std::vector check(autd.geometry().num_devices(), false);
-  ASSERT_TRUE(autd.send(Uniform(0.5, autd3::internal::pi, &check)));
+  ASSERT_TRUE(autd.send_async(Uniform(0.5, autd3::internal::pi, &check)).get());
 
   ASSERT_FALSE(check[0]);
   ASSERT_TRUE(check[1]);

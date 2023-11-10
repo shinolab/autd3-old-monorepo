@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,15 +18,16 @@
 TEST(Gain, Transform) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send(autd3::gain::Uniform(0.5)
-                            .with_phase(autd3::internal::pi)
-                            .with_transform([](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
-                                               const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
-                              if (dev.idx() == 0) {
-                                return autd3::internal::native_methods::Drive{d.phase + autd3::internal::pi / 4, d.amp};
-                              }
-                              return autd3::internal::native_methods::Drive{d.phase - autd3::internal::pi / 4, d.amp};
-                            })));
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0.5)
+                                  .with_phase(autd3::internal::pi)
+                                  .with_transform([](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
+                                                     const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
+                                    if (dev.idx() == 0) {
+                                      return autd3::internal::native_methods::Drive{d.phase + autd3::internal::pi / 4, d.amp};
+                                    }
+                                    return autd3::internal::native_methods::Drive{d.phase - autd3::internal::pi / 4, d.amp};
+                                  }))
+                  .get());
 
   {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
@@ -46,13 +47,14 @@ TEST(Gain, TransformCheckOnlyForEnabled) {
   autd.geometry()[0].set_enable(false);
 
   std::vector cnt(autd.geometry().num_devices(), false);
-  ASSERT_TRUE(autd.send(autd3::gain::Uniform(0.5)
-                            .with_phase(autd3::internal::pi)
-                            .with_transform([&cnt](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
-                                                   const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
-                              cnt[dev.idx()] = true;
-                              return d;
-                            })));
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0.5)
+                                  .with_phase(autd3::internal::pi)
+                                  .with_transform([&cnt](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
+                                                         const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
+                                    cnt[dev.idx()] = true;
+                                    return d;
+                                  }))
+                  .get());
 
   ASSERT_FALSE(cnt[0]);
   ASSERT_TRUE(cnt[1]);

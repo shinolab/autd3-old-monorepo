@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <chrono>
+#include <future>
 #include <optional>
 #include <vector>
 
@@ -63,17 +64,20 @@ class Controller {
      * @return Controller
      */
     template <class L>
-    Controller open_with(L&& link) {
+    [[nodiscard]] std::future<Controller> open_with_async(L&& link) {
       static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
+      return std::async(std::launch::deferred, [this, link]() -> Controller {
+        const auto [result, err_len, err] = AUTDControllerOpenWith(_ptr, link.ptr());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw AUTDException(err_str);
+        }
+        auto ptr = result;
+        Geometry geometry(AUTDGeometry(ptr));
 
-      char err[256]{};
-
-      const auto ptr = AUTDControllerOpenWith(_ptr, link.ptr(), err);
-      if (ptr._0 == nullptr) throw AUTDException(err);
-
-      Geometry geometry(AUTDGeometry(ptr));
-
-      return {std::move(geometry), ptr, link.props()};
+        return {std::move(geometry), ptr, link.props()};
+      });
     }
 
    private:
@@ -129,8 +133,16 @@ class Controller {
   /**
    * @brief Close connection
    */
-  void close() const {
-    if (char err[256]{}; !AUTDControllerClose(_ptr, err)) throw AUTDException(err);
+  [[nodiscard]] std::future<bool> close_async() const {
+    return std::async(std::launch::deferred, [this]() -> bool {
+      const auto [result, err_len, err] = AUTDControllerClose(_ptr);
+      if (result == native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      return result == native_methods::AUTD3_TRUE;
+    });
   }
 
   /**
@@ -138,15 +150,20 @@ class Controller {
    *
    * @return List of FPGA information
    */
-  [[nodiscard]] std::vector<FPGAInfo> fpga_info() {
-    char err[256]{};
-    const size_t num_devices = geometry().num_devices();
-    std::vector<uint8_t> info(num_devices);
-    if (!AUTDControllerFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
-    std::vector<FPGAInfo> ret;
-    ret.reserve(num_devices);
-    std::ranges::transform(info, std::back_inserter(ret), [](const uint8_t i) { return FPGAInfo(i); });
-    return ret;
+  [[nodiscard]] std::future<std::vector<FPGAInfo>> fpga_info_async() {
+    return std::async(std::launch::deferred, [this]() -> std::vector<FPGAInfo> {
+      const size_t num_devices = geometry().num_devices();
+      std::vector<uint8_t> info(num_devices);
+      if (const auto [result, err_len, err] = AUTDControllerFPGAInfo(_ptr, info.data()); result == native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      std::vector<FPGAInfo> ret;
+      ret.reserve(num_devices);
+      std::ranges::transform(info, std::back_inserter(ret), [](const uint8_t i) { return FPGAInfo(i); });
+      return ret;
+    });
   }
 
   /**
@@ -154,18 +171,23 @@ class Controller {
    *
    * @return List of firmware information
    */
-  [[nodiscard]] std::vector<FirmwareInfo> firmware_infos() {
-    char err[256]{};
-    const auto handle = AUTDControllerFirmwareInfoListPointer(_ptr, err);
-    if (handle._0 == nullptr) throw AUTDException(err);
-    std::vector<FirmwareInfo> ret;
-    for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
-      char info[256]{};
-      AUTDControllerFirmwareInfoGet(handle, i, info);
-      ret.emplace_back(std::string(info));
-    }
-    AUTDControllerFirmwareInfoListPointerDelete(handle);
-    return ret;
+  [[nodiscard]] std::future<std::vector<FirmwareInfo>> firmware_infos_async() {
+    return std::async(std::launch::deferred, [this]() -> std::vector<FirmwareInfo> {
+      const auto handle = AUTDControllerFirmwareInfoListPointer(_ptr);
+      if (handle.result == nullptr) {
+        const std::string err_str(handle.err_len, ' ');
+        native_methods::AUTDGetErr(handle.err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      std::vector<FirmwareInfo> ret;
+      for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
+        char info[256]{};
+        AUTDControllerFirmwareInfoGet(handle, i, info);
+        ret.emplace_back(std::string(info));
+      }
+      AUTDControllerFirmwareInfoListPointerDelete(handle);
+      return ret;
+    });
   }
 
   /**
@@ -180,8 +202,8 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename D, typename Rep, typename Period>
-  auto send(D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, bool> {
-    return send(std::forward<D>(data), std::optional(timeout));
+  auto send_async(D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, std::future<bool>> {
+    return send_async(std::forward<D>(data), std::optional(timeout));
   }
 
   /**
@@ -196,8 +218,9 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename D, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_datagram_v<D>, bool> {
-    return send(std::forward<D>(data), NullDatagram(), timeout);
+  auto send_async(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+      -> std::enable_if_t<is_datagram_v<D>, std::future<bool>> {
+    return send_async(std::forward<D>(data), NullDatagram(), timeout);
   }
 
   /**
@@ -214,9 +237,9 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename D1, typename D2, typename Rep, typename Period>
-  auto send(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, bool> {
-    return send(std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
+  auto send_async(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
+      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
+    return send_async(std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
   }
 
   /**
@@ -233,9 +256,9 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, bool> {
-    return send(&data1, &data2, timeout);
+  auto send_async(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
+    return send_async(&data1, &data2, timeout);
   }
 
   /**
@@ -250,8 +273,8 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename S, typename Rep, typename Period>
-  auto send(S&& s, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<S>, bool> {
-    return send(std::forward<S>(s), std::optional(timeout));
+  auto send_async(S&& s, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<S>, std::future<bool>> {
+    return send_async(std::forward<S>(s), std::optional(timeout));
   }
 
   /**
@@ -266,13 +289,19 @@ class Controller {
    * data has been sent reliably or not.
    */
   template <typename S, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_special_v<S>, bool> {
-    char err[256]{};
-    const int64_t timeout_ns =
-        timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
-    const auto res = native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns, err);
-    if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
-    return res == native_methods::AUTD3_TRUE;
+  auto send_async(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
+      -> std::enable_if_t<is_special_v<S>, std::future<bool>> {
+    return std::async(std::launch::deferred, [this, &s, timeout]() -> bool {
+      const int64_t timeout_ns =
+          timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
+      const auto [result, err_len, err] = native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns);
+      if (result == native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      return result == native_methods::AUTD3_TRUE;
+    });
   }
 
   template <typename F>
@@ -290,9 +319,12 @@ class Controller {
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr(_controller._geometry);
       _keymap[key] = _k++;
-      char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, timeout_ns, err);
-      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, timeout_ns);
+      if (_kv_map.result == nullptr) {
+        const std::string err_str(_kv_map.err_len, ' ');
+        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
       return std::move(*this);
     }
 
@@ -309,9 +341,12 @@ class Controller {
       const auto ptr1 = data1.ptr(_controller._geometry);
       const auto ptr2 = data2.ptr(_controller._geometry);
       _keymap[key] = _k++;
-      char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, timeout_ns, err);
-      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, timeout_ns);
+      if (_kv_map.result == nullptr) {
+        const std::string err_str(_kv_map.err_len, ' ');
+        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
       return std::move(*this);
     }
 
@@ -328,9 +363,12 @@ class Controller {
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr();
       _keymap[key] = _k++;
-      char err[256]{};
-      _kv_map = native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, timeout_ns, err);
-      if (_kv_map._0 == nullptr) throw AUTDException(err);
+      _kv_map = native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, timeout_ns);
+      if (_kv_map.result == nullptr) {
+        const std::string err_str(_kv_map.err_len, ' ');
+        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
       return std::move(*this);
     }
 
@@ -339,21 +377,29 @@ class Controller {
       return set(key, std::forward<D>(data), std::optional(timeout));
     }
 
-    void send() {
-      std::vector<int32_t> map;
-      map.reserve(_controller.geometry().num_devices());
-      std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const Device& d) {
-        if (!d.enable()) return -1;
-        const auto k = _map(d);
-        return k.has_value() ? _keymap[k.value()] : -1;
+    std::future<bool> send_async() {
+      return std::async(std::launch::deferred, [this]() {
+        std::vector<int32_t> map;
+        map.reserve(_controller.geometry().num_devices());
+        std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const Device& d) {
+          if (!d.enable()) return -1;
+          const auto k = _map(d);
+          return k.has_value() ? _keymap[k.value()] : -1;
+        });
+        const auto [result, err_len, err] = AUTDControllerGroup(_controller._ptr, map.data(), _kv_map);
+        if (result == native_methods::AUTD3_ERR) {
+          const std::string err_str(err_len, ' ');
+          native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw AUTDException(err_str);
+        }
+        return result == native_methods::AUTD3_TRUE;
       });
-      if (char err[256]{}; AUTDControllerGroup(_controller._ptr, map.data(), _kv_map, err) == native_methods::AUTD3_ERR) throw AUTDException(err);
     }
 
    private:
     Controller& _controller;
     const F& _map;
-    native_methods::GroupKVMapPtr _kv_map;
+    native_methods::ResultGroupKVMap _kv_map;
     std::unordered_map<key_type, int32_t> _keymap;
     int32_t _k{0};
   };
@@ -367,12 +413,17 @@ class Controller {
   Controller(Geometry geometry, const native_methods::ControllerPtr ptr, std::shared_ptr<void> link_props)
       : _geometry(std::move(geometry)), _ptr(ptr), _link_props(std::move(link_props)) {}
 
-  bool send(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
-    char err[256]{};
-    const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
-    const auto res = AUTDControllerSend(_ptr, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns, err);
-    if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
-    return res == native_methods::AUTD3_TRUE;
+  std::future<bool> send_async(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
+    return std::async(std::launch::deferred, [this, d1, d2, timeout]() -> bool {
+      const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
+      const auto [result, err_len, err] = AUTDControllerSend(_ptr, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns);
+      if (result == native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      return result == native_methods::AUTD3_TRUE;
+    });
   }
 
   Geometry _geometry;

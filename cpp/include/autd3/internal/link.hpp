@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,6 @@ class LinkBuilder {
 
   [[nodiscard]] virtual native_methods::LinkBuilderPtr ptr() const = 0;
 
-  [[nodiscard]] virtual std::shared_ptr<void> props() const { return std::shared_ptr<void>(nullptr); }
+  [[nodiscard]] virtual std::shared_ptr<void> props() const { return {nullptr}; }
 };
 }  // namespace autd3::internal

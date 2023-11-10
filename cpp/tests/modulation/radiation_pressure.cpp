@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 TEST(Modulation, RadiationPressure) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send(autd3::modulation::Sine(150).with_radiation_pressure()));
+  ASSERT_TRUE(autd.send_async(autd3::modulation::Sine(150).with_radiation_pressure()).get());
 
   for (auto& dev : autd.geometry()) {
     auto mod = autd.link<autd3::link::Audit>().modulation(dev.idx());

@@ -3,7 +3,7 @@
 // Created Date: 12/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -99,7 +99,6 @@ class Visualizer final {
   internal::native_methods::Directivity _directivity;
 
   [[nodiscard]] internal::native_methods::ConfigPtr get_plot_config(Config config) const {
-    char err[256];
     if (_backend == internal::native_methods::Backend::Plotters && std::holds_alternative<PlotConfig>(config)) {
       const auto& [figsize, cbar_size, font_size, label_area_size, margin, ticks_step, cmap, fname] = std::get<PlotConfig>(config);
       auto ptr = internal::native_methods::AUTDLinkVisualizerPlotConfigDefault();
@@ -110,8 +109,15 @@ class Visualizer final {
       if (margin.has_value()) ptr = AUTDLinkVisualizerPlotConfigWithMargin(ptr, margin.value());
       if (ticks_step.has_value()) ptr = AUTDLinkVisualizerPlotConfigWithTicksStep(ptr, ticks_step.value());
       if (cmap.has_value()) ptr = AUTDLinkVisualizerPlotConfigWithCMap(ptr, cmap.value());
-      if (fname.has_value()) ptr = AUTDLinkVisualizerPlotConfigWithFName(ptr, fname.value().c_str(), err);
-      if (ptr._0 == nullptr) throw internal::AUTDException(err);
+      if (fname.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPlotConfigWithFName(ptr, fname.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
       return internal::native_methods::ConfigPtr{ptr._0};
     }
 
@@ -120,15 +126,54 @@ class Visualizer final {
       auto ptr = internal::native_methods::AUTDLinkVisualizerPyPlotConfigDefault();
       if (figsize.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFigSize(ptr, figsize.value().first, figsize.value().second);
       if (dpi.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithDPI(ptr, dpi.value());
-      if (cbar_position.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, cbar_position.value().c_str(), err);
-      if (cbar_size.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, cbar_size.value().c_str(), err);
-      if (cbar_pad.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, cbar_pad.value().c_str(), err);
+      if (cbar_position.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPyPlotConfigWithCBarPosition(ptr, cbar_position.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
+      if (cbar_size.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPyPlotConfigWithCBarSize(ptr, cbar_size.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
+      if (cbar_pad.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPyPlotConfigWithCBarPad(ptr, cbar_pad.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
       if (fontsize.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFontSize(ptr, fontsize.value());
       if (ticks_step.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithTicksStep(ptr, ticks_step.value());
-      if (cmap.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, cmap.value().c_str(), err);
+      if (cmap.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPyPlotConfigWithCMap(ptr, cmap.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
       if (show.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithShow(ptr, show.value());
-      if (fname.has_value()) ptr = AUTDLinkVisualizerPyPlotConfigWithFName(ptr, fname.value().c_str(), err);
-      if (ptr._0 == nullptr) throw internal::AUTDException(err);
+      if (fname.has_value()) {
+        auto [result, err_len, err] = AUTDLinkVisualizerPyPlotConfigWithFName(ptr, fname.value().c_str());
+        if (result._0 == nullptr) {
+          const std::string err_str(err_len, ' ');
+          internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+          throw internal::AUTDException(err_str);
+        }
+        ptr = result;
+      }
       return internal::native_methods::ConfigPtr{ptr._0};
     }
 
@@ -259,9 +304,13 @@ class Visualizer final {
     const auto points_ptr = reinterpret_cast<double*>(points.data());
     std::vector<std::complex<double>> buf;
     buf.resize(points_len);
-    if (char err[256]; AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity, points_ptr, points_len, geometry.ptr(), static_cast<uint32_t>(idx),
-                                                     reinterpret_cast<double*>(buf.data()), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+    if (auto [result, err_len, err] = AUTDLinkVisualizerCalcFieldOf(_ptr, _backend, _directivity, points_ptr, points_len, geometry.ptr(),
+                                                                    static_cast<uint32_t>(idx), reinterpret_cast<double*>(buf.data()));
+        result == internal::native_methods::AUTD3_ERR) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
     return buf;
   }
 
@@ -273,9 +322,13 @@ class Visualizer final {
     const auto config_ptr = get_plot_config(config);
     const auto range_ptr = internal::native_methods::AUTDLinkVisualizerPlotRange(range.x_start, range.x_end, range.y_start, range.y_end,
                                                                                  range.z_start, range.z_end, range.resolution);
-    if (char err[256]; AUTDLinkVisualizerPlotFieldOf(_ptr, _backend, _directivity, config_ptr, range_ptr, geometry.ptr(), static_cast<uint32_t>(idx),
-                                                     err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+    if (auto [result, err_len, err] =
+            AUTDLinkVisualizerPlotFieldOf(_ptr, _backend, _directivity, config_ptr, range_ptr, geometry.ptr(), static_cast<uint32_t>(idx));
+        result == internal::native_methods::AUTD3_ERR) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
   }
 
   void plot_field(const Config& config, const PlotRange& range, const internal::Geometry& geometry) const {
@@ -284,23 +337,35 @@ class Visualizer final {
 
   void plot_phase_of(const Config& config, const internal::Geometry& geometry, const size_t idx) const {
     const auto config_ptr = get_plot_config(config);
-    if (char err[256]; AUTDLinkVisualizerPlotPhaseOf(_ptr, _backend, _directivity, config_ptr, geometry.ptr(), static_cast<uint32_t>(idx), err) ==
-                       internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+    if (auto [result, err_len, err] =
+            AUTDLinkVisualizerPlotPhaseOf(_ptr, _backend, _directivity, config_ptr, geometry.ptr(), static_cast<uint32_t>(idx));
+        result == internal::native_methods::AUTD3_ERR) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
   }
 
   void plot_phase(const Config& config, const internal::Geometry& geometry) const { plot_phase_of(config, geometry, 0); }
 
   void plot_modulation_raw(const Config& config) const {
     const auto config_ptr = get_plot_config(config);
-    if (char err[256]; AUTDLinkVisualizerPlotModulationRaw(_ptr, _backend, _directivity, config_ptr, err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+    if (auto [result, err_len, err] = AUTDLinkVisualizerPlotModulationRaw(_ptr, _backend, _directivity, config_ptr);
+        result == internal::native_methods::AUTD3_ERR) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
   }
 
   void plot_modulation(const Config& config) const {
     const auto config_ptr = get_plot_config(config);
-    if (char err[256]; AUTDLinkVisualizerPlotModulation(_ptr, _backend, _directivity, config_ptr, err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+    if (auto [result, err_len, err] = AUTDLinkVisualizerPlotModulation(_ptr, _backend, _directivity, config_ptr);
+        result == internal::native_methods::AUTD3_ERR) {
+      const std::string err_str(err_len, ' ');
+      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
   }
 };
 

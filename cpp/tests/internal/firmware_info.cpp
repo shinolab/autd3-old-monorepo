@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ TEST(Internal, FirmwareInfo) {
   ASSERT_EQ("v4.0.0", autd3::internal::FirmwareInfo::latest_version());
 
   {
-    const auto infos = autd.firmware_infos();
+    const auto infos = autd.firmware_infos_async().get();
     std::ranges::for_each(std::ranges::views::iota(0) | std::ranges::views::take(infos.size()), [&](auto i) {
       std::stringstream ss;
       ss << i;
@@ -35,6 +35,6 @@ TEST(Internal, FirmwareInfo) {
 
   {
     autd.link<autd3::link::Audit>().break_down();
-    ASSERT_THROW((void)autd.firmware_infos(), autd3::internal::AUTDException);
+    ASSERT_THROW((void)autd.firmware_infos_async().get(), autd3::internal::AUTDException);
   }
 }

@@ -49,8 +49,20 @@ struct PlotConfigPtr {
   void* _0;
 };
 
+struct ResultPlotConfig {
+  PlotConfigPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
 struct PyPlotConfigPtr {
   void* _0;
+};
+
+struct ResultPyPlotConfig {
+  PyPlotConfigPtr result;
+  uint32_t err_len;
+  void* err;
 };
 
 extern "C" {
@@ -86,48 +98,43 @@ uint32_t AUTDLinkVisualizerModulation(LinkPtr visualizer,
                                       Directivity directivity,
                                       double *buf);
 
-int32_t AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer,
-                                      Backend backend,
-                                      Directivity directivity,
-                                      const double *points,
-                                      uint32_t points_len,
-                                      GeometryPtr geometry,
-                                      uint32_t idx,
-                                      double *buf,
-                                      char *err);
+ResultI32 AUTDLinkVisualizerCalcFieldOf(LinkPtr visualizer,
+                                        Backend backend,
+                                        Directivity directivity,
+                                        const double *points,
+                                        uint32_t points_len,
+                                        GeometryPtr geometry,
+                                        uint32_t idx,
+                                        double *buf);
 
 [[nodiscard]]
-int32_t AUTDLinkVisualizerPlotFieldOf(LinkPtr visualizer,
-                                      Backend backend,
-                                      Directivity directivity,
-                                      ConfigPtr config,
-                                      PlotRangePtr range,
-                                      GeometryPtr geometry,
-                                      uint32_t idx,
-                                      char *err);
+ResultI32 AUTDLinkVisualizerPlotFieldOf(LinkPtr visualizer,
+                                        Backend backend,
+                                        Directivity directivity,
+                                        ConfigPtr config,
+                                        PlotRangePtr range,
+                                        GeometryPtr geometry,
+                                        uint32_t idx);
 
 [[nodiscard]]
-int32_t AUTDLinkVisualizerPlotPhaseOf(LinkPtr visualizer,
-                                      Backend backend,
-                                      Directivity directivity,
-                                      ConfigPtr config,
-                                      GeometryPtr geometry,
-                                      uint32_t idx,
-                                      char *err);
+ResultI32 AUTDLinkVisualizerPlotPhaseOf(LinkPtr visualizer,
+                                        Backend backend,
+                                        Directivity directivity,
+                                        ConfigPtr config,
+                                        GeometryPtr geometry,
+                                        uint32_t idx);
 
 [[nodiscard]]
-int32_t AUTDLinkVisualizerPlotModulationRaw(LinkPtr visualizer,
-                                            Backend backend,
-                                            Directivity directivity,
-                                            ConfigPtr config,
-                                            char *err);
+ResultI32 AUTDLinkVisualizerPlotModulationRaw(LinkPtr visualizer,
+                                              Backend backend,
+                                              Directivity directivity,
+                                              ConfigPtr config);
 
 [[nodiscard]]
-int32_t AUTDLinkVisualizerPlotModulation(LinkPtr visualizer,
-                                         Backend backend,
-                                         Directivity directivity,
-                                         ConfigPtr config,
-                                         char *err);
+ResultI32 AUTDLinkVisualizerPlotModulation(LinkPtr visualizer,
+                                           Backend backend,
+                                           Directivity directivity,
+                                           ConfigPtr config);
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkVisualizerSphereNull(bool use_gpu, int32_t gpu_idx);
 
@@ -169,9 +176,8 @@ PlotConfigPtr AUTDLinkVisualizerPlotConfigWithTicksStep(PlotConfigPtr config,
 [[nodiscard]] PlotConfigPtr AUTDLinkVisualizerPlotConfigWithCMap(PlotConfigPtr config, CMap cmap);
 
 [[nodiscard]]
-PlotConfigPtr AUTDLinkVisualizerPlotConfigWithFName(PlotConfigPtr config,
-                                                    const char *fname,
-                                                    char *err);
+ResultPlotConfig AUTDLinkVisualizerPlotConfigWithFName(PlotConfigPtr config,
+                                                       const char *fname);
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkVisualizerSpherePython(bool use_gpu, int32_t gpu_idx);
 
@@ -189,19 +195,16 @@ PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithDPI(PyPlotConfigPtr config,
                                                       int32_t dpi);
 
 [[nodiscard]]
-PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithCBarPosition(PyPlotConfigPtr config,
-                                                               const char *cbar_position,
-                                                               char *err);
+ResultPyPlotConfig AUTDLinkVisualizerPyPlotConfigWithCBarPosition(PyPlotConfigPtr config,
+                                                                  const char *cbar_position);
 
 [[nodiscard]]
-PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithCBarSize(PyPlotConfigPtr config,
-                                                           const char *cbar_size,
-                                                           char *err);
+ResultPyPlotConfig AUTDLinkVisualizerPyPlotConfigWithCBarSize(PyPlotConfigPtr config,
+                                                              const char *cbar_size);
 
 [[nodiscard]]
-PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithCBarPad(PyPlotConfigPtr config,
-                                                          const char *cbar_pad,
-                                                          char *err);
+ResultPyPlotConfig AUTDLinkVisualizerPyPlotConfigWithCBarPad(PyPlotConfigPtr config,
+                                                             const char *cbar_pad);
 
 [[nodiscard]]
 PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithFontSize(PyPlotConfigPtr config,
@@ -212,18 +215,16 @@ PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithTicksStep(PyPlotConfigPtr conf
                                                             double ticks_step);
 
 [[nodiscard]]
-PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithCMap(PyPlotConfigPtr config,
-                                                       const char *cmap,
-                                                       char *err);
+ResultPyPlotConfig AUTDLinkVisualizerPyPlotConfigWithCMap(PyPlotConfigPtr config,
+                                                          const char *cmap);
 
 [[nodiscard]]
 PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithShow(PyPlotConfigPtr config,
                                                        bool show);
 
 [[nodiscard]]
-PyPlotConfigPtr AUTDLinkVisualizerPyPlotConfigWithFName(PyPlotConfigPtr config,
-                                                        const char *fname,
-                                                        char *err);
+ResultPyPlotConfig AUTDLinkVisualizerPyPlotConfigWithFName(PyPlotConfigPtr config,
+                                                           const char *fname);
 
 } // extern "C"
 

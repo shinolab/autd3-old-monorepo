@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <memory>
 
+#include "autd3/internal/exception.hpp"
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -26,15 +27,16 @@ class Cache final : public internal::Modulation {
   template <class M>
   explicit Cache(M&& m) {
     static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
-    char err[256]{};
-    auto cache = internal::native_methods::AUTDModulationWithCache(m.modulation_ptr(), err);
-    if (cache._0 == nullptr) throw internal::AUTDException(err);
-    const auto size = AUTDModulationCacheGetBufferSize(cache);
-    _buffer.resize(size);
+    auto cache = internal::native_methods::AUTDModulationWithCache(m.modulation_ptr());
+    if (cache.result == nullptr) {
+      const std::string err_str(cache.err_len, ' ');
+      internal::native_methods::AUTDGetErr(cache.err, const_cast<char*>(err_str.c_str()));
+      throw internal::AUTDException(err_str);
+    }
+    _buffer.resize(cache.buffer_len);
     AUTDModulationCacheGetBuffer(cache, _buffer.data());
-    _cache = std::shared_ptr<internal::native_methods::ModulationCachePtr>(
-        new internal::native_methods::ModulationCachePtr(cache),
-        [](const internal::native_methods::ModulationCachePtr* ptr) { AUTDModulationCacheDelete(*ptr); });
+    _cache = std::shared_ptr<internal::native_methods::ResultCache>(
+        new internal::native_methods::ResultCache(cache), [](const internal::native_methods::ResultCache* ptr) { AUTDModulationCacheDelete(*ptr); });
   }
   Cache(const Cache& v) = default;
   Cache& operator=(const Cache& obj) = default;
@@ -42,7 +44,9 @@ class Cache final : public internal::Modulation {
   Cache& operator=(Cache&& obj) noexcept = default;
   ~Cache() noexcept override = default;
 
-  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override { return AUTDModulationCacheIntoModulation(*_cache); }
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    return internal::native_methods::AUTDModulationCacheIntoModulation(*_cache);
+  }
 
   [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }
 
@@ -53,7 +57,7 @@ class Cache final : public internal::Modulation {
   [[nodiscard]] const double& operator[](const size_t i) const { return _buffer[i]; }
 
  private:
-  std::shared_ptr<internal::native_methods::ModulationCachePtr> _cache;
+  std::shared_ptr<internal::native_methods::ResultCache> _cache;
   std::vector<double> _buffer;
 };
 

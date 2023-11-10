@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ inline int run(autd3::Controller& autd) {
 
   if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_test}, "Group test");
 
-  const auto firm_infos = autd.firmware_infos();
+  const auto firm_infos = autd.firmware_infos_async().get();
   std::cout << "======== AUTD3 firmware information ========" << std::endl;
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "============================================" << std::endl;
@@ -66,10 +66,10 @@ inline int run(autd3::Controller& autd) {
     std::cin.ignore();
 
     std::cout << "finish." << std::endl;
-    autd.send(autd3::Stop());
+    autd.send_async(autd3::Stop()).get();
   }
 
-  autd.close();
+  autd.close_async().get();
 
   return 0;
 }

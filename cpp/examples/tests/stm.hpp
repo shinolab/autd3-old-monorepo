@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ using namespace std::ranges::views;
 
 inline void focus_stm(autd3::Controller& autd) {
   auto silencer = autd3::Silencer::disable();
-  autd.send(silencer);
+  autd.send_async(silencer).get();
 
   autd3::modulation::Static m;
 
@@ -34,12 +34,12 @@ inline void focus_stm(autd3::Controller& autd) {
 
   std::cout << "Actual frequency is " << stm.frequency() << " Hz\n";
 
-  autd.send(m, stm);
+  autd.send_async(m, stm).get();
 }
 
 inline void gain_stm(autd3::Controller& autd) {
   auto silencer = autd3::Silencer::disable();
-  autd.send(silencer);
+  autd.send_async(silencer).get();
 
   autd3::modulation::Static m;
 
@@ -53,5 +53,5 @@ inline void gain_stm(autd3::Controller& autd) {
                                                    }));
 
   std::cout << "Actual frequency is " << stm.frequency() << " Hz\n";
-  autd.send(m, stm);
+  autd.send_async(m, stm).get();
 }

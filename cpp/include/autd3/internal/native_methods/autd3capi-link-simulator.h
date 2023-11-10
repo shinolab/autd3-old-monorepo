@@ -10,14 +10,19 @@ struct LinkSimulatorBuilderPtr {
   void* _0;
 };
 
+struct ResultLinkSimulatorBuilder {
+  LinkSimulatorBuilderPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
 extern "C" {
 
 [[nodiscard]] LinkSimulatorBuilderPtr AUTDLinkSimulator(uint16_t port);
 
 [[nodiscard]]
-LinkSimulatorBuilderPtr AUTDLinkSimulatorWithAddr(LinkSimulatorBuilderPtr simulator,
-                                                  const char *addr,
-                                                  char *err);
+ResultLinkSimulatorBuilder AUTDLinkSimulatorWithAddr(LinkSimulatorBuilderPtr simulator,
+                                                     const char *addr);
 
 [[nodiscard]]
 LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr simulator,
@@ -25,10 +30,7 @@ LinkSimulatorBuilderPtr AUTDLinkSimulatorWithTimeout(LinkSimulatorBuilderPtr sim
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkSimulatorIntoBuilder(LinkSimulatorBuilderPtr simulator);
 
-[[nodiscard]]
-int32_t AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator,
-                                        GeometryPtr geometry,
-                                        char *err);
+[[nodiscard]] ResultI32 AUTDLinkSimulatorUpdateGeometry(LinkPtr simulator, GeometryPtr geometry);
 
 } // extern "C"
 

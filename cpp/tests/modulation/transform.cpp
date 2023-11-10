@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ TEST(Modulation, Transform) {
   auto autd = create_controller();
 
   const auto m = autd3::modulation::Sine(150).with_transform([](size_t, const double v) { return v / 2; });
-  ASSERT_TRUE(autd.send(m));
+  ASSERT_TRUE(autd.send_async(m).get());
 
   for (auto& dev : autd.geometry()) {
     auto mod = autd.link<autd3::link::Audit>().modulation(dev.idx());

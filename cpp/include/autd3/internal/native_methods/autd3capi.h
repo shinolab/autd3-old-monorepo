@@ -10,8 +10,16 @@ struct ControllerBuilderPtr {
   void* _0;
 };
 
-struct FirmwareInfoListPtr {
-  void* _0;
+struct ResultFirmwareInfoList {
+  void* result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultGroupKVMap {
+  void* result;
+  uint32_t err_len;
+  void* err;
 };
 
 struct Drive {
@@ -23,8 +31,11 @@ struct LinkAuditBuilderPtr {
   void* _0;
 };
 
-struct ModulationCachePtr {
-  void* _0;
+struct ResultCache {
+  void* result;
+  uint32_t buffer_len;
+  uint32_t err_len;
+  void* err;
 };
 
 extern "C" {
@@ -49,23 +60,20 @@ ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderP
                                                               double qz);
 
 [[nodiscard]]
-ControllerPtr AUTDControllerOpenWith(ControllerBuilderPtr builder,
-                                     LinkBuilderPtr link_builder,
-                                     char *err);
+ResultController AUTDControllerOpenWith(ControllerBuilderPtr builder,
+                                        LinkBuilderPtr link_builder);
 
-[[nodiscard]] bool AUTDControllerClose(ControllerPtr cnt, char *err);
+[[nodiscard]] ResultI32 AUTDControllerClose(ControllerPtr cnt);
 
 void AUTDControllerDelete(ControllerPtr cnt);
 
-[[nodiscard]] bool AUTDControllerFPGAInfo(ControllerPtr cnt, uint8_t *out, char *err);
+[[nodiscard]] ResultI32 AUTDControllerFPGAInfo(ControllerPtr cnt, uint8_t *out);
 
-[[nodiscard]]
-FirmwareInfoListPtr AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt,
-                                                          char *err);
+[[nodiscard]] ResultFirmwareInfoList AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt);
 
-void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info);
+void AUTDControllerFirmwareInfoGet(ResultFirmwareInfoList p_info_list, uint32_t idx, char *info);
 
-void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr p_info_list);
+void AUTDControllerFirmwareInfoListPointerDelete(ResultFirmwareInfoList p_info_list);
 
 void AUTDFirmwareLatest(char *latest);
 
@@ -86,48 +94,43 @@ void AUTDFirmwareLatest(char *latest);
 [[nodiscard]] DatagramPtr AUTDDatagramSilencer(uint16_t step);
 
 [[nodiscard]]
-int32_t AUTDControllerSend(ControllerPtr cnt,
-                           DatagramPtr d1,
-                           DatagramPtr d2,
-                           int64_t timeout_ns,
-                           char *err);
+ResultI32 AUTDControllerSend(ControllerPtr cnt,
+                             DatagramPtr d1,
+                             DatagramPtr d2,
+                             int64_t timeout_ns);
 
 [[nodiscard]]
-int32_t AUTDControllerSendSpecial(ControllerPtr cnt,
-                                  DatagramSpecialPtr special,
-                                  int64_t timeout_ns,
-                                  char *err);
+ResultI32 AUTDControllerSendSpecial(ControllerPtr cnt,
+                                    DatagramSpecialPtr special,
+                                    int64_t timeout_ns);
 
-[[nodiscard]] GroupKVMapPtr AUTDControllerGroupCreateKVMap();
-
-[[nodiscard]]
-GroupKVMapPtr AUTDControllerGroupKVMapSet(GroupKVMapPtr map,
-                                          int32_t key,
-                                          DatagramPtr d1,
-                                          DatagramPtr d2,
-                                          int64_t timeout_ns,
-                                          char *err);
+[[nodiscard]] ResultGroupKVMap AUTDControllerGroupCreateKVMap();
 
 [[nodiscard]]
-GroupKVMapPtr AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map,
-                                                 int32_t key,
-                                                 DatagramSpecialPtr special,
-                                                 int64_t timeout_ns,
-                                                 char *err);
+ResultGroupKVMap AUTDControllerGroupKVMapSet(ResultGroupKVMap map,
+                                             int32_t key,
+                                             DatagramPtr d1,
+                                             DatagramPtr d2,
+                                             int64_t timeout_ns);
 
 [[nodiscard]]
-int32_t AUTDControllerGroup(ControllerPtr cnt,
-                            const int32_t *map,
-                            GroupKVMapPtr kv_map,
-                            char *err);
+ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(ResultGroupKVMap map,
+                                                    int32_t key,
+                                                    DatagramSpecialPtr special,
+                                                    int64_t timeout_ns);
+
+[[nodiscard]]
+ResultI32 AUTDControllerGroup(ControllerPtr cnt,
+                              const int32_t *map,
+                              ResultGroupKVMap kv_map);
 
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
-[[nodiscard]] GainCalcDrivesMapPtr AUTDGainCalc(GainPtr gain, GeometryPtr geometry, char *err);
+[[nodiscard]] ResultGainCalcDrivesMap AUTDGainCalc(GainPtr gain, GeometryPtr geometry);
 
-void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive *dst, uint32_t idx);
+void AUTDGainCalcGetResult(ResultGainCalcDrivesMap src, Drive *dst, uint32_t idx);
 
-void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
+void AUTDGainCalcFreeResult(ResultGainCalcDrivesMap src);
 
 [[nodiscard]]
 GainPtr AUTDGainBessel(double x,
@@ -335,17 +338,15 @@ void AUTDLinkAuditFpgaDutiesAndPhases(LinkPtr audit,
 
 [[nodiscard]] DatagramPtr AUTDModulationIntoDatagram(ModulationPtr m);
 
-[[nodiscard]] int32_t AUTDModulationSize(ModulationPtr m, char *err);
+[[nodiscard]] ResultI32 AUTDModulationSize(ModulationPtr m);
 
-[[nodiscard]] ModulationCachePtr AUTDModulationWithCache(ModulationPtr m, char *err);
+[[nodiscard]] ResultCache AUTDModulationWithCache(ModulationPtr m);
 
-[[nodiscard]] uint32_t AUTDModulationCacheGetBufferSize(ModulationCachePtr m);
+void AUTDModulationCacheGetBuffer(ResultCache m, double *buf);
 
-void AUTDModulationCacheGetBuffer(ModulationCachePtr m, double *buf);
+[[nodiscard]] ModulationPtr AUTDModulationCacheIntoModulation(ResultCache m);
 
-[[nodiscard]] ModulationPtr AUTDModulationCacheIntoModulation(ModulationCachePtr m);
-
-void AUTDModulationCacheDelete(ModulationCachePtr m);
+void AUTDModulationCacheDelete(ResultCache m);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,

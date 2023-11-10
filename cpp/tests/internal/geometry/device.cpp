@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 11/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -64,13 +64,13 @@ TEST(Internal_Geometry, DeviceForceFan) {
 
   autd.geometry()[0].force_fan(true);
   autd.geometry()[1].force_fan(false);
-  autd.send(autd3::internal::UpdateFlags());
+  autd.send_async(autd3::internal::UpdateFlags()).get();
   ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(0), 1);
   ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(1), 0);
 
   autd.geometry()[0].force_fan(false);
   autd.geometry()[1].force_fan(true);
-  autd.send(autd3::internal::UpdateFlags());
+  autd.send_async(autd3::internal::UpdateFlags()).get();
   ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(0), 0);
   ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(1), 1);
 }
