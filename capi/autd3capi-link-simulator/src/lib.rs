@@ -19,9 +19,7 @@ use std::{
     time::Duration,
 };
 
-use autd3capi_def::{
-    common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32,
-};
+use autd3capi_def::{common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32};
 
 use autd3_link_simulator::*;
 
@@ -37,19 +35,10 @@ impl LinkSimulatorBuilderPtr {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultLinkSimulatorBuilderPtr {
+pub struct ResultLinkSimulatorBuilder {
     pub result: LinkSimulatorBuilderPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDRLinkSimulatorBuilderPtrGetErr(
-    r: ResultLinkSimulatorBuilderPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
@@ -63,16 +52,15 @@ pub unsafe extern "C" fn AUTDLinkSimulator(port: u16) -> LinkSimulatorBuilderPtr
 pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
     simulator: LinkSimulatorBuilderPtr,
     addr: *const c_char,
-    _err: *mut c_char,
-) -> ResultLinkSimulatorBuilderPtr {
+) -> ResultLinkSimulatorBuilder {
     let addr = match CStr::from_ptr(addr).to_str() {
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultLinkSimulatorBuilderPtr {
+            return ResultLinkSimulatorBuilder {
                 result: LinkSimulatorBuilderPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
@@ -80,19 +68,19 @@ pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultLinkSimulatorBuilderPtr {
+            return ResultLinkSimulatorBuilder {
                 result: LinkSimulatorBuilderPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
-    ResultLinkSimulatorBuilderPtr {
+    ResultLinkSimulatorBuilder {
         result: LinkSimulatorBuilderPtr::new(
             Box::from_raw(simulator.0 as *mut SimulatorBuilder).with_server_ip(addr),
         ),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 

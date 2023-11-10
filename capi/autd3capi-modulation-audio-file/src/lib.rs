@@ -15,36 +15,36 @@
 
 use std::ffi::{c_char, CStr};
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr, ResultModulationPtr};
+use autd3capi_def::{common::*, take_mod, ModulationPtr, ResultModulation};
 
 use autd3_modulation_audio_file::{RawPCM, Wav};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulationPtr {
+pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulation {
     let path = match CStr::from_ptr(path).to_str() {
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultModulationPtr {
+            return ResultModulation {
                 result: ModulationPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     match Wav::new(path) {
-        Ok(v) => ResultModulationPtr {
+        Ok(v) => ResultModulation {
             result: ModulationPtr::new(v),
             err_len: 0,
-            err: std::ptr::null(),
+            err: std::ptr::null_mut(),
         },
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            ResultModulationPtr {
+            ResultModulation {
                 result: ModulationPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             }
         }
     }
@@ -64,30 +64,30 @@ pub unsafe extern "C" fn AUTDModulationWavWithSamplingFrequencyDivision(
 pub unsafe extern "C" fn AUTDModulationRawPCM(
     path: *const c_char,
     sample_rate: u32,
-) -> ResultModulationPtr {
+) -> ResultModulation {
     let path = match CStr::from_ptr(path).to_str() {
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultModulationPtr {
+            return ResultModulation {
                 result: ModulationPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
     match RawPCM::new(path, sample_rate) {
-        Ok(v) => ResultModulationPtr {
+        Ok(v) => ResultModulation {
             result: ModulationPtr::new(v),
             err_len: 0,
-            err: std::ptr::null(),
+            err: std::ptr::null_mut(),
         },
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            ResultModulationPtr {
+            ResultModulation {
                 result: ModulationPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             }
         }
     }

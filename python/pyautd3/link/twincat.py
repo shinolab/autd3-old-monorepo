@@ -20,6 +20,7 @@ from pyautd3.native_methods.autd3capi import (
     NativeMethods as Base,
 )
 from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_link_twincat import LinkRemoteTwinCATBuilderPtr, LinkTwinCATBuilderPtr
 from pyautd3.native_methods.autd3capi_link_twincat import NativeMethods as LinkTwinCAT
 
@@ -65,10 +66,12 @@ class RemoteTwinCAT(Link):
         _builder: LinkRemoteTwinCATBuilderPtr
 
         def __init__(self: "RemoteTwinCAT._Builder", server_ams_net_id: str) -> None:
-            err = ctypes.create_string_buffer(256)
-            self._builder = LinkTwinCAT().link_remote_twin_cat(server_ams_net_id.encode("utf-8"), err)
-            if self._builder._0 is None:
+            res = LinkTwinCAT().link_remote_twin_cat(server_ams_net_id.encode("utf-8"))
+            if res.result is None:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
                 raise AUTDError(err)
+            self._builder = res.result
 
         def with_server_ip(self: "RemoteTwinCAT._Builder", ip: str) -> "RemoteTwinCAT._Builder":
             """Set server IP address.

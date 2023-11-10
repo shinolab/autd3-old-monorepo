@@ -69,42 +69,32 @@ impl LinkRemoteTwinCATBuilderPtr {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultLinkRemoteTwinCATBuilderPtr {
+pub struct ResultLinkRemoteTwinCATBuilder {
     pub result: LinkRemoteTwinCATBuilderPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultLinkRemoteTwinCATBuilderPtrGetErr(
-    r: ResultLinkRemoteTwinCATBuilderPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
     server_ams_net_id: *const c_char,
-    _err: *mut c_char,
-) -> ResultLinkRemoteTwinCATBuilderPtr {
+) -> ResultLinkRemoteTwinCATBuilder {
     match CStr::from_ptr(server_ams_net_id).to_str() {
         Ok(v) => {
             let builder = RemoteTwinCAT::builder(v);
-            ResultLinkRemoteTwinCATBuilderPtr {
+            ResultLinkRemoteTwinCATBuilder {
                 result: LinkRemoteTwinCATBuilderPtr::new(builder),
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             }
         }
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            ResultLinkRemoteTwinCATBuilderPtr {
+            ResultLinkRemoteTwinCATBuilder {
                 result: LinkRemoteTwinCATBuilderPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             }
         }
     }

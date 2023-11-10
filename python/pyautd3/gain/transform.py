@@ -25,6 +25,7 @@ from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 G = TypeVar("G", bound=IGain)
 
@@ -41,9 +42,10 @@ class Transform(IGain, Generic[G]):
         self._f = f
 
     def _gain_ptr(self: "Transform", geometry: Geometry) -> GainPtr:
-        err = create_string_buffer(256)
-        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr(), err)
-        if res._0 is None:
+        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr())
+        if res.result is None:
+            err = create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
 
         drives: dict[int, np.ndarray] = {}

@@ -20,9 +20,10 @@ import numpy as np
 
 from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulation
-from pyautd3.native_methods.autd3capi import ModulationCachePtr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi import ResultCache
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 M = TypeVar("M", bound=IModulation)
 
@@ -30,17 +31,17 @@ M = TypeVar("M", bound=IModulation)
 class Cache(IModulation):
     """Modulation to cache the result of calculation."""
 
-    _cache: ModulationCachePtr
+    _cache: ResultCache
     _buffer: np.ndarray
 
     def __init__(self: "Cache", m: M) -> None:
-        err = create_string_buffer(256)
-        cache = Base().modulation_with_cache(m._modulation_ptr(), err)
-        if cache._0 is None:
+        cache = Base().modulation_with_cache(m._modulation_ptr())
+        if cache.result is None:
+            err = create_string_buffer(int(cache.err_len))
+            Def().get_err(cache.err, err)
             raise AUTDError(err)
         self._cache = cache
-
-        n = int(Base().modulation_cache_get_buffer_size(self._cache))
+        n = int(self._cache.buffer_len)
         self._buffer = np.zeros(n, dtype=float)
         Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
 

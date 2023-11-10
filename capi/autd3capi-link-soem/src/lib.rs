@@ -229,32 +229,23 @@ impl LinkRemoteSOEMBuilderPtr {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultLinkRemoteSOEMBuilderPtr {
+pub struct ResultLinkRemoteSOEMBuilder {
     pub result: LinkRemoteSOEMBuilderPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDRLinkRemoteSOEMBuilderPtrGetErr(
-    r: ResultLinkRemoteSOEMBuilderPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char) -> ResultLinkRemoteSOEMBuilderPtr {
+pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char) -> ResultLinkRemoteSOEMBuilder {
     let addr = match CStr::from_ptr(addr).to_str() {
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultLinkRemoteSOEMBuilderPtr {
+            return ResultLinkRemoteSOEMBuilder {
                 result: LinkRemoteSOEMBuilderPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
@@ -262,17 +253,17 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char) -> ResultLinkRe
         Ok(v) => v,
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultLinkRemoteSOEMBuilderPtr {
+            return ResultLinkRemoteSOEMBuilder {
                 result: LinkRemoteSOEMBuilderPtr(NULL),
                 err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
-    ResultLinkRemoteSOEMBuilderPtr {
+    ResultLinkRemoteSOEMBuilder {
         result: LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(addr)),
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 

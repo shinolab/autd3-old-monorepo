@@ -20,7 +20,7 @@ pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, LinkBuilderPtr, ResultControllerPtr,
+    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, LinkBuilderPtr, ResultController,
     ResultI32,
 };
 use std::{ffi::c_char, time::Duration};
@@ -89,7 +89,7 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
 pub unsafe extern "C" fn AUTDControllerOpenWith(
     builder: ControllerBuilderPtr,
     link_builder: LinkBuilderPtr,
-) -> ResultControllerPtr {
+) -> ResultController {
     let link_builder: Box<DynamicLinkBuilder> =
         Box::from_raw(link_builder.0 as *mut DynamicLinkBuilder);
     Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder)
@@ -123,26 +123,26 @@ pub unsafe extern "C" fn AUTDControllerFPGAInfo(cnt: ControllerPtr, out: *mut u8
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultFirmwareInfoListPtr {
+pub struct ResultFirmwareInfoList {
     pub result: ConstPtr,
     pub err_len: u32,
-    pub err: *const c_char,
+    pub err: ConstPtr,
 }
 
-impl From<Result<Vec<FirmwareInfo>, AUTDError>> for ResultFirmwareInfoListPtr {
+impl From<Result<Vec<FirmwareInfo>, AUTDError>> for ResultFirmwareInfoList {
     fn from(r: Result<Vec<FirmwareInfo>, AUTDError>) -> Self {
         match r {
             Ok(v) => Self {
                 result: Box::into_raw(Box::new(v)) as _,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: NULL,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
@@ -150,25 +150,16 @@ impl From<Result<Vec<FirmwareInfo>, AUTDError>> for ResultFirmwareInfoListPtr {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDResultFirmwareInfoListPtrGetErr(
-    r: ResultFirmwareInfoListPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
-}
-
-#[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointer(
     cnt: ControllerPtr,
-) -> ResultFirmwareInfoListPtr {
+) -> ResultFirmwareInfoList {
     cast_mut!(cnt.0, Cnt).firmware_infos().into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDControllerFirmwareInfoGet(
-    p_info_list: ResultFirmwareInfoListPtr,
+    p_info_list: ResultFirmwareInfoList,
     idx: u32,
     info: *mut c_char,
 ) {
@@ -179,7 +170,7 @@ pub unsafe extern "C" fn AUTDControllerFirmwareInfoGet(
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDControllerFirmwareInfoListPointerDelete(
-    p_info_list: ResultFirmwareInfoListPtr,
+    p_info_list: ResultFirmwareInfoList,
 ) {
     let _ = Box::from_raw(p_info_list.result as *mut Vec<FirmwareInfo>);
 }
@@ -303,37 +294,31 @@ type M = std::collections::HashMap<K, V>;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultGroupKVMapPtr {
+pub struct ResultGroupKVMap {
     pub result: ConstPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDGroupKVMapPtrGetErr(r: ResultGroupKVMapPtr, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDControllerGroupCreateKVMap() -> ResultGroupKVMapPtr {
-    ResultGroupKVMapPtr {
+pub unsafe extern "C" fn AUTDControllerGroupCreateKVMap() -> ResultGroupKVMap {
+    ResultGroupKVMap {
         result: Box::into_raw(Box::<M>::default()) as _,
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
-    map: ResultGroupKVMapPtr,
+    map: ResultGroupKVMap,
     key: i32,
     d1: DatagramPtr,
     d2: DatagramPtr,
     timeout_ns: i64,
-) -> ResultGroupKVMapPtr {
+) -> ResultGroupKVMap {
     let timeout = if timeout_ns < 0 {
         None
     } else {
@@ -348,10 +333,10 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
-                return ResultGroupKVMapPtr {
+                return ResultGroupKVMap {
                     result: std::ptr::null(),
                     err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 };
             }
         };
@@ -362,10 +347,10 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
-                return ResultGroupKVMapPtr {
+                return ResultGroupKVMap {
                     result: std::ptr::null(),
                     err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 };
             }
         };
@@ -376,29 +361,29 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSet(
             Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
-                return ResultGroupKVMapPtr {
+                return ResultGroupKVMap {
                     result: std::ptr::null(),
                     err_len: err.as_bytes_with_nul().len() as _,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 };
             }
         };
     }
-    ResultGroupKVMapPtr {
+    ResultGroupKVMap {
         result: Box::into_raw(map) as _,
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
-    map: ResultGroupKVMapPtr,
+    map: ResultGroupKVMap,
     key: i32,
     special: DatagramSpecialPtr,
     timeout_ns: i64,
-) -> ResultGroupKVMapPtr {
+) -> ResultGroupKVMap {
     let timeout = if timeout_ns < 0 {
         None
     } else {
@@ -412,17 +397,17 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
         Ok((op1, op2)) => map.insert(key, (op1, op2, timeout)),
         Err(e) => {
             let err = std::ffi::CString::new(e.to_string()).unwrap();
-            return ResultGroupKVMapPtr {
+            return ResultGroupKVMap {
                 result: std::ptr::null(),
                 err_len: err.as_bytes_with_nul().len() as _,
-                err: err.into_raw(),
+                err: err.into_raw() as _,
             };
         }
     };
-    ResultGroupKVMapPtr {
+    ResultGroupKVMap {
         result: Box::into_raw(map) as _,
         err_len: 0,
-        err: std::ptr::null(),
+        err: std::ptr::null_mut(),
     }
 }
 
@@ -431,7 +416,7 @@ pub unsafe extern "C" fn AUTDControllerGroupKVMapSetSpecial(
 pub unsafe extern "C" fn AUTDControllerGroup(
     cnt: ControllerPtr,
     map: *const i32,
-    kv_map: ResultGroupKVMapPtr,
+    kv_map: ResultGroupKVMap,
 ) -> ResultI32 {
     let kv_map = Box::from_raw(kv_map.result as *mut M);
     kv_map

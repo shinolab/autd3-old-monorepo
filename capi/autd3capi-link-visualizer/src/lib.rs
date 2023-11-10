@@ -17,8 +17,6 @@ pub mod null;
 pub mod plotters;
 pub mod python;
 
-
-
 use autd3_link_visualizer::{
     NullBackend, NullPlotConfig, PlotConfig, PlotRange, PlottersBackend, PyPlotConfig,
     PythonBackend, Visualizer,
@@ -175,14 +173,14 @@ macro_rules! into_result {
             Ok(_) => ResultI32 {
                 result: AUTD3_TRUE,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 ResultI32 {
                     result: 0,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }

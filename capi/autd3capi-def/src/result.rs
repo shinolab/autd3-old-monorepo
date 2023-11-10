@@ -17,12 +17,18 @@ use autd3capi_common::{libc, AUTDError, AUTDInternalError, ConstPtr, Controller,
 
 use crate::{ControllerPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE};
 
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGetErr(src: ConstPtr, dst: *mut c_char) {
+    let src = std::ffi::CString::from_raw(src as _);
+    libc::strcpy(dst, src.as_ptr());
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct ResultI32 {
     pub result: i32,
     pub err_len: u32,
-    pub err: *const c_char,
+    pub err: ConstPtr,
 }
 
 impl From<Result<(), AUTDInternalError>> for ResultI32 {
@@ -31,14 +37,14 @@ impl From<Result<(), AUTDInternalError>> for ResultI32 {
             Ok(_) => Self {
                 result: AUTD3_TRUE,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: AUTD3_ERR,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
@@ -51,14 +57,14 @@ impl From<Result<bool, AUTDError>> for ResultI32 {
             Ok(v) => Self {
                 result: if v { AUTD3_TRUE } else { AUTD3_FALSE },
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: AUTD3_ERR,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
@@ -71,14 +77,14 @@ impl From<Result<bool, AUTDInternalError>> for ResultI32 {
             Ok(v) => Self {
                 result: if v { AUTD3_TRUE } else { AUTD3_FALSE },
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: AUTD3_ERR,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
@@ -91,107 +97,80 @@ impl From<Result<usize, AUTDInternalError>> for ResultI32 {
             Ok(v) => Self {
                 result: v as i32,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: AUTD3_ERR,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultI32GetErr(r: ResultI32, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
-}
-
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultControllerPtr {
+pub struct ResultController {
     pub result: ControllerPtr,
     pub err_len: u32,
-    pub err: *const c_char,
+    pub err: ConstPtr,
 }
 
-impl From<Result<Controller<Box<L>>, AUTDError>> for ResultControllerPtr {
+impl From<Result<Controller<Box<L>>, AUTDError>> for ResultController {
     fn from(r: Result<Controller<Box<L>>, AUTDError>) -> Self {
         match r {
             Ok(v) => Self {
                 result: ControllerPtr(Box::into_raw(Box::new(v)) as _),
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: ControllerPtr(NULL),
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultControllerPtrGetErr(r: ResultControllerPtr, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
-}
-
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultGainCalcDrivesMapPtr {
+pub struct ResultGainCalcDrivesMap {
     pub result: ConstPtr,
     pub err_len: u32,
-    pub err: *const c_char,
+    pub err: ConstPtr,
 }
 
-impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainCalcDrivesMapPtr {
+impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainCalcDrivesMap {
     fn from(r: Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>) -> Self {
         match r {
             Ok(v) => Self {
                 result: Box::into_raw(Box::new(v)) as _,
                 err_len: 0,
-                err: std::ptr::null(),
+                err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = std::ffi::CString::new(e.to_string()).unwrap();
                 Self {
                     result: NULL,
                     err_len: err.as_bytes_with_nul().len() as u32,
-                    err: err.into_raw(),
+                    err: err.into_raw() as _,
                 }
             }
         }
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultGainCalcDrivesMapPtrGetErr(
-    r: ResultGainCalcDrivesMapPtr,
-    err: *mut c_char,
-) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
-}
-
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultModulationPtr {
+pub struct ResultModulation {
     pub result: ModulationPtr,
     pub err_len: u32,
-    pub err: *const c_char,
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDResultModulationPtrGetErr(r: ResultModulationPtr, err: *mut c_char) {
-    let err_ = std::ffi::CString::from_raw(r.err as *mut c_char);
-    libc::strcpy(err, err_.as_ptr());
+    pub err: ConstPtr,
 }

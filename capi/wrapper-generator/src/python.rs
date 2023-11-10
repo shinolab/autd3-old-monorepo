@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,7 +67,10 @@ impl PythonGenerator {
             Type::Float64 => "ctypes.c_double".to_string(),
             Type::Bool => "ctypes.c_bool".to_string(),
             Type::VoidPtr => "ctypes.c_void_p".to_string(),
-            Type::Custom(ref s) => s.to_owned(),
+            Type::Custom(ref s) => match s.as_str() {
+                "* mut c_char" => "ctypes.c_char_p".to_string(),
+                s => s.to_owned(),
+            },
         }
     }
 
@@ -359,7 +362,6 @@ class {}(ctypes.Structure):",
 
         if crate_name == "autd3capi-def" {
             writeln!(w)?;
-            return Ok(());
         }
 
         write!(

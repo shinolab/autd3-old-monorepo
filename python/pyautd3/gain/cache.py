@@ -23,6 +23,7 @@ from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 G = TypeVar("G", bound=IGain)
 
@@ -42,9 +43,10 @@ class Cache(IGain, Generic[G]):
         device_indices = [dev.idx for dev in geometry.devices()]
 
         if len(self._cache) != len(device_indices) or any(idx not in self._cache for idx in device_indices):
-            err = create_string_buffer(256)
-            res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr(), err)
-            if res._0 is None:
+            res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr())
+            if res.result is None:
+                err = create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
                 raise AUTDError(err)
 
             for dev in geometry.devices():

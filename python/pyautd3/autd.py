@@ -24,7 +24,7 @@ from .autd_error import AUTDError, InvalidDatagramTypeError, KeyAlreadyExistsErr
 from .geometry import AUTD3, Device, Geometry
 from .internal.datagram import Datagram, SpecialDatagram
 from .internal.link import Link, LinkBuilder
-from .native_methods.autd3capi import ControllerBuilderPtr, FirmwareInfoListPtr
+from .native_methods.autd3capi import ControllerBuilderPtr, ResultFirmwareInfoList, ResultGroupKVMap
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi_def import (
     AUTD3_ERR,
@@ -32,8 +32,10 @@ from .native_methods.autd3capi_def import (
     ControllerPtr,
     DatagramPtr,
     DatagramSpecialPtr,
-    GroupKVMapPtr,
+    ResultController,
+    ResultI32,
 )
+from .native_methods.autd3capi_def import NativeMethods as Def
 
 K = TypeVar("K")
 L = TypeVar("L", bound=Link)
@@ -193,13 +195,20 @@ class Controller(Generic[L]):
     async def _open_impl(builder: ControllerBuilderPtr, link_builder: LinkBuilder[L]) -> "Controller[L]":
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
-        err = ctypes.create_string_buffer(256)
         loop.call_soon(
-            lambda *_: future.set_result(Base().controller_open_with(builder, link_builder._link_builder_ptr(), err)),
+            lambda *_: future.set_result(
+                Base().controller_open_with(
+                    builder,
+                    link_builder._link_builder_ptr(),
+                ),
+            ),
         )
-        ptr: ControllerPtr = await future
-        if ptr._0 is None:
+        result: ResultController = await future
+        if result.result is None:
+            err = ctypes.create_string_buffer(int(result.err_len))
+            Def().get_err(result.err, err)
             raise AUTDError(err)
+        ptr: ControllerPtr = result.result
         geometry = Geometry(Base().geometry(ptr))
         link = link_builder._resolve_link(ptr)
         return Controller(geometry, ptr, link)
@@ -208,12 +217,14 @@ class Controller(Generic[L]):
         """Get firmware information list."""
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
-        err = ctypes.create_string_buffer(256)
+
         loop.call_soon(
-            lambda *_: future.set_result(Base().controller_firmware_info_list_pointer(self._ptr, err)),
+            lambda *_: future.set_result(Base().controller_firmware_info_list_pointer(self._ptr)),
         )
-        handle: FirmwareInfoListPtr = await future
-        if handle._0 is None:
+        handle: ResultFirmwareInfoList = await future
+        if handle.result is None:
+            err = ctypes.create_string_buffer(int(handle.err_len))
+            Def().get_err(handle.err, err)
             raise AUTDError(err)
 
         def get_firmware_info(i: int) -> FirmwareInfo:
@@ -231,13 +242,18 @@ class Controller(Generic[L]):
     async def close(self: "Controller") -> None:
         """Close controller."""
         future: asyncio.Future = asyncio.Future()
-        err = ctypes.create_string_buffer(256)
         loop = asyncio.get_event_loop()
         loop.call_soon(
-            lambda *_: future.set_result(Base().controller_close(self._ptr, err)),
+            lambda *_: future.set_result(
+                Base().controller_close(
+                    self._ptr,
+                ),
+            ),
         )
-        res: ctypes.c_bool = await future
-        if not res:
+        res: ResultI32 = await future
+        if res.result == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
 
     async def fpga_info(self: "Controller") -> list[FPGAInfo]:
@@ -245,13 +261,19 @@ class Controller(Generic[L]):
         infos = np.zeros([self.geometry.num_devices]).astype(ctypes.c_uint8)
         pinfos = np.ctypeslib.as_ctypes(infos)
         future: asyncio.Future = asyncio.Future()
-        err = ctypes.create_string_buffer(256)
         loop = asyncio.get_event_loop()
         loop.call_soon(
-            lambda *_: future.set_result(Base().controller_fpga_info(self._ptr, pinfos, err)),
+            lambda *_: future.set_result(
+                Base().controller_fpga_info(
+                    self._ptr,
+                    pinfos,
+                ),
+            ),
         )
-        res: ctypes.c_bool = await future
-        if not res:
+        res: ResultI32 = await future
+        if int(res.result) == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
         return [FPGAInfo(x) for x in infos]
 
@@ -282,7 +304,6 @@ class Controller(Generic[L]):
         timeout_ = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         future: asyncio.Future = asyncio.Future()
         loop = asyncio.get_event_loop()
-        err = ctypes.create_string_buffer(256)
         match (d1, d2):
             case (SpecialDatagram(), None):
                 ds_ptr = d1._special_datagram_ptr()  # type: ignore[union-attr]
@@ -292,7 +313,6 @@ class Controller(Generic[L]):
                             self._ptr,
                             ds_ptr,
                             timeout_,
-                            err,
                         ),
                     ),
                 )
@@ -305,7 +325,6 @@ class Controller(Generic[L]):
                             d_ptr,
                             DatagramPtr(None),
                             timeout_,
-                            err,
                         ),
                     ),
                 )
@@ -320,7 +339,6 @@ class Controller(Generic[L]):
                             d11_ptr,
                             d22_ptr,
                             timeout_,
-                            err,
                         ),
                     ),
                 )
@@ -334,21 +352,23 @@ class Controller(Generic[L]):
                             d1_ptr,
                             d2_ptr,
                             timeout_,
-                            err,
                         ),
                     ),
                 )
             case _:
                 raise InvalidDatagramTypeError
-        res = int(await future)
-        if res == AUTD3_ERR:
+        res: ResultI32 = await future
+        result = int(res.result)
+        if result == AUTD3_ERR:
+            err = ctypes.create_string_buffer(int(res.err_len))
+            Def().get_err(res.err, err)
             raise AUTDError(err)
-        return res == AUTD3_TRUE
+        return result == AUTD3_TRUE
 
     class _GroupGuard(Generic[K]):
         _controller: "Controller"
         _map: Callable[[Device], K | None]
-        _kv_map: GroupKVMapPtr
+        _kv_map: ResultGroupKVMap
         _keymap: dict[K, int]
         _k: int
 
@@ -373,7 +393,6 @@ class Controller(Generic[L]):
 
             timeout_ns = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
 
-            err = ctypes.create_string_buffer(256)
             match (d1, d2):
                 case (SpecialDatagram(), None):
                     self._kv_map = Base().controller_group_kv_map_set_special(
@@ -381,7 +400,6 @@ class Controller(Generic[L]):
                         self._k,
                         d1._special_datagram_ptr(),  # type: ignore[union-attr]
                         timeout_ns,
-                        err,
                     )
                 case (Datagram(), None):
                     self._kv_map = Base().controller_group_kv_map_set(
@@ -390,7 +408,6 @@ class Controller(Generic[L]):
                         d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         DatagramPtr(None),
                         timeout_ns,
-                        err,
                     )
                 case ((Datagram(), Datagram()), None):
                     (d11, d12) = d1  # type: ignore[misc]
@@ -400,7 +417,6 @@ class Controller(Generic[L]):
                         d11._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         d12._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         timeout_ns,
-                        err,
                     )
                 case (Datagram(), Datagram()):
                     self._kv_map = Base().controller_group_kv_map_set(
@@ -409,12 +425,13 @@ class Controller(Generic[L]):
                         d1._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         d2._datagram_ptr(self._controller._geometry),  # type: ignore[union-attr]
                         timeout_ns,
-                        err,
                     )
                 case _:
                     raise InvalidDatagramTypeError
 
-            if self._kv_map._0 is None:
+            if self._kv_map.result is None:
+                err = ctypes.create_string_buffer(int(self._kv_map.err_len))
+                Def().get_err(self._kv_map.err, err)
                 raise AUTDError(err)
 
             self._k += 1
@@ -428,21 +445,22 @@ class Controller(Generic[L]):
             )
             future: asyncio.Future = asyncio.Future()
             loop = asyncio.get_event_loop()
-            err = ctypes.create_string_buffer(256)
             loop.call_soon(
                 lambda *_: future.set_result(
                     Base().controller_group(
                         self._controller._ptr,
                         np.ctypeslib.as_ctypes(m.astype(ctypes.c_int32)),
                         self._kv_map,
-                        err,
                     ),
                 ),
             )
-            res = int(await future)
-            if res == AUTD3_ERR:
+            res: ResultI32 = await future
+            result = int(res.result)
+            if result == AUTD3_ERR:
+                err = ctypes.create_string_buffer(int(res.err_len))
+                Def().get_err(res.err, err)
                 raise AUTDError(err)
-            return res == AUTD3_TRUE
+            return result == AUTD3_TRUE
 
     def group(self: "Controller", group_map: Callable[[Device], K | None]) -> "Controller._GroupGuard":
         """Grouping data."""
