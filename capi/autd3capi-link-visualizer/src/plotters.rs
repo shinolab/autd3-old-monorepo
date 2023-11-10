@@ -221,11 +221,11 @@ pub unsafe extern "C" fn AUTDLinkVisualizerPlotConfigWithFName(
     let fname = match CStr::from_ptr(fname).to_str() {
         Ok(v) => v.to_owned(),
         Err(e) => {
-            let err = std::ffi::CString::new(e.to_string()).unwrap();
+            let err = e.to_string();
             return ResultPlotConfig {
                 result: PlotConfigPtr(NULL),
-                err_len: err.as_bytes_with_nul().len() as u32,
-                err: err.into_raw() as _,
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
             };
         }
     };
