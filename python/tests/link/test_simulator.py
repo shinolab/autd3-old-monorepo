@@ -25,7 +25,7 @@ def test_simulator():
     autd = (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(Simulator.builder(8080).with_server_ip("127.0.0.1").with_timeout(timedelta(milliseconds=200)))
+        .open_with_async(Simulator.builder(8080).with_server_ip("127.0.0.1").with_timeout(timedelta(milliseconds=200)))
     )
 
-    autd.close()
+    autd.close_async()

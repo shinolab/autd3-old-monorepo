@@ -25,7 +25,7 @@ from tests.test_autd import create_controller
 async def test_sine_legacy():
     autd = await create_controller()
 
-    assert await autd.send(SineLegacy(150.0).with_amp(0.5).with_offset(0.25))
+    assert await autd.send_async(SineLegacy(150.0).with_amp(0.5).with_offset(0.25))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -33,14 +33,14 @@ async def test_sine_legacy():
         assert np.array_equal(mod, mod_expext)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert await autd.send(SineLegacy(150).with_sampling_frequency_division(512))
+    assert await autd.send_async(SineLegacy(150).with_sampling_frequency_division(512))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
 
-    assert await autd.send(SineLegacy(150).with_sampling_frequency(8e3))
+    assert await autd.send_async(SineLegacy(150).with_sampling_frequency(8e3))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2560
 
-    assert await autd.send(SineLegacy(150).with_sampling_period(timedelta(microseconds=100)))
+    assert await autd.send_async(SineLegacy(150).with_sampling_period(timedelta(microseconds=100)))
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 2048

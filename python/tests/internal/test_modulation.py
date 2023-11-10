@@ -25,7 +25,7 @@ async def test_cache():
 
     m = Sine(150).with_cache()
 
-    assert await autd.send(m)
+    assert await autd.send_async(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -132,17 +132,17 @@ async def test_cache_check_once():
     autd = await create_controller()
 
     m = CacheTest()
-    assert await autd.send(m)
+    assert await autd.send_async(m)
     assert m.calc_cnt == 1
-    assert await autd.send(m)
+    assert await autd.send_async(m)
     assert m.calc_cnt == 2
 
     m = CacheTest()
     m_cached = m.with_cache()
 
-    assert await autd.send(m_cached)
+    assert await autd.send_async(m_cached)
     assert m.calc_cnt == 1
-    assert await autd.send(m_cached)
+    assert await autd.send_async(m_cached)
     assert m.calc_cnt == 1
 
 
@@ -152,7 +152,7 @@ async def test_transform():
 
     m = Sine(150).with_transform(lambda _i, v: v / 2)
 
-    assert await autd.send(m)
+    assert await autd.send_async(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
@@ -248,7 +248,7 @@ async def test_radiation_pressure():
 
     m = Sine(150).with_radiation_pressure()
 
-    assert await autd.send(m)
+    assert await autd.send_async(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

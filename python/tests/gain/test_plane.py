@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 async def test_plane():
     autd = await create_controller()
 
-    assert await autd.send(Plane([0, 0, 1]).with_amp(0.5))
+    assert await autd.send_async(Plane([0, 0, 1]).with_amp(0.5))
 
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)

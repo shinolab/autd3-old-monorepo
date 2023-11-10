@@ -21,7 +21,7 @@ from pyautd3.modulation import Sine, Static
 
 async def group(autd: Controller) -> None:
     config = Silencer()
-    await autd.send(config)
+    await autd.send_async(config)
 
     def grouping(dev: Device) -> str | None:
         match dev.idx:
@@ -36,4 +36,4 @@ async def group(autd: Controller) -> None:
         "focus",
         Sine(150),
         Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])),
-    ).send()
+    ).send_async()

@@ -39,7 +39,7 @@ async def test_modulation():
     assert m.sampling_frequency == 4000
     assert len(m) == 10
 
-    assert await autd.send(m)
+    assert await autd.send_async(m)
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)

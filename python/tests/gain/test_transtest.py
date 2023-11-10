@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 async def test_transtest():
     autd = await create_controller()
 
-    assert await autd.send(TransducerTest().set_drive(0, 0, np.pi, 0.5).set_drive(1, 248, np.pi, 0.5))
+    assert await autd.send_async(TransducerTest().set_drive(0, 0, np.pi, 0.5).set_drive(1, 248, np.pi, 0.5))
 
     duties, phases = autd.link.duties_and_phases(0, 0)
     assert duties[0] == 85

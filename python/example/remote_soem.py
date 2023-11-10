@@ -24,7 +24,7 @@ async def main() -> None:
     with await (
         Controller.builder()
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with(
+        .open_with_async(
             RemoteSOEM.builder("127.0.0.1:8080"),
         )
     ) as autd:

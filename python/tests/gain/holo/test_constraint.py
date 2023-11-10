@@ -30,7 +30,7 @@ async def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.uniform(0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties == 85)
@@ -42,7 +42,7 @@ async def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.normalize())
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert not np.all(duties == 0)
@@ -54,7 +54,7 @@ async def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 0.5)
         .with_constraint(AmplitudeConstraint.clamp(0.4, 0.5))
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert np.all(duties >= 67)
@@ -67,7 +67,7 @@ async def test_constraint():
         .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5)
         .with_constraint(AmplitudeConstraint.dont_care())
     )
-    assert await autd.send(g)
+    assert await autd.send_async(g)
     for dev in autd.geometry:
         duties, phases = autd.link.duties_and_phases(dev.idx, 0)
         assert not np.all(duties == 0)

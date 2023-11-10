@@ -23,7 +23,7 @@ from tests.test_autd import create_controller
 async def test_static():
     autd = await create_controller()
 
-    assert await autd.send(Static().with_amp(0.2))
+    assert await autd.send_async(Static().with_amp(0.2))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
