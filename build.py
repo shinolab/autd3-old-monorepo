@@ -131,6 +131,7 @@ class Config:
     release: bool
     cuda: bool
     skip_cuda: bool
+    skip_visualizer: bool
     _af: bool
     shaderc: bool
     target: Optional[str]
@@ -149,6 +150,7 @@ class Config:
         self.release = hasattr(args, "release") and args.release
         self.universal = hasattr(args, "universal") and args.universal
         self.skip_cuda = hasattr(args, "skip_cuda") and args.skip_cuda
+        self.skip_visualizer = hasattr(args, "skip_visualizer") and args.skip_visualizer
         self.no_examples = hasattr(args, "no_examples") and args.no_examples
         self.cmake_extra = (
             args.cmake_extra.split(" ")
@@ -314,7 +316,7 @@ class Config:
             command.append("--all")
             if not self.cuda or self.skip_cuda:
                 command.append("--exclude=autd3capi-backend-cuda")
-            if not self.is_built_autd3capi_link_visualizer():
+            if not self.is_built_autd3capi_link_visualizer() or self.skip_visualizer:
                 command.append("--exclude=autd3capi-link-visualizer")
         return command
 
@@ -1591,6 +1593,11 @@ if __name__ == "__main__":
         parser_test.add_argument("--all", action="store_true", help="test all crates")
         parser_test.add_argument(
             "--skip-cuda", action="store_true", help="force skip cuda test"
+        )
+        parser_test.add_argument(
+            "--skip-visualizer",
+            action="store_true",
+            help="force skip link-visualizer test",
         )
         parser_test.add_argument("--release", action="store_true", help="release build")
         parser_test.set_defaults(handler=rust_test)
