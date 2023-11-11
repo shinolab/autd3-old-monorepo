@@ -91,10 +91,6 @@ jobs:
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
           cd ..
-          cd autd3-link-visualizer
-          cargo publish --no-verify --dry-run
-          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-          cd ..
           cd autd3-modulation-audio-file
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
@@ -139,7 +135,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: windows-latest
           cuda: true
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version
@@ -214,7 +210,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           cuda: true
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version
@@ -401,7 +397,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: macos-latest
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version

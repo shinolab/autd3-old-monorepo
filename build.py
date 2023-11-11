@@ -131,7 +131,6 @@ class Config:
     release: bool
     cuda: bool
     skip_cuda: bool
-    skip_visualizer: bool
     _af: bool
     shaderc: bool
     target: Optional[str]
@@ -150,7 +149,6 @@ class Config:
         self.release = hasattr(args, "release") and args.release
         self.universal = hasattr(args, "universal") and args.universal
         self.skip_cuda = hasattr(args, "skip_cuda") and args.skip_cuda
-        self.skip_visualizer = hasattr(args, "skip_visualizer") and args.skip_visualizer
         self.no_examples = hasattr(args, "no_examples") and args.no_examples
         self.cmake_extra = (
             args.cmake_extra.split(" ")
@@ -217,14 +215,11 @@ class Config:
         command = self.cargo_command_base("build")
         features = "remote"
         if self._all:
-            features += " python"
             command.append("--all")
             if not self.cuda:
                 command.append("--exclude=autd3-backend-cuda")
             if not self._af:
                 command.append("--exclude=autd3-backend-arrayfire")
-            if self.shaderc:
-                features += " gpu"
         command.append("--features")
         command.append(features)
         return command
@@ -233,14 +228,11 @@ class Config:
         command = self.cargo_command_base("test")
         features = "test-utilities remote"
         if self._all:
-            features += " python"
             command.append("--all")
             if not self.cuda or self.skip_cuda:
                 command.append("--exclude=autd3-backend-cuda")
             if not self._af:
                 command.append("--exclude=autd3-backend-arrayfire")
-            if self.shaderc:
-                features += " gpu"
         command.append("--features")
         command.append(features)
         return command
@@ -252,9 +244,7 @@ class Config:
         if self._all:
             if self.cuda and not self.skip_cuda:
                 features += " cuda"
-            features += " simulator remote_soem remote_twincat visualizer python"
-            if self.shaderc:
-                features += " gpu"
+            features += " simulator remote_soem remote_twincat"
         command.append("--features")
         command.append(features)
         return command
@@ -268,9 +258,7 @@ class Config:
         return command
 
     def cargo_cov_command(self):
-        features = "remote test-utilities python"
-        if self.shaderc:
-            features += " gpu"
+        features = "remote test-utilities"
         command = [
             "cargo",
             "+nightly",
@@ -298,8 +286,6 @@ class Config:
             command.append(features)
         if not self.cuda or self.skip_cuda:
             command.append("--exclude=autd3capi-backend-cuda")
-        if not self.is_built_autd3capi_link_visualizer():
-            command.append("--exclude=autd3capi-link-visualizer")
 
         if self.is_macos() and self.universal:
             command_aarch64 = command.copy()
@@ -316,8 +302,6 @@ class Config:
             command.append("--all")
             if not self.cuda or self.skip_cuda:
                 command.append("--exclude=autd3capi-backend-cuda")
-            if not self.is_built_autd3capi_link_visualizer() or self.skip_visualizer:
-                command.append("--exclude=autd3capi-link-visualizer")
         return command
 
     def cargo_clippy_capi_command(self):
@@ -327,9 +311,6 @@ class Config:
         command.append("-D")
         command.append("warnings")
         return command
-
-    def is_built_autd3capi_link_visualizer(self):
-        return self.shaderc
 
     def is_windows(self):
         return self._platform == "Windows"
@@ -418,7 +399,6 @@ def rust_run(args):
         "twincat",
         "remote_twincat",
         "simulator",
-        "visualizer",
     ]
 
     if args.target not in examples:
@@ -438,8 +418,6 @@ def rust_run(args):
             features = "remote_twincat"
         case "simulator":
             features = "simulator"
-        case "visualizer":
-            features = "visualizer"
 
     with working_dir("src/examples"):
         commands = ["cargo", "run"]
@@ -547,8 +525,6 @@ def cpp_build(args):
             os.makedirs("build", exist_ok=True)
             with working_dir("build"):
                 command = ["cmake", "..", "-DAUTD_LOCAL_TEST=ON"]
-                if config.is_built_autd3capi_link_visualizer():
-                    command.append("-DENABLE_LINK_VISUALIZER=ON")
                 if config.cmake_extra is not None:
                     for cmd in config.cmake_extra:
                         command.append(cmd)
@@ -571,8 +547,6 @@ def cpp_test(args):
             command = ["cmake", ".."]
             if config.cuda and not config.skip_cuda:
                 command.append("-DENABLE_BACKEND_CUDA=ON")
-            if config.is_built_autd3capi_link_visualizer():
-                command.append("-DENABLE_LINK_VISUALIZER=ON")
             if config.cmake_extra is not None:
                 for cmd in config.cmake_extra:
                     command.append(cmd)
@@ -1593,11 +1567,6 @@ if __name__ == "__main__":
         parser_test.add_argument("--all", action="store_true", help="test all crates")
         parser_test.add_argument(
             "--skip-cuda", action="store_true", help="force skip cuda test"
-        )
-        parser_test.add_argument(
-            "--skip-visualizer",
-            action="store_true",
-            help="force skip link-visualizer test",
         )
         parser_test.add_argument("--release", action="store_true", help="release build")
         parser_test.set_defaults(handler=rust_test)
