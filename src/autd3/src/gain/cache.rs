@@ -150,13 +150,13 @@ mod tests {
             .iter_mut()
             .for_each(|drive| {
                 drive.phase = 1.0;
-                drive.amp = EmitIntensity::new_normalized(0.5).unwrap();
+                drive.amp = EmitIntensity::new_pulse_width(0x1F).unwrap();
             });
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 1.0);
-            assert_eq!(drive.amp.normalized(), 0.5);
+            assert_eq!(drive.amp.pulse_width(), 0x1F);
         });
     }
 

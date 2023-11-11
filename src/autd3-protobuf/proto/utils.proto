@@ -28,16 +28,6 @@ message Quaternion {
   float z = 4;
 }
 
-message NormalizedCorrected {
-  float value = 1;
-  float alpha = 2;
-}
-
 message EmitIntensity {
-  oneof value {
-    float normalized = 1;
-    NormalizedCorrected normalized_corrected = 2;
-    float duty_ratio = 3;
-    uint32 pulse_width = 4;
-  }
- }
+  uint32 pulse_width = 1;
+}

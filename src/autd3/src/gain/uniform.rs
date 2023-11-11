@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmittIntensity},
+    common::{EmitIntensity, TryIntoEmitIntensity},
     derive::prelude::*,
     geometry::Geometry,
 };
@@ -35,7 +35,7 @@ impl Uniform {
     ///
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn new<A: TryIntoEmittIntensity>(amp: A) -> Result<Self, AUTDInternalError> {
+    pub fn new<A: TryIntoEmitIntensity>(amp: A) -> Result<Self, AUTDInternalError> {
         Ok(Self {
             amp: amp.try_into()?,
             phase: 0.,
@@ -82,12 +82,12 @@ mod tests {
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);
 
-        let gain = Uniform::new(0.5).unwrap();
+        let gain = Uniform::new(0x1F).unwrap();
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
-            assert_eq!(drive.amp.normalized(), 0.5);
+            assert_eq!(drive.amp.pulse_width(), 0x1F);
         });
 
         let gain = gain.with_phase(0.2);
@@ -95,7 +95,7 @@ mod tests {
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.2);
-            assert_eq!(drive.amp.normalized(), 0.5);
+            assert_eq!(drive.amp.pulse_width(), 0x1F);
         });
     }
 }

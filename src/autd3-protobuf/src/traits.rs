@@ -58,23 +58,7 @@ impl ToMessage for autd3_driver::common::EmitIntensity {
     #[allow(clippy::unnecessary_cast)]
     fn to_msg(&self) -> Self::Message {
         Self::Message {
-            value: Some(match self {
-                autd3_driver::common::EmitIntensity::Normalized(v) => {
-                    crate::pb::emit_intensity::Value::Normalized(v.value() as _)
-                }
-                autd3_driver::common::EmitIntensity::NormalizedCorrected(v) => {
-                    crate::pb::emit_intensity::Value::NormalizedCorrected(NormalizedCorrected {
-                        value: v.value() as _,
-                        alpha: v.alpha() as _,
-                    })
-                }
-                autd3_driver::common::EmitIntensity::DutyRatio(v) => {
-                    crate::pb::emit_intensity::Value::DutyRatio(v.value() as _)
-                }
-                autd3_driver::common::EmitIntensity::PulseWidth(v) => {
-                    crate::pb::emit_intensity::Value::PulseWidth(v.value() as _)
-                }
-            }),
+            pulse_width: self.pulse_width() as _,
         }
     }
 }
@@ -417,20 +401,7 @@ impl FromMessage<Quaternion> for autd3_driver::geometry::UnitQuaternion {
 impl FromMessage<EmitIntensity> for autd3_driver::common::EmitIntensity {
     #[allow(clippy::unnecessary_cast)]
     fn from_msg(msg: &EmitIntensity) -> Self {
-        match msg.value.as_ref().unwrap() {
-            crate::pb::emit_intensity::Value::Normalized(v) => {
-                Self::new_normalized(*v as _).unwrap()
-            }
-            crate::pb::emit_intensity::Value::NormalizedCorrected(v) => {
-                Self::new_normalized_corrected_with_alpha(v.value as _, v.alpha as _).unwrap()
-            }
-            crate::pb::emit_intensity::Value::DutyRatio(v) => {
-                Self::new_duty_ratio(*v as _).unwrap()
-            }
-            crate::pb::emit_intensity::Value::PulseWidth(v) => {
-                Self::new_pulse_width(*v as _).unwrap()
-            }
-        }
+        Self::new_pulse_width(msg.pulse_width as _).unwrap()
     }
 }
 

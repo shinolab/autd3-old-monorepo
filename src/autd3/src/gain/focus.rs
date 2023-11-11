@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmittIntensity},
+    common::{EmitIntensity, TryIntoEmitIntensity},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -48,7 +48,7 @@ impl Focus {
     ///
     /// * `amp` - amplitude
     ///
-    pub fn with_amp<A: TryIntoEmittIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
+    pub fn with_amp<A: TryIntoEmitIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
         Ok(Self {
             amp: amp.try_into()?,
             ..self

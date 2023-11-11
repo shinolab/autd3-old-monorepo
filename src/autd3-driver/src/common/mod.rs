@@ -21,4 +21,4 @@ mod emit_intensity;
 // pub use corrected_amplitude::CorrectedAmplitude;
 pub use drive::Drive;
 // pub use duty_ratio::DutyRatio;
-pub use emit_intensity::{EmitIntensity, TryIntoEmittIntensity};
+pub use emit_intensity::{EmitIntensity, TryIntoEmitIntensity};

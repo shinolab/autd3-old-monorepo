@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmittIntensity},
+    common::{EmitIntensity, TryIntoEmitIntensity},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -47,7 +47,7 @@ impl Plane {
     ///
     /// * `amp` - amplitude
     ///
-    pub fn with_amp<A: TryIntoEmittIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
+    pub fn with_amp<A: TryIntoEmitIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
         Ok(Self {
             amp: amp.try_into()?,
             ..self
@@ -110,7 +110,7 @@ mod tests {
 
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let p = Plane::new(d)
-            .with_amp(0.5)
+            .with_amp(0x1F)
             .unwrap()
             .calc(&geometry, GainFilter::All)
             .unwrap();
@@ -118,7 +118,7 @@ mod tests {
         assert_eq!(p[&0].len(), geometry.num_transducers());
         p[&0]
             .iter()
-            .for_each(|p| assert_eq!(p.amp.normalized(), 0.5));
+            .for_each(|p| assert_eq!(p.amp.pulse_width(), 0x1F));
         p[&0].iter().zip(geometry[0].iter()).for_each(|(p, tr)| {
             let expected_phase = d.dot(tr.position()) * tr.wavenumber(geometry[0].sound_speed);
             assert_approx_eq::assert_approx_eq!(p.phase, expected_phase);
