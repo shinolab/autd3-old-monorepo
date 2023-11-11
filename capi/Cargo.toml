@@ -9,7 +9,6 @@ members = [
     "autd3capi-link-simulator",
     "autd3capi-link-soem",
     "autd3capi-link-twincat",
-    "autd3capi-link-visualizer",
     "autd3capi-modulation-audio-file",
 ]
 default-members = [

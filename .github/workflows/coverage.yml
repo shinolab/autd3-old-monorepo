@@ -40,7 +40,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           cuda: true
-          shaderc: true
+          shaderc: false
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
