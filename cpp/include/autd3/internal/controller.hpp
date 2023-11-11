@@ -101,12 +101,9 @@ class Controller {
   }
   Controller& operator=(Controller&& obj) noexcept {
     if (this != &obj) {
-      if (_ptr._0 != nullptr) AUTDControllerDelete(_ptr);
-
       _geometry = std::move(obj._geometry);
       _ptr = obj._ptr;
       _link_props = std::move(obj._link_props);
-
       obj._ptr._0 = nullptr;
     }
     return *this;
@@ -258,7 +255,16 @@ class Controller {
   template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
   auto send_async(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
       -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
-    return send_async(&data1, &data2, timeout);
+    return std::async(std::launch::deferred, [this, d1 = std::forward<D1>(data1), d2 = std::forward<D2>(data2), timeout]() -> bool {
+      const int64_t timeout_ns = timeout.has_value() ? std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count() : -1;
+      const auto [result, err_len, err] = AUTDControllerSend(_ptr, d1.ptr(_geometry), d2.ptr(_geometry), timeout_ns);
+      if (result == native_methods::AUTD3_ERR) {
+        const std::string err_str(err_len, ' ');
+        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+        throw AUTDException(err_str);
+      }
+      return result == native_methods::AUTD3_TRUE;
+    });
   }
 
   /**
@@ -412,19 +418,6 @@ class Controller {
  private:
   Controller(Geometry geometry, const native_methods::ControllerPtr ptr, std::shared_ptr<void> link_props)
       : _geometry(std::move(geometry)), _ptr(ptr), _link_props(std::move(link_props)) {}
-
-  std::future<bool> send_async(const Datagram* d1, const Datagram* d2, const std::optional<std::chrono::nanoseconds> timeout) const {
-    return std::async(std::launch::deferred, [this, d1, d2, timeout]() -> bool {
-      const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
-      const auto [result, err_len, err] = AUTDControllerSend(_ptr, d1->ptr(_geometry), d2->ptr(_geometry), timeout_ns);
-      if (result == native_methods::AUTD3_ERR) {
-        const std::string err_str(err_len, ' ');
-        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
-      return result == native_methods::AUTD3_TRUE;
-    });
-  }
 
   Geometry _geometry;
   native_methods::ControllerPtr _ptr;
