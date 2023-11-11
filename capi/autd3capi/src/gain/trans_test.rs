@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,9 +26,13 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
     dev_idx: u32,
     tr_idx: u32,
     phase: float,
-    amp: float,
+    pulse_width: u16,
 ) -> GainPtr {
-    GainPtr::new(take_gain!(trans_test, TransducerTest).set(dev_idx as _, tr_idx as _, phase, amp))
+    GainPtr::new(
+        take_gain!(trans_test, TransducerTest)
+            .set(dev_idx as _, tr_idx as _, phase, pulse_width)
+            .unwrap(),
+    )
 }
 
 #[cfg(test)]
@@ -45,7 +49,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainTransducerTest();
-            let g = AUTDGainTransducerTestSet(g, 0, 0, 1., 1.);
+            let g = AUTDGainTransducerTestSet(g, 0, 0, 1., 256);
 
             let g = AUTDGainIntoDatagram(g);
 

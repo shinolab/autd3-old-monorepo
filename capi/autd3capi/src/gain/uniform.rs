@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@ use autd3capi_def::{
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainUniform(amp: float) -> GainPtr {
-    GainPtr::new(Uniform::new(amp))
+pub unsafe extern "C" fn AUTDGainUniform(amp: u16) -> GainPtr {
+    GainPtr::new(Uniform::new(amp).unwrap())
 }
 
 #[no_mangle]
@@ -41,7 +41,7 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let g = AUTDGainUniform(1.);
+            let g = AUTDGainUniform(256);
             let g = AUTDGainUniformWithPhase(g, 1.);
             let g = AUTDGainIntoDatagram(g);
 

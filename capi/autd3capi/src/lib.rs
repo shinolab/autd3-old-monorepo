@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ pub struct ControllerBuilderPtr(pub ConstPtr);
 #[repr(C)]
 pub struct Drive {
     pub phase: float,
-    pub amp: float,
+    pub amp: u16,
 }
 
 struct CallbackPtr(ConstPtr);

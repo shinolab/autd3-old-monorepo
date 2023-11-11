@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,13 @@
 
 #![allow(clippy::missing_safety_doc)]
 
+mod emit_intensity;
 mod result;
 
 pub use autd3capi_common as common;
 pub use autd3capi_common::holo;
 
+pub use emit_intensity::*;
 pub use result::*;
 
 use autd3capi_common::float;

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,16 +82,16 @@ mod tests {
             let dev0 = AUTDDevice(geo, 0);
             let dev1 = AUTDDevice(geo, 1);
 
-            let g = AUTDGainUniform(0.9);
+            let g = AUTDGainUniform(0xFE);
             let g = AUTDGainUniformWithPhase(g, 0.8);
 
             let mut drives0 = {
                 let num_trans = AUTDDeviceNumTransducers(dev0);
-                vec![Drive { amp: 0., phase: 0. }; num_trans as _]
+                vec![Drive { amp: 0, phase: 0. }; num_trans as _]
             };
             let mut drives1 = {
                 let num_trans = AUTDDeviceNumTransducers(dev1);
-                vec![Drive { amp: 0., phase: 0. }; num_trans as _]
+                vec![Drive { amp: 0, phase: 0. }; num_trans as _]
             };
 
             let res = AUTDGainCalc(g, geo);
@@ -101,11 +101,11 @@ mod tests {
             AUTDGainCalcGetResult(res, drives1.as_mut_ptr(), 1);
 
             drives0.iter().for_each(|d| {
-                assert_eq!(d.amp, 0.9);
+                assert_eq!(d.amp, 0xFE);
                 assert_eq!(d.phase, 0.8);
             });
             drives1.iter().for_each(|d| {
-                assert_eq!(d.amp, 0.9);
+                assert_eq!(d.amp, 0xFE);
                 assert_eq!(d.phase, 0.8);
             });
 

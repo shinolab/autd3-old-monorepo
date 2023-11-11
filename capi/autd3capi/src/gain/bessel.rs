@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,8 +33,8 @@ pub unsafe extern "C" fn AUTDGainBessel(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainBesselWithAmp(bessel: GainPtr, amp: float) -> GainPtr {
-    GainPtr::new(take_gain!(bessel, Bessel).with_amp(amp))
+pub unsafe extern "C" fn AUTDGainBesselWithAmp(bessel: GainPtr, amp: u16) -> GainPtr {
+    GainPtr::new(take_gain!(bessel, Bessel).with_amp(amp).unwrap())
 }
 
 #[cfg(test)]
@@ -50,7 +50,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainBessel(0., 0., 0., 0., 0., 1., 1.);
-            let g = AUTDGainBesselWithAmp(g, 1.);
+            let g = AUTDGainBesselWithAmp(g, 256);
             let g = AUTDGainIntoDatagram(g);
 
             let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
