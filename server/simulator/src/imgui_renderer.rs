@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -865,10 +865,7 @@ impl ImGuiRenderer {
                     ui.checkbox("Auto play", &mut settings.auto_play);
 
                     ui.text(format!("System time: {} [ns]", self.real_time));
-                    if settings.auto_play {
-                        update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                        self.real_time = get_current_ec_time();
-                    } else {
+                    if !settings.auto_play {
                         ui.same_line();
                         if ui.button("+") {
                             self.real_time =
@@ -918,6 +915,11 @@ impl ImGuiRenderer {
                 *settings = Default::default();
             }
         });
+
+        if settings.auto_play {
+            update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
+            self.real_time = get_current_ec_time();
+        }
 
         self.font_size = font_size;
         self.do_update_font = update_font;

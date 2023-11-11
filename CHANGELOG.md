@@ -9,6 +9,7 @@
 - Add pre-built `libautd3capi-link-visualizer` dynamic library for macOS 
 - Fix [#212](https://github.com/shinolab/autd3/issues/212): unity-linux and unity-mac packages are not published
 - Fix [#213](https://github.com/shinolab/autd3/issues/213): simulator settings file can not be saved on unity
+- Fix [#215](https://github.com/shinolab/autd3/issues/215): simulator auto_run works only in info tab
 
 # 16.0.3
 
