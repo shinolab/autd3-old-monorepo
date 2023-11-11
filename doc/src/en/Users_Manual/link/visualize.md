@@ -9,7 +9,7 @@
 
 ## Visualize phase pattern
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -94,7 +94,7 @@ autd.link.plot_phase(PyPlotConfig(fname="phase.png"), autd.geometry)
 
 ## Visualize modulation data
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -174,7 +174,7 @@ autd.link.plot_modulation(PyPlotConfig(fname="mod.png"))
 
 ## Visualize sound field
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -293,7 +293,7 @@ autd.link.plot_field(
 
 You can calculate sound field without plotting by using `calc_field` function.
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
