@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -82,6 +82,19 @@ namespace AUTD3Sharp.Link
         public async Task UpdateGeometryAsync(Geometry geometry)
         {
             var res = await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr));
+            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
+            var err = new byte[res.errLen];
+            unsafe
+            {
+                fixed (byte* p = err)
+                    NativeMethodsDef.AUTDGetErr(res.err, p);
+                throw new AUTDException(err);
+            }
+        }
+
+        public void UpdateGeometry(Geometry geometry)
+        {
+            var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr);
             if (res.result != NativeMethodsDef.AUTD3_ERR) return;
             var err = new byte[res.errLen];
             unsafe
