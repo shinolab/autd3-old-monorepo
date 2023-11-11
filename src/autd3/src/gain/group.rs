@@ -248,7 +248,7 @@ mod tests {
         .set("plane", Plane::new(Vector3::zeros()))
         .set(
             "plane2",
-            Plane::new(Vector3::zeros()).with_amp(0.5).unwrap(),
+            Plane::new(Vector3::zeros()).with_amp(0x1F).unwrap(),
         );
 
         let drives = gain.calc(&geometry, GainFilter::All).unwrap();
@@ -276,7 +276,7 @@ mod tests {
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.normalized(), 0.5);
+                assert_eq!(d.amp.pulse_width(), 0x1F);
             }
         });
         drives[&2].iter().for_each(|d| {
@@ -347,7 +347,7 @@ mod tests {
         .set("plane", Plane::new(Vector3::zeros()))
         .set(
             "plane2",
-            Plane::new(Vector3::zeros()).with_amp(0.5).unwrap(),
+            Plane::new(Vector3::zeros()).with_amp(0x1F).unwrap(),
         );
 
         assert!(gain.get::<Null>("null").is_some());
@@ -359,7 +359,10 @@ mod tests {
 
         assert!(gain.get::<Plane>("plane2").is_some());
         assert!(gain.get::<Null>("plane2").is_none());
-        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp().normalized(), 0.5);
+        assert_eq!(
+            gain.get::<Plane>("plane2").unwrap().amp().pulse_width(),
+            0x1F
+        );
 
         assert!(gain.get::<Null>("focus").is_none());
         assert!(gain.get::<Focus>("focus").is_none());

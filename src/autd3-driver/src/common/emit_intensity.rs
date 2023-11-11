@@ -17,126 +17,45 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
-pub struct Normalized {
-    value: float,
-}
-
-impl Normalized {
-    pub fn value(&self) -> float {
-        self.value
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct NormalizedCorrected {
-    value: float,
-    alpha: float,
-}
-
-impl NormalizedCorrected {
-    pub fn value(&self) -> float {
-        self.value
-    }
-
-    pub fn alpha(&self) -> float {
-        self.alpha
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct DutyRatio {
-    value: float,
-}
-
-impl DutyRatio {
-    pub fn value(&self) -> float {
-        self.value
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct PulseWidth {
-    value: u16,
-}
-
-impl PulseWidth {
-    pub fn value(&self) -> u16 {
-        self.value
-    }
-}
-
-#[derive(Clone, Copy)]
-pub enum EmitIntensity {
-    Normalized(Normalized),
-    NormalizedCorrected(NormalizedCorrected),
-    DutyRatio(DutyRatio),
-    PulseWidth(PulseWidth),
+#[repr(C)]
+pub struct EmitIntensity {
+    pulse_width: u16,
 }
 
 impl EmitIntensity {
-    pub const MAX: EmitIntensity = EmitIntensity::PulseWidth(PulseWidth { value: 256 });
-    pub const MIN: EmitIntensity = EmitIntensity::PulseWidth(PulseWidth { value: 0 });
+    pub const MAX: EmitIntensity = EmitIntensity { pulse_width: 256 };
+    pub const MIN: EmitIntensity = EmitIntensity { pulse_width: 0 };
     pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
 
     pub fn normalized(&self) -> float {
-        match self {
-            Self::Normalized(Normalized { value }) => *value,
-            Self::NormalizedCorrected(NormalizedCorrected { value, alpha }) => {
-                value.powf(1. / alpha)
-            }
-            Self::DutyRatio(DutyRatio { value }) => (value * PI).sin(),
-            Self::PulseWidth(PulseWidth { value }) => (*value as float / 512.0 * PI).sin(),
-        }
+        (self.duty_ratio() * PI).sin()
     }
 
     pub fn duty_ratio(&self) -> float {
-        match self {
-            Self::Normalized(Normalized { value }) => value.asin() / PI,
-            Self::NormalizedCorrected(NormalizedCorrected { value, alpha }) => {
-                value.powf(1. / alpha).asin() / PI
-            }
-            Self::DutyRatio(DutyRatio { value }) => *value,
-            Self::PulseWidth(PulseWidth { value }) => *value as float / 512.0,
-        }
+        self.pulse_width as float / 512.0
     }
 
     pub fn pulse_width(&self) -> u16 {
-        match match self {
-            Self::Normalized(Normalized { value }) => (value.asin() / PI * 512.0).round() as u16,
-            Self::NormalizedCorrected(NormalizedCorrected { value, alpha }) => {
-                (value.powf(1. / alpha).asin() / PI * 512.0).round() as u16
-            }
-            Self::DutyRatio(DutyRatio { value }) => (*value * 512.0).round() as u16,
-            Self::PulseWidth(PulseWidth { value }) => *value,
-        } {
-            1 => 0,
-            r => r,
-        }
+        self.pulse_width
     }
 
     pub fn new_normalized(value: float) -> Result<Self, AUTDInternalError> {
         if !(0.0..=1.0).contains(&value) {
             Err(AUTDInternalError::AmplitudeOutOfRange(value))
         } else {
-            Ok(EmitIntensity::Normalized(Normalized { value }))
+            match (value.asin() / PI * 512.0).round() as u16 {
+                1 => Ok(EmitIntensity { pulse_width: 0 }),
+                v => Ok(EmitIntensity { pulse_width: v }),
+            }
         }
     }
 
     pub fn new_normalized_clamped(value: float) -> Self {
-        EmitIntensity::Normalized(Normalized {
-            value: value.clamp(0.0, 1.0),
-        })
+        Self::new_normalized(value.clamp(0.0, 1.0)).unwrap()
     }
 
     pub fn new_normalized_corrected(value: float) -> Result<Self, AUTDInternalError> {
-        if !(0.0..=1.0).contains(&value) {
-            Err(AUTDInternalError::AmplitudeOutOfRange(value))
-        } else {
-            Ok(Self::NormalizedCorrected(NormalizedCorrected {
-                value,
-                alpha: Self::DEFAULT_CORRECTED_ALPHA,
-            }))
-        }
+        Self::new_normalized_corrected_with_alpha(value, Self::DEFAULT_CORRECTED_ALPHA)
     }
 
     pub fn new_normalized_corrected_with_alpha(
@@ -146,10 +65,10 @@ impl EmitIntensity {
         if !(0.0..=1.0).contains(&value) {
             Err(AUTDInternalError::AmplitudeOutOfRange(value))
         } else {
-            Ok(Self::NormalizedCorrected(NormalizedCorrected {
-                value,
-                alpha,
-            }))
+            match (value.powf(1. / alpha).asin() / PI * 512.0).round() as u16 {
+                1 => Ok(EmitIntensity { pulse_width: 0 }),
+                v => Ok(EmitIntensity { pulse_width: v }),
+            }
         }
     }
 
@@ -157,38 +76,39 @@ impl EmitIntensity {
         if !(0.0..=0.5).contains(&value) {
             Err(AUTDInternalError::DutyRatioOutOfRange(value))
         } else {
-            Ok(Self::DutyRatio(DutyRatio { value }))
+            match (value * 512.0).round() as u16 {
+                1 => Ok(EmitIntensity { pulse_width: 0 }),
+                v => Ok(EmitIntensity { pulse_width: v }),
+            }
         }
     }
 
     pub fn new_pulse_width(value: u16) -> Result<Self, AUTDInternalError> {
-        if value == 1 {
-            Err(AUTDInternalError::PulseWidthOutOfRange(value))
-        } else if !(0..=256).contains(&value) {
+        if value == 1 || !(0..=256).contains(&value) {
             Err(AUTDInternalError::PulseWidthOutOfRange(value))
         } else {
-            Ok(EmitIntensity::PulseWidth(PulseWidth { value }))
+            Ok(EmitIntensity { pulse_width: value })
         }
     }
 }
 
-pub trait TryIntoEmittIntensity {
+pub trait TryIntoEmitIntensity {
     fn try_into(self) -> Result<EmitIntensity, AUTDInternalError>;
 }
 
-impl TryIntoEmittIntensity for float {
+impl TryIntoEmitIntensity for float {
     fn try_into(self) -> Result<EmitIntensity, AUTDInternalError> {
         EmitIntensity::new_normalized(self)
     }
 }
 
-impl TryIntoEmittIntensity for u16 {
+impl TryIntoEmitIntensity for u16 {
     fn try_into(self) -> Result<EmitIntensity, AUTDInternalError> {
         EmitIntensity::new_pulse_width(self)
     }
 }
 
-impl TryIntoEmittIntensity for EmitIntensity {
+impl TryIntoEmitIntensity for EmitIntensity {
     fn try_into(self) -> Result<EmitIntensity, AUTDInternalError> {
         Ok(self)
     }

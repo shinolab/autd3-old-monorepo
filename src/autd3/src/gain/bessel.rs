@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmittIntensity},
+    common::{EmitIntensity, TryIntoEmitIntensity},
     derive::prelude::*,
     geometry::{Geometry, UnitQuaternion, Vector3},
 };
@@ -54,7 +54,7 @@ impl Bessel {
     ///
     /// * `amp` - amplitude
     ///
-    pub fn with_amp<A: TryIntoEmittIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
+    pub fn with_amp<A: TryIntoEmitIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
         Ok(Self {
             amp: amp.try_into()?,
             ..self
@@ -156,7 +156,7 @@ mod tests {
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
-            .with_amp(0.5)
+            .with_amp(0x1F)
             .unwrap()
             .calc(&geometry, GainFilter::All)
             .unwrap();
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(b[&0].len(), geometry.num_transducers());
         b[&0]
             .iter()
-            .for_each(|b| assert_eq!(b.amp.normalized(), 0.5));
+            .for_each(|b| assert_eq!(b.amp.pulse_width(), 0x1F));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d.normalize();

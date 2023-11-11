@@ -26,7 +26,7 @@ pub use crate::{
 
 pub use autd3_driver::{
     autd3_device::AUTD3,
-    common::{Drive, EmitIntensity, TryIntoEmittIntensity},
+    common::{Drive, EmitIntensity, TryIntoEmitIntensity},
     datagram::{
         Clear, ConfigureAmpFilter, ConfigureModDelay, ConfigurePhaseFilter, DatagramT, FocusSTM,
         GainSTM, Modulation, ModulationProperty, Silencer, Stop, Synchronize, UpdateFlags,

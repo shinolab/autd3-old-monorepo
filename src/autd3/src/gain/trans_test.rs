@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmittIntensity},
+    common::{EmitIntensity, TryIntoEmitIntensity},
     derive::prelude::*,
     geometry::Geometry,
 };
@@ -43,7 +43,7 @@ impl TransducerTest {
     /// * `tr_idx` - local transducer index
     /// * `phase` - phase (from 0 to 2π)
     /// * `amp` - normalized amplitude (from 0 to 1)
-    pub fn set<A: TryIntoEmittIntensity>(
+    pub fn set<A: TryIntoEmitIntensity>(
         mut self,
         dev_idx: usize,
         tr_idx: usize,
