@@ -10,7 +10,7 @@
 
 ## 位相パターンの可視化
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -95,7 +95,7 @@ autd.link.plot_phase(PyPlotConfig(fname="phase.png"), autd.geometry)
 
 ## 変調データの可視化
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -175,7 +175,7 @@ autd.link.plot_modulation(PyPlotConfig(fname="mod.png"))
 
 ## 音場の可視化
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
@@ -294,7 +294,7 @@ autd.link.plot_field(
 
 `calc_field`関数で, プロットせずに音場の計算を行うことができる.
 
-```rust,edition2021
+```rust,ignore,edition2021
 # extern crate autd3;
 # extern crate tokio;
 # extern crate autd3_link_visualizer;
