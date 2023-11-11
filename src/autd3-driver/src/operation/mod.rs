@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -182,7 +182,7 @@ pub mod tests {
     use std::collections::HashMap;
 
     use crate::{
-        common::Amplitude,
+        common::EmitIntensity,
         cpu::{Header, EC_OUTPUT_FRAME_SIZE},
         derive::prelude::{Drive, Gain, GainAsAny, GainFilter},
         geometry::{Transducer, UnitQuaternion, Vector3},
@@ -238,7 +238,7 @@ pub mod tests {
             filter: GainFilter,
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Ok(Self::transform(geometry, filter, |_, _| Drive {
-                amp: Amplitude::MAX,
+                amp: EmitIntensity::MAX,
                 phase: 2.,
             }))
         }

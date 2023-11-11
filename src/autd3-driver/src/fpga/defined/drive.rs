@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,11 +26,9 @@ impl FPGADrive {
     }
 
     pub fn to_duty(d: &Drive) -> u8 {
-        let d = 512.0 / PI * d.amp.value().asin();
-        if d < 1.0 {
-            0
-        } else {
-            (d - 1.0).round() as _
+        match d.amp.pulse_width() {
+            0 => 0,
+            r => (r - 1) as u8,
         }
     }
 
@@ -45,7 +43,7 @@ mod tests {
     use std::mem::size_of;
 
     use super::*;
-    use crate::{common::Amplitude, defined::PI};
+    use crate::{common::EmitIntensity, defined::PI};
 
     #[test]
     fn drive() {
@@ -64,7 +62,7 @@ mod tests {
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: Amplitude::MIN,
+                amp: EmitIntensity::MIN,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -72,7 +70,7 @@ mod tests {
 
             let s = Drive {
                 phase: PI,
-                amp: Amplitude::new_clamped(0.5),
+                amp: EmitIntensity::new_normalized(0.5).unwrap(),
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -80,7 +78,7 @@ mod tests {
 
             let s = Drive {
                 phase: 2.0 * PI,
-                amp: Amplitude::MAX,
+                amp: EmitIntensity::MAX,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -88,7 +86,7 @@ mod tests {
 
             let s = Drive {
                 phase: 3.0 * PI,
-                amp: Amplitude::new_clamped(1.5),
+                amp: EmitIntensity::MAX,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -96,7 +94,7 @@ mod tests {
 
             let s = Drive {
                 phase: -PI,
-                amp: Amplitude::new_clamped(-1.0),
+                amp: EmitIntensity::MIN,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);

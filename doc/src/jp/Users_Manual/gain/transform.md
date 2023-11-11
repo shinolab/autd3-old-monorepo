@@ -9,8 +9,8 @@ use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let g = Uniform::new(1.0).with_transform(|dev, tr, d| Drive {
-    amp: Amplitude::new_clamped(d.amp.value() - 0.5),
+let g = Uniform::new(1.0).unwrap().with_transform(|dev, tr, d| Drive {
+    amp: EmitIntensity::new_normalized(d.amp.normalized() - 0.5).unwrap(),
     phase: d.phase + PI,
 });
 # }

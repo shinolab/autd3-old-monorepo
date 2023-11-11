@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -119,7 +119,7 @@ mod tests {
 
     use autd3_driver::{
         autd3_device::AUTD3,
-        common::Amplitude,
+        common::EmitIntensity,
         geometry::{IntoDevice, Vector3},
     };
 
@@ -141,7 +141,7 @@ mod tests {
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
-            assert_eq!(drive.amp.value(), 1.0);
+            assert_eq!(drive.amp.normalized(), 1.0);
         });
 
         gain.drives_mut()
@@ -150,13 +150,13 @@ mod tests {
             .iter_mut()
             .for_each(|drive| {
                 drive.phase = 1.0;
-                drive.amp = Amplitude::new_clamped(0.5);
+                drive.amp = EmitIntensity::new_normalized(0.5).unwrap();
             });
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 1.0);
-            assert_eq!(drive.amp.value(), 0.5);
+            assert_eq!(drive.amp.normalized(), 0.5);
         });
     }
 
@@ -173,7 +173,7 @@ mod tests {
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
             Ok(Self::transform(geometry, filter, |_, _| Drive {
-                amp: Amplitude::MIN,
+                amp: EmitIntensity::MIN,
                 phase: 0.0,
             }))
         }

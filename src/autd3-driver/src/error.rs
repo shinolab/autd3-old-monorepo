@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,10 @@ pub enum AUTDInternalError {
     AmplitudeOutOfRange(float),
     #[error("Duty ratio ({0}) is out of range ([0, 0.5])")]
     DutyRatioOutOfRange(float),
+    #[error(
+        "Pulse width ({0}) is out of range ([0, 256]). Also, pulse width 1 cannot be specified."
+    )]
+    PulseWidthOutOfRange(u16),
 
     #[error(
         "Modulation buffer size ({0}) is out of range ([{}, {}])",

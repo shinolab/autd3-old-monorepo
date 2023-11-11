@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,12 +18,12 @@ package autd3;
 import "utils.proto";
 
 message Focus {
-  Amplitude amp = 1;
+  EmitIntensity amp = 1;
   Vector3 pos = 2;
 }
 
 message Bessel {
-  Amplitude amp = 1;
+  EmitIntensity amp = 1;
   Vector3 pos = 2;
   Vector3 dir = 3;
   float theta = 4;
@@ -32,7 +32,7 @@ message Bessel {
 message Null {}
 
 message Plane {
-  Amplitude amp = 1;
+  EmitIntensity amp = 1;
   Vector3 dir = 3;
 }
 
@@ -40,7 +40,7 @@ message TransducerTest {
   message TestDrive {
     uint32 dev_idx = 1;
     uint32 tr_idx = 2;
-    Amplitude amp = 3;
+    EmitIntensity amp = 3;
     float phase = 4;
   }
   repeated TestDrive drives = 1;
@@ -58,7 +58,7 @@ enum Backend {
 
 message DontCare {}
 message Normalize {}
-message Uniform { Amplitude value = 1; }
+message Uniform { EmitIntensity value = 1; }
 message Clamp {
   float min = 1;
   float max = 2;

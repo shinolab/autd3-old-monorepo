@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,13 +52,29 @@ impl ToMessage for autd3_driver::geometry::Quaternion {
     }
 }
 
-impl ToMessage for autd3_driver::common::Amplitude {
-    type Message = Amplitude;
+impl ToMessage for autd3_driver::common::EmitIntensity {
+    type Message = EmitIntensity;
 
     #[allow(clippy::unnecessary_cast)]
     fn to_msg(&self) -> Self::Message {
         Self::Message {
-            value: self.value() as _,
+            value: Some(match self {
+                autd3_driver::common::EmitIntensity::Normalized(v) => {
+                    crate::pb::emit_intensity::Value::Normalized(v.value() as _)
+                }
+                autd3_driver::common::EmitIntensity::NormalizedCorrected(v) => {
+                    crate::pb::emit_intensity::Value::NormalizedCorrected(NormalizedCorrected {
+                        value: v.value() as _,
+                        alpha: v.alpha() as _,
+                    })
+                }
+                autd3_driver::common::EmitIntensity::DutyRatio(v) => {
+                    crate::pb::emit_intensity::Value::DutyRatio(v.value() as _)
+                }
+                autd3_driver::common::EmitIntensity::PulseWidth(v) => {
+                    crate::pb::emit_intensity::Value::PulseWidth(v.value() as _)
+                }
+            }),
         }
     }
 }
@@ -398,10 +414,23 @@ impl FromMessage<Quaternion> for autd3_driver::geometry::UnitQuaternion {
     }
 }
 
-impl FromMessage<Amplitude> for autd3_driver::common::Amplitude {
+impl FromMessage<EmitIntensity> for autd3_driver::common::EmitIntensity {
     #[allow(clippy::unnecessary_cast)]
-    fn from_msg(msg: &Amplitude) -> Self {
-        Self::new_clamped(msg.value as _)
+    fn from_msg(msg: &EmitIntensity) -> Self {
+        match msg.value.as_ref().unwrap() {
+            crate::pb::emit_intensity::Value::Normalized(v) => {
+                Self::new_normalized(*v as _).unwrap()
+            }
+            crate::pb::emit_intensity::Value::NormalizedCorrected(v) => {
+                Self::new_normalized_corrected_with_alpha(v.value as _, v.alpha as _).unwrap()
+            }
+            crate::pb::emit_intensity::Value::DutyRatio(v) => {
+                Self::new_duty_ratio(*v as _).unwrap()
+            }
+            crate::pb::emit_intensity::Value::PulseWidth(v) => {
+                Self::new_pulse_width(*v as _).unwrap()
+            }
+        }
     }
 }
 
@@ -411,7 +440,7 @@ impl FromMessage<Constraint> for autd3_gain_holo::Constraint {
             Some(constraint::Constraint::DontCare(_)) => Self::DontCare,
             Some(constraint::Constraint::Normalize(_)) => Self::Normalize,
             Some(constraint::Constraint::Uniform(uniform)) => Self::Uniform(
-                autd3_driver::common::Amplitude::from_msg(uniform.value.as_ref().unwrap()),
+                autd3_driver::common::EmitIntensity::from_msg(uniform.value.as_ref().unwrap()),
             ),
             Some(constraint::Constraint::Clamp(clamp)) => {
                 Self::Clamp(clamp.min as _, clamp.max as _)

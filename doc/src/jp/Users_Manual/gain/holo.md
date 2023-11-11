@@ -101,7 +101,7 @@ use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
-      .with_constraint(Constraint::Uniform(Amplitude::MAX));
+      .with_constraint(Constraint::Uniform(EmitIntensity::MAX));
 # Ok(())
 # }
 ```

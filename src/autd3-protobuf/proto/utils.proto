@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,4 +28,16 @@ message Quaternion {
   float z = 4;
 }
 
-message Amplitude { float value = 1; }
+message NormalizedCorrected {
+  float value = 1;
+  float alpha = 2;
+}
+
+message EmitIntensity {
+  oneof value {
+    float normalized = 1;
+    NormalizedCorrected normalized_corrected = 2;
+    float duty_ratio = 3;
+    uint32 pulse_width = 4;
+  }
+ }
