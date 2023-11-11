@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ mod tests {
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintNormalize();
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(1.);
+            let constraint = AUTDGainHoloConstraintUniform(256);
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintClamp(0., 1.);
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);

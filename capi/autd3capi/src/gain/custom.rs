@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -64,7 +64,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev0);
             let drives = vec![
                 Drive {
-                    amp: Amplitude::MAX,
+                    amp: EmitIntensity::MAX,
                     phase: 0.
                 };
                 num_transducers as _
@@ -74,7 +74,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev1);
             let drives = vec![
                 Drive {
-                    amp: Amplitude::MAX,
+                    amp: EmitIntensity::MAX,
                     phase: 0.
                 };
                 num_transducers as _

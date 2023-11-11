@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ pub unsafe extern "C" fn AUTDGainPlane(nx: float, ny: float, nz: float) -> GainP
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainPlaneWithAmp(plane: GainPtr, amp: float) -> GainPtr {
-    GainPtr::new(take_gain!(plane, Plane).with_amp(amp))
+pub unsafe extern "C" fn AUTDGainPlaneWithAmp(plane: GainPtr, amp: u16) -> GainPtr {
+    GainPtr::new(take_gain!(plane, Plane).with_amp(amp).unwrap())
 }
 
 #[cfg(test)]
@@ -39,7 +39,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainPlane(0., 0., 1.);
-            let g = AUTDGainPlaneWithAmp(g, 1.);
+            let g = AUTDGainPlaneWithAmp(g, 256);
             let g = AUTDGainIntoDatagram(g);
 
             let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
