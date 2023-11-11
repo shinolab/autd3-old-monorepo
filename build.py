@@ -194,8 +194,6 @@ class Config:
                 warn("Skip building crates using CUDA")
             if not self._af:
                 warn("Skip building crates using ArrayFire")
-            if not self.shaderc:
-                warn("Skip building crates using Vulkano")
 
     def cargo_command_base(self, subcommand):
         command = []
