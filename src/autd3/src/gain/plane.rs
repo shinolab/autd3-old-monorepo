@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,14 +16,14 @@ use std::collections::HashMap;
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::Amplitude,
+    common::{EmitIntensity, TryIntoEmittIntensity},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
 /// Gain to produce a plane wave
 #[derive(Gain, Clone, Copy)]
 pub struct Plane {
-    amp: Amplitude,
+    amp: EmitIntensity,
     dir: Vector3,
 }
 
@@ -37,7 +37,7 @@ impl Plane {
     pub fn new(dir: Vector3) -> Self {
         Self {
             dir,
-            amp: Amplitude::MAX,
+            amp: EmitIntensity::MAX,
         }
     }
 
@@ -47,14 +47,14 @@ impl Plane {
     ///
     /// * `amp` - amplitude
     ///
-    pub fn with_amp<A: Into<Amplitude>>(self, amp: A) -> Self {
-        Self {
-            amp: amp.into(),
+    pub fn with_amp<A: TryIntoEmittIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
+        Ok(Self {
+            amp: amp.try_into()?,
             ..self
-        }
+        })
     }
 
-    pub fn amp(&self) -> Amplitude {
+    pub fn amp(&self) -> EmitIntensity {
         self.amp
     }
 
@@ -83,10 +83,7 @@ impl Gain for Plane {
 #[cfg(test)]
 mod tests {
 
-    use autd3_driver::{
-        autd3_device::AUTD3,
-        geometry::{IntoDevice},
-    };
+    use autd3_driver::{autd3_device::AUTD3, geometry::IntoDevice};
 
     use super::*;
 
@@ -103,7 +100,9 @@ mod tests {
         let p = Plane::new(d).calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(p.len(), 1);
         assert_eq!(p[&0].len(), geometry.num_transducers());
-        p[&0].iter().for_each(|d| assert_eq!(d.amp.value(), 1.0));
+        p[&0]
+            .iter()
+            .for_each(|d| assert_eq!(d.amp.normalized(), 1.0));
         p[&0].iter().zip(geometry[0].iter()).for_each(|(p, tr)| {
             let expected_phase = d.dot(tr.position()) * tr.wavenumber(geometry[0].sound_speed);
             assert_approx_eq::assert_approx_eq!(p.phase, expected_phase);
@@ -112,11 +111,14 @@ mod tests {
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let p = Plane::new(d)
             .with_amp(0.5)
+            .unwrap()
             .calc(&geometry, GainFilter::All)
             .unwrap();
         assert_eq!(p.len(), 1);
         assert_eq!(p[&0].len(), geometry.num_transducers());
-        p[&0].iter().for_each(|p| assert_eq!(p.amp.value(), 0.5));
+        p[&0]
+            .iter()
+            .for_each(|p| assert_eq!(p.amp.normalized(), 0.5));
         p[&0].iter().zip(geometry[0].iter()).for_each(|(p, tr)| {
             let expected_phase = d.dot(tr.position()) * tr.wavenumber(geometry[0].sound_speed);
             assert_approx_eq::assert_approx_eq!(p.phase, expected_phase);

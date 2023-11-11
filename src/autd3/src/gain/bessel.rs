@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::Amplitude,
+    common::{EmitIntensity, TryIntoEmittIntensity},
     derive::prelude::*,
     geometry::{Geometry, UnitQuaternion, Vector3},
 };
@@ -24,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a Bessel beam
 #[derive(Gain, Clone, Copy)]
 pub struct Bessel {
-    amp: Amplitude,
+    amp: EmitIntensity,
     pos: Vector3,
     dir: Vector3,
     theta: float,
@@ -44,7 +44,7 @@ impl Bessel {
             pos,
             dir,
             theta,
-            amp: Amplitude::MAX,
+            amp: EmitIntensity::MAX,
         }
     }
 
@@ -54,14 +54,14 @@ impl Bessel {
     ///
     /// * `amp` - amplitude
     ///
-    pub fn with_amp<A: Into<Amplitude>>(self, amp: A) -> Self {
-        Self {
-            amp: amp.into(),
+    pub fn with_amp<A: TryIntoEmittIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
+        Ok(Self {
+            amp: amp.try_into()?,
             ..self
-        }
+        })
     }
 
-    pub fn amp(&self) -> Amplitude {
+    pub fn amp(&self) -> EmitIntensity {
         self.amp
     }
 
@@ -109,11 +109,7 @@ impl Gain for Bessel {
 mod tests {
     use rand::Rng;
 
-    use autd3_driver::{
-        autd3_device::AUTD3,
-        defined::PI,
-        geometry::{IntoDevice},
-    };
+    use autd3_driver::{autd3_device::AUTD3, defined::PI, geometry::IntoDevice};
 
     use super::*;
 
@@ -135,7 +131,9 @@ mod tests {
             .unwrap();
         assert_eq!(b.len(), 1);
         assert_eq!(b[&0].len(), geometry.num_transducers());
-        b[&0].iter().for_each(|d| assert_eq!(d.amp.value(), 1.0));
+        b[&0]
+            .iter()
+            .for_each(|d| assert_eq!(d.amp.normalized(), 1.0));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d.normalize();
@@ -159,11 +157,14 @@ mod tests {
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
             .with_amp(0.5)
+            .unwrap()
             .calc(&geometry, GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), 1);
         assert_eq!(b[&0].len(), geometry.num_transducers());
-        b[&0].iter().for_each(|b| assert_eq!(b.amp.value(), 0.5));
+        b[&0]
+            .iter()
+            .for_each(|b| assert_eq!(b.amp.normalized(), 0.5));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d.normalize();

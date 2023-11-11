@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,12 +15,16 @@ use std::collections::HashMap;
 
 use autd3_derive::Gain;
 
-use autd3_driver::{common::Amplitude, derive::prelude::*, geometry::Geometry};
+use autd3_driver::{
+    common::{EmitIntensity, TryIntoEmittIntensity},
+    derive::prelude::*,
+    geometry::Geometry,
+};
 
 /// Gain with uniform amplitude and phase
 #[derive(Gain, Clone, Copy)]
 pub struct Uniform {
-    amp: Amplitude,
+    amp: EmitIntensity,
     phase: float,
 }
 
@@ -31,11 +35,11 @@ impl Uniform {
     ///
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn new<A: Into<Amplitude>>(amp: A) -> Self {
-        Self {
-            amp: amp.into(),
+    pub fn new<A: TryIntoEmittIntensity>(amp: A) -> Result<Self, AUTDInternalError> {
+        Ok(Self {
+            amp: amp.try_into()?,
             phase: 0.,
-        }
+        })
     }
 
     /// set phase
@@ -78,12 +82,12 @@ mod tests {
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);
 
-        let gain = Uniform::new(0.5);
+        let gain = Uniform::new(0.5).unwrap();
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
-            assert_eq!(drive.amp.value(), 0.5);
+            assert_eq!(drive.amp.normalized(), 0.5);
         });
 
         let gain = gain.with_phase(0.2);
@@ -91,7 +95,7 @@ mod tests {
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.2);
-            assert_eq!(drive.amp.value(), 0.5);
+            assert_eq!(drive.amp.normalized(), 0.5);
         });
     }
 }

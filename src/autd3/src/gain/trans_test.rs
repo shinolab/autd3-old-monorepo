@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 11/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,12 +15,16 @@ use std::collections::HashMap;
 
 use autd3_derive::Gain;
 
-use autd3_driver::{common::Amplitude, derive::prelude::*, geometry::Geometry};
+use autd3_driver::{
+    common::{EmitIntensity, TryIntoEmittIntensity},
+    derive::prelude::*,
+    geometry::Geometry,
+};
 
 /// Gain to drive only specified transducers
 #[derive(Gain, Default, Clone)]
 pub struct TransducerTest {
-    test_drive: HashMap<(usize, usize), (float, Amplitude)>,
+    test_drive: HashMap<(usize, usize), (float, EmitIntensity)>,
 }
 
 impl TransducerTest {
@@ -39,20 +43,20 @@ impl TransducerTest {
     /// * `tr_idx` - local transducer index
     /// * `phase` - phase (from 0 to 2π)
     /// * `amp` - normalized amplitude (from 0 to 1)
-    pub fn set<A: Into<Amplitude>>(
+    pub fn set<A: TryIntoEmittIntensity>(
         mut self,
         dev_idx: usize,
         tr_idx: usize,
         phase: float,
         amp: A,
-    ) -> Self {
+    ) -> Result<Self, AUTDInternalError> {
         self.test_drive
-            .insert((dev_idx, tr_idx), (phase, amp.into()));
-        self
+            .insert((dev_idx, tr_idx), (phase, amp.try_into()?));
+        Ok(self)
     }
 
     /// get drive map which maps (device index, local transducer index) index to phase and amplitude
-    pub fn test_drive(&self) -> &HashMap<(usize, usize), (float, Amplitude)> {
+    pub fn test_drive(&self) -> &HashMap<(usize, usize), (float, EmitIntensity)> {
         &self.test_drive
     }
 }
@@ -69,7 +73,7 @@ impl Gain for TransducerTest {
             } else {
                 Drive {
                     phase: 0.0,
-                    amp: Amplitude::MIN,
+                    amp: EmitIntensity::MIN,
                 }
             }
         }))
@@ -99,19 +103,21 @@ mod tests {
         let mut rng = rand::thread_rng();
         let test_id = rng.gen_range(0..geometry.num_transducers());
         let test_phase = rng.gen_range(-1.0..1.0);
-        let test_amp = Amplitude::new_clamped(rng.gen_range(0.0..1.0));
+        let test_amp = EmitIntensity::new_normalized(rng.gen_range(0.0..1.0)).unwrap();
 
-        transducer_test = transducer_test.set(0, test_id, test_phase, test_amp);
+        transducer_test = transducer_test
+            .set(0, test_id, test_phase, test_amp)
+            .unwrap();
 
         let drives = transducer_test.calc(&geometry, GainFilter::All).unwrap();
 
         drives[&0].iter().enumerate().for_each(|(idx, drive)| {
             if idx == test_id {
                 assert_eq!(drive.phase, test_phase);
-                assert_eq!(drive.amp.value(), test_amp.value());
+                assert_eq!(drive.amp.normalized(), test_amp.normalized());
             } else {
                 assert_eq!(drive.phase, 0.0);
-                assert_eq!(drive.amp.value(), 0.0);
+                assert_eq!(drive.amp.normalized(), 0.0);
             }
         });
     }
