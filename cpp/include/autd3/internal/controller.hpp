@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::internal {
 
@@ -66,15 +67,8 @@ class Controller {
     template <class L>
     [[nodiscard]] Controller open_with(L&& link) {
       static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
-      const auto [result, err_len, err] = AUTDControllerOpenWith(_ptr, link.ptr());
-      if (result._0 == nullptr) {
-        const std::string err_str(err_len, ' ');
-        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
-      auto ptr = result;
+      auto ptr = validate(AUTDControllerOpenWith(_ptr, link.ptr()));
       Geometry geometry(AUTDGeometry(ptr));
-
       return {std::move(geometry), ptr, link.props()};
     }
 
@@ -141,15 +135,7 @@ class Controller {
   /**
    * @brief Close connection
    */
-  [[nodiscard]] bool close() const {
-    const auto [result, err_len, err] = AUTDControllerClose(_ptr);
-    if (result == native_methods::AUTD3_ERR) {
-      const std::string err_str(err_len, ' ');
-      native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
-    return result == native_methods::AUTD3_TRUE;
-  }
+  [[nodiscard]] bool close() const { return validate(AUTDControllerClose(_ptr)) == native_methods::AUTD3_TRUE; }
 
   /**
    * @brief Close connection
@@ -166,11 +152,7 @@ class Controller {
   [[nodiscard]] std::vector<FPGAInfo> fpga_info() {
     const size_t num_devices = geometry().num_devices();
     std::vector<uint8_t> info(num_devices);
-    if (const auto [result, err_len, err] = AUTDControllerFPGAInfo(_ptr, info.data()); result == native_methods::AUTD3_ERR) {
-      const std::string err_str(err_len, ' ');
-      native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
+    validate(AUTDControllerFPGAInfo(_ptr, info.data()));
     std::vector<FPGAInfo> ret;
     ret.reserve(num_devices);
     std::ranges::transform(info, std::back_inserter(ret), [](const uint8_t i) { return FPGAInfo(i); });
@@ -192,12 +174,7 @@ class Controller {
    * @return List of firmware information
    */
   [[nodiscard]] std::vector<FirmwareInfo> firmware_infos() {
-    const auto handle = AUTDControllerFirmwareInfoListPointer(_ptr);
-    if (handle.result == nullptr) {
-      const std::string err_str(handle.err_len, ' ');
-      native_methods::AUTDGetErr(handle.err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
+    const auto handle = validate(AUTDControllerFirmwareInfoListPointer(_ptr));
     std::vector<FirmwareInfo> ret;
     for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
       char info[256]{};
@@ -337,13 +314,7 @@ class Controller {
   auto send(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
       -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, bool> {
     const int64_t timeout_ns = timeout.has_value() ? std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count() : -1;
-    const auto [result, err_len, err] = AUTDControllerSend(_ptr, data1.ptr(_geometry), data2.ptr(_geometry), timeout_ns);
-    if (result == native_methods::AUTD3_ERR) {
-      const std::string err_str(err_len, ' ');
-      native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
-    return result == native_methods::AUTD3_TRUE;
+    return validate(AUTDControllerSend(_ptr, data1.ptr(_geometry), data2.ptr(_geometry), timeout_ns)) == native_methods::AUTD3_TRUE;
   }
 
   /**
@@ -364,13 +335,7 @@ class Controller {
       -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
     return std::async(std::launch::deferred, [this, d1 = std::forward<D1>(data1), d2 = std::forward<D2>(data2), timeout]() -> bool {
       const int64_t timeout_ns = timeout.has_value() ? std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count() : -1;
-      const auto [result, err_len, err] = AUTDControllerSend(_ptr, d1.ptr(_geometry), d2.ptr(_geometry), timeout_ns);
-      if (result == native_methods::AUTD3_ERR) {
-        const std::string err_str(err_len, ' ');
-        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
-      return result == native_methods::AUTD3_TRUE;
+      return validate(AUTDControllerSend(_ptr, d1.ptr(_geometry), d2.ptr(_geometry), timeout_ns)) == native_methods::AUTD3_TRUE;
     });
   }
 
@@ -421,13 +386,7 @@ class Controller {
   auto send(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_special_v<S>, bool> {
     const int64_t timeout_ns =
         timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
-    const auto [result, err_len, err] = native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns);
-    if (result == native_methods::AUTD3_ERR) {
-      const std::string err_str(err_len, ' ');
-      native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
-    return result == native_methods::AUTD3_TRUE;
+    return validate(native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns)) == native_methods::AUTD3_TRUE;
   }
 
   /**
@@ -447,13 +406,7 @@ class Controller {
     return std::async(std::launch::deferred, [this, s_ = std::forward<S>(s), timeout]() -> bool {
       const int64_t timeout_ns =
           timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
-      const auto [result, err_len, err] = native_methods::AUTDControllerSendSpecial(_ptr, s_.ptr(), timeout_ns);
-      if (result == native_methods::AUTD3_ERR) {
-        const std::string err_str(err_len, ' ');
-        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
-      return result == native_methods::AUTD3_TRUE;
+      return validate(native_methods::AUTDControllerSendSpecial(_ptr, s_.ptr(), timeout_ns)) == native_methods::AUTD3_TRUE;
     });
   }
 
@@ -472,12 +425,7 @@ class Controller {
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr(_controller._geometry);
       _keymap[key] = _k++;
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, timeout_ns);
-      if (_kv_map.result == nullptr) {
-        const std::string err_str(_kv_map.err_len, ' ');
-        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
+      _kv_map = validate(native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr, native_methods::DatagramPtr{nullptr}, timeout_ns));
       return std::move(*this);
     }
 
@@ -494,12 +442,7 @@ class Controller {
       const auto ptr1 = data1.ptr(_controller._geometry);
       const auto ptr2 = data2.ptr(_controller._geometry);
       _keymap[key] = _k++;
-      _kv_map = native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, timeout_ns);
-      if (_kv_map.result == nullptr) {
-        const std::string err_str(_kv_map.err_len, ' ');
-        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
+      _kv_map = validate(native_methods::AUTDControllerGroupKVMapSet(_kv_map, _keymap[key], ptr1, ptr2, timeout_ns));
       return std::move(*this);
     }
 
@@ -516,12 +459,7 @@ class Controller {
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr();
       _keymap[key] = _k++;
-      _kv_map = native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, timeout_ns);
-      if (_kv_map.result == nullptr) {
-        const std::string err_str(_kv_map.err_len, ' ');
-        native_methods::AUTDGetErr(_kv_map.err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
+      _kv_map = validate(native_methods::AUTDControllerGroupKVMapSetSpecial(_kv_map, _keymap[key], ptr, timeout_ns));
       return std::move(*this);
     }
 
@@ -538,13 +476,7 @@ class Controller {
         const auto k = _map(d);
         return k.has_value() ? _keymap[k.value()] : -1;
       });
-      const auto [result, err_len, err] = AUTDControllerGroup(_controller._ptr, map.data(), _kv_map);
-      if (result == native_methods::AUTD3_ERR) {
-        const std::string err_str(err_len, ' ');
-        native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw AUTDException(err_str);
-      }
-      return result == native_methods::AUTD3_TRUE;
+      return validate(AUTDControllerGroup(_controller._ptr, map.data(), _kv_map)) == native_methods::AUTD3_TRUE;
     }
 
     [[nodiscard]] std::future<bool> send_async() {
@@ -554,7 +486,7 @@ class Controller {
    private:
     Controller& _controller;
     const F& _map;
-    native_methods::ResultGroupKVMap _kv_map;
+    native_methods::GroupKVMapPtr _kv_map;
     std::unordered_map<key_type, int32_t> _keymap;
     int32_t _k{0};
   };

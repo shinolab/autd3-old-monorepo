@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::internal {
 
@@ -43,15 +44,7 @@ class Modulation : public Datagram {
 
   [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 
-  [[nodiscard]] size_t size() const {
-    const auto [result, err_len, err] = AUTDModulationSize(modulation_ptr());
-    if (result == native_methods::AUTD3_ERR) {
-      const std::string err_str(err_len, ' ');
-      native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw AUTDException(err_str);
-    }
-    return static_cast<size_t>(result);
-  }
+  [[nodiscard]] size_t size() const { return native_methods::validate<size_t>(AUTDModulationSize(modulation_ptr())); }
 };
 
 template <class M>

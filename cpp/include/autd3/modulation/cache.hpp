@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,16 +27,11 @@ class Cache final : public internal::Modulation {
   template <class M>
   explicit Cache(M&& m) {
     static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
-    auto cache = internal::native_methods::AUTDModulationWithCache(m.modulation_ptr());
-    if (cache.result == nullptr) {
-      const std::string err_str(cache.err_len, ' ');
-      internal::native_methods::AUTDGetErr(cache.err, const_cast<char*>(err_str.c_str()));
-      throw internal::AUTDException(err_str);
-    }
-    _buffer.resize(cache.buffer_len);
+    auto cache = validate(internal::native_methods::AUTDModulationWithCache(m.modulation_ptr()));
+    _buffer.resize(internal::native_methods::AUTDModulationCacheGetBufferLen(cache));
     AUTDModulationCacheGetBuffer(cache, _buffer.data());
-    _cache = std::shared_ptr<internal::native_methods::ResultCache>(
-        new internal::native_methods::ResultCache(cache), [](const internal::native_methods::ResultCache* ptr) { AUTDModulationCacheDelete(*ptr); });
+    _cache = std::shared_ptr<internal::native_methods::CachePtr>(
+        new internal::native_methods::CachePtr(cache), [](const internal::native_methods::CachePtr* ptr) { AUTDModulationCacheDelete(*ptr); });
   }
   Cache(const Cache& v) = default;
   Cache& operator=(const Cache& obj) = default;
@@ -57,7 +52,7 @@ class Cache final : public internal::Modulation {
   [[nodiscard]] const double& operator[](const size_t i) const { return _buffer[i]; }
 
  private:
-  std::shared_ptr<internal::native_methods::ResultCache> _cache;
+  std::shared_ptr<internal::native_methods::CachePtr> _cache;
   std::vector<double> _buffer;
 };
 

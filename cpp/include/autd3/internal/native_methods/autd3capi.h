@@ -11,13 +11,13 @@ struct ControllerBuilderPtr {
 };
 
 struct ResultFirmwareInfoList {
-  void* result;
+  FirmwareInfoListPtr result;
   uint32_t err_len;
   void* err;
 };
 
 struct ResultGroupKVMap {
-  void* result;
+  GroupKVMapPtr result;
   uint32_t err_len;
   void* err;
 };
@@ -32,8 +32,7 @@ struct LinkAuditBuilderPtr {
 };
 
 struct ResultCache {
-  void* result;
-  uint32_t buffer_len;
+  CachePtr result;
   uint32_t err_len;
   void* err;
 };
@@ -71,9 +70,9 @@ void AUTDControllerDelete(ControllerPtr cnt);
 
 [[nodiscard]] ResultFirmwareInfoList AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt);
 
-void AUTDControllerFirmwareInfoGet(ResultFirmwareInfoList p_info_list, uint32_t idx, char *info);
+void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr p_info_list, uint32_t idx, char *info);
 
-void AUTDControllerFirmwareInfoListPointerDelete(ResultFirmwareInfoList p_info_list);
+void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr p_info_list);
 
 void AUTDFirmwareLatest(char *latest);
 
@@ -104,17 +103,17 @@ ResultI32 AUTDControllerSendSpecial(ControllerPtr cnt,
                                     DatagramSpecialPtr special,
                                     int64_t timeout_ns);
 
-[[nodiscard]] ResultGroupKVMap AUTDControllerGroupCreateKVMap();
+[[nodiscard]] GroupKVMapPtr AUTDControllerGroupCreateKVMap();
 
 [[nodiscard]]
-ResultGroupKVMap AUTDControllerGroupKVMapSet(ResultGroupKVMap map,
+ResultGroupKVMap AUTDControllerGroupKVMapSet(GroupKVMapPtr map,
                                              int32_t key,
                                              DatagramPtr d1,
                                              DatagramPtr d2,
                                              int64_t timeout_ns);
 
 [[nodiscard]]
-ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(ResultGroupKVMap map,
+ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map,
                                                     int32_t key,
                                                     DatagramSpecialPtr special,
                                                     int64_t timeout_ns);
@@ -122,15 +121,15 @@ ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(ResultGroupKVMap map,
 [[nodiscard]]
 ResultI32 AUTDControllerGroup(ControllerPtr cnt,
                               const int32_t *map,
-                              ResultGroupKVMap kv_map);
+                              GroupKVMapPtr kv_map);
 
 [[nodiscard]] DatagramPtr AUTDGainIntoDatagram(GainPtr gain);
 
 [[nodiscard]] ResultGainCalcDrivesMap AUTDGainCalc(GainPtr gain, GeometryPtr geometry);
 
-void AUTDGainCalcGetResult(ResultGainCalcDrivesMap src, Drive *dst, uint32_t idx);
+void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive *dst, uint32_t idx);
 
-void AUTDGainCalcFreeResult(ResultGainCalcDrivesMap src);
+void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
 
 [[nodiscard]]
 GainPtr AUTDGainBessel(double x,
@@ -342,11 +341,13 @@ void AUTDLinkAuditFpgaDutiesAndPhases(LinkPtr audit,
 
 [[nodiscard]] ResultCache AUTDModulationWithCache(ModulationPtr m);
 
-void AUTDModulationCacheGetBuffer(ResultCache m, double *buf);
+uint32_t AUTDModulationCacheGetBufferLen(CachePtr m);
 
-[[nodiscard]] ModulationPtr AUTDModulationCacheIntoModulation(ResultCache m);
+void AUTDModulationCacheGetBuffer(CachePtr m, double *buf);
 
-void AUTDModulationCacheDelete(ResultCache m);
+[[nodiscard]] ModulationPtr AUTDModulationCacheIntoModulation(CachePtr m);
+
+void AUTDModulationCacheDelete(CachePtr m);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationCustom(uint32_t freq_div,
