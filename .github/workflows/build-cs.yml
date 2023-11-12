@@ -28,6 +28,7 @@ jobs:
             dotnet/cs/src/AUTD3Sharp.nuspec
             dotnet/cs/*.cs
             dotnet/cs/**/*.cs
+            dotnet/fs/**/*.cs
             dotnet/unity/Assets/package.json
 
   build:
