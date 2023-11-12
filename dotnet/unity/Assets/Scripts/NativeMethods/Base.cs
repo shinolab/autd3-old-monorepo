@@ -50,10 +50,10 @@ namespace AUTD3Sharp
         public static extern ResultGainCalcDrivesMap AUTDGainCalc(GainPtr gain, GeometryPtr geometry);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCalcGetResult", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDGainCalcGetResult(ResultGainCalcDrivesMap src, Drive* dst, uint idx);
+        public static extern void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive* dst, uint idx);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCalcFreeResult", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDGainCalcFreeResult(ResultGainCalcDrivesMap src);
+        public static extern void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainNull", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainNull();
@@ -192,10 +192,10 @@ namespace AUTD3Sharp
         public static extern ResultFirmwareInfoList AUTDControllerFirmwareInfoListPointer(ControllerPtr cnt);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerFirmwareInfoGet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDControllerFirmwareInfoGet(ResultFirmwareInfoList p_info_list, uint idx, byte* info);
+        public static extern void AUTDControllerFirmwareInfoGet(FirmwareInfoListPtr p_info_list, uint idx, byte* info);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerFirmwareInfoListPointerDelete", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDControllerFirmwareInfoListPointerDelete(ResultFirmwareInfoList p_info_list);
+        public static extern void AUTDControllerFirmwareInfoListPointerDelete(FirmwareInfoListPtr p_info_list);
 
         [DllImport(__DllName, EntryPoint = "AUTDFirmwareLatest", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDFirmwareLatest(byte* latest);
@@ -231,16 +231,16 @@ namespace AUTD3Sharp
         public static extern ResultI32 AUTDControllerSendSpecial(ControllerPtr cnt, DatagramSpecialPtr special, long timeout_ns);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerGroupCreateKVMap", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultGroupKVMap AUTDControllerGroupCreateKVMap();
+        public static extern GroupKVMapPtr AUTDControllerGroupCreateKVMap();
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerGroupKVMapSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultGroupKVMap AUTDControllerGroupKVMapSet(ResultGroupKVMap map, int key, DatagramPtr d1, DatagramPtr d2, long timeout_ns);
+        public static extern ResultGroupKVMap AUTDControllerGroupKVMapSet(GroupKVMapPtr map, int key, DatagramPtr d1, DatagramPtr d2, long timeout_ns);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerGroupKVMapSetSpecial", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(ResultGroupKVMap map, int key, DatagramSpecialPtr special, long timeout_ns);
+        public static extern ResultGroupKVMap AUTDControllerGroupKVMapSetSpecial(GroupKVMapPtr map, int key, DatagramSpecialPtr special, long timeout_ns);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerGroup", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultI32 AUTDControllerGroup(ControllerPtr cnt, int* map, ResultGroupKVMap kv_map);
+        public static extern ResultI32 AUTDControllerGroup(ControllerPtr cnt, int* map, GroupKVMapPtr kv_map);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAudit", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern LinkAuditBuilderPtr AUTDLinkAudit();
@@ -357,14 +357,17 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationWithCache", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultCache AUTDModulationWithCache(ModulationPtr m);
 
+        [DllImport(__DllName, EntryPoint = "AUTDModulationCacheGetBufferLen", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern uint AUTDModulationCacheGetBufferLen(CachePtr m);
+
         [DllImport(__DllName, EntryPoint = "AUTDModulationCacheGetBuffer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDModulationCacheGetBuffer(ResultCache m, float* buf);
+        public static extern void AUTDModulationCacheGetBuffer(CachePtr m, float* buf);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCacheIntoModulation", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationCacheIntoModulation(ResultCache m);
+        public static extern ModulationPtr AUTDModulationCacheIntoModulation(CachePtr m);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCacheDelete", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDModulationCacheDelete(ResultCache m);
+        public static extern void AUTDModulationCacheDelete(CachePtr m);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCustom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationCustom(uint freq_div, float* ptr, ulong len);
@@ -514,7 +517,7 @@ namespace AUTD3Sharp
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct ResultFirmwareInfoList
     {
-        public IntPtr result;
+        public FirmwareInfoListPtr result;
         public uint err_len;
         public IntPtr err;
     }
@@ -522,7 +525,7 @@ namespace AUTD3Sharp
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct ResultGroupKVMap
     {
-        public IntPtr result;
+        public GroupKVMapPtr result;
         public uint err_len;
         public IntPtr err;
     }
@@ -536,8 +539,7 @@ namespace AUTD3Sharp
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct ResultCache
     {
-        public IntPtr result;
-        public uint buffer_len;
+        public CachePtr result;
         public uint err_len;
         public IntPtr err;
     }
