@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,13 +40,7 @@ class Wav final : public internal::ModulationWithFreqDiv<Wav>,
   explicit Wav(std::filesystem::path path) : _path(std::move(path)) {}
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    auto [result, err_len, err] = internal::native_methods::AUTDModulationWav(_path.string().c_str());
-    if (result._0 == nullptr) {
-      const std::string err_str(err_len, ' ');
-      internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw internal::AUTDException(err_str);
-    }
-    auto ptr = result;
+    auto ptr = validate(internal::native_methods::AUTDModulationWav(_path.string().c_str()));
     if (_freq_div.has_value()) ptr = AUTDModulationWavWithSamplingFrequencyDivision(ptr, _freq_div.value());
     return ptr;
   }

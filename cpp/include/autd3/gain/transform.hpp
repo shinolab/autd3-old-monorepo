@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::gain {
 
@@ -31,13 +32,7 @@ class Transform final : public internal::Gain, public IntoCache<Transform<G, F>>
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     std::unordered_map<size_t, std::vector<internal::native_methods::Drive>> drives;
 
-    const auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr());
-    if (res.result == nullptr) {
-      const std::string err_str(res.err_len, ' ');
-      internal::native_methods::AUTDGetErr(res.err, const_cast<char*>(err_str.c_str()));
-      throw internal::AUTDException(err_str);
-    }
-
+    const auto res = validate(internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr()));
     std::for_each(geometry.devices().begin(), geometry.devices().end(), [this, &res, &drives](const internal::Device& dev) {
       std::vector<internal::native_methods::Drive> d;
       d.resize(dev.num_transducers());

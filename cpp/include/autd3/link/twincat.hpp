@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::link {
 
@@ -59,13 +60,7 @@ class RemoteTwinCAT final {
     internal::native_methods::LinkRemoteTwinCATBuilderPtr _ptr;
 
     explicit Builder(const std::string& server_ams_net_id) : LinkBuilder() {
-      auto [result, err_len, err] = internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str());
-      if (result._0 == nullptr) {
-        const std::string err_str(err_len, ' ');
-        internal::native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-        throw internal::AUTDException(err_str);
-      }
-      _ptr = result;
+      _ptr = validate(internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str()));
     }
 
    public:

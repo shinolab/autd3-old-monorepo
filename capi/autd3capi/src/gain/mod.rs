@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::Drive;
 use autd3capi_def::{
     common::{driver::datagram::GainFilter, *},
-    DatagramPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMap,
+    DatagramPtr, GainCalcDrivesMapPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMap,
 };
 
 pub mod bessel;
@@ -48,18 +48,18 @@ pub unsafe extern "C" fn AUTDGainCalc(
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainCalcGetResult(
-    src: ResultGainCalcDrivesMap,
+    src: GainCalcDrivesMapPtr,
     dst: *mut Drive,
     idx: u32,
 ) {
     let idx = idx as usize;
-    let src = cast!(src.result, HashMap<usize, Vec<Drive>>);
+    let src = cast!(src.0, HashMap<usize, Vec<Drive>>);
     std::ptr::copy_nonoverlapping(src[&idx].as_ptr(), dst, src[&idx].len());
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: ResultGainCalcDrivesMap) {
-    let _ = Box::from_raw(src.result as *mut HashMap<usize, Vec<Drive>>);
+pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: GainCalcDrivesMapPtr) {
+    let _ = Box::from_raw(src.0 as *mut HashMap<usize, Vec<Drive>>);
 }
 
 #[cfg(test)]
@@ -95,10 +95,13 @@ mod tests {
             };
 
             let res = AUTDGainCalc(g, geo);
-            assert!(!res.result.is_null());
+            let res = res.result;
+            assert!(!res.0.is_null());
 
             AUTDGainCalcGetResult(res, drives0.as_mut_ptr(), 0);
             AUTDGainCalcGetResult(res, drives1.as_mut_ptr(), 1);
+
+            AUTDGainCalcFreeResult(res);
 
             drives0.iter().for_each(|d| {
                 assert_eq!(d.amp, 0xFE);

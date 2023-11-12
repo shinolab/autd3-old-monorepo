@@ -46,6 +46,18 @@ struct ConstraintPtr {
   void* _0;
 };
 
+struct FirmwareInfoListPtr {
+  void* _0;
+};
+
+struct GroupKVMapPtr {
+  void* _0;
+};
+
+struct CachePtr {
+  void* _0;
+};
+
 struct DevicePtr {
   void* _0;
 };
@@ -90,6 +102,10 @@ struct GroupGainMapPtr {
   void* _0;
 };
 
+struct GainCalcDrivesMapPtr {
+  void* _0;
+};
+
 struct LinkBuilderPtr {
   void* _0;
 };
@@ -113,7 +129,7 @@ struct ResultController {
 };
 
 struct ResultGainCalcDrivesMap {
-  void* result;
+  GainCalcDrivesMapPtr result;
   uint32_t err_len;
   void* err;
 };

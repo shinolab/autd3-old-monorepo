@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,12 +68,13 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
     config.usize_is_size_t = true;
     config.export = cbindgen::ExportConfig {
         include: vec![
-            "TransMode".to_string(),
-            "Level".to_string(),
             "TimerStrategy".to_string(),
             "GainSTMMode".to_string(),
             "ControllerPtr".to_string(),
             "ConstraintPtr".to_string(),
+            "FirmwareInfoListPtr".to_string(),
+            "GroupKVMapPtr".to_string(),
+            "CachePtr".to_string(),
             "DevicePtr".to_string(),
             "TransducerPtr".to_string(),
             "GeometryPtr".to_string(),
@@ -85,7 +86,6 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "STMPropsPtr".to_string(),
             "BackendPtr".to_string(),
             "GroupGainMapPtr".to_string(),
-            "GroupKVMapPtr".to_string(),
             "GainCalcDrivesMapPtr".to_string(),
             "LinkBuilderPtr".to_string(),
             "ResultI32".to_string(),

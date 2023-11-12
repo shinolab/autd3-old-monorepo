@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,14 +15,13 @@
 
 use autd3capi_def::{
     common::{autd3::modulation::ModulationCache, *},
-    ModulationPtr,
+    CachePtr, ModulationPtr,
 };
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct ResultCache {
-    pub result: ConstPtr,
-    pub buffer_len: u32,
+    pub result: CachePtr,
     pub err_len: u32,
     pub err: ConstPtr,
 }
@@ -35,16 +34,14 @@ impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTD
     ) -> Self {
         match r {
             Ok(v) => Self {
-                buffer_len: v.buffer().len() as u32,
-                result: Box::into_raw(Box::new(v)) as _,
+                result: CachePtr(Box::into_raw(Box::new(v)) as _),
                 err_len: 0,
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: NULL,
-                    buffer_len: 0,
+                    result: CachePtr(NULL),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }
@@ -60,20 +57,25 @@ pub unsafe extern "C" fn AUTDModulationWithCache(m: ModulationPtr) -> ResultCach
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: ResultCache, buf: *mut float) {
-    let cache = cast!(m.result, ModulationCache);
+pub unsafe extern "C" fn AUTDModulationCacheGetBufferLen(m: CachePtr) -> u32 {
+    cast!(m.0, ModulationCache).buffer().len() as u32
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: CachePtr, buf: *mut float) {
+    let cache = cast!(m.0, ModulationCache);
     std::ptr::copy_nonoverlapping(cache.buffer().as_ptr(), buf, cache.buffer().len());
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: ResultCache) -> ModulationPtr {
-    ModulationPtr::new(cast!(m.result, ModulationCache).clone())
+pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: CachePtr) -> ModulationPtr {
+    ModulationPtr::new(cast!(m.0, ModulationCache).clone())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheDelete(m: ResultCache) {
-    let _ = Box::from_raw(m.result as *mut ModulationCache);
+pub unsafe extern "C" fn AUTDModulationCacheDelete(m: CachePtr) {
+    let _ = Box::from_raw(m.0 as *mut ModulationCache);
 }
 
 #[cfg(test)]
@@ -92,13 +94,13 @@ mod tests {
             let m = AUTDModulationSine(150);
 
             let cache = AUTDModulationWithCache(m);
-            assert!(!cache.result.is_null());
-            let m = AUTDModulationIntoDatagram(AUTDModulationCacheIntoModulation(cache));
+            assert!(!cache.result.0.is_null());
+            let m = AUTDModulationIntoDatagram(AUTDModulationCacheIntoModulation(cache.result));
 
             let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 
-            AUTDModulationCacheDelete(cache);
+            AUTDModulationCacheDelete(cache.result);
             AUTDControllerDelete(cnt);
         }
     }

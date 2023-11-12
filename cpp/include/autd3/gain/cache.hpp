@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::gain {
 
@@ -40,12 +41,7 @@ class Cache final : public internal::Gain {
     if (std::vector<uint32_t> device_indices(view.begin(), view.end());
         _cache->size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
-      const auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr());
-      if (res.result == nullptr) {
-        const std::string err_str(res.err_len, ' ');
-        internal::native_methods::AUTDGetErr(res.err, const_cast<char*>(err_str.c_str()));
-        throw internal::AUTDException(err_str);
-      }
+      const auto res = validate(internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr()));
       for (const auto& dev : geometry.devices()) {
         std::vector<internal::native_methods::Drive> drives;
         drives.resize(dev.num_transducers());

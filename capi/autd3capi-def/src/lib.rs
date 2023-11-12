@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -78,6 +78,18 @@ impl From<TimerStrategy> for common::autd3::prelude::TimerStrategy {
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct ControllerPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct FirmwareInfoListPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct GroupKVMapPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct GainCalcDrivesMapPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -169,6 +181,10 @@ macro_rules! take_mod {
         Box::from_raw($ptr.0 as *mut Box<M> as *mut Box<$type>)
     };
 }
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct CachePtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]

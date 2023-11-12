@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,8 +39,22 @@
 
 namespace autd3::internal::native_methods {
 
+template <class T>
+concept ResultPtr = requires(T& x) { x.result._0; };
+
 template <typename T>
-T validate(ResultI32 res) {
+inline constexpr auto validate(T res) {
+  const auto [result, err_len, err] = res;
+  if (result._0 == nullptr) {
+    const std::string err_str(err_len, ' ');
+    AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+    throw AUTDException(err_str);
+  }
+  return result;
+}
+
+template <typename T = int32_t>
+inline constexpr T validate(ResultI32 res) {
   const auto [result, err_len, err] = res;
   if (result == AUTD3_ERR) {
     const std::string err_str(err_len, ' ');

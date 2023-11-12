@@ -4,7 +4,7 @@
  * Created Date: 10/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,10 @@ use std::{
 
 use autd3capi_common::{libc, AUTDError, AUTDInternalError, ConstPtr, Controller, Drive, L, NULL};
 
-use crate::{BackendPtr, ControllerPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE};
+use crate::{
+    BackendPtr, ControllerPtr, GainCalcDrivesMapPtr, ModulationPtr, AUTD3_ERR, AUTD3_FALSE,
+    AUTD3_TRUE,
+};
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetErr(src: ConstPtr, dst: *mut c_char) {
@@ -147,7 +150,7 @@ impl From<Result<Controller<Box<L>>, AUTDError>> for ResultController {
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct ResultGainCalcDrivesMap {
-    pub result: ConstPtr,
+    pub result: GainCalcDrivesMapPtr,
     pub err_len: u32,
     pub err: ConstPtr,
 }
@@ -156,14 +159,14 @@ impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainC
     fn from(r: Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>) -> Self {
         match r {
             Ok(v) => Self {
-                result: Box::into_raw(Box::new(v)) as _,
+                result: GainCalcDrivesMapPtr(Box::into_raw(Box::new(v)) as _),
                 err_len: 0,
                 err: std::ptr::null_mut(),
             },
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: NULL,
+                    result: GainCalcDrivesMapPtr(NULL),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }
