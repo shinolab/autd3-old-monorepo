@@ -133,14 +133,6 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultI32
-    {
-        internal int result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct ResultGainCalcDrivesMap
     {
         internal IntPtr result;
@@ -170,5 +162,21 @@ namespace AUTD3Sharp
         internal BackendPtr result;
         internal uint err_len;
         internal IntPtr err;
+    }
+    internal static class ResultExtensions
+    {
+        internal static int Validate(this ResultI32 res)
+        {
+            if (res.result == NativeMethodsDef.AUTD3_ERR)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
     }
 }
