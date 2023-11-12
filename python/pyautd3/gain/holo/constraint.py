@@ -12,6 +12,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.native_methods.autd3capi_gain_holo import ConstraintPtr
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 
@@ -35,14 +36,14 @@ class AmplitudeConstraint:
         return AmplitudeConstraint(GainHolo().gain_holo_constraint_normalize())
 
     @staticmethod
-    def uniform(value: float) -> "AmplitudeConstraint":
+    def uniform(value: int | float | EmitIntensity) -> "AmplitudeConstraint":  # noqa: PYI041
         """Set all amplitudes to the specified value.
 
         Arguments:
         ---------
-            value: amplitude
+            value: pulse width (int) | normalized amplitude (float) | EmitIntensity
         """
-        return AmplitudeConstraint(GainHolo().gain_holo_constraint_uniform(value))
+        return AmplitudeConstraint(GainHolo().gain_holo_constraint_uniform(EmitIntensity._cast(value).pulse_width))
 
     @staticmethod
     def clamp(min_v: float, max_v: float) -> "AmplitudeConstraint":

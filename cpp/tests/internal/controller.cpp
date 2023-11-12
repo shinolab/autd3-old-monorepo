@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -111,7 +111,7 @@ TEST(Internal, ControllerSendDouble) {
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
 
-  ASSERT_TRUE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1)).get());
+  ASSERT_TRUE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1.0)).get());
   for (auto& dev : autd.geometry()) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
@@ -121,16 +121,16 @@ TEST(Internal, ControllerSendDouble) {
   }
 
   autd.link<autd3::link::Audit>().down();
-  ASSERT_FALSE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1)).get());
+  ASSERT_FALSE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1.0)).get());
 
   autd.link<autd3::link::Audit>().break_down();
-  ASSERT_THROW(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1)).get(), autd3::internal::AUTDException);
+  ASSERT_THROW(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1.0)).get(), autd3::internal::AUTDException);
 }
 
 TEST(Internal, ControllerSendSpecial) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(1)).get());
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(1.0)).get());
   for (auto& dev : autd.geometry()) {
     auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 256; }));
@@ -155,7 +155,7 @@ TEST(Internal, ControllerGroup) {
 
   autd.group([](auto& dev) -> std::optional<size_t> { return dev.idx(); })
       .set(0, autd3::modulation::Static(), autd3::gain::Null())
-      .set(1, autd3::modulation::Sine(150), autd3::gain::Uniform(1))
+      .set(1, autd3::modulation::Sine(150), autd3::gain::Uniform(1.0))
       .send_async()
       .get();
 
@@ -177,7 +177,7 @@ TEST(Internal, ControllerGroup) {
 
   autd.group([](auto& dev) -> std::optional<size_t> { return dev.idx(); })
       .set(1, autd3::internal::Stop())
-      .set(0, autd3::modulation::Sine(150), autd3::gain::Uniform(1))
+      .set(0, autd3::modulation::Sine(150), autd3::gain::Uniform(1.0))
       .send_async()
       .get();
 

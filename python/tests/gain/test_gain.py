@@ -16,17 +16,18 @@ import numpy as np
 import pytest
 
 from pyautd3 import Device, Drive, Geometry, Transducer
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain import Gain
 from tests.test_autd import create_controller
 
 
 class Uniform(Gain):
-    _amp: float
+    _amp: EmitIntensity
     _phase: float
     check: np.ndarray
 
     def __init__(self: "Uniform", amp: float, phase: float, check: np.ndarray) -> None:
-        self._amp = amp
+        self._amp = EmitIntensity.new_normalized(amp)
         self._phase = phase
         self.check = check
 
@@ -35,7 +36,7 @@ class Uniform(Gain):
             self.check[dev.idx] = True
             return Drive(
                 self._phase,
-                self._amp,
+                self._amp.pulse_width,
             )
 
         return Gain._transform(geometry, f)

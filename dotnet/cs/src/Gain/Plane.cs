@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ namespace AUTD3Sharp.Gain
     public sealed class Plane : Internal.Gain
     {
         private readonly Vector3 _dir;
-        private float_t? _amp;
+        private EmitIntensity? _amp;
 
         public Plane(Vector3 dir)
         {
@@ -55,6 +55,28 @@ namespace AUTD3Sharp.Gain
         /// <returns></returns>
         public Plane WithAmp(float_t amp)
         {
+            _amp = EmitIntensity.NewNormalized(amp);
+            return this;
+        }
+
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+        /// <returns></returns>
+
+        public Plane WithAmp(ushort amp)
+        {
+            _amp = EmitIntensity.NewPulseWidth(amp);
+            return this;
+        }
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+        /// <returns></returns>
+        public Plane WithAmp(EmitIntensity amp)
+        {
             _amp = amp;
             return this;
         }
@@ -63,7 +85,7 @@ namespace AUTD3Sharp.Gain
         {
             var ptr = NativeMethodsBase.AUTDGainPlane(_dir.x, _dir.y, _dir.z);
             if (_amp != null)
-                ptr = NativeMethodsBase.AUTDGainPlaneWithAmp(ptr, _amp.Value);
+                ptr = NativeMethodsBase.AUTDGainPlaneWithAmp(ptr, _amp.PulseWidth);
             return ptr;
         }
     }

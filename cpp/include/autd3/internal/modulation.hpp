@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,7 +48,7 @@ class Modulation : public Datagram {
     if (result == native_methods::AUTD3_ERR) {
       const std::string err_str(err_len, ' ');
       native_methods::AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
-      throw internal::AUTDException(err_str);
+      throw AUTDException(err_str);
     }
     return static_cast<size_t>(result);
   }
@@ -66,22 +66,21 @@ class ModulationWithFreqDiv : public Modulation {
     return std::move(*static_cast<M*>(this));
   }
   void with_sampling_frequency(const double freq) & {
-    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_CLK_FREQ) / freq));
+    with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_CLK_FREQ) / freq));
   }
   [[nodiscard]] M&& with_sampling_frequency(const double freq) && {
-    return std::move(*this).with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_CLK_FREQ) / freq));
+    return std::move(*this).with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_CLK_FREQ) / freq));
   }
   template <typename Rep, typename Period>
   void with_sampling_period(const std::chrono::duration<Rep, Period> period) & {
     with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_CLK_FREQ) / 1000000000.0 *
+        static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_CLK_FREQ) / 1000000000.0 *
                               static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
   }
   template <typename Rep, typename Period>
   [[nodiscard]] M&& with_sampling_period(const std::chrono::duration<Rep, Period> period) && {
     return std::move(*this).with_sampling_frequency_division(
-        static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_CLK_FREQ) / 1000000000.0 *
+        static_cast<uint32_t>(static_cast<double>(native_methods::FPGA_CLK_FREQ) / 1000000000.0 *
                               static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count())));
   }
 };

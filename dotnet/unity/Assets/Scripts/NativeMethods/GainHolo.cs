@@ -23,7 +23,7 @@ namespace AUTD3Sharp
         public static extern ConstraintPtr AUTDGainHoloConstraintNormalize();
 
         [DllImport(__DllName, EntryPoint = "AUTDGainHoloConstraintUniform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ConstraintPtr AUTDGainHoloConstraintUniform(float value);
+        public static extern ConstraintPtr AUTDGainHoloConstraintUniform(ushort pulse_width);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainHoloConstraintClamp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ConstraintPtr AUTDGainHoloConstraintClamp(float min_v, float max_v);

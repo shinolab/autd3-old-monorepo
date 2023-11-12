@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::gain::holo {
@@ -35,7 +36,24 @@ class AmplitudeConstraint {
    * @param value amplitude
    */
   static AmplitudeConstraint uniform(const double value) {
-    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintUniform(value)};
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintUniform(internal::EmitIntensity::new_normalized(value).pulse_width())};
+  }
+
+  /**
+   * @brief Set all amplitudes to the specified value
+   * @param value amplitude
+   */
+  static AmplitudeConstraint uniform(const uint16_t value) {
+    return AmplitudeConstraint{
+        internal::native_methods::AUTDGainHoloConstraintUniform(internal::EmitIntensity::new_pulse_width(value).pulse_width())};
+  }
+
+  /**
+   * @brief Set all amplitudes to the specified value
+   * @param value amplitude
+   */
+  static AmplitudeConstraint uniform(const internal::EmitIntensity value) {
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloConstraintUniform(value.pulse_width())};
   }
 
   /**

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -202,7 +202,7 @@ public class AUTDTest
             Assert.All(duties, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
-        Assert.True(await autd.SendAsync(new Static(), new Uniform(1)));
+        Assert.True(await autd.SendAsync(new Static(), new Uniform(1.0)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
@@ -213,10 +213,10 @@ public class AUTDTest
         }
 
         autd.Link<Audit>().Down();
-        Assert.False(await autd.SendAsync((new Static(), new Uniform(1))));
+        Assert.False(await autd.SendAsync((new Static(), new Uniform(1.0))));
 
         autd.Link<Audit>().BreakDown();
-        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static(), new Uniform(1)));
+        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static(), new Uniform(1.0)));
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public class AUTDTest
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("0", (new Static(), new Null()))
-             .Set("1", new Sine(150), new Uniform(1))
+             .Set("1", new Sine(150), new Uniform(1.0))
              .SendAsync();
         {
             var m = autd.Link<Audit>().Modulation(0);
@@ -273,7 +273,7 @@ public class AUTDTest
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("1", new Stop())
-             .Set("0", (new Sine(150), new Uniform(1)))
+             .Set("0", (new Sine(150), new Uniform(1.0)))
              .SendAsync();
         {
             var m = autd.Link<Audit>().Modulation(0);
@@ -322,7 +322,7 @@ public class AUTDTest
     public async Task TestClear()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(1).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(1.0).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link<Audit>().Modulation(dev.Idx);
@@ -347,7 +347,7 @@ public class AUTDTest
     public async Task TestStop()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(1).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(1.0).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
             var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);

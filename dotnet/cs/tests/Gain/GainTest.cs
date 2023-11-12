@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,13 +17,13 @@ public class GainTest
 {
     public class MyUniform : AUTD3Sharp.Gain.Gain
     {
-        private readonly double _amp;
+        private readonly EmitIntensity _amp;
         private readonly double _phase;
         public bool[] Check;
 
         public MyUniform(double amp, double phase, bool[] check)
         {
-            _amp = amp;
+            _amp = EmitIntensity.NewNormalized(amp);
             _phase = phase;
             Check = check;
         }
@@ -33,7 +33,7 @@ public class GainTest
             return Transform(geometry, (dev, _) =>
             {
                 Check[dev.Idx] = true;
-                return new Drive { Phase = _phase, Amp = _amp };
+                return new Drive { Phase = _phase, Amp = _amp.PulseWidth };
             });
         }
     }

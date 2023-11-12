@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ namespace AUTD3Sharp.Modulation.AudioFile
                     var res = NativeMethodsModulationAudioFile.AUTDModulationRawPCM(fp, _sampleRate);
                     if (res.result.Item1 == IntPtr.Zero)
                     {
-                        var err = new byte[res.errLen];
+                        var err = new byte[res.err_len];
                         fixed (byte* p = err)
                             NativeMethodsDef.AUTDGetErr(res.err, p);
                         throw new AUTDException(err);

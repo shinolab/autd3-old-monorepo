@@ -31,7 +31,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloConstraintNormalize.argtypes = [] 
         self.dll.AUTDGainHoloConstraintNormalize.restype = ConstraintPtr
 
-        self.dll.AUTDGainHoloConstraintUniform.argtypes = [ctypes.c_double] 
+        self.dll.AUTDGainHoloConstraintUniform.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDGainHoloConstraintUniform.restype = ConstraintPtr
 
         self.dll.AUTDGainHoloConstraintClamp.argtypes = [ctypes.c_double, ctypes.c_double] 
@@ -127,8 +127,8 @@ class NativeMethods(metaclass=Singleton):
     def gain_holo_constraint_normalize(self) -> ConstraintPtr:
         return self.dll.AUTDGainHoloConstraintNormalize()
 
-    def gain_holo_constraint_uniform(self, value: float) -> ConstraintPtr:
-        return self.dll.AUTDGainHoloConstraintUniform(value)
+    def gain_holo_constraint_uniform(self, pulse_width: int) -> ConstraintPtr:
+        return self.dll.AUTDGainHoloConstraintUniform(pulse_width)
 
     def gain_holo_constraint_clamp(self, min_v: float, max_v: float) -> ConstraintPtr:
         return self.dll.AUTDGainHoloConstraintClamp(min_v, max_v)

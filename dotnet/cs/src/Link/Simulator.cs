@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ namespace AUTD3Sharp.Link
         {
             var res = await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* p = err)
@@ -96,7 +96,7 @@ namespace AUTD3Sharp.Link
         {
             var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr);
             if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* p = err)

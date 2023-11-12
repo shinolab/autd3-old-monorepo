@@ -12,7 +12,7 @@ extern "C" {
 
 [[nodiscard]] ConstraintPtr AUTDGainHoloConstraintNormalize();
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintUniform(double value);
+[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintUniform(uint16_t pulse_width);
 
 [[nodiscard]] ConstraintPtr AUTDGainHoloConstraintClamp(double min_v, double max_v);
 

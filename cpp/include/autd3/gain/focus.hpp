@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include "autd3/gain/cache.hpp"
 #include "autd3/gain/transform.hpp"
 #include "autd3/internal/def.hpp"
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -31,17 +32,17 @@ class Focus final : public internal::Gain, public IntoCache<Focus>, public IntoT
  public:
   explicit Focus(internal::Vector3 p) : _p(std::move(p)) {}
 
-  AUTD3_DEF_PARAM(Focus, double, amp)
+  AUTD3_DEF_PARAM_AMP(Focus)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainFocus(_p.x(), _p.y(), _p.z());
-    if (_amp.has_value()) ptr = AUTDGainFocusWithAmp(ptr, _amp.value());
+    if (_amp.has_value()) ptr = AUTDGainFocusWithAmp(ptr, _amp.value().pulse_width());
     return ptr;
   }
 
  private:
   internal::Vector3 _p;
-  std::optional<double> _amp;
+  std::optional<internal::EmitIntensity> _amp;
 };
 
 }  // namespace autd3::gain

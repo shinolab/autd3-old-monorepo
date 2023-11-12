@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,12 +36,24 @@ namespace AUTD3Sharp.Gain
             internal int DevIdx;
             internal int TrIdx;
             internal float_t Phase;
-            internal float_t Amp;
+            internal EmitIntensity Amp;
         }
 
         private readonly List<Prop> _props = new List<Prop>();
 
         public TransducerTest Set(int devIdx, int trIdx, float_t phase, float_t amp)
+        {
+            _props.Add(new Prop { DevIdx = devIdx, TrIdx = trIdx, Phase = phase, Amp = EmitIntensity.NewNormalized(amp) });
+            return this;
+        }
+
+        public TransducerTest Set(int devIdx, int trIdx, float_t phase, ushort amp)
+        {
+            _props.Add(new Prop { DevIdx = devIdx, TrIdx = trIdx, Phase = phase, Amp = EmitIntensity.NewPulseWidth(amp) });
+            return this;
+        }
+
+        public TransducerTest Set(int devIdx, int trIdx, float_t phase, EmitIntensity amp)
         {
             _props.Add(new Prop { DevIdx = devIdx, TrIdx = trIdx, Phase = phase, Amp = amp });
             return this;
@@ -49,7 +61,7 @@ namespace AUTD3Sharp.Gain
 
         internal override GainPtr GainPtr(Geometry geometry)
         {
-            return _props.Aggregate(NativeMethodsBase.AUTDGainTransducerTest(), (gainPtr, prop) => NativeMethodsBase.AUTDGainTransducerTestSet(gainPtr, (uint)prop.DevIdx, (uint)prop.TrIdx, prop.Phase, prop.Amp));
+            return _props.Aggregate(NativeMethodsBase.AUTDGainTransducerTest(), (gainPtr, prop) => NativeMethodsBase.AUTDGainTransducerTestSet(gainPtr, (uint)prop.DevIdx, (uint)prop.TrIdx, prop.Phase, prop.Amp.PulseWidth));
         }
     }
 }

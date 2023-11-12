@@ -100,6 +100,7 @@ class ResultBackend(ctypes.Structure):
     _fields_ = [("result", BackendPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
+DEFAULT_CORRECTED_ALPHA: float = 0.803
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14
@@ -132,8 +133,44 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
+        self.dll.AUTDEmitIntensityNormalizedFrom.argtypes = [ctypes.c_uint16] 
+        self.dll.AUTDEmitIntensityNormalizedFrom.restype = ctypes.c_double
+
+        self.dll.AUTDEmitIntensityDutyRatioFrom.argtypes = [ctypes.c_uint16] 
+        self.dll.AUTDEmitIntensityDutyRatioFrom.restype = ctypes.c_double
+
+        self.dll.AUTDEmitIntensityNormalizedInto.argtypes = [ctypes.c_double] 
+        self.dll.AUTDEmitIntensityNormalizedInto.restype = ResultI32
+
+        self.dll.AUTDEmitIntensityNormalizedCorrectedInto.argtypes = [ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDEmitIntensityNormalizedCorrectedInto.restype = ResultI32
+
+        self.dll.AUTDEmitIntensityDutyRatioInto.argtypes = [ctypes.c_double] 
+        self.dll.AUTDEmitIntensityDutyRatioInto.restype = ResultI32
+
+        self.dll.AUTDEmitIntensityPulseWidthInto.argtypes = [ctypes.c_uint16] 
+        self.dll.AUTDEmitIntensityPulseWidthInto.restype = ResultI32
+
         self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
         self.dll.AUTDGetErr.restype = None
+
+    def emit_intensity_normalized_from(self, pulse_width: int) -> ctypes.c_double:
+        return self.dll.AUTDEmitIntensityNormalizedFrom(pulse_width)
+
+    def emit_intensity_duty_ratio_from(self, pulse_width: int) -> ctypes.c_double:
+        return self.dll.AUTDEmitIntensityDutyRatioFrom(pulse_width)
+
+    def emit_intensity_normalized_into(self, value: float) -> ResultI32:
+        return self.dll.AUTDEmitIntensityNormalizedInto(value)
+
+    def emit_intensity_normalized_corrected_into(self, value: float, alpha: float) -> ResultI32:
+        return self.dll.AUTDEmitIntensityNormalizedCorrectedInto(value, alpha)
+
+    def emit_intensity_duty_ratio_into(self, value: float) -> ResultI32:
+        return self.dll.AUTDEmitIntensityDutyRatioInto(value)
+
+    def emit_intensity_pulse_width_into(self, value: int) -> ResultI32:
+        return self.dll.AUTDEmitIntensityPulseWidthInto(value)
 
     def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDGetErr(src, dst)

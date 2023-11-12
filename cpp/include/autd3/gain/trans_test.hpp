@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 
 #include "autd3/gain/cache.hpp"
 #include "autd3/gain/transform.hpp"
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -31,9 +32,23 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
   TransducerTest() = default;
 
   void set(const size_t dev_idx, const size_t tr_idx, const double phase, const double amp) & {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
+    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_normalized(amp)});
   }
   TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const double amp) && {
+    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_normalized(amp)});
+    return std::move(*this);
+  }
+  void set(const size_t dev_idx, const size_t tr_idx, const double phase, const uint16_t amp) & {
+    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_pulse_width(amp)});
+  }
+  TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const uint16_t amp) && {
+    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_pulse_width(amp)});
+    return std::move(*this);
+  }
+  void set(const size_t dev_idx, const size_t tr_idx, const double phase, const internal::EmitIntensity amp) & {
+    _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
+  }
+  TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const internal::EmitIntensity amp) && {
     _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
     return std::move(*this);
   }
@@ -41,7 +56,8 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return std::accumulate(_props.cbegin(), _props.cend(), internal::native_methods::AUTDGainTransducerTest(),
                            [](const internal::native_methods::GainPtr acc, const Prop& p) {
-                             return AUTDGainTransducerTestSet(acc, static_cast<uint32_t>(p.dev_idx), static_cast<uint32_t>(p.tr_idx), p.phase, p.amp);
+                             return AUTDGainTransducerTestSet(acc, static_cast<uint32_t>(p.dev_idx), static_cast<uint32_t>(p.tr_idx), p.phase,
+                                                              p.amp.pulse_width());
                            });
   }
 
@@ -50,7 +66,7 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
     size_t dev_idx;
     size_t tr_idx;
     double phase;
-    double amp;
+    internal::EmitIntensity amp;
   };
 
   std::vector<Prop> _props;

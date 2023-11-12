@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,14 +53,24 @@ namespace AUTD3Sharp.Gain.Holo
     public sealed class Uniform : IAmplitudeConstraint
     {
 
-        internal readonly float_t Value;
+        internal readonly EmitIntensity Value;
 
-        public Uniform(float_t value = 1)
+        public Uniform(float_t value)
+        {
+            Value = EmitIntensity.NewNormalized(value);
+        }
+
+        public Uniform(ushort value)
+        {
+            Value = EmitIntensity.NewPulseWidth(value);
+        }
+
+        public Uniform(EmitIntensity value)
         {
             Value = value;
         }
 
-        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintUniform(Value);
+        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintUniform(Value.PulseWidth);
     }
 
     /// <summary>

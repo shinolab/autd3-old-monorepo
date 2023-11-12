@@ -24,7 +24,7 @@ struct ResultGroupKVMap {
 
 struct Drive {
   double phase;
-  double amp;
+  uint16_t amp;
 };
 
 struct LinkAuditBuilderPtr {
@@ -141,7 +141,7 @@ GainPtr AUTDGainBessel(double x,
                        double nz,
                        double theta_z);
 
-[[nodiscard]] GainPtr AUTDGainBesselWithAmp(GainPtr bessel, double amp);
+[[nodiscard]] GainPtr AUTDGainBesselWithAmp(GainPtr bessel, uint16_t amp);
 
 [[nodiscard]] GainPtr AUTDGainCustom();
 
@@ -153,7 +153,7 @@ GainPtr AUTDGainCustomSet(GainPtr custom,
 
 [[nodiscard]] GainPtr AUTDGainFocus(double x, double y, double z);
 
-[[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, double amp);
+[[nodiscard]] GainPtr AUTDGainFocusWithAmp(GainPtr focus, uint16_t amp);
 
 [[nodiscard]]
 GroupGainMapPtr AUTDGainGroupCreateMap(const uint32_t *device_indices_ptr,
@@ -174,7 +174,7 @@ GainPtr AUTDGainGroup(GroupGainMapPtr map,
 
 [[nodiscard]] GainPtr AUTDGainPlane(double nx, double ny, double nz);
 
-[[nodiscard]] GainPtr AUTDGainPlaneWithAmp(GainPtr plane, double amp);
+[[nodiscard]] GainPtr AUTDGainPlaneWithAmp(GainPtr plane, uint16_t amp);
 
 [[nodiscard]] GainPtr AUTDGainTransducerTest();
 
@@ -183,9 +183,9 @@ GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
                                   uint32_t dev_idx,
                                   uint32_t tr_idx,
                                   double phase,
-                                  double amp);
+                                  uint16_t pulse_width);
 
-[[nodiscard]] GainPtr AUTDGainUniform(double amp);
+[[nodiscard]] GainPtr AUTDGainUniform(uint16_t amp);
 
 [[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
 
