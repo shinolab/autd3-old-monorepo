@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ module GainHoloTest =
 
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let backend = new NalgebraBackend();
-        let g = (new GSPAT<NalgebraBackend>(backend)).WithConstraint(new Uniform())
+        let g = (new GSPAT<NalgebraBackend>(backend)).WithConstraint(new Uniform(1.0))
                     .AddFocus(center + 20.0 * Vector3d.UnitX, 1.0)
                     .AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
 
