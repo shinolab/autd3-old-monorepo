@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,17 +45,7 @@ namespace AUTD3Sharp.Gain
         {
             var deviceIndices = geometry.Devices().Select(d => d.Idx).ToArray();
             if (_cache.Count == deviceIndices.Length && deviceIndices.All(i => _cache.ContainsKey(i))) return;
-            var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr);
-            if (res.result == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-
+            var res = NativeMethodsBase.AUTDGainCalc(_g.GainPtr(geometry), geometry.Ptr).Validate();
             foreach (var dev in geometry.Devices())
             {
                 var drives = new Drive[dev.NumTransducers];

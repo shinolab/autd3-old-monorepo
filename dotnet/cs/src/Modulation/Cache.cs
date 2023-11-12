@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,22 +34,15 @@ namespace AUTD3Sharp.Modulation
     {
         private bool _isDisposed;
 
-        private ResultCache _cache;
+        private CachePtr _cache;
         private readonly float_t[] _buffer;
 
         public Cache(Internal.Modulation m)
         {
             unsafe
             {
-                _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr());
-                if (_cache.result == IntPtr.Zero)
-                {
-                    var err = new byte[_cache.err_len];
-                    fixed (byte* p = err)
-                        NativeMethodsDef.AUTDGetErr(_cache.err, p);
-                    throw new AUTDException(err);
-                }
-                _buffer = new float_t[_cache.buffer_len];
+                _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr()).Validate();
+                _buffer = new float_t[NativeMethodsBase.AUTDModulationCacheGetBufferLen(_cache)];
                 fixed (float_t* p = _buffer)
                     NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, p);
             }
@@ -64,8 +57,8 @@ namespace AUTD3Sharp.Modulation
         {
             if (_isDisposed) return;
 
-            if (_cache.result != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
-            _cache.result = IntPtr.Zero;
+            if (_cache.Item1 != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
+            _cache.Item1 = IntPtr.Zero;
 
             _isDisposed = true;
             GC.SuppressFinalize(this);

@@ -4,7 +4,7 @@
  * Created Date: 07/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -109,6 +109,18 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct CachePtr
+    {
+        internal IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct FirmwareInfoListPtr
+    {
+        internal IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct ConstraintPtr
     {
         internal IntPtr Item1;
@@ -135,7 +147,7 @@ namespace AUTD3Sharp
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct ResultGainCalcDrivesMap
     {
-        internal IntPtr result;
+        internal GainCalcDrivesMapPtr result;
         internal uint err_len;
         internal IntPtr err;
     }
@@ -163,11 +175,69 @@ namespace AUTD3Sharp
         internal uint err_len;
         internal IntPtr err;
     }
+
+
     internal static class ResultExtensions
     {
         internal static int Validate(this ResultI32 res)
         {
             if (res.result == NativeMethodsDef.AUTD3_ERR)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static GainCalcDrivesMapPtr Validate(this ResultGainCalcDrivesMap res)
+        {
+            if (res.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static FirmwareInfoListPtr Validate(this ResultFirmwareInfoList res)
+        {
+            if (res.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static GroupKVMapPtr Validate(this ResultGroupKVMap res)
+        {
+            if (res.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static CachePtr Validate(this ResultCache res)
+        {
+            if (res.result.Item1 == IntPtr.Zero)
             {
                 var err = new byte[res.err_len];
                 unsafe

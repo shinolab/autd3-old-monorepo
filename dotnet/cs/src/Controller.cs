@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 13/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -263,20 +263,7 @@ namespace AUTD3Sharp
             _linkProps = linkProps;
         }
 
-        private ResultFirmwareInfoList GetFirmwareInfoListPtr()
-        {
-
-            var res = NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr);
-            if (res.result != IntPtr.Zero) return res;
-            unsafe
-            {
-                var err = new byte[res.err_len];
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
-        }
-
-        private static FirmwareInfo GetFirmwareInfo(ResultFirmwareInfoList handle, uint i)
+        private static FirmwareInfo GetFirmwareInfo(FirmwareInfoListPtr handle, uint i)
         {
             var info = new byte[256];
             unsafe
@@ -295,7 +282,7 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public async Task<FirmwareInfo[]> FirmwareInfoListAsync()
         {
-            var handle = await Task.Run(GetFirmwareInfoListPtr);
+            var handle = await Task.Run(() => NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr).Validate());
             var result = Enumerable.Range(0, Geometry.NumDevices).Select(i => GetFirmwareInfo(handle, (uint)i)).ToArray();
             NativeMethodsBase.AUTDControllerFirmwareInfoListPointerDelete(handle);
             return result;
@@ -307,7 +294,7 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public FirmwareInfo[] FirmwareInfoList()
         {
-            var handle = GetFirmwareInfoListPtr();
+            var handle = NativeMethodsBase.AUTDControllerFirmwareInfoListPointer(Ptr).Validate();
             var result = Enumerable.Range(0, Geometry.NumDevices).Select(i => GetFirmwareInfo(handle, (uint)i)).ToArray();
             NativeMethodsBase.AUTDControllerFirmwareInfoListPointerDelete(handle);
             return result;
@@ -579,7 +566,7 @@ namespace AUTD3Sharp
         {
             private readonly Controller _controller;
             private readonly Func<Device, object?> _map;
-            private ResultGroupKVMap _kvMap;
+            private GroupKVMapPtr _kvMap;
             private readonly IDictionary<object, int> _keymap;
             private int _k;
 
@@ -602,14 +589,8 @@ namespace AUTD3Sharp
                 var ptr1 = data1.Ptr(_controller.Geometry);
                 var ptr2 = data2.Ptr(_controller.Geometry);
                 _keymap[key] = _k++;
-                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs);
-                if (_kvMap.result != IntPtr.Zero) return this;
-                var err = new byte[_kvMap.err_len];
-                unsafe
-                {
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(_kvMap.err, ep);
-                    throw new AUTDException(err);
-                }
+                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSet(_kvMap, _keymap[key], ptr1, ptr2, timeoutNs).Validate();
+                return this;
             }
 
             public GroupGuard Set(object key, IDatagram data, TimeSpan? timeout = null)
@@ -630,14 +611,8 @@ namespace AUTD3Sharp
                 var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
                 var ptr = data.Ptr();
                 _keymap[key] = _k++;
-                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs);
-                if (_kvMap.result != IntPtr.Zero) return this;
-                var err = new byte[_kvMap.err_len];
-                unsafe
-                {
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(_kvMap.err, ep);
-                    throw new AUTDException(err);
-                }
+                _kvMap = NativeMethodsBase.AUTDControllerGroupKVMapSetSpecial(_kvMap, _keymap[key], ptr, timeoutNs).Validate();
+                return this;
             }
 
             public async Task SendAsync()
