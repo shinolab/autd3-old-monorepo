@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -207,7 +207,7 @@ namespace AUTD3Sharp
                 var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr()));
                 if (result.result.Item1 == IntPtr.Zero)
                 {
-                    var err = new byte[result.errLen];
+                    var err = new byte[result.err_len];
                     unsafe
                     {
                         fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
@@ -229,7 +229,7 @@ namespace AUTD3Sharp
                 var result = NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr());
                 if (result.result.Item1 == IntPtr.Zero)
                 {
-                    var err = new byte[result.errLen];
+                    var err = new byte[result.err_len];
                     unsafe
                     {
                         fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
@@ -322,7 +322,7 @@ namespace AUTD3Sharp
             if (Ptr.Item1 == IntPtr.Zero) return false;
             var res = await Task.Run(() => NativeMethodsBase.AUTDControllerClose(Ptr));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -339,7 +339,7 @@ namespace AUTD3Sharp
             if (Ptr.Item1 == IntPtr.Zero) return false;
             var res = NativeMethodsBase.AUTDControllerClose(Ptr);
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -384,7 +384,7 @@ namespace AUTD3Sharp
                 }
             });
             if (res.result != NativeMethodsDef.AUTD3_ERR) return infos.Select(x => new FPGAInfo(x)).ToArray();
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -405,7 +405,7 @@ namespace AUTD3Sharp
                 {
                     var res = NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr);
                     if (res.result != NativeMethodsDef.AUTD3_ERR) return infos.Select(x => new FPGAInfo(x)).ToArray();
-                    var err = new byte[res.errLen];
+                    var err = new byte[res.err_len];
                     fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
                     throw new AUTDException(err);
                 }
@@ -436,7 +436,7 @@ namespace AUTD3Sharp
                 NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
                     (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -461,7 +461,7 @@ namespace AUTD3Sharp
             var res = NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
                     (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -513,7 +513,7 @@ namespace AUTD3Sharp
             var res = await Task.Run(() => NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -539,7 +539,7 @@ namespace AUTD3Sharp
             var res = NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
                 (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
             if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.errLen];
+            var err = new byte[res.err_len];
             unsafe
             {
                 fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -658,7 +658,7 @@ namespace AUTD3Sharp
                     }
                 });
                 if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-                var err = new byte[res.errLen];
+                var err = new byte[res.err_len];
                 unsafe
                 {
                     fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
@@ -680,7 +680,7 @@ namespace AUTD3Sharp
                     {
                         var res = NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap);
                         if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-                        var err = new byte[res.errLen];
+                        var err = new byte[res.err_len];
                         fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
                         throw new AUTDException(err);
                     }

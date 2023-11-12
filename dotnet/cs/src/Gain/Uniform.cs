@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,10 +32,22 @@ namespace AUTD3Sharp.Gain
     /// </summary>
     public sealed class Uniform : Internal.Gain
     {
-        private readonly float_t _amp;
+        private readonly EmitIntensity _amp;
         private float_t? _phase;
 
         public Uniform(float_t amp)
+        {
+            _amp = EmitIntensity.NewNormalized(amp);
+            _phase = null;
+        }
+
+        public Uniform(ushort amp)
+        {
+            _amp = EmitIntensity.NewPulseWidth(amp);
+            _phase = null;
+        }
+
+        public Uniform(EmitIntensity amp)
         {
             _amp = amp;
             _phase = null;
@@ -54,7 +66,7 @@ namespace AUTD3Sharp.Gain
 
         internal override GainPtr GainPtr(Geometry geometry)
         {
-            var ptr = NativeMethodsBase.AUTDGainUniform(_amp);
+            var ptr = NativeMethodsBase.AUTDGainUniform(_amp.PulseWidth);
             if (_phase != null)
                 ptr = NativeMethodsBase.AUTDGainUniformWithPhase(ptr, _phase.Value);
             return ptr;

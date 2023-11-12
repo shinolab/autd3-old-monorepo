@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,7 +75,7 @@ public class GainSTMTest
             Assert.Equal(0, autd.Link<Audit>().StmFinishIdx(dev.Idx));
         }
 
-        stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
+        stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingFrequency);
@@ -86,7 +86,7 @@ public class GainSTMTest
             Assert.Equal(512u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
-        stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
+        stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(10000, stm.Frequency);
         Assert.Equal(2 * 10000, stm.SamplingFrequency);
@@ -97,7 +97,7 @@ public class GainSTMTest
             Assert.Equal(1024u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
         }
 
-        stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1)).AddGain(new Uniform(0.5));
+        stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingFrequency);

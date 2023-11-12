@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -174,7 +174,7 @@ pub fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
         "public struct Drive",
     );
     let content = content.replace("public double phase;", "public double Phase;");
-    let content = content.replace("public double amp;", "public double Amp;");
+    let content = content.replace("public ushort amp;", "public ushort Amp;");
 
     let content = content.replace("internal enum CMap : byte", "public enum CMap : byte");
     let content = content.replace(

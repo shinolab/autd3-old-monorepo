@@ -16,6 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3 import Device, Drive, Geometry, Transducer
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain import Gain, Uniform
 from tests.test_autd import create_controller
 
@@ -44,7 +45,7 @@ class CacheTest(Gain):
             geometry,
             lambda _dev, _tr: Drive(
                 np.pi,
-                0.5,
+                EmitIntensity.new_normalized(0.5).pulse_width,
             ),
         )
 

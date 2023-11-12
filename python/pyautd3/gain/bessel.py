@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
 from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -26,7 +27,7 @@ class Bessel(IGain):
     _p: np.ndarray
     _d: np.ndarray
     _theta: float
-    _amp: float | None
+    _amp: EmitIntensity | None
 
     def __init__(self: "Bessel", pos: np.ndarray, direction: np.ndarray, theta_z: float) -> None:
         """Constructor.
@@ -43,14 +44,14 @@ class Bessel(IGain):
         self._theta = theta_z
         self._amp = None
 
-    def with_amp(self: "Bessel", amp: float) -> "Bessel":
+    def with_amp(self: "Bessel", amp: int | float | EmitIntensity) -> "Bessel":  # noqa: PYI041
         """Set amplitude.
 
         Arguments:
         ---------
-            amp: Normalized amplitude (from 0 to 1)
+            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
         """
-        self._amp = amp
+        self._amp = EmitIntensity._cast(amp)
         return self
 
     def _gain_ptr(self: "Bessel", _: Geometry) -> GainPtr:
@@ -64,5 +65,5 @@ class Bessel(IGain):
             self._theta,
         )
         if self._amp is not None:
-            ptr = Base().gain_bessel_with_amp(ptr, self._amp)
+            ptr = Base().gain_bessel_with_amp(ptr, self._amp.pulse_width)
         return ptr

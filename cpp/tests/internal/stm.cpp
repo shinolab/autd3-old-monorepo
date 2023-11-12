@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -163,7 +163,7 @@ TEST(STMTest, GainSTM) {
     ASSERT_EQ(0, autd.link<autd3::link::Audit>().stm_finish_idx(dev.idx()));
   }
 
-  stm = autd3::internal::GainSTM::with_sampling_frequency_division(512).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
+  stm = autd3::internal::GainSTM::with_sampling_frequency_division(512).add_gain(autd3::gain::Uniform(1.0)).add_gain(autd3::gain::Uniform(0.5));
   ASSERT_TRUE(autd.send_async(stm).get());
   ASSERT_EQ(20000.0, stm.frequency());
   ASSERT_EQ(2 * 20000.0, stm.sampling_frequency());
@@ -173,7 +173,7 @@ TEST(STMTest, GainSTM) {
     ASSERT_EQ(512u, autd.link<autd3::link::Audit>().stm_frequency_division(dev.idx()));
   }
 
-  stm = autd3::internal::GainSTM::with_sampling_frequency(20e3).add_gain(autd3::gain::Uniform(1)).add_gain(autd3::gain::Uniform(0.5));
+  stm = autd3::internal::GainSTM::with_sampling_frequency(20e3).add_gain(autd3::gain::Uniform(1.0)).add_gain(autd3::gain::Uniform(0.5));
   ASSERT_TRUE(autd.send_async(stm).get());
   ASSERT_EQ(10000, stm.frequency());
   ASSERT_EQ(2 * 10000, stm.sampling_frequency());
@@ -184,7 +184,7 @@ TEST(STMTest, GainSTM) {
   }
 
   stm = autd3::internal::GainSTM::with_sampling_period(std::chrono::microseconds(25))
-            .add_gain(autd3::gain::Uniform(1))
+            .add_gain(autd3::gain::Uniform(1.0))
             .add_gain(autd3::gain::Uniform(0.5));
   ASSERT_TRUE(autd.send_async(stm).get());
   ASSERT_EQ(20000.0, stm.frequency());

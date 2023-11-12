@@ -147,7 +147,7 @@ async def test_gain_stm():
         assert autd.link.stm_start_idx(dev.idx) == -1
         assert autd.link.stm_finish_idx(dev.idx) == 0
 
-    stm = GainSTM.with_sampling_frequency_division(512).add_gain(Uniform(1)).add_gain(Uniform(0.5))
+    stm = GainSTM.with_sampling_frequency_division(512).add_gain(Uniform(1.0)).add_gain(Uniform(0.5))
     assert await autd.send_async(stm)
 
     assert stm.frequency == 20000.0
@@ -157,7 +157,7 @@ async def test_gain_stm():
     for dev in autd.geometry:
         assert autd.link.stm_freqency_division(dev.idx) == 512
 
-    stm = GainSTM.with_sampling_frequency(20e3).add_gain(Uniform(1)).add_gain(Uniform(0.5))
+    stm = GainSTM.with_sampling_frequency(20e3).add_gain(Uniform(1.0)).add_gain(Uniform(0.5))
     assert await autd.send_async(stm)
     assert stm.frequency == 10000.0
     assert stm.sampling_frequency == 2 * 10000.0
@@ -166,7 +166,7 @@ async def test_gain_stm():
     for dev in autd.geometry:
         assert autd.link.stm_freqency_division(dev.idx) == 1024
 
-    stm = GainSTM.with_sampling_period(timedelta(microseconds=25)).add_gain(Uniform(1)).add_gain(Uniform(0.5))
+    stm = GainSTM.with_sampling_period(timedelta(microseconds=25)).add_gain(Uniform(1.0)).add_gain(Uniform(0.5))
     assert await autd.send_async(stm)
     assert stm.frequency == 20000.0
     assert stm.sampling_frequency == 2 * 20000.0

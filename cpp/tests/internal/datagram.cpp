@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ TEST(Internal, Silencer) {
 TEST(Internal, Clear) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(1).with_phase(autd3::internal::pi)).get());
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(1.0).with_phase(autd3::internal::pi)).get());
   for (auto& dev : autd.geometry()) {
     auto m = autd.link<autd3::link::Audit>().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0; }));

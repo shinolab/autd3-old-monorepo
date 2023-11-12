@@ -4,7 +4,7 @@
  * Created Date: 07/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -136,7 +136,7 @@ namespace AUTD3Sharp
     internal unsafe struct ResultI32
     {
         internal int result;
-        internal uint errLen;
+        internal uint err_len;
         internal IntPtr err;
     }
 
@@ -144,7 +144,7 @@ namespace AUTD3Sharp
     internal unsafe struct ResultGainCalcDrivesMap
     {
         internal IntPtr result;
-        internal uint errLen;
+        internal uint err_len;
         internal IntPtr err;
     }
 
@@ -152,7 +152,7 @@ namespace AUTD3Sharp
     internal unsafe struct ResultModulation
     {
         internal ModulationPtr result;
-        internal uint errLen;
+        internal uint err_len;
         internal IntPtr err;
     }
 
@@ -160,7 +160,7 @@ namespace AUTD3Sharp
     internal unsafe struct ResultController
     {
         internal ControllerPtr result;
-        internal uint errLen;
+        internal uint err_len;
         internal IntPtr err;
     }
 
@@ -168,7 +168,7 @@ namespace AUTD3Sharp
     internal unsafe struct ResultBackend
     {
         internal BackendPtr result;
-        internal uint errLen;
+        internal uint err_len;
         internal IntPtr err;
     }
 }

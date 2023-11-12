@@ -14,7 +14,7 @@ class LinkAuditBuilderPtr(ctypes.Structure):
 
 
 class Drive(ctypes.Structure):
-    _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_double)]
+    _fields_ = [("phase", ctypes.c_double), ("amp", ctypes.c_uint16)]
 
 
 class ResultFirmwareInfoList(ctypes.Structure):
@@ -52,7 +52,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainBessel.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainBessel.restype = GainPtr
 
-        self.dll.AUTDGainBesselWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainBesselWithAmp.argtypes = [GainPtr, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDGainBesselWithAmp.restype = GainPtr
 
         self.dll.AUTDGainCustom.argtypes = [] 
@@ -64,7 +64,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainFocus.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainFocus.restype = GainPtr
 
-        self.dll.AUTDGainFocusWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainFocusWithAmp.argtypes = [GainPtr, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDGainFocusWithAmp.restype = GainPtr
 
         self.dll.AUTDGainGroupCreateMap.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32] 
@@ -94,16 +94,16 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainPlane.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainPlane.restype = GainPtr
 
-        self.dll.AUTDGainPlaneWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainPlaneWithAmp.argtypes = [GainPtr, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDGainPlaneWithAmp.restype = GainPtr
 
         self.dll.AUTDGainTransducerTest.argtypes = [] 
         self.dll.AUTDGainTransducerTest.restype = GainPtr
 
-        self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_double, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
-        self.dll.AUTDGainUniform.argtypes = [ctypes.c_double] 
+        self.dll.AUTDGainUniform.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDGainUniform.restype = GainPtr
 
         self.dll.AUTDGainUniformWithPhase.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
@@ -526,7 +526,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_bessel(self, x: float, y: float, z: float, nx: float, ny: float, nz: float, theta_z: float) -> GainPtr:
         return self.dll.AUTDGainBessel(x, y, z, nx, ny, nz, theta_z)
 
-    def gain_bessel_with_amp(self, bessel: GainPtr, amp: float) -> GainPtr:
+    def gain_bessel_with_amp(self, bessel: GainPtr, amp: int) -> GainPtr:
         return self.dll.AUTDGainBesselWithAmp(bessel, amp)
 
     def gain_custom(self) -> GainPtr:
@@ -538,7 +538,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_focus(self, x: float, y: float, z: float) -> GainPtr:
         return self.dll.AUTDGainFocus(x, y, z)
 
-    def gain_focus_with_amp(self, focus: GainPtr, amp: float) -> GainPtr:
+    def gain_focus_with_amp(self, focus: GainPtr, amp: int) -> GainPtr:
         return self.dll.AUTDGainFocusWithAmp(focus, amp)
 
     def gain_group_create_map(self, device_indices_ptr: ctypes.Array[ctypes.c_uint32] | None, num_devices: int) -> GroupGainMapPtr:
@@ -568,16 +568,16 @@ class NativeMethods(metaclass=Singleton):
     def gain_plane(self, nx: float, ny: float, nz: float) -> GainPtr:
         return self.dll.AUTDGainPlane(nx, ny, nz)
 
-    def gain_plane_with_amp(self, plane: GainPtr, amp: float) -> GainPtr:
+    def gain_plane_with_amp(self, plane: GainPtr, amp: int) -> GainPtr:
         return self.dll.AUTDGainPlaneWithAmp(plane, amp)
 
     def gain_transducer_test(self) -> GainPtr:
         return self.dll.AUTDGainTransducerTest()
 
-    def gain_transducer_test_set(self, trans_test: GainPtr, dev_idx: int, tr_idx: int, phase: float, amp: float) -> GainPtr:
-        return self.dll.AUTDGainTransducerTestSet(trans_test, dev_idx, tr_idx, phase, amp)
+    def gain_transducer_test_set(self, trans_test: GainPtr, dev_idx: int, tr_idx: int, phase: float, pulse_width: int) -> GainPtr:
+        return self.dll.AUTDGainTransducerTestSet(trans_test, dev_idx, tr_idx, phase, pulse_width)
 
-    def gain_uniform(self, amp: float) -> GainPtr:
+    def gain_uniform(self, amp: int) -> GainPtr:
         return self.dll.AUTDGainUniform(amp)
 
     def gain_uniform_with_phase(self, uniform: GainPtr, phase: float) -> GainPtr:

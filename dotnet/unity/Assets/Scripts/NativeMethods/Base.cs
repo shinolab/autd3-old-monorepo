@@ -20,7 +20,7 @@ namespace AUTD3Sharp
         public static extern GainPtr AUTDGainBessel(float x, float y, float z, float nx, float ny, float nz, float theta_z);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainBesselWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainBesselWithAmp(GainPtr bessel, float amp);
+        public static extern GainPtr AUTDGainBesselWithAmp(GainPtr bessel, ushort amp);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCustom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainCustom();
@@ -32,7 +32,7 @@ namespace AUTD3Sharp
         public static extern GainPtr AUTDGainFocus(float x, float y, float z);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainFocusWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainFocusWithAmp(GainPtr focus, float amp);
+        public static extern GainPtr AUTDGainFocusWithAmp(GainPtr focus, ushort amp);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainGroupCreateMap", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GroupGainMapPtr AUTDGainGroupCreateMap(uint* device_indices_ptr, uint num_devices);
@@ -62,16 +62,16 @@ namespace AUTD3Sharp
         public static extern GainPtr AUTDGainPlane(float nx, float ny, float nz);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainPlaneWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainPlaneWithAmp(GainPtr plane, float amp);
+        public static extern GainPtr AUTDGainPlaneWithAmp(GainPtr plane, ushort amp);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainTransducerTest", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainTransducerTest();
 
         [DllImport(__DllName, EntryPoint = "AUTDGainTransducerTestSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainTransducerTestSet(GainPtr trans_test, uint dev_idx, uint tr_idx, float phase, float amp);
+        public static extern GainPtr AUTDGainTransducerTestSet(GainPtr trans_test, uint dev_idx, uint tr_idx, float phase, ushort pulse_width);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainUniform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainUniform(float amp);
+        public static extern GainPtr AUTDGainUniform(ushort amp);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainUniformWithPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainUniformWithPhase(GainPtr uniform, float phase);
@@ -508,7 +508,7 @@ namespace AUTD3Sharp
     public struct Drive
     {
         public float phase;
-        public float amp;
+        public ushort Amp;
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -32,6 +32,12 @@ enum class TimerStrategy : uint8_t {
   NativeTimer = 2,
 };
 
+struct ResultI32 {
+  int32_t result;
+  uint32_t err_len;
+  void* err;
+};
+
 struct ControllerPtr {
   void* _0;
 };
@@ -88,12 +94,6 @@ struct LinkBuilderPtr {
   void* _0;
 };
 
-struct ResultI32 {
-  int32_t result;
-  uint32_t err_len;
-  void* err;
-};
-
 struct ResultModulation {
   ModulationPtr result;
   uint32_t err_len;
@@ -126,7 +126,21 @@ constexpr const double DEVICE_WIDTH_MM = 192.0;
 
 constexpr const double ULTRASOUND_FREQUENCY = 40000.0;
 
+constexpr const double DEFAULT_CORRECTED_ALPHA = 0.803;
+
 extern "C" {
+
+[[nodiscard]] double AUTDEmitIntensityNormalizedFrom(uint16_t pulse_width);
+
+[[nodiscard]] double AUTDEmitIntensityDutyRatioFrom(uint16_t pulse_width);
+
+[[nodiscard]] ResultI32 AUTDEmitIntensityNormalizedInto(double value);
+
+[[nodiscard]] ResultI32 AUTDEmitIntensityNormalizedCorrectedInto(double value, double alpha);
+
+[[nodiscard]] ResultI32 AUTDEmitIntensityDutyRatioInto(double value);
+
+[[nodiscard]] ResultI32 AUTDEmitIntensityPulseWidthInto(uint16_t value);
 
 void AUTDGetErr(void* src, char *dst);
 

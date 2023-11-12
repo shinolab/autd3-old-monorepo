@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ namespace AUTD3Sharp.Gain
         private readonly Vector3 _point;
         private readonly Vector3 _dir;
         private readonly float_t _thetaZ;
-        private float_t? _amp;
+        private EmitIntensity? _amp;
 
         public Bessel(Vector3 point, Vector3 dir, float_t thetaZ)
         {
@@ -59,6 +59,29 @@ namespace AUTD3Sharp.Gain
         /// <returns></returns>
         public Bessel WithAmp(float_t amp)
         {
+            _amp = EmitIntensity.NewNormalized(amp);
+            return this;
+        }
+
+
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="amp">pulse width (from 0 to 256)</param>
+        /// <returns></returns>
+        public Bessel WithAmp(ushort amp)
+        {
+            _amp = EmitIntensity.NewPulseWidth(amp);
+            return this;
+        }
+
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="amp">ultrasound emission intensity</param>
+        /// <returns></returns>
+        public Bessel WithAmp(EmitIntensity amp)
+        {
             _amp = amp;
             return this;
         }
@@ -67,7 +90,7 @@ namespace AUTD3Sharp.Gain
         {
             var ptr = NativeMethodsBase.AUTDGainBessel(_point.x, _point.y, _point.z, _dir.x, _dir.y, _dir.z, _thetaZ);
             if (_amp != null)
-                ptr = NativeMethodsBase.AUTDGainBesselWithAmp(ptr, _amp.Value);
+                ptr = NativeMethodsBase.AUTDGainBesselWithAmp(ptr, _amp.PulseWidth);
             return ptr;
         }
     }

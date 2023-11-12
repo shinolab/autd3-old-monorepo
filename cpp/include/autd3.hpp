@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,7 @@
 #include "autd3/internal/controller.hpp"
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/geometry/device.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/geometry/transducer.hpp"
@@ -54,6 +55,7 @@ constexpr double pi = internal::pi;
 static inline std::string version = "17.0.0";
 
 using internal::Device;
+using internal::EmitIntensity;
 using internal::Geometry;
 using internal::Transducer;
 

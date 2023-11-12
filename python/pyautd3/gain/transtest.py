@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import functools
 
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
 from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -23,13 +24,19 @@ from pyautd3.native_methods.autd3capi_def import GainPtr
 class TransducerTest(IGain):
     """Gain to drive only specified transducers."""
 
-    _data: list[tuple[int, int, float, float]]
+    _data: list[tuple[int, int, float, EmitIntensity]]
 
     def __init__(self: "TransducerTest") -> None:
         super().__init__()
         self._data = []
 
-    def set_drive(self: "TransducerTest", dev_idx: int, tr_idx: int, phase: float, amp: float) -> "TransducerTest":
+    def set_drive(
+        self: "TransducerTest",
+        dev_idx: int,
+        tr_idx: int,
+        phase: float,
+        amp: int | float | EmitIntensity,  # noqa: PYI041
+    ) -> "TransducerTest":
         """Set drive parameters.
 
         Arguments:
@@ -37,14 +44,14 @@ class TransducerTest(IGain):
             dev_idx: Device index
             tr_idx: Local transducer index
             phase: Phase (from 0 to 2π)
-            amp: Normalized amplitude (from 0 to 1)
+            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
         """
-        self._data.append((dev_idx, tr_idx, phase, amp))
+        self._data.append((dev_idx, tr_idx, phase, EmitIntensity._cast(amp)))
         return self
 
     def _gain_ptr(self: "TransducerTest", _: Geometry) -> GainPtr:
         return functools.reduce(
-            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2], v[3]),
+            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2], v[3].pulse_width),
             self._data,
             Base().gain_transducer_test(),
         )

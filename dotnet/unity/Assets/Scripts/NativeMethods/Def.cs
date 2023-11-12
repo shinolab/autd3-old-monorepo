@@ -14,6 +14,7 @@ namespace AUTD3Sharp
     {
         const string __DllName = "autd3capi_def";
 
+        internal const float DEFAULT_CORRECTED_ALPHA = 0.803f;
         internal const uint NUM_TRANS_IN_UNIT = 249;
         internal const uint NUM_TRANS_IN_X = 18;
         internal const uint NUM_TRANS_IN_Y = 14;
@@ -26,10 +27,36 @@ namespace AUTD3Sharp
         internal const int AUTD3_FALSE = 0;
 
 
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedFrom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern float AUTDEmitIntensityNormalizedFrom(ushort pulse_width);
+
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityDutyRatioFrom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern float AUTDEmitIntensityDutyRatioFrom(ushort pulse_width);
+
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultI32 AUTDEmitIntensityNormalizedInto(float value);
+
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedCorrectedInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultI32 AUTDEmitIntensityNormalizedCorrectedInto(float value, float alpha);
+
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityDutyRatioInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultI32 AUTDEmitIntensityDutyRatioInto(float value);
+
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityPulseWidthInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultI32 AUTDEmitIntensityPulseWidthInto(ushort value);
+
         [DllImport(__DllName, EntryPoint = "AUTDGetErr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDGetErr(IntPtr src, byte* dst);
 
 
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct ResultI32
+    {
+        public int result;
+        public uint err_len;
+        public IntPtr err;
     }
 
 

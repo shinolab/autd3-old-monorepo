@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 12/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include <autd3/gain/cache.hpp>
 #include <autd3/gain/gain.hpp>
 #include <autd3/gain/uniform.hpp>
+#include <autd3/internal/emit_intensity.hpp>
 
 #include "utils.hpp"
 
@@ -36,7 +37,9 @@ class ForCacheTest final : public autd3::gain::Gain, public autd3::gain::IntoCac
   [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::internal::native_methods::Drive>> calc(
       const autd3::internal::Geometry& geometry) const override {
     ++*_cnt;
-    return transform(geometry, [&](const auto&, const auto&) { return autd3::internal::native_methods::Drive{autd3::internal::pi, 0.5}; });
+    return transform(geometry, [&](const auto&, const auto&) {
+      return autd3::internal::native_methods::Drive{autd3::internal::pi, autd3::internal::EmitIntensity::new_normalized(0.5).pulse_width()};
+    });
   }
 
  private:

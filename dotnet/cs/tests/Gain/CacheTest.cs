@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ public class CacheTest
         public override Dictionary<int, Drive[]> Calc(Geometry geometry)
         {
             CalcCnt++;
-            return Transform(geometry, (_, _) => new Drive { Phase = Math.PI, Amp = 0.5 });
+            return Transform(geometry, (_, _) => new Drive { Phase = Math.PI, Amp = EmitIntensity.NewNormalized(0.5).PulseWidth });
         }
     }
 

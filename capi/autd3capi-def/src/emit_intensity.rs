@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 12/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,8 @@
 use autd3capi_common::driver::defined::float;
 
 use crate::ResultI32;
+
+pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
 
 #[no_mangle]
 #[must_use]
@@ -29,12 +31,6 @@ pub unsafe extern "C" fn AUTDEmitIntensityDutyRatioFrom(pulse_width: u16) -> flo
     autd3capi_common::driver::common::EmitIntensity::new_pulse_width(pulse_width)
         .unwrap()
         .duty_ratio()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityPulseWidthFrom(pulse_width: u16) -> u16 {
-    pulse_width
 }
 
 #[no_mangle]

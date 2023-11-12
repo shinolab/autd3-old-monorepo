@@ -12,6 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
 from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
@@ -21,18 +22,18 @@ from pyautd3.native_methods.autd3capi_def import GainPtr
 class Uniform(IGain):
     """Gain with uniform amplitude and phase."""
 
-    _amp: float
+    _amp: EmitIntensity
     _phase: float | None
 
-    def __init__(self: "Uniform", amp: float) -> None:
+    def __init__(self: "Uniform", amp: int | float | EmitIntensity) -> None:  # noqa: PYI041
         """Constructor.
 
         Arguments:
         ---------
-            amp: Normalized amplitude (from 0 to 1)
+            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
         """
         super().__init__()
-        self._amp = amp
+        self._amp = EmitIntensity._cast(amp)
         self._phase = None
 
     def with_phase(self: "Uniform", phase: float) -> "Uniform":
@@ -46,7 +47,7 @@ class Uniform(IGain):
         return self
 
     def _gain_ptr(self: "Uniform", _: Geometry) -> GainPtr:
-        ptr = Base().gain_uniform(self._amp)
+        ptr = Base().gain_uniform(self._amp.pulse_width)
         if self._phase is not None:
             ptr = Base().gain_uniform_with_phase(ptr, self._phase)
         return ptr
