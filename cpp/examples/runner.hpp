@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,16 +31,17 @@
 #include "tests/stm.hpp"
 #include "tests/transtest.hpp"
 
-inline int run(autd3::Controller& autd) {
-  using F = std::function<void(autd3::Controller&)>;
+template <typename L>
+inline int run(autd3::Controller<L>& autd) {
+  using F = std::function<void(autd3::Controller<L>&)>;
   std::vector<std::pair<F, std::string>> tests = {
-      std::pair(F{focus_test}, "Single focus test"), std::pair(F{bessel_test}, "Bessel beam test"),
-      std::pair(F{plane_test}, "Plane wave test"),   std::pair(F{mod_audio_file_test}, "Wav modulation test"),
-      std::pair(F{focus_stm}, "FocusSTM test"),      std::pair(F{gain_stm}, "GainSTM test"),
-      std::pair(F{holo_test}, "Multiple foci test"), std::pair(F{advanced_test}, "Custom Gain & Modulation test"),
-      std::pair(F{flag_test}, "Flag test"),          std::pair(F{tran_test}, "TransducerTest test")};
+      std::pair(F{focus_test<L>}, "Single focus test"), std::pair(F{bessel_test<L>}, "Bessel beam test"),
+      std::pair(F{plane_test<L>}, "Plane wave test"),   std::pair(F{mod_audio_file_test<L>}, "Wav modulation test"),
+      std::pair(F{focus_stm<L>}, "FocusSTM test"),      std::pair(F{gain_stm<L>}, "GainSTM test"),
+      std::pair(F{holo_test<L>}, "Multiple foci test"), std::pair(F{advanced_test<L>}, "Custom Gain & Modulation test"),
+      std::pair(F{flag_test<L>}, "Flag test"),          std::pair(F{tran_test<L>}, "TransducerTest test")};
 
-  if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_test}, "Group test");
+  if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_test<L>}, "Group test");
 
   const auto firm_infos = autd.firmware_infos_async().get();
   std::cout << "======== AUTD3 firmware information ========" << std::endl;

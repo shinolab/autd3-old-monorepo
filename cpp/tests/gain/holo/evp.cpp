@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "autd3/gain/holo.hpp"
 
 TEST(Gain_Holo, EVP) {
-  auto autd = autd3::internal::Controller::builder()
+  auto autd = autd3::internal::ControllerBuilder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .open_with_async(autd3::link::Audit::builder())
                   .get();
@@ -36,7 +36,7 @@ TEST(Gain_Holo, EVP) {
   ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
+    auto [duties, phases] = autd.link().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
@@ -47,7 +47,7 @@ TEST(Gain_Holo, EVP) {
 #include "autd3/gain/holo/backend_cuda.hpp"
 
 TEST(Gain_Holo, EVPWithCUDA) {
-  auto autd = autd3::internal::Controller::builder()
+  auto autd = autd3::internal::ControllerBuilder()
                   .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
                   .open_with_async(autd3::link::Audit::builder())
                   .get();
@@ -66,7 +66,7 @@ TEST(Gain_Holo, EVPWithCUDA) {
   ASSERT_TRUE(autd.send_async(g).get());
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
+    auto [duties, phases] = autd.link().duties_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }

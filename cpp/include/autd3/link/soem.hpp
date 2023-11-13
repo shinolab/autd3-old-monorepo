@@ -19,6 +19,10 @@
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
+namespace autd3::internal {
+class ControllerBuilder;
+}
+
 namespace autd3::link {
 
 using internal::native_methods::SyncMode;
@@ -30,16 +34,23 @@ using OnErrCallback = void (*)(const char* msg);
  *
  */
 class SOEM {
+  SOEM() {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class SOEM;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkSOEMBuilderPtr _ptr;
 
-    Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkSOEM()) {}
+    Builder() : _ptr(internal::native_methods::AUTDLinkSOEM()) {}
+
+    [[nodiscard]] SOEM resolve_link(internal::native_methods::LinkPtr) const { return SOEM{}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkSOEMIntoBuilder(_ptr); }
+    using Link = SOEM;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkSOEMIntoBuilder(_ptr); }
 
     /**
      * @brief Set network interface name
@@ -152,24 +163,29 @@ class SOEM {
   };
 
   static Builder builder() { return {}; }
-
-  SOEM() = delete;
 };
 
 /**
  * @brief Link to connect to remote SOEMServer
  */
 class RemoteSOEM final {
+  RemoteSOEM() {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class RemoteSOEM;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkRemoteSOEMBuilderPtr _ptr;
 
-    explicit Builder(const std::string& addr) : LinkBuilder() { _ptr = validate(internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str())); }
+    explicit Builder(const std::string& addr) { _ptr = validate(internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str())); }
+
+    [[nodiscard]] RemoteSOEM resolve_link(internal::native_methods::LinkPtr) const { return RemoteSOEM{}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkRemoteSOEMIntoBuilder(_ptr); }
+    using Link = RemoteSOEM;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkRemoteSOEMIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
@@ -185,8 +201,6 @@ class RemoteSOEM final {
    * @param addr IP address and port of SOEMServer (e.g., "127.0.0.1:8080")
    */
   static Builder builder(const std::string& addr) { return Builder(addr); }
-
-  RemoteSOEM() = delete;
 };
 
 }  // namespace autd3::link

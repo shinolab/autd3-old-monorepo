@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ TEST(Modulation, Static) {
   ASSERT_TRUE(autd.send_async(autd3::modulation::Static().with_amp(0.2)).get());
 
   for (auto& dev : autd.geometry()) {
-    auto mod = autd.link<autd3::link::Audit>().modulation(dev.idx());
+    auto mod = autd.link().modulation(dev.idx());
     std::vector<uint8_t> mod_expect{32, 32};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
-    ASSERT_EQ(5120, autd.link<autd3::link::Audit>().modulation_frequency_division(dev.idx()));
+    ASSERT_EQ(5120, autd.link().modulation_frequency_division(dev.idx()));
   }
 }

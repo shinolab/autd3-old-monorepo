@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,21 +17,32 @@
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
+namespace autd3::internal {
+class ControllerBuilder;
+}
+
 namespace autd3::link {
 
 class Audit final {
   internal::native_methods::LinkPtr _ptr;
 
+  explicit Audit(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class Audit;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkAuditBuilderPtr _ptr;
 
-    Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkAudit()) {}
+    Builder() : _ptr(internal::native_methods::AUTDLinkAudit()) {}
+
+    [[nodiscard]] Audit resolve_link(const internal::native_methods::LinkPtr link) const { return Audit{link}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkAuditIntoBuilder(_ptr); }
+    using Link = Audit;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkAuditIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
@@ -42,8 +53,6 @@ class Audit final {
   };
 
   static Builder builder() { return {}; }
-
-  explicit Audit(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
   void down() const { AUTDLinkAuditDown(_ptr); }
 

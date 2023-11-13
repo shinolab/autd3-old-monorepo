@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,8 @@
 #include "autd3.hpp"
 #include "autd3/gain/holo.hpp"
 
-inline void holo_test(autd3::Controller& autd) {
+template <typename L>
+inline void holo_test(autd3::Controller<L>& autd) {
   autd3::Silencer silencer;
   autd.send_async(silencer);
 

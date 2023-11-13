@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,11 +36,14 @@ class MyUniformGain final : public autd3::Gain {
   MyUniformGain() = default;
 
   [[nodiscard]] std::unordered_map<size_t, std::vector<autd3::Drive>> calc(const autd3::Geometry& geometry) const override {
-    return autd3::Gain::transform(geometry, [this](const autd3::Device&, const autd3::Transducer&) { return autd3::Drive{0.0, autd3::EmitIntensity::new_normalized(1.0).pulse_width()}; });
+    return autd3::Gain::transform(geometry, [this](const autd3::Device&, const autd3::Transducer&) {
+      return autd3::Drive{0.0, autd3::EmitIntensity::new_normalized(1.0).pulse_width()};
+    });
   }
 };
 
-inline void advanced_test(autd3::Controller& autd) {
+template <typename L>
+inline void advanced_test(autd3::Controller<L>& autd) {
   auto config = autd3::Silencer::disable();
   autd.send_async(config).get();
 
