@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ public class SOEMTest
             _testOutputHelper.WriteLine(msg);
         });
 
-        var autd = await Controller.Builder()
+        var autd = await new ControllerBuilder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .OpenWithAsync(SOEM.Builder()
                 .WithIfname("")
@@ -58,7 +58,7 @@ public class SOEMTest
     [Fact(Skip = "SOEM is required")]
     public async Task TestRemoteSOEM()
     {
-        var autd = await Controller.Builder()
+        var autd = await new ControllerBuilder()
             .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
             .OpenWithAsync(RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
                 .WithTimeout(TimeSpan.FromMilliseconds(200)));

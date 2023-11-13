@@ -4,13 +4,14 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  * 
  */
 
+using AUTD3Sharp.Internal;
 using System;
 
 #if UNITY_2020_2_OR_NEWER
@@ -19,9 +20,9 @@ using System;
 
 namespace AUTD3Sharp.Link
 {
-    public sealed class Audit : Internal.ILink<Audit>
+    public sealed class Audit
     {
-        public sealed class AuditBuilder : Internal.ILinkBuilder
+        public sealed class AuditBuilder : Internal.ILinkBuilder<Audit>
         {
             private LinkAuditBuilderPtr _ptr;
 
@@ -36,9 +37,17 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<Audit>.Ptr()
             {
                 return NativeMethodsBase.AUTDLinkAuditIntoBuilder(_ptr);
+            }
+
+            Audit ILinkBuilder<Audit>.ResolveLink(LinkPtr ptr)
+            {
+                return new Audit
+                {
+                    _ptr = ptr
+                };
             }
         }
 
@@ -191,14 +200,6 @@ namespace AUTD3Sharp.Link
         public int StmFinishIdx(int idx)
         {
             return NativeMethodsBase.AUTDLinkAuditFpgaStmFinishIdx(_ptr, (uint)idx);
-        }
-
-        Audit Internal.ILink<Audit>.Create(LinkPtr ptr, object? props)
-        {
-            return new Audit
-            {
-                _ptr = ptr
-            };
         }
     }
 }

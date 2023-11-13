@@ -4,13 +4,14 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+using AUTD3Sharp.Internal;
 using System;
 using System.Net;
 
@@ -21,7 +22,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class TwinCAT
     {
-        public sealed class TwinCATBuilder : Internal.ILinkBuilder
+        public sealed class TwinCATBuilder : Internal.ILinkBuilder<TwinCAT>
         {
             private LinkTwinCATBuilderPtr _ptr;
 
@@ -36,9 +37,14 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<TwinCAT>.Ptr()
             {
                 return NativeMethodsLinkTwinCAT.AUTDLinkTwinCATIntoBuilder(_ptr);
+            }
+
+            TwinCAT ILinkBuilder<TwinCAT>.ResolveLink(LinkPtr ptr)
+            {
+                return new TwinCAT { };
             }
         }
 
@@ -53,7 +59,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class RemoteTwinCAT
     {
-        public sealed class RemoteTwinCATBuilder : Internal.ILinkBuilder
+        public sealed class RemoteTwinCATBuilder : Internal.ILinkBuilder<RemoteTwinCAT>
         {
             private LinkRemoteTwinCATBuilderPtr _ptr;
 
@@ -121,9 +127,14 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<RemoteTwinCAT>.Ptr()
             {
                 return NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATIntoBuilder(_ptr);
+            }
+
+            RemoteTwinCAT ILinkBuilder<RemoteTwinCAT>.ResolveLink(LinkPtr ptr)
+            {
+                return new RemoteTwinCAT { };
             }
         }
 

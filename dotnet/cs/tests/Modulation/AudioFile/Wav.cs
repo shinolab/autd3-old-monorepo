@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,12 +20,12 @@ public class WavTest
     [Fact]
     public async Task Wav()
     {
-        var autd = await Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         Assert.True(await autd.SendAsync(new Wav("sin150.wav")));
         foreach (var dev in autd.Geometry)
         {
-            var mod = autd.Link<Audit>().Modulation(dev.Idx);
+            var mod = autd.Link.Modulation(dev.Idx);
             var modExpext = new byte[] {
                 85,
                 107,
@@ -108,7 +108,7 @@ public class WavTest
                 45,
                 64};
             Assert.Equal(modExpext, mod);
-            Assert.Equal(5120u, autd.Link<Audit>().ModulationFrequencyDivision(dev.Idx));
+            Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
     }
 }

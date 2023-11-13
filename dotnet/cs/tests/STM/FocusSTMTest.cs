@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ public class FocusSTMTest
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.False(autd.Link<Audit>().IsStmGainMode(dev.Idx));
+            Assert.False(autd.Link.IsStmGainMode(dev.Idx));
         }
 
         Assert.Equal(1, stm.Frequency);
@@ -41,15 +41,15 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(10240000u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(10240000u, autd.Link.StmFrequencyDivision(dev.Idx));
         }
 
         Assert.Null(stm.StartIdx);
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
-            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link.StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link.StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(0);
@@ -58,8 +58,8 @@ public class FocusSTMTest
         Assert.Null(stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, autd.Link<Audit>().StmStartIdx(dev.Idx));
-            Assert.Equal(-1, autd.Link<Audit>().StmFinishIdx(dev.Idx));
+            Assert.Equal(0, autd.Link.StmStartIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link.StmFinishIdx(dev.Idx));
         }
 
         stm = stm.WithStartIdx(null).WithFinishIdx(0);
@@ -68,8 +68,8 @@ public class FocusSTMTest
         Assert.Equal((ushort)0, stm.FinishIdx);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(-1, autd.Link<Audit>().StmStartIdx(dev.Idx));
-            Assert.Equal(0, autd.Link<Audit>().StmFinishIdx(dev.Idx));
+            Assert.Equal(-1, autd.Link.StmStartIdx(dev.Idx));
+            Assert.Equal(0, autd.Link.StmFinishIdx(dev.Idx));
         }
 
         stm = FocusSTM.WithSamplingFrequencyDivision(512).AddFocus(center).AddFocus(center);
@@ -80,7 +80,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(512u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(512u, autd.Link.StmFrequencyDivision(dev.Idx));
         }
 
         stm = FocusSTM.WithSamplingFrequency(20e3).AddFocus(center).AddFocus(center);
@@ -91,7 +91,7 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(1024u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(1024u, autd.Link.StmFrequencyDivision(dev.Idx));
         }
 
         stm = FocusSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddFocus(center).AddFocus(center);
@@ -102,20 +102,20 @@ public class FocusSTMTest
         Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(512u, autd.Link<Audit>().StmFrequencyDivision(dev.Idx));
+            Assert.Equal(512u, autd.Link.StmFrequencyDivision(dev.Idx));
         }
 
 
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(2u, autd.Link<Audit>().StmCycle(dev.Idx));
+            Assert.Equal(2u, autd.Link.StmCycle(dev.Idx));
             {
-                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
+                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
                 Assert.Contains(duties, d => d != 0);
                 Assert.Contains(phases, p => p != 0);
             }
             {
-                var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 1);
+                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 1);
                 Assert.Contains(duties, d => d != 0);
                 Assert.Contains(phases, p => p != 0);
             }

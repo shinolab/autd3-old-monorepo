@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 14/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ module CustomTest =
             drive
         override this.Calc (geometry: Geometry) = AUTD3Sharp.Gain.Gain.Transform(geometry, Calc_);
         
-    let Test (autd : Controller) = 
+    let Test<'T> (autd : Controller<'T>) = 
         (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         let m = new Sine 150;

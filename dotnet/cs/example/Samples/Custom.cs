@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ internal static class CustomTest
         }
     }
 
-    public static async Task Test(Controller autd)
+    public static async Task Test<T>(Controller<T> autd)
     {
         var config = new Silencer();
         await autd.SendAsync(config);

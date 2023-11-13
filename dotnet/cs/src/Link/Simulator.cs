@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 
+using AUTD3Sharp.Internal;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -25,9 +26,9 @@ namespace AUTD3Sharp.Link
     /// <summary>
     /// Link for AUTD Simulator
     /// </summary>
-    public sealed class Simulator : Internal.ILink<Simulator>
+    public sealed class Simulator
     {
-        public sealed class SimulatorBuilder : Internal.ILinkBuilder
+        public sealed class SimulatorBuilder : Internal.ILinkBuilder<Simulator>
         {
             private LinkSimulatorBuilderPtr _ptr;
 
@@ -66,9 +67,17 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<Simulator>.Ptr()
             {
                 return NativeMethodsLinkSimulator.AUTDLinkSimulatorIntoBuilder(_ptr);
+            }
+
+            Simulator ILinkBuilder<Simulator>.ResolveLink(LinkPtr ptr)
+            {
+                return new Simulator
+                {
+                    _ptr = ptr,
+                };
             }
         }
 
@@ -103,14 +112,6 @@ namespace AUTD3Sharp.Link
                     NativeMethodsDef.AUTDGetErr(res.err, p);
                 throw new AUTDException(err);
             }
-        }
-
-        Simulator Internal.ILink<Simulator>.Create(LinkPtr ptr, object? _)
-        {
-            return new Simulator
-            {
-                _ptr = ptr,
-            };
         }
     }
 }

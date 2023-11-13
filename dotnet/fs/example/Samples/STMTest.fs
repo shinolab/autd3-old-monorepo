@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2023
+// Last Modified: 14/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ open AUTD3Sharp.Utils
 open System.Threading.Tasks
 
 module STMTest =
-    let GainSTMTest (autd : Controller) = 
+    let GainSTMTest<'T> (autd : Controller<'T>) = 
         (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
@@ -36,7 +36,7 @@ module STMTest =
         printfn $"Actual frequency is {stm.Frequency}";
         (stm )|> autd.SendAsync  |> Async.AwaitTask|> ignore
 
-    let FocusSTMTest (autd : Controller) = 
+    let FocusSTMTest<'T> (autd : Controller<'T>) = 
         (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
