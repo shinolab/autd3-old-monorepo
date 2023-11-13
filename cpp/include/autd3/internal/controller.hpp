@@ -27,88 +27,25 @@
 
 namespace autd3::internal {
 
+class ControllerBuilder;
+
 /**
  * @brief Controller class for AUTD3
  */
+template <typename L>
 class Controller {
+  friend class ControllerBuilder;
+
  public:
-  /**
-   * @brief Builder for Controller
-   */
-  class Builder {
-    friend class Controller;
-
-   public:
-    /**
-     * @brief Add device
-     *
-     * @param device AUTD3 device
-     * @return Builder
-     */
-    Builder add_device(const AUTD3& device) {
-      if (const auto euler = device.euler(); euler.has_value())
-        _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(),
-                                              euler.value().y(), euler.value().z());
-      else if (const auto quat = device.quaternion(); quat.has_value())
-        _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
-                                                        quat.value().x(), quat.value().y(), quat.value().z());
-      else
-        throw std::runtime_error("unreachable!");
-      return *this;
-    }
-
-    /**
-     * @brief Open controller
-     *
-     * @tparam L LinkBuilder
-     * @param link link builder
-     * @return Controller
-     */
-    template <class L>
-    [[nodiscard]] Controller open_with(L&& link) {
-      static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
-      auto ptr = validate(AUTDControllerOpenWith(_ptr, link.ptr()));
-      Geometry geometry(AUTDGeometry(ptr));
-      return {std::move(geometry), ptr, link.props()};
-    }
-
-    /**
-     * @brief Open controller
-     *
-     * @tparam L LinkBuilder
-     * @param link link builder
-     * @return Controller
-     */
-    template <class L>
-    [[nodiscard]] std::future<Controller> open_with_async(L&& link) {
-      static_assert(std::is_base_of_v<LinkBuilder, std::remove_reference_t<L>>, "This is not Link");
-      return std::async(std::launch::deferred, [this, link]() -> Controller { return open_with(link); });
-    }
-
-   private:
-    explicit Builder() : _ptr(native_methods::AUTDControllerBuilder()) {}
-
-    native_methods::ControllerBuilderPtr _ptr;
-  };
-
-  /**
-   * @brief Create Controller builder
-   *
-   * @return Builder
-   */
-  static Builder builder() noexcept { return Builder{}; }
-
   Controller() = delete;
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _link_props(std::move(obj._link_props)) {
-    obj._ptr._0 = nullptr;
-  }
+  Controller(Controller&& obj) noexcept : _geometry(std::move(obj._geometry)), _ptr(obj._ptr), _link(std::move(obj._link)) { obj._ptr._0 = nullptr; }
   Controller& operator=(Controller&& obj) noexcept {
     if (this != &obj) {
       _geometry = std::move(obj._geometry);
       _ptr = obj._ptr;
-      _link_props = std::move(obj._link_props);
+      _link = std::move(obj._link);
       obj._ptr._0 = nullptr;
     }
     return *this;
@@ -127,10 +64,8 @@ class Controller {
   [[nodiscard]] const Geometry& geometry() const { return _geometry; }
   [[nodiscard]] Geometry& geometry() { return _geometry; }
 
-  template <typename L>
-  [[nodiscard]] L link() const {
-    return L(internal::native_methods::AUTDLinkGet(_ptr), _link_props);
-  }
+  [[nodiscard]] L& link() { return _link; }
+  [[nodiscard]] const L& link() const { return _link; }
 
   /**
    * @brief Close connection
@@ -497,12 +432,71 @@ class Controller {
   }
 
  private:
-  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, std::shared_ptr<void> link_props)
-      : _geometry(std::move(geometry)), _ptr(ptr), _link_props(std::move(link_props)) {}
+  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, L link)
+      : _geometry(std::move(geometry)), _ptr(ptr), _link(std::move(link)) {}
 
   Geometry _geometry;
   native_methods::ControllerPtr _ptr;
-  std::shared_ptr<void> _link_props;
+  L _link;
+};
+
+/**
+ * @brief Builder for Controller
+ */
+class ControllerBuilder {
+ public:
+  /**
+   * @brief Add device
+   *
+   * @param device AUTD3 device
+   * @return Builder
+   */
+  ControllerBuilder add_device(const AUTD3& device) {
+    if (const auto euler = device.euler(); euler.has_value())
+      _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(),
+                                            euler.value().y(), euler.value().z());
+    else if (const auto quat = device.quaternion(); quat.has_value())
+      _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
+                                                      quat.value().x(), quat.value().y(), quat.value().z());
+    else
+      throw std::runtime_error("unreachable!");
+    return *this;
+  }
+
+  /**
+   * @brief Open controller
+   *
+   * @tparam L LinkBuilder
+   * @param link link builder
+   * @return Controller
+   */
+  template <LinkBuilder B>
+  [[nodiscard]] Controller<typename B::Link> open_with(B&& link_builder) {
+    auto ptr = validate(AUTDControllerOpenWith(_ptr, link_builder.ptr()));
+    Geometry geometry(AUTDGeometry(ptr));
+    return Controller<typename B::Link>{std::move(geometry), ptr, link_builder.resolve_link(native_methods::AUTDLinkGet(ptr))};
+  }
+
+  /**
+   * @brief Open controller
+   *
+   * @tparam L LinkBuilder
+   * @param link link builder
+   * @return Controller
+   */
+  template <LinkBuilder B>
+  [[nodiscard]] std::future<Controller<typename B::Link>> open_with_async(B&& link_builder) {
+    return std::async(std::launch::deferred, [this, builder = std::forward<B>(link_builder)]() -> Controller<typename B::Link> {
+      auto ptr = validate(AUTDControllerOpenWith(_ptr, builder.ptr()));
+      Geometry geometry(AUTDGeometry(ptr));
+      return Controller<typename B::Link>{std::move(geometry), ptr, builder.resolve_link(native_methods::AUTDLinkGet(ptr))};
+    });
+  }
+
+  ControllerBuilder() : _ptr(native_methods::AUTDControllerBuilder()) {}
+
+ private:
+  native_methods::ControllerBuilderPtr _ptr;
 };
 
 }  // namespace autd3::internal

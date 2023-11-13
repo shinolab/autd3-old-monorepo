@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,17 +17,10 @@
 
 namespace autd3::internal {
 
-class LinkBuilder {
- public:
-  virtual ~LinkBuilder() = default;
-  LinkBuilder(const LinkBuilder& obj) = default;
-  LinkBuilder& operator=(const LinkBuilder& obj) = default;
-  LinkBuilder(LinkBuilder&& obj) = default;
-  LinkBuilder& operator=(LinkBuilder&& obj) = default;
-  LinkBuilder() = default;
-
-  [[nodiscard]] virtual native_methods::LinkBuilderPtr ptr() const = 0;
-
-  [[nodiscard]] virtual std::shared_ptr<void> props() const { return {nullptr}; }
+template <class T>
+concept LinkBuilder = requires(T t) {
+  typename T::Link;
+  { t.ptr() } -> std::same_as<native_methods::LinkBuilderPtr>;
 };
+
 }  // namespace autd3::internal

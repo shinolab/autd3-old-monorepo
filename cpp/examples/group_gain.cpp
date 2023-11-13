@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include "util.hpp"
 
 int main() try {
-  auto autd = autd3::Controller::builder()
+  auto autd = autd3::ControllerBuilder()
                   .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                   .open_with_async(autd3::link::Nop::builder())
                   .get();

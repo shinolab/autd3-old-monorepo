@@ -3,7 +3,7 @@
 // Created Date: 09/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,10 @@
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
+namespace autd3::internal {
+class ControllerBuilder;
+}
+
 namespace autd3::link {
 
 /**
@@ -21,18 +25,23 @@ namespace autd3::link {
  *
  */
 class Nop {
- public:
-  class Builder final : public internal::LinkBuilder {
-    friend class Nop;
+  explicit Nop(internal::native_methods::LinkPtr) {}
 
-    explicit Builder() : LinkBuilder() {}
+ public:
+  class Builder final {
+    friend class Nop;
+    friend class internal::ControllerBuilder;
+
+    Builder() {}
+
+    [[nodiscard]] Nop resolve_link(const internal::native_methods::LinkPtr link) const { return Nop{link}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return internal::native_methods::AUTDLinkNop(); }
+    using Link = Nop;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return internal::native_methods::AUTDLinkNop(); }
   };
 
   static Builder builder() { return Builder(); }
-
-  Nop() = delete;
 };
 }  // namespace autd3::link

@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ TEST(Internal, FirmwareInfo) {
   }
 
   {
-    autd.link<autd3::link::Audit>().break_down();
+    autd.link().break_down();
     ASSERT_THROW((void)autd.firmware_infos_async().get(), autd3::internal::AUTDException);
   }
 }

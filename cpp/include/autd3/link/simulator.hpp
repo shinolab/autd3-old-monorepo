@@ -21,6 +21,10 @@
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
+namespace autd3::internal {
+class ControllerBuilder;
+}
+
 namespace autd3::link {
 
 /**
@@ -30,16 +34,23 @@ namespace autd3::link {
 class Simulator final {
   internal::native_methods::LinkPtr _ptr;
 
+  explicit Simulator(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class Simulator;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkSimulatorBuilderPtr _ptr;
 
-    explicit Builder(const uint16_t port) : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
+    explicit Builder(const uint16_t port) : _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
+
+    [[nodiscard]] Simulator resolve_link(const internal::native_methods::LinkPtr link) const { return Simulator{link}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkSimulatorIntoBuilder(_ptr); }
+    using Link = Simulator;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkSimulatorIntoBuilder(_ptr); }
 
     /**
      * @brief Set server IP address
@@ -61,10 +72,6 @@ class Simulator final {
   };
 
   static Builder builder(const uint16_t port) { return Builder(port); }
-
-  Simulator() = delete;
-
-  explicit Simulator(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
   void update_geometry(const internal::Geometry& geometry) const { validate(AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr())); }
 
