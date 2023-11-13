@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ namespace Samples;
 
 internal static class GainSTMTest
 {
-    public static async Task Test(Controller autd)
+    public static async Task Test<T>(Controller<T> autd)
     {
         var config = Silencer.Disable();
         await autd.SendAsync(config);
@@ -44,7 +44,7 @@ internal static class GainSTMTest
 
 internal static class FocusSTMTest
 {
-    public static async Task Test(Controller autd)
+    public static async Task Test<T>(Controller<T> autd)
     {
         var config = Silencer.Disable();
         await autd.SendAsync(config);

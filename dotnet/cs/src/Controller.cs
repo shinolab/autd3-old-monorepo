@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -164,103 +164,23 @@ namespace AUTD3Sharp
     /// <summary>
     /// Controller class for AUTD3
     /// </summary>
-    public sealed class Controller : IDisposable
+    public sealed class Controller<T> : IDisposable
     {
         #region field
 
         private bool _isDisposed;
         internal ControllerPtr Ptr;
-        private readonly object? _linkProps;
+        private T _link;
 
         #endregion
 
         #region Controller
 
-        public class ControllerBuilder
-        {
-
-            private ControllerBuilderPtr _ptr;
-
-            /// <summary>
-            /// Add device
-            /// </summary>
-            /// <param name="device">AUTD3 device</param>
-            /// <returns></returns>
-            public ControllerBuilder AddDevice(AUTD3 device)
-            {
-                if (device.Rot != null)
-                    _ptr = NativeMethodsBase.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
-                        device.Rot.Value.y, device.Rot.Value.z);
-                else if (device.Quat != null)
-                    _ptr = NativeMethodsBase.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
-                        device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
-                return this;
-            }
-
-            /// <summary>
-            /// Open controller
-            /// </summary>
-            /// <param name="link">link</param>
-            /// <returns>Controller</returns>
-            public async Task<Controller> OpenWithAsync(ILinkBuilder link)
-            {
-                var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr()));
-                if (result.result.Item1 == IntPtr.Zero)
-                {
-                    var err = new byte[result.err_len];
-                    unsafe
-                    {
-                        fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
-                        throw new AUTDException(err);
-                    }
-                }
-                var ptr = result.result;
-                var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
-                return new Controller(geometry, ptr, link.Props());
-            }
-
-            /// <summary>
-            /// Open controller
-            /// </summary>
-            /// <param name="link">link</param>
-            /// <returns>Controller</returns>
-            public Controller OpenWith(ILinkBuilder link)
-            {
-                var result = NativeMethodsBase.AUTDControllerOpenWith(_ptr, link.Ptr());
-                if (result.result.Item1 == IntPtr.Zero)
-                {
-                    var err = new byte[result.err_len];
-                    unsafe
-                    {
-                        fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
-                        throw new AUTDException(err);
-                    }
-                }
-                var ptr = result.result;
-                var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
-                return new Controller(geometry, ptr, link.Props());
-            }
-
-            internal ControllerBuilder()
-            {
-                _ptr = NativeMethodsBase.AUTDControllerBuilder();
-            }
-        }
-
-        /// <summary>
-        /// Create Controller builder
-        /// </summary>
-        /// <returns>ControllerBuilder</returns>
-        public static ControllerBuilder Builder()
-        {
-            return new ControllerBuilder();
-        }
-
-        private Controller(Geometry geometry, ControllerPtr ptr, object? linkProps)
+        internal Controller(Geometry geometry, ControllerPtr ptr, T link)
         {
             Ptr = ptr;
             Geometry = geometry;
-            _linkProps = linkProps;
+            _link = link;
         }
 
         private static FirmwareInfo GetFirmwareInfo(FirmwareInfoListPtr handle, uint i)
@@ -399,11 +319,7 @@ namespace AUTD3Sharp
             }
         }
 
-        public T Link<T>()
-            where T : ILink<T>, new()
-        {
-            return new T().Create(NativeMethodsBase.AUTDLinkGet(Ptr), _linkProps);
-        }
+        public T Link => _link;
 
         #endregion
 
@@ -564,13 +480,13 @@ namespace AUTD3Sharp
 
         public sealed class GroupGuard
         {
-            private readonly Controller _controller;
+            private readonly Controller<T> _controller;
             private readonly Func<Device, object?> _map;
             private GroupKVMapPtr _kvMap;
             private readonly IDictionary<object, int> _keymap;
             private int _k;
 
-            internal GroupGuard(Func<Device, object?> map, Controller controller)
+            internal GroupGuard(Func<Device, object?> map, Controller<T> controller)
             {
                 _controller = controller;
                 _map = map;
@@ -666,6 +582,78 @@ namespace AUTD3Sharp
         public GroupGuard Group(Func<Device, object?> map)
         {
             return new GroupGuard(map, this);
+        }
+    }
+
+    public class ControllerBuilder
+    {
+        private ControllerBuilderPtr _ptr;
+
+        /// <summary>
+        /// Add device
+        /// </summary>
+        /// <param name="device">AUTD3 device</param>
+        /// <returns></returns>
+        public ControllerBuilder AddDevice(AUTD3 device)
+        {
+            if (device.Rot != null)
+                _ptr = NativeMethodsBase.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
+                    device.Rot.Value.y, device.Rot.Value.z);
+            else if (device.Quat != null)
+                _ptr = NativeMethodsBase.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
+                    device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
+            return this;
+        }
+
+        /// <summary>
+        /// Open controller
+        /// </summary>
+        /// <param name="linkBuilder">link</param>
+        /// <returns>Controller</returns>
+        public async Task<Controller<T>> OpenWithAsync<T>(ILinkBuilder<T> linkBuilder)
+        {
+            var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr()));
+            if (result.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[result.err_len];
+                unsafe
+                {
+                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
+                    throw new AUTDException(err);
+                }
+            }
+            var ptr = result.result;
+            var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
+            var link = linkBuilder.ResolveLink(NativeMethodsBase.AUTDLinkGet(ptr));
+            return new Controller<T>(geometry, ptr, link);
+        }
+
+        /// <summary>
+        /// Open controller
+        /// </summary>
+        /// <param name="link">link</param>
+        /// <returns>Controller</returns>
+        public Controller<T> OpenWith<T>(ILinkBuilder<T> linkBuilder)
+        {
+            var result = NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr());
+            if (result.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[result.err_len];
+                unsafe
+                {
+                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
+                    throw new AUTDException(err);
+                }
+            }
+            var ptr = result.result;
+            var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
+            var link = linkBuilder.ResolveLink(NativeMethodsBase.AUTDLinkGet(ptr));
+            return new Controller<T>(geometry, ptr, link);
+        }
+
+        public ControllerBuilder()
+        {
+            _ptr = NativeMethodsBase.AUTDControllerBuilder();
         }
     }
 

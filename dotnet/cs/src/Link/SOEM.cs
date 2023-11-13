@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 
+using AUTD3Sharp.Internal;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -30,7 +31,7 @@ namespace AUTD3Sharp.Link
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnErrCallbackDelegate(string str);
 
-        public sealed class SOEMBuilder : Internal.ILinkBuilder
+        public sealed class SOEMBuilder : Internal.ILinkBuilder<SOEM>
         {
             private LinkSOEMBuilderPtr _ptr;
 
@@ -152,9 +153,14 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<SOEM>.Ptr()
             {
                 return NativeMethodsLinkSOEM.AUTDLinkSOEMIntoBuilder(_ptr);
+            }
+
+            SOEM ILinkBuilder<SOEM>.ResolveLink(LinkPtr ptr)
+            {
+                return new SOEM { };
             }
         }
 
@@ -193,7 +199,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class RemoteSOEM
     {
-        public sealed class RemoteSOEMBuilder : Internal.ILinkBuilder
+        public sealed class RemoteSOEMBuilder : Internal.ILinkBuilder<RemoteSOEM>
         {
             private LinkRemoteSOEMBuilderPtr _ptr;
 
@@ -229,9 +235,14 @@ namespace AUTD3Sharp.Link
                 return this;
             }
 
-            LinkBuilderPtr Internal.ILinkBuilder.Ptr()
+            LinkBuilderPtr ILinkBuilder<RemoteSOEM>.Ptr()
             {
                 return NativeMethodsLinkSOEM.AUTDLinkRemoteSOEMIntoBuilder(_ptr);
+            }
+
+            RemoteSOEM ILinkBuilder<RemoteSOEM>.ResolveLink(LinkPtr ptr)
+            {
+                return new RemoteSOEM { };
             }
         }
 

@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2023
+// Last Modified: 14/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ namespace Samples
 open AUTD3Sharp
 
 module SampleRunner =
-    let Run (autd : Controller) = 
+    let Run<'T> (autd : Controller<'T>) = 
         let examples = [
                 (FocusTest.Test, "Single focus test");
                 (BesselBeamTest.Test, "Bessel beam test");

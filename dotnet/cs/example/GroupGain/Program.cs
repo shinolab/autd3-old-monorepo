@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
-using var autd = await Controller.Builder()
+using var autd = await new ControllerBuilder()
     .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
     .OpenWithAsync(Nop.Builder());
 
