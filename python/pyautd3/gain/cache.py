@@ -11,19 +11,18 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
-from ctypes import POINTER, create_string_buffer
+from ctypes import POINTER
 from functools import reduce
 from typing import Generic, TypeVar
 
 import numpy as np
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import Geometry
 from pyautd3.internal.gain import IGain
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 G = TypeVar("G", bound=IGain)
 
@@ -43,12 +42,7 @@ class Cache(IGain, Generic[G]):
         device_indices = [dev.idx for dev in geometry.devices()]
 
         if len(self._cache) != len(device_indices) or any(idx not in self._cache for idx in device_indices):
-            res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr())
-            if res.result is None:
-                err = create_string_buffer(int(res.err_len))
-                Def().get_err(res.err, err)
-                raise AUTDError(err)
-
+            res = _validate_ptr(Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr()))
             for dev in geometry.devices():
                 drives = np.zeros(dev.num_transducers, dtype=Drive)
                 Base().gain_calc_get_result(res, drives.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore[arg-type]

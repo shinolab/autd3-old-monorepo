@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultGainCalcDrivesMap, ResultI32, STMPropsPtr, TransducerPtr
+from .autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultGainCalcDrivesMap, ResultI32, STMPropsPtr, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -18,15 +18,15 @@ class Drive(ctypes.Structure):
 
 
 class ResultFirmwareInfoList(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_void_p), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+    _fields_ = [("result", FirmwareInfoListPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 class ResultGroupKVMap(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_void_p), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+    _fields_ = [("result", GroupKVMapPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 class ResultCache(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_void_p), ("buffer_len", ctypes.c_uint32), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+    _fields_ = [("result", CachePtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 class Singleton(type):
@@ -82,10 +82,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainCalc.argtypes = [GainPtr, GeometryPtr]  # type: ignore 
         self.dll.AUTDGainCalc.restype = ResultGainCalcDrivesMap
 
-        self.dll.AUTDGainCalcGetResult.argtypes = [ResultGainCalcDrivesMap, ctypes.POINTER(Drive), ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGainCalcGetResult.argtypes = [GainCalcDrivesMapPtr, ctypes.POINTER(Drive), ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDGainCalcGetResult.restype = None
 
-        self.dll.AUTDGainCalcFreeResult.argtypes = [ResultGainCalcDrivesMap]  # type: ignore 
+        self.dll.AUTDGainCalcFreeResult.argtypes = [GainCalcDrivesMapPtr]  # type: ignore 
         self.dll.AUTDGainCalcFreeResult.restype = None
 
         self.dll.AUTDGainNull.argtypes = [] 
@@ -223,10 +223,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerFirmwareInfoListPointer.argtypes = [ControllerPtr]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoListPointer.restype = ResultFirmwareInfoList
 
-        self.dll.AUTDControllerFirmwareInfoGet.argtypes = [ResultFirmwareInfoList, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoGet.argtypes = [FirmwareInfoListPtr, ctypes.c_uint32, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoGet.restype = None
 
-        self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [ResultFirmwareInfoList]  # type: ignore 
+        self.dll.AUTDControllerFirmwareInfoListPointerDelete.argtypes = [FirmwareInfoListPtr]  # type: ignore 
         self.dll.AUTDControllerFirmwareInfoListPointerDelete.restype = None
 
         self.dll.AUTDFirmwareLatest.argtypes = [ctypes.c_char_p] 
@@ -263,15 +263,15 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerSendSpecial.restype = ResultI32
 
         self.dll.AUTDControllerGroupCreateKVMap.argtypes = [] 
-        self.dll.AUTDControllerGroupCreateKVMap.restype = ResultGroupKVMap
+        self.dll.AUTDControllerGroupCreateKVMap.restype = GroupKVMapPtr
 
-        self.dll.AUTDControllerGroupKVMapSet.argtypes = [ResultGroupKVMap, ctypes.c_int32, DatagramPtr, DatagramPtr, ctypes.c_int64]  # type: ignore 
+        self.dll.AUTDControllerGroupKVMapSet.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramPtr, DatagramPtr, ctypes.c_int64]  # type: ignore 
         self.dll.AUTDControllerGroupKVMapSet.restype = ResultGroupKVMap
 
-        self.dll.AUTDControllerGroupKVMapSetSpecial.argtypes = [ResultGroupKVMap, ctypes.c_int32, DatagramSpecialPtr, ctypes.c_int64]  # type: ignore 
+        self.dll.AUTDControllerGroupKVMapSetSpecial.argtypes = [GroupKVMapPtr, ctypes.c_int32, DatagramSpecialPtr, ctypes.c_int64]  # type: ignore 
         self.dll.AUTDControllerGroupKVMapSetSpecial.restype = ResultGroupKVMap
 
-        self.dll.AUTDControllerGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), ResultGroupKVMap]  # type: ignore 
+        self.dll.AUTDControllerGroup.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_int32), GroupKVMapPtr]  # type: ignore 
         self.dll.AUTDControllerGroup.restype = ResultI32
 
         self.dll.AUTDLinkAudit.argtypes = [] 
@@ -385,13 +385,16 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWithCache.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationWithCache.restype = ResultCache
 
-        self.dll.AUTDModulationCacheGetBuffer.argtypes = [ResultCache, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDModulationCacheGetBufferLen.argtypes = [CachePtr]  # type: ignore 
+        self.dll.AUTDModulationCacheGetBufferLen.restype = ctypes.c_uint32
+
+        self.dll.AUTDModulationCacheGetBuffer.argtypes = [CachePtr, ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDModulationCacheGetBuffer.restype = None
 
-        self.dll.AUTDModulationCacheIntoModulation.argtypes = [ResultCache]  # type: ignore 
+        self.dll.AUTDModulationCacheIntoModulation.argtypes = [CachePtr]  # type: ignore 
         self.dll.AUTDModulationCacheIntoModulation.restype = ModulationPtr
 
-        self.dll.AUTDModulationCacheDelete.argtypes = [ResultCache]  # type: ignore 
+        self.dll.AUTDModulationCacheDelete.argtypes = [CachePtr]  # type: ignore 
         self.dll.AUTDModulationCacheDelete.restype = None
 
         self.dll.AUTDModulationCustom.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
@@ -556,10 +559,10 @@ class NativeMethods(metaclass=Singleton):
     def gain_calc(self, gain: GainPtr, geometry: GeometryPtr) -> ResultGainCalcDrivesMap:
         return self.dll.AUTDGainCalc(gain, geometry)
 
-    def gain_calc_get_result(self, src: ResultGainCalcDrivesMap, dst: ctypes.Array | None, idx: int) -> None:
+    def gain_calc_get_result(self, src: GainCalcDrivesMapPtr, dst: ctypes.Array | None, idx: int) -> None:
         return self.dll.AUTDGainCalcGetResult(src, dst, idx)
 
-    def gain_calc_free_result(self, src: ResultGainCalcDrivesMap) -> None:
+    def gain_calc_free_result(self, src: GainCalcDrivesMapPtr) -> None:
         return self.dll.AUTDGainCalcFreeResult(src)
 
     def gain_null(self) -> GainPtr:
@@ -697,10 +700,10 @@ class NativeMethods(metaclass=Singleton):
     def controller_firmware_info_list_pointer(self, cnt: ControllerPtr) -> ResultFirmwareInfoList:
         return self.dll.AUTDControllerFirmwareInfoListPointer(cnt)
 
-    def controller_firmware_info_get(self, p_info_list: ResultFirmwareInfoList, idx: int, info: ctypes.Array[ctypes.c_char] | None) -> None:
+    def controller_firmware_info_get(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDControllerFirmwareInfoGet(p_info_list, idx, info)
 
-    def controller_firmware_info_list_pointer_delete(self, p_info_list: ResultFirmwareInfoList) -> None:
+    def controller_firmware_info_list_pointer_delete(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDControllerFirmwareInfoListPointerDelete(p_info_list)
 
     def firmware_latest(self, latest: ctypes.Array[ctypes.c_char] | None) -> None:
@@ -736,16 +739,16 @@ class NativeMethods(metaclass=Singleton):
     def controller_send_special(self, cnt: ControllerPtr, special: DatagramSpecialPtr, timeout_ns: int) -> ResultI32:
         return self.dll.AUTDControllerSendSpecial(cnt, special, timeout_ns)
 
-    def controller_group_create_kv_map(self) -> ResultGroupKVMap:
+    def controller_group_create_kv_map(self) -> GroupKVMapPtr:
         return self.dll.AUTDControllerGroupCreateKVMap()
 
-    def controller_group_kv_map_set(self, map: ResultGroupKVMap, key: int, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int) -> ResultGroupKVMap:
+    def controller_group_kv_map_set(self, map: GroupKVMapPtr, key: int, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int) -> ResultGroupKVMap:
         return self.dll.AUTDControllerGroupKVMapSet(map, key, d1, d2, timeout_ns)
 
-    def controller_group_kv_map_set_special(self, map: ResultGroupKVMap, key: int, special: DatagramSpecialPtr, timeout_ns: int) -> ResultGroupKVMap:
+    def controller_group_kv_map_set_special(self, map: GroupKVMapPtr, key: int, special: DatagramSpecialPtr, timeout_ns: int) -> ResultGroupKVMap:
         return self.dll.AUTDControllerGroupKVMapSetSpecial(map, key, special, timeout_ns)
 
-    def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: ResultGroupKVMap) -> ResultI32:
+    def controller_group(self, cnt: ControllerPtr, map: ctypes.Array[ctypes.c_int32] | None, kv_map: GroupKVMapPtr) -> ResultI32:
         return self.dll.AUTDControllerGroup(cnt, map, kv_map)
 
     def link_audit(self) -> LinkAuditBuilderPtr:
@@ -859,13 +862,16 @@ class NativeMethods(metaclass=Singleton):
     def modulation_with_cache(self, m: ModulationPtr) -> ResultCache:
         return self.dll.AUTDModulationWithCache(m)
 
-    def modulation_cache_get_buffer(self, m: ResultCache, buf: ctypes.Array[ctypes.c_double] | None) -> None:
+    def modulation_cache_get_buffer_len(self, m: CachePtr) -> ctypes.c_uint32:
+        return self.dll.AUTDModulationCacheGetBufferLen(m)
+
+    def modulation_cache_get_buffer(self, m: CachePtr, buf: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDModulationCacheGetBuffer(m, buf)
 
-    def modulation_cache_into_modulation(self, m: ResultCache) -> ModulationPtr:
+    def modulation_cache_into_modulation(self, m: CachePtr) -> ModulationPtr:
         return self.dll.AUTDModulationCacheIntoModulation(m)
 
-    def modulation_cache_delete(self, m: ResultCache) -> None:
+    def modulation_cache_delete(self, m: CachePtr) -> None:
         return self.dll.AUTDModulationCacheDelete(m)
 
     def modulation_custom(self, freq_div: int, ptr: ctypes.Array[ctypes.c_double] | None, len: int) -> ModulationPtr:

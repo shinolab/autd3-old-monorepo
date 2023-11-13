@@ -14,13 +14,12 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import ctypes
 from datetime import timedelta
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi import (
     NativeMethods as Base,
 )
 from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr, TimerStrategy
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_link_soem import LinkRemoteSOEMBuilderPtr, LinkSOEMBuilderPtr, SyncMode
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
 
@@ -196,12 +195,7 @@ class RemoteSOEM(Link):
         _builder: LinkRemoteSOEMBuilderPtr
 
         def __init__(self: "RemoteSOEM._Builder", addr: str) -> None:
-            res = LinkSOEM().link_remote_soem(addr.encode("utf-8"))
-            if res.result._0 is None:
-                err = ctypes.create_string_buffer(int(res.err_len))
-                Def().get_err(res.err, err)
-                raise AUTDError(err)
-            self._builder = res.result
+            self._builder = _validate_ptr(LinkSOEM().link_remote_soem(addr.encode("utf-8")))
 
         def with_timeout(self: "RemoteSOEM._Builder", timeout: timedelta) -> "RemoteSOEM._Builder":
             """Set timeout.

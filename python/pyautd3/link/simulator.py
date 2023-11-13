@@ -13,15 +13,13 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import asyncio
-import ctypes
 from datetime import timedelta
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import Geometry
 from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.internal.utils import _validate_int, _validate_ptr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, ControllerPtr, LinkPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
+from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkPtr
 from pyautd3.native_methods.autd3capi_link_simulator import (
     LinkBuilderPtr,
     LinkSimulatorBuilderPtr,
@@ -49,12 +47,7 @@ class Simulator(Link):
             ---------
                 addr: Server IP address
             """
-            result = LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8"))
-            if result.result._0 is None:
-                err = ctypes.create_string_buffer(int(result.err_len))
-                Def().get_err(result.err, err)
-                raise AUTDError(err)
-            self._builder = result.result
+            self._builder = _validate_ptr(LinkSimulator().link_simulator_with_addr(self._builder, addr.encode("utf-8")))
             return self
 
         def with_timeout(self: "Simulator._Builder", timeout: timedelta) -> "Simulator._Builder":
@@ -93,21 +86,13 @@ class Simulator(Link):
                 ),
             ),
         )
-        res = await future
-        result = int(res.result)
-        if result == AUTD3_ERR:
-            err = ctypes.create_string_buffer(int(res.err_len))
-            Def().get_err(res.err, err)
-            raise AUTDError(err)
+        _validate_int(await future)
 
     def update_geometry(self: "Simulator", geometry: Geometry) -> None:
         """Update geometry."""
-        res = LinkSimulator().link_simulator_update_geometry(
-            self._ptr,
-            geometry._geometry_ptr(),
+        _validate_int(
+            LinkSimulator().link_simulator_update_geometry(
+                self._ptr,
+                geometry._geometry_ptr(),
+            ),
         )
-        result = int(res.result)
-        if result == AUTD3_ERR:
-            err = ctypes.create_string_buffer(int(res.err_len))
-            Def().get_err(res.err, err)
-            raise AUTDError(err)

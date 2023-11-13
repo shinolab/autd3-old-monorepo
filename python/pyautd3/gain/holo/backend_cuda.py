@@ -11,15 +11,13 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
-import ctypes
 from ctypes import Array, c_double
 
-from pyautd3.autd_error import AUTDError
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi_backend_cuda import (
     NativeMethods as AUTD3BackendCUDA,
 )
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 from .backend import Backend
 from .constraint import AmplitudeConstraint
@@ -29,13 +27,7 @@ class CUDABackend(Backend):
     """Backend using CUDA."""
 
     def __init__(self: "CUDABackend") -> None:
-        res = AUTD3BackendCUDA().cuda_backend()
-        if res.result._0 is None:
-            err = ctypes.create_string_buffer(int(res.err_len))
-            Def().get_err(res.err, err)
-            raise AUTDError(err)
-        ptr = res.result
-        super().__init__(ptr)
+        super().__init__(_validate_ptr(AUTD3BackendCUDA().cuda_backend()))
 
     def __del__(self: "CUDABackend") -> None:
         if hasattr(self, "_ptr") and self._ptr._0 is not None:

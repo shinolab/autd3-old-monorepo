@@ -13,19 +13,18 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from collections.abc import Callable
-from ctypes import POINTER, create_string_buffer
+from ctypes import POINTER
 from functools import reduce
 from typing import Generic, TypeVar
 
 import numpy as np
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import Device, Geometry, Transducer
 from pyautd3.internal.gain import IGain
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 
 G = TypeVar("G", bound=IGain)
 
@@ -42,11 +41,7 @@ class Transform(IGain, Generic[G]):
         self._f = f
 
     def _gain_ptr(self: "Transform", geometry: Geometry) -> GainPtr:
-        res = Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr())
-        if res.result is None:
-            err = create_string_buffer(int(res.err_len))
-            Def().get_err(res.err, err)
-            raise AUTDError(err)
+        res = _validate_ptr(Base().gain_calc(self._g._gain_ptr(geometry), geometry._geometry_ptr()))
 
         drives: dict[int, np.ndarray] = {}
         for dev in geometry.devices():
