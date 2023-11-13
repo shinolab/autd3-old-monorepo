@@ -13,17 +13,14 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from collections.abc import Iterator
-from ctypes import create_string_buffer
 from typing import TypeVar
 
 import numpy as np
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulation
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi import ResultCache
-from pyautd3.native_methods.autd3capi_def import ModulationPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
+from pyautd3.native_methods.autd3capi_def import CachePtr, ModulationPtr
 
 M = TypeVar("M", bound=IModulation)
 
@@ -31,17 +28,12 @@ M = TypeVar("M", bound=IModulation)
 class Cache(IModulation):
     """Modulation to cache the result of calculation."""
 
-    _cache: ResultCache
+    _cache: CachePtr
     _buffer: np.ndarray
 
     def __init__(self: "Cache", m: M) -> None:
-        cache = Base().modulation_with_cache(m._modulation_ptr())
-        if cache.result is None:
-            err = create_string_buffer(int(cache.err_len))
-            Def().get_err(cache.err, err)
-            raise AUTDError(err)
-        self._cache = cache
-        n = int(self._cache.buffer_len)
+        self._cache = _validate_ptr(Base().modulation_with_cache(m._modulation_ptr()))
+        n = int(Base().modulation_cache_get_buffer_len(self._cache))
         self._buffer = np.zeros(n, dtype=float)
         Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
 

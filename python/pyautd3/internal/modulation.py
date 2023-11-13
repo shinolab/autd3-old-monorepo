@@ -14,16 +14,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
-from ctypes import create_string_buffer
 from datetime import timedelta
 from typing import TYPE_CHECKING, TypeVar
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.geometry import AUTD3, Geometry
 from pyautd3.internal.datagram import Datagram
+from pyautd3.internal.utils import _validate_int
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import AUTD3_ERR, FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
+from pyautd3.native_methods.autd3capi_def import FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
 
 if TYPE_CHECKING:
     from pyautd3.modulation.cache import Cache
@@ -53,13 +51,7 @@ class IModulation(Datagram, metaclass=ABCMeta):
         return AUTD3.fpga_clk_freq() / self.sampling_frequency_division
 
     def __len__(self: "IModulation") -> int:
-        res = Base().modulation_size(self._modulation_ptr())
-        n = int(res.result)
-        if n == AUTD3_ERR:
-            err = create_string_buffer(int(res.err_len))
-            Def().get_err(res.err, err)
-            raise AUTDError(err)
-        return n
+        return _validate_int(Base().modulation_size(self._modulation_ptr()))
 
     @abstractmethod
     def _modulation_ptr(self: "IModulation") -> ModulationPtr:

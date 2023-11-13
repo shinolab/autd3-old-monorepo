@@ -24,3 +24,11 @@ def _validate_int(res: ResultI32) -> int:
         Def().get_err(res.err, err)
         raise AUTDError(err)
     return int(res.result)
+
+
+def _validate_ptr(res):  # noqa: ANN001
+    if res.result._0 is None:
+        err = ctypes.create_string_buffer(int(res.err_len))
+        Def().get_err(res.err, err)
+        raise AUTDError(err)
+    return res.result

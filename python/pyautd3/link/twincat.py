@@ -11,16 +11,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-import ctypes
 from datetime import timedelta
 
-from pyautd3.autd_error import AUTDError
 from pyautd3.internal.link import Link, LinkBuilder
+from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi import (
     NativeMethods as Base,
 )
 from pyautd3.native_methods.autd3capi_def import ControllerPtr, LinkBuilderPtr, LinkPtr
-from pyautd3.native_methods.autd3capi_def import NativeMethods as Def
 from pyautd3.native_methods.autd3capi_link_twincat import LinkRemoteTwinCATBuilderPtr, LinkTwinCATBuilderPtr
 from pyautd3.native_methods.autd3capi_link_twincat import NativeMethods as LinkTwinCAT
 
@@ -66,12 +64,7 @@ class RemoteTwinCAT(Link):
         _builder: LinkRemoteTwinCATBuilderPtr
 
         def __init__(self: "RemoteTwinCAT._Builder", server_ams_net_id: str) -> None:
-            res = LinkTwinCAT().link_remote_twin_cat(server_ams_net_id.encode("utf-8"))
-            if res.result._0 is None:
-                err = ctypes.create_string_buffer(int(res.err_len))
-                Def().get_err(res.err, err)
-                raise AUTDError(err)
-            self._builder = res.result
+            self._builder = _validate_ptr(LinkTwinCAT().link_remote_twin_cat(server_ams_net_id.encode("utf-8")))
 
         def with_server_ip(self: "RemoteTwinCAT._Builder", ip: str) -> "RemoteTwinCAT._Builder":
             """Set server IP address.

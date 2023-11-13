@@ -28,6 +28,18 @@ class ControllerPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class FirmwareInfoListPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GroupKVMapPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GainCalcDrivesMapPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class GeometryPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
@@ -64,6 +76,10 @@ class ModulationPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class CachePtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class STMPropsPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
@@ -89,7 +105,7 @@ class ResultController(ctypes.Structure):
 
 
 class ResultGainCalcDrivesMap(ctypes.Structure):
-    _fields_ = [("result", ctypes.c_void_p), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+    _fields_ = [("result", GainCalcDrivesMapPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 class ResultModulation(ctypes.Structure):
