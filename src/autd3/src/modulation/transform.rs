@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3_driver::derive::prelude::*;
 pub struct Transform<M: Modulation, F: Fn(usize, float) -> float> {
     m: M,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
     f: F,
 }
 
@@ -36,7 +36,7 @@ pub trait IntoTransform<M: Modulation> {
 impl<M: Modulation> IntoTransform<M> for M {
     fn with_transform<F: Fn(usize, float) -> float>(self, f: F) -> Transform<M, F> {
         Transform {
-            freq_div: self.sampling_frequency_division(),
+            config: self.sampling_config(),
             f,
             m: self,
         }

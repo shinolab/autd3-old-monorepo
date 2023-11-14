@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ pub struct SineLegacy {
     freq: float,
     amp: float,
     offset: float,
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl SineLegacy {
@@ -37,7 +37,7 @@ impl SineLegacy {
             freq,
             amp: 1.0,
             offset: 0.5,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 
@@ -76,7 +76,7 @@ impl SineLegacy {
 
 impl Modulation for SineLegacy {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        let sf = self.sampling_frequency();
+        let sf = self.sampling_config().frequency();
         let freq = self
             .freq
             .clamp(FPGA_CLK_FREQ as float / u32::MAX as float, sf / 2.0);
@@ -123,7 +123,7 @@ mod tests {
             0.3846920646287802,
         ];
         let m = SineLegacy::new(150.);
-        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
+        assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
             .iter()

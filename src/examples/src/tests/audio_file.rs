@@ -13,9 +13,7 @@
 
 use autd3::prelude::*;
 
-pub async fn audio_file<L: Link>(
-    autd: &mut Controller<L>,
-) -> anyhow::Result<bool> {
+pub async fn audio_file<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default()).await?;
 
     let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);

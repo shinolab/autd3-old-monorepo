@@ -4,23 +4,17 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{defined::float, error::AUTDInternalError, fpga::FPGA_CLK_FREQ};
+use crate::{common::SamplingConfiguration, defined::float, error::AUTDInternalError};
 
 pub trait ModulationProperty {
-    fn sampling_frequency(&self) -> float {
-        FPGA_CLK_FREQ as float / self.sampling_frequency_division() as float
-    }
-    fn sampling_frequency_division(&self) -> u32;
-    fn sampling_period(&self) -> std::time::Duration {
-        std::time::Duration::from_nanos((1000000000. / self.sampling_frequency()) as u64)
-    }
+    fn sampling_config(&self) -> SamplingConfiguration;
 }
 
 /// Modulation controls the amplitude modulation data.
@@ -40,18 +34,8 @@ pub trait Modulation: ModulationProperty {
 
 impl ModulationProperty for Box<dyn Modulation> {
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn sampling_frequency(&self) -> float {
-        self.as_ref().sampling_frequency()
-    }
-
-    #[cfg_attr(coverage_nightly, coverage(off))]
-    fn sampling_frequency_division(&self) -> u32 {
-        self.as_ref().sampling_frequency_division()
-    }
-
-    #[cfg_attr(coverage_nightly, coverage(off))]
-    fn sampling_period(&self) -> std::time::Duration {
-        self.as_ref().sampling_period()
+    fn sampling_config(&self) -> SamplingConfiguration {
+        self.as_ref().sampling_config()
     }
 }
 
@@ -73,12 +57,12 @@ mod tests {
 
     struct NullModulation {
         pub buf: Vec<float>,
-        pub freq_div: u32,
+        pub config: SamplingConfiguration,
     }
 
     impl ModulationProperty for NullModulation {
-        fn sampling_frequency_division(&self) -> u32 {
-            self.freq_div
+        fn sampling_config(&self) -> SamplingConfiguration {
+            self.config
         }
     }
 
@@ -91,19 +75,17 @@ mod tests {
     #[test]
     fn test_modulation_property() {
         let m = NullModulation {
-            freq_div: 512,
+            config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
             buf: vec![],
         };
-        assert_eq!(m.sampling_frequency_division(), 512);
-        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 40e3);
-        assert_eq!(m.sampling_period(), std::time::Duration::from_micros(25));
+        assert_eq!(m.sampling_config().frequency_division(), 512);
     }
 
     #[test]
     fn test_modulation_len() {
         assert_eq!(
             NullModulation {
-                freq_div: 512,
+                config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
                 buf: vec![],
             }
             .len()
@@ -113,7 +95,7 @@ mod tests {
 
         assert_eq!(
             NullModulation {
-                freq_div: 512,
+                config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
                 buf: vec![0.0; 100],
             }
             .len()

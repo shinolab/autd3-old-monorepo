@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use autd3_driver::derive::prelude::*;
 pub struct Static {
     amp: float,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Static {
@@ -28,7 +28,7 @@ impl Static {
     pub fn new() -> Self {
         Self {
             amp: 1.0,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 

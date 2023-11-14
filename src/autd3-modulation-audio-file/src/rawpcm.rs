@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ use crate::error::AudioFileError;
 pub struct RawPCM {
     sample_rate: u32,
     raw_buffer: Vec<f32>,
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl RawPCM {
@@ -53,7 +53,7 @@ impl RawPCM {
         Ok(Self {
             sample_rate,
             raw_buffer,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         })
     }
 }
@@ -61,7 +61,7 @@ impl RawPCM {
 impl Modulation for RawPCM {
     #[allow(clippy::unnecessary_cast)]
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        let sample_rate = self.sampling_frequency() as u32;
+        let sample_rate = self.sampling_config().frequency() as u32;
         let samples =
             wav_io::resample::linear(self.raw_buffer.clone(), 1, self.sample_rate, sample_rate);
         Ok(samples.iter().map(|&d| d as float).collect())

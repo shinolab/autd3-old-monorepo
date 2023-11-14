@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,9 +13,7 @@
 
 use autd3::prelude::*;
 
-pub async fn focus_stm<L: Link>(
-    autd: &mut Controller<L>,
-) -> anyhow::Result<bool> {
+pub async fn focus_stm<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.send(Silencer::disable()).await?;
 
     let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
@@ -26,7 +24,7 @@ pub async fn focus_stm<L: Link>(
         let theta = 2.0 * PI * i as float / point_num as float;
         let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
         center + p
-    }));
+    }))?;
 
     let m = Static::new();
 
@@ -47,7 +45,7 @@ pub async fn gain_stm<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool>
         let theta = 2.0 * PI * i as float / point_num as float;
         let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
         Focus::new(center + p)
-    }));
+    }))?;
 
     let m = Static::new();
 

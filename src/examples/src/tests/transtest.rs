@@ -13,13 +13,13 @@
 
 use autd3::prelude::*;
 
-pub async fn transtest<L: Link>(
-    autd: &mut Controller<L>,
-) -> anyhow::Result<bool> {
+pub async fn transtest<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default()).await?;
 
     let m = Static::new();
-    let g = TransducerTest::new().set(0, 0, 0., 1.)?.set(0, 248, 0., 1.)?;
+    let g = TransducerTest::new()
+        .set(0, 0, 0., 1.)?
+        .set(0, 248, 0., 1.)?;
 
     autd.send((m, g)).await?;
 

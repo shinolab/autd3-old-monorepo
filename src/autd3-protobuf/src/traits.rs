@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 use std::rc::Rc;
+
+use autd3_driver::common::SamplingConfiguration;
 
 use crate::pb::*;
 
@@ -625,22 +627,25 @@ impl FromMessage<FpgaInfoResponse> for Vec<autd3_driver::fpga::FPGAInfo> {
 
 impl FromMessage<FocusStm> for autd3_driver::datagram::FocusSTM {
     fn from_msg(msg: &FocusStm) -> Self {
-        autd3_driver::datagram::FocusSTM::with_sampling_frequency_division(msg.freq_div)
-            .add_foci_from_iter(msg.control_points.iter().map(|p| {
-                autd3_driver::operation::ControlPoint::new(
-                    autd3_driver::geometry::Vector3::from_msg(p.pos.as_ref().unwrap()),
-                )
-                .with_shift(p.shift as _)
-            }))
-            .with_start_idx(if msg.start_idx < 0 {
-                None
-            } else {
-                Some(msg.start_idx as _)
-            })
-            .with_finish_idx(if msg.finish_idx < 0 {
-                None
-            } else {
-                Some(msg.finish_idx as _)
-            })
+        autd3_driver::datagram::FocusSTM::new_with_sampling_config(
+            SamplingConfiguration::new_with_frequency_division(msg.freq_div).unwrap(),
+        )
+        .add_foci_from_iter(msg.control_points.iter().map(|p| {
+            autd3_driver::operation::ControlPoint::new(autd3_driver::geometry::Vector3::from_msg(
+                p.pos.as_ref().unwrap(),
+            ))
+            .with_shift(p.shift as _)
+        }))
+        .unwrap()
+        .with_start_idx(if msg.start_idx < 0 {
+            None
+        } else {
+            Some(msg.start_idx as _)
+        })
+        .with_finish_idx(if msg.finish_idx < 0 {
+            None
+        } else {
+            Some(msg.finish_idx as _)
+        })
     }
 }

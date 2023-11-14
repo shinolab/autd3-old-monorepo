@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use std::ops::Deref;
 pub struct Cache {
     cache: Vec<float>,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 pub trait IntoCache<M: Modulation> {
@@ -39,7 +39,7 @@ impl Clone for Cache {
     fn clone(&self) -> Self {
         Self {
             cache: self.cache.clone(),
-            freq_div: self.freq_div,
+            config: self.config,
         }
     }
 }
@@ -47,10 +47,10 @@ impl Clone for Cache {
 impl Cache {
     /// constructor
     pub fn new<M: Modulation>(modulation: M) -> Result<Self, AUTDInternalError> {
-        let freq_div = modulation.sampling_frequency_division();
+        let config = modulation.sampling_config();
         Ok(Self {
             cache: modulation.calc()?,
-            freq_div,
+            config,
         })
     }
 
@@ -99,7 +99,7 @@ mod tests {
     #[derive(Modulation)]
     struct TestModulation {
         pub calc_cnt: Arc<AtomicUsize>,
-        pub freq_div: u32,
+        pub config: SamplingConfiguration,
     }
 
     impl Modulation for TestModulation {
@@ -115,7 +115,8 @@ mod tests {
 
         let modulation = TestModulation {
             calc_cnt: calc_cnt.clone(),
-            freq_div: 4096,
+            config: SamplingConfiguration::new_with_period(std::time::Duration::from_micros(250))
+                .unwrap(),
         }
         .with_cache()
         .unwrap();

@@ -4,14 +4,17 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, defined::float, error::AUTDInternalError, operation::GainSTMMode};
+use crate::{
+    common::SamplingConfiguration, datagram::*, defined::float, error::AUTDInternalError,
+    operation::GainSTMMode,
+};
 
 use super::STMProps;
 
@@ -37,11 +40,7 @@ impl<G: Gain> GainSTM<G> {
     /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
     ///
     pub fn new(freq: float) -> Self {
-        Self {
-            gains: vec![],
-            mode: GainSTMMode::PhaseDutyFull,
-            props: STMProps::new(freq),
-        }
+        Self::new_with_props_mode(STMProps::new(freq), GainSTMMode::PhaseDutyFull)
     }
 
     /// constructor
@@ -50,8 +49,11 @@ impl<G: Gain> GainSTM<G> {
     ///
     /// * `period` - Period. The period closest to `period` from the possible periods is set.
     ///
-    pub fn with_period(period: std::time::Duration) -> Self {
-        Self::new(1000000000. / period.as_nanos() as float)
+    pub fn new_with_period(period: std::time::Duration) -> Self {
+        Self::new_with_props_mode(
+            STMProps::new_with_period(period),
+            GainSTMMode::PhaseDutyFull,
+        )
     }
 
     /// constructor
@@ -60,40 +62,11 @@ impl<G: Gain> GainSTM<G> {
     ///
     /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_CLK_FREQ]/`freq_div`.
     ///
-    pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
-        Self {
-            gains: vec![],
-            mode: GainSTMMode::PhaseDutyFull,
-            props: STMProps::with_sampling_frequency_division(freq_div),
-        }
-    }
-
-    /// constructor
-    ///
-    /// # Arguments
-    ///
-    /// * `freq` - Sampling frequency of STM. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
-    ///
-    pub fn with_sampling_frequency(freq: float) -> Self {
-        Self {
-            gains: vec![],
-            mode: GainSTMMode::PhaseDutyFull,
-            props: STMProps::with_sampling_frequency(freq),
-        }
-    }
-
-    /// constructor
-    ///
-    /// # Arguments
-    ///
-    /// * `period` - Sampling period. The sampling period closest to `period` from the possible sampling periods is set.
-    ///
-    pub fn with_sampling_period(period: std::time::Duration) -> Self {
-        Self {
-            gains: vec![],
-            mode: GainSTMMode::PhaseDutyFull,
-            props: STMProps::with_sampling_period(period),
-        }
+    pub fn new_with_sampling_config(config: SamplingConfiguration) -> Self {
+        Self::new_with_props_mode(
+            STMProps::new_with_sampling_config(config),
+            GainSTMMode::PhaseDutyFull,
+        )
     }
 
     /// Set the start index of STM
@@ -120,7 +93,7 @@ impl<G: Gain> GainSTM<G> {
         self.props.finish_idx()
     }
 
-    pub fn freq(&self) -> float {
+    pub fn frequency(&self) -> float {
         self.props.freq(self.gains.len())
     }
 
@@ -128,16 +101,8 @@ impl<G: Gain> GainSTM<G> {
         self.props.period(self.gains.len())
     }
 
-    pub fn sampling_frequency(&self) -> float {
-        self.props.sampling_frequency(self.gains.len())
-    }
-
-    pub fn sampling_frequency_division(&self) -> u32 {
-        self.props.sampling_frequency_division(self.gains.len())
-    }
-
-    pub fn sampling_period(&self) -> std::time::Duration {
-        self.props.sampling_period(self.gains.len())
+    pub fn sampling_config(&self) -> SamplingConfiguration {
+        self.props.sampling_config(self.gains.len()).unwrap()
     }
 
     /// Set the mode of GainSTM
@@ -150,20 +115,29 @@ impl<G: Gain> GainSTM<G> {
     }
 
     /// Add a [Gain] to GainSTM
-    pub fn add_gain(mut self, gain: G) -> Self {
+    pub fn add_gain(mut self, gain: G) -> Result<Self, AUTDInternalError> {
         self.gains.push(gain);
-        self
+        self.props.sampling_config(self.gains.len())?;
+        Ok(self)
     }
 
     /// Add boxed [Gain]s from iterator to GainSTM
-    pub fn add_gains_from_iter<I: IntoIterator<Item = G>>(mut self, iter: I) -> Self {
+    pub fn add_gains_from_iter<I: IntoIterator<Item = G>>(
+        mut self,
+        iter: I,
+    ) -> Result<Self, AUTDInternalError> {
         self.gains.extend(iter);
-        self
+        self.props.sampling_config(self.gains.len())?;
+        Ok(self)
     }
 
-    #[doc(hidden)]
-    /// This is used only for capi.
-    pub fn with_props_mode(props: STMProps, mode: GainSTMMode) -> Self {
+    /// constructor
+    ///
+    /// # Arguments
+    ///
+    /// * `props` - STMProps
+    /// * `mode` - GainSTMMode
+    pub fn new_with_props_mode(props: STMProps, mode: GainSTMMode) -> Self {
         Self {
             gains: Vec::new(),
             mode,
@@ -209,7 +183,10 @@ impl<G: Gain> Datagram for GainSTM<G> {
     type O2 = crate::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        let freq_div = self.sampling_frequency_division();
+        let freq_div = self
+            .props
+            .sampling_config(self.gains.len())?
+            .frequency_division();
         let Self {
             gains, mode, props, ..
         } = self;
@@ -230,74 +207,13 @@ mod tests {
         common::Drive,
         datagram::{Gain, GainAsAny},
         derive::prelude::Geometry,
-        fpga::FPGA_CLK_FREQ,
         operation::{tests::NullGain, GainSTMOp, NullOp},
     };
-
-    use assert_approx_eq::assert_approx_eq;
 
     #[test]
     fn freq() {
         let stm = GainSTM::<NullGain>::new(1.0);
-        assert_eq!(stm.freq(), 1.0);
-
-        let stm = GainSTM::<_>::with_sampling_frequency_division(512)
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_approx_eq!(stm.freq(), FPGA_CLK_FREQ as float / 512. / 10.);
-
-        let stm = GainSTM::<_>::with_sampling_frequency(40e3)
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_approx_eq!(stm.freq(), 40e3 / 10.);
-    }
-
-    #[test]
-    fn period() {
-        let stm = GainSTM::<NullGain>::with_period(std::time::Duration::from_millis(1));
-        assert_eq!(stm.period(), std::time::Duration::from_millis(1));
-
-        let stm = GainSTM::<_>::with_sampling_period(std::time::Duration::from_millis(1))
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_eq!(stm.period(), std::time::Duration::from_millis(10));
-    }
-
-    #[test]
-    fn sampling_frequency_division() {
-        let stm = GainSTM::<NullGain>::with_sampling_frequency_division(512);
-        assert_eq!(stm.sampling_frequency_division(), 512);
-
-        let stm = GainSTM::<_>::new(1.0).add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_eq!(
-            stm.sampling_frequency_division(),
-            (FPGA_CLK_FREQ as float / 10.) as u32
-        );
-
-        let stm = GainSTM::<NullGain>::with_sampling_frequency(40e3);
-        assert_eq!(
-            stm.sampling_frequency_division(),
-            (FPGA_CLK_FREQ as float / 40e3) as u32
-        );
-    }
-
-    #[test]
-    fn sampling_frequency() {
-        let stm = GainSTM::<NullGain>::with_sampling_frequency(40e3);
-        assert_eq!(stm.sampling_frequency(), 40e3);
-
-        let stm = GainSTM::<NullGain>::with_sampling_frequency_division(512);
-        assert_approx_eq!(stm.sampling_frequency(), FPGA_CLK_FREQ as float / 512.);
-
-        let stm = GainSTM::<_>::new(1.0).add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
-    }
-
-    #[test]
-    fn sampling_period() {
-        let stm = GainSTM::<NullGain>::with_sampling_period(std::time::Duration::from_millis(1));
-        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
-
-        let stm = GainSTM::<_>::with_period(std::time::Duration::from_millis(10))
-            .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_eq!(stm.sampling_period(), std::time::Duration::from_millis(1));
+        assert_eq!(stm.frequency(), 1.0);
     }
 
     #[test]
@@ -313,30 +229,6 @@ mod tests {
 
         let stm = stm.with_mode(GainSTMMode::PhaseDutyFull);
         assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
-    }
-
-    #[test]
-    fn with_props_mode() {
-        let stm =
-            GainSTM::<NullGain>::with_props_mode(STMProps::new(1.0), GainSTMMode::PhaseDutyFull);
-        assert_eq!(stm.freq(), 1.0);
-        assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
-
-        let stm = GainSTM::<NullGain>::with_props_mode(
-            STMProps::with_sampling_frequency_division(512),
-            GainSTMMode::PhaseFull,
-        )
-        .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_approx_eq!(stm.freq(), FPGA_CLK_FREQ as float / 512. / 10.);
-        assert_eq!(stm.mode(), GainSTMMode::PhaseFull);
-
-        let stm = GainSTM::<NullGain>::with_props_mode(
-            STMProps::with_sampling_frequency(40e3),
-            GainSTMMode::PhaseHalf,
-        )
-        .add_gains_from_iter((0..10).map(|_| NullGain {}));
-        assert_approx_eq!(stm.freq(), 40e3 / 10.);
-        assert_eq!(stm.mode(), GainSTMMode::PhaseHalf);
     }
 
     struct NullGain2 {}
@@ -362,7 +254,9 @@ mod tests {
     fn test_get() {
         let stm = GainSTM::<Box<dyn Gain>>::new(1.0)
             .add_gain(Box::new(NullGain {}))
-            .add_gain(Box::new(NullGain2 {}));
+            .unwrap()
+            .add_gain(Box::new(NullGain2 {}))
+            .unwrap();
 
         assert!(stm.get::<NullGain>(0).is_some());
         assert!(stm.get::<NullGain2>(0).is_none());
@@ -378,7 +272,9 @@ mod tests {
     fn test_clear() {
         let mut stm = GainSTM::<Box<dyn Gain>>::new(1.0)
             .add_gain(Box::new(NullGain {}))
-            .add_gain(Box::new(NullGain2 {}));
+            .unwrap()
+            .add_gain(Box::new(NullGain2 {}))
+            .unwrap();
 
         let gains = stm.clear();
 
@@ -412,7 +308,11 @@ mod tests {
 
     #[test]
     fn gain_stm_operation() {
-        let stm = GainSTM::<Box<dyn Gain>>::new(1.);
+        let stm = GainSTM::<Box<dyn Gain>>::new(1.)
+            .add_gain(Box::new(NullGain {}))
+            .unwrap()
+            .add_gain(Box::new(NullGain2 {}))
+            .unwrap();
 
         let r = stm.operation();
         assert!(r.is_ok());

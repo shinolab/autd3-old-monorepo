@@ -13,9 +13,7 @@
 
 use autd3::prelude::*;
 
-pub async fn group<L: Link>(
-    autd: &mut Controller<L>,
-) -> anyhow::Result<bool> {
+pub async fn group<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
     autd.group(|dev| match dev.idx() {
