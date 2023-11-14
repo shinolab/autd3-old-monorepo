@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,12 +29,9 @@
 #define FOCUS_STM_BUF_PAGE_SIZE (1 << FOCUS_STM_BUF_PAGE_SIZE_WIDTH)
 #define FOCUS_STM_BUF_PAGE_SIZE_MASK (FOCUS_STM_BUF_PAGE_SIZE - 1)
 
-#define GAIN_STM_BUF_PAGE_SIZE_WIDTH (5)
+#define GAIN_STM_BUF_PAGE_SIZE_WIDTH (6)
 #define GAIN_STM_BUF_PAGE_SIZE (1 << GAIN_STM_BUF_PAGE_SIZE_WIDTH)
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH (6)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE (1 << GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK (GAIN_STM_LEGACY_BUF_PAGE_SIZE - 1)
 
 #define WDT_CNT_MAX (1000)
 
@@ -363,7 +360,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
   }
 
   src = src_base;
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
 
   switch (_gain_stm_mode) {
     case GAIN_STM_MODE_DUTY_PHASE_FULL:
@@ -380,7 +377,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) *dst++ = 0xFF00 | (((*src++) >> 8) & 0x00FF);
@@ -398,7 +395,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -410,7 +407,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 2) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -422,7 +419,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 3) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -436,8 +433,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
       break;
   }
 
-  if ((_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) == 0)
-    change_stm_page((_stm_cycle & ~GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH);
+  if ((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0) change_stm_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >> GAIN_STM_BUF_PAGE_SIZE_WIDTH);
 
   if ((flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
     _fpga_flags_internal |= CTL_FLAG_OP_MODE;
