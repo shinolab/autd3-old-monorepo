@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,14 +24,14 @@ use num::integer::lcm;
 #[derive(Modulation, Clone)]
 pub struct Fourier {
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
     components: Vec<Sine>,
 }
 
 impl Fourier {
     pub fn new(sine: Sine) -> Self {
         Self {
-            freq_div: sine.sampling_frequency_division(),
+            config: sine.sampling_config(),
             components: vec![sine],
         }
     }
@@ -44,14 +44,16 @@ impl Fourier {
     pub fn add_component(self, sine: Sine) -> Self {
         let Self {
             mut components,
-            freq_div,
+            config,
         } = self;
-        let freq_div = freq_div.min(sine.sampling_frequency_division());
-        components.push(sine.with_sampling_frequency_division(freq_div));
-        Self {
-            components,
-            freq_div,
-        }
+        let config = SamplingConfiguration::new_with_frequency_division(
+            config
+                .frequency_division()
+                .min(sine.sampling_config().frequency_division()),
+        )
+        .unwrap();
+        components.push(sine.with_sampling_config(config));
+        Self { components, config }
     }
 
     /// Add sine wave components from iterator
@@ -65,21 +67,15 @@ impl Fourier {
     ) -> Self {
         let Self {
             mut components,
-            freq_div,
+            config,
         } = self;
         let append = iter.into_iter().map(|m| m.into()).collect::<Vec<_>>();
-        let freq_div = append
-            .iter()
-            .fold(freq_div, |acc, m| acc.min(m.sampling_frequency_division()));
-        components.extend(
-            append
-                .iter()
-                .map(|m| m.with_sampling_frequency_division(freq_div)),
-        );
-        Self {
-            components,
-            freq_div,
-        }
+        let freq_div = append.iter().fold(config.frequency_division(), |acc, m| {
+            acc.min(m.sampling_config().frequency_division())
+        });
+        let config = SamplingConfiguration::new_with_frequency_division(freq_div).unwrap();
+        components.extend(append.iter().map(|m| m.with_sampling_config(config)));
+        Self { components, config }
     }
 }
 

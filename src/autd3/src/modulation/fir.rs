@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ use autd3_driver::derive::prelude::*;
 pub struct FIRImpl<M: Modulation> {
     m: M,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
     fir: sdr_rs::fir::FIR<f32>,
 }
 
@@ -73,8 +73,8 @@ impl<M: Modulation> FIR<M> for M {
     #[allow(clippy::unnecessary_cast)]
     fn with_low_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M> {
         FIRImpl {
-            freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::lowpass(n_taps, (cutoff / self.sampling_frequency()) as f64),
+            config: self.sampling_config(),
+            fir: fir::FIR::lowpass(n_taps, (cutoff / self.sampling_config().frequency()) as f64),
             m: self,
         }
     }
@@ -82,8 +82,8 @@ impl<M: Modulation> FIR<M> for M {
     #[allow(clippy::unnecessary_cast)]
     fn with_high_pass(self, n_taps: usize, cutoff: float) -> FIRImpl<M> {
         FIRImpl {
-            freq_div: self.sampling_frequency_division(),
-            fir: fir::FIR::highpass(n_taps, (cutoff / self.sampling_frequency()) as f64),
+            config: self.sampling_config(),
+            fir: fir::FIR::highpass(n_taps, (cutoff / self.sampling_config().frequency()) as f64),
             m: self,
         }
     }
@@ -91,11 +91,11 @@ impl<M: Modulation> FIR<M> for M {
     #[allow(clippy::unnecessary_cast)]
     fn with_band_pass(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M> {
         FIRImpl {
-            freq_div: self.sampling_frequency_division(),
+            config: self.sampling_config(),
             fir: fir::FIR::bandpass(
                 n_taps,
-                (f_low / self.sampling_frequency()) as f64,
-                (f_high / self.sampling_frequency()) as f64,
+                (f_low / self.sampling_config().frequency()) as f64,
+                (f_high / self.sampling_config().frequency()) as f64,
             ),
             m: self,
         }
@@ -104,11 +104,11 @@ impl<M: Modulation> FIR<M> for M {
     #[allow(clippy::unnecessary_cast)]
     fn with_band_stop(self, n_taps: usize, f_low: float, f_high: float) -> FIRImpl<M> {
         FIRImpl {
-            freq_div: self.sampling_frequency_division(),
+            config: self.sampling_config(),
             fir: fir::FIR::bandstop(
                 n_taps,
-                (f_low / self.sampling_frequency()) as f64,
-                (f_high / self.sampling_frequency()) as f64,
+                (f_low / self.sampling_config().frequency()) as f64,
+                (f_high / self.sampling_config().frequency()) as f64,
             ),
             m: self,
         }
@@ -142,14 +142,14 @@ mod tests {
     #[derive(Modulation)]
     pub struct TestModulation {
         data: Vec<float>,
-        freq_div: u32,
+        config: SamplingConfiguration,
     }
 
     impl TestModulation {
         pub fn new(data: Vec<float>) -> Self {
             Self {
                 data,
-                freq_div: 5120, // 4kHz
+                config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
             }
         }
     }

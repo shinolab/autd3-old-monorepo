@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::{collections::HashMap, fmt};
 use crate::{
     defined::{float, PI},
     error::AUTDInternalError,
-    fpga::{MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::MOD_BUF_SIZE_MAX,
     geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
@@ -147,9 +147,6 @@ impl Operation for ModulationOp {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
         }
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
-            return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
-        }
 
         self.remains = geometry
             .devices()
@@ -175,7 +172,10 @@ mod tests {
     use rand::prelude::*;
 
     use super::*;
-    use crate::{fpga::SAMPLING_FREQ_DIV_MIN, geometry::tests::create_geometry};
+    use crate::{
+        fpga::{SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+        geometry::tests::create_geometry,
+    };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;
@@ -486,23 +486,5 @@ mod tests {
                 MOD_BUF_SIZE_MAX + 1
             ))
         );
-    }
-
-    #[test]
-    fn modulation_op_freq_div_out_of_range() {
-        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
-
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
-        assert!(op.init(&geometry).is_ok());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
-        assert!(op.init(&geometry).is_err());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX);
-        assert!(op.init(&geometry).is_ok());
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ pub struct Sine {
     amp: float,
     phase: float,
     offset: float,
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Sine {
@@ -41,7 +41,7 @@ impl Sine {
             amp: 1.0,
             phase: 0.0,
             offset: 0.5,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 
@@ -94,7 +94,7 @@ impl Sine {
 
 impl Modulation for Sine {
     fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        let sf = self.sampling_frequency() as usize;
+        let sf = self.sampling_config().frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
         let n = sf / d;
@@ -197,7 +197,7 @@ mod tests {
             0.3832773180720463,
         ];
         let m = Sine::new(150);
-        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
+        assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
             .iter()

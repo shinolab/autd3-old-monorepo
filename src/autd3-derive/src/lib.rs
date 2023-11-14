@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -51,39 +51,15 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
     } else {
         quote! {
             impl <#(#linetimes_impl,)* #(#type_params_impl,)*> #name #ty_generics #where_clause {
-                /// Set sampling frequency division
+                /// Set sampling configuration
                 ///
                 /// # Arguments
                 ///
-                /// * `freq_div` - Sampling frequency division. The sampling frequency will be [FPGA_CLK_FREQ] / `freq_div`. The value must be at least [SAMPLING_FREQ_DIV_MIN]
+                /// * `config` - Sampling configuration
                 ///
                 #[allow(clippy::needless_update)]
-                pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
-                    Self {freq_div, ..self}
-                }
-
-                /// Set sampling frequency
-                ///
-                /// # Arguments
-                ///
-                /// * `freq` - Sampling frequency. The sampling frequency closest to `freq` from the possible sampling frequencies is set.
-                ///
-                #[allow(clippy::needless_update)]
-                pub fn with_sampling_frequency(self, freq: float) -> Self {
-                    let freq_div = FPGA_CLK_FREQ as float / freq;
-                    self.with_sampling_frequency_division(freq_div as _)
-                }
-
-                /// Set sampling period
-                ///
-                /// # Arguments
-                ///
-                /// * `period` - Sampling period. The sampling period closest to `period` from the possible sampling periods is set.
-                ///
-                #[allow(clippy::needless_update)]
-                pub fn with_sampling_period(self, period: std::time::Duration) -> Self {
-                    let freq_div = FPGA_CLK_FREQ as float / 1000000000. * period.as_nanos() as float;
-                    self.with_sampling_frequency_division(freq_div as _)
+                pub fn with_sampling_config(self, config: autd3_driver::common::SamplingConfiguration) -> Self {
+                    Self {config, ..self}
                 }
             }
         }
@@ -91,8 +67,8 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
 
     let gen = quote! {
         impl <#(#linetimes_prop,)* #(#type_params_prop,)*> ModulationProperty for #name #ty_generics #where_clause {
-            fn sampling_frequency_division(&self) -> u32 {
-                self.freq_div
+            fn sampling_config(&self) -> autd3_driver::common::SamplingConfiguration {
+                self.config
             }
         }
 
@@ -103,7 +79,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
             type O2 = NullOp;
 
             fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
-                let freq_div = self.freq_div;
+                let freq_div = self.config.frequency_division();
                 Ok((Self::O1::new(self.calc()?, freq_div), Self::O2::default()))
             }
         }

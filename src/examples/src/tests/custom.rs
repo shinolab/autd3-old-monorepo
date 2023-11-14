@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,12 +43,14 @@ impl Gain for MyUniform {
 
 #[derive(Modulation, Clone, Copy)]
 pub struct Burst {
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Burst {
     pub fn new() -> Self {
-        Self { freq_div: 5120 }
+        Self {
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+        }
     }
 }
 

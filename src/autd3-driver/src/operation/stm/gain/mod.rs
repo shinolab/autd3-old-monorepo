@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use std::collections::HashMap;
 
 use crate::{
     derive::prelude::{AUTDInternalError, Drive, Gain, GainFilter, Operation},
-    fpga::{FPGADrive, GAIN_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{FPGADrive, GAIN_STM_BUF_SIZE_MAX},
     geometry::Device,
     operation::{
         stm::gain::reduced_phase::{PhaseFull, PhaseHalf},
@@ -68,10 +68,6 @@ impl<G: Gain> Operation for GainSTMOp<G> {
         &mut self,
         geometry: &crate::derive::prelude::Geometry,
     ) -> Result<(), crate::derive::prelude::AUTDInternalError> {
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
-            return Err(AUTDInternalError::GainSTMFreqDivOutOfRange(self.freq_div));
-        }
-
         self.drives = self
             .gains
             .iter()
@@ -1010,27 +1006,6 @@ mod tests {
                 GAIN_STM_BUF_SIZE_MAX + 1
             ))
         );
-    }
-
-    #[test]
-    fn gain_stm_op_freq_div_out_of_range() {
-        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
-
-        let test = |d: u32| {
-            let gains: Vec<NullGain> = (0..2).map(|_| NullGain {}).collect();
-
-            let mut op = GainSTMOp::<_>::new(gains, GainSTMMode::PhaseDutyFull, d, None, None);
-            op.init(&geometry)
-        };
-
-        assert_eq!(
-            test(SAMPLING_FREQ_DIV_MIN - 1),
-            Err(AUTDInternalError::GainSTMFreqDivOutOfRange(
-                SAMPLING_FREQ_DIV_MIN - 1
-            ))
-        );
-        assert_eq!(test(SAMPLING_FREQ_DIV_MIN), Ok(()));
-        assert_eq!(test(SAMPLING_FREQ_DIV_MAX), Ok(()));
     }
 
     #[test]

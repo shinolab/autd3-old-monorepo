@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ pub struct Square {
     low: float,
     high: float,
     duty: float,
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Square {
@@ -39,7 +39,7 @@ impl Square {
             low: 0.0,
             high: 1.0,
             duty: 0.5,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 
@@ -98,7 +98,7 @@ impl Modulation for Square {
             ));
         }
 
-        let sf = self.sampling_frequency() as usize;
+        let sf = self.sampling_config().frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let k = gcd(sf, freq);
         let n = sf / k;
@@ -129,7 +129,7 @@ mod tests {
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         ];
         let m = Square::new(150);
-        assert_approx_eq::assert_approx_eq!(m.sampling_frequency(), 4e3);
+        assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
             .iter()

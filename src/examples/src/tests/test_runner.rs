@@ -27,9 +27,7 @@ use super::{
     transtest::*,
 };
 
-pub async fn run<L: Link>(
-    mut autd: Controller<L>,
-) -> anyhow::Result<()> {
+pub async fn run<L: Link>(mut autd: Controller<L>) -> anyhow::Result<()> {
     type Test<L> = (
         &'static str,
         fn(

@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use crate::{
     defined::METER,
     error::AUTDInternalError,
-    fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+    fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX},
     geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
@@ -167,9 +167,7 @@ impl Operation for FocusSTMOp {
                 self.points.len(),
             ));
         }
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
-            return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
-        }
+
         match self.start_idx {
             Some(idx) if idx >= self.points.len() as u16 => {
                 return Err(AUTDInternalError::STMStartIndexOutOfRange)
@@ -209,7 +207,10 @@ mod tests {
     use super::*;
     use crate::{
         defined::{float, MILLIMETER},
-        fpga::{FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_WIDTH, SAMPLING_FREQ_DIV_MIN},
+        fpga::{
+            FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_WIDTH, SAMPLING_FREQ_DIV_MAX,
+            SAMPLING_FREQ_DIV_MIN,
+        },
         geometry::{tests::create_geometry, Vector3},
     };
 
@@ -722,38 +723,6 @@ mod tests {
                 FOCUS_STM_BUF_SIZE_MAX + 1
             ))
         );
-    }
-
-    #[test]
-    fn focus_stm_op_freq_div_out_of_range() {
-        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
-
-        let test = |d: u32| {
-            let mut rng = rand::thread_rng();
-
-            let points: Vec<ControlPoint> = (0..100)
-                .map(|_| {
-                    ControlPoint::new(Vector3::new(
-                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
-                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
-                        rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
-                    ))
-                    .with_shift(rng.gen_range(0..0xFF))
-                })
-                .collect();
-
-            let mut op = FocusSTMOp::new(points.clone(), d, None, None);
-            op.init(&geometry)
-        };
-
-        assert_eq!(
-            test(SAMPLING_FREQ_DIV_MIN - 1),
-            Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(
-                SAMPLING_FREQ_DIV_MIN - 1
-            ))
-        );
-        assert_eq!(test(SAMPLING_FREQ_DIV_MIN), Ok(()));
-        assert_eq!(test(SAMPLING_FREQ_DIV_MAX), Ok(()));
     }
 
     #[test]
