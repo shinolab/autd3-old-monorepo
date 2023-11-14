@@ -34,6 +34,7 @@ tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
 default = []
+firmware-v3 = []
 single_float = []
 use_meter = []
 serde = ["dep:serde"]
