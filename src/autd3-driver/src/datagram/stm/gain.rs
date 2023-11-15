@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 16/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -211,9 +211,41 @@ mod tests {
     };
 
     #[test]
-    fn freq() {
-        let stm = GainSTM::<NullGain>::new(1.0);
-        assert_eq!(stm.frequency(), 1.0);
+    fn new() {
+        let stm = GainSTM::<NullGain>::new(1.)
+            .add_gains_from_iter((0..10).map(|_| NullGain {}))
+            .unwrap();
+
+        assert_eq!(stm.frequency(), 1.);
+        assert_eq!(stm.sampling_config().frequency(), 1. * 10.);
+    }
+
+    #[test]
+    fn new_with_period() {
+        let stm = GainSTM::<NullGain>::new_with_period(std::time::Duration::from_micros(250))
+            .add_gains_from_iter((0..10).map(|_| NullGain {}))
+            .unwrap();
+
+        assert_eq!(stm.period(), std::time::Duration::from_micros(250));
+        assert_eq!(
+            stm.sampling_config().period(),
+            std::time::Duration::from_micros(25)
+        );
+    }
+
+    #[test]
+    fn new_with_sampling_config() {
+        let stm = GainSTM::<NullGain>::new_with_sampling_config(
+            SamplingConfiguration::new_with_period(std::time::Duration::from_micros(25)).unwrap(),
+        )
+        .add_gains_from_iter((0..10).map(|_| NullGain {}))
+        .unwrap();
+
+        assert_eq!(stm.period(), std::time::Duration::from_micros(250));
+        assert_eq!(
+            stm.sampling_config().period(),
+            std::time::Duration::from_micros(25)
+        );
     }
 
     #[test]

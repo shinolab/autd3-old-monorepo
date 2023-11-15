@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 16/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -129,5 +129,99 @@ impl STMProps {
 
     pub fn sampling_config(&self, size: usize) -> Result<SamplingConfiguration, AUTDInternalError> {
         self.sampling.sampling(size)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_frequency() {
+        let config = STMSamplingConfiguration::Frequency(4e3);
+        assert_eq!(config.frequency(1), 4e3);
+        assert_eq!(config.frequency(2), 4e3);
+        assert_eq!(config.period(1), std::time::Duration::from_micros(250));
+        assert_eq!(config.period(2), std::time::Duration::from_micros(250));
+        assert_eq!(
+            config.sampling(1).unwrap(),
+            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+        );
+        assert_eq!(
+            config.sampling(2).unwrap(),
+            SamplingConfiguration::new_with_frequency(8e3).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_period() {
+        let config = STMSamplingConfiguration::Period(std::time::Duration::from_micros(250));
+        assert_eq!(config.frequency(1), 4e3);
+        assert_eq!(config.frequency(2), 4e3);
+        assert_eq!(config.period(1), std::time::Duration::from_micros(250));
+        assert_eq!(config.period(2), std::time::Duration::from_micros(250));
+        assert_eq!(
+            config.sampling(1).unwrap(),
+            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+        );
+        assert_eq!(
+            config.sampling(2).unwrap(),
+            SamplingConfiguration::new_with_frequency(8e3).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_sampling() {
+        let config = STMSamplingConfiguration::SamplingConfiguration(
+            SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+        );
+        assert_eq!(config.frequency(1), 4e3);
+        assert_eq!(config.frequency(2), 2e3);
+        assert_eq!(config.period(1), std::time::Duration::from_micros(250));
+        assert_eq!(config.period(2), std::time::Duration::from_micros(500));
+        assert_eq!(
+            config.sampling(1).unwrap(),
+            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+        );
+        assert_eq!(
+            config.sampling(2).unwrap(),
+            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_frequency_out_of_range() {
+        let config = STMSamplingConfiguration::Frequency(40e3);
+        assert_eq!(
+            config.sampling(1),
+            Ok(SamplingConfiguration::new_with_frequency(40e3).unwrap())
+        );
+        assert_eq!(
+            config.sampling(2),
+            Err(AUTDInternalError::STMFreqOutOfRange(
+                2,
+                40e3,
+                SamplingConfiguration::MIN.frequency() * 2.,
+                SamplingConfiguration::MAX.frequency() * 2.,
+            ))
+        );
+    }
+
+    #[test]
+    fn test_period_out_of_range() {
+        let config = STMSamplingConfiguration::Period(std::time::Duration::from_micros(25));
+        assert_eq!(
+            config.sampling(1),
+            Ok(SamplingConfiguration::new_with_frequency(40e3).unwrap())
+        );
+        assert_eq!(
+            config.sampling(2),
+            Err(AUTDInternalError::STMPeriodOutOfRange(
+                2,
+                25000,
+                SamplingConfiguration::MIN.period().as_nanos() as usize / 2,
+                SamplingConfiguration::MAX.period().as_nanos() as usize / 2,
+            ))
+        );
     }
 }

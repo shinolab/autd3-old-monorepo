@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 16/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -171,9 +171,41 @@ mod tests {
     };
 
     #[test]
-    fn freq() {
-        let stm = FocusSTM::new(1.0);
-        assert_eq!(stm.frequency(), 1.0);
+    fn new() {
+        let stm = FocusSTM::new(1.)
+            .add_foci_from_iter((0..10).map(|_| Vector3::zeros()))
+            .unwrap();
+
+        assert_eq!(stm.frequency(), 1.);
+        assert_eq!(stm.sampling_config().frequency(), 1. * 10.);
+    }
+
+    #[test]
+    fn new_with_period() {
+        let stm = FocusSTM::new_with_period(std::time::Duration::from_micros(250))
+            .add_foci_from_iter((0..10).map(|_| Vector3::zeros()))
+            .unwrap();
+
+        assert_eq!(stm.period(), std::time::Duration::from_micros(250));
+        assert_eq!(
+            stm.sampling_config().period(),
+            std::time::Duration::from_micros(25)
+        );
+    }
+
+    #[test]
+    fn new_with_sampling_config() {
+        let stm = FocusSTM::new_with_sampling_config(
+            SamplingConfiguration::new_with_period(std::time::Duration::from_micros(25)).unwrap(),
+        )
+        .add_foci_from_iter((0..10).map(|_| Vector3::zeros()))
+        .unwrap();
+
+        assert_eq!(stm.period(), std::time::Duration::from_micros(250));
+        assert_eq!(
+            stm.sampling_config().period(),
+            std::time::Duration::from_micros(25)
+        );
     }
 
     #[test]
@@ -225,11 +257,11 @@ mod tests {
     #[test]
     fn add_foci() {
         let stm = FocusSTM::new(1.0)
-            .add_focus(Vector3::new(1., 2., 3.))
+            .add_foci_from_iter([Vector3::new(1., 2., 3.)])
             .unwrap()
-            .add_focus((Vector3::new(4., 5., 6.), 1))
+            .add_foci_from_iter([(Vector3::new(4., 5., 6.), 1)])
             .unwrap()
-            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2))
+            .add_foci_from_iter([ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2)])
             .unwrap();
 
         assert_eq!(stm.foci().len(), 3);
