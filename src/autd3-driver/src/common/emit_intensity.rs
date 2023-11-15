@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2023
+ * Last Modified: 16/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use crate::{
     derive::prelude::AUTDInternalError,
 };
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(C)]
 pub struct EmitIntensity {
     pulse_width: u16,
@@ -117,6 +117,10 @@ impl TryIntoEmitIntensity for EmitIntensity {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{
+        collections::hash_map::DefaultHasher,
+        hash::{Hash, Hasher},
+    };
 
     #[test]
     fn test_new_normalized() {
@@ -281,5 +285,21 @@ mod tests {
             format!("{:?}", intensity),
             "EmitIntensity { pulse_width: 0 }"
         );
+    }
+
+    #[test]
+    fn test_ord() {
+        let intensity1 = EmitIntensity::new_pulse_width(0).unwrap();
+        let intensity2 = EmitIntensity::new_pulse_width(2).unwrap();
+        assert!(intensity1 < intensity2);
+        assert_eq!(intensity1.min(intensity2), intensity1);
+    }
+
+    #[test]
+    fn hash() {
+        let intensity = EmitIntensity::new_pulse_width(0).unwrap();
+        let mut s = DefaultHasher::new();
+        assert_eq!(intensity.hash(&mut s), 0.hash(&mut s));
+        s.finish();
     }
 }
