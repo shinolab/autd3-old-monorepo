@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 15/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@ use crate::{
 };
 
 /// AUTD3 device
-#[derive(Clone, Copy)]
 pub struct AUTD3 {
     position: Vector3,
     rotation: UnitQuaternion,
@@ -70,9 +69,7 @@ impl AUTD3 {
         }
     }
 
-    #[doc(hidden)]
-    /// This is used only for internal.
-    pub fn is_missing_transducer<T1, T2>(x: T1, y: T2) -> bool
+    fn is_missing_transducer<T1, T2>(x: T1, y: T2) -> bool
     where
         T1: TryInto<u8> + PartialEq<T1>,
         T2: TryInto<u8> + PartialEq<T2>,
@@ -151,6 +148,34 @@ impl IntoDevice for AUTD3 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn autd3_device() {
+        let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
+        let dev: Device = dev.into_device(0);
+        assert_eq!(dev.num_transducers(), 249);
+
+        assert_approx_eq::assert_approx_eq!(dev[0].position().x, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[0].position().y, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[1].position().x, AUTD3::TRANS_SPACING);
+        assert_approx_eq::assert_approx_eq!(dev[1].position().y, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[18].position().x, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[18].position().y, AUTD3::TRANS_SPACING);
+    }
+
+    #[test]
+    fn autd3_device_with_quaternion() {
+        let dev = AUTD3::with_quaternion(Vector3::zeros(), UnitQuaternion::identity());
+        let dev: Device = dev.into_device(0);
+        assert_eq!(dev.num_transducers(), 249);
+
+        assert_approx_eq::assert_approx_eq!(dev[0].position().x, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[0].position().y, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[1].position().x, AUTD3::TRANS_SPACING);
+        assert_approx_eq::assert_approx_eq!(dev[1].position().y, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[18].position().x, 0.);
+        assert_approx_eq::assert_approx_eq!(dev[18].position().y, AUTD3::TRANS_SPACING);
+    }
 
     #[test]
     fn autd3_is_missing_transducer() {
