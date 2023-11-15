@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 15/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -246,6 +246,23 @@ mod tests {
         fn timeout(&self) -> Duration {
             self.timeout
         }
+    }
+
+    #[tokio::test]
+    async fn close() {
+        let mut link = MockLink {
+            is_open: true,
+            timeout: Duration::from_millis(0),
+            send_cnt: 0,
+            recv_cnt: 0,
+            down: false,
+        };
+
+        assert!(link.is_open());
+
+        link.close().await.unwrap();
+
+        assert!(!link.is_open());
     }
 
     #[tokio::test]
