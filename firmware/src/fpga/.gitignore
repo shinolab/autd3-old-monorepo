@@ -9,6 +9,6 @@
 !/*.tcl
 !/docs/
 !/docs/**/*
-!tr.coe
+!*.coe
 !/.github/
 !/.github/**/*
