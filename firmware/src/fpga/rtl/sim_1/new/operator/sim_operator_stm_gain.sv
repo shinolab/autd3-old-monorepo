@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 18/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ module sim_operator_stm_gain ();
   bit [15:0] idx;
   bit dout_valid;
 
-  bit [7:0] intensity_buf[1024][DEPTH];
-  bit [7:0] phase_buf[1024][DEPTH];
+  bit [7:0] intensity_buf[2048][DEPTH];
+  bit [7:0] phase_buf[2048][DEPTH];
 
   time_cnt_generator #(
       .DEPTH(DEPTH)
@@ -69,7 +69,8 @@ module sim_operator_stm_gain ();
   end
 
   initial begin
-    cycle_stm = 2048 - 1;
+    //    cycle_stm = 2048 - 1;
+    cycle_stm = 100 - 1;
     freq_div_stm = 512;
 
     sim_helper_random.init();
