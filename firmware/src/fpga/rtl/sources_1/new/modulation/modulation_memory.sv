@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,14 +18,14 @@ module modulation_memory (
     modulation_bus_if.memory_port M_BUS
 );
 
-  bit bus_clk;
-  bit mod_ena;
-  bit we;
-  bit [14:0] mod_addr;
-  bit [15:0] data_in;
+  logic bus_clk;
+  logic mod_ena;
+  logic we;
+  logic [14:0] mod_addr;
+  logic [15:0] data_in;
 
-  bit [15:0] idx;
-  bit [7:0] m;
+  logic [15:0] idx;
+  logic [7:0] m;
 
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign mod_ena = CPU_BUS.MOD_EN;
