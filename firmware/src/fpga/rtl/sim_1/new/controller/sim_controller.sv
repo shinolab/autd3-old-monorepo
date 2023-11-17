@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,8 +38,6 @@ module sim_controller ();
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
-  bit signed [WIDTH:0] filter_duty[DEPTH];
-  bit signed [WIDTH:0] filter_phase[DEPTH];
   bit [WIDTH-1:0] step_s;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
@@ -64,8 +62,6 @@ module sim_controller ();
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
-      .FILTER_DUTY(filter_duty),
-      .FILTER_PHASE(filter_phase),
       .STEP_S(step_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
@@ -82,8 +78,6 @@ module sim_controller ();
     bit [15:0] cycle_m_buf;
     bit [31:0] freq_div_m_buf;
     bit [15:0] delay_buf[DEPTH];
-    bit signed [WIDTH:0] filter_duty_buf[DEPTH];
-    bit signed [WIDTH:0] filter_phase_buf[DEPTH];
     bit [WIDTH-1:0] step_s_buf;
     bit [15:0] cycle_stm_buf;
     bit [31:0] freq_div_stm_buf;
@@ -108,15 +102,6 @@ module sim_controller ();
       delay_buf[i] = sim_helper_random.range(16'hFFFF, 0);
     end
     sim_helper_bram.write_delay(delay_buf);
-
-    for (int i = 0; i < DEPTH; i++) begin
-      filter_duty_buf[i] = sim_helper_random.range(511, -512);
-    end
-    sim_helper_bram.write_filter_duty(filter_duty_buf);
-    for (int i = 0; i < DEPTH; i++) begin
-      filter_phase_buf[i] = sim_helper_random.range(511, -512);
-    end
-    sim_helper_bram.write_filter_phase(filter_phase_buf);
 
     step_s_buf = sim_helper_random.range(MAX, 0);
     sim_helper_bram.write_silent_step(step_s_buf);
@@ -151,18 +136,6 @@ module sim_controller ();
     for (int i = 0; i < DEPTH; i++) begin
       if (delay_buf[i] != delay_m[i]) begin
         $error("Failed at delay[%d]", i);
-        $finish();
-      end
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (filter_duty_buf[i] != filter_duty[i]) begin
-        $error("Failed at filter_duty[%d] (%d != %d)", i, filter_duty_buf[i], filter_duty[i]);
-        $finish();
-      end
-    end
-    for (int i = 0; i < DEPTH; i++) begin
-      if (filter_phase_buf[i] != filter_phase[i]) begin
-        $error("Failed at filter_phase[%d] (%d != %d)", i, filter_phase_buf[i], filter_phase[i]);
         $finish();
       end
     end

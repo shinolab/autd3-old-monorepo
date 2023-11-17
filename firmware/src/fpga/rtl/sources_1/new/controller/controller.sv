@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -27,8 +27,6 @@ module controller #(
     output var [15:0] CYCLE_M,
     output var [31:0] FREQ_DIV_M,
     output var [15:0] DELAY_M[DEPTH],
-    output var signed [WIDTH:0] FILTER_DUTY[DEPTH],
-    output var signed [WIDTH:0] FILTER_PHASE[DEPTH],
     output var [WIDTH-1:0] STEP_S,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
@@ -73,9 +71,6 @@ module controller #(
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
 
-  bit signed [WIDTH:0] filter_duty[DEPTH];
-  bit signed [WIDTH:0] filter_phase[DEPTH];
-
   bit [WIDTH-1:0] step_s;
 
   bit [15:0] cycle_stm;
@@ -93,10 +88,6 @@ module controller #(
   assign ctl_addr = CPU_BUS.BRAM_ADDR[6:0];
   assign dly_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_DELAY);
   assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_duty_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_DUTY);
-  assign flt_duty_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_phase_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_PHASE);
-  assign flt_phase_addr = CPU_BUS.BRAM_ADDR[7:0];
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
@@ -119,8 +110,6 @@ module controller #(
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_cycle_delay
     assign DELAY_M[i] = delay_m[i];
-    assign FILTER_DUTY[i] = filter_duty[i];
-    assign FILTER_PHASE[i] = filter_phase[i];
   end
 
   BRAM_CONTROLLER ctl_bram (
@@ -149,34 +138,6 @@ module controller #(
       .addrb(dly_cnt),
       .dinb (),
       .doutb(dly_dout)
-  );
-
-  BRAM_FILTER flt_bram_duty (
-      .clka (bus_clk),
-      .ena  (flt_duty_ena),
-      .wea  (wea),
-      .addra(flt_duty_addr),
-      .dina (cpu_data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(flt_cnt),
-      .dinb (),
-      .doutb(flt_duty_dout)
-  );
-
-  BRAM_FILTER flt_bram_phase (
-      .clka (bus_clk),
-      .ena  (flt_phase_ena),
-      .wea  (wea),
-      .addra(flt_phase_addr),
-      .dina (cpu_data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(flt_cnt),
-      .dinb (),
-      .doutb(flt_phase_dout)
   );
 
   typedef enum bit [4:0] {
@@ -410,13 +371,6 @@ module controller #(
     dly_cnt <= (dly_cnt == DEPTH - 1) ? 0 : dly_cnt + 1;
     dly_set <= (dly_set == DEPTH - 1) ? 0 : dly_set + 1;
     delay_m[dly_set] <= dly_dout;
-  end
-
-  always_ff @(posedge CLK) begin
-    flt_cnt <= (flt_cnt == DEPTH - 1) ? 0 : flt_cnt + 1;
-    flt_set <= (flt_set == DEPTH - 1) ? 0 : flt_set + 1;
-    filter_duty[flt_set] <= flt_duty_dout;
-    filter_phase[flt_set] <= flt_phase_dout;
   end
 
 endmodule

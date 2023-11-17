@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -56,7 +56,7 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_stm_gain_duty_phase(int idx, input bit [WIDTH-1:0] duty[DEPTH],
-                                                  input bit [WIDTH-1:0] phase[DEPTH]);
+                                           input bit [WIDTH-1:0] phase[DEPTH]);
     bit [15:0] offset;
     bit [15:0] i;
     offset = idx[21:6];
@@ -150,18 +150,6 @@ module sim_helper_bram #(
   task automatic write_delay(bit [15:0] delay[DEPTH]);
     for (int i = 0; i < DEPTH; i++) begin
       bram_write(BRAM_SELECT_CONTROLLER, ADDR_DELAY_BASE + i, delay[i]);
-    end
-  endtask
-
-  task automatic write_filter_duty(bit signed [WIDTH:0] filter_duty[DEPTH]);
-    for (int i = 0; i < DEPTH; i++) begin
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_FILTER_DUTY_BASE + i, filter_duty[i]);
-    end
-  endtask
-
-  task automatic write_filter_phase(bit signed [WIDTH:0] filter_phase[DEPTH]);
-    for (int i = 0; i < DEPTH; i++) begin
-      bram_write(BRAM_SELECT_CONTROLLER, ADDR_FILTER_PHASE_BASE + i, filter_phase[i]);
     end
   endtask
 
