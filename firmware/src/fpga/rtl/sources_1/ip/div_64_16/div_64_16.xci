@@ -1,13 +1,13 @@
 {
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
-    "xci_name": "div_64_16_l",
+    "xci_name": "div_64_16",
     "component_reference": "xilinx.com:ip:div_gen:5.1",
     "ip_revision": "20",
-    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/div_64_16_l",
+    "gen_directory": "../../../../autd3-fpga.gen/sources_1/ip/div_64_16",
     "parameters": {
       "component_parameters": {
-        "Component_Name": [ { "value": "div_64_16_l", "resolve_type": "user", "usage": "all" } ],
+        "Component_Name": [ { "value": "div_64_16", "resolve_type": "user", "usage": "all" } ],
         "algorithm_type": [ { "value": "Radix2", "resolve_type": "user", "usage": "all" } ],
         "dividend_and_quotient_width": [ { "value": "64", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "dividend_has_tuser": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
@@ -76,7 +76,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "20" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/div_64_16_l" } ],
+        "OUTPUTDIR": [ { "value": "../../../../autd3-fpga.gen/sources_1/ip/div_64_16" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2023.2" } ],
