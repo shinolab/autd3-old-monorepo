@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module controller #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -27,7 +26,7 @@ module controller #(
     output var [15:0] CYCLE_M,
     output var [31:0] FREQ_DIV_M,
     output var [15:0] DELAY_M[DEPTH],
-    output var [WIDTH-1:0] STEP_S,
+    output var [8:0] STEP_S,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
     output var [31:0] SOUND_SPEED,
@@ -71,7 +70,7 @@ module controller #(
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
 
-  bit [WIDTH-1:0] step_s;
+  bit [8:0] step_s;
 
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
@@ -186,7 +185,7 @@ module controller #(
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
-        din   <= {ENABLED_FEATURES_BITS, VERSION_NUM};
+        din   <= {8'hFF, VERSION_NUM};
         addr  <= ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
@@ -252,7 +251,7 @@ module controller #(
       RD_SILENT_STEP_REQ_RD_STM_FREQ_DIV_1: begin
         addr   <= ADDR_STM_FREQ_DIV_1;
 
-        step_s <= dout[WIDTH-1:0];
+        step_s <= dout[8:0];
 
         state  <= RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0;
       end

@@ -16,11 +16,6 @@ localparam int NUM_TRANSDUCERS = 249;
 localparam bit [7:0] VERSION_NUM = 8'h8B;
 localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
 
-localparam string ENABLE_STM = "TRUE";
-localparam string ENABLE_MODULATOR = "TRUE";
-localparam string ENABLE_SILENCER = "TRUE";
-localparam string ENABLE_MODULATOR_DELAY = "TRUE";
-
 localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
 localparam bit [1:0] BRAM_SELECT_MOD = 2'h1;
 localparam bit [1:0] BRAM_SELECT_NORMAL = 2'h2;
@@ -58,9 +53,3 @@ localparam int CTL_FLAG_STM_GAIN_MODE_BIT = 10;
 localparam int CTL_FLAG_USE_STM_FINISH_IDX_BIT = 11;
 localparam int CTL_FLAG_USE_STM_START_IDX_BIT = 12;
 localparam int CTL_FLAG_SYNC_BIT = 15;
-
-localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
-localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;
-localparam bit [7:0] ENABLED_SILENCER_BIT = ENABLE_SILENCER == "TRUE" ? 8'h04 : 8'h00;
-localparam bit [7:0] ENABLED_MODULATOR_DELAY_BIT = ENABLE_MODULATOR_DELAY == "TRUE" ? 8'h08 : 8'h00;
-localparam bit [7:0] ENABLED_FEATURES_BITS = ENABLED_MODULATOR_DELAY_BIT | ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;

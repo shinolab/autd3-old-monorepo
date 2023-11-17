@@ -21,16 +21,13 @@ module sim_controller ();
       .SYS_TIME()
   );
 
-  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
-  localparam bit [WIDTH-1:0] MAX = (1 << WIDTH) - 1;
 
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
   bit thermo;
   bit force_fan;
-  bit use_stm_start_idx;
   bit [63:0] ecat_sync_time;
   bit sync_set;
   bit op_mode;
@@ -38,7 +35,7 @@ module sim_controller ();
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
   bit [15:0] delay_m[DEPTH];
-  bit [WIDTH-1:0] step_s;
+  bit [8:0] step_s;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
@@ -48,7 +45,6 @@ module sim_controller ();
   bit use_stm_finish_idx;
 
   controller #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) controller (
       .CLK(CLK_20P48M),
@@ -78,7 +74,7 @@ module sim_controller ();
     bit [15:0] cycle_m_buf;
     bit [31:0] freq_div_m_buf;
     bit [15:0] delay_buf[DEPTH];
-    bit [WIDTH-1:0] step_s_buf;
+    bit [7:0] step_s_buf;
     bit [15:0] cycle_stm_buf;
     bit [31:0] freq_div_stm_buf;
     bit [31:0] sound_speed_buf;
@@ -103,7 +99,7 @@ module sim_controller ();
     end
     sim_helper_bram.write_delay(delay_buf);
 
-    step_s_buf = sim_helper_random.range(MAX, 0);
+    step_s_buf = sim_helper_random.range(9'h100, 0);
     sim_helper_bram.write_silent_step(step_s_buf);
 
     cycle_stm_buf = sim_helper_random.range(16'hFFFF, 0);
