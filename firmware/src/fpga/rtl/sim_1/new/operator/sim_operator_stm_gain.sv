@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@ module sim_operator_stm_gain ();
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
   sim_helper_bram sim_helper_bram ();
@@ -31,16 +30,15 @@ module sim_operator_stm_gain ();
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  bit [7:0] intensity;
+  bit [7:0] phase;
   bit [15:0] idx;
   bit dout_valid;
 
-  bit [WIDTH-1:0] duty_buf[1024][DEPTH];
-  bit [WIDTH-1:0] phase_buf[1024][DEPTH];
+  bit [7:0] intensity_buf[1024][DEPTH];
+  bit [7:0] phase_buf[1024][DEPTH];
 
   time_cnt_generator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK_20P48M),
@@ -59,7 +57,7 @@ module sim_operator_stm_gain ();
       .SOUND_SPEED(),
       .STM_GAIN_MODE(1'b1),
       .CPU_BUS(sim_helper_bram.cpu_bus.stm_port),
-      .DUTY(duty),
+      .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
       .IDX(idx)
@@ -81,10 +79,10 @@ module sim_operator_stm_gain ();
     for (int i = 0; i < cycle_stm + 1; i++) begin
       $display("write %d/%d", i + 1, cycle_stm + 1);
       for (int j = 0; j < DEPTH; j++) begin
-        duty_buf[i][j]  = sim_helper_random.range(8'hFF, 0);
+        intensity_buf[i][j] = sim_helper_random.range(8'hFF, 0);
         phase_buf[i][j] = sim_helper_random.range(8'hFF, 0);
       end
-      sim_helper_bram.write_stm_gain_duty_phase(i, duty_buf[i], phase_buf[i]);
+      sim_helper_bram.write_stm_gain_intensity_phase(i, intensity_buf[i], phase_buf[i]);
     end
 
     while (1) begin
@@ -103,12 +101,12 @@ module sim_operator_stm_gain ();
       end
       $display("check %d/%d", j + 1, cycle_stm + 1);
       for (int i = 0; i < DEPTH; i++) begin
-        if (!((duty_buf[idx_buf][i] == 0 && duty == 0) || (duty_buf[idx_buf][i] != 0 && (duty_buf[idx_buf][i] + 1 == duty)))) begin
-          $display("failed at duty[%d], %d!=%d", i, duty_buf[idx_buf][i] + 1, duty);
+        if (intensity_buf[idx_buf][i] !== intensity) begin
+          $display("failed at intensity[%d], %d!=%d", i, intensity_buf[idx_buf][i] + 1, intensity);
           $finish();
         end
-        if ({phase_buf[idx_buf][i], 1'b0} != phase) begin
-          $display("failed at phase[%d], %d!=%d", i, {phase_buf[idx_buf][i], 1'b0}, phase);
+        if (phase_buf[idx_buf][i] !== phase) begin
+          $display("failed at phase[%d], %d!=%d", i, phase_buf[idx_buf][i], phase);
           $finish();
         end
         @(posedge CLK_20P48M);

@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module stm_focus_operator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -21,17 +20,16 @@ module stm_focus_operator #(
     input var UPDATE,
     stm_bus_if.focus_port STM_BUS,
     input var [31:0] SOUND_SPEED,
-    output var [WIDTH-1:0] INTENSITY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID
 );
 
-  localparam int SqrtLatency = 2 + 2 + 2 + 2 + 10 + 66;
-  localparam int DivLatency = SqrtLatency + 66 + 1;
+  localparam int DivLatency = 2 + 2 + 2 + 2 + 10 + 66 + 1;
   localparam int Latency = DivLatency + 249;
 
-  logic [WIDTH-1:0] intensity;
-  logic [WIDTH-1:0] phase;
+  logic [7:0] intensity;
+  logic [7:0] phase;
 
   logic [15:0] addr;
   logic [127:0] data_out;
@@ -49,8 +47,6 @@ module stm_focus_operator #(
   logic [63:0] quo;
   logic [31:0] _unused_rem;
   logic [15:0] divined;
-  logic [63:0] _unused_quo;
-  logic [15:0] rem;
 
   logic [$clog2(Latency)-1:0] cnt;
   logic [$clog2(DEPTH)-1:0] set_cnt;
@@ -151,22 +147,12 @@ module stm_focus_operator #(
   );
 
   div_64_32 div_64_32_quo (
-      .s_axis_dividend_tdata({21'd0, sqrt_dout, 19'd0}),
+      .s_axis_dividend_tdata({22'd0, sqrt_dout, 18'd0}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(SOUND_SPEED),
       .s_axis_divisor_tvalid(1'b1),
       .aclk(CLK),
       .m_axis_dout_tdata({quo, _unused_rem}),
-      .m_axis_dout_tvalid()
-  );
-
-  div_64_16 div_64_16_rem (
-      .s_axis_dividend_tdata(quo),
-      .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(divined),
-      .s_axis_divisor_tvalid(1'b1),
-      .aclk(CLK),
-      .m_axis_dout_tdata({_unused_quo, rem}),
       .m_axis_dout_tvalid()
   );
 
@@ -206,13 +192,12 @@ module stm_focus_operator #(
       CALC: begin
         tr_idx <= tr_idx + 1;
         cnt <= cnt + 1;
-        divined <= 15'd512;
 
         if (cnt >= DivLatency) begin
           dout_valid <= 1'b1;
           set_cnt <= set_cnt + 1;
 
-          phase <= rem[WIDTH-1:0];
+          phase <= quo[7:0];
           intensity <= intensity_buf;
         end
 

@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,20 +13,19 @@
 
 `timescale 1ns / 1ps
 module stm_gain_operator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var UPDATE,
     input var [15:0] IDX,
     stm_bus_if.gain_port STM_BUS,
-    output var [WIDTH-1:0] DUTY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  bit [7:0] intensity;
+  bit [7:0] phase;
 
   bit [127:0] data_out;
 
@@ -47,7 +46,7 @@ module stm_gain_operator #(
 
   state_t state = WAITING;
 
-  assign DUTY = duty;
+  assign INTENSITY = intensity;
   assign PHASE = phase;
 
   assign idx = IDX;
@@ -78,44 +77,44 @@ module stm_gain_operator #(
         dout_valid <= 1;
         case (set_cnt)
           0: begin
-            phase <= {data_out[7:0], 1'h0};
-            duty <= data_out[15:8] == 8'h00 ? 9'h00 : data_out[15:8] + 1;
+            phase <= data_out[7:0];
+            intensity <= data_out[15:8];
             set_cnt <= set_cnt + 1;
           end
           1: begin
-            phase <= {data_out[23:16], 1'h0};
-            duty <= data_out[31:24] == 8'h00 ? 9'h00 : data_out[31:24] + 1;
+            phase <= data_out[23:16];
+            intensity <= data_out[31:24];
             set_cnt <= set_cnt + 1;
           end
           2: begin
-            phase <= {data_out[39:32], 1'h0};
-            duty <= data_out[47:40] == 8'h00 ? 9'h00 : data_out[47:40] + 1;
+            phase <= data_out[39:32];
+            intensity <= data_out[47:40];
             set_cnt <= set_cnt + 1;
           end
           3: begin
-            phase <= {data_out[55:48], 1'h0};
-            duty <= data_out[63:56] == 8'h00 ? 9'h00 : data_out[63:56] + 1;
+            phase <= data_out[55:48];
+            intensity <= data_out[63:56];
             set_cnt <= set_cnt + 1;
           end
           4: begin
-            phase <= {data_out[71:64], 1'h0};
-            duty <= data_out[79:72] == 8'h00 ? 9'h00 : data_out[79:72] + 1;
+            phase <= data_out[71:64];
+            intensity <= data_out[79:72];
             set_cnt <= set_cnt + 1;
           end
           5: begin
-            phase <= {data_out[87:80], 1'h0};
-            duty <= data_out[95:88] == 8'h00 ? 9'h00 : data_out[95:88] + 1;
+            phase <= data_out[87:80];
+            intensity <= data_out[95:88];
             set_cnt <= set_cnt + 1;
             gain_addr_offset <= gain_addr_offset + 1;
           end
           6: begin
-            phase <= {data_out[103:96], 1'h0};
-            duty <= data_out[111:104] == 8'h00 ? 9'h00 : data_out[111:104] + 1;
+            phase <= data_out[103:96];
+            intensity <= data_out[111:104];
             set_cnt <= set_cnt + 1;
           end
           7: begin
-            phase <= {data_out[119:112], 1'h0};
-            duty <= data_out[127:120] == 8'h00 ? 9'h00 : data_out[127:120] + 1;
+            phase <= data_out[119:112];
+            intensity <= data_out[127:120];
             set_cnt <= 0;
           end
           default: begin
