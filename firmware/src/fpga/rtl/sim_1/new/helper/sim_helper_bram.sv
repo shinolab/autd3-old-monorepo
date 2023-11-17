@@ -55,27 +55,27 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
-  task automatic write_stm_gain_duty_phase(int idx, input logic [WIDTH-1:0] duty[DEPTH],
-                                           input logic [WIDTH-1:0] phase[DEPTH]);
+  task automatic write_stm_gain_intensity_phase(int idx, input logic [WIDTH-1:0] intensity[DEPTH],
+                                                input logic [WIDTH-1:0] phase[DEPTH]);
     logic [15:0] offset;
     logic [15:0] i;
     offset = idx[21:6];
     i = idx[5:0] << 8;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
     for (int j = 0; j < DEPTH; j++) begin
-      bram_write(BRAM_SELECT_STM, i + j, {duty[j][7:0], phase[j][7:0]});
+      bram_write(BRAM_SELECT_STM, i + j, {intensity[j][7:0], phase[j][7:0]});
     end
   endtask
 
   task automatic write_stm_focus(int idx, input logic [17:0] x, input logic [17:0] y,
-                                 input logic [17:0] z, input logic [3:0] duty_shift);
+                                 input logic [17:0] z, input logic [3:0] intensity_shift);
     logic [15:0] offset = idx[15:11];
     logic [15:0] i = idx[10:0] << 3;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
     bram_write(BRAM_SELECT_STM, i, x[15:0]);
     bram_write(BRAM_SELECT_STM, i + 1, {y[13:0], x[17:16]});
     bram_write(BRAM_SELECT_STM, i + 2, {z[11:0], y[17:14]});
-    bram_write(BRAM_SELECT_STM, i + 3, {6'd0, duty_shift, z[17:12]});
+    bram_write(BRAM_SELECT_STM, i + 3, {6'd0, intensity_shift, z[17:12]});
   endtask
 
   task automatic set_mod_bram_offset(input logic offset);
@@ -94,8 +94,8 @@ module sim_helper_bram #(
     end
   endtask
 
-  task automatic write_duty_phase(int idx, logic [7:0] duty, logic [7:0] phase);
-    bram_write(BRAM_SELECT_NORMAL, idx, {duty, phase});
+  task automatic write_intensity_phase(int idx, logic [7:0] intensity, logic [7:0] phase);
+    bram_write(BRAM_SELECT_NORMAL, idx, {intensity, phase});
   endtask
 
   task automatic set_ctl_reg(logic force_fan, logic sync);

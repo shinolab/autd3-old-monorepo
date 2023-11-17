@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@ module sim_operator_stm_focus ();
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
   sim_helper_bram sim_helper_bram ();
@@ -37,13 +36,12 @@ module sim_operator_stm_focus ();
   bit signed [17:0] focus_x[65536];
   bit signed [17:0] focus_y[65536];
   bit signed [17:0] focus_z[65536];
-  bit [3:0] duty_shift[65536];
+  bit [7:0] intensity_buf[65536];
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  bit [7:0] intensity;
+  bit [7:0] phase;
 
   time_cnt_generator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK_20P48M),
@@ -62,7 +60,7 @@ module sim_operator_stm_focus ();
       .SOUND_SPEED(sound_speed),
       .STM_GAIN_MODE(1'b0),
       .CPU_BUS(sim_helper_bram.cpu_bus.stm_port),
-      .DUTY(duty),
+      .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid),
       .IDX(idx)
@@ -88,8 +86,8 @@ module sim_operator_stm_focus ();
       focus_x[i] = sim_helper_random.range(131071, -131072 + 6908);
       focus_y[i] = sim_helper_random.range(131071, -131072 + 5283);
       focus_z[i] = sim_helper_random.range(131071, -131072);
-      duty_shift[i] = sim_helper_random.range(15, 0);
-      sim_helper_bram.write_stm_focus(i, focus_x[i], focus_y[i], focus_z[i], duty_shift[i]);
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      sim_helper_bram.write_stm_focus(i, focus_x[i], focus_y[i], focus_z[i], intensity_buf[i]);
     end
 
     while (1) begin
@@ -120,13 +118,13 @@ module sim_operator_stm_focus ();
           x = focus_x[idx_buf] - $rtoi(10.16 * ix / 0.025);  // [0.025mm]
           z = focus_z[idx_buf];  // [0.025mm]
           r = $rtoi($sqrt(x * x + y * y + z * z));  // [0.025mm]
-          lambda = (r << 22) / sound_speed;
-          p = lambda % 512;
-          if (duty != (512 >> (1 + duty_shift[idx_buf]))) begin
-            $error("Failed at d_out=%d, d_in=%d @%d", duty, 512 >> (1 + duty_shift[idx_buf]), id);
+          lambda = (r << 18) / sound_speed;
+          p = lambda % 256;
+          if (intensity !== intensity_buf[idx_buf]) begin
+            $error("Failed at d_out=%d, d_in=%d @%d", intensity, intensity_buf[idx_buf], id);
             $finish();
           end
-          if (phase != p) begin
+          if (phase !== p) begin
             $error("Failed at p_out=%d, p_in=%d (r2=%d, r=%d, lambda=%d) @%d", phase, p,
                    x * x + y * y + z * z, r, lambda, id);
             $error("x=%d, y=%d, z=%d", x, y, z);

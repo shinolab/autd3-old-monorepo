@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,14 +14,13 @@
 
 `timescale 1ns / 1ps
 module normal_operator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     cpu_bus_if.normal_port CPU_BUS,
     input var UPDATE,
-    output var [WIDTH-1:0] DUTY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID
 );
 
@@ -36,8 +35,8 @@ module normal_operator #(
   bit [7:0] read_addr = 0;
   bit [15:0] dout;
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  bit [7:0] intensity;
+  bit [7:0] phase;
 
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign ena = CPU_BUS.NORMAL_EN;
@@ -45,7 +44,7 @@ module normal_operator #(
   assign addr = CPU_BUS.BRAM_ADDR[7:0];
   assign data_in = CPU_BUS.DATA_IN;
 
-  assign DUTY = duty;
+  assign INTENSITY = intensity;
   assign PHASE = phase;
   assign DOUT_VALID = dout_valid;
 
@@ -85,8 +84,8 @@ module normal_operator #(
         if (read_addr > 1) begin
           dout_valid <= 1;
 
-          phase <= {dout[7:0], 1'h0};
-          duty <= dout[15:8] == 8'h00 ? 9'h00 : dout[15:8] + 1;
+          phase <= dout[7:0];
+          intensity <= dout[15:8];
         end
 
         if (read_addr == DEPTH + 1) begin

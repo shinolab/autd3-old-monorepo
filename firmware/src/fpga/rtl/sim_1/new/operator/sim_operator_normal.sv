@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,21 +22,19 @@ module sim_operator_normal ();
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  bit [7:0] intensity;
+  bit [7:0] phase;
   bit dout_valid;
 
-  bit [WIDTH-1:0] duty_buf[DEPTH];
-  bit [WIDTH-1:0] phase_buf[DEPTH];
+  bit [7:0] intensity_buf[DEPTH];
+  bit [7:0] phase_buf[DEPTH];
 
   time_cnt_generator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK_20P48M),
@@ -47,13 +45,12 @@ module sim_operator_normal ();
   );
 
   normal_operator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) normal_operator (
       .CLK(CLK_20P48M),
       .CPU_BUS(sim_helper_bram.cpu_bus.normal_port),
       .UPDATE(UPDATE),
-      .DUTY(duty),
+      .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid)
   );
@@ -64,9 +61,9 @@ module sim_operator_normal ();
     @(posedge locked);
 
     for (int i = 0; i < DEPTH; i++) begin
-      duty_buf[i]  = sim_helper_random.range(8'hFF, 0);
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
       phase_buf[i] = sim_helper_random.range(8'hFF, 0);
-      sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
+      sim_helper_bram.write_intensity_phase(i, intensity_buf[i], phase_buf[i]);
     end
 
     while (1) begin
@@ -83,12 +80,12 @@ module sim_operator_normal ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (!((duty_buf[i] == 0 && duty == 0) || (duty_buf[i] != 0 && (duty_buf[i] + 1 == duty)))) begin
-        $display("failed at duty[%d], %d!=%d", i, duty_buf[i] + 1, duty);
+      if (intensity_buf[i] !== intensity) begin
+        $display("failed at intensity[%d], %d!=%d", i, intensity_buf[i], intensity);
         $finish();
       end
-      if ({phase_buf[i], 1'b0} != phase) begin
-        $display("failed at phase[%d], %d!=%d", i, {phase_buf[i], 5'h00}, phase);
+      if (phase_buf[i] !== phase) begin
+        $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase);
         $finish();
       end
       @(posedge CLK_20P48M);

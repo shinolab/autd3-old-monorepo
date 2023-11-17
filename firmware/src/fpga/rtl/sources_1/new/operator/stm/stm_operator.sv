@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module stm_operator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -24,8 +23,8 @@ module stm_operator #(
     input var [31:0] SOUND_SPEED,
     input var STM_GAIN_MODE,
     cpu_bus_if.stm_port CPU_BUS,
-    output var [WIDTH-1:0] DUTY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID,
     output var [15:0] IDX
 );
@@ -33,16 +32,16 @@ module stm_operator #(
   stm_bus_if stm_bus_if ();
   assign stm_bus_if.STM_GAIN_MODE = STM_GAIN_MODE;
 
-  bit [WIDTH-1:0] duty_gain;
-  bit [WIDTH-1:0] phase_gain;
-  bit [WIDTH-1:0] duty_focus;
-  bit [WIDTH-1:0] phase_focus;
+  bit [ 7:0] intensity_gain;
+  bit [ 7:0] phase_gain;
+  bit [ 7:0] intensity_focus;
+  bit [ 7:0] phase_focus;
   bit [15:0] idx;
   bit start_gain, done_gain;
   bit start_focus, done_focus;
   bit dout_valid_gain, dout_valid_focus;
 
-  assign DUTY = STM_GAIN_MODE ? duty_gain : duty_focus;
+  assign INTENSITY = STM_GAIN_MODE ? intensity_gain : intensity_focus;
   assign PHASE = STM_GAIN_MODE ? phase_gain : phase_focus;
   assign DOUT_VALID = STM_GAIN_MODE ? dout_valid_gain : dout_valid_focus;
   assign IDX = idx;
@@ -62,20 +61,18 @@ module stm_operator #(
   );
 
   stm_gain_operator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) stm_gain_operator (
       .CLK(CLK),
       .UPDATE(UPDATE),
       .IDX(idx),
       .STM_BUS(stm_bus_if.gain_port),
-      .DUTY(duty_gain),
+      .INTENSITY(intensity_gain),
       .PHASE(phase_gain),
       .DOUT_VALID(dout_valid_gain)
   );
 
   stm_focus_operator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) stm_focus_operator (
       .CLK(CLK),
@@ -83,7 +80,7 @@ module stm_operator #(
       .IDX(idx),
       .STM_BUS(stm_bus_if.focus_port),
       .SOUND_SPEED(SOUND_SPEED),
-      .DUTY(duty_focus),
+      .INTENSITY(intensity_focus),
       .PHASE(phase_focus),
       .DOUT_VALID(dout_valid_focus)
   );
