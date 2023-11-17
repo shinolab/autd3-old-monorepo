@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 18/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module sim_helper_bram #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) ();
 
@@ -55,8 +54,8 @@ module sim_helper_bram #(
     CPU_WE0_N <= 1;
   endtask
 
-  task automatic write_stm_gain_intensity_phase(int idx, input logic [WIDTH-1:0] intensity[DEPTH],
-                                                input logic [WIDTH-1:0] phase[DEPTH]);
+  task automatic write_stm_gain_intensity_phase(int idx, input logic [7:0] intensity[DEPTH],
+                                                input logic [7:0] phase[DEPTH]);
     logic [15:0] offset;
     logic [15:0] i;
     offset = idx[21:6];
@@ -68,14 +67,14 @@ module sim_helper_bram #(
   endtask
 
   task automatic write_stm_focus(int idx, input logic [17:0] x, input logic [17:0] y,
-                                 input logic [17:0] z, input logic [3:0] intensity_shift);
+                                 input logic [17:0] z, input logic [7:0] intensity_shift);
     logic [15:0] offset = idx[15:11];
     logic [15:0] i = idx[10:0] << 3;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_PAGE, offset);
     bram_write(BRAM_SELECT_STM, i, x[15:0]);
     bram_write(BRAM_SELECT_STM, i + 1, {y[13:0], x[17:16]});
     bram_write(BRAM_SELECT_STM, i + 2, {z[11:0], y[17:14]});
-    bram_write(BRAM_SELECT_STM, i + 3, {6'd0, intensity_shift, z[17:12]});
+    bram_write(BRAM_SELECT_STM, i + 3, {2'd0, intensity_shift, z[17:12]});
   endtask
 
   task automatic set_mod_bram_offset(input logic offset);
@@ -121,7 +120,7 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV_1, mod_freq_div[31:16]);
   endtask
 
-  task automatic write_silent_step(logic [WIDTH-1:0] silent_step);
+  task automatic write_silent_step(logic [8:0] silent_step);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP, silent_step);
   endtask
 
