@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -63,12 +63,6 @@ module main #(
   bit [15:0] delay_m[DEPTH];
   bit dout_valid_m;
 
-  bit signed [WIDTH:0] filter_duty[DEPTH];
-  bit signed [WIDTH:0] filter_phase[DEPTH];
-  bit [WIDTH-1:0] duty_f;
-  bit [WIDTH-1:0] phase_f;
-  bit dout_valid_f;
-
   bit [WIDTH-1:0] step_s;
   bit [WIDTH-1:0] duty_s;
   bit [WIDTH-1:0] phase_s;
@@ -106,9 +100,7 @@ module main #(
       .STM_START_IDX(stm_start_idx),
       .USE_STM_START_IDX(use_stm_start_idx),
       .STM_FINISH_IDX(stm_finish_idx),
-      .USE_STM_FINISH_IDX(use_stm_finish_idx),
-      .FILTER_DUTY(filter_duty),
-      .FILTER_PHASE(filter_phase)
+      .USE_STM_FINISH_IDX(use_stm_finish_idx)
   );
 
   time_cnt_generator #(
@@ -184,27 +176,6 @@ module main #(
     assign dout_valid = dout_valid_normal;
   end
 
-  if (ENABLE_FILTER == "TRUE") begin : gen_filter
-    filter #(
-        .WIDTH(WIDTH),
-        .DEPTH(DEPTH)
-    ) filter (
-        .CLK(CLK),
-        .DIN_VALID(dout_valid),
-        .DUTY(duty),
-        .PHASE(phase),
-        .FILTER_DUTY(filter_duty),
-        .FILTER_PHASE(filter_phase),
-        .DUTY_F(duty_f),
-        .PHASE_F(phase_f),
-        .DOUT_VALID(dout_valid_f)
-    );
-  end else begin : gen_filter_false
-    assign duty_f = duty;
-    assign phase_f = phase;
-    assign dout_valid_f = dout_valid;
-  end
-
   if (ENABLE_MODULATOR == "TRUE") begin : gen_modulator
     modulator #(
         .WIDTH(WIDTH),
@@ -215,9 +186,9 @@ module main #(
         .CYCLE_M(cycle_m),
         .FREQ_DIV_M(freq_div_m),
         .CPU_BUS(CPU_BUS_MOD),
-        .DIN_VALID(dout_valid_f),
-        .DUTY_IN(duty_f),
-        .PHASE_IN(phase_f),
+        .DIN_VALID(dout_valid),
+        .DUTY_IN(duty),
+        .PHASE_IN(phase),
         .DELAY_M(delay_m),
         .DUTY_OUT(duty_m),
         .PHASE_OUT(phase_m),
@@ -225,9 +196,9 @@ module main #(
         .IDX()
     );
   end else begin : gen_modulator_false
-    assign duty_m = duty_f;
-    assign phase_m = phase_f;
-    assign dout_valid_m = dout_valid_f;
+    assign duty_m = duty;
+    assign phase_m = phase;
+    assign dout_valid_m = dout_valid;
   end
 
   if (ENABLE_SILENCER == "TRUE") begin : gen_silencer
