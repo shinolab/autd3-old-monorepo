@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -69,8 +69,7 @@ module sim_operator_stm_gain ();
   end
 
   initial begin
-    //    cycle_stm = 2048 - 1;
-    cycle_stm = 100 - 1;
+    cycle_stm = 2048 - 1;
     freq_div_stm = 512;
 
     sim_helper_random.init();

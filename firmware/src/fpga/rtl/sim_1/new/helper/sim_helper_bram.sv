@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/11/2023
+ * Last Modified: 19/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -158,6 +158,7 @@ module sim_helper_bram #(
     CPU_CKIO  = 0;
   end
 
-  always #6.65 CPU_CKIO = ~CPU_CKIO;
+  //  always #6.65 CPU_CKIO = ~CPU_CKIO;
+  always #0.1 CPU_CKIO = ~CPU_CKIO;  // to speed up simulation
 
 endmodule
