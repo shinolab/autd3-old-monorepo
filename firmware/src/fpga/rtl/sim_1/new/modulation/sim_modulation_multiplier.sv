@@ -38,7 +38,6 @@ module sim_modulation_multiplier ();
   logic [7:0] mod[65536];
   logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
-  logic [15:0] idx_buf;
 
   modulation_bus_if m_bus ();
 
@@ -65,21 +64,22 @@ module sim_modulation_multiplier ();
   );
 
   always @(posedge din_valid) begin
-    idx_buf = idx;
-    idx = idx === cycle_m ? 0 : idx + 1;
+    idx <= idx === cycle_m ? 0 : idx + 1;
   end
 
   task automatic set();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      intensity = sim_helper_random.range(8'hFF, 0);
-      phase = sim_helper_random.range(8'hFF, 0);
-      intensity_buf[i] = intensity;
-      phase_buf[i] = phase;
+      din_valid <= 1'b1;
+      intensity <= intensity_buf[i];
+      phase <=    phase_buf[i];
     end
     @(posedge CLK_20P48M);
-    din_valid = 1'b0;
+    din_valid <= 1'b0;
   endtask
 
   task automatic check();
@@ -91,9 +91,9 @@ module sim_modulation_multiplier ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (intensity_out !== (intensity_buf[i] * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)])) begin
+      if (intensity_out !== (intensity_buf[i] * mod[(idx-delay_m[i]+cycle_m+1)%(cycle_m+1)])) begin
         $error("Failed at %d: d=%d, m=%d, d_m=%d", i, intensity_buf[i],
-               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], intensity_out);
+               mod[(idx-delay_m[i]+cycle_m+1)%(cycle_m+1)], intensity_out);
         $finish();
       end
       if (phase_out !== phase_buf[i]) begin
