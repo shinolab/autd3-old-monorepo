@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,14 +18,14 @@ module stm_memory (
     stm_bus_if.memory_port STM_BUS
 );
 
-  bit bus_clk;
-  bit stm_ena;
-  bit we;
-  bit [18:0] stm_addr;
-  bit [15:0] data_in;
+  logic bus_clk;
+  logic stm_ena;
+  logic we;
+  logic [18:0] stm_addr;
+  logic [15:0] data_in;
 
-  bit [15:0] idx;
-  bit [127:0] data_out;
+  logic [15:0] idx;
+  logic [127:0] data_out;
 
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign stm_ena = CPU_BUS.STM_EN;

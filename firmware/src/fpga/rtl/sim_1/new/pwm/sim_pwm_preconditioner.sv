@@ -13,8 +13,8 @@
 
 module sim_pwm_preconditioner ();
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -26,15 +26,15 @@ module sim_pwm_preconditioner ();
   localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  logic [WIDTH-1:0] duty;
+  logic [WIDTH-1:0] phase;
 
-  bit [WIDTH-1:0] rise  [DEPTH];
-  bit [WIDTH-1:0] fall  [DEPTH];
-  bit din_valid, dout_valid;
+  logic [WIDTH-1:0] rise  [DEPTH];
+  logic [WIDTH-1:0] fall  [DEPTH];
+  logic din_valid, dout_valid;
 
-  bit [WIDTH-1:0] duty_buf [DEPTH];
-  bit [WIDTH-1:0] phase_buf[DEPTH];
+  logic [WIDTH-1:0] duty_buf [DEPTH];
+  logic [WIDTH-1:0] phase_buf[DEPTH];
 
   pwm_preconditioner #(
       .WIDTH(WIDTH),
@@ -49,7 +49,7 @@ module sim_pwm_preconditioner ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(int idx, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
+  task automatic set(int idx, logic [WIDTH-1:0] d, logic [WIDTH-1:0] p);
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;

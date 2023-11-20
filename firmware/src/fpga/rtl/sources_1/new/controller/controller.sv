@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -38,47 +38,47 @@ module controller #(
 
   `include "params.vh"
 
-  bit bus_clk;
-  bit ctl_ena;
-  bit wea;
-  bit [6:0] ctl_addr;
-  bit [7:0] dly_addr;
-  bit [7:0] flt_duty_addr;
-  bit [7:0] flt_phase_addr;
-  bit [15:0] cpu_data_in;
-  bit [15:0] cpu_data_out;
-  bit [6:0] addr;
-  bit we;
-  bit [15:0] din;
-  bit [15:0] dout;
+  logic bus_clk;
+  logic ctl_ena;
+  logic wea;
+  logic [6:0] ctl_addr;
+  logic [7:0] dly_addr;
+  logic [7:0] flt_duty_addr;
+  logic [7:0] flt_phase_addr;
+  logic [15:0] cpu_data_in;
+  logic [15:0] cpu_data_out;
+  logic [6:0] addr;
+  logic we;
+  logic [15:0] din;
+  logic [15:0] dout;
 
-  bit [7:0] dly_cnt = 0;
-  bit [7:0] dly_set = DEPTH - 2;
-  bit [15:0] dly_dout;
+  logic [7:0] dly_cnt = 0;
+  logic [7:0] dly_set = DEPTH - 2;
+  logic [15:0] dly_dout;
 
-  bit [7:0] flt_cnt = 0;
-  bit [7:0] flt_set = DEPTH - 2;
-  bit [15:0] flt_duty_dout;
-  bit [15:0] flt_phase_dout;
+  logic [7:0] flt_cnt = 0;
+  logic [7:0] flt_set = DEPTH - 2;
+  logic [15:0] flt_duty_dout;
+  logic [15:0] flt_phase_dout;
 
-  bit [15:0] ctl_reg;
+  logic [15:0] ctl_reg;
 
-  bit [63:0] ecat_sync_time;
-  bit sync_set;
+  logic [63:0] ecat_sync_time;
+  logic sync_set;
 
-  bit [15:0] cycle_m;
-  bit [31:0] freq_div_m;
-  bit [15:0] delay_m[DEPTH];
+  logic [15:0] cycle_m;
+  logic [31:0] freq_div_m;
+  logic [15:0] delay_m[DEPTH];
 
-  bit [8:0] step_s;
+  logic [8:0] step_s;
 
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
-  bit [31:0] sound_speed;
-  bit [15:0] stm_start_idx;
-  bit [15:0] stm_finish_idx;
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
+  logic [31:0] sound_speed;
+  logic [15:0] stm_start_idx;
+  logic [15:0] stm_finish_idx;
 
-  bit [2:0] ctl_page;
+  logic [2:0] ctl_page;
 
   assign ctl_page = CPU_BUS.BRAM_ADDR[10:8];
   assign bus_clk = CPU_BUS.BUS_CLK;
@@ -139,7 +139,7 @@ module controller #(
       .doutb(dly_dout)
   );
 
-  typedef enum bit [4:0] {
+  typedef enum logic [4:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,

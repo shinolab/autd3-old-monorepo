@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,8 +25,8 @@ module pwm #(
     output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] R[DEPTH];
-  bit [WIDTH-1:0] F[DEPTH];
+  logic [WIDTH-1:0] R[DEPTH];
+  logic [WIDTH-1:0] F[DEPTH];
 
   pwm_preconditioner #(
       .WIDTH(WIDTH),
@@ -42,7 +42,7 @@ module pwm #(
   );
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
-    bit [WIDTH-1:0] R_buf, F_buf;
+    logic [WIDTH-1:0] R_buf, F_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)
     ) pwm_buffer (

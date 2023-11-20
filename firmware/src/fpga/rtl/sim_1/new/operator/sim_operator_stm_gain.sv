@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 module sim_operator_stm_gain ();
 
-  bit CLK_20P48M;
-  bit locked;
-  bit [63:0] SYS_TIME;
+  logic CLK_20P48M;
+  logic locked;
+  logic [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -27,16 +27,16 @@ module sim_operator_stm_gain ();
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
 
-  bit [7:0] intensity;
-  bit [7:0] phase;
-  bit [15:0] idx;
-  bit dout_valid;
+  logic [7:0] intensity;
+  logic [7:0] phase;
+  logic [15:0] idx;
+  logic dout_valid;
 
-  bit [7:0] intensity_buf[2048][DEPTH];
-  bit [7:0] phase_buf[2048][DEPTH];
+  logic [7:0] intensity_buf[2048][DEPTH];
+  logic [7:0] phase_buf[2048][DEPTH];
 
   time_cnt_generator #(
       .DEPTH(DEPTH)
@@ -63,7 +63,7 @@ module sim_operator_stm_gain ();
       .IDX(idx)
   );
 
-  bit [15:0] idx_buf;
+  logic [15:0] idx_buf;
   always @(posedge CLK_20P48M) begin
     if (UPDATE) idx_buf = idx;
   end

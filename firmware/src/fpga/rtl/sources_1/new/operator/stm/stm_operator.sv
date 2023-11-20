@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -32,14 +32,14 @@ module stm_operator #(
   stm_bus_if stm_bus_if ();
   assign stm_bus_if.STM_GAIN_MODE = STM_GAIN_MODE;
 
-  bit [ 7:0] intensity_gain;
-  bit [ 7:0] phase_gain;
-  bit [ 7:0] intensity_focus;
-  bit [ 7:0] phase_focus;
-  bit [15:0] idx;
-  bit start_gain, done_gain;
-  bit start_focus, done_focus;
-  bit dout_valid_gain, dout_valid_focus;
+  logic [ 7:0] intensity_gain;
+  logic [ 7:0] phase_gain;
+  logic [ 7:0] intensity_focus;
+  logic [ 7:0] phase_focus;
+  logic [15:0] idx;
+  logic start_gain, done_gain;
+  logic start_focus, done_focus;
+  logic dout_valid_gain, dout_valid_focus;
 
   assign INTENSITY = STM_GAIN_MODE ? intensity_gain : intensity_focus;
   assign PHASE = STM_GAIN_MODE ? phase_gain : phase_focus;

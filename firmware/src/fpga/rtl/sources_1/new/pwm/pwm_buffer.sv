@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,8 +23,8 @@ module pwm_buffer #(
     output var [WIDTH-1:0] FALL_OUT
 );
 
-  bit [WIDTH-1:0] R;
-  bit [WIDTH-1:0] F;
+  logic [WIDTH-1:0] R;
+  logic [WIDTH-1:0] F;
 
   assign RISE_OUT = R;
   assign FALL_OUT = F;

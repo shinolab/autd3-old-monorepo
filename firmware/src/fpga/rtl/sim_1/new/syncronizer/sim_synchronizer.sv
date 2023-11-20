@@ -4,7 +4,7 @@
  * Created Date: 29/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,16 +15,16 @@
 module sim_synchronizer ();
 
   localparam int ECAT_SYNC_BASE = 500000;  // 500 us
-  localparam bit [15:0] ECAT_SYNC_CYCLE_TICKS = 1;
+  localparam logic [15:0] ECAT_SYNC_CYCLE_TICKS = 1;
 
-  bit CLK_20P48M, CLK_20P48M_p50, CLK_20P48M_m50;
-  bit [63:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
-  bit [63:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
+  logic CLK_20P48M, CLK_20P48M_p50, CLK_20P48M_m50;
+  logic [63:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
+  logic [63:0] SYS_TIME_WO_SYNC, SYS_TIME_p50_WO_SYNC, SYS_TIME_m50_WO_SYNC;
 
-  bit ECAT_SYNC;
+  logic ECAT_SYNC;
 
-  bit set;
-  bit [63:0] ecat_sync_time;  // [ns]
+  logic set;
+  logic [63:0] ecat_sync_time;  // [ns]
 
   synchronizer synchronizer (
       .CLK(CLK_20P48M),

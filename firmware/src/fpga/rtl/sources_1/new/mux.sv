@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,14 +33,14 @@ module mux #(
     output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] duty_stm_buf;
-  bit [WIDTH-1:0] phase_stm_buf;
-  bit dout_valid_stm_buf;
-  bit [WIDTH-1:0] duty_normal_buf;
-  bit [WIDTH-1:0] phase_normal_buf;
-  bit dout_valid_normal_buf;
+  logic [WIDTH-1:0] duty_stm_buf;
+  logic [WIDTH-1:0] phase_stm_buf;
+  logic dout_valid_stm_buf;
+  logic [WIDTH-1:0] duty_normal_buf;
+  logic [WIDTH-1:0] phase_normal_buf;
+  logic dout_valid_normal_buf;
 
-  typedef enum bit [1:0] {
+  typedef enum logic [1:0] {
     NORMAL,
     WAIT_START_STM,
     STM,
@@ -49,7 +49,7 @@ module mux #(
 
   stm_state_t stm_state = NORMAL;
 
-  bit output_stm;
+  logic output_stm;
   assign output_stm = (stm_state == STM) | (stm_state == WAIT_FINISH_STM);
   assign DUTY = output_stm ? duty_stm_buf : duty_normal_buf;
   assign PHASE = output_stm ? phase_stm_buf : phase_normal_buf;
