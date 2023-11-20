@@ -27,7 +27,6 @@ module stm_sampler (
   logic [63:0] _unused_quo;
   logic [31:0] cycle;
   logic [31:0] rem;
-  logic rem_tvalid;
 
   assign IDX = rem[15:0];
 

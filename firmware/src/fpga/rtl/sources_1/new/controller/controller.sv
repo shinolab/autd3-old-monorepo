@@ -43,8 +43,6 @@ module controller #(
   logic wea;
   logic [6:0] ctl_addr;
   logic [7:0] dly_addr;
-  logic [7:0] flt_duty_addr;
-  logic [7:0] flt_phase_addr;
   logic [15:0] cpu_data_in;
   logic [15:0] cpu_data_out;
   logic [6:0] addr;
@@ -55,11 +53,6 @@ module controller #(
   logic [7:0] dly_cnt = 0;
   logic [7:0] dly_set = DEPTH - 2;
   logic [15:0] dly_dout;
-
-  logic [7:0] flt_cnt = 0;
-  logic [7:0] flt_set = DEPTH - 2;
-  logic [15:0] flt_duty_dout;
-  logic [15:0] flt_phase_dout;
 
   logic [15:0] ctl_reg;
 
