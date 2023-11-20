@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ module sim_modulation_multiplier ();
 
   always @(posedge din_valid) begin
     idx_buf = idx;
-    idx = idx == cycle_m ? 0 : idx + 1;
+    idx = idx === cycle_m ? 0 : idx + 1;
   end
 
   task automatic set();

@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -90,7 +90,7 @@ module sim_modulator ();
       intensity_real = $itor(
           int'(intensity_buf[i]) * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)]) / 255.0 / 255.0;
       if (pulse_width_out !== int'(($asin(intensity_real) * 2.0 / `M_PI * 256.0))) begin
-        $error("Failed at %d: d=%d, m=%d, d_m=%d != %d", i, intensity_buf[i],
+        $error("Failed at %d: d=%d, m=%d, d_m=%d !== %d", i, intensity_buf[i],
                mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], pulse_width_out, int'(($asin
                (intensity_real) * 2.0 / `M_PI * 256.0)));
         $finish();

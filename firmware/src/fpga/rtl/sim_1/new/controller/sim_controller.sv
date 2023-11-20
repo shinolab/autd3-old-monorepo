@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -121,41 +121,41 @@ module sim_controller ();
       @(posedge CLK_20P48M);
     end
 
-    if (cycle_m_buf != cycle_m) begin
+    if (cycle_m_buf !== cycle_m) begin
       $error("Failed at cycle_m");
       $finish();
     end
-    if (freq_div_m_buf != freq_div_m) begin
+    if (freq_div_m_buf !== freq_div_m) begin
       $error("Failed at freq_div_m");
       $finish();
     end
     for (int i = 0; i < DEPTH; i++) begin
-      if (delay_buf[i] != delay_m[i]) begin
+      if (delay_buf[i] !== delay_m[i]) begin
         $error("Failed at delay[%d]", i);
         $finish();
       end
     end
-    if (step_s_buf != step_s) begin
+    if (step_s_buf !== step_s) begin
       $error("Failed at step_s");
       $finish();
     end
-    if (cycle_stm_buf != cycle_stm) begin
+    if (cycle_stm_buf !== cycle_stm) begin
       $error("Failed at cycle_stm");
       $finish();
     end
-    if (freq_div_stm_buf != freq_div_stm) begin
+    if (freq_div_stm_buf !== freq_div_stm) begin
       $error("Failed at freq_div_stm");
       $finish();
     end
-    if (sound_speed_buf != sound_speed) begin
+    if (sound_speed_buf !== sound_speed) begin
       $error("Failed at sound_speed");
       $finish();
     end
-    if (stm_start_idx_buf != stm_start_idx) begin
+    if (stm_start_idx_buf !== stm_start_idx) begin
       $error("Failed at stm_start_idx");
       $finish();
     end
-    if (stm_finish_idx_buf != stm_finish_idx) begin
+    if (stm_finish_idx_buf !== stm_finish_idx) begin
       $error("Failed at stm_finish_idx");
       $finish();
     end
@@ -163,7 +163,7 @@ module sim_controller ();
     sim_helper_bram.set_ctl_reg(1, 1);
     @(posedge sync_set);
 
-    if (ecat_sync_time_buf != ecat_sync_time) begin
+    if (ecat_sync_time_buf !== ecat_sync_time) begin
       $error("Failed at ecat_sync_time");
       $finish();
     end

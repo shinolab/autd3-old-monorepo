@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ module sim_pwm_generator ();
   );
 
   task automatic set(bit [WIDTH-1:0] r, bit [WIDTH-1:0] f);
-    while (time_cnt != 512 - 1) @(posedge CLK_20P48M);
+    while (time_cnt !== 512 - 1) @(posedge CLK_20P48M);
     rise = r;
     fall = f;
     @(posedge CLK_20P48M);
@@ -50,11 +50,11 @@ module sim_pwm_generator ();
     while (1) begin
       automatic int t = time_cnt;
       @(posedge CLK_20P48M);
-      if (pwm_out != (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
+      if (pwm_out !== (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
         $error("Failed at v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
         $finish();
       end
-      if (time_cnt == 512 - 1) begin
+      if (time_cnt === 512 - 1) begin
         break;
       end
     end

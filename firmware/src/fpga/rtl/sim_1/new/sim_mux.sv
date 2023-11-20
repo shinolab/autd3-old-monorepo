@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -99,11 +99,11 @@ module sim_mux ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_buf_normal[i] != duty) begin
+      if (duty_buf_normal[i] !== duty) begin
         $display("failed at duty[%d], %d!=%d", i, duty_buf_normal[i], duty);
         $finish();
       end
-      if (phase_buf_normal[i] != phase) begin
+      if (phase_buf_normal[i] !== phase) begin
         $display("failed at phase[%d], %d!=%d", i, phase_buf_normal[i], phase);
         $finish();
       end
@@ -120,11 +120,11 @@ module sim_mux ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_buf_stm[i] != duty) begin
+      if (duty_buf_stm[i] !== duty) begin
         $display("failed at duty[%d], %d!=%d", i, duty_buf_stm[i], duty);
         $finish();
       end
-      if (phase_buf_stm[i] != phase) begin
+      if (phase_buf_stm[i] !== phase) begin
         $display("failed at phase[%d], %d!=%d", i, phase_buf_stm[i], phase);
         $finish();
       end

@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -87,7 +87,7 @@ module sim_helper_bram #(
     for (int i = 0; i < cnt; i += 2) begin
       addr = i >> 1;
       bram_write(BRAM_SELECT_MOD, addr[13:0], {mod_data[i+1], mod_data[i]});
-      if (addr == 32'h3fff) begin
+      if (addr === 32'h3fff) begin
         set_mod_bram_offset(1);
       end
     end
