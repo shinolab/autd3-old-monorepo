@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,46 +12,47 @@
  */
 
 module silencer #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [WIDTH-1:0] STEP,
-    input var [WIDTH-1:0] DUTY,
-    input var [WIDTH-1:0] PHASE,
-    output var [WIDTH-1:0] DUTY_S,
-    output var [WIDTH-1:0] PHASE_S,
+    input var [8:0] STEP,
+    input var [8:0] PULSE_WIDTH_IN,
+    input var [7:0] PHASE_IN,
+    output var [8:0] PULSE_WIDTH_OUT,
+    output var [7:0] PHASE_OUT,
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
 
-  bit signed [WIDTH+1:0] step, step_n;
-  bit [WIDTH-1:0] duty_buf, phase_buf;
+  logic signed [10:0] step, step_n;
+  logic [8:0] pulse_width_buf;
+  logic [7:0] phase_buf;
 
-  bit signed [WIDTH+1:0] current_duty [DEPTH] = '{DEPTH{0}};
-  bit signed [WIDTH+1:0] current_phase[DEPTH] = '{DEPTH{0}};
-  bit signed [WIDTH+1:0] a_duty_step, b_duty_step, duty_step;
-  bit signed [WIDTH+1:0] duty_step_buf[3];
-  bit signed [WIDTH+1:0] a_phase_step, b_phase_step, phase_step;
-  bit signed [WIDTH+1:0] a_phase_fg, b_phase_fg, s_phase_fg;
-  bit add_phase_fg;
-  bit signed [WIDTH+1:0] a_duty, b_duty, s_duty;
-  bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
-  bit signed [WIDTH+1:0] a_phase_fold, b_phase_fold, s_phase_fold;
-  bit add_fold;
-  bit [$clog2(DEPTH+(AddSubLatency+1)*4)-1:0] calc_cnt, calc_step_cnt, fold_cnt, set_cnt;
+  logic signed [10:0] current_pulse_width[DEPTH] = '{DEPTH{0}};
+  logic signed [10:0] current_phase[DEPTH] = '{DEPTH{0}};
+  logic signed [10:0] a_pulse_width_step, b_pulse_width_step, pulse_width_step;
+  logic signed [10:0] pulse_width_step_buf[3];
+  logic signed [10:0] a_phase_step, b_phase_step, phase_step;
+  logic signed [10:0] a_phase_fg, b_phase_fg, s_phase_fg;
+  logic add_phase_fg;
+  logic signed [10:0] a_pulse_width, b_pulse_width, s_pulse_width;
+  logic signed [10:0] a_phase, b_phase, s_phase;
+  logic signed [10:0] a_phase_fold, b_phase_fold, s_phase_fold;
+  logic add_fold;
+  logic [$clog2(DEPTH+(AddSubLatency+1)*4)-1:0] calc_cnt, calc_step_cnt, fold_cnt, set_cnt;
 
-  bit [WIDTH-1:0] duty_s, phase_s;
+  logic [8:0] pulse_width_s;
+  logic [7:0] phase_s;
 
-  bit dout_valid = 0;
+  logic dout_valid = 0;
 
-  assign DUTY_S = duty_s;
-  assign PHASE_S = phase_s;
+  assign PULSE_WIDTH_OUT = pulse_width_s;
+  assign PHASE_OUT = phase_s;
   assign DOUT_VALID = dout_valid;
 
-  typedef enum bit {
+  typedef enum logic {
     WAITING,
     RUN
   } state_t;
@@ -59,17 +60,17 @@ module silencer #(
   state_t state = WAITING;
 
   addsub #(
-      .WIDTH(WIDTH + 2)
-  ) sub_duty_step (
+      .WIDTH(11)
+  ) sub_pulse_width_step (
       .CLK(CLK),
-      .A  (a_duty_step),
-      .B  (b_duty_step),
+      .A  (a_pulse_width_step),
+      .B  (b_pulse_width_step),
       .ADD(1'b0),
-      .S  (duty_step)
+      .S  (pulse_width_step)
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) sub_phase_step (
       .CLK(CLK),
       .A  (a_phase_step),
@@ -79,7 +80,7 @@ module silencer #(
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) phase_fg (
       .CLK(CLK),
       .A  (a_phase_fg),
@@ -89,17 +90,17 @@ module silencer #(
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
-  ) add_duty (
+      .WIDTH(11)
+  ) add_pulse_width (
       .CLK(CLK),
-      .A  (a_duty),
-      .B  (b_duty),
+      .A  (a_pulse_width),
+      .B  (b_pulse_width),
       .ADD(1'b1),
-      .S  (s_duty)
+      .S  (s_pulse_width)
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) addsub_phase (
       .CLK(CLK),
       .A  (a_phase),
@@ -109,7 +110,7 @@ module silencer #(
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) addsub_phase_fold (
       .CLK(CLK),
       .A  (a_phase_fold),
@@ -135,21 +136,21 @@ module silencer #(
         end
       end
       RUN: begin
-        // duty 1: calculate step
-        a_duty_step <= {2'b00, duty_buf};
-        b_duty_step <= current_duty[calc_step_cnt];
+        // pulse_width 1: calculate step
+        a_pulse_width_step <= {2'b00, pulse_width_buf};
+        b_pulse_width_step <= current_pulse_width[calc_step_cnt];
 
-        // duty 2: wait phase
-        duty_step_buf[0] <= duty_step;
-        duty_step_buf[1] <= duty_step_buf[0];
-        duty_step_buf[2] <= duty_step_buf[1];
+        // pulse_width 2: wait phase
+        pulse_width_step_buf[0] <= pulse_width_step;
+        pulse_width_step_buf[1] <= pulse_width_step_buf[0];
+        pulse_width_step_buf[2] <= pulse_width_step_buf[1];
 
-        // duty 3: calculate next duty
-        a_duty <= current_duty[calc_cnt];
-        if (duty_step_buf[2][WIDTH+1] == 1'b0) begin
-          b_duty <= (duty_step_buf[2] < step) ? duty_step_buf[2] : step;
+        // pulse_width 3: calculate next pulse_width
+        a_pulse_width <= current_pulse_width[calc_cnt];
+        if (pulse_width_step_buf[2][10] == 1'b0) begin
+          b_pulse_width <= (pulse_width_step_buf[2] < step) ? pulse_width_step_buf[2] : step;
         end else begin
-          b_duty <= (step_n < duty_step_buf[2]) ? duty_step_buf[2] : step_n;
+          b_pulse_width <= (step_n < pulse_width_step_buf[2]) ? pulse_width_step_buf[2] : step_n;
         end
 
         // phase 1: calculate step
@@ -158,25 +159,25 @@ module silencer #(
 
         // phase 2: should phase go forward or back?
         a_phase_fg   <= phase_step;
-        if (phase_step[WIDTH+1] == 1'b0) begin
-          if (phase_step <= 11'sd256) begin
+        if (phase_step[10] == 1'b0) begin
+          if (phase_step <= 11'sd128) begin
             b_phase_fg <= '0;
           end else begin
-            b_phase_fg   <= 11'sd512;
+            b_phase_fg   <= 11'sd256;
             add_phase_fg <= 1'b0;
           end
         end else begin
-          if (-11'sd512 <= phase_step) begin
+          if (-11'sd256 <= phase_step) begin
             b_phase_fg <= '0;
           end else begin
-            b_phase_fg   <= 11'sd512;
+            b_phase_fg   <= 11'sd256;
             add_phase_fg <= 1'b1;
           end
         end
 
         // phase 3: calculate next phase
         a_phase <= current_phase[calc_cnt];
-        if (s_phase_fg[WIDTH+1] == 1'b0) begin
+        if (s_phase_fg[10] == 1'b0) begin
           b_phase <= (s_phase_fg < step) ? s_phase_fg : step;
         end else begin
           b_phase <= (step_n < s_phase_fg) ? s_phase_fg : step_n;
@@ -184,11 +185,11 @@ module silencer #(
 
         // phase 4: make phase be in [0, T-1]
         a_phase_fold <= s_phase;
-        if (s_phase >= 11'sd512) begin
-          b_phase_fold <= 11'sd512;
+        if (s_phase >= 11'sd256) begin
+          b_phase_fold <= 11'sd256;
           add_fold <= 1'b0;
-        end else if (s_phase[WIDTH+1] == 1'b1) begin
-          b_phase_fold <= 11'sd512;
+        end else if (s_phase[10] == 1'b1) begin
+          b_phase_fold <= 11'sd256;
           add_fold <= 1'b1;
         end else begin
           b_phase_fold <= '0;
@@ -201,15 +202,15 @@ module silencer #(
         end
         if (calc_cnt > AddSubLatency) begin
           if (fold_cnt <= DEPTH - 1) begin
-            current_duty[fold_cnt] <= s_duty;
+            current_pulse_width[fold_cnt] <= s_pulse_width;
           end
           fold_cnt <= fold_cnt + 1;
         end
         if (fold_cnt > AddSubLatency) begin
           dout_valid <= 1'b1;
           current_phase[set_cnt] <= s_phase_fold;
-          duty_s <= current_duty[set_cnt][WIDTH-1:0];
-          phase_s <= s_phase_fold[WIDTH-1:0];
+          pulse_width_s <= current_pulse_width[set_cnt][8:0];
+          phase_s <= s_phase_fold[7:0];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
             state <= WAITING;
@@ -222,8 +223,8 @@ module silencer #(
   end
 
   always_ff @(posedge CLK) begin
-    duty_buf  <= DUTY;
-    phase_buf <= PHASE;
+    pulse_width_buf <= PULSE_WIDTH_IN;
+    phase_buf <= PHASE_IN;
   end
 
 endmodule
