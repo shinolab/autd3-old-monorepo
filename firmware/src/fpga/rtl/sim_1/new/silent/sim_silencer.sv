@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,11 +14,10 @@
 `timescale 1ns / 1ps
 module sim_silencer ();
 
-  parameter int WIDTH = 9;
   parameter int DEPTH = 249;
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -27,29 +26,28 @@ module sim_silencer ();
 
   sim_helper_random sim_helper_random ();
 
-  bit [WIDTH-1:0] step;
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
-  bit [WIDTH-1:0] duty_s;
-  bit [WIDTH-1:0] phase_s;
-  bit din_valid, dout_valid;
+  logic [8:0] step;
+  logic [8:0] pulse_width;
+  logic [7:0] phase;
+  logic [8:0] pulse_width_s;
+  logic [7:0] phase_s;
+  logic din_valid, dout_valid;
 
-  bit [WIDTH-1:0] duty_buf[DEPTH];
-  bit [WIDTH-1:0] phase_buf[DEPTH];
-  bit [WIDTH-1:0] duty_s_buf[DEPTH];
-  bit [WIDTH-1:0] phase_s_buf[DEPTH];
+  logic [8:0] pulse_width_buf[DEPTH];
+  logic [7:0] phase_buf[DEPTH];
+  logic [8:0] pulse_width_s_buf[DEPTH];
+  logic [7:0] phase_s_buf[DEPTH];
 
   silencer #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) silencer (
       .CLK(CLK_20P48M),
       .DIN_VALID(din_valid),
       .STEP(step),
-      .DUTY(duty),
-      .PHASE(phase),
-      .DUTY_S(duty_s),
-      .PHASE_S(phase_s),
+      .PULSE_WIDTH_IN(pulse_width),
+      .PHASE_IN(phase),
+      .PULSE_WIDTH_OUT(pulse_width_s),
+      .PHASE_OUT(phase_s),
       .DOUT_VALID(dout_valid)
   );
 
@@ -58,9 +56,9 @@ module sim_silencer ();
   task automatic set();
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      duty = duty_buf[i];
-      phase = phase_buf[i];
+      din_valid <= 1'b1;
+      pulse_width <= pulse_width_buf[i];
+      phase <= phase_buf[i];
     end
     @(posedge CLK_20P48M);
     din_valid = 1'b0;
@@ -75,7 +73,7 @@ module sim_silencer ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      duty_s_buf[i]  = duty_s;
+      pulse_width_s_buf[i] = pulse_width_s;
       phase_s_buf[i] = phase_s;
       @(posedge CLK_20P48M);
     end
@@ -84,19 +82,23 @@ module sim_silencer ();
   task automatic check();
     for (int i = 0; i < DEPTH; i++) begin
       if (phase_s_buf[i] !== phase_buf[i]) begin
-        $display("ASSERTION FAILED: PHASE(%d) != PHASE_S(%d) in %d-th transducer, step = %d",
-                 phase_buf[i], phase_s_buf[i], i, step);
+        $display("ERR: PHASE(%d) !== PHASE_S(%d) in %d-th transducer, step = %d", phase_buf[i],
+                 phase_s_buf[i], i, step);
         $finish;
       end
-      if (duty_s_buf[i] !== duty_buf[i]) begin
-        $display("ASSERTION FAILED: DUTY(%d) != DUTY_S(%d) in %d-th transducer,  step = %d",
-                 duty_buf[i], duty_s_buf[i], i, step);
+      if (pulse_width_s_buf[i] !== pulse_width_buf[i]) begin
+        $display("ERR: PULSE_WIDTH(%d) !== PULSE_WIDTH_S(%d) in %d-th transducer, step = %d",
+                 pulse_width_buf[i], pulse_width_s_buf[i], i, step);
         $finish;
       end
     end
   endtask
 
   initial begin
+    din_valid = 0;
+    step = 0;
+    phase = 0;
+    pulse_width = 0;
     sim_helper_random.init();
 
     @(posedge locked);
@@ -106,7 +108,7 @@ module sim_silencer ();
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 1;
-      duty_buf[i]  = 1;
+      pulse_width_buf[i] = 1;
     end
     fork
       set();
@@ -117,15 +119,15 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 1) begin
+      if (pulse_width_s_buf[i] !== 1) begin
         $display("ASSERTION FAILED");
         $finish;
       end
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 511;
-      duty_buf[i]  = 511;
+      phase_buf[i] = 255;
+      pulse_width_buf[i] = 256;
     end
     fork
       set();
@@ -136,7 +138,7 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 2) begin
+      if (pulse_width_s_buf[i] !== 2) begin
         $display("ASSERTION FAILED");
         $finish;
       end
@@ -147,20 +149,20 @@ module sim_silencer ();
       wait_calc();
     join
     for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== 511) begin
+      if (phase_s_buf[i] !== 255) begin
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 3) begin
+      if (pulse_width_s_buf[i] !== 3) begin
         $display("ASSERTION FAILED");
         $finish;
       end
     end
 
-    step = 16'hFFFF;
+    step = 16'd256;
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
-      duty_buf[i]  = 0;
+      pulse_width_buf[i] = 0;
     end
 
     fork
@@ -172,7 +174,7 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 0) begin
+      if (pulse_width_s_buf[i] !== 0) begin
         $display("ASSERTION FAILED");
         $finish;
       end
@@ -184,7 +186,7 @@ module sim_silencer ();
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 1;
-      duty_buf[i]  = 1;
+      pulse_width_buf[i] = 1;
     end
     fork
       set();
@@ -195,7 +197,7 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 1) begin
+      if (pulse_width_s_buf[i] !== 1) begin
         $display("ASSERTION FAILED");
         $finish;
       end
@@ -203,7 +205,7 @@ module sim_silencer ();
 
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 50;
-      duty_buf[i]  = 50;
+      pulse_width_buf[i] = 50;
     end
     fork
       set();
@@ -214,15 +216,15 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 11) begin
+      if (pulse_width_s_buf[i] !== 11) begin
         $display("ASSERTION FAILED");
         $finish;
       end
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      phase_buf[i] = 511;
-      duty_buf[i]  = 511;
+      phase_buf[i] = 255;
+      pulse_width_buf[i] = 256;
     end
     fork
       set();
@@ -233,7 +235,7 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 21) begin
+      if (pulse_width_s_buf[i] !== 21) begin
         $display("ASSERTION FAILED");
         $finish;
       end
@@ -244,20 +246,20 @@ module sim_silencer ();
       wait_calc();
     join
     for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s_buf[i] !== 511) begin
+      if (phase_s_buf[i] !== 255) begin
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 31) begin
+      if (pulse_width_s_buf[i] !== 31) begin
         $display("ASSERTION FAILED");
         $finish;
       end
     end
 
-    step = 16'hFFFF;
+    step = 16'd256;
     for (int i = 0; i < DEPTH; i++) begin
       phase_buf[i] = 0;
-      duty_buf[i]  = 0;
+      pulse_width_buf[i] = 0;
     end
 
     fork
@@ -269,7 +271,7 @@ module sim_silencer ();
         $display("ASSERTION FAILED");
         $finish;
       end
-      if (duty_s_buf[i] !== 0) begin
+      if (pulse_width_s_buf[i] !== 0) begin
         $display("ASSERTION FAILED");
         $finish;
       end
@@ -278,11 +280,11 @@ module sim_silencer ();
 
     // from random to random with random step
     repeat (100) begin
-      step = sim_helper_random.range(512, 2);
-      n_repeat = int'(512 / step) + 1;
+      step = sim_helper_random.range(256, 1);
+      n_repeat = int'(256 / step) + 1;
       for (int i = 0; i < DEPTH; i++) begin
-        duty_buf[i]  = sim_helper_random.range(511, 0);
-        phase_buf[i] = sim_helper_random.range(511, 0);
+        pulse_width_buf[i] = sim_helper_random.range(256, 0);
+        phase_buf[i] = sim_helper_random.range(255, 0);
       end
       repeat (n_repeat) begin
         fork
@@ -298,12 +300,12 @@ module sim_silencer ();
     end
 
     // disable
-    step = 16'hFFFF;
+    step = 16'd256;
     n_repeat = 1;
 
     for (int i = 0; i < DEPTH; i++) begin
-      duty_buf[i]  = sim_helper_random.range(511, 0);
-      phase_buf[i] = sim_helper_random.range(511, 0);
+      pulse_width_buf[i] = sim_helper_random.range(256, 0);
+      phase_buf[i] = sim_helper_random.range(255, 0);
     end
     repeat (n_repeat) begin
       fork
