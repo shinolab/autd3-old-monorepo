@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ module sim_pwm_preconditioner ();
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
-      if (i == idx) begin
+      if (i === idx) begin
         duty  = d;
         phase = p;
       end else begin
@@ -89,8 +89,8 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if ((rise[i] != ((512-phase_buf[i]-duty_buf[i]/2+512)%512))
-        & (fall[i] == ((512-phase_buf[i]+(duty_buf[i]+1)/2)%512))) begin
+      if ((rise[i] !== ((512-phase_buf[i]-duty_buf[i]/2+512)%512))
+        & (fall[i] === ((512-phase_buf[i]+(duty_buf[i]+1)/2)%512))) begin
         $error("Failed at idx=%d, d=%d, p=%d, R=%d, F=%d", i, duty_buf[i], phase_buf[i], rise[i],
                fall[i]);
         $finish();

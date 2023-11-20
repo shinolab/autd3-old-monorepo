@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -112,7 +112,7 @@ module sim_operator_stm_focus ();
           automatic bit signed [63:0] x, z;
           automatic bit [63:0] r, lambda;
           automatic int p;
-          if ((iy == 1) && (ix == 1 || ix == 2 || ix == 16)) begin
+          if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
             continue;
           end
           x = focus_x[idx_buf] - $rtoi(10.16 * ix / 0.025);  // [0.025mm]
