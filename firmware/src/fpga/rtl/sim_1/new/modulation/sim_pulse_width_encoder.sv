@@ -4,7 +4,7 @@
  * Created Date: 17/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,28 +51,32 @@ module sim_pulse_width_encoder ();
 
   task automatic set(logic [7:0] intensity[DEPTH], logic [7:0] mod[DEPTH], logic [7:0] p[DEPTH]);
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf[i] = intensity[i] * mod[i];
+      phase_buf[i] = p[i];
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      intensity_in = intensity[i] * mod[i];
-      phase = p[i];
-      intensity_buf[i] = intensity_in;
-      phase_buf[i] = phase;
+      din_valid <= 1'b1;
+      intensity_in <= intensity_buf[i];
+      phase <= phase_buf[i];
     end
     @(posedge CLK_20P48M);
-    din_valid = 1'b0;
+    din_valid <= 1'b0;
   endtask
 
   task automatic set_random();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0) * sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      intensity_in = sim_helper_random.range(8'hFF, 0) * sim_helper_random.range(8'hFF, 0);
-      phase = sim_helper_random.range(8'hFF, 0);
-      intensity_buf[i] = intensity_in;
-      phase_buf[i] = phase;
+      din_valid <= 1'b1;
+      intensity_in <= intensity_buf[i];
+      phase <= phase_buf[i];
     end
     @(posedge CLK_20P48M);
-    din_valid = 1'b0;
+    din_valid <= 1'b0;
   endtask
 
   task automatic check();

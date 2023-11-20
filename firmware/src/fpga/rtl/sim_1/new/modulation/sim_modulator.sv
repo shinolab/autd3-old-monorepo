@@ -60,20 +60,21 @@ module sim_modulator ();
       .DOUT_VALID(dout_valid),
       .IDX(idx)
   );
-
   always @(posedge din_valid) idx_buf = idx;
 
   task automatic set();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      intensity = sim_helper_random.range(8'hFF, 0);
-      phase = sim_helper_random.range(8'hFF, 0);
-      intensity_buf[i] = intensity;
-      phase_buf[i] = phase;
+      din_valid <= 1'b1;
+      intensity <= intensity_buf[i];
+      phase <= phase_buf[i];
     end
     @(posedge CLK_20P48M);
-    din_valid = 1'b0;
+    din_valid <= 1'b0;
   endtask
 
   task automatic check();
