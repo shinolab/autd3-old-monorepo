@@ -4,7 +4,7 @@
  * Created Date: 17/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,18 +21,18 @@ module time_cnt_generator #(
     output var [8:0] TIME_CNT,
     output var UPDATE
 );
-  bit [8:0] t_buf0, t_buf1, t;
-  bit update;
+  logic [8:0] t_buf0, t_buf1, t;
+  logic update;
 
   assign t_buf0   = SYS_TIME[8:0];
 
   assign UPDATE   = update;
   assign TIME_CNT = t;
 
-  bit cross0;
+  logic cross0;
   assign cross0 = t_buf0 == 9'd0;
 
-  bit cross0_with_skip;
+  logic cross0_with_skip;
   assign cross0_with_skip = (t_buf0 == 9'd1) & SKIP_ONE_ASSERT;
 
   always_ff @(posedge CLK) begin

@@ -13,9 +13,9 @@
 
 module sim_operator_stm_focus ();
 
-  bit CLK_20P48M;
-  bit locked;
-  bit [63:0] SYS_TIME;
+  logic CLK_20P48M;
+  logic locked;
+  logic [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -27,19 +27,19 @@ module sim_operator_stm_focus ();
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit [31:0] sound_speed;
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
-  bit [15:0] idx;
-  bit dout_valid;
+  logic [31:0] sound_speed;
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
+  logic [15:0] idx;
+  logic dout_valid;
 
-  bit signed [17:0] focus_x[65536];
-  bit signed [17:0] focus_y[65536];
-  bit signed [17:0] focus_z[65536];
-  bit [7:0] intensity_buf[65536];
+  logic signed [17:0] focus_x[65536];
+  logic signed [17:0] focus_y[65536];
+  logic signed [17:0] focus_z[65536];
+  logic [7:0] intensity_buf[65536];
 
-  bit [7:0] intensity;
-  bit [7:0] phase;
+  logic [7:0] intensity;
+  logic [7:0] phase;
 
   time_cnt_generator #(
       .DEPTH(DEPTH)
@@ -66,7 +66,7 @@ module sim_operator_stm_focus ();
       .IDX(idx)
   );
 
-  bit [15:0] idx_buf;
+  logic [15:0] idx_buf;
   always @(posedge CLK_20P48M) begin
     if (UPDATE) idx_buf = idx;
   end
@@ -107,10 +107,14 @@ module sim_operator_stm_focus ();
       $display("check %d @%d", idx_buf, SYS_TIME);
       id = 0;
       for (int iy = 0; iy < 14; iy++) begin
-        automatic bit signed [63:0] y = focus_y[idx_buf] - $rtoi(10.16 * iy / 0.025);  // [0.025mm]
+        automatic
+        logic signed [63:0]
+        y = focus_y[idx_buf] - $rtoi(
+            10.16 * iy / 0.025
+        );  // [0.025mm]
         for (int ix = 0; ix < 18; ix++) begin
-          automatic bit signed [63:0] x, z;
-          automatic bit [63:0] r, lambda;
+          automatic logic signed [63:0] x, z;
+          automatic logic [63:0] r, lambda;
           automatic int p;
           if ((iy === 1) && (ix === 1 || ix === 2 || ix === 16)) begin
             continue;

@@ -4,7 +4,7 @@
  * Created Date: 17/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,9 @@
 
 module sim_time_cnt_gen ();
 
-  bit CLK_20P48M;
-  bit [63:0] SYS_TIME;
-  bit locked;
+  logic CLK_20P48M;
+  logic [63:0] SYS_TIME;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -26,8 +26,8 @@ module sim_time_cnt_gen ();
   localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
-  bit [WIDTH-1:0] time_cnt;
-  bit skip_one_assert;
+  logic [WIDTH-1:0] time_cnt;
+  logic skip_one_assert;
 
   time_cnt_generator #(
       .WIDTH(WIDTH),

@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,19 +24,19 @@ module normal_operator #(
     output var DOUT_VALID
 );
 
-  bit bus_clk;
-  bit ena;
-  bit we;
-  bit [7:0] addr;
-  bit [15:0] data_in;
+  logic bus_clk;
+  logic ena;
+  logic we;
+  logic [7:0] addr;
+  logic [15:0] data_in;
 
-  bit dout_valid;
+  logic dout_valid;
 
-  bit [7:0] read_addr = 0;
-  bit [15:0] dout;
+  logic [7:0] read_addr = 0;
+  logic [15:0] dout;
 
-  bit [7:0] intensity;
-  bit [7:0] phase;
+  logic [7:0] intensity;
+  logic [7:0] phase;
 
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign ena = CPU_BUS.NORMAL_EN;
@@ -62,7 +62,7 @@ module normal_operator #(
       .doutb(dout)
   );
 
-  typedef enum bit {
+  typedef enum logic {
     WAITING,
     RUN
   } state_t;

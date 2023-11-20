@@ -13,9 +13,9 @@
 
 module sim_pwm_generator ();
 
-  bit CLK_20P48M;
-  bit locked;
-  bit [63:0] SYS_TIME;
+  logic CLK_20P48M;
+  logic locked;
+  logic [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -24,12 +24,12 @@ module sim_pwm_generator ();
 
   localparam int WIDTH = 9;
 
-  bit [WIDTH-1:0] time_cnt;
+  logic [WIDTH-1:0] time_cnt;
   assign time_cnt = SYS_TIME[WIDTH-1:0];
 
-  bit [WIDTH-1:0] rise, fall;
+  logic [WIDTH-1:0] rise, fall;
 
-  bit pwm_out;
+  logic pwm_out;
 
   pwm_generator #(
       .WIDTH(WIDTH)
@@ -41,7 +41,7 @@ module sim_pwm_generator ();
       .PWM_OUT(pwm_out)
   );
 
-  task automatic set(bit [WIDTH-1:0] r, bit [WIDTH-1:0] f);
+  task automatic set(logic [WIDTH-1:0] r, logic [WIDTH-1:0] f);
     while (time_cnt !== 512 - 1) @(posedge CLK_20P48M);
     rise = r;
     fall = f;

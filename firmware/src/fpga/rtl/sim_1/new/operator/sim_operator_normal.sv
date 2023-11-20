@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 module sim_operator_normal ();
 
-  bit [63:0] SYS_TIME;
-  bit CLK_20P48M;
-  bit locked;
+  logic [63:0] SYS_TIME;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -27,12 +27,12 @@ module sim_operator_normal ();
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit [7:0] intensity;
-  bit [7:0] phase;
-  bit dout_valid;
+  logic [7:0] intensity;
+  logic [7:0] phase;
+  logic dout_valid;
 
-  bit [7:0] intensity_buf[DEPTH];
-  bit [7:0] phase_buf[DEPTH];
+  logic [7:0] intensity_buf[DEPTH];
+  logic [7:0] phase_buf[DEPTH];
 
   time_cnt_generator #(
       .DEPTH(DEPTH)

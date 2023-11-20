@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -32,10 +32,10 @@ module top (
   `include "cvt_uid.vh"
   `include "params.vh"
 
-  bit clk;
-  bit reset;
+  logic clk;
+  logic reset;
 
-  bit PWM_OUT[NUM_TRANSDUCERS];
+  logic PWM_OUT[NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 

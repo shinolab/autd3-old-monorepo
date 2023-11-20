@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,20 +24,20 @@ module stm_gain_operator #(
     output var DOUT_VALID
 );
 
-  bit [7:0] intensity;
-  bit [7:0] phase;
+  logic [7:0] intensity;
+  logic [7:0] phase;
 
-  bit [127:0] data_out;
+  logic [127:0] data_out;
 
-  bit [15:0] idx;
-  bit dout_valid;
+  logic [15:0] idx;
+  logic dout_valid;
 
-  bit [9:0] gain_addr_base;
-  bit [5:0] gain_addr_offset;
-  bit [2:0] set_cnt;
-  bit [$clog2(DEPTH):0] cnt;
+  logic [9:0] gain_addr_base;
+  logic [5:0] gain_addr_offset;
+  logic [2:0] set_cnt;
+  logic [$clog2(DEPTH):0] cnt;
 
-  typedef enum bit [1:0] {
+  typedef enum logic [1:0] {
     WAITING,
     BRAM_WAIT_0,
     BRAM_WAIT_1,

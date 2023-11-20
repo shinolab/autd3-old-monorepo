@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,22 +28,22 @@ module pwm_preconditioner #(
 
   localparam int AddSubLatency = 2;
 
-  bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
+  logic [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
 
-  bit [WIDTH-1:0] duty_buf[4], phase_buf;
-  bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
+  logic [WIDTH-1:0] duty_buf[4], phase_buf;
+  logic [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
-  bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
-  bit signed [WIDTH+1:0] a_duty_r, b_duty_r, s_duty_r;
-  bit signed [WIDTH+1:0] a_rise, b_rise, s_rise;
-  bit signed [WIDTH+1:0] a_fall, b_fall, s_fall;
-  bit signed [WIDTH+1:0] a_fold_rise, b_fold_rise, s_fold_rise;
-  bit fold_rise_addsub;
-  bit signed [WIDTH+1:0] a_fold_fall, b_fold_fall, s_fold_fall;
+  logic signed [WIDTH+1:0] a_phase, b_phase, s_phase;
+  logic signed [WIDTH+1:0] a_duty_r, b_duty_r, s_duty_r;
+  logic signed [WIDTH+1:0] a_rise, b_rise, s_rise;
+  logic signed [WIDTH+1:0] a_fall, b_fall, s_fall;
+  logic signed [WIDTH+1:0] a_fold_rise, b_fold_rise, s_fold_rise;
+  logic fold_rise_addsub;
+  logic signed [WIDTH+1:0] a_fold_fall, b_fold_fall, s_fold_fall;
 
-  bit [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] cnt, lr_cnt, fold_cnt, set_cnt;
+  logic [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] cnt, lr_cnt, fold_cnt, set_cnt;
 
-  bit dout_valid;
+  logic dout_valid;
 
   assign DOUT_VALID = dout_valid;
 
@@ -109,7 +109,7 @@ module pwm_preconditioner #(
       .S  (s_fold_fall)
   );
 
-  typedef enum bit [2:0] {
+  typedef enum logic [2:0] {
     WAITING,
     RUN,
     DONE

@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,43 +30,43 @@ module main #(
 
   `include "params.vh"
 
-  bit [63:0] sys_time;
-  bit skip_one_assert;
+  logic [63:0] sys_time;
+  logic skip_one_assert;
 
-  bit [WIDTH-1:0] time_cnt;
-  bit update;
+  logic [WIDTH-1:0] time_cnt;
+  logic update;
 
-  bit [63:0] ecat_sync_time;
-  bit sync_set;
+  logic [63:0] ecat_sync_time;
+  logic sync_set;
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
-  bit dout_valid;
+  logic [WIDTH-1:0] duty;
+  logic [WIDTH-1:0] phase;
+  logic dout_valid;
 
-  bit op_mode;
-  bit [WIDTH-1:0] duty_normal;
-  bit [WIDTH-1:0] phase_normal;
-  bit dout_valid_normal;
+  logic op_mode;
+  logic [WIDTH-1:0] duty_normal;
+  logic [WIDTH-1:0] phase_normal;
+  logic dout_valid_normal;
 
-  bit stm_gain_mode;
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
-  bit [31:0] sound_speed;
-  bit [15:0] stm_start_idx;
-  bit [15:0] stm_finish_idx;
-  bit use_stm_start_idx, use_stm_finish_idx;
+  logic stm_gain_mode;
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
+  logic [31:0] sound_speed;
+  logic [15:0] stm_start_idx;
+  logic [15:0] stm_finish_idx;
+  logic use_stm_start_idx, use_stm_finish_idx;
 
-  bit [15:0] cycle_m;
-  bit [31:0] freq_div_m;
-  bit [WIDTH-1:0] duty_m;
-  bit [WIDTH-1:0] phase_m;
-  bit [15:0] delay_m[DEPTH];
-  bit dout_valid_m;
+  logic [15:0] cycle_m;
+  logic [31:0] freq_div_m;
+  logic [WIDTH-1:0] duty_m;
+  logic [WIDTH-1:0] phase_m;
+  logic [15:0] delay_m[DEPTH];
+  logic dout_valid_m;
 
-  bit [WIDTH-1:0] step_s;
-  bit [WIDTH-1:0] duty_s;
-  bit [WIDTH-1:0] phase_s;
-  bit dout_valid_s;
+  logic [WIDTH-1:0] step_s;
+  logic [WIDTH-1:0] duty_s;
+  logic [WIDTH-1:0] phase_s;
+  logic dout_valid_s;
 
   synchronizer synchronizer (
       .CLK(CLK),
@@ -127,10 +127,10 @@ module main #(
   );
 
   if (ENABLE_STM == "TRUE") begin : gen_stm
-    bit [WIDTH-1:0] duty_stm;
-    bit [WIDTH-1:0] phase_stm;
-    bit dout_valid_stm;
-    bit [15:0] stm_idx;
+    logic [WIDTH-1:0] duty_stm;
+    logic [WIDTH-1:0] phase_stm;
+    logic dout_valid_stm;
+    logic [15:0] stm_idx;
 
     stm_operator #(
         .WIDTH(WIDTH),
@@ -234,7 +234,7 @@ module main #(
       .PWM_OUT(PWM_OUT)
   );
 
-  bit gpio_out;
+  logic gpio_out;
 
   assign GPIO_OUT = gpio_out;
 

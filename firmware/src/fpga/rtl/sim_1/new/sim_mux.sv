@@ -14,8 +14,8 @@
 `timescale 1ns / 1ps
 module sim_mux ();
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
@@ -28,20 +28,20 @@ module sim_mux ();
 
   sim_helper_random sim_helper_random ();
 
-  bit op_mode;
-  bit [WIDTH-1:0] duty_normal, phase_normal;
-  bit dout_valid_normal;
-  bit [WIDTH-1:0] duty_stm, phase_stm;
-  bit dout_valid_stm;
-  bit [15:0] stm_idx, stm_start_idx, stm_finish_idx;
-  bit use_stm_start_idx, use_stm_finish_idx;
-  bit [WIDTH-1:0] duty, phase;
-  bit dout_valid;
+  logic op_mode;
+  logic [WIDTH-1:0] duty_normal, phase_normal;
+  logic dout_valid_normal;
+  logic [WIDTH-1:0] duty_stm, phase_stm;
+  logic dout_valid_stm;
+  logic [15:0] stm_idx, stm_start_idx, stm_finish_idx;
+  logic use_stm_start_idx, use_stm_finish_idx;
+  logic [WIDTH-1:0] duty, phase;
+  logic dout_valid;
 
-  bit [WIDTH-1:0] duty_buf_normal[DEPTH];
-  bit [WIDTH-1:0] phase_buf_normal[DEPTH];
-  bit [WIDTH-1:0] duty_buf_stm[DEPTH];
-  bit [WIDTH-1:0] phase_buf_stm[DEPTH];
+  logic [WIDTH-1:0] duty_buf_normal[DEPTH];
+  logic [WIDTH-1:0] phase_buf_normal[DEPTH];
+  logic [WIDTH-1:0] duty_buf_stm[DEPTH];
+  logic [WIDTH-1:0] phase_buf_stm[DEPTH];
 
   mux #(
       .WIDTH(WIDTH)

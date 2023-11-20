@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,11 +14,11 @@
 `timescale 1ns / 1ps
 module sim_main ();
 
-  bit CLK_163P84M;
-  bit CLK_20P48M;
-  bit [63:0] SYS_TIME;
-  bit locked;
-  bit CAT_SYNC0;
+  logic CLK_163P84M;
+  logic CLK_20P48M;
+  logic [63:0] SYS_TIME;
+  logic locked;
+  logic CAT_SYNC0;
   sim_helper_clk sim_helper_clk (
       .CLK_163P84M(CLK_163P84M),
       .CLK_20P48M(CLK_20P48M),
@@ -33,9 +33,9 @@ module sim_main ();
   localparam int DEPTH = 249;
   localparam int CYCLE = 4096;
 
-  bit [WIDTH-1:0] duty_buf[DEPTH];
-  bit [WIDTH-1:0] phase_buf[DEPTH];
-  bit pwm_out[DEPTH];
+  logic [WIDTH-1:0] duty_buf[DEPTH];
+  logic [WIDTH-1:0] phase_buf[DEPTH];
+  logic pwm_out[DEPTH];
 
   main #(
       .WIDTH(WIDTH),
@@ -69,7 +69,7 @@ module sim_main ();
   end
 
   localparam int ECATSyncBase = 500000;  // 500 us
-  localparam bit [15:0] ECATSyncCycleTicks = 1;
+  localparam logic [15:0] ECATSyncCycleTicks = 1;
 
   always begin
     #800 CAT_SYNC0 = 0;

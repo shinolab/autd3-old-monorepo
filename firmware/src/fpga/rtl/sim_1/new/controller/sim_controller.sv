@@ -13,8 +13,8 @@
 
 module sim_controller ();
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
@@ -26,23 +26,23 @@ module sim_controller ();
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  bit thermo;
-  bit force_fan;
-  bit [63:0] ecat_sync_time;
-  bit sync_set;
-  bit op_mode;
-  bit stm_gain_mode;
-  bit [15:0] cycle_m;
-  bit [31:0] freq_div_m;
-  bit [15:0] delay_m[DEPTH];
-  bit [8:0] step_s;
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
-  bit [31:0] sound_speed;
-  bit [15:0] stm_start_idx;
-  bit use_stm_start_idx;
-  bit [15:0] stm_finish_idx;
-  bit use_stm_finish_idx;
+  logic thermo;
+  logic force_fan;
+  logic [63:0] ecat_sync_time;
+  logic sync_set;
+  logic op_mode;
+  logic stm_gain_mode;
+  logic [15:0] cycle_m;
+  logic [31:0] freq_div_m;
+  logic [15:0] delay_m[DEPTH];
+  logic [8:0] step_s;
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
+  logic [31:0] sound_speed;
+  logic [15:0] stm_start_idx;
+  logic use_stm_start_idx;
+  logic [15:0] stm_finish_idx;
+  logic use_stm_finish_idx;
 
   controller #(
       .DEPTH(DEPTH)
@@ -69,17 +69,17 @@ module sim_controller ();
   );
 
   initial begin
-    bit [15:0] ctrl_reg;
-    bit [63:0] ecat_sync_time_buf;
-    bit [15:0] cycle_m_buf;
-    bit [31:0] freq_div_m_buf;
-    bit [15:0] delay_buf[DEPTH];
-    bit [7:0] step_s_buf;
-    bit [15:0] cycle_stm_buf;
-    bit [31:0] freq_div_stm_buf;
-    bit [31:0] sound_speed_buf;
-    bit [15:0] stm_start_idx_buf;
-    bit [15:0] stm_finish_idx_buf;
+    logic [15:0] ctrl_reg;
+    logic [63:0] ecat_sync_time_buf;
+    logic [15:0] cycle_m_buf;
+    logic [31:0] freq_div_m_buf;
+    logic [15:0] delay_buf[DEPTH];
+    logic [7:0] step_s_buf;
+    logic [15:0] cycle_stm_buf;
+    logic [31:0] freq_div_stm_buf;
+    logic [31:0] sound_speed_buf;
+    logic [15:0] stm_start_idx_buf;
+    logic [15:0] stm_finish_idx_buf;
     @(posedge locked);
 
     sim_helper_random.init();
