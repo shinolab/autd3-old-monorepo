@@ -14,13 +14,11 @@
 `timescale 1ns / 1ps
 module sim_main ();
 
-  logic CLK_163P84M;
   logic CLK_20P48M;
   logic [63:0] SYS_TIME;
   logic locked;
   logic CAT_SYNC0;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(CLK_163P84M),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
@@ -29,20 +27,16 @@ module sim_main ();
   sim_helper_bram sim_helper_bram ();
   sim_helper_random sim_helper_random ();
 
-  localparam int WIDTH = 13;
   localparam int DEPTH = 249;
-  localparam int CYCLE = 4096;
 
-  logic [WIDTH-1:0] duty_buf[DEPTH];
-  logic [WIDTH-1:0] phase_buf[DEPTH];
+  logic [7:0] intensity_buf[DEPTH];
+  logic [7:0] phase_buf[DEPTH];
   logic pwm_out[DEPTH];
 
   main #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) main (
-      .CLK(CLK_163P84M),
-      .CLK_L(CLK_20P48M),
+      .CLK(CLK_20P48M),
       .CAT_SYNC0(CAT_SYNC0),
       .CPU_BUS_CTL(sim_helper_bram.cpu_bus.ctl_port),
       .CPU_BUS_NORMAL(sim_helper_bram.cpu_bus.normal_port),
@@ -58,12 +52,10 @@ module sim_main ();
 
     @(posedge locked);
 
-    sim_helper_bram.write_cycle('{DEPTH{CYCLE}});
-
     for (int i = 0; i < DEPTH; i++) begin
-      duty_buf[i]  = sim_helper_random.range(CYCLE / 2, 0);
-      phase_buf[i] = sim_helper_random.range(CYCLE - 1, 0);
-      sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+      sim_helper_bram.write_intensity_phase(i, intensity_buf[i], phase_buf[i]);
     end
 
   end
