@@ -12,29 +12,27 @@
  */
 
 module pwm #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
-    input var [WIDTH-1:0] TIME_CNT,
+    input var [8:0] TIME_CNT,
     input var UPDATE,
     input var DIN_VALID,
-    input var [WIDTH-1:0] DUTY,
-    input var [WIDTH-1:0] PHASE,
+    input var [8:0] PULSE_WIDTH,
+    input var [7:0] PHASE,
     output var PWM_OUT[DEPTH],
     output var DOUT_VALID
 );
 
-  logic [WIDTH-1:0] R[DEPTH];
-  logic [WIDTH-1:0] F[DEPTH];
+  logic [8:0] R[DEPTH];
+  logic [8:0] F[DEPTH];
 
   pwm_preconditioner #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) pwm_preconditioner (
       .CLK(CLK),
       .DIN_VALID(DIN_VALID),
-      .DUTY(DUTY),
+      .PULSE_WIDTH(PULSE_WIDTH),
       .PHASE(PHASE),
       .RISE(R),
       .FALL(F),
@@ -42,10 +40,8 @@ module pwm #(
   );
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
-    logic [WIDTH-1:0] R_buf, F_buf;
-    pwm_buffer #(
-        .WIDTH(WIDTH)
-    ) pwm_buffer (
+    logic [8:0] R_buf, F_buf;
+    pwm_buffer pwm_buffer (
         .CLK(CLK),
         .UPDATE(UPDATE),
         .RISE_IN(R[i]),
@@ -53,9 +49,7 @@ module pwm #(
         .RISE_OUT(R_buf),
         .FALL_OUT(F_buf)
     );
-    pwm_generator #(
-        .WIDTH(WIDTH)
-    ) pwm_generator (
+    pwm_generator pwm_generator (
         .CLK(CLK),
         .TIME_CNT(TIME_CNT),
         .RISE(R_buf),

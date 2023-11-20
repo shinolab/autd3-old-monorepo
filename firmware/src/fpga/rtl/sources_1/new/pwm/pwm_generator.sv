@@ -13,19 +13,17 @@
 
 
 `timescale 1ns / 1ps
-module pwm_generator #(
-    parameter int WIDTH = 9
-) (
+module pwm_generator (
     input var CLK,
-    input var [WIDTH-1:0] TIME_CNT,
-    input var [WIDTH-1:0] RISE,
-    input var [WIDTH-1:0] FALL,
+    input var [8:0] TIME_CNT,
+    input var [8:0] RISE,
+    input var [8:0] FALL,
     output var PWM_OUT
 );
 
-  logic [WIDTH-1:0] t;
-  logic [WIDTH-1:0] R;
-  logic [WIDTH-1:0] F;
+  logic [8:0] t;
+  logic [8:0] R;
+  logic [8:0] F;
   logic v;
 
   assign t = TIME_CNT;
