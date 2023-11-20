@@ -22,18 +22,14 @@ module sim_pwm_generator ();
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 9;
+  logic [8:0] time_cnt;
+  assign time_cnt = SYS_TIME[8:0];
 
-  logic [WIDTH-1:0] time_cnt;
-  assign time_cnt = SYS_TIME[WIDTH-1:0];
-
-  logic [WIDTH-1:0] rise, fall;
+  logic [8:0] rise, fall;
 
   logic pwm_out;
 
-  pwm_generator #(
-      .WIDTH(WIDTH)
-  ) pwm_generator (
+  pwm_generator pwm_generator (
       .CLK(CLK_20P48M),
       .TIME_CNT(time_cnt),
       .RISE(rise),
@@ -41,7 +37,7 @@ module sim_pwm_generator ();
       .PWM_OUT(pwm_out)
   );
 
-  task automatic set(logic [WIDTH-1:0] r, logic [WIDTH-1:0] f);
+  task automatic set(logic [8:0] r, logic [8:0] f);
     while (time_cnt !== 512 - 1) @(posedge CLK_20P48M);
     rise = r;
     fall = f;

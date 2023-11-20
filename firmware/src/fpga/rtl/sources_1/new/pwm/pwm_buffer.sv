@@ -12,19 +12,17 @@
  */
 
 `timescale 1ns / 1ps
-module pwm_buffer #(
-    parameter int WIDTH = 9
-) (
+module pwm_buffer (
     input var CLK,
     input var UPDATE,
-    input var [WIDTH-1:0] RISE_IN,
-    input var [WIDTH-1:0] FALL_IN,
-    output var [WIDTH-1:0] RISE_OUT,
-    output var [WIDTH-1:0] FALL_OUT
+    input var [8:0] RISE_IN,
+    input var [8:0] FALL_IN,
+    output var [8:0] RISE_OUT,
+    output var [8:0] FALL_OUT
 );
 
-  logic [WIDTH-1:0] R;
-  logic [WIDTH-1:0] F;
+  logic [8:0] R;
+  logic [8:0] F;
 
   assign RISE_OUT = R;
   assign FALL_OUT = F;
