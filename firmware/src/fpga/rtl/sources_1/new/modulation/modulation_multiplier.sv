@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ module modulation_multiplier #(
 
   logic [7:0] mod;
 
-  logic [151:0] intensity_m;
+  logic [15:0] intensity_m;
 
   logic [17:0] idx_offset_a, idx_offset_b, idx_offset_s;
   logic [17:0] idx_oc_a, idx_oc_b, idx_oc_s;

@@ -37,8 +37,6 @@ module stm_operator #(
   logic [ 7:0] intensity_focus;
   logic [ 7:0] phase_focus;
   logic [15:0] idx;
-  logic start_gain, done_gain;
-  logic start_focus, done_focus;
   logic dout_valid_gain, dout_valid_focus;
 
   assign INTENSITY = STM_GAIN_MODE ? intensity_gain : intensity_focus;

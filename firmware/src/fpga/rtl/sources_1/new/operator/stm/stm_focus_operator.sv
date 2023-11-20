@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,6 @@ module stm_focus_operator #(
 
   logic [63:0] quo;
   logic [31:0] _unused_rem;
-  logic [15:0] divined;
 
   logic [$clog2(Latency)-1:0] cnt;
   logic [$clog2(DEPTH)-1:0] set_cnt;
