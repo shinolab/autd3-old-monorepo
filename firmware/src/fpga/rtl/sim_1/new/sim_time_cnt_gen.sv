@@ -23,14 +23,12 @@ module sim_time_cnt_gen ();
       .SYS_TIME()
   );
 
-  localparam int WIDTH = 9;
   localparam int DEPTH = 249;
 
-  logic [WIDTH-1:0] time_cnt;
+  logic [8:0] time_cnt;
   logic skip_one_assert;
 
   time_cnt_generator #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK_20P48M),

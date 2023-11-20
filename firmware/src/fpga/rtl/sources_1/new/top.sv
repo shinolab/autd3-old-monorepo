@@ -61,7 +61,6 @@ module top (
   );
 
   main #(
-      .WIDTH(9),
       .DEPTH(NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
