@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -113,7 +113,7 @@ mod tests {
                     dev.idx(),
                     (0..dev.num_transducers())
                         .map(|_| Drive {
-                            amp: EmitIntensity::new_normalized(rng.gen_range(0.0..1.0)).unwrap(),
+                            intensity: EmitIntensity::new(rng.gen_range(0..=0xFF)),
                             phase: rng.gen_range(0.0..2.0 * PI),
                         })
                         .collect(),
@@ -161,7 +161,7 @@ mod tests {
                 .zip(gain.data[&dev.idx()].iter())
                 .for_each(|(d, g)| {
                     assert_eq!(d[0], FPGADrive::to_phase(g));
-                    assert_eq!(d[1], FPGADrive::to_duty(g));
+                    assert_eq!(d[1], FPGADrive::to_intensity(g));
                 })
         });
     }

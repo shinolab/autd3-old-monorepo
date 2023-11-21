@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ impl<G: Gain> GainSTM<G> {
     /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
     ///
     pub fn new(freq: float) -> Self {
-        Self::new_with_props_mode(STMProps::new(freq), GainSTMMode::PhaseDutyFull)
+        Self::new_with_props_mode(STMProps::new(freq), GainSTMMode::PhaseIntensityFull)
     }
 
     /// constructor
@@ -52,7 +52,7 @@ impl<G: Gain> GainSTM<G> {
     pub fn new_with_period(period: std::time::Duration) -> Self {
         Self::new_with_props_mode(
             STMProps::new_with_period(period),
-            GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull,
         )
     }
 
@@ -65,7 +65,7 @@ impl<G: Gain> GainSTM<G> {
     pub fn new_with_sampling_config(config: SamplingConfiguration) -> Self {
         Self::new_with_props_mode(
             STMProps::new_with_sampling_config(config),
-            GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull,
         )
     }
 
@@ -251,7 +251,7 @@ mod tests {
     #[test]
     fn with_mode() {
         let stm = GainSTM::<NullGain>::new(1.0);
-        assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
+        assert_eq!(stm.mode(), GainSTMMode::PhaseIntensityFull);
 
         let stm = stm.with_mode(GainSTMMode::PhaseFull);
         assert_eq!(stm.mode(), GainSTMMode::PhaseFull);
@@ -259,8 +259,8 @@ mod tests {
         let stm = stm.with_mode(GainSTMMode::PhaseHalf);
         assert_eq!(stm.mode(), GainSTMMode::PhaseHalf);
 
-        let stm = stm.with_mode(GainSTMMode::PhaseDutyFull);
-        assert_eq!(stm.mode(), GainSTMMode::PhaseDutyFull);
+        let stm = stm.with_mode(GainSTMMode::PhaseIntensityFull);
+        assert_eq!(stm.mode(), GainSTMMode::PhaseIntensityFull);
     }
 
     struct NullGain2 {}

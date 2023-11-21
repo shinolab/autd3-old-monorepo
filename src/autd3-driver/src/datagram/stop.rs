@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 use crate::{
     datagram::*,
     error::AUTDInternalError,
+    fpga::SILENCER_STEP_DEFAULT,
     operation::{ConfigSilencerOp, StopOp},
 };
 
@@ -32,7 +33,10 @@ impl Datagram for Stop {
     type O2 = StopOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        Ok((Self::O1::new(10), Self::O2::default()))
+        Ok((
+            Self::O1::new(SILENCER_STEP_DEFAULT, SILENCER_STEP_DEFAULT),
+            Self::O2::default(),
+        ))
     }
 }
 

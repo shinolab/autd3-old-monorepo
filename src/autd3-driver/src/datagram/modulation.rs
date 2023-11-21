@@ -4,14 +4,17 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{common::SamplingConfiguration, defined::float, error::AUTDInternalError};
+use crate::{
+    common::{EmitIntensity, SamplingConfiguration},
+    error::AUTDInternalError,
+};
 
 pub trait ModulationProperty {
     fn sampling_config(&self) -> SamplingConfiguration;
@@ -26,7 +29,7 @@ pub trait ModulationProperty {
 /// * The start/end timing of Modulation cannot be controlled.
 #[allow(clippy::len_without_is_empty)]
 pub trait Modulation: ModulationProperty {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError>;
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError>;
     fn len(&self) -> Result<usize, AUTDInternalError> {
         self.calc().map(|v| v.len())
     }
@@ -41,7 +44,7 @@ impl ModulationProperty for Box<dyn Modulation> {
 
 impl Modulation for Box<dyn Modulation> {
     #[cfg_attr(coverage_nightly, coverage(off))]
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         self.as_ref().calc()
     }
 
@@ -56,7 +59,7 @@ mod tests {
     use super::*;
 
     struct NullModulation {
-        pub buf: Vec<float>,
+        pub buf: Vec<EmitIntensity>,
         pub config: SamplingConfiguration,
     }
 
@@ -67,7 +70,7 @@ mod tests {
     }
 
     impl Modulation for NullModulation {
-        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+        fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
             Ok(self.buf.clone())
         }
     }
@@ -96,7 +99,7 @@ mod tests {
         assert_eq!(
             NullModulation {
                 config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
-                buf: vec![0.0; 100],
+                buf: vec![EmitIntensity::new(0); 100],
             }
             .len()
             .unwrap(),

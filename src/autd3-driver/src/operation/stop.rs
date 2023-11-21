@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ impl Operation for StopOp {
             );
             dst.iter_mut().for_each(|d| {
                 d.set(&Drive {
-                    amp: EmitIntensity::MIN,
+                    intensity: EmitIntensity::MIN,
                     phase: 0.,
                 })
             });

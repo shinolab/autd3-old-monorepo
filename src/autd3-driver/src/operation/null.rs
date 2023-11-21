@@ -47,7 +47,7 @@ impl Operation for NullOp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geometry::{tests::create_geometry};
+    use crate::geometry::tests::create_geometry;
 
     const NUM_TRANS_IN_UNIT: usize = 249;
     const NUM_DEVICE: usize = 10;

@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -171,7 +171,7 @@ impl<G: Gain> Operation for GainSTMOp<G> {
 
         let mut send = 0;
         match self.mode {
-            GainSTMMode::PhaseDutyFull => {
+            GainSTMMode::PhaseIntensityFull => {
                 let d = &self.drives[sent][&device.idx()];
                 unsafe {
                     let dst = std::slice::from_raw_parts_mut(
@@ -304,7 +304,7 @@ mod tests {
     const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn gain_stm_phase_duty_full_op() {
+    fn gain_stm_phase_intensity_full_op() {
         const GAIN_STM_SIZE: usize = 3;
         const FRAME_SIZE: usize = 12 + NUM_TRANS_IN_UNIT * 2;
 
@@ -323,8 +323,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: EmitIntensity::new_normalized(rng.gen_range(0.0..1.0))
-                                        .unwrap(),
+                                    intensity: EmitIntensity::new(rng.gen_range(0..=0xFF)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -340,7 +339,8 @@ mod tests {
             .collect();
 
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
-        let mut op = GainSTMOp::<_>::new(gains, GainSTMMode::PhaseDutyFull, freq_div, None, None);
+        let mut op =
+            GainSTMOp::<_>::new(gains, GainSTMMode::PhaseIntensityFull, freq_div, None, None);
 
         assert!(op.init(&geometry).is_ok());
 
@@ -377,11 +377,11 @@ mod tests {
 
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 2],
-                ((GainSTMMode::PhaseDutyFull as u16) & 0xFF) as u8
+                ((GainSTMMode::PhaseIntensityFull as u16) & 0xFF) as u8
             );
             assert_eq!(
                 tx[dev.idx() * FRAME_SIZE + 3],
-                ((GainSTMMode::PhaseDutyFull as u16) >> 8) as u8
+                ((GainSTMMode::PhaseIntensityFull as u16) >> 8) as u8
             );
 
             assert_eq!(tx[dev.idx() * FRAME_SIZE + 4], (freq_div & 0xFF) as u8);
@@ -408,7 +408,7 @@ mod tests {
                 .zip(gain_data[0][&dev.idx()].iter())
                 .for_each(|(d, g)| {
                     assert_eq!(d[0], FPGADrive::to_phase(g));
-                    assert_eq!(d[1], FPGADrive::to_duty(g));
+                    assert_eq!(d[1], FPGADrive::to_intensity(g));
                 })
         });
 
@@ -444,7 +444,7 @@ mod tests {
                 .zip(gain_data[1][&dev.idx()].iter())
                 .for_each(|(d, g)| {
                     assert_eq!(d[0], FPGADrive::to_phase(g));
-                    assert_eq!(d[1], FPGADrive::to_duty(g));
+                    assert_eq!(d[1], FPGADrive::to_intensity(g));
                 })
         });
 
@@ -480,7 +480,7 @@ mod tests {
                 .zip(gain_data[2][&dev.idx()].iter())
                 .for_each(|(d, g)| {
                     assert_eq!(d[0], FPGADrive::to_phase(g));
-                    assert_eq!(d[1], FPGADrive::to_duty(g));
+                    assert_eq!(d[1], FPGADrive::to_intensity(g));
                 })
         });
     }
@@ -505,8 +505,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: EmitIntensity::new_normalized(rng.gen_range(0.0..1.0))
-                                        .unwrap(),
+                                    intensity: EmitIntensity::new(rng.gen_range(0..=0xFF)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -688,8 +687,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: EmitIntensity::new_normalized(rng.gen_range(0.0..1.0))
-                                        .unwrap(),
+                                    intensity: EmitIntensity::new(rng.gen_range(0..=0xFF)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -883,8 +881,7 @@ mod tests {
                             dev.idx(),
                             (0..dev.num_transducers())
                                 .map(|_| Drive {
-                                    amp: EmitIntensity::new_normalized(rng.gen_range(0.0..1.0))
-                                        .unwrap(),
+                                    intensity: EmitIntensity::new(rng.gen_range(0..=0xFF)),
                                     phase: rng.gen_range(0.0..2.0 * PI),
                                 })
                                 .collect(),
@@ -901,7 +898,7 @@ mod tests {
 
         let mut op = GainSTMOp::<_>::new(
             gains.clone(),
-            GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull,
             SAMPLING_FREQ_DIV_MIN,
             Some(start_idx),
             Some(finish_idx),
@@ -929,7 +926,7 @@ mod tests {
 
         let mut op = GainSTMOp::<_>::new(
             gains.clone(),
-            GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull,
             SAMPLING_FREQ_DIV_MIN,
             Some(start_idx),
             None,
@@ -957,7 +954,7 @@ mod tests {
 
         let mut op = GainSTMOp::<_>::new(
             gains.clone(),
-            GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull,
             SAMPLING_FREQ_DIV_MIN,
             None,
             Some(finish_idx),
@@ -993,7 +990,7 @@ mod tests {
 
             let mut op = GainSTMOp::<_>::new(
                 gains,
-                GainSTMMode::PhaseDutyFull,
+                GainSTMMode::PhaseIntensityFull,
                 SAMPLING_FREQ_DIV_MIN,
                 None,
                 None,
@@ -1019,7 +1016,7 @@ mod tests {
         let test = |n: usize, start_idx: Option<u16>, finish_idx: Option<u16>| {
             let mut op = GainSTMOp::new(
                 (0..n).map(|_| NullGain {}).collect(),
-                GainSTMMode::PhaseDutyFull,
+                GainSTMMode::PhaseIntensityFull,
                 SAMPLING_FREQ_DIV_MIN,
                 start_idx,
                 finish_idx,

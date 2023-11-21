@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use crate::{common::Drive, defined::PI};
 #[repr(C)]
 pub struct FPGADrive {
     pub phase: u8,
-    pub duty: u8,
+    pub intensity: u8,
 }
 
 impl FPGADrive {
@@ -25,15 +25,12 @@ impl FPGADrive {
         (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as _
     }
 
-    pub fn to_duty(d: &Drive) -> u8 {
-        match d.amp.pulse_width() {
-            0 => 0,
-            r => (r - 1) as u8,
-        }
+    pub fn to_intensity(d: &Drive) -> u8 {
+        d.intensity.value()
     }
 
     pub fn set(&mut self, d: &Drive) {
-        self.duty = Self::to_duty(d);
+        self.intensity = Self::to_intensity(d);
         self.phase = Self::to_phase(d);
     }
 }
@@ -51,18 +48,18 @@ mod tests {
 
         let d = FPGADrive {
             phase: 0x01,
-            duty: 0x02,
+            intensity: 0x02,
         };
         let dc = Clone::clone(&d);
         assert_eq!(d.phase, dc.phase);
-        assert_eq!(d.duty, dc.duty);
+        assert_eq!(d.intensity, dc.intensity);
 
         let mut d = [0x00u8; 2];
 
         unsafe {
             let s = Drive {
                 phase: 0.0,
-                amp: EmitIntensity::MIN,
+                intensity: EmitIntensity::MIN,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -70,7 +67,7 @@ mod tests {
 
             let s = Drive {
                 phase: PI,
-                amp: EmitIntensity::new_normalized(0.5).unwrap(),
+                intensity: EmitIntensity::new(84),
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -78,7 +75,7 @@ mod tests {
 
             let s = Drive {
                 phase: 2.0 * PI,
-                amp: EmitIntensity::MAX,
+                intensity: EmitIntensity::MAX,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 0x00);
@@ -86,7 +83,7 @@ mod tests {
 
             let s = Drive {
                 phase: 3.0 * PI,
-                amp: EmitIntensity::MAX,
+                intensity: EmitIntensity::MAX,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);
@@ -94,7 +91,7 @@ mod tests {
 
             let s = Drive {
                 phase: -PI,
-                amp: EmitIntensity::MIN,
+                intensity: EmitIntensity::MIN,
             };
             (*(&mut d as *mut _ as *mut FPGADrive)).set(&s);
             assert_eq!(d[0], 128);

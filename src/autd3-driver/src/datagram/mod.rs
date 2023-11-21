@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 mod clear;
-mod filter;
+mod debug;
 mod gain;
 mod mod_delay;
 mod modulation;
@@ -24,7 +24,7 @@ mod update_flag;
 mod with_timeout;
 
 pub use clear::Clear;
-pub use filter::{ConfigureAmpFilter, ConfigurePhaseFilter};
+pub use debug::ConfigureDebugOutoutIdx;
 pub use gain::{Gain, GainAsAny, GainFilter};
 pub use mod_delay::ConfigureModDelay;
 pub use modulation::{Modulation, ModulationProperty};
@@ -68,7 +68,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::operation::{ConfigureAmpFilterOp, ConfigurePhaseFilterOp, NullOp};
+    use crate::operation::{ClearOp, ConfigureModDelayOp, NullOp};
 
     use super::*;
 
@@ -76,7 +76,7 @@ mod tests {
         pub err: bool,
     }
     impl Datagram for TestDatagram1 {
-        type O1 = ConfigureAmpFilterOp;
+        type O1 = ClearOp;
         type O2 = NullOp;
 
         fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -92,7 +92,7 @@ mod tests {
         pub err: bool,
     }
     impl Datagram for TestDatagram2 {
-        type O1 = ConfigurePhaseFilterOp;
+        type O1 = ConfigureModDelayOp;
         type O2 = NullOp;
 
         fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn test_datagram_tuple() {
         let d = (TestDatagram1 { err: false }, TestDatagram2 { err: false });
-        let _: (ConfigureAmpFilterOp, ConfigurePhaseFilterOp) =
+        let _: (ClearOp, ConfigureModDelayOp) =
             <(TestDatagram1, TestDatagram2) as Datagram>::operation(d).unwrap();
     }
 
