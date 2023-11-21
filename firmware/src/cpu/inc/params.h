@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/11/2023
+// Last Modified: 21/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,8 @@
 #define BRAM_ADDR_MOD_FREQ_DIV_1 (0x023)
 #define BRAM_ADDR_VERSION_NUM (0x030)
 #define BRAM_ADDR_VERSION_NUM_MINOR (0x031)
-#define BRAM_ADDR_SILENT_STEP (0x040)
+#define BRAM_ADDR_SILENT_INTENSITY_STEP (0x040)
+#define BRAM_ADDR_SILENT_PHASE_STEP (0x041)
 #define BRAM_ADDR_STM_MEM_PAGE (0x050)
 #define BRAM_ADDR_STM_CYCLE (0x051)
 #define BRAM_ADDR_STM_FREQ_DIV_0 (0x052)
@@ -38,9 +39,8 @@
 #define BRAM_ADDR_SOUND_SPEED_1 (0x055)
 #define BRAM_ADDR_STM_START_IDX (0x056)
 #define BRAM_ADDR_STM_FINISH_IDX (0x057)
+#define BRAM_ADDR_DEBUG_OUT_IDX (0x0F0)
 #define BRAM_ADDR_MOD_DELAY_BASE (0x200)
-#define BRAM_ADDR_FILTER_DUTY_BASE (0x300)
-#define BRAM_ADDR_FILTER_PHASE_BASE (0x400)
 
 #define CTL_FLAG_FORCE_FAN_BIT (0)
 #define CTL_FLAG_READS_FPGA_INFO_BIT (1)
@@ -69,13 +69,12 @@
 #define TAG_GAIN (0x30)
 #define TAG_FOCUS_STM (0x40)
 #define TAG_GAIN_STM (0x50)
-#define TAG_FILTER (0x60)
+#define TAG_DEBUG (0xF0)
 
 #define INFO_TYPE_CPU_VERSION_MAJOR (0x01)
 #define INFO_TYPE_CPU_VERSION_MINOR (0x02)
 #define INFO_TYPE_FPGA_VERSION_MAJOR (0x03)
 #define INFO_TYPE_FPGA_VERSION_MINOR (0x04)
-#define INFO_TYPE_FPGA_FUNCTIONS (0x05)
 #define INFO_TYPE_CLEAR (0x06)
 
 #define MODULATION_FLAG_BEGIN (1 << 0)
@@ -91,11 +90,8 @@
 #define GAIN_STM_FLAG_USE_START_IDX (1 << 4)
 #define GAIN_STM_FLAG_USE_FINISH_IDX (1 << 5)
 
-#define GAIN_STM_MODE_DUTY_PHASE_FULL (0)
+#define GAIN_STM_MODE_INTENSITY_PHASE_FULL (0)
 #define GAIN_STM_MODE_PHASE_FULL (1)
 #define GAIN_STM_MODE_PHASE_HALF (2)
-
-#define FILTER_ADD_PHASE (0x00)
-#define FILTER_ADD_DUTY (0x01)
 
 #endif  // INC_PARAMS_H_
