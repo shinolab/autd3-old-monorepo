@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ module main #(
     input var THERMO,
     output var FORCE_FAN,
     output var PWM_OUT[DEPTH],
-    output var GPIO_OUT
+    output var GPIO_OUT[2]
 );
 
   `include "params.vh"
@@ -32,26 +32,26 @@ module main #(
   logic [63:0] sys_time;
   logic skip_one_assert;
 
-  logic [8:0] time_cnt;
-  logic update;
+  (*mark_debug="true"*) logic [8:0] time_cnt;
+  (*mark_debug="true"*) logic update;
 
   logic [63:0] ecat_sync_time;
   logic sync_set;
 
-  logic [7:0] intensity;
-  logic [7:0] phase;
-  logic dout_valid;
+  (*mark_debug="true"*) logic [7:0] intensity;
+  (*mark_debug="true"*) logic [7:0] phase;
+  (*mark_debug="true"*) logic dout_valid;
 
-  logic op_mode;
-  logic [7:0] intensity_normal;
-  logic [7:0] phase_normal;
-  logic dout_valid_normal;
+  (*mark_debug="true"*) logic op_mode;
+  (*mark_debug="true"*) logic [7:0] intensity_normal;
+  (*mark_debug="true"*) logic [7:0] phase_normal;
+  (*mark_debug="true"*) logic dout_valid_normal;
 
-  logic [7:0] intensity_stm;
-  logic [7:0] phase_stm;
-  logic dout_valid_stm;
-  logic [15:0] stm_idx;
-  logic stm_gain_mode;
+  (*mark_debug="true"*) logic [7:0] intensity_stm;
+  (*mark_debug="true"*) logic [7:0] phase_stm;
+  (*mark_debug="true"*) logic dout_valid_stm;
+  (*mark_debug="true"*) logic [15:0] stm_idx;
+  (*mark_debug="true"*) logic stm_gain_mode;
   logic [15:0] cycle_stm;
   logic [31:0] freq_div_stm;
   logic [31:0] sound_speed;
@@ -61,15 +61,22 @@ module main #(
 
   logic [15:0] cycle_m;
   logic [31:0] freq_div_m;
-  logic [8:0] pulse_width_m;
-  logic [7:0] phase_m;
+  (*mark_debug="true"*) logic [15:0] intensity_m;
+  (*mark_debug="true"*) logic [7:0] phase_m;
   logic [15:0] delay_m[DEPTH];
-  logic dout_valid_m;
+  (*mark_debug="true"*) logic dout_valid_m;
 
-  logic [8:0] step_s;
-  logic [8:0] pulse_width_s;
-  logic [7:0] phase_s;
-  logic dout_valid_s;
+  (*mark_debug="true"*) logic [15:0] step_intensity_s;
+  (*mark_debug="true"*) logic [15:0] step_phase_s;
+  (*mark_debug="true"*) logic [15:0] intensity_s;
+  (*mark_debug="true"*) logic [7:0] phase_s;
+  (*mark_debug="true"*) logic dout_valid_s;
+
+  (*mark_debug="true"*) logic [8:0] pulse_width_e;
+  (*mark_debug="true"*) logic [7:0] phase_e;
+  (*mark_debug="true"*) logic dout_valid_e;
+
+  logic [7:0] debug_output_idx;
 
   synchronizer synchronizer (
       .CLK(CLK),
@@ -95,14 +102,16 @@ module main #(
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
-      .STEP_S(step_s),
+      .STEP_INTENSITY_S(step_intensity_s),
+      .STEP_PHASE_S(step_phase_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
       .STM_START_IDX(stm_start_idx),
       .USE_STM_START_IDX(use_stm_start_idx),
       .STM_FINISH_IDX(stm_finish_idx),
-      .USE_STM_FINISH_IDX(use_stm_finish_idx)
+      .USE_STM_FINISH_IDX(use_stm_finish_idx),
+      .DEBUG_OUTPUT_IDX(debug_output_idx)
   );
 
   time_cnt_generator #(
@@ -174,7 +183,7 @@ module main #(
       .INTENSITY_IN(intensity),
       .PHASE_IN(phase),
       .DELAY_M(delay_m),
-      .PULSE_WIDTH_OUT(pulse_width_m),
+      .INTENSITY_OUT(intensity_m),
       .PHASE_OUT(phase_m),
       .DOUT_VALID(dout_valid_m),
       .IDX()
@@ -185,12 +194,25 @@ module main #(
   ) silencer (
       .CLK(CLK),
       .DIN_VALID(dout_valid_m),
-      .STEP(step_s),
-      .PULSE_WIDTH_IN(pulse_width_m),
+      .STEP_INTENSITY(step_intensity_s),
+      .STEP_PHASE(step_phase_s),
+      .INTENSITY_IN(intensity_m),
       .PHASE_IN(phase_m),
-      .PULSE_WIDTH_OUT(pulse_width_s),
+      .INTENSITY_OUT(intensity_s),
       .PHASE_OUT(phase_s),
       .DOUT_VALID(dout_valid_s)
+  );
+
+  pulse_width_encoder #(
+      .DEPTH(DEPTH)
+  ) pulse_width_encoder (
+      .CLK(CLK),
+      .DIN_VALID(dout_valid_s),
+      .INTENSITY_IN(intensity_s),
+      .PHASE_IN(phase_s),
+      .PULSE_WIDTH_OUT(pulse_width_e),
+      .PHASE_OUT(phase_e),
+      .DOUT_VALID(dout_valid_e)
   );
 
   pwm #(
@@ -199,18 +221,21 @@ module main #(
       .CLK(CLK),
       .TIME_CNT(time_cnt),
       .UPDATE(update),
-      .DIN_VALID(dout_valid_s),
-      .PULSE_WIDTH(pulse_width_s),
-      .PHASE(phase_s),
+      .DIN_VALID(dout_valid_e),
+      .PULSE_WIDTH(pulse_width_e),
+      .PHASE(phase_e),
       .PWM_OUT(PWM_OUT)
   );
 
-  logic gpio_out;
+  logic gpio_out_0;
+  logic gpio_out_1;
 
-  assign GPIO_OUT = gpio_out;
+  assign GPIO_OUT[0] = gpio_out_0;
+  assign GPIO_OUT[1] = gpio_out_1;
 
   always_ff @(posedge CLK) begin
-    gpio_out <= time_cnt < 9'd256;
+    gpio_out_0 <= time_cnt < 9'd256;
+    gpio_out_1 <= PWM_OUT[debug_output_idx];
   end
 
 endmodule

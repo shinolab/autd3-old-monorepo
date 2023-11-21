@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ module sim_controller ();
   logic [15:0] cycle_m;
   logic [31:0] freq_div_m;
   logic [15:0] delay_m[DEPTH];
-  logic [8:0] step_s;
+  logic [15:0] step_intensity_s, step_phase_s;
   logic [15:0] cycle_stm;
   logic [31:0] freq_div_stm;
   logic [31:0] sound_speed;
@@ -58,7 +58,8 @@ module sim_controller ();
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
-      .STEP_S(step_s),
+      .STEP_INTENSITY_S(step_intensity_s),
+      .STEP_PHASE_S(step_phase_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
@@ -74,7 +75,7 @@ module sim_controller ();
     logic [15:0] cycle_m_buf;
     logic [31:0] freq_div_m_buf;
     logic [15:0] delay_buf[DEPTH];
-    logic [7:0] step_s_buf;
+    logic [15:0] step_intensity_s_buf, step_phase_s_buf;
     logic [15:0] cycle_stm_buf;
     logic [31:0] freq_div_stm_buf;
     logic [31:0] sound_speed_buf;
@@ -99,8 +100,9 @@ module sim_controller ();
     end
     sim_helper_bram.write_delay(delay_buf);
 
-    step_s_buf = sim_helper_random.range(9'h100, 0);
-    sim_helper_bram.write_silent_step(step_s_buf);
+    step_intensity_s_buf = sim_helper_random.range(16'hFFFF, 0);
+    step_phase_s_buf = sim_helper_random.range(16'hFFFF, 0);
+    sim_helper_bram.write_silent_step(step_intensity_s_buf, step_phase_s_buf);
 
     cycle_stm_buf = sim_helper_random.range(16'hFFFF, 0);
     sim_helper_bram.write_stm_cycle(cycle_stm_buf);
@@ -135,8 +137,12 @@ module sim_controller ();
         $finish();
       end
     end
-    if (step_s_buf !== step_s) begin
-      $error("Failed at step_s");
+    if (step_intensity_s_buf !== step_intensity_s) begin
+      $error("Failed at step_intensity_s");
+      $finish();
+    end
+    if (step_phase_s_buf !== step_phase_s) begin
+      $error("Failed at step_phase_s");
       $finish();
     end
     if (cycle_stm_buf !== cycle_stm) begin

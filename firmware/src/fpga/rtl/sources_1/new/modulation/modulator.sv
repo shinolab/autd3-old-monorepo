@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ module modulator #(
     input var [7:0] INTENSITY_IN,
     input var [7:0] PHASE_IN,
     input var [15:0] DELAY_M[DEPTH],
-    output var [8:0] PULSE_WIDTH_OUT,
+    output var [15:0] INTENSITY_OUT,
     output var [7:0] PHASE_OUT,
     output var DOUT_VALID,
     output var [15:0] IDX
@@ -46,10 +46,6 @@ module modulator #(
       .IDX(IDX)
   );
 
-  logic [15:0] intensity_mult_out;
-  logic [7:0] phase_mult_out;
-  logic dout_mult;
-
   modulation_multiplier #(
       .DEPTH(DEPTH)
   ) modulation_multiplier (
@@ -61,19 +57,7 @@ module modulator #(
       .DELAY_M(DELAY_M),
       .INTENSITY_IN(INTENSITY_IN),
       .PHASE_IN(PHASE_IN),
-      .INTENSITY_OUT(intensity_mult_out),
-      .PHASE_OUT(phase_mult_out),
-      .DOUT_VALID(dout_mult)
-  );
-
-  pulse_width_encoder #(
-      .DEPTH(DEPTH)
-  ) pulse_width_encoder (
-      .CLK(CLK),
-      .DIN_VALID(dout_mult),
-      .INTENSITY_IN(intensity_mult_out),
-      .PHASE_IN(phase_mult_out),
-      .PULSE_WIDTH_OUT(PULSE_WIDTH_OUT),
+      .INTENSITY_OUT(INTENSITY_OUT),
       .PHASE_OUT(PHASE_OUT),
       .DOUT_VALID(DOUT_VALID)
   );

@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ module top (
     output var FORCE_FAN,
     input var THERMO,
     output var [252:1] XDCR_OUT,
-    output var [0:0] GPIO_OUT
+    output var GPIO_OUT[2]
 );
 
   `include "cvt_uid.vh"
@@ -72,7 +72,7 @@ module top (
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
       .PWM_OUT(PWM_OUT),
-      .GPIO_OUT(GPIO_OUT[0])
+      .GPIO_OUT(GPIO_OUT)
   );
 
 endmodule

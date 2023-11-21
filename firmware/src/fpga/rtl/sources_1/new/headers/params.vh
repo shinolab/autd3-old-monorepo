@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,8 @@ localparam bit [13:0] ADDR_MOD_FREQ_DIV_0 = 14'h022;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_1 = 14'h023;
 localparam bit [13:0] ADDR_VERSION_NUM_MAJOR = 14'h030;
 localparam bit [13:0] ADDR_VERSION_NUM_MINOR = 14'h031;
-localparam bit [13:0] ADDR_SILENT_STEP = 14'h040;
+localparam bit [13:0] ADDR_SILENT_STEP_INTENSITY = 14'h040;
+localparam bit [13:0] ADDR_SILENT_STEP_PHASE = 14'h041;
 localparam bit [13:0] ADDR_STM_MEM_PAGE = 14'h050;
 localparam bit [13:0] ADDR_STM_CYCLE = 14'h051;
 localparam bit [13:0] ADDR_STM_FREQ_DIV_0 = 14'h052;
@@ -45,6 +46,7 @@ localparam bit [13:0] ADDR_SOUND_SPEED_0 = 14'h054;
 localparam bit [13:0] ADDR_SOUND_SPEED_1 = 14'h055;
 localparam bit [13:0] ADDR_STM_START_IDX = 14'h056;
 localparam bit [13:0] ADDR_STM_FINISH_IDX = 14'h057;
+localparam bit [13:0] ADDR_DEBUG_OUT_IDX = 14'h0F0;
 localparam bit [13:0] ADDR_DELAY_BASE = 14'h200;
 
 localparam int CTL_FLAG_FORCE_FAN_BIT = 0;

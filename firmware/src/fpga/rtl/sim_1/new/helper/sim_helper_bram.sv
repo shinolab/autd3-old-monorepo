@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -120,8 +120,10 @@ module sim_helper_bram #(
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_FREQ_DIV_1, mod_freq_div[31:16]);
   endtask
 
-  task automatic write_silent_step(logic [8:0] silent_step);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP, silent_step);
+  task automatic write_silent_step(logic [15:0] silent_step_intensity,
+                                   logic [15:0] silent_step_phase);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP_INTENSITY, silent_step_intensity);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_SILENT_STEP_PHASE, silent_step_phase);
   endtask
 
   task automatic write_stm_cycle(logic [15:0] stm_cycle);

@@ -1418,9 +1418,11 @@ set_property IOSTANDARD LVCMOS33 [get_ports THERMO]
 set_property PULLTYPE PULLUP [get_ports THERMO]
 set_property PACKAGE_PIN M19 [get_ports THERMO]
 set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_OUT[0]}]
-set_property PULLUP true [get_ports {GPIO_OUT[0]}]
+set_property PULLTYPE PULLUP [get_ports {GPIO_OUT[0]}]
 set_property PACKAGE_PIN Y20 [get_ports {GPIO_OUT[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_OUT[1]}]
+set_property PULLTYPE PULLUP [get_ports {GPIO_OUT[1]}]
+set_property PACKAGE_PIN T19 [get_ports {GPIO_OUT[1]}]
 
 create_clock -period 13.333 -name cpu_bsc_75M -waveform {0.000 6.666} [get_ports CPU_CKIO]
 create_clock -period 39.063 -name main_25P6M -waveform {0.000 19.531} [get_ports MRCC_25P6M]
-
