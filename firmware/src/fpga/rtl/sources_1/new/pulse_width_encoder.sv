@@ -4,7 +4,7 @@
  * Created Date: 17/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,8 @@ module pulse_width_encoder #(
   localparam int Latency = 1;
 
   logic [15:0] addr;
-  logic [ 7:0] dout;
+  logic [7:0] dout;
+  logic full_width[3];
 
   BRAM_ASIN asin_bram (
       .clka (CLK),
@@ -83,7 +84,7 @@ module pulse_width_encoder #(
 
         if (cnt > Latency) begin
           dout_valid <= 1'b1;
-          pulse_width_out <= dout == 8'hFF ? 9'h100 : dout;
+          pulse_width_out <= {full_width[2], dout[7:0]};
           phase_out <= phase_buf[set_cnt];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
@@ -94,6 +95,12 @@ module pulse_width_encoder #(
       default: begin
       end
     endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    full_width[0] <= INTENSITY_IN == 16'd65025;  // 255*255
+    full_width[1] <= full_width[0];
+    full_width[2] <= full_width[1];
   end
 
 endmodule

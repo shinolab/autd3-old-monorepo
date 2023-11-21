@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,12 +34,12 @@ module sim_modulator ();
   logic [31:0] freq_div_m;
   logic [15:0] delay_m[DEPTH];
   logic [7:0] intensity;
-  logic [8:0] pulse_width_out;
+  logic [15:0] intensity_out;
   logic [7:0] phase;
   logic [7:0] phase_out;
 
   logic [7:0] mod[65536];
-  logic [8:0] intensity_buf[DEPTH];
+  logic [7:0] intensity_buf[DEPTH];
   logic [7:0] phase_buf[DEPTH];
   logic [15:0] idx_buf;
 
@@ -55,7 +55,7 @@ module sim_modulator ();
       .INTENSITY_IN(intensity),
       .PHASE_IN(phase),
       .DELAY_M(delay_m),
-      .PULSE_WIDTH_OUT(pulse_width_out),
+      .INTENSITY_OUT(intensity_out),
       .PHASE_OUT(phase_out),
       .DOUT_VALID(dout_valid),
       .IDX(idx)
@@ -78,8 +78,6 @@ module sim_modulator ();
   endtask
 
   task automatic check();
-    real intensity_real;
-
     while (1) begin
       @(posedge CLK_20P48M);
       if (dout_valid) begin
@@ -88,12 +86,10 @@ module sim_modulator ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      intensity_real = $itor(
-          int'(intensity_buf[i]) * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)]) / 255.0 / 255.0;
-      if (pulse_width_out !== int'(($asin(intensity_real) * 2.0 / `M_PI * 256.0))) begin
+      if (intensity_out !== int'(intensity_buf[i]) * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)]) begin
         $error("Failed at %d: d=%d, m=%d, d_m=%d !== %d", i, intensity_buf[i],
-               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], pulse_width_out, int'(($asin
-               (intensity_real) * 2.0 / `M_PI * 256.0)));
+               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], intensity_out,
+               int'(intensity_buf[i]) * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)]);
         $finish();
       end
       if (phase_out !== phase_buf[i]) begin

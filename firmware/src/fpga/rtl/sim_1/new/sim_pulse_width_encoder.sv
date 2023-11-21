@@ -28,6 +28,8 @@ module sim_pulse_width_encoder ();
 
   localparam int DEPTH = 249;
 
+localparam int MAX = 255*255;
+
   logic din_valid, dout_valid;
   logic [15:0] intensity_in;
   logic [8:0] pulse_width_out;
@@ -49,9 +51,9 @@ module sim_pulse_width_encoder ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic set(logic [7:0] intensity[DEPTH], logic [7:0] mod[DEPTH], logic [7:0] p[DEPTH]);
+  task automatic set(logic [15:0] intensity[DEPTH], logic [7:0] p[DEPTH]);
     for (int i = 0; i < DEPTH; i++) begin
-      intensity_buf[i] = intensity[i] * mod[i];
+      intensity_buf[i] = intensity[i];
       phase_buf[i] = p[i];
     end
     for (int i = 0; i < DEPTH; i++) begin
@@ -66,7 +68,7 @@ module sim_pulse_width_encoder ();
 
   task automatic set_random();
     for (int i = 0; i < DEPTH; i++) begin
-      intensity_buf[i] = sim_helper_random.range(8'hFF, 0) * sim_helper_random.range(8'hFF, 0);
+      intensity_buf[i] = sim_helper_random.range(MAX, 0);
       phase_buf[i] = sim_helper_random.range(8'hFF, 0);
     end
     for (int i = 0; i < DEPTH; i++) begin
@@ -104,8 +106,7 @@ module sim_pulse_width_encoder ();
     end
   endtask
 
-  logic [7:0] intensity_tmp[DEPTH];
-  logic [7:0] mod_tmp[DEPTH];
+  logic [15:0] intensity_tmp[DEPTH];
   logic [7:0] phase_tmp[DEPTH];
   initial begin
     din_valid = 0;
@@ -121,15 +122,14 @@ module sim_pulse_width_encoder ();
       join
     end
 
-    for (int i = 0; i <= 16'hFFFF;) begin
-      $display("check %d/65535", i);
+    for (int i = 0; i <= MAX;) begin
+      $display("check %d/%d", i, MAX);
       for (int j = i; j < i + DEPTH; j++) begin
-        intensity_tmp[j-i] = j <= 16'hFFFF ? j[15:8] : 0;
-        mod_tmp[j-i] = j <= 16'hFFFF ? j[7:0] : 0;
+        intensity_tmp[j-i] = j <= MAX ? j : 0;
         phase_tmp[j-i] = sim_helper_random.range(8'hFF, 0);
       end
       fork
-        set(intensity_tmp, mod_tmp, phase_tmp);
+        set(intensity_tmp, phase_tmp);
         check();
       join
       i += DEPTH;
