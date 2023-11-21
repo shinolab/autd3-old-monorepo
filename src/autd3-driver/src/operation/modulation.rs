@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{collections::HashMap, fmt};
 
 use crate::{
-    defined::{float, PI},
+    common::EmitIntensity,
     error::AUTDInternalError,
     fpga::MOD_BUF_SIZE_MAX,
     geometry::{Device, Geometry},
@@ -58,20 +58,16 @@ impl fmt::Display for ModulationControlFlags {
 }
 
 pub struct ModulationOp {
-    buf: Vec<u8>,
+    buf: Vec<EmitIntensity>,
     freq_div: u32,
     remains: HashMap<usize, usize>,
     sent: HashMap<usize, usize>,
 }
 
 impl ModulationOp {
-    pub fn to_duty(amp: &float) -> u8 {
-        (amp.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8
-    }
-
-    pub fn new(buf: Vec<float>, freq_div: u32) -> Self {
+    pub fn new(buf: Vec<EmitIntensity>, freq_div: u32) -> Self {
         Self {
-            buf: buf.iter().map(Self::to_duty).collect(),
+            buf,
             freq_div,
             remains: HashMap::new(),
             sent: HashMap::new(),
@@ -119,7 +115,7 @@ impl Operation for ModulationOp {
         unsafe {
             std::ptr::copy_nonoverlapping(
                 self.buf[sent..].as_ptr(),
-                tx[offset..].as_mut_ptr(),
+                tx[offset..].as_mut_ptr() as _,
                 mod_size,
             )
         }
@@ -222,7 +218,9 @@ mod tests {
 
         let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+        let buf: Vec<EmitIntensity> = (0..MOD_SIZE)
+            .map(|_| EmitIntensity::new(rng.gen()))
+            .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
@@ -288,8 +286,8 @@ mod tests {
                 .skip((2 + 2 + 4 + MOD_SIZE) * dev.idx())
                 .skip(8)
                 .zip(buf.iter())
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
     }
@@ -305,7 +303,9 @@ mod tests {
 
         let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+        let buf: Vec<EmitIntensity> = (0..MOD_SIZE)
+            .map(|_| EmitIntensity::new(rng.gen()))
+            .collect();
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
 
@@ -359,8 +359,8 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(8)
                 .zip(buf.iter().take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
 
@@ -408,8 +408,8 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(4)
                 .zip(buf.iter().skip(FRAME_SIZE - 4).take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
 
@@ -457,8 +457,8 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(4)
                 .zip(buf.iter().skip(FRAME_SIZE - 4 + FRAME_SIZE).take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
     }
@@ -470,7 +470,7 @@ mod tests {
         let check = |n: usize| {
             let mut rng = rand::thread_rng();
 
-            let buf: Vec<float> = (0..n).map(|_| rng.gen()).collect();
+            let buf: Vec<EmitIntensity> = (0..n).map(|_| EmitIntensity::new(rng.gen())).collect();
             let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
             let mut op = ModulationOp::new(buf.clone(), freq_div);

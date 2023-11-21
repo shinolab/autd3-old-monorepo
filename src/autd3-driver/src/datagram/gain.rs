@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,12 +58,12 @@ pub trait Gain: GainAsAny {
                             dev.idx(),
                             dev.iter()
                                 .map(|tr| {
-                                    if filter[tr.local_idx()] {
+                                    if filter[tr.tr_idx()] {
                                         f(dev, tr)
                                     } else {
                                         Drive {
                                             phase: 0.,
-                                            amp: EmitIntensity::MIN,
+                                            intensity: EmitIntensity::MIN,
                                         }
                                     }
                                 })
@@ -118,7 +118,7 @@ mod tests {
         let d0 = g.get(&0).unwrap();
         assert_eq!(d0.len(), 249);
         d0.iter().for_each(|d| {
-            assert_eq!(d.amp.normalized(), 1.);
+            assert_eq!(d.intensity.value(), 0xFF);
             assert_eq!(d.phase, 2.);
         });
 
@@ -126,7 +126,7 @@ mod tests {
         let d1 = g.get(&1).unwrap();
         assert_eq!(d1.len(), 249);
         d1.iter().for_each(|d| {
-            assert_eq!(d.amp.normalized(), 1.);
+            assert_eq!(d.intensity.value(), 0xFF);
             assert_eq!(d.phase, 2.);
         });
     }
@@ -146,7 +146,7 @@ mod tests {
         let d1 = g.get(&1).unwrap();
         assert_eq!(d1.len(), 249);
         d1.iter().for_each(|d| {
-            assert_eq!(d.amp.normalized(), 1.);
+            assert_eq!(d.intensity.value(), 0xFF);
             assert_eq!(d.phase, 2.);
         });
     }
@@ -157,12 +157,7 @@ mod tests {
         let filter = geometry
             .iter()
             .take(2)
-            .map(|dev| {
-                (
-                    dev.idx(),
-                    dev.iter().map(|tr| tr.local_idx() < 100).collect(),
-                )
-            })
+            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.tr_idx() < 100).collect()))
             .collect::<HashMap<_, _>>();
         let g = NullGain {}
             .calc(&geometry, GainFilter::Filter(&filter))
@@ -175,10 +170,10 @@ mod tests {
         assert_eq!(d0.len(), 249);
         d0.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp.normalized(), 1.);
+                assert_eq!(d.intensity.value(), 0xFF);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp.normalized(), 0.);
+                assert_eq!(d.intensity.value(), 0x00);
                 assert_eq!(d.phase, 0.);
             }
         });
@@ -188,10 +183,10 @@ mod tests {
         assert_eq!(d1.len(), 249);
         d1.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp.normalized(), 1.);
+                assert_eq!(d.intensity.value(), 0xFF);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp.normalized(), 0.);
+                assert_eq!(d.intensity.value(), 0x00);
                 assert_eq!(d.phase, 0.);
             }
         });
@@ -206,12 +201,7 @@ mod tests {
 
         let filter = geometry
             .iter()
-            .map(|dev| {
-                (
-                    dev.idx(),
-                    dev.iter().map(|tr| tr.local_idx() < 100).collect(),
-                )
-            })
+            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.tr_idx() < 100).collect()))
             .collect::<HashMap<_, _>>();
         let g = NullGain {}
             .calc(&geometry, GainFilter::Filter(&filter))
@@ -226,10 +216,10 @@ mod tests {
         assert_eq!(d1.len(), 249);
         d1.iter().enumerate().for_each(|(i, d)| {
             if i < 100 {
-                assert_eq!(d.amp.normalized(), 1.);
+                assert_eq!(d.intensity.value(), 0xFF);
                 assert_eq!(d.phase, 2.);
             } else {
-                assert_eq!(d.amp.normalized(), 0.);
+                assert_eq!(d.intensity.value(), 0x00);
                 assert_eq!(d.phase, 0.);
             }
         });

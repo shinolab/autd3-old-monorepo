@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -125,7 +125,7 @@ impl Operation for FocusSTMOp {
                 .zip(self.points.iter().skip(sent).take(send_num))
                 .try_for_each(|(d, p)| {
                     let lp = device.to_local(p.point());
-                    d.set(lp.x, lp.y, lp.z, p.shift())
+                    d.set(lp.x, lp.y, lp.z, p.intensity())
                 })?
         }
 
@@ -239,7 +239,7 @@ mod tests {
                     rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                     rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                 ))
-                .with_shift(rng.gen_range(0..0xFF))
+                .with_intensity(rng.gen::<u8>())
             })
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
@@ -324,7 +324,7 @@ mod tests {
                 .zip(points.iter())
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -357,7 +357,7 @@ mod tests {
                     rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                     rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                 ))
-                .with_shift(rng.gen_range(0..0xFF))
+                .with_intensity(rng.gen::<u8>())
             })
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
@@ -454,7 +454,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -518,7 +518,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -582,7 +582,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -708,7 +708,7 @@ mod tests {
                         rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                         rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                     ))
-                    .with_shift(rng.gen_range(0..0xFF))
+                    .with_intensity(rng.gen::<u8>())
                 })
                 .collect();
             let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
@@ -740,7 +740,7 @@ mod tests {
 
         let x = FOCUS_STM_FIXED_NUM_UNIT * (1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) as float;
         let points: Vec<ControlPoint> = (0..FOCUS_STM_SIZE)
-            .map(|_| ControlPoint::new(Vector3::new(x, x, x)).with_shift(0))
+            .map(|_| ControlPoint::new(Vector3::new(x, x, x)).with_intensity(0))
             .collect();
         let freq_div: u32 = SAMPLING_FREQ_DIV_MIN;
 
@@ -770,7 +770,7 @@ mod tests {
                         rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                         rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                     ))
-                    .with_shift(rng.gen_range(0..0xFF))
+                    .with_intensity(rng.gen::<u8>())
                 })
                 .collect();
 

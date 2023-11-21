@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -239,19 +239,19 @@ mod tests {
             .unwrap()
             .add_focus((Vector3::new(4., 5., 6.), 1))
             .unwrap()
-            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2))
+            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_intensity(2))
             .unwrap();
 
         assert_eq!(stm.foci().len(), 3);
 
         assert_eq!(stm.foci()[0].point(), &Vector3::new(1., 2., 3.));
-        assert_eq!(stm.foci()[0].shift(), 0);
+        assert_eq!(stm.foci()[0].intensity().value(), 0xFF);
 
         assert_eq!(stm.foci()[1].point(), &Vector3::new(4., 5., 6.));
-        assert_eq!(stm.foci()[1].shift(), 1);
+        assert_eq!(stm.foci()[1].intensity().value(), 0x01);
 
         assert_eq!(stm.foci()[2].point(), &Vector3::new(7., 8., 9.));
-        assert_eq!(stm.foci()[2].shift(), 2);
+        assert_eq!(stm.foci()[2].intensity().value(), 0x02);
     }
 
     #[test]
@@ -261,19 +261,19 @@ mod tests {
             .unwrap()
             .add_foci_from_iter([(Vector3::new(4., 5., 6.), 1)])
             .unwrap()
-            .add_foci_from_iter([ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2)])
+            .add_foci_from_iter([ControlPoint::new(Vector3::new(7., 8., 9.)).with_intensity(2)])
             .unwrap();
 
         assert_eq!(stm.foci().len(), 3);
 
         assert_eq!(stm.foci()[0].point(), &Vector3::new(1., 2., 3.));
-        assert_eq!(stm.foci()[0].shift(), 0);
+        assert_eq!(stm.foci()[0].intensity().value(), 0xFF);
 
         assert_eq!(stm.foci()[1].point(), &Vector3::new(4., 5., 6.));
-        assert_eq!(stm.foci()[1].shift(), 1);
+        assert_eq!(stm.foci()[1].intensity().value(), 0x01);
 
         assert_eq!(stm.foci()[2].point(), &Vector3::new(7., 8., 9.));
-        assert_eq!(stm.foci()[2].shift(), 2);
+        assert_eq!(stm.foci()[2].intensity().value(), 0x02);
     }
 
     #[test]
@@ -283,7 +283,7 @@ mod tests {
             .unwrap()
             .add_focus((Vector3::new(4., 5., 6.), 1))
             .unwrap()
-            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2))
+            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_intensity(2))
             .unwrap();
 
         let foci = stm.clear();
@@ -293,11 +293,11 @@ mod tests {
         assert_eq!(foci.len(), 3);
 
         assert_eq!(foci[0].point(), &Vector3::new(1., 2., 3.));
-        assert_eq!(foci[0].shift(), 0);
+        assert_eq!(foci[0].intensity().value(), 0xFF);
         assert_eq!(foci[1].point(), &Vector3::new(4., 5., 6.));
-        assert_eq!(foci[1].shift(), 1);
+        assert_eq!(foci[1].intensity().value(), 0x01);
         assert_eq!(foci[2].point(), &Vector3::new(7., 8., 9.));
-        assert_eq!(foci[2].shift(), 2);
+        assert_eq!(foci[2].intensity().value(), 0x02);
     }
 
     #[test]
@@ -307,7 +307,7 @@ mod tests {
             .unwrap()
             .add_focus((Vector3::new(4., 5., 6.), 1))
             .unwrap()
-            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_shift(2))
+            .add_focus(ControlPoint::new(Vector3::new(7., 8., 9.)).with_intensity(2))
             .unwrap();
 
         let r = <FocusSTM as Datagram>::operation(stm);
