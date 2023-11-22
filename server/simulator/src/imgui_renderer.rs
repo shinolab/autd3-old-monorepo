@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,7 +56,6 @@ pub struct ImGuiRenderer {
     enable: Vec<bool>,
     thermal: Vec<bool>,
     show_mod_plot: Vec<bool>,
-    show_mod_plot_raw: Vec<bool>,
     mod_plot_size: Vec<[f32; 2]>,
     real_time: u64,
     time_step: i32,
@@ -103,7 +102,6 @@ impl ImGuiRenderer {
             real_time: get_current_ec_time(),
             time_step: 1000000,
             show_mod_plot: Vec::new(),
-            show_mod_plot_raw: Vec::new(),
             mod_plot_size: Vec::new(),
             initial_settings,
         })
@@ -114,7 +112,6 @@ impl ImGuiRenderer {
         self.enable = vec![true; dev_num];
         self.thermal = vec![false; dev_num];
         self.show_mod_plot = vec![false; dev_num];
-        self.show_mod_plot_raw = vec![false; dev_num];
         self.mod_plot_size = vec![[200., 50.]; dev_num];
     }
 
@@ -701,7 +698,11 @@ impl ImGuiRenderer {
                             TreeNodeFlags::DEFAULT_OPEN,
                         ) {
                             ui.text("Silencer");
-                            ui.text(format!("Step: {}", cpu.fpga().silencer_step()));
+                            ui.text(format!(
+                                "Step intensity: {}",
+                                cpu.fpga().silencer_step_intensity()
+                            ));
+                            ui.text(format!("Step phase: {}", cpu.fpga().silencer_step_phase()));
 
                             {
                                 ui.separator();
@@ -748,25 +749,6 @@ impl ImGuiRenderer {
                                     self.show_mod_plot[cpu.idx()] = !self.show_mod_plot[cpu.idx()];
                                 }
                                 if self.show_mod_plot[cpu.idx()] {
-                                    let mod_v: Vec<f32> = m
-                                        .iter()
-                                        .map(|&v| (v as f32 / 510.0 * std::f32::consts::PI).sin())
-                                        .collect();
-                                    ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
-                                        .graph_size(self.mod_plot_size[cpu.idx()])
-                                        .scale_min(0.)
-                                        .scale_max(1.)
-                                        .build();
-                                }
-
-                                if ui.radio_button_bool(
-                                    format!("Show mod plot (raw)##{}", cpu.idx()),
-                                    self.show_mod_plot_raw[cpu.idx()],
-                                ) {
-                                    self.show_mod_plot_raw[cpu.idx()] =
-                                        !self.show_mod_plot_raw[cpu.idx()];
-                                }
-                                if self.show_mod_plot_raw[cpu.idx()] {
                                     let mod_v: Vec<f32> =
                                         m.iter().map(|&v| v as f32 / 255.0).collect();
                                     ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
@@ -776,9 +758,7 @@ impl ImGuiRenderer {
                                         .build();
                                 }
 
-                                if self.show_mod_plot[cpu.idx()]
-                                    || self.show_mod_plot_raw[cpu.idx()]
-                                {
+                                if self.show_mod_plot[cpu.idx()] {
                                     unsafe {
                                         igDragFloat2(
                                             CString::new(format!("plot size##{}", cpu.idx()))
