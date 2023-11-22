@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, MILLIMETER,
 };
-use autd3_driver::{cpu::TxDatagram};
-use autd3_firmware_emulator::CPUEmulator;
+use autd3_driver::cpu::TxDatagram;
+use autd3_firmware_emulator::{CPUEmulator, FPGAEmulator};
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
     command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo},
@@ -312,15 +312,6 @@ impl Simulator {
                             .map(|dev| CPUEmulator::new(dev.idx(), dev.num_transducers()))
                             .collect();
 
-                        cpus.iter_mut().for_each(|cpu| {
-                            let origin = geometry[cpu.idx()][0].position();
-                            let local_position = geometry[cpu.idx()]
-                                .iter()
-                                .map(|tr| tr.position() - origin)
-                                .collect();
-                            cpu.fpga_mut().configure_local_trans_pos(local_position);
-                        });
-
                         body_pointer = [0usize]
                             .into_iter()
                             .chain(geometry.iter().map(|dev| dev.num_transducers()))
@@ -512,15 +503,13 @@ impl Simulator {
                                         } else {
                                             0
                                         };
-                                        let drives = cpu.fpga().duties_and_phases(idx);
-                                        let duty_filter = cpu.fpga().duty_filters();
-                                        let phase_filter = cpu.fpga().phase_filters();
+                                        let drives = cpu.fpga().intensities_and_phases(idx);
                                         let m = if self.settings.mod_enable {
                                             let mod_idx =
                                                 ImGuiRenderer::mod_idx(imgui.system_time(), cpu);
-                                            cpu.fpga().modulation_at(mod_idx) as f32 / 255.
+                                            cpu.fpga().modulation_at(mod_idx)
                                         } else {
-                                            1.
+                                            0xFF
                                         };
                                         sources
                                             .drives_mut()
@@ -529,18 +518,12 @@ impl Simulator {
                                             .enumerate()
                                             .for_each(|(i, d)| {
                                                 d.amp = (PI
-                                                    * (drives[i].0 as f32 + duty_filter[i] as f32)
-                                                    * m
+                                                    * FPGAEmulator::to_pulse_width(drives[i].0, m)
+                                                        as f32
                                                     / 512.0)
                                                     .sin();
-                                                d.phase = 2.
-                                                    * PI
-                                                    * (drives[i].1 as f32 + phase_filter[i] as f32)
-                                                    / 512.0;
-                                                d.set_wave_number(
-                                                    40e3,
-                                                    self.settings.sound_speed,
-                                                );
+                                                d.phase = 2. * PI * (drives[i].1 as f32) / 256.0;
+                                                d.set_wave_number(40e3, self.settings.sound_speed);
                                             });
                                     });
                                 }
