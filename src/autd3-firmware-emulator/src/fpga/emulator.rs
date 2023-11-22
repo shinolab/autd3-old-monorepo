@@ -4,14 +4,14 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::geometry::Vector3;
+use autd3_driver::defined::{float, PI};
 
 use super::params::*;
 
@@ -141,8 +141,12 @@ impl FPGAEmulator {
         (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_STM_GAIN_MODE_BIT)) != 0
     }
 
-    pub fn silencer_step(&self) -> u16 {
-        self.controller_bram[ADDR_SILENT_STEP]
+    pub fn silencer_step_intensity(&self) -> u16 {
+        self.controller_bram[ADDR_SILENT_STEP_INTENSITY]
+    }
+
+    pub fn silencer_step_phase(&self) -> u16 {
+        self.controller_bram[ADDR_SILENT_STEP_PHASE]
     }
 
     pub fn mod_delays(&self) -> Vec<u16> {
@@ -150,22 +154,6 @@ impl FPGAEmulator {
             .iter()
             .take(self.num_transducers)
             .copied()
-            .collect()
-    }
-
-    pub fn duty_filters(&self) -> Vec<i16> {
-        self.controller_bram[ADDR_FILTER_DUTY_BASE..]
-            .iter()
-            .take(self.num_transducers)
-            .map(|&v| v as i16)
-            .collect()
-    }
-
-    pub fn phase_filters(&self) -> Vec<i16> {
-        self.controller_bram[ADDR_FILTER_PHASE_BASE..]
-            .iter()
-            .take(self.num_transducers)
-            .map(|&v| v as i16)
             .collect()
     }
 
@@ -237,55 +225,51 @@ impl FPGAEmulator {
             return false;
         }
         if !self.is_stm_mode() {
-            return self.duties_and_phases(0).iter().any(|&d| d.0 != 0);
+            return self.intensities_and_phases(0).iter().any(|&d| d.0 != 0);
         }
         true
     }
 
-    pub fn duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+    pub fn intensities_and_phases(&self, idx: usize) -> Vec<(u8, u8)> {
         if self.is_stm_mode() {
             if self.is_stm_gain_mode() {
-                self.gain_stm_duties_and_phases(idx)
+                self.gain_stm_intensities_and_phases(idx)
             } else {
-                self.focus_stm_duties_and_phases(idx)
+                self.focus_stm_intensities_and_phases(idx)
             }
         } else {
-            self.normal_duties_and_phases()
+            self.normal_intensities_and_phases()
         }
     }
 
-    fn normal_duties_and_phases(&self) -> Vec<(u16, u16)> {
+    fn normal_intensities_and_phases(&self) -> Vec<(u8, u8)> {
         self.normal_op_bram
             .iter()
             .take(self.num_transducers)
             .map(|d| {
-                let duty = (d >> 8) & 0xFF;
-                let duty = if duty == 0 { 0 } else { duty + 1 };
+                let intensity = (d >> 8) & 0xFF;
                 let phase = d & 0xFF;
-                let phase = phase << 1;
-                (duty, phase)
+                (intensity as u8, phase as u8)
             })
             .collect()
     }
 
-    fn gain_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+    fn gain_stm_intensities_and_phases(&self, idx: usize) -> Vec<(u8, u8)> {
         self.stm_op_bram
             .iter()
             .skip(256 * idx)
             .take(self.num_transducers)
             .map(|&d| {
-                let duty = (d >> 8) & 0xFF;
-                let duty = if duty == 0 { 0 } else { duty + 1 };
+                let intensity = (d >> 8) & 0xFF;
                 let phase = d & 0xFF;
-                let phase = phase << 1;
-                (duty, phase)
+                (intensity as u8, phase as u8)
             })
             .collect()
     }
 
-    fn focus_stm_duties_and_phases(&self, idx: usize) -> Vec<(u16, u16)> {
+    fn focus_stm_intensities_and_phases(&self, idx: usize) -> Vec<(u8, u8)> {
         let sound_speed = self.sound_speed() as u64;
-        let duty_shift = (self.stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
+        let intensity = self.stm_op_bram[8 * idx + 3] >> 6 & 0x00FF;
 
         let mut x = (self.stm_op_bram[8 * idx + 1] as u32) << 16 & 0x30000;
         x |= self.stm_op_bram[8 * idx] as u32;
@@ -317,24 +301,46 @@ impl FPGAEmulator {
                 let d2 =
                     (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
                 let dist = d2.sqrt() as u64;
-                let q = (dist << 19) / sound_speed;
-                let p = q & 0x1FF;
-                (0x1FF >> duty_shift, p as u16)
+                let q = (dist << 18) / sound_speed;
+                let p = q & 0xFF;
+                (intensity as u8, p as u8)
             })
             .collect()
     }
 
-    pub fn configure_local_trans_pos(&mut self, local_trans_pos: Vec<Vector3>) {
-        self.tr_pos = local_trans_pos
-            .iter()
-            .map(|tr| {
-                let x = (tr.x * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
-                let y = (tr.y * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
-                let z = (tr.z * TRANS_SIZE_FIXED_POINT_UNIT).round() as i16;
-                (((z as u64) << 32) & 0xFFFF00000000)
-                    | (((x as u64) << 16) & 0xFFFF0000)
-                    | ((y as u64) & 0xFFFF)
-            })
-            .collect();
+    pub fn to_pulse_width(a: u8, b: u8) -> u16 {
+        let a = a as float / 255.0;
+        let b = b as float / 255.0;
+        ((a * b).asin() / PI * 512.0).round() as u16
+    }
+}
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    static ASIN_TABLE: &[u8; 65536] = include_bytes!("asin.dat");
+
+    fn to_pulse_width_actual(a: u8, b: u8) -> u16 {
+        let r = ASIN_TABLE[a as usize * b as usize];
+        let full_width = a == 0xFF && b == 0xFF;
+        if full_width {
+            r as u16 | 0x0100
+        } else {
+            r as u16
+        }
+    }
+
+    #[test]
+    fn test_to_pulse_width() {
+        for a in 0x00..0xFF {
+            for b in 0x00..0xFF {
+                assert_eq!(
+                    to_pulse_width_actual(a, b),
+                    FPGAEmulator::to_pulse_width(a, b)
+                );
+            }
+        }
     }
 }
