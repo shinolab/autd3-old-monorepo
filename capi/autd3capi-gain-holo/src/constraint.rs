@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, holo::*, ConstraintPtr};
+use autd3capi_def::{holo::*, ConstraintPtr, EmitIntensity};
 
 #[no_mangle]
 #[must_use]
@@ -29,14 +29,15 @@ pub unsafe extern "C" fn AUTDGainHoloConstraintNormalize() -> ConstraintPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloConstraintUniform(pulse_width: u16) -> ConstraintPtr {
-    ConstraintPtr(Box::into_raw(Box::new(Constraint::Uniform(
-        EmitIntensity::new_pulse_width(pulse_width).unwrap(),
-    ))) as _)
+pub unsafe extern "C" fn AUTDGainHoloConstraintUniform(intensity: EmitIntensity) -> ConstraintPtr {
+    ConstraintPtr(Box::into_raw(Box::new(Constraint::Uniform(intensity.into()))) as _)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainHoloConstraintClamp(min_v: float, max_v: float) -> ConstraintPtr {
-    ConstraintPtr(Box::into_raw(Box::new(Constraint::Clamp(min_v, max_v))) as _)
+pub unsafe extern "C" fn AUTDGainHoloConstraintClamp(
+    min_v: EmitIntensity,
+    max_v: EmitIntensity,
+) -> ConstraintPtr {
+    ConstraintPtr(Box::into_raw(Box::new(Constraint::Clamp(min_v.into(), max_v.into()))) as _)
 }

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{
+    common::{autd3::modulation::Sine, *},
+    take_mod, ModulationPtr, SamplingConfiguration,
+};
 
 #[no_mangle]
 #[must_use]
@@ -23,11 +26,11 @@ pub unsafe extern "C" fn AUTDModulationSine(freq: u32) -> ModulationPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSineWithSamplingFrequencyDivision(
+pub unsafe extern "C" fn AUTDModulationSineWithSamplingConfig(
     m: ModulationPtr,
-    div: u32,
+    config: SamplingConfiguration,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Sine).with_sampling_frequency_division(div))
+    ModulationPtr::new(take_mod!(m, Sine).with_sampling_config(config.into()))
 }
 
 #[no_mangle]
@@ -72,7 +75,10 @@ mod tests {
             let m = AUTDModulationSineWithPhase(m, 0.);
             let m = AUTDModulationSineWithOffset(m, 0.5);
             let div = 10240;
-            let m = AUTDModulationSineWithSamplingFrequencyDivision(m, div);
+            let m = AUTDModulationSineWithSamplingConfig(
+                m,
+                AUTDSamplingConfigNewWithFrequencyDivision(div).result,
+            );
 
             let m = AUTDModulationIntoDatagram(m);
 

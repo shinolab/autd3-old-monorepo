@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ pub mod timer_strategy;
 pub mod derive {
     pub mod prelude {
         pub use crate::{
-            common::{Drive, SamplingConfiguration},
+            common::{Drive, EmitIntensity, SamplingConfiguration},
             datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, ModulationProperty},
             defined::float,
             error::AUTDInternalError,

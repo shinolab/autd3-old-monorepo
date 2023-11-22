@@ -20,8 +20,8 @@ use num::integer::gcd;
 #[derive(Modulation, Clone, Copy)]
 pub struct Square {
     freq: usize,
-    low: float,
-    high: float,
+    low: EmitIntensity,
+    high: EmitIntensity,
     duty: float,
     config: SamplingConfiguration,
 }
@@ -36,8 +36,8 @@ impl Square {
     pub fn new(freq: usize) -> Self {
         Self {
             freq,
-            low: 0.0,
-            high: 1.0,
+            low: EmitIntensity::MIN,
+            high: EmitIntensity::MAX,
             duty: 0.5,
             config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
@@ -49,8 +49,11 @@ impl Square {
     ///
     /// * `low` - low level amplitude (from 0 to 1)
     ///
-    pub fn with_low(self, low: float) -> Self {
-        Self { low, ..self }
+    pub fn with_low<A: Into<EmitIntensity>>(self, low: A) -> Self {
+        Self {
+            low: low.into(),
+            ..self
+        }
     }
 
     /// set high level amplitude
@@ -59,8 +62,11 @@ impl Square {
     ///
     /// * `high` - high level amplitude (from 0 to 1)
     ///     
-    pub fn with_high(self, high: float) -> Self {
-        Self { high, ..self }
+    pub fn with_high<A: Into<EmitIntensity>>(self, high: A) -> Self {
+        Self {
+            high: high.into(),
+            ..self
+        }
     }
 
     /// set duty ratio which is defined as `Th / (Th + Tl)`, where `Th` is high level duration, and `Tl` is low level duration.
@@ -77,11 +83,11 @@ impl Square {
         self.duty
     }
 
-    pub fn low(&self) -> float {
+    pub fn low(&self) -> EmitIntensity {
         self.low
     }
 
-    pub fn high(&self) -> float {
+    pub fn high(&self) -> EmitIntensity {
         self.high
     }
 
@@ -111,7 +117,6 @@ impl Modulation for Square {
                     .into_iter()
                     .chain(vec![self.low; size - n_high])
             })
-            .map(|v| EmitIntensity::new((v * 255.0).round() as u8))
             .collect())
     }
 }
@@ -141,7 +146,7 @@ mod tests {
 
     #[test]
     fn test_square_with_low() {
-        let m = Square::new(150).with_low(1.0);
+        let m = Square::new(150).with_low(EmitIntensity::new(0xFF));
         m.calc().unwrap().iter().for_each(|a| {
             assert_eq!(a.value(), 0xFF);
         });
@@ -149,7 +154,7 @@ mod tests {
 
     #[test]
     fn test_square_with_high() {
-        let m = Square::new(150).with_high(0.0);
+        let m = Square::new(150).with_high(EmitIntensity::new(0x00));
         m.calc().unwrap().iter().for_each(|a| {
             assert_eq!(a.value(), 0x00);
         });

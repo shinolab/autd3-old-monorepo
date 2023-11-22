@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,10 @@
 
 use autd3_backend_cuda::*;
 use autd3capi_def::{
-    common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr, ResultBackend,
+    common::{driver::geometry::Vector3, *},
+    create_holo,
+    holo::*,
+    take_gain, BackendPtr, ConstraintPtr, GainPtr, ResultBackend,
 };
 use std::rc::Rc;
 
@@ -82,34 +85,6 @@ pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithLambda(holo: GainPtr, lambda: fl
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, SDP<CUDABackend>).with_repeat(repeat as _))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainHoloCUDAEVP(
-    backend: BackendPtr,
-    points: *const float,
-    amps: *const float,
-    size: u64,
-) -> GainPtr {
-    create_holo!(EVP, CUDABackend, backend, points, amps, size)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainHoloCUDAEVPWithConstraint(
-    holo: GainPtr,
-    constraint: ConstraintPtr,
-) -> GainPtr {
-    GainPtr::new(
-        take_gain!(holo, EVP<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
-    )
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainHoloCUDAEVPWithGamma(holo: GainPtr, gamma: float) -> GainPtr {
-    GainPtr::new(take_gain!(holo, EVP<CUDABackend>).with_gamma(gamma))
 }
 
 #[no_mangle]

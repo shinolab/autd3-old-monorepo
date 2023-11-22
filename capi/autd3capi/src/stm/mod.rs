@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,32 +17,28 @@ pub mod focus;
 pub mod gain;
 
 use autd3_driver::datagram::STMProps;
-use autd3capi_def::{common::*, STMPropsPtr};
+use autd3capi_def::{common::*, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMProps(freq: float) -> STMPropsPtr {
+pub unsafe extern "C" fn AUTDSTMPropsNew(freq: float) -> STMPropsPtr {
     STMPropsPtr::new(STMProps::new(freq))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsWithSamplingFreq(freq: float) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::with_sampling_frequency(freq))
+pub unsafe extern "C" fn AUTDSTMPropsNewWithPeriod(p: u64) -> STMPropsPtr {
+    STMPropsPtr::new(STMProps::new_with_period(std::time::Duration::from_nanos(
+        p,
+    )))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsWithSamplingFreqDiv(div: u32) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::with_sampling_frequency_division(div))
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsWithSamplingPeriod(period_ns: u64) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::with_sampling_period(
-        std::time::Duration::from_nanos(period_ns),
-    ))
+pub unsafe extern "C" fn AUTDSTMPropsNewWithSamplingConfig(
+    config: SamplingConfiguration,
+) -> STMPropsPtr {
+    STMPropsPtr::new(STMProps::new_with_sampling_config(config.into()))
 }
 
 #[no_mangle]
@@ -75,25 +71,13 @@ pub unsafe extern "C" fn AUTDSTMPropsFrequency(props: STMPropsPtr, size: u64) ->
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequency(props: STMPropsPtr, size: u64) -> float {
-    Box::from_raw(props.0 as *mut STMProps).sampling_frequency(size as usize)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequencyDivision(
+pub unsafe extern "C" fn AUTDSTMPropsSamplingConfig(
     props: STMPropsPtr,
     size: u64,
-) -> u32 {
-    Box::from_raw(props.0 as *mut STMProps).sampling_frequency_division(size as usize)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsSamplingPeriod(props: STMPropsPtr, size: u64) -> u64 {
+) -> ResultSamplingConfig {
     Box::from_raw(props.0 as *mut STMProps)
-        .sampling_period(size as usize)
-        .as_nanos() as u64
+        .sampling_config(size as usize)
+        .into()
 }
 
 #[no_mangle]
@@ -119,36 +103,39 @@ pub unsafe extern "C" fn AUTDSTMPropsFinishIdx(props: STMPropsPtr) -> i32 {
 #[cfg(test)]
 mod tests {
 
+    use autd3capi_def::{
+        AUTDSamplingConfigFrequencyDivision, AUTDSamplingConfigNewWithFrequencyDivision,
+    };
+
     use super::*;
 
     #[test]
     fn stm_props() {
         unsafe {
-            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsNew(1.);
             assert_eq!(1., AUTDSTMPropsFrequency(props, 0));
 
-            let props = AUTDSTMPropsWithSamplingFreq(1.);
-            assert_eq!(1., AUTDSTMPropsSamplingFrequency(props, 0));
+            let props = AUTDSTMPropsNewWithSamplingConfig(
+                AUTDSamplingConfigNewWithFrequencyDivision(512).result,
+            );
+            assert_eq!(
+                512,
+                AUTDSamplingConfigFrequencyDivision(AUTDSTMPropsSamplingConfig(props, 0).result)
+            );
 
-            let props = AUTDSTMPropsWithSamplingFreqDiv(512);
-            assert_eq!(512, AUTDSTMPropsSamplingFrequencyDivision(props, 0));
-
-            let props = AUTDSTMPropsWithSamplingPeriod(250 * 1000);
-            assert_eq!(250 * 1000, AUTDSTMPropsSamplingPeriod(props, 0));
-
-            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsNew(1.);
             let props = AUTDSTMPropsWithStartIdx(props, 0);
             assert_eq!(0, AUTDSTMPropsStartIdx(props));
 
-            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsNew(1.);
             let props = AUTDSTMPropsWithStartIdx(props, -1);
             assert_eq!(-1, AUTDSTMPropsStartIdx(props));
 
-            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsNew(1.);
             let props = AUTDSTMPropsWithFinishIdx(props, 1);
             assert_eq!(1, AUTDSTMPropsFinishIdx(props));
 
-            let props = AUTDSTMProps(1.);
+            let props = AUTDSTMPropsNew(1.);
             let props = AUTDSTMPropsWithFinishIdx(props, -1);
             assert_eq!(-1, AUTDSTMPropsFinishIdx(props));
         }

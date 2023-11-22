@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,14 +13,18 @@
 
 #![allow(clippy::missing_safety_doc)]
 
+mod drive;
 mod emit_intensity;
 mod result;
+mod sampling_config;
 
 pub use autd3capi_common as common;
 pub use autd3capi_common::holo;
 
+pub use drive::*;
 pub use emit_intensity::*;
 pub use result::*;
+pub use sampling_config::*;
 
 use autd3capi_common::float;
 use common::{
@@ -43,7 +47,7 @@ pub const AUTD3_FALSE: i32 = 0;
 
 #[repr(u8)]
 pub enum GainSTMMode {
-    PhaseDutyFull = 0,
+    PhaseIntensityFull = 0,
     PhaseFull = 1,
     PhaseHalf = 2,
 }
@@ -51,7 +55,9 @@ pub enum GainSTMMode {
 impl From<GainSTMMode> for common::autd3::prelude::GainSTMMode {
     fn from(mode: GainSTMMode) -> Self {
         match mode {
-            GainSTMMode::PhaseDutyFull => common::autd3::prelude::GainSTMMode::PhaseDutyFull,
+            GainSTMMode::PhaseIntensityFull => {
+                common::autd3::prelude::GainSTMMode::PhaseIntensityFull
+            }
             GainSTMMode::PhaseFull => common::autd3::prelude::GainSTMMode::PhaseFull,
             GainSTMMode::PhaseHalf => common::autd3::prelude::GainSTMMode::PhaseHalf,
         }

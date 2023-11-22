@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,9 +22,10 @@ pub use autd3_gain_holo as holo;
 use driver::link::LinkSync;
 pub use libc;
 
-pub use autd3::prelude::*;
+pub use autd3::{controller::Controller, error::AUTDError};
 pub use autd3_driver::{
     datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, STMProps},
+    defined::float,
     error::AUTDInternalError,
     firmware_version::FirmwareInfo,
     geometry::{Device, Geometry},

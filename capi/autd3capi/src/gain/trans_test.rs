@@ -4,14 +4,18 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3capi_def::{common::*, take_gain, GainPtr};
+use autd3capi_def::{
+    common::{autd3::gain::TransducerTest, *},
+    take_gain, EmitIntensity, GainPtr, TransducerPtr,
+};
+use driver::geometry::Transducer;
 
 #[no_mangle]
 #[must_use]
@@ -23,33 +27,41 @@ pub unsafe extern "C" fn AUTDGainTransducerTest() -> GainPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainTransducerTestSet(
     trans_test: GainPtr,
-    dev_idx: u32,
-    tr_idx: u32,
+    tr: TransducerPtr,
     phase: float,
-    pulse_width: u16,
+    intensity: EmitIntensity,
 ) -> GainPtr {
-    GainPtr::new(
-        take_gain!(trans_test, TransducerTest)
-            .set(dev_idx as _, tr_idx as _, phase, pulse_width)
-            .unwrap(),
-    )
+    GainPtr::new(take_gain!(trans_test, TransducerTest).set(
+        cast!(tr.0, Transducer),
+        phase,
+        intensity,
+    ))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use crate::{gain::*, tests::*, *};
+    use crate::{
+        gain::*,
+        geometry::{device::AUTDDevice, transducer::AUTDTransducer, AUTDGeometry},
+        tests::*,
+        *,
+    };
 
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_trans_test() {
         unsafe {
             let cnt = create_controller();
 
+            let geo = AUTDGeometry(cnt);
+            let dev = AUTDDevice(geo, 0);
+            let tr = AUTDTransducer(dev, 0);
+
             let g = AUTDGainTransducerTest();
-            let g = AUTDGainTransducerTestSet(g, 0, 0, 1., 256);
+            let g = AUTDGainTransducerTestSet(g, tr, 1., AUTDEmitIntensityNew(255));
 
             let g = AUTDGainIntoDatagram(g);
 

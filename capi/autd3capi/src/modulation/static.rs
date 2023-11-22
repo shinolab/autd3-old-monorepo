@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{
+    common::{autd3::modulation::Static, *},
+    take_mod, EmitIntensity, ModulationPtr,
+};
 
 #[no_mangle]
 #[must_use]
@@ -25,9 +28,9 @@ pub unsafe extern "C" fn AUTDModulationStatic() -> ModulationPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationStaticWithAmp(
     m: ModulationPtr,
-    amp: float,
+    intensity: EmitIntensity,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Static).with_amp(amp))
+    ModulationPtr::new(take_mod!(m, Static).with_intensity(intensity))
 }
 
 #[cfg(test)]
@@ -44,7 +47,7 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationStatic();
-            let m = AUTDModulationStaticWithAmp(m, 1.);
+            let m = AUTDModulationStaticWithAmp(m, AUTDEmitIntensityNew(255));
 
             let m = AUTDModulationIntoDatagram(m);
 

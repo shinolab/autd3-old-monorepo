@@ -4,7 +4,7 @@
  * Created Date: 06/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,13 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, DevicePtr, GeometryPtr};
+use autd3capi_def::{
+    common::{
+        driver::geometry::{Quaternion, UnitQuaternion, Vector3},
+        *,
+    },
+    DevicePtr, GeometryPtr,
+};
 
 #[no_mangle]
 #[must_use]
@@ -118,6 +124,8 @@ pub unsafe extern "C" fn AUTDDeviceEnableGet(dev: DevicePtr) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use driver::{defined::PI, geometry::UnitVector3};
+
     use super::*;
     use crate::{
         geometry::{transducer::*, *},

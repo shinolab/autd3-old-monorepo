@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,13 @@
 
 use autd3capi_def::{
     common::{autd3::gain::Uniform, *},
-    take_gain, GainPtr,
+    take_gain, EmitIntensity, GainPtr,
 };
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainUniform(amp: u16) -> GainPtr {
-    GainPtr::new(Uniform::new(amp).unwrap())
+pub unsafe extern "C" fn AUTDGainUniform(intensity: EmitIntensity) -> GainPtr {
+    GainPtr::new(Uniform::new(intensity))
 }
 
 #[no_mangle]
@@ -34,14 +34,14 @@ mod tests {
 
     use crate::{gain::*, tests::*, *};
 
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_uniform() {
         unsafe {
             let cnt = create_controller();
 
-            let g = AUTDGainUniform(256);
+            let g = AUTDGainUniform(AUTDEmitIntensityNew(255));
             let g = AUTDGainUniformWithPhase(g, 1.);
             let g = AUTDGainIntoDatagram(g);
 

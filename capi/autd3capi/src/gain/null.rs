@@ -4,14 +4,14 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3capi_def::{common::*, GainPtr};
+use autd3capi_def::{common::autd3::gain::Null, GainPtr};
 
 #[no_mangle]
 #[must_use]
