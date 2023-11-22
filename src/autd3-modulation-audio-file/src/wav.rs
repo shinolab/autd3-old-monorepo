@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 use hound::SampleFormat;
 
 use std::path::Path;
@@ -60,7 +60,6 @@ impl Wav {
                 .samples::<i32>()
                 .map(|i| (i.unwrap() as i64 - std::i32::MIN as i64) as f32 / 4294967295.)
                 .collect(),
-            (SampleFormat::Float, 32) => reader.samples::<f32>().map(|i| i.unwrap()).collect(),
             _ => return Err(AudioFileError::Wav(hound::Error::Unsupported)),
         };
 
@@ -75,7 +74,7 @@ impl Wav {
 
 impl Modulation for Wav {
     #[allow(clippy::unnecessary_cast)]
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         let sample_rate = self.sampling_config().frequency() as u32;
         let samples = wav_io::resample::linear(
             self.raw_buffer.clone(),
@@ -83,6 +82,9 @@ impl Modulation for Wav {
             self.sample_rate,
             sample_rate,
         );
-        Ok(samples.iter().map(|&d| d as float).collect())
+        Ok(samples
+            .iter()
+            .map(|&d| EmitIntensity::new((d * 255.).round() as u8))
+            .collect())
     }
 }
