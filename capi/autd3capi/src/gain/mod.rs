@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,9 @@
 
 use std::collections::HashMap;
 
-use crate::Drive;
 use autd3capi_def::{
     common::{driver::datagram::GainFilter, *},
-    DatagramPtr, GainCalcDrivesMapPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMap,
+    DatagramPtr, Drive, GainCalcDrivesMapPtr, GainPtr, GeometryPtr, ResultGainCalcDrivesMap,
 };
 
 pub mod bessel;
@@ -64,13 +63,15 @@ pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: GainCalcDrivesMapPtr) {
 
 #[cfg(test)]
 mod tests {
+    use autd3capi_def::AUTDEmitIntensityNew;
+
     use super::*;
 
     use crate::{
         gain::uniform::*,
         geometry::{device::*, *},
         tests::*,
-        Drive, *,
+        *,
     };
 
     #[test]
@@ -82,16 +83,28 @@ mod tests {
             let dev0 = AUTDDevice(geo, 0);
             let dev1 = AUTDDevice(geo, 1);
 
-            let g = AUTDGainUniform(0xFE);
+            let g = AUTDGainUniform(AUTDEmitIntensityNew(0xFE));
             let g = AUTDGainUniformWithPhase(g, 0.8);
 
             let mut drives0 = {
                 let num_trans = AUTDDeviceNumTransducers(dev0);
-                vec![Drive { amp: 0, phase: 0. }; num_trans as _]
+                vec![
+                    Drive {
+                        intensity: AUTDEmitIntensityNew(0),
+                        phase: 0.
+                    };
+                    num_trans as _
+                ]
             };
             let mut drives1 = {
                 let num_trans = AUTDDeviceNumTransducers(dev1);
-                vec![Drive { amp: 0, phase: 0. }; num_trans as _]
+                vec![
+                    Drive {
+                        intensity: AUTDEmitIntensityNew(0),
+                        phase: 0.
+                    };
+                    num_trans as _
+                ]
             };
 
             let res = AUTDGainCalc(g, geo);
@@ -104,11 +117,11 @@ mod tests {
             AUTDGainCalcFreeResult(res);
 
             drives0.iter().for_each(|d| {
-                assert_eq!(d.amp, 0xFE);
+                assert_eq!(d.intensity, AUTDEmitIntensityNew(0xFE));
                 assert_eq!(d.phase, 0.8);
             });
             drives1.iter().for_each(|d| {
-                assert_eq!(d.amp, 0xFE);
+                assert_eq!(d.intensity, AUTDEmitIntensityNew(0xFE));
                 assert_eq!(d.phase, 0.8);
             });
 

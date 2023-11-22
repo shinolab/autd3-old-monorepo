@@ -4,17 +4,14 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3capi_def::{
-    common::{driver::common::Drive, *},
-    take_gain, GainPtr,
-};
+use autd3capi_def::{common::*, take_gain, Drive, GainPtr};
 
 #[no_mangle]
 #[must_use]
@@ -32,7 +29,7 @@ pub unsafe extern "C" fn AUTDGainCustomSet(
     ptr: *const Drive,
     len: u32,
 ) -> GainPtr {
-    let mut drives = Vec::<Drive>::with_capacity(len as _);
+    let mut drives = Vec::<autd3capi_def::common::driver::common::Drive>::with_capacity(len as _);
     drives.set_len(len as _);
     std::ptr::copy_nonoverlapping(ptr as *const _, drives.as_mut_ptr(), len as _);
     GainPtr::new(take_gain!(custom, CustomGain).set(dev_idx as _, drives))
@@ -49,7 +46,7 @@ mod tests {
         *,
     };
 
-    use autd3capi_def::{common::driver::common::Drive, DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, Drive, AUTD3_TRUE};
 
     #[test]
     fn test_custom_gain() {
@@ -64,7 +61,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev0);
             let drives = vec![
                 Drive {
-                    amp: EmitIntensity::MAX,
+                    intensity: AUTDEmitIntensityNew(255),
                     phase: 0.
                 };
                 num_transducers as _
@@ -74,7 +71,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev1);
             let drives = vec![
                 Drive {
-                    amp: EmitIntensity::MAX,
+                    intensity: AUTDEmitIntensityNew(255),
                     phase: 0.
                 };
                 num_transducers as _

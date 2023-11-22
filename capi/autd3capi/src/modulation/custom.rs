@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,22 +14,25 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{driver::defined::float, CustomModulation},
-    ModulationPtr,
+    common::CustomModulation, EmitIntensity, ModulationPtr, SamplingConfiguration,
 };
 
 #[no_mangle]
 #[must_use]
 #[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDModulationCustom(
-    freq_div: u32,
-    ptr: *const float,
+    config: SamplingConfiguration,
+    ptr: *const EmitIntensity,
     len: u64,
 ) -> ModulationPtr {
-    let mut buf = Vec::<float>::with_capacity(len as _);
+    let mut buf =
+        Vec::<autd3capi_def::common::driver::common::EmitIntensity>::with_capacity(len as _);
     buf.set_len(len as _);
-    std::ptr::copy_nonoverlapping(ptr, buf.as_mut_ptr(), len as _);
-    ModulationPtr::new(CustomModulation { freq_div, buf })
+    std::ptr::copy_nonoverlapping(ptr as _, buf.as_mut_ptr(), len as _);
+    ModulationPtr::new(CustomModulation {
+        config: config.into(),
+        buf,
+    })
 }
 
 #[cfg(test)]
@@ -45,8 +48,12 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let buf = [1., 1.];
-            let m = AUTDModulationCustom(5000, buf.as_ptr(), buf.len() as _);
+            let buf = [AUTDEmitIntensityNew(255), AUTDEmitIntensityNew(255)];
+            let m = AUTDModulationCustom(
+                AUTDSamplingConfigNewWithFrequencyDivision(5120).result,
+                buf.as_ptr(),
+                buf.len() as _,
+            );
             let m = AUTDModulationIntoDatagram(m);
 
             let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);

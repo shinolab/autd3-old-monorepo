@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,10 @@
 use std::rc::Rc;
 
 use autd3capi_def::{
-    common::*, create_holo, holo::*, take_gain, BackendPtr, ConstraintPtr, GainPtr,
+    common::{driver::geometry::Vector3, *},
+    create_holo,
+    holo::*,
+    take_gain, BackendPtr, ConstraintPtr, GainPtr,
 };
 
 #[no_mangle]
@@ -50,6 +53,8 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATWithRepeat(holo: GainPtr, repeat: u32)
 #[cfg(test)]
 mod tests {
 
+    use autd3capi_def::AUTDEmitIntensityNew;
+
     use super::*;
     use crate::{constraint::*, nalgebra_backend::*};
 
@@ -67,9 +72,10 @@ mod tests {
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintNormalize();
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(256);
+            let constraint = AUTDGainHoloConstraintUniform(AUTDEmitIntensityNew(255));
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintClamp(0., 1.);
+            let constraint =
+                AUTDGainHoloConstraintClamp(AUTDEmitIntensityNew(255), AUTDEmitIntensityNew(255));
             let holo = AUTDGainHoloGSPATWithConstraint(holo, constraint);
 
             let _ = AUTDGainHoloGSPATWithRepeat(holo, 100);

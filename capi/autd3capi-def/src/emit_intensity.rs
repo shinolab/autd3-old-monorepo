@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,59 +13,45 @@
 
 use autd3capi_common::driver::defined::float;
 
-use crate::ResultI32;
-
 pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityNormalizedFrom(pulse_width: u16) -> float {
-    autd3capi_common::driver::common::EmitIntensity::new_pulse_width(pulse_width)
-        .unwrap()
-        .normalized()
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
+pub struct EmitIntensity {
+    value: u8,
+}
+
+impl From<autd3capi_common::driver::common::EmitIntensity> for EmitIntensity {
+    fn from(value: autd3capi_common::driver::common::EmitIntensity) -> Self {
+        Self {
+            value: value.value(),
+        }
+    }
+}
+
+impl From<EmitIntensity> for autd3capi_common::driver::common::EmitIntensity {
+    fn from(value: EmitIntensity) -> Self {
+        Self::new(value.value)
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityDutyRatioFrom(pulse_width: u16) -> float {
-    autd3capi_common::driver::common::EmitIntensity::new_pulse_width(pulse_width)
-        .unwrap()
-        .duty_ratio()
+pub unsafe extern "C" fn AUTDEmitIntensityNew(value: u8) -> EmitIntensity {
+    autd3capi_common::driver::common::EmitIntensity::new(value).into()
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityNormalizedInto(value: float) -> ResultI32 {
-    autd3capi_common::driver::common::EmitIntensity::new_normalized(value)
-        .map(|v| v.pulse_width() as usize)
-        .into()
+pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrection(value: u8) -> EmitIntensity {
+    AUTDEmitIntensityNewWithCorrectionAlpha(value, DEFAULT_CORRECTED_ALPHA)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityNormalizedCorrectedInto(
-    value: float,
+pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrectionAlpha(
+    value: u8,
     alpha: float,
-) -> ResultI32 {
-    autd3capi_common::driver::common::EmitIntensity::new_normalized_corrected_with_alpha(
-        value, alpha,
-    )
-    .map(|v| v.pulse_width() as usize)
-    .into()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityDutyRatioInto(value: float) -> ResultI32 {
-    autd3capi_common::driver::common::EmitIntensity::new_duty_ratio(value)
-        .map(|v| v.pulse_width() as usize)
-        .into()
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityPulseWidthInto(value: u16) -> ResultI32 {
-    autd3capi_common::driver::common::EmitIntensity::new_pulse_width(value)
-        .map(|v| v.pulse_width() as usize)
-        .into()
+) -> EmitIntensity {
+    autd3capi_common::driver::common::EmitIntensity::new_with_correction_alpha(value, alpha).into()
 }

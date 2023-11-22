@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,12 +49,12 @@ impl crate::driver::datagram::Gain for CustomGain {
 
 #[derive(Modulation)]
 pub struct CustomModulation {
-    pub buf: Vec<float>,
-    pub freq_div: u32,
+    pub buf: Vec<EmitIntensity>,
+    pub config: SamplingConfiguration,
 }
 
 impl crate::driver::datagram::Modulation for CustomModulation {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok(self.buf.clone())
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{autd3::link::audit::*, *},
+    common::{autd3::link::audit::*, driver::link::LinkSync, *},
     LinkBuilderPtr, LinkPtr,
 };
 use std::time::Duration;
@@ -164,10 +164,18 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaIsStmGainMode(audit: LinkPtr, idx: u32
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStep(audit: LinkPtr, idx: u32) -> u16 {
+pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStepIntensity(audit: LinkPtr, idx: u32) -> u16 {
     cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
-        .silencer_step()
+        .silencer_step_intensity()
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStepPhase(audit: LinkPtr, idx: u32) -> u16 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
+        .fpga()
+        .silencer_step_phase()
 }
 
 #[no_mangle]
@@ -181,40 +189,6 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModDelays(audit: LinkPtr, idx: u32, de
         cast!(audit.0, Box<Audit>)[idx as usize]
             .fpga()
             .mod_delays()
-            .len(),
-    )
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaDutyFilters(audit: LinkPtr, idx: u32, filters: *mut i16) {
-    std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<Audit>)[idx as usize]
-            .fpga()
-            .duty_filters()
-            .as_ptr(),
-        filters,
-        cast!(audit.0, Box<Audit>)[idx as usize]
-            .fpga()
-            .duty_filters()
-            .len(),
-    )
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaPhaseFilters(
-    audit: LinkPtr,
-    idx: u32,
-    filters: *mut i16,
-) {
-    std::ptr::copy_nonoverlapping(
-        cast!(audit.0, Box<Audit>)[idx as usize]
-            .fpga()
-            .phase_filters()
-            .as_ptr(),
-        filters,
-        cast!(audit.0, Box<Audit>)[idx as usize]
-            .fpga()
-            .phase_filters()
             .len(),
     )
 }
@@ -294,19 +268,19 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaModulation(audit: LinkPtr, idx: u32, d
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkAuditFpgaDutiesAndPhases(
+pub unsafe extern "C" fn AUTDLinkAuditFpgaIntensitiesAndPhases(
     audit: LinkPtr,
     idx: u32,
     stm_idx: u32,
-    duties: *mut u16,
-    phases: *mut u16,
+    intensities: *mut u8,
+    phases: *mut u8,
 ) {
     let dp = cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
-        .duties_and_phases(stm_idx as _);
+        .intensities_and_phases(stm_idx as _);
     let d = dp.iter().map(|v| v.0).collect::<Vec<_>>();
     let p = dp.iter().map(|v| v.1).collect::<Vec<_>>();
-    std::ptr::copy_nonoverlapping(d.as_ptr(), duties, d.len());
+    std::ptr::copy_nonoverlapping(d.as_ptr(), intensities, d.len());
     std::ptr::copy_nonoverlapping(p.as_ptr(), phases, p.len());
 }
 
@@ -488,8 +462,10 @@ mod tests {
             let cnt = create_controller();
             let link = AUTDLinkGet(cnt);
 
-            assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 0), 10);
-            assert_eq!(AUTDLinkAuditFpgaSilencerStep(link, 1), 10);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStepIntensity(link, 0), 256);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStepIntensity(link, 1), 256);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStepPhase(link, 0), 256);
+            assert_eq!(AUTDLinkAuditFpgaSilencerStepPhase(link, 1), 256);
         }
     }
 
@@ -506,40 +482,6 @@ mod tests {
                 AUTDLinkAuditFpgaModDelays(link, i, delays.as_mut_ptr());
 
                 delays.iter().for_each(|&v| assert_eq!(v, 0));
-            })
-        }
-    }
-
-    #[test]
-    fn test_fpga_duty_filter() {
-        unsafe {
-            let cnt = create_controller();
-            let link = AUTDLinkGet(cnt);
-
-            (0..2).for_each(|i| {
-                let n = AUTDLinkAuditCpuNumTransducers(link, i);
-
-                let mut filters = vec![0; n as usize];
-                AUTDLinkAuditFpgaDutyFilters(link, i, filters.as_mut_ptr());
-
-                filters.iter().for_each(|&v| assert_eq!(v, 0));
-            })
-        }
-    }
-
-    #[test]
-    fn test_fpga_phase_filter() {
-        unsafe {
-            let cnt = create_controller();
-            let link = AUTDLinkGet(cnt);
-
-            (0..2).for_each(|i| {
-                let n = AUTDLinkAuditCpuNumTransducers(link, i);
-
-                let mut filters = vec![0; n as usize];
-                AUTDLinkAuditFpgaPhaseFilters(link, i, filters.as_mut_ptr());
-
-                filters.iter().for_each(|&v| assert_eq!(v, 0));
             })
         }
     }
@@ -638,13 +580,13 @@ mod tests {
                 let n = AUTDLinkAuditFpgaModulationCycle(link, i);
                 let mut data = vec![0; n as usize];
                 AUTDLinkAuditFpgaModulation(link, i, data.as_mut_ptr());
-                data.iter().for_each(|&v| assert_eq!(v, 0));
+                data.iter().for_each(|&v| assert_eq!(v, 0xFF));
             })
         }
     }
 
     #[test]
-    fn test_fpga_duties_and_phases() {
+    fn test_fpga_intensities_and_phases() {
         unsafe {
             let cnt = create_controller();
             let link = AUTDLinkGet(cnt);
@@ -652,16 +594,16 @@ mod tests {
             (0..2).for_each(|i| {
                 let n = AUTDLinkAuditCpuNumTransducers(link, i);
 
-                let mut duties = vec![0; n as usize];
+                let mut intensities = vec![0; n as usize];
                 let mut phases = vec![0; n as usize];
-                AUTDLinkAuditFpgaDutiesAndPhases(
+                AUTDLinkAuditFpgaIntensitiesAndPhases(
                     link,
                     i,
                     0,
-                    duties.as_mut_ptr(),
+                    intensities.as_mut_ptr(),
                     phases.as_mut_ptr(),
                 );
-                duties.iter().for_each(|&v| assert_eq!(v, 0));
+                intensities.iter().for_each(|&v| assert_eq!(v, 0));
                 phases.iter().for_each(|&v| assert_eq!(v, 0));
             })
         }

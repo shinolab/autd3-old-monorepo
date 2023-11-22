@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,21 +20,21 @@ pub mod modulation;
 pub mod stm;
 
 use autd3capi_def::{
-    common::*, ControllerPtr, DatagramPtr, DatagramSpecialPtr, FirmwareInfoListPtr, GroupKVMapPtr,
-    LinkBuilderPtr, ResultController, ResultI32,
+    common::{
+        autd3::prelude::{
+            Clear, ConfigureModDelay, Silencer, Stop, Synchronize, UpdateFlags, AUTD3,
+        },
+        driver::geometry::{Quaternion, UnitQuaternion, Vector3},
+        *,
+    },
+    ControllerPtr, DatagramPtr, DatagramSpecialPtr, FirmwareInfoListPtr, GroupKVMapPtr,
+    LinkBuilderPtr, ResultController, ResultDatagramPtr, ResultI32,
 };
 use std::{ffi::c_char, time::Duration};
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct ControllerBuilderPtr(pub ConstPtr);
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C)]
-pub struct Drive {
-    pub phase: float,
-    pub amp: u16,
-}
 
 struct CallbackPtr(ConstPtr);
 unsafe impl Send for CallbackPtr {}
@@ -213,20 +213,11 @@ pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramConfigureAmpFilter() -> DatagramPtr {
-    DatagramPtr::new(ConfigureAmpFilter::new())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDDatagramConfigurePhaseFilter() -> DatagramPtr {
-    DatagramPtr::new(ConfigurePhaseFilter::new())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDDatagramSilencer(step: u16) -> DatagramPtr {
-    DatagramPtr::new(Silencer::new(step))
+pub unsafe extern "C" fn AUTDDatagramSilencer(
+    step_intensity: u16,
+    step_phase: u16,
+) -> ResultDatagramPtr {
+    Silencer::new(step_intensity, step_phase).into()
 }
 
 #[no_mangle]
@@ -457,22 +448,6 @@ mod tests {
     }
 
     #[test]
-    fn drive_test() {
-        assert_eq!(
-            std::mem::size_of::<autd3_driver::common::Drive>(),
-            std::mem::size_of::<Drive>()
-        );
-        assert_eq!(
-            memoffset::offset_of!(autd3_driver::common::Drive, phase),
-            memoffset::offset_of!(Drive, phase)
-        );
-        assert_eq!(
-            memoffset::offset_of!(autd3_driver::common::Drive, amp),
-            memoffset::offset_of!(Drive, amp)
-        );
-    }
-
-    #[test]
     fn basic() {
         unsafe {
             let cnt = create_controller();
@@ -512,7 +487,7 @@ mod tests {
             let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 
-            let s = AUTDDatagramSilencer(10);
+            let s = AUTDDatagramSilencer(256, 256).result;
             let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 

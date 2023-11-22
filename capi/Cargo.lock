@@ -235,7 +235,6 @@ dependencies = [
  "assert_approx_eq",
  "autd3-driver",
  "autd3capi-def",
- "memoffset",
  "wrapper-generator",
 ]
 
@@ -264,7 +263,9 @@ dependencies = [
 name = "autd3capi-def"
 version = "17.0.0"
 dependencies = [
+ "assert_approx_eq",
  "autd3capi-common",
+ "memoffset",
  "wrapper-generator",
 ]
 

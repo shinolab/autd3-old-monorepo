@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 use std::collections::HashMap;
 
-use autd3capi_def::{common::*, GainPtr, GroupGainMapPtr};
+use autd3capi_def::{
+    common::{autd3::gain::Group, driver::autd3_device::AUTD3, *},
+    GainPtr, GroupGainMapPtr,
+};
 
 type M = HashMap<usize, Vec<i32>>;
 
@@ -70,7 +73,7 @@ pub unsafe extern "C" fn AUTDGainGroup(
     std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
     GainPtr::new(keys.iter().zip(values.iter()).fold(
         Group::new(move |dev, tr| {
-            let key = map[&dev.idx()][tr.local_idx()];
+            let key = map[&dev.idx()][tr.tr_idx()];
             if key < 0 {
                 None
             } else {

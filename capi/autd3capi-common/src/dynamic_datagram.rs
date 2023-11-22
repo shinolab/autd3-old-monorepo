@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,9 @@
 use std::time::Duration;
 
 use autd3::prelude::*;
-use autd3_driver::{datagram::Datagram, error::AUTDInternalError, operation::Operation};
+use autd3_driver::{
+    datagram::Datagram, error::AUTDInternalError, fpga::SILENCER_STEP_DEFAULT, operation::Operation,
+};
 
 use crate::{G, M};
 
@@ -101,7 +103,10 @@ impl DynamicDatagram for Synchronize {
 impl DynamicDatagram for Stop {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::new(<Self as Datagram>::O1::new(10)),
+            Box::new(<Self as Datagram>::O1::new(
+                SILENCER_STEP_DEFAULT,
+                SILENCER_STEP_DEFAULT,
+            )),
             Box::<crate::driver::operation::StopOp>::default(),
         ))
     }
@@ -114,7 +119,10 @@ impl DynamicDatagram for Stop {
 impl DynamicDatagram for Silencer {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::new(<Self as Datagram>::O1::new(self.step())),
+            Box::new(<Self as Datagram>::O1::new(
+                self.step_intensity(),
+                self.step_phase(),
+            )),
             Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
@@ -150,35 +158,9 @@ impl DynamicDatagram for ConfigureModDelay {
     }
 }
 
-impl DynamicDatagram for ConfigureAmpFilter {
-    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        Ok((
-            Box::<crate::driver::operation::ConfigureAmpFilterOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
-        ))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram>::timeout(self)
-    }
-}
-
-impl DynamicDatagram for ConfigurePhaseFilter {
-    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        Ok((
-            Box::<crate::driver::operation::ConfigurePhaseFilterOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
-        ))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram>::timeout(self)
-    }
-}
-
 impl DynamicDatagram for FocusSTM {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let freq_div = self.sampling_frequency_division();
+        let freq_div = self.sampling_config().frequency_division();
         Ok((
             Box::new(<Self as Datagram>::O1::new(
                 self.clear(),
@@ -200,7 +182,7 @@ impl DynamicDatagram for GainSTM<Box<G>> {
         &mut self,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), autd3_driver::error::AUTDInternalError>
     {
-        let freq_div = self.sampling_frequency_division();
+        let freq_div = self.sampling_config().frequency_division();
         Ok((
             Box::new(<Self as Datagram>::O1::new(
                 self.clear(),
@@ -238,7 +220,7 @@ impl DynamicDatagram for Box<G> {
 
 impl DynamicDatagram for Box<M> {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let freq_div = self.sampling_frequency_division();
+        let freq_div = self.sampling_config().frequency_division();
         let buf = self.calc()?;
         Ok((
             Box::new(crate::driver::operation::ModulationOp::new(buf, freq_div)),
