@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -65,7 +65,7 @@ impl LinAlgBackend for NalgebraBackend {
                     .flat_map(|dev| {
                         dev.iter().filter_map(move |tr| {
                             if let Some(filter) = filter.get(&dev.idx()) {
-                                if filter[tr.local_idx()] {
+                                if filter[tr.tr_idx()] {
                                     Some(foci.iter().map(move |fp| {
                                         propagate::<Sphere>(
                                             tr,
