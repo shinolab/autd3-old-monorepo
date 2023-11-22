@@ -41,7 +41,7 @@ impl ControlPoint {
     /// # Arguments
     ///
     /// * `point` - focal point
-    /// * `intensity` - emittion intensity
+    /// * `intensity` - emission intensity
     ///
     pub fn with_intensity<I: Into<EmitIntensity>>(self, intensity: I) -> Self {
         Self {
