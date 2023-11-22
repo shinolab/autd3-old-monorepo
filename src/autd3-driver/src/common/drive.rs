@@ -19,7 +19,7 @@ use super::EmitIntensity;
 pub struct Drive {
     /// Phase of ultrasound (from 0 to 2π)
     pub phase: float,
-    /// Emittion intensity
+    /// emission intensity
     pub intensity: EmitIntensity,
 }
 
