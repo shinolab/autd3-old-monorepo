@@ -33,7 +33,7 @@ macro_rules! impl_holo {
             $backend: $crate::LinAlgBackend,
         {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: crate::amp::Amplitude) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: $crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
@@ -75,7 +75,7 @@ macro_rules! impl_holo {
     ($t:ty) => {
         impl $t {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: crate::amp::Amplitude) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: $crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
