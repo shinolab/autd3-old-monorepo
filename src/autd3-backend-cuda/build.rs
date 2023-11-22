@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,9 @@ fn main() {
 
     #[cfg(feature = "single_float")]
     build.define("AUTD3_USE_SINGLE_FLOAT", "1");
+
+    #[cfg(feature = "use_meter")]
+    build.define("AUTD3_USE_METER", "1");
 
     build
         .cuda(true)

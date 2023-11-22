@@ -4,7 +4,7 @@
  * Created Date: 06/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/09/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,14 @@ typedef cuComplex autd3_complex_t;
 typedef double autd3_float_t;
 typedef cuDoubleComplex autd3_complex_t;
 #endif
+
+#ifdef AUTD3_USE_METER
+#define AUTD3_CUDA_BACKEND_MILLIMETER (1.0 / 1000.0)
+#else
+#define AUTD3_CUDA_BACKEND_MILLIMETER (1.0)
+#endif
+
+#define AUTD3_CUDA_BACKEND_T4010A1_AMPLITUDE (23.77004454874038 * 300.0 * AUTD3_CUDA_BACKEND_MILLIMETER)
 
 __device__ autd3_float_t absc2(const autd3_complex_t x) { return x.x * x.x + x.y * x.y; }
 __device__ autd3_float_t absc(const autd3_complex_t x) { return sqrt(absc2(x)); }
@@ -234,7 +242,7 @@ __global__ void generate_propagation_matrix_kernel(const autd3_float_t *position
   autd3_float_t yd = foci[3 * yi + 1] - positions[3 * xi + 1];
   autd3_float_t zd = foci[3 * yi + 2] - positions[3 * xi + 2];
   autd3_float_t dist = sqrt(xd * xd + yd * yd + zd * zd);
-  autd3_float_t r = exp(-dist * attens[xi]) / dist;
+  autd3_float_t r = exp(-dist * attens[xi]) / dist * AUTD3_CUDA_BACKEND_T4010A1_AMPLITUDE;
   autd3_float_t phase = -wavenums[xi] * dist;
   dst[yi + xi * row] = makeAUTDComplex(r * cos(phase), r * sin(phase));
 }

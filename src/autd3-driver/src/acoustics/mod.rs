@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 pub mod directivity;
 
 use crate::{
-    defined::{float, Complex},
+    defined::{float, Complex, T4010A1_AMPLITUDE},
     geometry::{Transducer, Vector3},
 };
 
@@ -37,7 +37,8 @@ pub fn propagate<D: Directivity>(
 ) -> Complex {
     let diff = target_pos - tr.position();
     let dist = diff.norm();
-    let r = D::directivity_from_tr(tr, &diff) * (-dist * attenuation).exp() / dist;
+    let r =
+        D::directivity_from_tr(tr, &diff) * (-dist * attenuation).exp() / dist * T4010A1_AMPLITUDE;
     let phase = -tr.wavenumber(sound_speed) * dist;
     Complex::new(r * phase.cos(), r * phase.sin())
 }

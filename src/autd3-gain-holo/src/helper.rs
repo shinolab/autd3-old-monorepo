@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,11 +33,11 @@ macro_rules! impl_holo {
             $backend: $crate::LinAlgBackend,
         {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
-                amps.push(amp);
+                amps.push(amp.value);
                 Self { foci, amps, ..self }
             }
 
@@ -75,11 +75,11 @@ macro_rules! impl_holo {
     ($t:ty) => {
         impl $t {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
-                amps.push(amp);
+                amps.push(amp.value);
                 Self { foci, amps, ..self }
             }
 
@@ -135,7 +135,10 @@ pub fn generate_result(
                             let phase = q[idx].argument() + PI;
                             let amp = constraint.convert(q[idx].abs(), max_coefficient);
                             idx += 1;
-                            Drive { amp, phase }
+                            Drive {
+                                intensity: amp,
+                                phase,
+                            }
                         })
                         .collect(),
                 )
@@ -148,12 +151,15 @@ pub fn generate_result(
                     (
                         dev.idx(),
                         dev.iter()
-                            .filter(|tr| filter[tr.local_idx()])
+                            .filter(|tr| filter[tr.tr_idx()])
                             .map(|_| {
                                 let phase = q[idx].argument() + PI;
                                 let amp = constraint.convert(q[idx].abs(), max_coefficient);
                                 idx += 1;
-                                Drive { amp, phase }
+                                Drive {
+                                    intensity: amp,
+                                    phase,
+                                }
                             })
                             .collect(),
                     )
@@ -163,7 +169,7 @@ pub fn generate_result(
                         dev.iter()
                             .map(|_| Drive {
                                 phase: 0.,
-                                amp: EmitIntensity::MIN,
+                                intensity: EmitIntensity::MIN,
                             })
                             .collect(),
                     )

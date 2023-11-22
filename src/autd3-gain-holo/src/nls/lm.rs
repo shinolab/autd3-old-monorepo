@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -313,7 +313,10 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                                 let phase = x[idx].rem_euclid(2.0 * PI);
                                 let amp = self.constraint.convert(1.0, 1.0);
                                 idx += 1;
-                                Drive { amp, phase }
+                                Drive {
+                                    intensity: amp,
+                                    phase,
+                                }
                             })
                             .collect(),
                     )
@@ -326,12 +329,15 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                         (
                             dev.idx(),
                             dev.iter()
-                                .filter(|tr| filter[tr.local_idx()])
+                                .filter(|tr| filter[tr.tr_idx()])
                                 .map(|_| {
                                     let phase = x[idx].rem_euclid(2.0 * PI);
                                     let amp = self.constraint.convert(1.0, 1.0);
                                     idx += 1;
-                                    Drive { amp, phase }
+                                    Drive {
+                                        intensity: amp,
+                                        phase,
+                                    }
                                 })
                                 .collect(),
                         )
@@ -341,7 +347,7 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                             dev.iter()
                                 .map(|_| Drive {
                                     phase: 0.,
-                                    amp: EmitIntensity::MIN,
+                                    intensity: EmitIntensity::MIN,
                                 })
                                 .collect(),
                         )

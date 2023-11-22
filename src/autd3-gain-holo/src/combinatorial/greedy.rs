@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -86,28 +86,34 @@ impl Gain for Greedy {
 
         let mut cache = vec![Complex::new(0., 0.); m];
 
-        let amp = self.constraint.convert(1.0, 1.0);
+        let intensity = self.constraint.convert(1.0, 1.0);
         let mut res: HashMap<usize, Vec<Drive>> = geometry
             .devices()
             .map(|dev| {
                 (
                     dev.idx(),
-                    vec![Drive { amp, phase: 0.0 }; dev.num_transducers()],
+                    vec![
+                        Drive {
+                            intensity,
+                            phase: 0.0
+                        };
+                        dev.num_transducers()
+                    ],
                 )
             })
             .collect();
         let mut indices: Vec<_> = match filter {
             GainFilter::All => geometry
                 .devices()
-                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.local_idx())))
+                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.tr_idx())))
                 .collect(),
             GainFilter::Filter(filter) => geometry
                 .devices()
                 .filter_map(|dev| {
                     filter.get(&dev.idx()).map(|filter| {
                         dev.iter().filter_map(|tr| {
-                            if filter[tr.local_idx()] {
-                                Some((dev.idx(), tr.local_idx()))
+                            if filter[tr.tr_idx()] {
+                                Some((dev.idx(), tr.tr_idx()))
                             } else {
                                 None
                             }

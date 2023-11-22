@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -46,50 +46,50 @@ pub async fn holo<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     match s.trim().parse::<usize>() {
         Ok(0) => {
             let g = SDP::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(1) => {
             let g = EVP::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(2) => {
             let g = GS::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(3) => {
             let g = GSPAT::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(4) => {
             let g = LSS::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(5) => {
             let g = LM::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         Ok(6) => {
             let g = Greedy::new()
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
         _ => {
             let g = GSPAT::new(backend)
-                .add_focus(center + p, 1.)
-                .add_focus(center - p, 1.);
+                .add_focus(center + p, 5e3 * Pascal)
+                .add_focus(center - p, 5e3 * Pascal);
             autd.send((m, g)).await?
         }
     };
