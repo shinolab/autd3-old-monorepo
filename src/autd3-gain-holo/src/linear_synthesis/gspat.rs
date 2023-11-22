@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ use crate::{
 use autd3_derive::Gain;
 
 use autd3_driver::{
+    defined::T4010A1_AMPLITUDE,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -76,7 +77,7 @@ impl<B: LinAlgBackend> Gain for GSPAT<B> {
         let amps = self.backend.from_slice_cv(&self.amps)?;
 
         let mut b = self.backend.alloc_cm(m, n)?;
-        self.backend.gen_back_prop(m, n, &g, &amps, &mut b)?;
+        self.backend.gen_back_prop(m, n, &g, &mut b)?;
 
         let mut r = self.backend.alloc_zeros_cm(n, n)?;
         self.backend.gemm_c(
@@ -111,13 +112,6 @@ impl<B: LinAlgBackend> Gain for GSPAT<B> {
             )?;
         }
 
-        let mut tmp = self.backend.clone_cv(&gamma)?;
-        self.backend.reciprocal_assign_c(&mut tmp)?;
-        self.backend.normalize_assign_cv(&mut gamma)?;
-        self.backend.hadamard_product_assign_cv(&tmp, &mut p)?;
-        self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
-        self.backend.hadamard_product_assign_cv(&amps, &mut p)?;
-
         self.backend.gemv_c(
             Trans::NoTrans,
             Complex::new(1., 0.),
@@ -126,6 +120,8 @@ impl<B: LinAlgBackend> Gain for GSPAT<B> {
             Complex::new(0., 0.),
             &mut q,
         )?;
+        self.backend
+            .scale_assign_cv(Complex::new(1. / T4010A1_AMPLITUDE, 0.0), &mut q)?;
 
         generate_result(
             geometry,

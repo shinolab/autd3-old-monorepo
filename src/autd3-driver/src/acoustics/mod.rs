@@ -14,7 +14,7 @@
 pub mod directivity;
 
 use crate::{
-    defined::{float, Complex, T4010A1_AMPLITUDE},
+    defined::{float, Complex},
     geometry::{Transducer, Vector3},
 };
 
@@ -37,8 +37,7 @@ pub fn propagate<D: Directivity>(
 ) -> Complex {
     let diff = target_pos - tr.position();
     let dist = diff.norm();
-    let r =
-        D::directivity_from_tr(tr, &diff) * (-dist * attenuation).exp() / dist * T4010A1_AMPLITUDE;
+    let r = D::directivity_from_tr(tr, &diff) * (-dist * attenuation).exp() / dist;
     let phase = -tr.wavenumber(sound_speed) * dist;
     Complex::new(r * phase.cos(), r * phase.sin())
 }

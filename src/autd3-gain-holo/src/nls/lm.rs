@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3_derive::Gain;
 
 use autd3_driver::{
     common::EmitIntensity,
-    defined::PI,
+    defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -170,17 +170,20 @@ impl<B: LinAlgBackend> Gain for LM<B> {
         geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        let g = self
+        let mut g = self
             .backend
             .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+        self.backend
+            .scale_assign_cm(Complex::new(T4010A1_AMPLITUDE, 0.), &mut g)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
 
         let n_param = n + m;
 
-        let mut bhb = self.backend.alloc_zeros_cm(n_param, n_param)?;
-        {
+        let bhb = {
+            let mut bhb = self.backend.alloc_zeros_cm(n_param, n_param)?;
+
             let mut amps = self.backend.from_slice_cv(&self.amps)?;
 
             let mut p = self.backend.alloc_cm(n, n)?;
@@ -200,9 +203,10 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                 Complex::new(0., 0.),
                 &mut bhb,
             )?;
-        }
+            bhb
+        };
 
-        let mut x = self.backend.alloc_v(n_param)?;
+        let mut x = self.backend.alloc_zeros_v(n_param)?;
         self.backend.copy_from_slice_v(&self.initial, &mut x)?;
 
         let mut nu = 2.0;

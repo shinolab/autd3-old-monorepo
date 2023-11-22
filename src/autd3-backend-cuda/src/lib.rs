@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -874,6 +874,33 @@ impl LinAlgBackend for CUDABackend {
             cublas_call!(cuda_sys::cublas::cublasZscal_v2(
                 self.handle,
                 b.len as _,
+                &a as *const _ as _,
+                b.ptr as _,
+                1
+            ));
+        }
+        Ok(())
+    }
+
+    fn scale_assign_cm(
+        &self,
+        a: autd3_gain_holo::Complex,
+        b: &mut Self::MatrixXc,
+    ) -> Result<(), HoloError> {
+        let a = make_complex(a.re, a.im);
+        unsafe {
+            #[cfg(feature = "single_float")]
+            cublas_call!(cuda_sys::cublas::cublasCscal_v2(
+                self.handle,
+                (b.cols * b.rows) as _,
+                &a as *const _ as _,
+                b.ptr,
+                1
+            ));
+            #[cfg(not(feature = "single_float"))]
+            cublas_call!(cuda_sys::cublas::cublasZscal_v2(
+                self.handle,
+                (b.cols * b.rows) as _,
                 &a as *const _ as _,
                 b.ptr as _,
                 1

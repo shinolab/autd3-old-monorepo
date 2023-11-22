@@ -24,9 +24,6 @@ fn main() {
     #[cfg(feature = "single_float")]
     build.define("AUTD3_USE_SINGLE_FLOAT", "1");
 
-    #[cfg(feature = "use_meter")]
-    build.define("AUTD3_USE_METER", "1");
-
     build
         .cuda(true)
         .flag("-cudart=shared")

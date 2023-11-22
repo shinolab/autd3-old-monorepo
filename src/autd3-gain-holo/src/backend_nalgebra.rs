@@ -4,7 +4,7 @@
  * Created Date: 07/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -284,11 +284,10 @@ impl LinAlgBackend for NalgebraBackend {
         m: usize,
         n: usize,
         transfer: &Self::MatrixXc,
-        amps: &Self::VectorXc,
         b: &mut Self::MatrixXc,
     ) -> Result<(), HoloError> {
         (0..n).for_each(|i| {
-            let x = amps[i]
+            let x = 1.0
                 / transfer
                     .rows(i, 1)
                     .iter()
@@ -410,6 +409,11 @@ impl LinAlgBackend for NalgebraBackend {
     }
 
     fn scale_assign_cv(&self, a: Complex, b: &mut Self::VectorXc) -> Result<(), HoloError> {
+        b.apply(|x| *x *= a);
+        Ok(())
+    }
+
+    fn scale_assign_cm(&self, a: Complex, b: &mut Self::MatrixXc) -> Result<(), HoloError> {
         b.apply(|x| *x *= a);
         Ok(())
     }

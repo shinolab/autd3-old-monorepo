@@ -17,6 +17,7 @@ use autd3_driver::defined::{float, ABSOLUTE_THRESHOLD_OF_HEARING};
 pub struct dB;
 pub struct Pascal;
 
+#[derive(Clone, Copy, Debug)]
 pub struct Amplitude {
     // Amplitude in Pascal
     pub(crate) value: float,
@@ -37,6 +38,16 @@ impl std::ops::Mul<Pascal> for float {
 
     fn mul(self, _rhs: Pascal) -> Self::Output {
         Self::Output { value: self }
+    }
+}
+
+impl std::ops::Mul<Amplitude> for float {
+    type Output = Amplitude;
+
+    fn mul(self, rhs: Amplitude) -> Self::Output {
+        Self::Output {
+            value: self * rhs.value,
+        }
     }
 }
 
