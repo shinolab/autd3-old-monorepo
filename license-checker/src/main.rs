@@ -4,7 +4,7 @@
  * Created Date: 26/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -310,50 +310,34 @@ Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.j
         r"imgui-winit-support 0.11.0 (MIT)
 https://github.com/imgui-rs/imgui-rs",
     );
-    let sdr_rs_dep = (
-        "MIT",
-        r"sdr 0.7.0 (MIT)
-https://github.com/adamgreig/sdr-rs
-Modification of the original version by Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.jp>",
-    );
     let notofont_dep = ("OFL", "Noto Sans v2.012 (OFL)");
 
     let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../capi/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[
-            imgui_vulkano_render,
-            imgui_winit_support,
-            sdr_rs_dep,
-            notofont_dep,
-        ],
+        &[imgui_vulkano_render, imgui_winit_support, notofont_dep],
     )?;
 
     let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/simulator/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[
-            imgui_vulkano_render,
-            imgui_winit_support,
-            sdr_rs_dep,
-            notofont_dep,
-        ],
+        &[imgui_vulkano_render, imgui_winit_support, notofont_dep],
     )? || changed;
 
     let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/SOEMAUTDServer/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[sdr_rs_dep],
+        &[],
     )? || changed;
 
     let changed = check(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../server/src-tauri/Cargo.toml"),
         "ThirdPartyNotice",
         &license_file_map,
-        &[sdr_rs_dep],
+        &[],
     )? || changed;
 
     let changed = check_npm(
