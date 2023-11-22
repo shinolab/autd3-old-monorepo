@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,6 @@ const ENABLE_GREEDY_BENCH: bool = true;
 const ENABLE_NAIVE_BENCH: bool = true;
 const ENABLE_GS_BENCH: bool = true;
 const ENABLE_GSPAT_BENCH: bool = true;
-const ENABLE_EVP_BENCH: bool = true;
 const ENABLE_SDP_BENCH: bool = true;
 const ENABLE_LM_BENCH: bool = true;
 
@@ -107,20 +106,6 @@ pub fn foci<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 |b, geometry| {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
-                            .add_foci_from_iter(gen_foci(N))
-                            .calc(geometry, GainFilter::All)
-                            .unwrap();
-                    })
-                },
-            );
-        }
-        if ENABLE_EVP_BENCH {
-            group.bench_with_input(
-                BenchmarkId::new("EVP", size * size),
-                &generate_geometry(size),
-                |b, geometry| {
-                    b.iter(|| {
-                        EVP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(N))
                             .calc(geometry, GainFilter::All)
                             .unwrap();
@@ -217,20 +202,6 @@ pub fn devices<B: LinAlgBackend + 'static, const N: usize>(c: &mut Criterion) {
                 |b, geometry| {
                     b.iter(|| {
                         GSPAT::new(backend.clone())
-                            .add_foci_from_iter(gen_foci(size))
-                            .calc(geometry, GainFilter::All)
-                            .unwrap();
-                    })
-                },
-            );
-        }
-        if ENABLE_EVP_BENCH {
-            group.bench_with_input(
-                BenchmarkId::new("EVP", size),
-                &generate_geometry(N),
-                |b, geometry| {
-                    b.iter(|| {
-                        EVP::new(backend.clone())
                             .add_foci_from_iter(gen_foci(size))
                             .calc(geometry, GainFilter::All)
                             .unwrap();

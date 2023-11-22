@@ -4,7 +4,7 @@
  * Created Date: 04/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -396,6 +396,16 @@ impl LinAlgBackend for ArrayFireBackend {
         &self,
         a: autd3_gain_holo::Complex,
         b: &mut Self::VectorXc,
+    ) -> Result<(), HoloError> {
+        let a = AfC::new(a.re, a.im);
+        *b = arrayfire::mul(b, &a, false);
+        Ok(())
+    }
+
+    fn scale_assign_cm(
+        &self,
+        a: autd3_gain_holo::Complex,
+        b: &mut Self::MatrixXc,
     ) -> Result<(), HoloError> {
         let a = AfC::new(a.re, a.im);
         *b = arrayfire::mul(b, &a, false);

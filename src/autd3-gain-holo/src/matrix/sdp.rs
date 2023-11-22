@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ use crate::{
 use autd3_derive::Gain;
 
 use autd3_driver::{
+    defined::T4010A1_AMPLITUDE,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -81,139 +82,141 @@ impl<B: LinAlgBackend + 'static> SDP<B> {
 }
 
 impl<B: LinAlgBackend> Gain for SDP<B> {
+    #[allow(non_snake_case)]
     fn calc(
         &self,
         geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        let b = self
+        let G = self
             .backend
             .generate_propagation_matrix(geometry, &self.foci, &filter)?;
 
-        let m = self.backend.cols_c(&b)?;
+        let m = self.backend.cols_c(&G)?;
         let n = self.foci.len();
 
-        let mut q = self.backend.alloc_zeros_cv(m)?;
+        let zeros = self.backend.alloc_zeros_cv(n)?;
+        let ones = self.backend.from_slice_cv(&vec![1.; n])?;
 
+        let mut a = self.backend.alloc_zeros_cm(n, n)?;
         let amps = self.backend.from_slice_cv(&self.amps)?;
+        self.backend.create_diagonal_c(&amps, &mut a)?;
 
-        let mut p = self.backend.alloc_zeros_cm(n, n)?;
-        self.backend.create_diagonal_c(&amps, &mut p)?;
-
-        let mut pseudo_inv_b = self.backend.alloc_zeros_cm(m, n)?;
+        let mut pseudo_inv_G = self.backend.alloc_zeros_cm(m, n)?;
         let mut u_ = self.backend.alloc_cm(n, n)?;
         let mut s = self.backend.alloc_cm(m, n)?;
         let mut vt = self.backend.alloc_cm(m, m)?;
         let mut buf = self.backend.alloc_zeros_cm(m, n)?;
-        let b_tmp = self.backend.clone_cm(&b)?;
+        let G_ = self.backend.clone_cm(&G)?;
         self.backend.pseudo_inverse_svd(
-            b_tmp,
+            G_,
             self.alpha,
             &mut u_,
             &mut s,
             &mut vt,
             &mut buf,
-            &mut pseudo_inv_b,
+            &mut pseudo_inv_G,
         )?;
 
-        let mut mm = self.backend.alloc_cm(n, n)?;
-        let ones = vec![1.; n];
-        let ones = self.backend.from_slice_cv(&ones)?;
-        self.backend.create_diagonal_c(&ones, &mut mm)?;
+        let M = {
+            let mut M = self.backend.alloc_cm(n, n)?;
+            self.backend.create_diagonal_c(&ones, &mut M)?;
 
-        self.backend.gemm_c(
-            Trans::NoTrans,
-            Trans::NoTrans,
-            Complex::new(-1., 0.),
-            &b,
-            &pseudo_inv_b,
-            Complex::new(1., 0.),
-            &mut mm,
-        )?;
+            self.backend.gemm_c(
+                Trans::NoTrans,
+                Trans::NoTrans,
+                Complex::new(-1., 0.),
+                &G,
+                &pseudo_inv_G,
+                Complex::new(1., 0.),
+                &mut M,
+            )?;
 
-        let mut tmp = self.backend.alloc_zeros_cm(n, n)?;
-        self.backend.gemm_c(
-            Trans::NoTrans,
-            Trans::NoTrans,
-            Complex::new(1., 0.),
-            &p,
-            &mm,
-            Complex::new(0., 0.),
-            &mut tmp,
-        )?;
-        self.backend.gemm_c(
-            Trans::NoTrans,
-            Trans::NoTrans,
-            Complex::new(1., 0.),
-            &tmp,
-            &p,
-            Complex::new(0., 0.),
-            &mut mm,
-        )?;
+            let mut tmp = self.backend.alloc_zeros_cm(n, n)?;
+            self.backend.gemm_c(
+                Trans::NoTrans,
+                Trans::NoTrans,
+                Complex::new(1., 0.),
+                &a,
+                &M,
+                Complex::new(0., 0.),
+                &mut tmp,
+            )?;
+            self.backend.gemm_c(
+                Trans::NoTrans,
+                Trans::NoTrans,
+                Complex::new(1., 0.),
+                &tmp,
+                &a,
+                Complex::new(0., 0.),
+                &mut M,
+            )?;
+            M
+        };
 
-        let mut x_mat = self.backend.alloc_cm(n, n)?;
-        self.backend.create_diagonal_c(&ones, &mut x_mat)?;
+        let mut U = self.backend.alloc_cm(n, n)?;
+        self.backend.create_diagonal_c(&ones, &mut U)?;
 
         let mut rng = rand::thread_rng();
 
-        let zero = self.backend.alloc_zeros_cv(n)?;
         let mut x = self.backend.alloc_zeros_cv(n)?;
-        let mut mmc = self.backend.alloc_cv(n)?;
+        let mut Mc = self.backend.alloc_cv(n)?;
         for _ in 0..self.repeat {
-            let ii = (n as float * rng.gen_range(0.0..1.0)) as usize;
+            let i = rng.gen_range(0..n);
 
-            self.backend.get_col_c(&mm, ii, &mut mmc)?;
-            self.backend.set_cv(ii, Complex::new(0., 0.), &mut mmc)?;
+            self.backend.get_col_c(&M, i, &mut Mc)?;
+            self.backend.set_cv(i, Complex::new(0., 0.), &mut Mc)?;
 
             self.backend.gemv_c(
                 Trans::NoTrans,
                 Complex::new(1., 0.),
-                &x_mat,
-                &mmc,
+                &U,
+                &Mc,
                 Complex::new(0., 0.),
                 &mut x,
             )?;
 
-            let gamma = self.backend.dot_c(&x, &mmc)?;
+            let gamma = self.backend.dot_c(&x, &Mc)?;
             if gamma.re > 0. {
                 self.backend
                     .scale_assign_cv(Complex::new(-(self.lambda / gamma.re).sqrt(), 0.), &mut x)?;
 
-                self.backend.set_col_c(&x, ii, 0, ii, &mut x_mat)?;
-                self.backend.set_col_c(&x, ii, ii + 1, n, &mut x_mat)?;
-
+                self.backend.set_col_c(&x, i, 0, i, &mut U)?;
+                self.backend.set_col_c(&x, i, i + 1, n, &mut U)?;
                 self.backend.conj_assign_v(&mut x)?;
-
-                self.backend.set_row_c(&x, ii, 0, ii, &mut x_mat)?;
-                self.backend.set_row_c(&x, ii, ii + 1, n, &mut x_mat)?;
+                self.backend.set_row_c(&x, i, 0, i, &mut U)?;
+                self.backend.set_row_c(&x, i, i + 1, n, &mut U)?;
             } else {
-                self.backend.set_col_c(&zero, ii, 0, ii, &mut x_mat)?;
-                self.backend.set_col_c(&zero, ii, ii + 1, n, &mut x_mat)?;
-                self.backend.set_row_c(&zero, ii, 0, ii, &mut x_mat)?;
-                self.backend.set_row_c(&zero, ii, ii + 1, n, &mut x_mat)?;
+                self.backend.set_col_c(&zeros, i, 0, i, &mut U)?;
+                self.backend.set_col_c(&zeros, i, i + 1, n, &mut U)?;
+                self.backend.set_row_c(&zeros, i, 0, i, &mut U)?;
+                self.backend.set_row_c(&zeros, i, i + 1, n, &mut U)?;
             }
         }
 
-        let u = self.backend.max_eigen_vector_c(x_mat)?;
+        let u = self.backend.max_eigen_vector_c(U)?;
 
         let mut ut = self.backend.alloc_zeros_cv(n)?;
         self.backend.gemv_c(
             Trans::NoTrans,
             Complex::new(1., 0.),
-            &p,
+            &a,
             &u,
             Complex::new(0., 0.),
             &mut ut,
         )?;
 
+        let mut q = self.backend.alloc_zeros_cv(m)?;
         self.backend.gemv_c(
             Trans::NoTrans,
             Complex::new(1., 0.),
-            &pseudo_inv_b,
+            &pseudo_inv_G,
             &ut,
             Complex::new(0., 0.),
             &mut q,
         )?;
+        self.backend
+            .scale_assign_cv(Complex::new(1. / T4010A1_AMPLITUDE, 0.0), &mut q)?;
 
         generate_result(
             geometry,

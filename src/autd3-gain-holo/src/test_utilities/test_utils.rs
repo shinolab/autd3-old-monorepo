@@ -4,7 +4,7 @@
  * Created Date: 09/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -118,6 +118,8 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         println!("test_scale_assign_v done");
         self.test_scale_assign_cv()?;
         println!("test_scale_assign_cv done");
+        self.test_scale_assign_cm()?;
+        println!("test_scale_assign_cm done");
         self.test_conj_assign_v()?;
         println!("test_conj_assign_v done");
         self.test_sqrt_assign_v()?;
@@ -954,6 +956,22 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
 
         let v = self.backend.to_host_cv(v)?;
         let vc = self.backend.to_host_cv(vc)?;
+        v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
+            assert_approx_eq::assert_approx_eq!(scale * vc, v, EPS);
+        });
+        Ok(())
+    }
+
+    fn test_scale_assign_cm(&self) -> Result<(), HoloError> {
+        let mut v = self.make_random_cm(N, N)?;
+        let vc = self.backend.clone_cm(&v)?;
+        let mut rng = rand::thread_rng();
+        let scale = Complex::new(rng.gen(), rng.gen());
+
+        self.backend.scale_assign_cm(scale, &mut v)?;
+
+        let v = self.backend.to_host_cm(v)?;
+        let vc = self.backend.to_host_cm(vc)?;
         v.iter().zip(vc.iter()).for_each(|(&v, &vc)| {
             assert_approx_eq::assert_approx_eq!(scale * vc, v, EPS);
         });
@@ -1941,17 +1959,15 @@ impl<const N: usize, B: LinAlgBackend> LinAlgBackendTestHelper<N, B> {
         let g = self
             .backend
             .generate_propagation_matrix(&geometry, &foci, &GainFilter::All)?;
-        let amps = self.make_random_cv(n)?;
 
         let mut b = self.backend.alloc_cm(m, n)?;
 
-        self.backend.gen_back_prop(m, n, &g, &amps, &mut b)?;
-        let amps = self.backend.to_host_cv(amps)?;
+        self.backend.gen_back_prop(m, n, &g, &mut b)?;
         let g = self.backend.to_host_cm(g)?;
         let reference = {
             let mut b = MatrixXc::zeros(m, n);
             (0..n).for_each(|i| {
-                let x = amps[i] / g.rows(i, 1).iter().map(|x| x.norm_sqr()).sum::<float>();
+                let x = 1.0 / g.rows(i, 1).iter().map(|x| x.norm_sqr()).sum::<float>();
                 (0..m).for_each(|j| {
                     b[(j, i)] = g[(i, j)].conj() * x;
                 })

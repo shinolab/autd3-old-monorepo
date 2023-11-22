@@ -19,7 +19,7 @@ use autd3_derive::Gain;
 use autd3_driver::{
     acoustics::{directivity::Sphere, propagate},
     common::EmitIntensity,
-    defined::PI,
+    defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -63,7 +63,7 @@ impl Greedy {
         res: &mut [Complex],
     ) {
         res.iter_mut().zip(foci.iter()).for_each(|(r, f)| {
-            *r = propagate::<Sphere>(trans, attenuation, sound_speed, f);
+            *r = propagate::<Sphere>(trans, attenuation, sound_speed, f) * T4010A1_AMPLITUDE;
         });
     }
 
