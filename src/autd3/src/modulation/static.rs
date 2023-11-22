@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,12 +13,12 @@
 
 use autd3_derive::Modulation;
 
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 /// Without modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Static {
-    amp: float,
+    intensity: EmitIntensity,
     #[no_change]
     config: SamplingConfiguration,
 }
@@ -27,29 +27,32 @@ impl Static {
     /// constructor
     pub fn new() -> Self {
         Self {
-            amp: 1.0,
+            intensity: EmitIntensity::MAX,
             config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 
-    /// set amplitude
+    /// set emission intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - normalized amplitude of the ultrasound (from 0 to 1)
+    /// * `intensity` - normalized emission intensity of the ultrasound (from 0 to 1)
     ///
-    pub fn with_amp(self, amp: float) -> Self {
-        Self { amp, ..self }
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
+        Self {
+            intensity: intensity.into(),
+            ..self
+        }
     }
 
-    pub fn amp(&self) -> float {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 }
 
 impl Modulation for Static {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        Ok(vec![self.amp; 2])
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
+        Ok(vec![self.intensity; 2])
     }
 }
 
@@ -66,21 +69,30 @@ mod tests {
     #[test]
     fn test_static_default() {
         let m = Static::default();
-        assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
-        assert_eq!(m.calc().unwrap(), vec![1.0, 1.0]);
+        assert_eq!(m.intensity, EmitIntensity::MAX);
+        assert_eq!(
+            m.calc().unwrap(),
+            vec![EmitIntensity::MAX, EmitIntensity::MAX]
+        );
     }
 
     #[test]
     fn test_static_new() {
         let m = Static::new();
-        assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
-        assert_eq!(m.calc().unwrap(), vec![1.0, 1.0]);
+        assert_eq!(m.intensity, EmitIntensity::MAX);
+        assert_eq!(
+            m.calc().unwrap(),
+            vec![EmitIntensity::MAX, EmitIntensity::MAX]
+        );
     }
 
     #[test]
-    fn test_static_with_amp() {
-        let m = Static::new().with_amp(0.5);
-        assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
-        assert_eq!(m.calc().unwrap(), vec![0.5, 0.5]);
+    fn test_static_with_intensity() {
+        let m = Static::new().with_intensity(0x1F);
+        assert_eq!(m.intensity, EmitIntensity::new(0x1F));
+        assert_eq!(
+            m.calc().unwrap(),
+            vec![EmitIntensity::new(0x1F), EmitIntensity::new(0x1F)]
+        );
     }
 }

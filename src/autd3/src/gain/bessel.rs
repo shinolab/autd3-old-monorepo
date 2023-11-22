@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmitIntensity},
+    common::EmitIntensity,
     derive::prelude::*,
     geometry::{Geometry, UnitQuaternion, Vector3},
 };
@@ -24,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a Bessel beam
 #[derive(Gain, Clone, Copy)]
 pub struct Bessel {
-    amp: EmitIntensity,
+    intensity: EmitIntensity,
     pos: Vector3,
     dir: Vector3,
     theta: float,
@@ -44,25 +44,25 @@ impl Bessel {
             pos,
             dir,
             theta,
-            amp: EmitIntensity::MAX,
+            intensity: EmitIntensity::MAX,
         }
     }
 
-    /// set amplitude
+    /// set emission intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - amplitude
+    /// * `intensity` - emission intensity
     ///
-    pub fn with_amp<A: TryIntoEmitIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
-        Ok(Self {
-            amp: amp.try_into()?,
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
+        Self {
+            intensity: intensity.into(),
             ..self
-        })
+        }
     }
 
-    pub fn amp(&self) -> EmitIntensity {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 
     pub fn pos(&self) -> Vector3 {
@@ -99,7 +99,7 @@ impl Gain for Bessel {
             let phase = dist * tr.wavenumber(dev.sound_speed);
             Drive {
                 phase,
-                amp: self.amp,
+                intensity: self.intensity,
             }
         }))
     }
@@ -133,7 +133,7 @@ mod tests {
         assert_eq!(b[&0].len(), geometry.num_transducers());
         b[&0]
             .iter()
-            .for_each(|d| assert_eq!(d.amp.normalized(), 1.0));
+            .for_each(|d| assert_eq!(d.intensity.value(), 0xFF));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d.normalize();
@@ -156,15 +156,14 @@ mod tests {
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
-            .with_amp(0x1F)
-            .unwrap()
+            .with_intensity(0x1F)
             .calc(&geometry, GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), 1);
         assert_eq!(b[&0].len(), geometry.num_transducers());
         b[&0]
             .iter()
-            .for_each(|b| assert_eq!(b.amp.pulse_width(), 0x1F));
+            .for_each(|b| assert_eq!(b.intensity.value(), 0x1F));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
                 let dir = d.normalize();

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use num::integer::gcd;
 
@@ -91,7 +91,7 @@ impl Square {
 }
 
 impl Modulation for Square {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         if !(0.0..=1.0).contains(&self.duty) {
             return Err(AUTDInternalError::ModulationError(
                 "duty must be in range from 0 to 1".to_string(),
@@ -111,6 +111,7 @@ impl Modulation for Square {
                     .into_iter()
                     .chain(vec![self.low; size - n_high])
             })
+            .map(|v| EmitIntensity::new((v * 255.0).round() as u8))
             .collect())
     }
 }
@@ -122,20 +123,19 @@ mod tests {
     #[test]
     fn test_square() {
         let expect = [
-            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ];
         let m = Square::new(150);
         assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
-            .iter()
+            .into_iter()
             .zip(m.calc().unwrap().iter())
             .for_each(|(e, a)| {
-                assert_approx_eq::assert_approx_eq!(e, a);
+                assert_eq!(e, a.value());
             });
     }
 
@@ -143,7 +143,7 @@ mod tests {
     fn test_square_with_low() {
         let m = Square::new(150).with_low(1.0);
         m.calc().unwrap().iter().for_each(|a| {
-            assert_approx_eq::assert_approx_eq!(a, 1.0);
+            assert_eq!(a.value(), 0xFF);
         });
     }
 
@@ -151,7 +151,7 @@ mod tests {
     fn test_square_with_high() {
         let m = Square::new(150).with_high(0.0);
         m.calc().unwrap().iter().for_each(|a| {
-            assert_approx_eq::assert_approx_eq!(a, 0.0);
+            assert_eq!(a.value(), 0x00);
         });
     }
 
@@ -159,12 +159,12 @@ mod tests {
     fn test_square_with_duty() {
         let m = Square::new(150).with_duty(0.0);
         m.calc().unwrap().iter().for_each(|a| {
-            assert_approx_eq::assert_approx_eq!(a, 0.0);
+            assert_eq!(a.value(), 0x00);
         });
 
         let m = Square::new(150).with_duty(1.0);
         m.calc().unwrap().iter().for_each(|a| {
-            assert_approx_eq::assert_approx_eq!(a, 1.0);
+            assert_eq!(a.value(), 0xFF);
         });
     }
 

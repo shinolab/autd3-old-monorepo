@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::ops::{Deref, DerefMut};
 use super::sine::Sine;
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use num::integer::lcm;
 
@@ -116,7 +116,7 @@ impl std::ops::Add<Sine> for Sine {
 }
 
 impl Modulation for Fourier {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         let n = self.components.len();
         let buffers = self
             .components
@@ -127,14 +127,14 @@ impl Modulation for Fourier {
         Ok(buffers
             .iter()
             .map(|b| b.iter().cycle().take(len).collect::<Vec<_>>())
-            .fold(vec![0.0; len], |acc, x| {
+            .fold(vec![0usize; len], |acc, x| {
                 acc.iter()
                     .zip(x.iter())
-                    .map(|(a, &b)| a + b)
+                    .map(|(a, &b)| a + b.value() as usize)
                     .collect::<Vec<_>>()
             })
             .iter()
-            .map(|x| x / n as float)
+            .map(|x| EmitIntensity::new((x / n) as u8))
             .collect::<Vec<_>>())
     }
 }
@@ -164,14 +164,14 @@ mod tests {
         let buf = f.calc().unwrap();
 
         for i in 0..buf.len() {
-            assert_approx_eq::assert_approx_eq!(
-                buf[i],
-                (f0_buf[i % f0_buf.len()]
-                    + f1_buf[i % f1_buf.len()]
-                    + f2_buf[i % f2_buf.len()]
-                    + f3_buf[i % f3_buf.len()]
-                    + f4_buf[i % f4_buf.len()])
-                    / 5.0
+            assert_eq!(
+                buf[i].value(),
+                ((f0_buf[i % f0_buf.len()].value() as usize
+                    + f1_buf[i % f1_buf.len()].value() as usize
+                    + f2_buf[i % f2_buf.len()].value() as usize
+                    + f3_buf[i % f3_buf.len()].value() as usize
+                    + f4_buf[i % f4_buf.len()].value() as usize)
+                    / 5) as u8
             );
         }
     }

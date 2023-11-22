@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,16 +15,12 @@ use std::collections::HashMap;
 
 use autd3_derive::Gain;
 
-use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmitIntensity},
-    derive::prelude::*,
-    geometry::Geometry,
-};
+use autd3_driver::{common::EmitIntensity, derive::prelude::*, geometry::Geometry};
 
-/// Gain with uniform amplitude and phase
+/// Gain with uniform emission intensity and phase
 #[derive(Gain, Clone, Copy)]
 pub struct Uniform {
-    amp: EmitIntensity,
+    intensity: EmitIntensity,
     phase: float,
 }
 
@@ -33,13 +29,13 @@ impl Uniform {
     ///
     /// # Arguments
     ///
-    /// * `amp` - normalized amp (from 0 to 1)
+    /// * `intensity` - normalized intensity (from 0 to 1)
     ///
-    pub fn new<A: TryIntoEmitIntensity>(amp: A) -> Result<Self, AUTDInternalError> {
-        Ok(Self {
-            amp: amp.try_into()?,
+    pub fn new<A: Into<EmitIntensity>>(intensity: A) -> Self {
+        Self {
+            intensity: intensity.into(),
             phase: 0.,
-        })
+        }
     }
 
     /// set phase
@@ -61,7 +57,7 @@ impl Gain for Uniform {
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_, _| Drive {
             phase: self.phase,
-            amp: self.amp,
+            intensity: self.intensity,
         }))
     }
 }
@@ -82,12 +78,12 @@ mod tests {
                 AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
             ]);
 
-        let gain = Uniform::new(0x1F).unwrap();
+        let gain = Uniform::new(0x1F);
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.0);
-            assert_eq!(drive.amp.pulse_width(), 0x1F);
+            assert_eq!(drive.intensity.value(), 0x1F);
         });
 
         let gain = gain.with_phase(0.2);
@@ -95,7 +91,7 @@ mod tests {
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase, 0.2);
-            assert_eq!(drive.amp.pulse_width(), 0x1F);
+            assert_eq!(drive.intensity.value(), 0x1F);
         });
     }
 }

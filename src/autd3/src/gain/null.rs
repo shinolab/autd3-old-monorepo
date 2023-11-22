@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ impl Gain for Null {
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_, _| Drive {
             phase: 0.,
-            amp: EmitIntensity::MIN,
+            intensity: EmitIntensity::MIN,
         }))
     }
 }
@@ -64,7 +64,7 @@ mod tests {
         assert_eq!(drives.len(), 1);
         assert_eq!(drives[&0].len(), geometry.num_transducers());
         drives[&0].iter().for_each(|d| {
-            assert_eq!(d.amp.normalized(), 0.0);
+            assert_eq!(d.intensity.value(), 0);
             assert_eq!(d.phase, 0.0);
         });
     }

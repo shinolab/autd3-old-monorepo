@@ -4,7 +4,7 @@
  * Created Date: 30/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@ pub async fn transtest<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool
 
     let m = Static::new();
     let g = TransducerTest::new()
-        .set(0, 0, 0., 1.)?
-        .set(0, 248, 0., 1.)?;
+        .set(&autd.geometry[0][0], 0., 0xFF)
+        .set(&autd.geometry[0][248], 0., 0xFF);
 
     autd.send((m, g)).await?;
 

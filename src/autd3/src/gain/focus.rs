@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::{EmitIntensity, TryIntoEmitIntensity},
+    common::EmitIntensity,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -24,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Focus {
-    amp: EmitIntensity,
+    intensity: EmitIntensity,
     pos: Vector3,
 }
 
@@ -38,25 +38,25 @@ impl Focus {
     pub fn new(pos: Vector3) -> Self {
         Self {
             pos,
-            amp: EmitIntensity::MAX,
+            intensity: EmitIntensity::MAX,
         }
     }
 
-    /// set amplitude
+    /// set emission intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - amplitude
+    /// * `intensity` - emission intensity
     ///
-    pub fn with_amp<A: TryIntoEmitIntensity>(self, amp: A) -> Result<Self, AUTDInternalError> {
-        Ok(Self {
-            amp: amp.try_into()?,
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
+        Self {
+            intensity: intensity.into(),
             ..self
-        })
+        }
     }
 
-    pub fn amp(&self) -> EmitIntensity {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 
     pub fn pos(&self) -> Vector3 {
@@ -74,7 +74,7 @@ impl Gain for Focus {
             let phase = tr.align_phase_at(self.pos, dev.sound_speed);
             Drive {
                 phase,
-                amp: self.amp,
+                intensity: self.intensity,
             }
         }))
     }
