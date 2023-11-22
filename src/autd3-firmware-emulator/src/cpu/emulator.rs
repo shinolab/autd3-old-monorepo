@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -164,13 +164,13 @@ impl CPUEmulator {
             data[4..].as_ptr() as *const u16
         };
 
-        let segment_capacity =
-            (self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) + MOD_BUF_SEGMENT_SIZE - self.mod_cycle;
+        let page_capacity =
+            (self.mod_cycle & !MOD_BUF_PAGE_SIZE_MASK) + MOD_BUF_PAGE_SIZE - self.mod_cycle;
 
-        if write as u32 <= segment_capacity {
+        if write as u32 <= page_capacity {
             self.bram_cpy(
                 BRAM_SELECT_MOD,
-                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
+                ((self.mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1) as u16,
                 data,
                 ((write + 1) >> 1) as usize,
             );
@@ -178,25 +178,24 @@ impl CPUEmulator {
         } else {
             self.bram_cpy(
                 BRAM_SELECT_MOD,
-                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as u16,
+                ((self.mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1) as u16,
                 data,
-                (segment_capacity >> 1) as usize,
+                (page_capacity >> 1) as usize,
             );
-            self.mod_cycle += segment_capacity;
-            let data = unsafe { data.add(segment_capacity as _) };
+            self.mod_cycle += page_capacity;
+            let data = unsafe { data.add(page_capacity as _) };
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_MOD_ADDR_OFFSET,
-                ((self.mod_cycle & !MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH)
-                    as u16,
+                ((self.mod_cycle & !MOD_BUF_PAGE_SIZE_MASK) >> MOD_BUF_PAGE_SIZE_WIDTH) as u16,
             );
             self.bram_cpy(
                 BRAM_SELECT_MOD,
-                ((self.mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1) as _,
+                ((self.mod_cycle & MOD_BUF_PAGE_SIZE_MASK) >> 1) as _,
                 data,
-                ((write as u32 - segment_capacity + 1) >> 1) as _,
+                ((write as u32 - page_capacity + 1) >> 1) as _,
             );
-            self.mod_cycle += write as u32 - segment_capacity;
+            self.mod_cycle += write as u32 - page_capacity;
         }
 
         if (flag & MODULATION_FLAG_END) == MODULATION_FLAG_END {
@@ -209,8 +208,18 @@ impl CPUEmulator {
     }
 
     fn config_silencer(&mut self, data: &[u8]) {
-        let step = ((data[3] as u16) << 8) | data[2] as u16;
-        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
+        let step_intensity = ((data[3] as u16) << 8) | data[2] as u16;
+        let step_phase = ((data[5] as u16) << 8) | data[4] as u16;
+        self.bram_write(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_SILENT_STEP_INTENSITY,
+            step_intensity,
+        );
+        self.bram_write(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_SILENT_STEP_PHASE,
+            step_phase,
+        );
     }
 
     fn write_mod_delay(&mut self, data: &[u8]) {
@@ -223,41 +232,6 @@ impl CPUEmulator {
             delays.as_ptr(),
             delays.len(),
         );
-    }
-
-    fn write_duty_filter(&mut self, data: &[u8]) {
-        let filter = unsafe {
-            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
-        };
-        self.bram_cpy(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_FILTER_DUTY_BASE,
-            filter.as_ptr(),
-            filter.len(),
-        );
-    }
-
-    fn write_phase_filter(&mut self, data: &[u8]) {
-        let filter = unsafe {
-            std::slice::from_raw_parts(data.as_ptr() as *const u16, self.num_transducers)
-        };
-        self.bram_cpy(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_FILTER_PHASE_BASE,
-            filter.as_ptr(),
-            filter.len(),
-        );
-    }
-
-    fn write_filter(&mut self, data: &[u8]) {
-        let flag = data[1];
-        if flag == FILTER_ADD_DUTY {
-            self.write_duty_filter(&data[2..]);
-        } else if flag == FILTER_ADD_PHASE {
-            self.write_phase_filter(&data[2..]);
-        } else {
-            unimplemented!("unknown filter type: {flag}")
-        }
     }
 
     fn write_gain(&mut self, data: &[u8]) {
@@ -322,11 +296,11 @@ impl CPUEmulator {
             unsafe { data.as_ptr().add(4) as *const u16 }
         };
 
-        let segment_capacity = (self.stm_cycle & !POINT_STM_BUF_SEGMENT_SIZE_MASK)
-            + POINT_STM_BUF_SEGMENT_SIZE
+        let page_capacity = (self.stm_cycle & !POINT_STM_BUF_PAGE_SIZE_MASK)
+            + POINT_STM_BUF_PAGE_SIZE
             - self.stm_cycle;
-        if size <= segment_capacity {
-            let mut dst = ((self.stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3) as u16;
+        if size <= page_capacity {
+            let mut dst = ((self.stm_cycle & POINT_STM_BUF_PAGE_SIZE_MASK) << 3) as u16;
             (0..size as usize).for_each(|_| unsafe {
                 self.bram_write(BRAM_SELECT_STM, dst, src.read());
                 dst += 1;
@@ -344,8 +318,8 @@ impl CPUEmulator {
             });
             self.stm_cycle += size;
         } else {
-            let mut dst = ((self.stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3) as u16;
-            (0..segment_capacity as usize).for_each(|_| unsafe {
+            let mut dst = ((self.stm_cycle & POINT_STM_BUF_PAGE_SIZE_MASK) << 3) as u16;
+            (0..page_capacity as usize).for_each(|_| unsafe {
                 self.bram_write(BRAM_SELECT_STM, dst, src.read());
                 dst += 1;
                 src = src.add(1);
@@ -360,17 +334,17 @@ impl CPUEmulator {
                 src = src.add(1);
                 dst += 4;
             });
-            self.stm_cycle += segment_capacity;
+            self.stm_cycle += page_capacity;
 
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_ADDR_OFFSET,
-                ((self.stm_cycle & !POINT_STM_BUF_SEGMENT_SIZE_MASK)
-                    >> POINT_STM_BUF_SEGMENT_SIZE_WIDTH) as _,
+                ((self.stm_cycle & !POINT_STM_BUF_PAGE_SIZE_MASK) >> POINT_STM_BUF_PAGE_SIZE_WIDTH)
+                    as _,
             );
 
-            let mut dst = ((self.stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3) as u16;
-            let cnt = size - segment_capacity;
+            let mut dst = ((self.stm_cycle & POINT_STM_BUF_PAGE_SIZE_MASK) << 3) as u16;
+            let cnt = size - page_capacity;
             (0..cnt as usize).for_each(|_| unsafe {
                 self.bram_write(BRAM_SELECT_STM, dst, src.read());
                 dst += 1;
@@ -386,7 +360,7 @@ impl CPUEmulator {
                 src = src.add(1);
                 dst += 4;
             });
-            self.stm_cycle += size - segment_capacity;
+            self.stm_cycle += size - page_capacity;
         }
 
         if (flag & FOCUS_STM_FLAG_END) == FOCUS_STM_FLAG_END {
@@ -444,9 +418,9 @@ impl CPUEmulator {
         };
 
         let mut src = src_base;
-        let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+        let mut dst = ((self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8) as u16;
 
-        if self.gain_stm_mode == GAIN_STM_MODE_DUTY_PHASE_FULL {
+        if self.gain_stm_mode == GAIN_STM_MODE_INTENSITY_PHASE_FULL {
             self.stm_cycle += 1;
             (0..self.num_transducers).for_each(|_| unsafe {
                 self.bram_write(BRAM_SELECT_STM, dst, src.read());
@@ -463,7 +437,7 @@ impl CPUEmulator {
 
             if send > 1 {
                 let mut src = src_base;
-                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | ((src.read() >> 8) & 0x00FF));
                     dst += 1;
@@ -482,7 +456,7 @@ impl CPUEmulator {
 
             if send > 1 {
                 let mut src = src_base;
-                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 4) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -494,7 +468,7 @@ impl CPUEmulator {
 
             if send > 2 {
                 let mut src = src_base;
-                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 8) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -506,7 +480,7 @@ impl CPUEmulator {
 
             if send > 3 {
                 let mut src = src_base;
-                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 8) as u16;
+                let mut dst = ((self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8) as u16;
                 (0..self.num_transducers).for_each(|_| unsafe {
                     let phase = (src.read() >> 12) & 0x000F;
                     self.bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (phase << 4) | phase);
@@ -517,12 +491,12 @@ impl CPUEmulator {
             }
         }
 
-        if self.stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK == 0 {
+        if self.stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK == 0 {
             self.bram_write(
                 BRAM_SELECT_CONTROLLER,
                 BRAM_ADDR_STM_ADDR_OFFSET,
-                ((self.stm_cycle & !GAIN_STM_BUF_SEGMENT_SIZE_MASK)
-                    >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH) as _,
+                ((self.stm_cycle & !GAIN_STM_BUF_PAGE_SIZE_MASK) >> GAIN_STM_BUF_PAGE_SIZE_WIDTH)
+                    as _,
             );
         }
 
@@ -568,7 +542,8 @@ impl CPUEmulator {
             self.fpga_flags_internal | self.fpga_flags.bits() as u16,
         );
 
-        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP_INTENSITY, 256);
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP_PHASE, 256);
 
         self.stm_cycle = 0;
 
@@ -585,25 +560,13 @@ impl CPUEmulator {
             std::mem::size_of::<u32>() >> 1,
         );
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0x0000);
-        self.bram_write(BRAM_SELECT_MOD, 0, 0x0000);
+        self.bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
 
         self.bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, self.num_transducers << 1);
 
         self.bram_set(
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_MOD_DELAY_BASE,
-            0x0000,
-            self.num_transducers,
-        );
-        self.bram_set(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_FILTER_PHASE_BASE,
-            0x0000,
-            self.num_transducers,
-        );
-        self.bram_set(
-            BRAM_SELECT_CONTROLLER,
-            BRAM_ADDR_FILTER_DUTY_BASE,
             0x0000,
             self.num_transducers,
         );
@@ -653,7 +616,7 @@ impl CPUEmulator {
             TAG_GAIN => self.write_gain(data),
             TAG_FOCUS_STM => self.write_focus_stm(data),
             TAG_GAIN_STM => self.write_gain_stm(data),
-            TAG_FILTER => self.write_filter(data),
+            TAG_DEBUG => {}
             _ => {
                 unimplemented!("Unsupported tag")
             }
