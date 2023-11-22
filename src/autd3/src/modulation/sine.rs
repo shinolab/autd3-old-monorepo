@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::{defined::PI, derive::prelude::*};
+use autd3_driver::{common::EmitIntensity, defined::PI, derive::prelude::*};
 
 use num::integer::gcd;
 
@@ -93,7 +93,7 @@ impl Sine {
 }
 
 impl Modulation for Sine {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         let sf = self.sampling_config().frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
@@ -104,6 +104,7 @@ impl Modulation for Sine {
                 self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float + self.phase).sin()
                     + self.offset
             })
+            .map(|v| EmitIntensity::new((v * 255.0).round() as u8))
             .collect())
     }
 }
@@ -115,145 +116,75 @@ mod tests {
     #[test]
     fn test_sine() {
         let expect = [
-            0.5,
-            0.6167226819279527,
-            0.7269952498697734,
-            0.8247240241650918,
-            0.9045084971874737,
-            0.9619397662556434,
-            0.9938441702975689,
-            0.998458666866564,
-            0.9755282581475768,
-            0.9263200821770461,
-            0.8535533905932737,
-            0.7612492823579744,
-            0.6545084971874737,
-            0.5392295478639225,
-            0.42178276747988463,
-            0.3086582838174552,
-            0.2061073738537635,
-            0.1197970171999847,
-            0.054496737905816106,
-            0.013815039801161777,
-            0.0,
-            0.013815039801161721,
-            0.054496737905815995,
-            0.11979701719998459,
-            0.20610737385376332,
-            0.3086582838174548,
-            0.42178276747988447,
-            0.5392295478639221,
-            0.6545084971874736,
-            0.7612492823579742,
-            0.8535533905932737,
-            0.9263200821770459,
-            0.9755282581475768,
-            0.998458666866564,
-            0.9938441702975689,
-            0.9619397662556434,
-            0.9045084971874737,
-            0.8247240241650922,
-            0.7269952498697739,
-            0.6167226819279527,
-            0.5000000000000002,
-            0.3832773180720477,
-            0.2730047501302264,
-            0.17527597583490817,
-            0.09549150281252639,
-            0.0380602337443568,
-            0.006155829702431115,
-            0.0015413331334359626,
-            0.024471741852423123,
-            0.07367991782295413,
-            0.14644660940672577,
-            0.23875071764202555,
-            0.34549150281252605,
-            0.46077045213607704,
-            0.5782172325201147,
-            0.691341716182544,
-            0.7938926261462363,
-            0.8802029828000151,
-            0.9455032620941837,
-            0.9861849601988383,
-            1.0,
-            0.9861849601988384,
-            0.9455032620941843,
-            0.8802029828000155,
-            0.7938926261462368,
-            0.6913417161825454,
-            0.5782172325201153,
-            0.4607704521360776,
-            0.34549150281252744,
-            0.23875071764202604,
-            0.14644660940672616,
-            0.07367991782295441,
-            0.02447174185242329,
-            0.0015413331334359626,
-            0.006155829702431004,
-            0.038060233744356575,
-            0.09549150281252555,
-            0.17527597583490773,
-            0.2730047501302267,
-            0.3832773180720463,
+            128, 157, 185, 210, 231, 245, 253, 255, 249, 236, 218, 194, 167, 138, 108, 79, 53, 31,
+            14, 4, 0, 4, 14, 31, 53, 79, 108, 138, 167, 194, 218, 236, 249, 255, 253, 245, 231,
+            210, 185, 157, 128, 98, 70, 45, 24, 10, 2, 0, 6, 19, 37, 61, 88, 117, 147, 176, 202,
+            224, 241, 251, 255, 251, 241, 224, 202, 176, 147, 117, 88, 61, 37, 19, 6, 0, 2, 10, 24,
+            45, 70, 98,
         ];
         let m = Sine::new(150);
         assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
-            .iter()
+            .into_iter()
             .zip(m.calc().unwrap().iter())
             .for_each(|(e, a)| {
-                assert_approx_eq::assert_approx_eq!(e, a);
+                assert_eq!(e, a.value());
             });
     }
 
     #[test]
     fn test_sine_new() {
         let m = Sine::new(100);
-        assert_eq!(m.freq, 100);
-        assert_approx_eq::assert_approx_eq!(m.amp, 1.0);
-        assert_approx_eq::assert_approx_eq!(m.offset, 0.5);
+        assert_eq!(m.freq(), 100);
+        assert_eq!(m.amp(), 1.0);
+        assert_eq!(m.offset(), 0.5);
+        assert_eq!(m.phase(), 0.0);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .map(|&x| x.value() as float / 255.)
+            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
     }
 
     #[test]
     fn test_sine_with_amp() {
         let m = Sine::new(100).with_amp(0.5);
-        assert_approx_eq::assert_approx_eq!(m.amp, 0.5);
+        assert_eq!(m.amp, 0.5);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .map(|&x| x.value() as float / 255.)
+            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
     }
 
     #[test]
     fn test_sine_with_offset() {
         let m = Sine::new(100).with_offset(1.0);
-        assert_approx_eq::assert_approx_eq!(m.offset, 1.0);
+        assert_eq!(m.offset, 1.0);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .map(|&x| x.value() as float / 255.)
+            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
     }
 
     #[test]
     fn test_sine_with_phase() {
         let m = Sine::new(100).with_phase(PI / 4.0);
-        assert_approx_eq::assert_approx_eq!(m.phase, PI / 4.0);
+        assert_eq!(m.phase, PI / 4.0);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .all(|&x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .map(|&x| x.value() as float / 255.)
+            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
     }
 }

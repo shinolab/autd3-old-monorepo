@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ impl Gain for MyUniform {
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
             phase: 0.0,
-            amp: EmitIntensity::MAX,
+            intensity: EmitIntensity::MAX,
         }))
     }
 }
@@ -55,9 +55,9 @@ impl Burst {
 }
 
 impl Modulation for Burst {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok((0..4000)
-            .map(|i| if i == 3999 { 1.0 } else { 0.0 })
+            .map(|i| if i == 3999 { EmitIntensity::MAX } else { EmitIntensity::MIN })
             .collect())
     }
 }

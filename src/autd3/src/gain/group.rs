@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,12 +32,12 @@ impl<K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, Bo
     /// # Arguments
     /// `f` - function to get key from transducer (currentry, transducer type annotation is required)
     ///
-    /// # Examples
+    /// # Exintensityles
     ///
     /// ```
     /// # use autd3::prelude::*;
     /// # let gain : autd3::gain::Group<_, _, _> =
-    /// Group::new(|dev, tr| match tr.local_idx() {
+    /// Group::new(|dev, tr| match tr.tr_idx() {
     ///                 0..=100 => Some("null"),
     ///                 101.. => Some("focus"),
     ///                 _ => None,
@@ -151,7 +151,7 @@ impl<
                         .unwrap()
                         .get_mut(&dev.idx())
                         .unwrap()
-                        .set(tr.local_idx(), true);
+                        .set(tr.tr_idx(), true);
                 }
             })
         });
@@ -204,10 +204,10 @@ impl<
                                 "Unspecified group key".to_owned(),
                             ));
                         };
-                        d[tr.local_idx()] = g[&dev.idx()][tr.local_idx()];
+                        d[tr.tr_idx()] = g[&dev.idx()][tr.tr_idx()];
                     } else {
-                        d[tr.local_idx()] = Drive {
-                            amp: EmitIntensity::MIN,
+                        d[tr.tr_idx()] = Drive {
+                            intensity: EmitIntensity::MIN,
                             phase: 0.0,
                         }
                     }
@@ -238,7 +238,7 @@ mod tests {
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(3),
         ]);
 
-        let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.local_idx()) {
+        let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.tr_idx()) {
             (0, 0..=99) => Some("null"),
             (0, 100..=199) => Some("plane"),
             (1, 200..) => Some("plane2"),
@@ -246,10 +246,7 @@ mod tests {
         })
         .set("null", Null::new())
         .set("plane", Plane::new(Vector3::zeros()))
-        .set(
-            "plane2",
-            Plane::new(Vector3::zeros()).with_amp(0x1F).unwrap(),
-        );
+        .set("plane2", Plane::new(Vector3::zeros()).with_intensity(0x1F));
 
         let drives = gain.calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(drives.len(), 4);
@@ -258,34 +255,34 @@ mod tests {
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.normalized(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.normalized(), 1.0);
+                assert_eq!(d.intensity.value(), 0xFF);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.normalized(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.normalized(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.pulse_width(), 0x1F);
+                assert_eq!(d.intensity.value(), 0x1F);
             }
         });
         drives[&2].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp.normalized(), 0.0);
+            assert_eq!(d.intensity.value(), 0);
         });
         drives[&3].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp.normalized(), 0.0);
+            assert_eq!(d.intensity.value(), 0);
         });
     }
 
@@ -296,7 +293,7 @@ mod tests {
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &Transducer| match tr.local_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,
@@ -319,7 +316,7 @@ mod tests {
             AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &Transducer| match tr.local_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,
@@ -345,22 +342,22 @@ mod tests {
         })
         .set("null", Null::new())
         .set("plane", Plane::new(Vector3::zeros()))
-        .set(
-            "plane2",
-            Plane::new(Vector3::zeros()).with_amp(0x1F).unwrap(),
-        );
+        .set("plane2", Plane::new(Vector3::zeros()).with_intensity(0x1F));
 
         assert!(gain.get::<Null>("null").is_some());
         assert!(gain.get::<Focus>("null").is_none());
 
         assert!(gain.get::<Plane>("plane").is_some());
         assert!(gain.get::<Null>("plane").is_none());
-        assert_eq!(gain.get::<Plane>("plane").unwrap().amp().normalized(), 1.0);
+        assert_eq!(
+            gain.get::<Plane>("plane").unwrap().intensity().value(),
+            0xFF
+        );
 
         assert!(gain.get::<Plane>("plane2").is_some());
         assert!(gain.get::<Null>("plane2").is_none());
         assert_eq!(
-            gain.get::<Plane>("plane2").unwrap().amp().pulse_width(),
+            gain.get::<Plane>("plane2").unwrap().intensity().value(),
             0x1F
         );
 

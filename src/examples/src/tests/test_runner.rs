@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,15 +15,17 @@ use colored::*;
 use std::io::{self, Write};
 
 use autd3::prelude::*;
-pub use autd3_gain_holo::*;
+// pub use autd3_gain_holo::*;
 
-#[cfg(feature = "cuda")]
-pub use autd3_backend_cuda::CUDABackend as Backend;
-#[cfg(not(feature = "cuda"))]
-pub use NalgebraBackend as Backend;
+// #[cfg(feature = "cuda")]
+// pub use autd3_backend_cuda::CUDABackend as Backend;
+// #[cfg(not(feature = "cuda"))]
+// pub use NalgebraBackend as Backend;
 
 use super::{
-    audio_file::*, bessel::*, custom::*, flag::*, focus::*, group::*, holo::*, plane::*, stm::*,
+    audio_file::*, bessel::*, custom::*, flag::*, focus::*, group::*, 
+    // holo::*, 
+    plane::*, stm::*,
     transtest::*,
 };
 
@@ -49,7 +51,7 @@ pub async fn run<L: Link>(mut autd: Controller<L>) -> anyhow::Result<()> {
         ("Wav modulation test", |autd| Box::pin(audio_file(autd))),
         ("FocusSTM test", |autd| Box::pin(focus_stm(autd))),
         ("GainSTM test", |autd| Box::pin(gain_stm(autd))),
-        ("Multiple foci test", |autd| Box::pin(holo(autd))),
+        // ("Multiple foci test", |autd| Box::pin(holo(autd))),
         ("Custom Gain & Modulation test", |autd| {
             Box::pin(custom(autd))
         }),

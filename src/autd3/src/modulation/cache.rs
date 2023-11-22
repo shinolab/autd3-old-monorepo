@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,14 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use std::ops::Deref;
 
 /// Modulation to cache the result of calculation
 #[derive(Modulation)]
 pub struct Cache {
-    cache: Vec<float>,
+    cache: Vec<EmitIntensity>,
     #[no_change]
     config: SamplingConfiguration,
 }
@@ -55,19 +55,19 @@ impl Cache {
     }
 
     /// get cached modulation data
-    pub fn buffer(&self) -> &[float] {
+    pub fn buffer(&self) -> &[EmitIntensity] {
         &self.cache
     }
 }
 
 impl Modulation for Cache {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok(self.cache.clone())
     }
 }
 
 impl Deref for Cache {
-    type Target = [float];
+    type Target = [EmitIntensity];
 
     fn deref(&self) -> &Self::Target {
         &self.cache
@@ -92,7 +92,7 @@ mod tests {
         let m = Static::new().with_cache().unwrap();
 
         for d in m.calc().unwrap() {
-            assert_eq!(d, 1.0);
+            assert_eq!(d.value(), 0xFF);
         }
     }
 
@@ -103,9 +103,9 @@ mod tests {
     }
 
     impl Modulation for TestModulation {
-        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+        fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
-            Ok(vec![0.0; 2])
+            Ok(vec![EmitIntensity::new(0); 2])
         }
     }
 

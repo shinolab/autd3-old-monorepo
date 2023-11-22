@@ -4,7 +4,7 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 /// Modulation for modulating radiation pressure
 #[derive(Modulation)]
@@ -37,7 +37,12 @@ impl<M: Modulation> IntoRadiationPressure<M> for M {
 }
 
 impl<M: Modulation> Modulation for RadiationPressure<M> {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        Ok(self.m.calc()?.iter().map(|v| v.sqrt()).collect())
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
+        Ok(self
+            .m
+            .calc()?
+            .iter()
+            .map(|&v| EmitIntensity::new(((v.value() as float / 255.).sqrt() * 255.).round() as u8))
+            .collect())
     }
 }

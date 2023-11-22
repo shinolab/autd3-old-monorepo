@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,15 +21,15 @@ pub use crate::{
     error::AUTDError,
     gain::{Bessel, Focus, Group, Null, Plane, TransducerTest, Uniform},
     link::Nop,
-    modulation::{IntoRadiationPressure, Sine, SineLegacy, Square, Static},
+    modulation::{IntoRadiationPressure, Sine, Square, Static},
 };
 
 pub use autd3_driver::{
     autd3_device::AUTD3,
-    common::{Drive, EmitIntensity, SamplingConfiguration, TryIntoEmitIntensity},
+    common::{Drive, EmitIntensity, SamplingConfiguration},
     datagram::{
-        Clear, ConfigureAmpFilter, ConfigureModDelay, ConfigurePhaseFilter, DatagramT, FocusSTM,
-        GainSTM, Modulation, ModulationProperty, Silencer, Stop, Synchronize, UpdateFlags,
+        Clear, ConfigureDebugOutoutIdx, ConfigureModDelay, DatagramT, FocusSTM, GainSTM,
+        Modulation, ModulationProperty, Silencer, Stop, Synchronize, UpdateFlags,
     },
     defined::{float, METER, MILLIMETER, PI},
     error::AUTDInternalError,
