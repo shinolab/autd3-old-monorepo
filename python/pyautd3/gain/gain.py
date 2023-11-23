@@ -19,9 +19,10 @@ from ctypes import POINTER
 
 import numpy as np
 
+from pyautd3.drive import Drive
 from pyautd3.geometry import Device, Geometry, Transducer
 from pyautd3.internal.gain import IGain
-from pyautd3.native_methods.autd3capi import Drive
+from pyautd3.native_methods.autd3capi import Drive as _Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
@@ -39,7 +40,7 @@ class Gain(IGain, metaclass=ABCMeta):
             lambda acc, dev: Base().gain_custom_set(
                 acc,
                 dev.idx,
-                drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore[arg-type]
+                drives[dev.idx].ctypes.data_as(POINTER(_Drive)),  # type: ignore[arg-type]
                 len(drives[dev.idx]),
             ),
             geometry.devices(),
@@ -48,4 +49,10 @@ class Gain(IGain, metaclass=ABCMeta):
 
     @staticmethod
     def _transform(geometry: Geometry, f: Callable[[Device, Transducer], Drive]) -> dict[int, np.ndarray]:
-        return {dev.idx: np.fromiter((np.void(f(dev, tr)) for tr in dev), dtype=Drive) for dev in geometry.devices()}  # type: ignore[call-overload]
+        return {
+            dev.idx: np.fromiter(
+                (np.void(_Drive(d.phase, d.intensity._value)) for d in (f(dev, tr) for tr in dev)),  # type: ignore[call-overload]
+                dtype=_Drive,
+            )
+            for dev in geometry.devices()
+        }

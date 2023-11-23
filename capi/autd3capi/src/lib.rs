@@ -28,7 +28,7 @@ use autd3capi_def::{
         *,
     },
     ControllerPtr, DatagramPtr, DatagramSpecialPtr, FirmwareInfoListPtr, GroupKVMapPtr,
-    LinkBuilderPtr, ResultController, ResultDatagramPtr, ResultI32,
+    LinkBuilderPtr, ResultController, ResultDatagram, ResultI32,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -216,7 +216,7 @@ pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
 pub unsafe extern "C" fn AUTDDatagramSilencer(
     step_intensity: u16,
     step_phase: u16,
-) -> ResultDatagramPtr {
+) -> ResultDatagram {
     Silencer::new(step_intensity, step_phase).into()
 }
 

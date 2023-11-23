@@ -5,7 +5,7 @@ import os
 from enum import IntEnum
 
 class GainSTMMode(IntEnum):
-    PhaseDutyFull = 0
+    PhaseIntensityFull = 0
     PhaseFull = 1
     PhaseHalf = 2
 
@@ -88,12 +88,16 @@ class BackendPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class ConstraintPtr(ctypes.Structure):
+class EmissionConstraintPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class GroupGainMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class Drive(ctypes.Structure):
+    _fields_ = [("phase", ctypes.c_double), ("intensity", ctypes.c_uint8)]
 
 
 class ResultI32(ctypes.Structure):
@@ -114,6 +118,18 @@ class ResultModulation(ctypes.Structure):
 
 class ResultBackend(ctypes.Structure):
     _fields_ = [("result", BackendPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultDatagram(ctypes.Structure):
+    _fields_ = [("result", DatagramPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class SamplingConfiguration(ctypes.Structure):
+    _fields_ = [("div", ctypes.c_uint32)]
+
+
+class ResultSamplingConfig(ctypes.Structure):
+    _fields_ = [("result", SamplingConfiguration), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 DEFAULT_CORRECTED_ALPHA: float = 0.803
@@ -149,44 +165,56 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDEmitIntensityNormalizedFrom.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDEmitIntensityNormalizedFrom.restype = ctypes.c_double
+        self.dll.AUTDEmitIntensityNewWithCorrection.argtypes = [ctypes.c_uint8] 
+        self.dll.AUTDEmitIntensityNewWithCorrection.restype = ctypes.c_uint8
 
-        self.dll.AUTDEmitIntensityDutyRatioFrom.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDEmitIntensityDutyRatioFrom.restype = ctypes.c_double
-
-        self.dll.AUTDEmitIntensityNormalizedInto.argtypes = [ctypes.c_double] 
-        self.dll.AUTDEmitIntensityNormalizedInto.restype = ResultI32
-
-        self.dll.AUTDEmitIntensityNormalizedCorrectedInto.argtypes = [ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDEmitIntensityNormalizedCorrectedInto.restype = ResultI32
-
-        self.dll.AUTDEmitIntensityDutyRatioInto.argtypes = [ctypes.c_double] 
-        self.dll.AUTDEmitIntensityDutyRatioInto.restype = ResultI32
-
-        self.dll.AUTDEmitIntensityPulseWidthInto.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDEmitIntensityPulseWidthInto.restype = ResultI32
+        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
+        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.restype = ctypes.c_uint8
 
         self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
         self.dll.AUTDGetErr.restype = None
 
-    def emit_intensity_normalized_from(self, pulse_width: int) -> ctypes.c_double:
-        return self.dll.AUTDEmitIntensityNormalizedFrom(pulse_width)
+        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.restype = ResultSamplingConfig
 
-    def emit_intensity_duty_ratio_from(self, pulse_width: int) -> ctypes.c_double:
-        return self.dll.AUTDEmitIntensityDutyRatioFrom(pulse_width)
+        self.dll.AUTDSamplingConfigNewWithFrequency.argtypes = [ctypes.c_double] 
+        self.dll.AUTDSamplingConfigNewWithFrequency.restype = ResultSamplingConfig
 
-    def emit_intensity_normalized_into(self, value: float) -> ResultI32:
-        return self.dll.AUTDEmitIntensityNormalizedInto(value)
+        self.dll.AUTDSamplingConfigNewWithPeriod.argtypes = [ctypes.c_uint64] 
+        self.dll.AUTDSamplingConfigNewWithPeriod.restype = ResultSamplingConfig
 
-    def emit_intensity_normalized_corrected_into(self, value: float, alpha: float) -> ResultI32:
-        return self.dll.AUTDEmitIntensityNormalizedCorrectedInto(value, alpha)
+        self.dll.AUTDSamplingConfigFrequencyDivision.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigFrequencyDivision.restype = ctypes.c_uint32
 
-    def emit_intensity_duty_ratio_into(self, value: float) -> ResultI32:
-        return self.dll.AUTDEmitIntensityDutyRatioInto(value)
+        self.dll.AUTDSamplingConfigFrequency.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigFrequency.restype = ctypes.c_double
 
-    def emit_intensity_pulse_width_into(self, value: int) -> ResultI32:
-        return self.dll.AUTDEmitIntensityPulseWidthInto(value)
+        self.dll.AUTDSamplingConfigPeriod.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigPeriod.restype = ctypes.c_uint64
+
+    def emit_intensity_new_with_correction(self, value: int) -> ctypes.c_uint8:
+        return self.dll.AUTDEmitIntensityNewWithCorrection(value)
+
+    def emit_intensity_new_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
+        return self.dll.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha)
 
     def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDGetErr(src, dst)
+
+    def sampling_config_new_with_frequency_division(self, div: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithFrequencyDivision(div)
+
+    def sampling_config_new_with_frequency(self, f: float) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithFrequency(f)
+
+    def sampling_config_new_with_period(self, p: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithPeriod(p)
+
+    def sampling_config_frequency_division(self, config: SamplingConfiguration) -> ctypes.c_uint32:
+        return self.dll.AUTDSamplingConfigFrequencyDivision(config)
+
+    def sampling_config_frequency(self, config: SamplingConfiguration) -> ctypes.c_double:
+        return self.dll.AUTDSamplingConfigFrequency(config)
+
+    def sampling_config_period(self, config: SamplingConfiguration) -> ctypes.c_uint64:
+        return self.dll.AUTDSamplingConfigPeriod(config)

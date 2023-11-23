@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3 import AUTD3, Controller
-from pyautd3.gain.holo import GS, AmplitudeConstraint, NalgebraBackend
+from pyautd3.gain.holo import GS, Amplitude, EmissionConstraint, NalgebraBackend
 from pyautd3.gain.holo.backend_cuda import CUDABackend
 from pyautd3.link.audit import Audit
 
@@ -28,16 +28,16 @@ async def test_gs():
     backend = NalgebraBackend()
     g = (
         GS(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 0.5) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
         .with_repeat(100)
-        .with_constraint(AmplitudeConstraint.uniform(0.5))
+        .with_constraint(EmissionConstraint.uniform(0x80))
     )
     assert await autd.send_async(g)
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 85)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0x80)
         assert not np.all(phases == 0)
 
 
@@ -49,14 +49,14 @@ async def test_gs_cuda():
     backend = CUDABackend()
     g = (
         GS(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 0.5)
-        .add_foci_from_iter(((autd.geometry.center + np.array([0, x, 150]), 0.5) for x in [-30]))
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
         .with_repeat(100)
-        .with_constraint(AmplitudeConstraint.uniform(0.5))
+        .with_constraint(EmissionConstraint.uniform(0x80))
     )
     assert await autd.send_async(g)
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 85)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0x80)
         assert not np.all(phases == 0)

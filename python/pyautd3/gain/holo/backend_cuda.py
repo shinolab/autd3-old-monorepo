@@ -20,7 +20,7 @@ from pyautd3.native_methods.autd3capi_backend_cuda import (
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
 from .backend import Backend
-from .constraint import AmplitudeConstraint
+from .constraint import EmissionConstraint
 
 
 class CUDABackend(Backend):
@@ -46,17 +46,8 @@ class CUDABackend(Backend):
     def _sdp_with_lambda(self: "CUDABackend", ptr: GainPtr, v: float) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudasdp_with_lambda(ptr, v)
 
-    def _sdp_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _sdp_with_constraint(self: "CUDABackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudasdp_with_constraint(ptr, v._constraint_ptr())
-
-    def _evp(self: "CUDABackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
-        return AUTD3BackendCUDA().gain_holo_cudaevp(self._backend_ptr(), foci, amps, size)
-
-    def _evp_with_gamma(self: "CUDABackend", ptr: GainPtr, v: float) -> GainPtr:
-        return AUTD3BackendCUDA().gain_holo_cudaevp_with_gamma(ptr, v)
-
-    def _evp_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
-        return AUTD3BackendCUDA().gain_holo_cudaevp_with_constraint(ptr, v._constraint_ptr())
 
     def _gs(self: "CUDABackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudags(self._backend_ptr(), foci, amps, size)
@@ -64,7 +55,7 @@ class CUDABackend(Backend):
     def _gs_with_repeat(self: "CUDABackend", ptr: GainPtr, v: int) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudags_with_repeat(ptr, v)
 
-    def _gs_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gs_with_constraint(self: "CUDABackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudags_with_constraint(ptr, v._constraint_ptr())
 
     def _gspat(self: "CUDABackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
@@ -73,13 +64,13 @@ class CUDABackend(Backend):
     def _gspat_with_repeat(self: "CUDABackend", ptr: GainPtr, v: int) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudagspat_with_repeat(ptr, v)
 
-    def _gspat_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gspat_with_constraint(self: "CUDABackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudagspat_with_constraint(ptr, v._constraint_ptr())
 
     def _naive(self: "CUDABackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cuda_naive(self._backend_ptr(), foci, amps, size)
 
-    def _naive_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _naive_with_constraint(self: "CUDABackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cuda_naive_with_constraint(ptr, v._constraint_ptr())
 
     def _lm(self: "CUDABackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
@@ -100,5 +91,5 @@ class CUDABackend(Backend):
     def _lm_with_initial(self: "CUDABackend", ptr: GainPtr, v: Array[c_double], size: int) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudalm_with_initial(ptr, v, size)
 
-    def _lm_with_constraint(self: "CUDABackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _lm_with_constraint(self: "CUDABackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return AUTD3BackendCUDA().gain_holo_cudalm_with_constraint(ptr, v._constraint_ptr())

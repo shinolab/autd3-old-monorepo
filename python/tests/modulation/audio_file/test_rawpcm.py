@@ -11,12 +11,12 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
-from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+from pyautd3 import SamplingConfiguration
 from pyautd3.modulation.audio_file import RawPCM
 from tests.test_autd import create_controller
 
@@ -29,99 +29,95 @@ async def test_rawpcm():
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
-        mod_expext = [
-            107,
-            131,
+        mod_expect = [
             157,
-            184,
-            209,
-            234,
+            185,
+            210,
+            231,
+            245,
+            253,
             255,
-            219,
-            191,
-            166,
-            140,
-            115,
-            92,
+            249,
+            236,
+            218,
+            194,
+            167,
+            138,
+            108,
+            79,
+            53,
+            31,
+            14,
+            4,
+            0,
+            4,
+            14,
+            31,
+            53,
+            79,
+            108,
+            138,
+            167,
+            194,
+            218,
+            236,
+            249,
+            255,
+            253,
+            245,
+            231,
+            210,
+            185,
+            157,
+            128,
+            98,
             70,
-            51,
-            33,
-            19,
-            8,
+            45,
+            24,
+            10,
             2,
             0,
-            2,
-            8,
+            6,
             19,
-            33,
-            51,
+            37,
+            61,
+            88,
+            117,
+            147,
+            176,
+            202,
+            224,
+            241,
+            251,
+            255,
+            251,
+            241,
+            224,
+            202,
+            176,
+            147,
+            117,
+            88,
+            61,
+            37,
+            19,
+            6,
+            0,
+            2,
+            10,
+            24,
+            45,
             70,
-            92,
-            115,
-            140,
-            166,
-            191,
-            219,
-            255,
-            234,
-            209,
-            184,
-            157,
-            131,
-            107,
-            85,
-            64,
-            45,
-            28,
-            15,
-            6,
-            1,
-            0,
-            3,
-            12,
-            23,
-            39,
-            57,
-            77,
-            99,
-            123,
-            148,
-            174,
-            200,
-            226,
-            255,
-            226,
-            200,
-            174,
-            148,
-            123,
-            99,
-            77,
-            57,
-            39,
-            23,
-            12,
-            3,
-            0,
-            1,
-            6,
-            15,
-            28,
-            45,
-            64,
-            85,
+            98,
+            128,
         ]
-        assert np.array_equal(mod, mod_expext)
+        assert np.array_equal(mod, mod_expect)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert await autd.send_async(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency_division(512))
+    assert await autd.send_async(
+        RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_config(
+            SamplingConfiguration.new_with_frequency_division(512),
+        ),
+    )
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
-
-    assert await autd.send_async(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_frequency(8e3))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 2560
-
-    assert await autd.send_async(RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_period(timedelta(microseconds=100)))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 2048

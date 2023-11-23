@@ -41,6 +41,6 @@ class Wav(IModulationWithFreqDiv):
 
     def _modulation_ptr(self: "Wav") -> ModulationPtr:
         ptr = _validate_ptr(ModulationAudioFile().modulation_wav(str(self._path).encode("utf-8")))
-        if self._freq_div is not None:
-            ptr = ModulationAudioFile().modulation_wav_with_sampling_frequency_division(ptr, self._freq_div)
+        if self._config is not None:
+            ptr = ModulationAudioFile().modulation_wav_with_sampling_config(ptr, self._config._internal)
         return ptr

@@ -47,6 +47,6 @@ class RawPCM(IModulationWithFreqDiv):
 
     def _modulation_ptr(self: "RawPCM") -> ModulationPtr:
         ptr = _validate_ptr(ModulationAudioFile().modulation_raw_pcm(str(self._path).encode("utf-8"), self._sample_rate))
-        if self._freq_div is not None:
-            ptr = ModulationAudioFile().modulation_raw_pcm_with_sampling_frequency_division(ptr, self._freq_div)
+        if self._config is not None:
+            ptr = ModulationAudioFile().modulation_raw_pcm_with_sampling_config(ptr, self._config._internal)
         return ptr

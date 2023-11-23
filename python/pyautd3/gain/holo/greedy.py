@@ -51,7 +51,7 @@ class Greedy(Holo):
     def _gain_ptr(self: "Greedy", _: Geometry) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
-        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
+        amps = np.ctypeslib.as_ctypes(np.fromiter((a.pascal for a in self._amps), dtype=float).astype(ctypes.c_double))
         ptr = GainHolo().gain_holo_greedy(foci_, amps, size)
         if self._div is not None:
             ptr = GainHolo().gain_holo_greedy_with_phase_div(ptr, self._div)

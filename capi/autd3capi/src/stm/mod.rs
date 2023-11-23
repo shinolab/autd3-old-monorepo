@@ -71,6 +71,14 @@ pub unsafe extern "C" fn AUTDSTMPropsFrequency(props: STMPropsPtr, size: u64) ->
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDSTMPropsPeriod(props: STMPropsPtr, size: u64) -> u64 {
+    Box::from_raw(props.0 as *mut STMProps)
+        .period(size as usize)
+        .as_nanos() as _
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsSamplingConfig(
     props: STMPropsPtr,
     size: u64,

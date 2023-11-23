@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,6 +21,16 @@ pub struct Pascal;
 pub struct Amplitude {
     // Amplitude in Pascal
     pub(crate) value: float,
+}
+
+impl Amplitude {
+    pub fn as_pascal(&self) -> float {
+        self.value
+    }
+
+    pub fn as_spl(&self) -> float {
+        20.0 * float::log10(self.value / ABSOLUTE_THRESHOLD_OF_HEARING)
+    }
 }
 
 impl std::ops::Mul<dB> for float {

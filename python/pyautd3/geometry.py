@@ -364,7 +364,6 @@ class Geometry:
         self._ptr = ptr
         self._devices = [Device(i, Base().device(self._ptr, i)) for i in range(int(Base().geometry_num_devices(self._ptr)))]
 
-
     @property
     def center(self: "Geometry") -> np.ndarray:
         """Get center position of all devices."""

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3capi_def::{
     common::{autd3::gain::Plane, driver::geometry::Vector3, *},
-    take_gain, EmitIntensity, GainPtr,
+    take_gain, GainPtr,
 };
 
 #[no_mangle]
@@ -24,7 +24,7 @@ pub unsafe extern "C" fn AUTDGainPlane(nx: float, ny: float, nz: float) -> GainP
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainPlaneWithAmp(plane: GainPtr, intensity: EmitIntensity) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainPlaneWithIntensity(plane: GainPtr, intensity: u8) -> GainPtr {
     GainPtr::new(take_gain!(plane, Plane).with_intensity(intensity))
 }
 
@@ -34,7 +34,7 @@ mod tests {
 
     use crate::{gain::*, tests::*, *};
 
-    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_plane() {
@@ -42,7 +42,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainPlane(0., 0., 1.);
-            let g = AUTDGainPlaneWithAmp(g, AUTDEmitIntensityNew(255));
+            let g = AUTDGainPlaneWithIntensity(g, 0xFF);
             let g = AUTDGainIntoDatagram(g);
 
             let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);

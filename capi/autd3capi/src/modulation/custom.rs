@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,16 +13,14 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{
-    common::CustomModulation, EmitIntensity, ModulationPtr, SamplingConfiguration,
-};
+use autd3capi_def::{common::CustomModulation, ModulationPtr, SamplingConfiguration};
 
 #[no_mangle]
 #[must_use]
 #[allow(clippy::uninit_vec)]
 pub unsafe extern "C" fn AUTDModulationCustom(
     config: SamplingConfiguration,
-    ptr: *const EmitIntensity,
+    ptr: *const u8,
     len: u64,
 ) -> ModulationPtr {
     let mut buf =
@@ -48,7 +46,7 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let buf = [AUTDEmitIntensityNew(255), AUTDEmitIntensityNew(255)];
+            let buf = [0xFF, 0xFF];
             let m = AUTDModulationCustom(
                 AUTDSamplingConfigNewWithFrequencyDivision(5120).result,
                 buf.as_ptr(),

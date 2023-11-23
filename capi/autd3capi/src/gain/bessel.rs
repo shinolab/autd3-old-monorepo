@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3capi_def::{
     common::{autd3::gain::Bessel, driver::geometry::Vector3, *},
-    take_gain, EmitIntensity, GainPtr,
+    take_gain, GainPtr,
 };
 
 #[no_mangle]
@@ -36,10 +36,7 @@ pub unsafe extern "C" fn AUTDGainBessel(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainBesselWithIntensity(
-    bessel: GainPtr,
-    intensity: EmitIntensity,
-) -> GainPtr {
+pub unsafe extern "C" fn AUTDGainBesselWithIntensity(bessel: GainPtr, intensity: u8) -> GainPtr {
     GainPtr::new(take_gain!(bessel, Bessel).with_intensity(intensity))
 }
 
@@ -48,7 +45,7 @@ mod tests {
     use super::*;
     use crate::{gain::*, tests::*, *};
 
-    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_bessel() {
@@ -56,7 +53,7 @@ mod tests {
             let cnt = create_controller();
 
             let g = AUTDGainBessel(0., 0., 0., 0., 0., 1., 1.);
-            let g = AUTDGainBesselWithIntensity(g, AUTDEmitIntensityNew(255));
+            let g = AUTDGainBesselWithIntensity(g, 0xFF);
             let g = AUTDGainIntoDatagram(g);
 
             let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);

@@ -79,6 +79,6 @@ class Sine(IModulationWithFreqDiv):
             ptr = Base().modulation_sine_with_offset(ptr, self._offset)
         if self._phase is not None:
             ptr = Base().modulation_sine_with_phase(ptr, self._phase)
-        if self._freq_div is not None:
-            ptr = Base().modulation_sine_with_sampling_frequency_division(ptr, self._freq_div)
+        if self._config is not None:
+            ptr = Base().modulation_sine_with_sampling_config(ptr, self._config._internal)
         return ptr

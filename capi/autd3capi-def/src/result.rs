@@ -22,8 +22,8 @@ use autd3capi_common::{
 };
 
 use crate::{
-    BackendPtr, ControllerPtr, DatagramPtr, GainCalcDrivesMapPtr, ModulationPtr,
-    SamplingConfiguration, AUTD3_ERR, AUTD3_FALSE, AUTD3_TRUE,
+    BackendPtr, ControllerPtr, DatagramPtr, GainCalcDrivesMapPtr, ModulationPtr, AUTD3_ERR,
+    AUTD3_FALSE, AUTD3_TRUE,
 };
 
 #[no_mangle]
@@ -124,38 +124,6 @@ impl From<Result<usize, AUTDInternalError>> for ResultI32 {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultSamplingConfig {
-    pub result: SamplingConfiguration,
-    pub err_len: u32,
-    pub err: ConstPtr,
-}
-
-impl From<Result<autd3capi_common::driver::common::SamplingConfiguration, AUTDInternalError>>
-    for ResultSamplingConfig
-{
-    fn from(
-        r: Result<autd3capi_common::driver::common::SamplingConfiguration, AUTDInternalError>,
-    ) -> Self {
-        match r {
-            Ok(result) => Self {
-                result: result.into(),
-                err_len: 0,
-                err: std::ptr::null_mut(),
-            },
-            Err(e) => {
-                let err = e.to_string();
-                Self {
-                    result: SamplingConfiguration { div: 0 },
-                    err_len: err.as_bytes().len() as u32 + 1,
-                    err: Box::into_raw(Box::new(err)) as _,
-                }
-            }
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy)]
 pub struct ResultController {
     pub result: ControllerPtr,
     pub err_len: u32,
@@ -228,13 +196,13 @@ pub struct ResultBackend {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct ResultDatagramPtr {
+pub struct ResultDatagram {
     pub result: DatagramPtr,
     pub err_len: u32,
     pub err: ConstPtr,
 }
 
-impl<T: DynamicDatagram> From<Result<T, AUTDInternalError>> for ResultDatagramPtr {
+impl<T: DynamicDatagram> From<Result<T, AUTDInternalError>> for ResultDatagram {
     fn from(r: Result<T, AUTDInternalError>) -> Self {
         match r {
             Ok(v) => Self {

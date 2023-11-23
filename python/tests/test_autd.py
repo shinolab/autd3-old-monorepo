@@ -19,9 +19,7 @@ import pytest
 from pyautd3 import (
     AUTD3,
     Clear,
-    ConfigureAmpFilter,
     ConfigureModDelay,
-    ConfigurePhaseFilter,
     Controller,
     Device,
     FirmwareInfo,
@@ -51,22 +49,26 @@ async def test_silencer():
     autd = await create_controller()
 
     for dev in autd.geometry:
-        assert autd.link.silencer_step(dev.idx) == 10
+        assert autd.link.silencer_step_intensity(dev.idx) == 256
+        assert autd.link.silencer_step_phase(dev.idx) == 256
 
-    await autd.send_async(Silencer(20))
+    await autd.send_async(Silencer(2000, 1000))
 
     for dev in autd.geometry:
-        assert autd.link.silencer_step(dev.idx) == 20
+        assert autd.link.silencer_step_intensity(dev.idx) == 2000
+        assert autd.link.silencer_step_phase(dev.idx) == 1000
 
     await autd.send_async(Silencer.disable())
 
     for dev in autd.geometry:
-        assert autd.link.silencer_step(dev.idx) == 0xFFFF
+        assert autd.link.silencer_step_intensity(dev.idx) == 0xFFFF
+        assert autd.link.silencer_step_phase(dev.idx) == 0xFFFF
 
     await autd.send_async(Silencer())
 
     for dev in autd.geometry:
-        assert autd.link.silencer_step(dev.idx) == 10
+        assert autd.link.silencer_step_intensity(dev.idx) == 256
+        assert autd.link.silencer_step_phase(dev.idx) == 256
 
 
 @pytest.mark.asyncio()
@@ -192,7 +194,7 @@ async def test_send_async_single():
     autd = await create_controller()
 
     for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
+        assert np.all(autd.link.modulation(dev.idx) == 0xFF)
 
     assert await autd.send_async(Static())
 
@@ -204,7 +206,7 @@ async def test_send_async_single():
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        print(await autd.send_async(Static()))
+        await autd.send_async(Static())
     assert str(e.value) == "broken"
 
 
@@ -213,25 +215,25 @@ async def test_send_async_double():
     autd = await create_controller()
 
     for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
+        assert np.all(autd.link.modulation(dev.idx) == 0xFF)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0)
         assert np.all(phases == 0)
 
-    assert await autd.send_async((Static(), Uniform(1.0)))
+    assert await autd.send_async((Static(), Uniform(0xFF)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 256)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0xFF)
         assert np.all(phases == 0)
 
     autd.link.down()
-    assert not await autd.send_async((Static(), Uniform(1.0)))
+    assert not await autd.send_async((Static(), Uniform(0xFF)))
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
-        await autd.send_async((Static(), Uniform(1.0)))
+        await autd.send_async((Static(), Uniform(0xFF)))
     assert str(e.value) == "broken"
 
 
@@ -239,18 +241,18 @@ async def test_send_async_double():
 async def test_send_async_special():
     autd = await create_controller()
 
-    assert await autd.send_async((Static(), Uniform(1.0)))
+    assert await autd.send_async((Static(), Uniform(0xFF)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
-        duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 256)
+        intensities, _ = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0xFF)
 
     await autd.send_async(Stop())
 
     for dev in autd.geometry:
-        duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
+        intensities, _ = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0)
 
     autd.link.down()
     assert not await autd.send_async(Stop())
@@ -265,32 +267,32 @@ async def test_send_async_special():
 async def test_group():
     autd = await create_controller()
 
-    await autd.group(lambda dev: dev.idx).set_data(0, Static(), Null()).set_data(1, Sine(150), Uniform(1.0)).send_async()
+    await autd.group(lambda dev: dev.idx).set_data(0, Static(), Null()).set_data(1, Sine(150), Uniform(0xFF)).send_async()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 2
     assert np.all(mod == 0xFF)
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0)
     assert np.all(phases == 0)
 
     mod = autd.link.modulation(1)
     assert len(mod) == 80
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 256)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0xFF)
     assert np.all(phases == 0)
 
-    await autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(1.0))).send_async()
+    await autd.group(lambda dev: dev.idx).set_data(1, Stop()).set_data(0, (Sine(150), Uniform(0xFF))).send_async()
 
     mod = autd.link.modulation(0)
     assert len(mod) == 80
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 256)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0xFF)
     assert np.all(phases == 0)
 
     mod = autd.link.modulation(1)
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0)
 
 
 @pytest.mark.asyncio()
@@ -304,41 +306,41 @@ async def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    await autd.group(f).set_data(0, Sine(150), Uniform(0.5).with_phase(np.pi)).send_async()
+    await autd.group(f).set_data(0, Sine(150), Uniform(0x80).with_phase(np.pi)).send_async()
 
     assert not check[0]
     assert check[1]
 
     mod = autd.link.modulation(0)
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0)
     assert np.all(phases == 0)
 
     mod = autd.link.modulation(1)
     assert len(mod) == 80
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 85)
-    assert np.all(phases == 256)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0x80)
+    assert np.all(phases == 128)
 
 
 @pytest.mark.asyncio()
 async def test_clear():
     autd = await create_controller()
 
-    assert await autd.send_async((Static(), Uniform(1.0).with_phase(np.pi)))
+    assert await autd.send_async((Static(), Uniform(0xFF).with_phase(np.pi)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 256)
-        assert np.all(phases == 256)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0xFF)
+        assert np.all(phases == 128)
 
     await autd.send_async(Clear())
 
     for dev in autd.geometry:
-        assert np.all(autd.link.modulation(dev.idx) == 0)
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
+        assert np.all(autd.link.modulation(dev.idx) == 0xFF)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0)
         assert np.all(phases == 0)
 
 
@@ -346,18 +348,18 @@ async def test_clear():
 async def test_stop():
     autd = await create_controller()
 
-    assert await autd.send_async((Static(), Uniform(1.0)))
+    assert await autd.send_async((Static(), Uniform(0xFF)))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
-        duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 256)
+        intensities, _ = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0xFF)
 
     await autd.send_async(Stop())
 
     for dev in autd.geometry:
-        duties, _ = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
+        intensities, _ = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0)
 
 
 @pytest.mark.asyncio()
@@ -401,37 +403,3 @@ async def test_configure_mod_delay():
 
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 1)
-
-
-@pytest.mark.asyncio()
-async def test_configure_amp_filter():
-    autd = await create_controller()
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.duty_filters(dev.idx) == 0)
-
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.amp_filter = -1
-
-    assert await autd.send_async(ConfigureAmpFilter())
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.duty_filters(dev.idx) == -256)
-
-
-@pytest.mark.asyncio()
-async def test_configure_phase_filter():
-    autd = await create_controller()
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.phase_filters(dev.idx) == 0)
-
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.phase_filter = -np.pi
-
-    assert await autd.send_async(ConfigurePhaseFilter())
-
-    for dev in autd.geometry:
-        assert np.all(autd.link.phase_filters(dev.idx) == -256)

@@ -12,11 +12,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from datetime import timedelta
-
 import numpy as np
 import pytest
 
+from pyautd3 import SamplingConfiguration
 from pyautd3.modulation import Square
 from tests.test_autd import create_controller
 
@@ -25,22 +24,18 @@ from tests.test_autd import create_controller
 async def test_square():
     autd = await create_controller()
 
-    assert await autd.send_async(Square(200).with_low(0.2).with_high(0.5).with_duty(0.1))
+    assert await autd.send_async(Square(200).with_low(32).with_high(85).with_duty(0.1))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
-        mod_expext = [85, 85, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
-        assert np.array_equal(mod, mod_expext)
+        mod_expect = [85, 85, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
+        assert np.array_equal(mod, mod_expect)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert await autd.send_async(Square(150).with_sampling_frequency_division(512))
+    assert await autd.send_async(
+        Square(150).with_sampling_config(
+            SamplingConfiguration.new_with_frequency_division(512),
+        ),
+    )
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
-
-    assert await autd.send_async(Square(150).with_sampling_frequency(8e3))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 2560
-
-    assert await autd.send_async(Square(150).with_sampling_period(timedelta(microseconds=100)))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 2048

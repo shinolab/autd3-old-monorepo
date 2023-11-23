@@ -46,25 +46,28 @@ LogFlushFunc = ctypes.CFUNCTYPE(None)
 class Silencer(Datagram):
     """Datagram for configure silencer."""
 
-    _step: int
+    _step_intensity: int
+    _step_phase: int
 
-    def __init__(self: "Silencer", step: int = 10) -> None:
+    def __init__(self: "Silencer", step_intensity: int = 256, step_phase: int = 256) -> None:
         """Constructor.
 
         Arguments:
         ---------
-            step: The update step of silencer. The lower the value, the stronger the silencer effect.
+            step_intensity: The intensity update step of silencer. The lower the value, the stronger the silencer effect.
+            step_phase: The phase update step of silencer. The lower the value, the stronger the silencer effect.
         """
         super().__init__()
-        self._step = step
+        self._step_intensity = step_intensity
+        self._step_phase = step_phase
 
     @staticmethod
     def disable() -> "Silencer":
         """Disable silencer."""
-        return Silencer(0xFFFF)
+        return Silencer(0xFFFF, 0xFFFF)
 
     def _datagram_ptr(self: "Silencer", _: Geometry) -> DatagramPtr:
-        return Base().datagram_silencer(self._step)
+        return _validate_ptr(Base().datagram_silencer(self._step_intensity, self._step_phase))
 
 
 class FPGAInfo:
@@ -615,23 +618,3 @@ class ConfigureModDelay(Datagram):
 
     def _datagram_ptr(self: "ConfigureModDelay", _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_mod_delay()
-
-
-class ConfigureAmpFilter(Datagram):
-    """Datagram to configure amplitude filter."""
-
-    def __init__(self: "ConfigureAmpFilter") -> None:
-        super().__init__()
-
-    def _datagram_ptr(self: "ConfigureAmpFilter", _: Geometry) -> DatagramPtr:
-        return Base().datagram_configure_amp_filter()
-
-
-class ConfigurePhaseFilter(Datagram):
-    """Datagram to configure phase filter."""
-
-    def __init__(self: "ConfigurePhaseFilter") -> None:
-        super().__init__()
-
-    def _datagram_ptr(self: "ConfigurePhaseFilter", _: Geometry) -> DatagramPtr:
-        return Base().datagram_configure_phase_filter()

@@ -14,7 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from abc import ABCMeta, abstractmethod
 from ctypes import Array, c_double
 
-from pyautd3.gain.holo.constraint import AmplitudeConstraint
+from pyautd3.gain.holo.constraint import EmissionConstraint
 from pyautd3.native_methods.autd3capi_def import BackendPtr, GainPtr
 
 
@@ -46,19 +46,7 @@ class Backend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _sdp_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
-        pass
-
-    @abstractmethod
-    def _evp(self: "Backend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
-        pass
-
-    @abstractmethod
-    def _evp_with_gamma(self: "Backend", ptr: GainPtr, v: float) -> GainPtr:
-        pass
-
-    @abstractmethod
-    def _evp_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _sdp_with_constraint(self: "Backend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         pass
 
     @abstractmethod
@@ -70,7 +58,7 @@ class Backend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _gs_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gs_with_constraint(self: "Backend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         pass
 
     @abstractmethod
@@ -82,7 +70,7 @@ class Backend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _gspat_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gspat_with_constraint(self: "Backend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         pass
 
     @abstractmethod
@@ -90,7 +78,7 @@ class Backend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _naive_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _naive_with_constraint(self: "Backend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         pass
 
     @abstractmethod
@@ -118,5 +106,5 @@ class Backend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _lm_with_constraint(self: "Backend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _lm_with_constraint(self: "Backend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         pass

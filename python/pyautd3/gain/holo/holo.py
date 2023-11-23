@@ -20,8 +20,9 @@ import numpy as np
 
 from pyautd3.gain.gain import IGain
 
+from .amplitude import Amplitude
 from .backend import Backend
-from .constraint import AmplitudeConstraint
+from .constraint import EmissionConstraint
 
 __all__ = []  # type: ignore[var-annotated]
 
@@ -31,9 +32,9 @@ H = TypeVar("H", bound="Holo")
 
 class Holo(IGain):
     _foci: list[float]
-    _amps: list[float]
+    _amps: list[Amplitude]
     _repeat: int | None
-    _constraint: AmplitudeConstraint | None
+    _constraint: EmissionConstraint | None
 
     def __init__(self: "Holo") -> None:
         self._foci = []
@@ -41,7 +42,7 @@ class Holo(IGain):
         self._repeat = None
         self._constraint = None
 
-    def add_focus(self: H, focus: np.ndarray, amp: float) -> H:
+    def add_focus(self: H, focus: np.ndarray, amp: Amplitude) -> H:
         """Add focus.
 
         Arguments:
@@ -55,7 +56,7 @@ class Holo(IGain):
         self._amps.append(amp)
         return self
 
-    def add_foci_from_iter(self: H, iterable: Iterable[tuple[np.ndarray, float]]) -> H:
+    def add_foci_from_iter(self: H, iterable: Iterable[tuple[np.ndarray, Amplitude]]) -> H:
         """Add foci from iterable.
 
         Arguments:
@@ -68,7 +69,7 @@ class Holo(IGain):
             self,
         )
 
-    def with_constraint(self: H, constraint: AmplitudeConstraint) -> H:
+    def with_constraint(self: H, constraint: EmissionConstraint) -> H:
         """Set amplitude constraint.
 
         Arguments:

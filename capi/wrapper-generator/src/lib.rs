@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,7 +71,7 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "TimerStrategy".to_string(),
             "GainSTMMode".to_string(),
             "ControllerPtr".to_string(),
-            "ConstraintPtr".to_string(),
+            "EmissionConstraintPtr".to_string(),
             "FirmwareInfoListPtr".to_string(),
             "GroupKVMapPtr".to_string(),
             "CachePtr".to_string(),

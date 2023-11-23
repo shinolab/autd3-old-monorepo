@@ -25,7 +25,7 @@ class Plane(IGain):
     """Gain to produce a plane wave."""
 
     _d: np.ndarray
-    _amp: EmitIntensity | None
+    _intensity: EmitIntensity | None
 
     def __init__(self: "Plane", direction: np.ndarray) -> None:
         """Constructor.
@@ -36,20 +36,20 @@ class Plane(IGain):
         """
         super().__init__()
         self._d = direction
-        self._amp = None
+        self._intensity = None
 
-    def with_amp(self: "Plane", amp: int | float | EmitIntensity) -> "Plane":  # noqa: PYI041
+    def with_intensity(self: "Plane", intensity: int | EmitIntensity) -> "Plane":
         """Set amplitude.
 
         Arguments:
         ---------
-            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
+            intensity: Emission intensity
         """
-        self._amp = EmitIntensity._cast(amp)
+        self._intensity = EmitIntensity._cast(intensity)
         return self
 
     def _gain_ptr(self: "Plane", _: Geometry) -> GainPtr:
         ptr = Base().gain_plane(self._d[0], self._d[1], self._d[2])
-        if self._amp is not None:
-            ptr = Base().gain_plane_with_amp(ptr, self._amp.pulse_width)
+        if self._intensity is not None:
+            ptr = Base().gain_plane_with_intensity(ptr, self._intensity.value)
         return ptr

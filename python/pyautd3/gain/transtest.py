@@ -15,7 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import functools
 
 from pyautd3.emit_intensity import EmitIntensity
-from pyautd3.geometry import Geometry
+from pyautd3.geometry import Geometry, Transducer
 from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
@@ -24,7 +24,7 @@ from pyautd3.native_methods.autd3capi_def import GainPtr
 class TransducerTest(IGain):
     """Gain to drive only specified transducers."""
 
-    _data: list[tuple[int, int, float, EmitIntensity]]
+    _data: list[tuple[Transducer, float, EmitIntensity]]
 
     def __init__(self: "TransducerTest") -> None:
         super().__init__()
@@ -32,26 +32,29 @@ class TransducerTest(IGain):
 
     def set_drive(
         self: "TransducerTest",
-        dev_idx: int,
-        tr_idx: int,
+        tr: Transducer,
         phase: float,
-        amp: int | float | EmitIntensity,  # noqa: PYI041
+        intensity: int | EmitIntensity,
     ) -> "TransducerTest":
         """Set drive parameters.
 
         Arguments:
         ---------
-            dev_idx: Device index
-            tr_idx: Local transducer index
+            tr: transducer
             phase: Phase (from 0 to 2π)
-            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
+            intensity: Emission intensity
         """
-        self._data.append((dev_idx, tr_idx, phase, EmitIntensity._cast(amp)))
+        self._data.append((tr, phase, EmitIntensity._cast(intensity)))
         return self
 
     def _gain_ptr(self: "TransducerTest", _: Geometry) -> GainPtr:
         return functools.reduce(
-            lambda acc, v: Base().gain_transducer_test_set(acc, v[0], v[1], v[2], v[3].pulse_width),
+            lambda acc, v: Base().gain_transducer_test_set(
+                acc,
+                v[0]._ptr,
+                v[1],
+                v[2].value,
+            ),
             self._data,
             Base().gain_transducer_test(),
         )

@@ -29,18 +29,18 @@ async def test_group():
 
     assert await autd.send_async(
         Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null")
-        .set_gain("uniform", Uniform(0.5).with_phase(np.pi))
+        .set_gain("uniform", Uniform(0x80).with_phase(np.pi))
         .set_gain("null", Null()),
     )
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         for tr in dev:
             if tr.position[0] < cx:
-                assert np.all(duties[tr.local_idx] == 85)
-                assert np.all(phases[tr.local_idx] == 256)
+                assert np.all(intensities[tr.local_idx] == 0x80)
+                assert np.all(phases[tr.local_idx] == 128)
             else:
-                assert np.all(duties[tr.local_idx] == 0)
+                assert np.all(intensities[tr.local_idx] == 0)
                 assert np.all(phases[tr.local_idx] == 0)
 
 
@@ -49,7 +49,7 @@ async def test_group_unknown_key():
     autd = await create_controller()
 
     with pytest.raises(AUTDError, match="Unknown group key"):
-        await autd.send_async(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0.5).with_phase(np.pi)).set_gain("null", Null()))
+        await autd.send_async(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0x80).with_phase(np.pi)).set_gain("null", Null()))
 
 
 @pytest.mark.asyncio()
@@ -71,15 +71,15 @@ async def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    assert await autd.send_async(Group(f).set_gain(0, Uniform(0.5).with_phase(np.pi)))
+    assert await autd.send_async(Group(f).set_gain(0, Uniform(0x80).with_phase(np.pi)))
 
     assert not check[0]
     assert check[1]
 
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0)
     assert np.all(phases == 0)
 
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 85)
-    assert np.all(phases == 256)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0x80)
+    assert np.all(phases == 128)

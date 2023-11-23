@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,9 @@
 
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{constraint::Constraint, impl_holo, Complex, HoloError, LinAlgBackend, Trans};
+use crate::{
+    constraint::EmissionConstraint, impl_holo, Amplitude, Complex, HoloError, LinAlgBackend, Trans,
+};
 use autd3_derive::Gain;
 
 use autd3_driver::{
@@ -32,13 +34,13 @@ use autd3_driver::{
 #[derive(Gain)]
 pub struct LM<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     eps_1: float,
     eps_2: float,
     tau: float,
     k_max: usize,
     initial: Vec<float>,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
     backend: Rc<B>,
 }
 
@@ -55,7 +57,7 @@ impl<B: LinAlgBackend> LM<B> {
             k_max: 5,
             initial: vec![],
             backend,
-            constraint: Constraint::Normalize,
+            constraint: EmissionConstraint::Normalize,
         }
     }
 
@@ -184,7 +186,7 @@ impl<B: LinAlgBackend> Gain for LM<B> {
         let bhb = {
             let mut bhb = self.backend.alloc_zeros_cm(n_param, n_param)?;
 
-            let mut amps = self.backend.from_slice_cv(&self.amps)?;
+            let mut amps = self.backend.from_slice_cv(self.amps_as_slice())?;
 
             let mut p = self.backend.alloc_cm(n, n)?;
             self.backend

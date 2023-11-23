@@ -27,7 +27,7 @@ class Bessel(IGain):
     _p: np.ndarray
     _d: np.ndarray
     _theta: float
-    _amp: EmitIntensity | None
+    _intensity: EmitIntensity | None
 
     def __init__(self: "Bessel", pos: np.ndarray, direction: np.ndarray, theta_z: float) -> None:
         """Constructor.
@@ -42,16 +42,16 @@ class Bessel(IGain):
         self._p = pos
         self._d = direction
         self._theta = theta_z
-        self._amp = None
+        self._intensity = None
 
-    def with_amp(self: "Bessel", amp: int | float | EmitIntensity) -> "Bessel":  # noqa: PYI041
+    def with_intensity(self: "Bessel", intensity: int | EmitIntensity) -> "Bessel":
         """Set amplitude.
 
         Arguments:
         ---------
-            amp: pulse width (int) | normalized amplitude (float) | EmitIntensity
+            intensity: Emission intensity
         """
-        self._amp = EmitIntensity._cast(amp)
+        self._intensity = EmitIntensity._cast(intensity)
         return self
 
     def _gain_ptr(self: "Bessel", _: Geometry) -> GainPtr:
@@ -64,6 +64,6 @@ class Bessel(IGain):
             self._d[2],
             self._theta,
         )
-        if self._amp is not None:
-            ptr = Base().gain_bessel_with_amp(ptr, self._amp.pulse_width)
+        if self._intensity is not None:
+            ptr = Base().gain_bessel_with_intensity(ptr, self._intensity.value)
         return ptr

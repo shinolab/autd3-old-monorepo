@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use autd3capi_def::{
     common::{driver::geometry::Vector3, *},
     create_holo,
     holo::*,
-    take_gain, BackendPtr, ConstraintPtr, GainPtr,
+    take_gain, BackendPtr, EmissionConstraintPtr, GainPtr,
 };
 
 #[no_mangle]
@@ -37,7 +37,7 @@ pub unsafe extern "C" fn AUTDGainHoloSDP(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDPWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, SDP<NalgebraBackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
@@ -64,9 +64,6 @@ pub unsafe extern "C" fn AUTDGainHoloSDPWithRepeat(holo: GainPtr, repeat: u32) -
 
 #[cfg(test)]
 mod tests {
-
-    use autd3capi_def::AUTDEmitIntensityNew;
-
     use super::*;
     use crate::{constraint::*, nalgebra_backend::*};
 
@@ -84,10 +81,9 @@ mod tests {
             let holo = AUTDGainHoloSDPWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintNormalize();
             let holo = AUTDGainHoloSDPWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(AUTDEmitIntensityNew(255));
+            let constraint = AUTDGainHoloConstraintUniform(0xFF);
             let holo = AUTDGainHoloSDPWithConstraint(holo, constraint);
-            let constraint =
-                AUTDGainHoloConstraintClamp(AUTDEmitIntensityNew(0), AUTDEmitIntensityNew(255));
+            let constraint = AUTDGainHoloConstraintClamp(0, 0xFF);
             let holo = AUTDGainHoloSDPWithConstraint(holo, constraint);
 
             let holo = AUTDGainHoloSDPWithAlpha(holo, 1.);

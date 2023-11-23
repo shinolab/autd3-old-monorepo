@@ -26,6 +26,6 @@ async def test_null():
     assert await autd.send_async(Null())
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 0)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0)
         assert np.all(phases == 0)

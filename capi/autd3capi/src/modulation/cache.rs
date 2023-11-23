@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3capi_def::{
         autd3::modulation::{IntoCache, ModulationCache},
         *,
     },
-    CachePtr, EmitIntensity, ModulationPtr,
+    CachePtr, ModulationPtr,
 };
 
 #[repr(C)]
@@ -65,7 +65,7 @@ pub unsafe extern "C" fn AUTDModulationCacheGetBufferLen(m: CachePtr) -> u32 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: CachePtr, buf: *mut EmitIntensity) {
+pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: CachePtr, buf: *mut u8) {
     let cache = cast!(m.0, ModulationCache);
     std::ptr::copy_nonoverlapping(cache.buffer().as_ptr() as _, buf, cache.buffer().len());
 }
