@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #![allow(clippy::missing_safety_doc)]
 
 mod drive;
-mod emit_intensity;
 mod result;
 mod sampling_config;
 
@@ -22,7 +21,6 @@ pub use autd3capi_common as common;
 pub use autd3capi_common::holo;
 
 pub use drive::*;
-pub use emit_intensity::*;
 pub use result::*;
 pub use sampling_config::*;
 
@@ -213,7 +211,7 @@ macro_rules! create_holo {
                         $points.add(i * 3 + 1).read(),
                         $points.add(i * 3 + 2).read(),
                     );
-                    let amp = *$amps.add(i);
+                    let amp = *$amps.add(i) * Pascal;
                     (p, amp)
                 }),
             ),
@@ -228,7 +226,7 @@ macro_rules! create_holo {
                     $points.add(i * 3 + 1).read(),
                     $points.add(i * 3 + 2).read(),
                 );
-                let amp = *$amps.add(i);
+                let amp = *$amps.add(i) * Pascal;
                 (p, amp)
             })),
         )
@@ -241,7 +239,7 @@ pub struct BackendPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct ConstraintPtr(pub ConstPtr);
+pub struct EmissionConstraintPtr(pub ConstPtr);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]

@@ -15,8 +15,8 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
 
+from pyautd3.drive import Drive
 from pyautd3.geometry import Device, Geometry, Transducer
-from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import DatagramPtr, GainPtr
 

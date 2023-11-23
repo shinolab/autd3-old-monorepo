@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,7 +16,8 @@ use std::{collections::HashMap, rc::Rc};
 use rand::Rng;
 
 use crate::{
-    constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
+    constraint::EmissionConstraint, helper::generate_result, impl_holo, Amplitude, Complex,
+    LinAlgBackend, Trans,
 };
 use autd3_derive::Gain;
 
@@ -33,11 +34,11 @@ use autd3_driver::{
 #[derive(Gain)]
 pub struct SDP<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     alpha: float,
     lambda: float,
     repeat: usize,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
     backend: Rc<B>,
 }
 
@@ -52,7 +53,7 @@ impl<B: LinAlgBackend + 'static> SDP<B> {
             lambda: 0.9,
             repeat: 100,
             backend,
-            constraint: Constraint::Normalize,
+            constraint: EmissionConstraint::Normalize,
         }
     }
 
@@ -99,7 +100,7 @@ impl<B: LinAlgBackend> Gain for SDP<B> {
         let ones = self.backend.from_slice_cv(&vec![1.; n])?;
 
         let mut a = self.backend.alloc_zeros_cm(n, n)?;
-        let amps = self.backend.from_slice_cv(&self.amps)?;
+        let amps = self.backend.from_slice_cv(self.amps_as_slice())?;
         self.backend.create_diagonal_c(&amps, &mut a)?;
 
         let mut pseudo_inv_G = self.backend.alloc_zeros_cm(m, n)?;

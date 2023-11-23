@@ -23,10 +23,10 @@ from tests.test_autd import create_controller
 async def test_static():
     autd = await create_controller()
 
-    assert await autd.send_async(Static().with_amp(0.2))
+    assert await autd.send_async(Static().with_intensity(0x80))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
-        mod_expext = [32, 32]
-        assert np.array_equal(mod, mod_expext)
+        mod_expect = [0x80] * 2
+        assert np.array_equal(mod, mod_expect)
         assert autd.link.modulation_frequency_division(dev.idx) == 5120

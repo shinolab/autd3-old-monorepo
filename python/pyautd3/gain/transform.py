@@ -19,10 +19,11 @@ from typing import Generic, TypeVar
 
 import numpy as np
 
+from pyautd3.drive import Drive
 from pyautd3.geometry import Device, Geometry, Transducer
 from pyautd3.internal.gain import IGain
 from pyautd3.internal.utils import _validate_ptr
-from pyautd3.native_methods.autd3capi import Drive
+from pyautd3.native_methods.autd3capi import Drive as _Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
 
@@ -45,11 +46,12 @@ class Transform(IGain, Generic[G]):
 
         drives: dict[int, np.ndarray] = {}
         for dev in geometry.devices():
-            d = np.zeros(dev.num_transducers, dtype=Drive)
+            d = np.zeros(dev.num_transducers, dtype=_Drive)
 
-            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(Drive)), dev.idx)  # type: ignore[arg-type]
+            Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(_Drive)), dev.idx)  # type: ignore[arg-type]
             for tr in dev:
-                d[tr.local_idx] = np.void(self._f(dev, tr, Drive(d[tr.local_idx]["phase"], d[tr.local_idx]["amp"])))  # type: ignore[call-overload]
+                drive = self._f(dev, tr, Drive(d[tr.local_idx]["phase"], int(d[tr.local_idx]["intensity"])))
+                d[tr.local_idx] = np.void(_Drive(drive.phase, drive.intensity._value))  # type: ignore[call-overload]
             drives[dev.idx] = d
 
         Base().gain_calc_free_result(res)
@@ -58,7 +60,7 @@ class Transform(IGain, Generic[G]):
             lambda acc, dev: Base().gain_custom_set(
                 acc,
                 dev.idx,
-                drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore[arg-type]
+                drives[dev.idx].ctypes.data_as(POINTER(_Drive)),  # type: ignore[arg-type]
                 len(drives[dev.idx]),
             ),
             geometry.devices(),

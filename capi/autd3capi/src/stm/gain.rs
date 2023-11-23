@@ -16,7 +16,7 @@
 use autd3_driver::datagram::STMProps;
 use autd3capi_def::{
     common::{driver::datagram::GainSTM, *},
-    DatagramPtr, GainPtr, GainSTMMode, ResultDatagramPtr, STMPropsPtr,
+    DatagramPtr, GainPtr, GainSTMMode, ResultDatagram, STMPropsPtr,
 };
 
 #[no_mangle]
@@ -26,7 +26,7 @@ pub unsafe extern "C" fn AUTDSTMGain(
     gains: *const GainPtr,
     size: u32,
     mode: GainSTMMode,
-) -> ResultDatagramPtr {
+) -> ResultDatagram {
     GainSTM::<Box<dyn Gain>>::new_with_props_mode(
         *Box::from_raw(props.0 as *mut STMProps),
         mode.into(),
@@ -39,7 +39,7 @@ pub unsafe extern "C" fn AUTDSTMGain(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMGainAddGain(stm: DatagramPtr, gain: GainPtr) -> ResultDatagramPtr {
+pub unsafe extern "C" fn AUTDSTMGainAddGain(stm: DatagramPtr, gain: GainPtr) -> ResultDatagram {
     Box::from_raw(stm.0 as *mut Box<GainSTM<_>>)
         .add_gain(*Box::from_raw(gain.0 as *mut Box<G>))
         .into()

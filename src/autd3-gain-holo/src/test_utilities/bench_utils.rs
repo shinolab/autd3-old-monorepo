@@ -4,7 +4,7 @@
  * Created Date: 08/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ pub fn generate_geometry(size: usize) -> Geometry {
     )
 }
 
-pub fn gen_foci(n: usize) -> impl Iterator<Item = (Vector3, float)> {
+pub fn gen_foci(n: usize) -> impl Iterator<Item = (Vector3, Amplitude)> {
     (0..n).map(move |i| {
         (
             Vector3::new(
@@ -58,7 +58,7 @@ pub fn gen_foci(n: usize) -> impl Iterator<Item = (Vector3, float)> {
                 black_box(70. + 10. * (2.0 * PI * i as float / n as float).sin()),
                 black_box(150.),
             ),
-            1.0,
+            10e3 * Pascal,
         )
     })
 }

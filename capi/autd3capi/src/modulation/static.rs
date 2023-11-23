@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 
 use autd3capi_def::{
     common::{autd3::modulation::Static, *},
-    take_mod, EmitIntensity, ModulationPtr,
+    take_mod, ModulationPtr,
 };
 
 #[no_mangle]
@@ -28,7 +28,7 @@ pub unsafe extern "C" fn AUTDModulationStatic() -> ModulationPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationStaticWithAmp(
     m: ModulationPtr,
-    intensity: EmitIntensity,
+    intensity: u8,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Static).with_intensity(intensity))
 }
@@ -47,7 +47,7 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationStatic();
-            let m = AUTDModulationStaticWithAmp(m, AUTDEmitIntensityNew(255));
+            let m = AUTDModulationStaticWithAmp(m, 0xFF);
 
             let m = AUTDModulationIntoDatagram(m);
 

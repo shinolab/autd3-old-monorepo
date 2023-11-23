@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3capi_def::{
     common::{driver::geometry::Vector3, *},
     create_holo,
     holo::*,
-    take_gain, BackendPtr, ConstraintPtr, GainPtr, ResultBackend,
+    take_gain, BackendPtr, EmissionConstraintPtr, GainPtr, ResultBackend,
 };
 use std::rc::Rc;
 
@@ -62,7 +62,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDASDP(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDASDPWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, SDP<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDAGS(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDAGSWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, GS<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
@@ -130,7 +130,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDAGSPAT(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDAGSPATWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, GSPAT<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
@@ -158,7 +158,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDANaive(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDANaiveWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, Naive<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),
@@ -179,7 +179,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDAGreedy(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDAGreedyWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(take_gain!(holo, Greedy).with_constraint(*Box::from_raw(constraint.0 as _)))
 }
@@ -205,7 +205,7 @@ pub unsafe extern "C" fn AUTDGainHoloCUDALM(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloCUDALMWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(
         take_gain!(holo, LM<CUDABackend>).with_constraint(*Box::from_raw(constraint.0 as _)),

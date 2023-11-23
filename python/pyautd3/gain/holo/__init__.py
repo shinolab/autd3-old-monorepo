@@ -11,9 +11,9 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
+from .amplitude import Amplitude
 from .backend_nalgebra import NalgebraBackend
-from .constraint import AmplitudeConstraint
-from .evp import EVP
+from .constraint import EmissionConstraint
 from .greedy import Greedy
 from .gs import GS
 from .gspat import GSPAT
@@ -22,9 +22,9 @@ from .naive import Naive
 from .sdp import SDP
 
 __all__ = [
+    "Amplitude",
     "NalgebraBackend",
-    "AmplitudeConstraint",
-    "EVP",
+    "EmissionConstraint",
     "SDP",
     "GS",
     "GSPAT",

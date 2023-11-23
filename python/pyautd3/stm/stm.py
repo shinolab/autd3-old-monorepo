@@ -15,13 +15,16 @@ import ctypes
 import functools
 from abc import ABCMeta
 from collections.abc import Iterable
+from ctypes import c_uint8
 from datetime import timedelta
 
 import numpy as np
 
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain.gain import IGain
 from pyautd3.geometry import Geometry
 from pyautd3.internal.datagram import Datagram
+from pyautd3.internal.utils import _validate_ptr, _validate_sampling_config
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import (
     DatagramPtr,
@@ -29,30 +32,28 @@ from pyautd3.native_methods.autd3capi_def import (
     GainSTMMode,
     STMPropsPtr,
 )
+from pyautd3.sampling_config import SamplingConfiguration
 
 __all__ = ["FocusSTM", "GainSTM"]  # type: ignore[var-annotated]
 
 
 class STM(Datagram, metaclass=ABCMeta):
     _freq: float | None
-    _sampling_freq: float | None
-    _sampling_freq_div: int | None
-    _sampling_period: timedelta | None
+    _period: timedelta | None
+    _sampling_config: SamplingConfiguration | None
     _start_idx: int
     _finish_idx: int
 
     def __init__(
         self: "STM",
         freq: float | None,
-        sampling_freq: float | None,
-        sampling_freq_div: int | None,
-        sampling_period: timedelta | None,
+        period: timedelta | None,
+        sampling_config: SamplingConfiguration | None,
     ) -> None:
         super().__init__()
         self._freq = freq
-        self._sampling_freq = sampling_freq
-        self._sampling_freq_div = sampling_freq_div
-        self._sampling_period = sampling_period
+        self._period = period
+        self._sampling_config = sampling_config
         self._start_idx = -1
         self._finish_idx = -1
 
@@ -75,27 +76,22 @@ class STM(Datagram, metaclass=ABCMeta):
     def _props(self: "STM") -> STMPropsPtr:
         ptr: STMPropsPtr
         if self._freq is not None:
-            ptr = Base().stm_props(self._freq)
-        if self._sampling_freq is not None:
-            ptr = Base().stm_props_with_sampling_freq(self._sampling_freq)
-        if self._sampling_freq_div is not None:
-            ptr = Base().stm_props_with_sampling_freq_div(self._sampling_freq_div)
-        if self._sampling_period is not None:
-            ptr = Base().stm_props_with_sampling_period(int(self._sampling_period.total_seconds() * 1000 * 1000 * 1000))
+            ptr = Base().stm_props_new(self._freq)
+        if self._period is not None:
+            ptr = Base().stm_props_new_with_period(int(self._period.total_seconds() * 1000 * 1000 * 1000))
+        if self._sampling_config is not None:
+            ptr = Base().stm_props_new_with_sampling_config(self._sampling_config._internal)
         ptr = Base().stm_props_with_start_idx(ptr, self._start_idx)
         return Base().stm_props_with_finish_idx(ptr, self._finish_idx)
 
     def _frequency_from_size(self: "STM", size: int) -> float:
         return float(Base().stm_props_frequency(self._props(), size))
 
-    def _sampling_frequency_from_size(self: "STM", size: int) -> float:
-        return float(Base().stm_props_sampling_frequency(self._props(), size))
+    def _period_from_size(self: "STM", size: int) -> timedelta:
+        return timedelta(seconds=int(Base().stm_props_period(self._props(), size)) / 1000.0 / 1000.0 / 1000.0)
 
-    def _sampling_frequency_division_from_size(self: "STM", size: int) -> int:
-        return int(Base().stm_props_sampling_frequency_division(self._props(), size))
-
-    def _sampling_period_from_size(self: "STM", size: int) -> timedelta:
-        return timedelta(microseconds=int(Base().stm_props_sampling_period(self._props(), size)) / 1000)
+    def _sampling_config_from_size(self: "STM", size: int) -> SamplingConfiguration:
+        return SamplingConfiguration.__private_new__(_validate_sampling_config(Base().stm_props_sampling_config(self._props(), size)))
 
 
 class FocusSTM(STM):
@@ -109,79 +105,74 @@ class FocusSTM(STM):
     """
 
     _points: list[float]
-    _duty_shifts: list[int]
+    _intensities: list[EmitIntensity]
 
     def __init__(
         self: "FocusSTM",
         freq: float | None,
         *,
-        sampling_freq: float | None = None,
-        sampling_freq_div: int | None = None,
-        sampling_period: timedelta | None = None,
+        period: timedelta | None = None,
+        sampling_config: SamplingConfiguration | None = None,
     ) -> None:
         """Constructor.
 
         Arguments:
         ---------
             freq: Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
-            sampling_freq: only for internal use.
-            sampling_freq_div: only for internal use.
-            sampling_period: only for internal use.
+            period: only for internal use.
+            sampling_config: only for internal use.
         """
-        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
+        super().__init__(freq, period, sampling_config)
         self._points = []
-        self._duty_shifts = []
+        self._intensities = []
 
     def _datagram_ptr(self: "FocusSTM", _: Geometry) -> DatagramPtr:
         points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
-        shifts = np.ctypeslib.as_ctypes(np.array(self._duty_shifts).astype(ctypes.c_uint8))
-        return Base().stm_focus(self._props(), points, shifts, len(self._duty_shifts))
-
-    @staticmethod
-    def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
-        """Constructor.
-
-        Arguments:
-        ---------
-            sampling_freq: Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
-        """
-        return FocusSTM(
-            None,
-            sampling_freq=sampling_freq,
+        intensities = np.fromiter((i.value for i in self._intensities), dtype=c_uint8)  # type: ignore[type-var,call-overload]
+        return _validate_ptr(
+            Base().stm_focus(
+                self._props(),
+                points,
+                intensities.ctypes.data_as(ctypes.POINTER(c_uint8)),  # type: ignore[arg-type]
+                len(self._intensities),
+            ),
         )
 
     @staticmethod
-    def with_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
+    def new_with_period(period: timedelta) -> "FocusSTM":
         """Constructor.
 
         Arguments:
         ---------
-            sampling_freq_div: Sampling frequency division.
+            period: Period.
         """
-        return FocusSTM(None, sampling_freq_div=sampling_freq_div)
+        return FocusSTM(None, period=period)
 
     @staticmethod
-    def with_sampling_period(sampling_period: timedelta) -> "FocusSTM":
+    def new_with_sampling_config(config: SamplingConfiguration) -> "FocusSTM":
         """Constructor.
 
         Arguments:
         ---------
-            sampling_period: Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
+            config: Sampling configuration
         """
-        return FocusSTM(None, sampling_period=sampling_period)
+        return FocusSTM(
+            None,
+            sampling_config=config,
+        )
 
-    def add_focus(self: "FocusSTM", point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
+    def add_focus(self: "FocusSTM", point: np.ndarray, intensity: EmitIntensity | None = None) -> "FocusSTM":
         """Add focus.
 
         Arguments:
         ---------
             point: Focal point
-            duty_shift: Duty shift. Duty ratio of ultrasound will be `50% >> shift`.
+            intensity: Emission intensity
         """
         self._points.append(point[0])
         self._points.append(point[1])
         self._points.append(point[2])
-        self._duty_shifts.append(duty_shift)
+        self._intensities.append(intensity if intensity is not None else EmitIntensity(0xFF))
         return self
 
     def add_foci_from_iter(self: "FocusSTM", iterable: Iterable[np.ndarray] | Iterable[tuple[np.ndarray, int]]) -> "FocusSTM":
@@ -200,22 +191,17 @@ class FocusSTM(STM):
     @property
     def frequency(self: "FocusSTM") -> float:
         """Frequency [Hz]."""
-        return self._frequency_from_size(len(self._duty_shifts))
+        return self._frequency_from_size(len(self._intensities))
 
     @property
-    def sampling_frequency(self: "FocusSTM") -> float:
+    def period(self: "FocusSTM") -> timedelta:
+        """Period."""
+        return self._period_from_size(len(self._intensities))
+
+    @property
+    def sampling_config(self: "FocusSTM") -> SamplingConfiguration:
         """Sampling frequency [Hz]."""
-        return self._sampling_frequency_from_size(len(self._duty_shifts))
-
-    @property
-    def sampling_frequency_division(self: "FocusSTM") -> int:
-        """Sampling frequency division."""
-        return self._sampling_frequency_division_from_size(len(self._duty_shifts))
-
-    @property
-    def sampling_period(self: "FocusSTM") -> timedelta:
-        """Sampling period."""
-        return self._sampling_period_from_size(len(self._duty_shifts))
+        return self._sampling_config_from_size(len(self._intensities))
 
     def with_start_idx(self: "FocusSTM", value: int | None) -> "FocusSTM":
         """Set the start index of STM.
@@ -248,58 +234,53 @@ class GainSTM(STM):
         self: "GainSTM",
         freq: float | None,
         *,
-        sampling_freq: float | None = None,
-        sampling_freq_div: int | None = None,
-        sampling_period: timedelta | None = None,
+        period: timedelta | None = None,
+        sampling_config: SamplingConfiguration | None = None,
     ) -> None:
         """Constructor.
 
         Arguments:
         ---------
             freq: Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
-            sampling_freq: only for internal use.
-            sampling_freq_div: only for internal use.
-            sampling_period: only for internal use.
+            period: only for internal use.
+            sampling_config: only for internal use.
         """
-        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
+        super().__init__(freq, period, sampling_config)
         self._gains = []
-        self._mode = GainSTMMode.PhaseDutyFull
+        self._mode = GainSTMMode.PhaseIntensityFull
 
     def _datagram_ptr(self: "GainSTM", geometry: Geometry) -> DatagramPtr:
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
             gains[i]["_0"] = g._gain_ptr(geometry)._0
-        return Base().stm_gain(self._props(), gains.ctypes.data_as(ctypes.POINTER(GainPtr)), len(self._gains), self._mode)  # type: ignore[arg-type]
+        return _validate_ptr(
+            Base().stm_gain(
+                self._props(),
+                gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore[arg-type]
+                len(self._gains),
+                self._mode,
+            ),
+        )
 
     @staticmethod
-    def with_sampling_frequency(sampling_freq: float) -> "GainSTM":
+    def new_with_sampling_config(config: SamplingConfiguration) -> "GainSTM":
         """Constructor.
 
         Arguments:
         ---------
-            sampling_freq: Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
+            config: Sampling configuration
         """
-        return GainSTM(None, sampling_freq=sampling_freq)
+        return GainSTM(None, sampling_config=config)
 
     @staticmethod
-    def with_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
+    def new_with_period(period: timedelta) -> "GainSTM":
         """Constructor.
 
         Arguments:
         ---------
-            sampling_freq_div: Sampling frequency division.
+            period: Period.
         """
-        return GainSTM(None, sampling_freq_div=sampling_freq_div)
-
-    @staticmethod
-    def with_sampling_period(sampling_period: timedelta) -> "GainSTM":
-        """Constructor.
-
-        Arguments:
-        ---------
-            sampling_period: Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
-        """
-        return GainSTM(None, sampling_period=sampling_period)
+        return GainSTM(None, period=period)
 
     def add_gain(self: "GainSTM", gain: IGain) -> "GainSTM":
         """Add gain.
@@ -327,19 +308,14 @@ class GainSTM(STM):
         return self._frequency_from_size(len(self._gains))
 
     @property
-    def sampling_frequency(self: "GainSTM") -> float:
-        """Sampling frequency [Hz]."""
-        return self._sampling_frequency_from_size(len(self._gains))
+    def period(self: "GainSTM") -> timedelta:
+        """Period."""
+        return self._period_from_size(len(self._gains))
 
     @property
-    def sampling_frequency_division(self: "GainSTM") -> int:
-        """Sampling frequency division."""
-        return self._sampling_frequency_division_from_size(len(self._gains))
-
-    @property
-    def sampling_period(self: "GainSTM") -> timedelta:
-        """Sampling period."""
-        return self._sampling_period_from_size(len(self._gains))
+    def sampling_config(self: "GainSTM") -> SamplingConfiguration:
+        """Sampling configuration."""
+        return self._sampling_config_from_size(len(self._gains))
 
     def with_mode(self: "GainSTM", mode: GainSTMMode) -> "GainSTM":
         """Set GainSTMMode.

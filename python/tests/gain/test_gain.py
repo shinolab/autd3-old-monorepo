@@ -22,12 +22,12 @@ from tests.test_autd import create_controller
 
 
 class Uniform(Gain):
-    _amp: EmitIntensity
+    _intensity: EmitIntensity
     _phase: float
     check: np.ndarray
 
-    def __init__(self: "Uniform", amp: float, phase: float, check: np.ndarray) -> None:
-        self._amp = EmitIntensity.new_normalized(amp)
+    def __init__(self: "Uniform", intensity: int, phase: float, check: np.ndarray) -> None:
+        self._intensity = EmitIntensity(intensity)
         self._phase = phase
         self.check = check
 
@@ -36,7 +36,7 @@ class Uniform(Gain):
             self.check[dev.idx] = True
             return Drive(
                 self._phase,
-                self._amp.pulse_width,
+                self._intensity,
             )
 
         return Gain._transform(geometry, f)
@@ -47,12 +47,12 @@ async def test_gain():
     autd = await create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    assert await autd.send_async(Uniform(0.5, np.pi, check))
+    assert await autd.send_async(Uniform(0x80, np.pi, check))
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 85)
-        assert np.all(phases == 256)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0x80)
+        assert np.all(phases == 128)
 
 
 @pytest.mark.asyncio()
@@ -61,16 +61,16 @@ async def test_gain_check_only_for_enabled():
     autd.geometry[0].enable = False
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    g = Uniform(0.5, np.pi, check)
+    g = Uniform(0x80, np.pi, check)
     assert await autd.send_async(g)
 
     assert not g.check[0]
     assert g.check[1]
 
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0)
     assert np.all(phases == 0)
 
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 85)
-    assert np.all(phases == 256)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0x80)
+    assert np.all(phases == 128)

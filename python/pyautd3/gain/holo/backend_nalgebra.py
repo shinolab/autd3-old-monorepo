@@ -17,7 +17,7 @@ from pyautd3.native_methods.autd3capi_def import GainPtr
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 
 from .backend import Backend
-from .constraint import AmplitudeConstraint
+from .constraint import EmissionConstraint
 
 
 class NalgebraBackend(Backend):
@@ -43,17 +43,8 @@ class NalgebraBackend(Backend):
     def _sdp_with_lambda(self: "NalgebraBackend", ptr: GainPtr, v: float) -> GainPtr:
         return GainHolo().gain_holo_sdp_with_lambda(ptr, v)
 
-    def _sdp_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _sdp_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return GainHolo().gain_holo_sdp_with_constraint(ptr, v._constraint_ptr())
-
-    def _evp(self: "NalgebraBackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
-        return GainHolo().gain_holo_evp(self._backend_ptr(), foci, amps, size)
-
-    def _evp_with_gamma(self: "NalgebraBackend", ptr: GainPtr, v: float) -> GainPtr:
-        return GainHolo().gain_holo_evp_with_gamma(ptr, v)
-
-    def _evp_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
-        return GainHolo().gain_holo_evp_with_constraint(ptr, v._constraint_ptr())
 
     def _gs(self: "NalgebraBackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
         return GainHolo().gain_holo_gs(self._backend_ptr(), foci, amps, size)
@@ -61,7 +52,7 @@ class NalgebraBackend(Backend):
     def _gs_with_repeat(self: "NalgebraBackend", ptr: GainPtr, v: int) -> GainPtr:
         return GainHolo().gain_holo_gs_with_repeat(ptr, v)
 
-    def _gs_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gs_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return GainHolo().gain_holo_gs_with_constraint(ptr, v._constraint_ptr())
 
     def _gspat(self: "NalgebraBackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
@@ -70,13 +61,13 @@ class NalgebraBackend(Backend):
     def _gspat_with_repeat(self: "NalgebraBackend", ptr: GainPtr, v: int) -> GainPtr:
         return GainHolo().gain_holo_gspat_with_repeat(ptr, v)
 
-    def _gspat_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _gspat_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return GainHolo().gain_holo_gspat_with_constraint(ptr, v._constraint_ptr())
 
     def _naive(self: "NalgebraBackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
         return GainHolo().gain_holo_naive(self._backend_ptr(), foci, amps, size)
 
-    def _naive_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _naive_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return GainHolo().gain_holo_naive_with_constraint(ptr, v._constraint_ptr())
 
     def _lm(self: "NalgebraBackend", foci: Array[c_double], amps: Array[c_double], size: int) -> GainPtr:
@@ -97,5 +88,5 @@ class NalgebraBackend(Backend):
     def _lm_with_initial(self: "NalgebraBackend", ptr: GainPtr, v: Array[c_double], size: int) -> GainPtr:
         return GainHolo().gain_holo_lm_with_initial(ptr, v, size)
 
-    def _lm_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: AmplitudeConstraint) -> GainPtr:
+    def _lm_with_constraint(self: "NalgebraBackend", ptr: GainPtr, v: EmissionConstraint) -> GainPtr:
         return GainHolo().gain_holo_lm_with_constraint(ptr, v._constraint_ptr())

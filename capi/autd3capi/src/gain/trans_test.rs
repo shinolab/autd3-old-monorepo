@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3capi_def::{
     common::{autd3::gain::TransducerTest, *},
-    take_gain, EmitIntensity, GainPtr, TransducerPtr,
+    take_gain, GainPtr, TransducerPtr,
 };
 use driver::geometry::Transducer;
 
@@ -29,7 +29,7 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
     trans_test: GainPtr,
     tr: TransducerPtr,
     phase: float,
-    intensity: EmitIntensity,
+    intensity: u8,
 ) -> GainPtr {
     GainPtr::new(take_gain!(trans_test, TransducerTest).set(
         cast!(tr.0, Transducer),
@@ -49,7 +49,7 @@ mod tests {
         *,
     };
 
-    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_trans_test() {
@@ -61,7 +61,7 @@ mod tests {
             let tr = AUTDTransducer(dev, 0);
 
             let g = AUTDGainTransducerTest();
-            let g = AUTDGainTransducerTestSet(g, tr, 1., AUTDEmitIntensityNew(255));
+            let g = AUTDGainTransducerTestSet(g, tr, 1., 0xFF);
 
             let g = AUTDGainIntoDatagram(g);
 

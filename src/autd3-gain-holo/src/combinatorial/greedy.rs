@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use crate::{constraint::Constraint, impl_holo, Complex};
+use crate::{constraint::EmissionConstraint, impl_holo, Amplitude, Complex};
 use autd3_derive::Gain;
 
 use autd3_driver::{
@@ -34,9 +34,9 @@ use rand::seq::SliceRandom;
 #[derive(Gain)]
 pub struct Greedy {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     phase_div: usize,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
 }
 
 impl_holo!(Greedy);
@@ -47,7 +47,7 @@ impl Greedy {
             foci: vec![],
             amps: vec![],
             phase_div: 16,
-            constraint: Constraint::Uniform(EmitIntensity::MAX),
+            constraint: EmissionConstraint::Uniform(EmitIntensity::MAX),
         }
     }
 
@@ -140,7 +140,7 @@ impl Gain for Greedy {
                 (0usize, float::INFINITY),
                 |acc, (idx, &phase)| {
                     let v = cache.iter().enumerate().fold(0., |acc, (j, c)| {
-                        acc + (self.amps[j] - (tmp[j] * phase + c).abs()).abs()
+                        acc + (self.amps[j].value - (tmp[j] * phase + c).abs()).abs()
                     });
                     if v < acc.1 {
                         (idx, v)

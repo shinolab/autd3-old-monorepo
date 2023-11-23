@@ -23,9 +23,9 @@ from tests.test_autd import create_controller
 async def test_uniform():
     autd = await create_controller()
 
-    assert await autd.send_async(Uniform(0.5).with_phase(np.pi))
+    assert await autd.send_async(Uniform(0x80).with_phase(np.pi))
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 85)
-        assert np.all(phases == 256)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0x80)
+        assert np.all(phases == 128)

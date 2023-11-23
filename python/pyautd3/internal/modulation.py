@@ -14,18 +14,18 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
-from datetime import timedelta
 from typing import TYPE_CHECKING, TypeVar
 
-from pyautd3.geometry import AUTD3, Geometry
+from pyautd3.emit_intensity import EmitIntensity
+from pyautd3.geometry import Geometry
 from pyautd3.internal.datagram import Datagram
 from pyautd3.internal.utils import _validate_int
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import FPGA_CLK_FREQ, DatagramPtr, ModulationPtr
+from pyautd3.native_methods.autd3capi_def import DatagramPtr, ModulationPtr
+from pyautd3.sampling_config import SamplingConfiguration
 
 if TYPE_CHECKING:
     from pyautd3.modulation.cache import Cache
-    from pyautd3.modulation.fir import BPF, BSF, HPF, LPF
     from pyautd3.modulation.radiation_pressure import RadiationPressure
     from pyautd3.modulation.transform import Transform
 
@@ -43,12 +43,8 @@ class IModulation(Datagram, metaclass=ABCMeta):
         return Base().modulation_into_datagram(self._modulation_ptr())
 
     @property
-    def sampling_frequency_division(self: "IModulation") -> int:
-        return int(Base().modulation_sampling_frequency_division(self._modulation_ptr()))
-
-    @property
-    def sampling_frequency(self: "IModulation") -> float:
-        return AUTD3.fpga_clk_freq() / self.sampling_frequency_division
+    def sampling_config(self: "IModulation") -> SamplingConfiguration:
+        return SamplingConfiguration.__private_new__(Base().modulation_sampling_config(self._modulation_ptr()))
 
     def __len__(self: "IModulation") -> int:
         return _validate_int(Base().modulation_size(self._modulation_ptr()))
@@ -61,7 +57,7 @@ class IModulation(Datagram, metaclass=ABCMeta):
         # This function is implemented in cache.py
         pass
 
-    def with_transform(self: M, f: Callable[[int, float], float]) -> "Transform":  # type: ignore[empty-body]
+    def with_transform(self: M, f: Callable[[int, EmitIntensity], EmitIntensity]) -> "Transform":  # type: ignore[empty-body]
         # This function is implemented in transform.py
         pass
 
@@ -69,58 +65,20 @@ class IModulation(Datagram, metaclass=ABCMeta):
         # This function is implemented in radiation_pressure.py
         pass
 
-    def with_low_pass(self: M, n_taps: int, cutoff: float) -> "LPF":  # type: ignore[empty-body]
-        # This function is implemented in fir.py
-        pass
-
-    def with_high_pass(self: M, n_taps: int, cutoff: float) -> "HPF":  # type: ignore[empty-body]
-        # This function is implemented in fir.py
-        pass
-
-    def with_band_pass(self: M, n_taps: int, f_low: float, f_high: float) -> "BPF":  # type: ignore[empty-body]
-        # This function is implemented in fir.py
-        pass
-
-    def with_band_stop(self: M, n_taps: int, f_low: float, f_high: float) -> "BSF":  # type: ignore[empty-body]
-        # This function is implemented in fir.py
-        pass
-
 
 class IModulationWithFreqDiv(IModulation):
-    _freq_div: int | None
+    _config: SamplingConfiguration | None
 
     def __init__(self: "IModulationWithFreqDiv") -> None:
         super().__init__()
-        self._freq_div = None
+        self._config = None
 
-    def with_sampling_frequency_division(self: MF, div: int) -> MF:
-        """Set sampling frequency division.
+    def with_sampling_config(self: MF, config: SamplingConfiguration) -> MF:
+        """Set sampling configuration.
 
         Arguments:
         ---------
-            div: Sampling frequency division.
-                The sampling frequency will be `pyautd3.AUTD3.fpga_clk_freq()` / `div`.
+            config: Sampling frequency configuration.
         """
-        self._freq_div = div
+        self._config = config
         return self
-
-    def with_sampling_frequency(self: MF, freq: float) -> MF:
-        """Set sampling frequency.
-
-        Arguments:
-        ---------
-            freq: Sampling frequency.
-                The sampling frequency closest to `freq` from the possible sampling frequencies is set.
-        """
-        div = int(FPGA_CLK_FREQ / freq)
-        return self.with_sampling_frequency_division(div)
-
-    def with_sampling_period(self: MF, period: timedelta) -> MF:
-        """Set sampling period.
-
-        Arguments:
-        ---------
-            period: Sampling period.
-                The sampling period closest to `period` from the possible sampling periods is set.
-        """
-        return self.with_sampling_frequency_division(int(FPGA_CLK_FREQ / 1000000000.0 * (period.total_seconds() * 1000.0 * 1000.0 * 1000.0)))

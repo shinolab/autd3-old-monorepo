@@ -72,8 +72,11 @@ class Audit(Link):
     def fpga_flags(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_cpu_fpga_flags(self._ptr, idx))
 
-    def silencer_step(self: "Audit", idx: int) -> int:
-        return int(LinkAudit().link_audit_fpga_silencer_step(self._ptr, idx))
+    def silencer_step_intensity(self: "Audit", idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_silencer_step_intensity(self._ptr, idx))
+
+    def silencer_step_phase(self: "Audit", idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_silencer_step_phase(self._ptr, idx))
 
     def assert_thermal_sensor(self: "Audit", idx: int) -> None:
         LinkAudit().link_audit_fpga_assert_thermal_sensor(self._ptr, idx)
@@ -96,24 +99,18 @@ class Audit(Link):
         LinkAudit().link_audit_fpga_mod_delays(self._ptr, idx, np.ctypeslib.as_ctypes(buf))
         return buf
 
-    def duty_filters(self: "Audit", idx: int) -> np.ndarray:
+    def intensities_and_phases(self: "Audit", idx: int, stm_idx: int) -> tuple[np.ndarray, np.ndarray]:
         n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
-        buf = np.zeros([n]).astype(ctypes.c_int16)
-        LinkAudit().link_audit_fpga_duty_filters(self._ptr, idx, np.ctypeslib.as_ctypes(buf))
-        return buf
-
-    def phase_filters(self: "Audit", idx: int) -> np.ndarray:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
-        buf = np.zeros([n]).astype(ctypes.c_int16)
-        LinkAudit().link_audit_fpga_phase_filters(self._ptr, idx, np.ctypeslib.as_ctypes(buf))
-        return buf
-
-    def duties_and_phases(self: "Audit", idx: int, stm_idx: int) -> tuple[np.ndarray, np.ndarray]:
-        n = int(LinkAudit().link_audit_cpu_num_transducers(self._ptr, idx))
-        duties = np.zeros([n]).astype(ctypes.c_uint16)
-        phases = np.zeros([n]).astype(ctypes.c_uint16)
-        LinkAudit().link_audit_fpga_duties_and_phases(self._ptr, idx, stm_idx, np.ctypeslib.as_ctypes(duties), np.ctypeslib.as_ctypes(phases))
-        return (duties, phases)
+        intensities = np.zeros([n]).astype(ctypes.c_uint8)
+        phases = np.zeros([n]).astype(ctypes.c_uint8)
+        LinkAudit().link_audit_fpga_intensities_and_phases(
+            self._ptr,
+            idx,
+            stm_idx,
+            np.ctypeslib.as_ctypes(intensities),
+            np.ctypeslib.as_ctypes(phases),
+        )
+        return (intensities, phases)
 
     def stm_cycle(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_fpga_stm_cycle(self._ptr, idx))

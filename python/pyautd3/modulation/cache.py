@@ -34,7 +34,7 @@ class Cache(IModulation):
     def __init__(self: "Cache", m: M) -> None:
         self._cache = _validate_ptr(Base().modulation_with_cache(m._modulation_ptr()))
         n = int(Base().modulation_cache_get_buffer_len(self._cache))
-        self._buffer = np.zeros(n, dtype=float)
+        self._buffer = np.zeros(n, dtype=np.uint8)
         Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
 
     @property

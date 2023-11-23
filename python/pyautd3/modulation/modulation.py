@@ -13,36 +13,40 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from abc import ABCMeta, abstractmethod
-from ctypes import c_double
+from ctypes import POINTER, c_uint8
 
 import numpy as np
 
 from pyautd3.internal.modulation import IModulation
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
+from pyautd3.sampling_config import SamplingConfiguration
 
 
 class Modulation(IModulation, metaclass=ABCMeta):
     """Base class of custom Modulation."""
 
-    _freq_div: int
+    _config: SamplingConfiguration
 
-    def __init__(self: "Modulation", freq_div: int) -> None:
+    def __init__(self: "Modulation", config: SamplingConfiguration) -> None:
         """Constructor.
 
         Arguments:
         ---------
-            freq_div: int
-          The sampling frequency will be `pyautd3.AUTD3.fpga_clk_freq()` / `freq_div`.
+            config: sampling configuration
         """
         super().__init__()
-        self._freq_div = freq_div
+        self._config = config
 
     @abstractmethod
     def calc(self: "Modulation") -> np.ndarray:
         """Calculate modulation data."""
 
     def _modulation_ptr(self: "Modulation") -> ModulationPtr:
-        data = self.calc()
+        data = np.fromiter((m.value for m in self.calc()), dtype=c_uint8)
         size = len(data)
-        return Base().modulation_custom(self._freq_div, np.ctypeslib.as_ctypes(data.astype(c_double)), size)
+        return Base().modulation_custom(
+            self._config._internal,
+            data.ctypes.data_as(POINTER(c_uint8)),  # type: ignore[arg-type]
+            size,
+        )

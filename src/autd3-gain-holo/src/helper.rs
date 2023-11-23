@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use autd3_driver::{
 };
 use nalgebra::ComplexField;
 
-use crate::{Constraint, VectorXc};
+use crate::{EmissionConstraint, VectorXc};
 
 #[doc(hidden)]
 #[macro_export]
@@ -37,17 +37,17 @@ macro_rules! impl_holo {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
-                amps.push(amp.value);
+                amps.push(amp);
                 Self { foci, amps, ..self }
             }
 
             /// Set constraint
-            pub fn with_constraint(self, constraint: Constraint) -> Self {
+            pub fn with_constraint(self, constraint: EmissionConstraint) -> Self {
                 Self { constraint, ..self }
             }
 
             /// Add foci
-            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, $crate::amp::Amplitude)>>(
                 self,
                 iter: I,
             ) -> Self {
@@ -62,12 +62,21 @@ macro_rules! impl_holo {
 
             pub fn foci(
                 &self,
-            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+            ) -> std::iter::Zip<
+                std::slice::Iter<'_, Vector3>,
+                std::slice::Iter<'_, $crate::amp::Amplitude>,
+            > {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub const fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &EmissionConstraint {
                 &self.constraint
+            }
+
+            fn amps_as_slice(&self) -> &[float] {
+                unsafe {
+                    std::slice::from_raw_parts(self.amps.as_ptr() as *const float, self.amps.len())
+                }
             }
         }
     };
@@ -79,17 +88,17 @@ macro_rules! impl_holo {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
-                amps.push(amp.value);
+                amps.push(amp);
                 Self { foci, amps, ..self }
             }
 
             /// Set constraint
-            pub fn with_constraint(self, constraint: Constraint) -> Self {
+            pub fn with_constraint(self, constraint: EmissionConstraint) -> Self {
                 Self { constraint, ..self }
             }
 
             /// Add foci
-            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, $crate::amp::Amplitude)>>(
                 self,
                 iter: I,
             ) -> Self {
@@ -104,11 +113,14 @@ macro_rules! impl_holo {
 
             pub fn foci(
                 &self,
-            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+            ) -> std::iter::Zip<
+                std::slice::Iter<'_, Vector3>,
+                std::slice::Iter<'_, $crate::amp::Amplitude>,
+            > {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub const fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &EmissionConstraint {
                 &self.constraint
             }
         }
@@ -119,7 +131,7 @@ macro_rules! impl_holo {
 pub fn generate_result(
     geometry: &Geometry,
     q: VectorXc,
-    constraint: &Constraint,
+    constraint: &EmissionConstraint,
     filter: GainFilter,
 ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
     let max_coefficient = q.camax().abs();

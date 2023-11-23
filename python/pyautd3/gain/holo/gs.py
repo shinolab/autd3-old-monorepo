@@ -51,7 +51,7 @@ class GS(HoloWithBackend):
     def _gain_ptr(self: "GS", _: Geometry) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(ctypes.c_double))
-        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(ctypes.c_double))
+        amps = np.ctypeslib.as_ctypes(np.fromiter((a.pascal for a in self._amps), dtype=float).astype(ctypes.c_double))
         ptr = self._backend._gs(foci_, amps, size)
         if self._repeat is not None:
             ptr = self._backend._gs_with_repeat(ptr, self._repeat)

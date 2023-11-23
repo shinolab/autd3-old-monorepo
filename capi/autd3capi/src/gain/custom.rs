@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,7 @@ mod tests {
         *,
     };
 
-    use autd3capi_def::{AUTDEmitIntensityNew, DatagramPtr, Drive, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, Drive, AUTD3_TRUE};
 
     #[test]
     fn test_custom_gain() {
@@ -61,7 +61,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev0);
             let drives = vec![
                 Drive {
-                    intensity: AUTDEmitIntensityNew(255),
+                    intensity: 0xFF,
                     phase: 0.
                 };
                 num_transducers as _
@@ -71,7 +71,7 @@ mod tests {
             let num_transducers = AUTDDeviceNumTransducers(dev1);
             let drives = vec![
                 Drive {
-                    intensity: AUTDEmitIntensityNew(255),
+                    intensity: 0xFF,
                     phase: 0.
                 };
                 num_transducers as _

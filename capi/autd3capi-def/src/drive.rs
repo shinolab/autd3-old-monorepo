@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,13 +13,25 @@
 
 use autd3capi_common::driver::defined::float;
 
-use crate::EmitIntensity;
+pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrection(value: u8) -> u8 {
+    AUTDEmitIntensityNewWithCorrectionAlpha(value, DEFAULT_CORRECTED_ALPHA)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrectionAlpha(value: u8, alpha: float) -> u8 {
+    autd3capi_common::driver::common::EmitIntensity::new_with_correction_alpha(value, alpha).value()
+}
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Drive {
     pub phase: float,
-    pub intensity: EmitIntensity,
+    pub intensity: u8,
 }
 
 #[cfg(test)]

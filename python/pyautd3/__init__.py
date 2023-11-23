@@ -14,9 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from pyautd3.autd import (
     Clear,
-    ConfigureAmpFilter,
     ConfigureModDelay,
-    ConfigurePhaseFilter,
     Controller,
     FirmwareInfo,
     Silencer,
@@ -24,11 +22,15 @@ from pyautd3.autd import (
     Synchronize,
     UpdateFlags,
 )
+from pyautd3.drive import Drive
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import AUTD3, Device, Geometry, Transducer
-from pyautd3.native_methods.autd3capi import Drive
 from pyautd3.native_methods.autd3capi_def import TimerStrategy
+from pyautd3.sampling_config import SamplingConfiguration
 
 __all__ = [
+    "EmitIntensity",
+    "SamplingConfiguration",
     "Silencer",
     "Controller",
     "AUTD3",
@@ -41,8 +43,6 @@ __all__ = [
     "UpdateFlags",
     "Synchronize",
     "ConfigureModDelay",
-    "ConfigureAmpFilter",
-    "ConfigurePhaseFilter",
     "Stop",
     "TimerStrategy",
 ]
