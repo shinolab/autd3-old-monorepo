@@ -51,3 +51,13 @@ class EmitIntensity:
             case _:
                 err = f"Invalid type: {type(value)}"
                 raise TypeError(err)
+
+    @staticmethod
+    def maximum() -> "EmitIntensity":
+        """Maximum intensity."""
+        return EmitIntensity(0xFF)
+
+    @staticmethod
+    def minimum() -> "EmitIntensity":
+        """Minimum intensity."""
+        return EmitIntensity(0x00)
