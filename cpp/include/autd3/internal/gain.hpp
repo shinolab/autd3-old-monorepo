@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,18 +16,21 @@
 
 namespace autd3::internal {
 
-class Gain : public Datagram {
+class Gain {
  public:
   Gain() = default;
   Gain(const Gain& obj) = default;
   Gain& operator=(const Gain& obj) = default;
   Gain(Gain&& obj) = default;
   Gain& operator=(Gain&& obj) = default;
-  ~Gain() override = default;
+  virtual ~Gain() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const override { return AUTDGainIntoDatagram(gain_ptr(geometry)); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const { return AUTDGainIntoDatagram(gain_ptr(geometry)); }
 
   [[nodiscard]] virtual native_methods::GainPtr gain_ptr(const Geometry& geometry) const = 0;
 };
+
+template <class G>
+concept gain = std::derived_from<std::remove_reference_t<G>, Gain>;
 
 }  // namespace autd3::internal

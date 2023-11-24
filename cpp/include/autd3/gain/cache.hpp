@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,9 +31,7 @@ namespace autd3::gain {
 template <class G>
 class Cache final : public internal::Gain {
  public:
-  explicit Cache(G g) : _g(std::move(g)), _cache(std::make_shared<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>>()) {
-    static_assert(std::is_base_of_v<Gain, G>, "This is not Gain");
-  }
+  explicit Cache(G g) : _g(std::move(g)), _cache(std::make_shared<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>>()) {}
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
@@ -66,7 +64,7 @@ class Cache final : public internal::Gain {
   mutable std::shared_ptr<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>> _cache;
 };
 
-template <typename G>
+template <class G>
 class IntoCache {
  public:
   [[nodiscard]] Cache<G> with_cache() & { return Cache(*static_cast<G*>(this)); }

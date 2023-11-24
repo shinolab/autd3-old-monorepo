@@ -21,11 +21,11 @@ TEST(Gain, Transform) {
   ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80)
                                   .with_phase(autd3::internal::pi)
                                   .with_transform([](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
-                                                     const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
+                                                     const autd3::internal::Drive d) -> autd3::internal::Drive {
                                     if (dev.idx() == 0) {
-                                      return autd3::internal::native_methods::Drive{d.phase + autd3::internal::pi / 4, d.intensity};
+                                      return autd3::internal::Drive{d.phase + autd3::internal::pi / 4, d.intensity};
                                     }
-                                    return autd3::internal::native_methods::Drive{d.phase - autd3::internal::pi / 4, d.intensity};
+                                    return autd3::internal::Drive{d.phase - autd3::internal::pi / 4, d.intensity};
                                   }))
                   .get());
 
@@ -50,7 +50,7 @@ TEST(Gain, TransformCheckOnlyForEnabled) {
   ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80)
                                   .with_phase(autd3::internal::pi)
                                   .with_transform([&cnt](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
-                                                         const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
+                                                         const autd3::internal::Drive d) -> autd3::internal::Drive {
                                     cnt[dev.idx()] = true;
                                     return d;
                                   }))

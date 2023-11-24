@@ -14,7 +14,6 @@
 #include <chrono>
 #include <utility>
 
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
@@ -37,7 +36,7 @@ class Audit final {
 
     Builder() : _ptr(internal::native_methods::AUTDLinkAudit()) {}
 
-    [[nodiscard]] Audit resolve_link(const internal::native_methods::LinkPtr link) const { return Audit{link}; }
+    [[nodiscard]] static Audit resolve_link(const internal::native_methods::LinkPtr link) { return Audit{link}; }
 
    public:
     using Link = Audit;

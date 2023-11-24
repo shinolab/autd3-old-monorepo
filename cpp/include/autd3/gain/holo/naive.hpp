@@ -24,10 +24,10 @@ namespace autd3::gain::holo {
 /**
  * @brief Gain to produce multiple foci with naive linear synthesis
  */
-template <class B>
-class Naive final : public Holo<Naive<B>, B>, public IntoCache<Naive<B>>, public IntoTransform<Naive<B>> {
+template <backend B>
+class Naive final : public Holo<Naive<B>>, public IntoCache<Naive<B>>, public IntoTransform<Naive<B>> {
  public:
-  explicit Naive(std::shared_ptr<B> backend) : Holo<Naive, B>(std::move(backend)) {}
+  explicit Naive(std::shared_ptr<B> backend) : Holo<Naive>(), _backend(std::move(backend)) {}
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = this->_backend->naive(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
@@ -35,6 +35,9 @@ class Naive final : public Holo<Naive<B>, B>, public IntoCache<Naive<B>>, public
     if (this->_constraint.has_value()) ptr = this->_backend->naive_with_constraint(ptr, this->_constraint.value());
     return ptr;
   }
+
+ private:
+  std::shared_ptr<B> _backend;
 };
 
 }  // namespace autd3::gain::holo

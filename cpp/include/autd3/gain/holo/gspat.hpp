@@ -28,10 +28,10 @@ namespace autd3::gain::holo {
  * @details Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on
  * Graphics (TOG), 39(4):138–1, 2020.
  */
-template <class B>
-class GSPAT final : public Holo<GSPAT<B>, B>, public IntoCache<GSPAT<B>>, public IntoTransform<GSPAT<B>> {
+template <backend B>
+class GSPAT final : public Holo<GSPAT<B>>, public IntoCache<GSPAT<B>>, public IntoTransform<GSPAT<B>> {
  public:
-  explicit GSPAT(std::shared_ptr<B> backend) : Holo<GSPAT, B>(std::move(backend)) {}
+  explicit GSPAT(std::shared_ptr<B> backend) : Holo<GSPAT>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(GSPAT, uint32_t, repeat)
 
@@ -44,6 +44,7 @@ class GSPAT final : public Holo<GSPAT<B>, B>, public IntoCache<GSPAT<B>>, public
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<uint32_t> _repeat;
 };
 

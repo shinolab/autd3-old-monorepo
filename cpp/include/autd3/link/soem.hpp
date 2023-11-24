@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 #include <string>
 
 #include "autd3/internal/exception.hpp"
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
@@ -45,7 +44,7 @@ class SOEM {
 
     Builder() : _ptr(internal::native_methods::AUTDLinkSOEM()) {}
 
-    [[nodiscard]] SOEM resolve_link(internal::native_methods::LinkPtr) const { return SOEM{}; }
+    [[nodiscard]] static SOEM resolve_link(internal::native_methods::LinkPtr) { return SOEM{}; }
 
    public:
     using Link = SOEM;
@@ -180,7 +179,7 @@ class RemoteSOEM final {
 
     explicit Builder(const std::string& addr) { _ptr = validate(internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str())); }
 
-    [[nodiscard]] RemoteSOEM resolve_link(internal::native_methods::LinkPtr) const { return RemoteSOEM{}; }
+    [[nodiscard]] static RemoteSOEM resolve_link(internal::native_methods::LinkPtr) { return RemoteSOEM{}; }
 
    public:
     using Link = RemoteSOEM;

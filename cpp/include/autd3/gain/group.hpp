@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,11 @@
 namespace autd3::gain {
 
 template <class F>
+concept gain_group_f = requires(F f, const internal::Device& dev, const internal::Transducer& tr) {
+  typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
+};
+
+template <gain_group_f F>
 class Group final : public internal::Gain, public IntoCache<Group<F>>, public IntoTransform<Group<F>> {
  public:
   using key_type = typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
@@ -39,9 +44,8 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
    * @param key Key
    * @param gain Gain
    */
-  template <class G>
+  template <internal::gain G>
   void set(const key_type key, G&& gain) & {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
   }
 
@@ -52,9 +56,8 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
    * @param key Key
    * @param gain Gain
    */
-  template <class G>
+  template <internal::gain G>
   Group&& set(const key_type key, G&& gain) && {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
     return std::move(*this);
   }

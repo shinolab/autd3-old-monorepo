@@ -27,10 +27,10 @@ namespace autd3::gain::holo {
  *
  * @details Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
  */
-template <class B>
-class GS final : public Holo<GS<B>, B>, public IntoCache<GS<B>>, public IntoTransform<GS<B>> {
+template <backend B>
+class GS final : public Holo<GS<B>>, public IntoCache<GS<B>>, public IntoTransform<GS<B>> {
  public:
-  explicit GS(std::shared_ptr<B> backend) : Holo<GS, B>(std::move(backend)) {}
+  explicit GS(std::shared_ptr<B> backend) : Holo<GS>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(GS, uint32_t, repeat)
 
@@ -43,6 +43,7 @@ class GS final : public Holo<GS<B>, B>, public IntoCache<GS<B>>, public IntoTran
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<uint32_t> _repeat;
 };
 

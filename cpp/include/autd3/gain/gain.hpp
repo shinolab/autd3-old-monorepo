@@ -24,6 +24,11 @@
 
 namespace autd3::gain {
 
+template <class F>
+concept gain_transform = requires(F f, const internal::Device& dev, const internal::Transducer& tr) {
+  { f(dev, tr) } -> std::same_as<internal::Drive>;
+};
+
 class Gain : public internal::Gain {
  public:
   Gain() = default;
@@ -40,7 +45,7 @@ class Gain : public internal::Gain {
                            });
   }
 
-  template <class Fn>
+  template <gain_transform Fn>
   [[nodiscard]] static std::unordered_map<size_t, std::vector<internal::Drive>> transform(const internal::Geometry& geometry, Fn func) {
     std::unordered_map<size_t, std::vector<internal::Drive>> drives_map;
     std::for_each(geometry.devices().begin(), geometry.devices().end(), [&drives_map, &func](const internal::Device& dev) {

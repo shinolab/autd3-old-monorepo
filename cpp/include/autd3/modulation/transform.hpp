@@ -18,10 +18,15 @@
 
 namespace autd3::modulation {
 
+template <class F>
+concept modulation_transform_f = requires(F f, size_t idx, internal::EmitIntensity d) {
+  { f(idx, d) } -> std::same_as<internal::EmitIntensity>;
+};
+
 /**
  * @brief Modulation to transform the result of calculation
  */
-template <class M, typename F>
+template <class M, modulation_transform_f F>
 class Transform final : public internal::Modulation, public IntoCache<Transform<M, F>>, public IntoRadiationPressure<Transform<M, F>> {
   using transform_f = uint8_t (*)(const void*, uint32_t, uint8_t);
 
@@ -43,14 +48,14 @@ class Transform final : public internal::Modulation, public IntoCache<Transform<
   transform_f _f_native;
 };
 
-template <typename M>
+template <class M>
 class IntoTransform {
  public:
-  template <typename F>
+  template <modulation_transform_f F>
   [[nodiscard]] Transform<M, F> with_transform(const F& f) & {
     return Transform(*static_cast<M*>(this), f);
   }
-  template <typename F>
+  template <modulation_transform_f F>
   [[nodiscard]] Transform<M, F> with_transform(const F& f) && {
     return Transform(std::move(*static_cast<M*>(this)), f);
   }
