@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,11 +33,11 @@ class Bessel final : public internal::Gain, public IntoCache<Bessel>, public Int
  public:
   explicit Bessel(internal::Vector3 p, internal::Vector3 d, const double theta) : _p(std::move(p)), _d(std::move(d)), _theta(theta) {}
 
-  AUTD3_DEF_PARAM_AMP(Bessel)
+  AUTD3_DEF_PARAM_INTENSITY(Bessel, intensity)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainBessel(_p.x(), _p.y(), _p.z(), _d.x(), _d.y(), _d.z(), _theta);
-    if (_amp.has_value()) ptr = AUTDGainBesselWithAmp(ptr, _amp.value().pulse_width());
+    if (_intensity.has_value()) ptr = AUTDGainBesselWithIntensity(ptr, _intensity.value().value());
     return ptr;
   }
 
@@ -45,7 +45,7 @@ class Bessel final : public internal::Gain, public IntoCache<Bessel>, public Int
   internal::Vector3 _p;
   internal::Vector3 _d;
   double _theta;
-  std::optional<internal::EmitIntensity> _amp;
+  std::optional<internal::EmitIntensity> _intensity;
 };
 
 }  // namespace autd3::gain

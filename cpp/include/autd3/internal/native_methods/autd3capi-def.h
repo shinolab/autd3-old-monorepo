@@ -21,7 +21,7 @@ constexpr const int32_t AUTD3_TRUE = 1;
 constexpr const int32_t AUTD3_FALSE = 0;
 
 enum class GainSTMMode : uint8_t {
-  PhaseDutyFull = 0,
+  PhaseIntensityFull = 0,
   PhaseFull = 1,
   PhaseHalf = 2,
 };
@@ -32,8 +32,12 @@ enum class TimerStrategy : uint8_t {
   NativeTimer = 2,
 };
 
-struct ResultI32 {
-  int32_t result;
+struct SamplingConfiguration {
+  uint32_t div;
+};
+
+struct ResultSamplingConfig {
+  SamplingConfiguration result;
   uint32_t err_len;
   void* err;
 };
@@ -42,7 +46,7 @@ struct ControllerPtr {
   void* _0;
 };
 
-struct ConstraintPtr {
+struct EmissionConstraintPtr {
   void* _0;
 };
 
@@ -110,6 +114,12 @@ struct LinkBuilderPtr {
   void* _0;
 };
 
+struct ResultI32 {
+  int32_t result;
+  uint32_t err_len;
+  void* err;
+};
+
 struct ResultModulation {
   ModulationPtr result;
   uint32_t err_len;
@@ -134,6 +144,17 @@ struct ResultGainCalcDrivesMap {
   void* err;
 };
 
+struct ResultDatagram {
+  DatagramPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct Drive {
+  double phase;
+  uint8_t intensity;
+};
+
 constexpr const double TRANS_SPACING_MM = 10.16;
 
 constexpr const double DEVICE_HEIGHT_MM = 151.4;
@@ -146,19 +167,21 @@ constexpr const double DEFAULT_CORRECTED_ALPHA = 0.803;
 
 extern "C" {
 
-[[nodiscard]] double AUTDEmitIntensityNormalizedFrom(uint16_t pulse_width);
-
-[[nodiscard]] double AUTDEmitIntensityDutyRatioFrom(uint16_t pulse_width);
-
-[[nodiscard]] ResultI32 AUTDEmitIntensityNormalizedInto(double value);
-
-[[nodiscard]] ResultI32 AUTDEmitIntensityNormalizedCorrectedInto(double value, double alpha);
-
-[[nodiscard]] ResultI32 AUTDEmitIntensityDutyRatioInto(double value);
-
-[[nodiscard]] ResultI32 AUTDEmitIntensityPulseWidthInto(uint16_t value);
+[[nodiscard]] uint8_t AUTDEmitIntensityNewWithCorrectionAlpha(uint8_t value, double alpha);
 
 void AUTDGetErr(void* src, char *dst);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequencyDivision(uint32_t div);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequency(double f);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithPeriod(uint64_t p);
+
+[[nodiscard]] uint32_t AUTDSamplingConfigFrequencyDivision(SamplingConfiguration config);
+
+[[nodiscard]] double AUTDSamplingConfigFrequency(SamplingConfiguration config);
+
+[[nodiscard]] uint64_t AUTDSamplingConfigPeriod(SamplingConfiguration config);
 
 } // extern "C"
 

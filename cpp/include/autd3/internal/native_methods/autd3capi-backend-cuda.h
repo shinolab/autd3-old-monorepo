@@ -18,7 +18,9 @@ GainPtr AUTDGainHoloCUDASDP(BackendPtr backend,
                             const double *amps,
                             uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDASDPWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDASDPWithConstraint(GainPtr holo,
+                                          EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloCUDASDPWithAlpha(GainPtr holo, double alpha);
 
@@ -27,22 +29,14 @@ GainPtr AUTDGainHoloCUDASDP(BackendPtr backend,
 [[nodiscard]] GainPtr AUTDGainHoloCUDASDPWithRepeat(GainPtr holo, uint32_t repeat);
 
 [[nodiscard]]
-GainPtr AUTDGainHoloCUDAEVP(BackendPtr backend,
-                            const double *points,
-                            const double *amps,
-                            uint64_t size);
-
-[[nodiscard]] GainPtr AUTDGainHoloCUDAEVPWithConstraint(GainPtr holo, ConstraintPtr constraint);
-
-[[nodiscard]] GainPtr AUTDGainHoloCUDAEVPWithGamma(GainPtr holo, double gamma);
-
-[[nodiscard]]
 GainPtr AUTDGainHoloCUDAGS(BackendPtr backend,
                            const double *points,
                            const double *amps,
                            uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDAGSWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDAGSWithConstraint(GainPtr holo,
+                                         EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloCUDAGSWithRepeat(GainPtr holo, uint32_t repeat);
 
@@ -52,7 +46,9 @@ GainPtr AUTDGainHoloCUDAGSPAT(BackendPtr backend,
                               const double *amps,
                               uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDAGSPATWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDAGSPATWithConstraint(GainPtr holo,
+                                            EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloCUDAGSPATWithRepeat(GainPtr holo, uint32_t repeat);
 
@@ -62,14 +58,18 @@ GainPtr AUTDGainHoloCUDANaive(BackendPtr backend,
                               const double *amps,
                               uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDANaiveWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDANaiveWithConstraint(GainPtr holo,
+                                            EmissionConstraintPtr constraint);
 
 [[nodiscard]]
 GainPtr AUTDGainHoloCUDAGreedy(const double *points,
                                const double *amps,
                                uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDAGreedyWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDAGreedyWithConstraint(GainPtr holo,
+                                             EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloCUDAGreedyWithPhaseDiv(GainPtr holo, uint32_t div);
 
@@ -79,7 +79,9 @@ GainPtr AUTDGainHoloCUDALM(BackendPtr backend,
                            const double *amps,
                            uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloCUDALMWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloCUDALMWithConstraint(GainPtr holo,
+                                         EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloCUDALMWithEps1(GainPtr holo, double eps);
 

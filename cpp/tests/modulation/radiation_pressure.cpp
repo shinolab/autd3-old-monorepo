@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,10 +22,10 @@ TEST(Modulation, RadiationPressure) {
 
   for (auto& dev : autd.geometry()) {
     auto mod = autd.link().modulation(dev.idx());
-    std::vector<uint8_t> mod_expect{127, 146, 165, 184, 204, 223, 242, 248, 229, 210, 191, 172, 153, 133, 114, 95,  76,  57,  38,  19,
-                                    0,   19,  38,  57,  76,  95,  114, 133, 153, 172, 191, 210, 229, 248, 242, 223, 204, 184, 165, 146,
-                                    127, 108, 89,  70,  51,  31,  12,  6,   25,  44,  63,  82,  101, 121, 140, 159, 178, 197, 216, 235,
-                                    255, 235, 216, 197, 178, 159, 140, 121, 102, 82,  63,  44,  25,  6,   12,  31,  50,  70,  89,  108};
+    std::vector<uint8_t> mod_expect{181, 200, 217, 231, 243, 250, 254, 255, 252, 245, 236, 222, 206, 188, 166, 142, 116, 89,  60,  32,
+                                    0,   32,  60,  89,  116, 142, 166, 188, 206, 222, 236, 245, 252, 255, 254, 250, 243, 231, 217, 200,
+                                    181, 158, 134, 107, 78,  50,  23,  0,   39,  70,  97,  125, 150, 173, 194, 212, 227, 239, 248, 253,
+                                    255, 253, 248, 239, 227, 212, 194, 173, 150, 125, 97,  70,  39,  0,   23,  50,  78,  107, 134, 158};
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
     ASSERT_EQ(5120, autd.link().modulation_frequency_division(dev.idx()));
   }

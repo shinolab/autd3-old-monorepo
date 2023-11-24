@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -97,6 +97,8 @@ class Transducer {
 
   [[nodiscard]] double phase_filter() const { return AUTDTransducerPhaseFilterGet(_ptr); }
   void set_phase_filter(const double value) const { AUTDTransducerPhaseFilterSet(_ptr, value); }
+
+  [[nodiscard]] native_methods::TransducerPtr ptr() const { return _ptr; }
 
  private:
   native_methods::TransducerPtr _ptr;

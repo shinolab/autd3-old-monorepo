@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,42 +31,34 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
  public:
   TransducerTest() = default;
 
-  void set(const size_t dev_idx, const size_t tr_idx, const double phase, const double amp) & {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_normalized(amp)});
+  void set(const internal::Transducer& tr, const double phase, const internal::EmitIntensity intensity) & {
+    _props.emplace_back(Prop{tr.ptr(), phase, intensity});
   }
-  TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const double amp) && {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_normalized(amp)});
+  TransducerTest&& set(const internal::Transducer& tr, const double phase, const internal::EmitIntensity intensity) && {
+    _props.emplace_back(Prop{tr.ptr(), phase, intensity});
     return std::move(*this);
   }
-  void set(const size_t dev_idx, const size_t tr_idx, const double phase, const uint16_t amp) & {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_pulse_width(amp)});
+
+  void set(const internal::Transducer& tr, const double phase, const uint8_t intensity) & {
+    _props.emplace_back(Prop{tr.ptr(), phase, internal::EmitIntensity(intensity)});
   }
-  TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const uint16_t amp) && {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, internal::EmitIntensity::new_pulse_width(amp)});
-    return std::move(*this);
-  }
-  void set(const size_t dev_idx, const size_t tr_idx, const double phase, const internal::EmitIntensity amp) & {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
-  }
-  TransducerTest&& set(const size_t dev_idx, const size_t tr_idx, const double phase, const internal::EmitIntensity amp) && {
-    _props.emplace_back(Prop{dev_idx, tr_idx, phase, amp});
+  TransducerTest&& set(const internal::Transducer& tr, const double phase, const uint8_t intensity) && {
+    _props.emplace_back(Prop{tr.ptr(), phase, internal::EmitIntensity(intensity)});
     return std::move(*this);
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     return std::accumulate(_props.cbegin(), _props.cend(), internal::native_methods::AUTDGainTransducerTest(),
                            [](const internal::native_methods::GainPtr acc, const Prop& p) {
-                             return AUTDGainTransducerTestSet(acc, static_cast<uint32_t>(p.dev_idx), static_cast<uint32_t>(p.tr_idx), p.phase,
-                                                              p.amp.pulse_width());
+                             return AUTDGainTransducerTestSet(acc, p.tr, p.phase, p.intensity.value());
                            });
   }
 
  private:
   struct Prop {
-    size_t dev_idx;
-    size_t tr_idx;
+    internal::native_methods::TransducerPtr tr;
     double phase;
-    internal::EmitIntensity amp;
+    internal::EmitIntensity intensity;
   };
 
   std::vector<Prop> _props;

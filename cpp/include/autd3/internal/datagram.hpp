@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/09/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::internal {
 
@@ -71,23 +72,28 @@ class NullDatagram final : public Datagram {
  */
 class Silencer final : public Datagram {
  public:
-  Silencer() noexcept : Silencer(10) {}
+  Silencer() noexcept : Silencer(256, 256) {}
   /**
    * @brief Constructor
    *
-   * @param step Update step of silencer. The smaller `step` is, the quieter the output is.
+   * @param step_intensity Intensity update step of silencer. The smaller `step` is, the quieter the output is.
+   * @param step_phase Phase update step of silencer. The smaller `step` is, the quieter the output is.
    */
-  explicit Silencer(const uint16_t step) noexcept : Datagram(), _step(step) {}
+  explicit Silencer(const uint16_t step_intensity, const uint16_t step_phase) noexcept
+      : Datagram(), _step_intensity(step_intensity), _step_phase(step_phase) {}
 
   /**
    * @brief Disable silencer
    */
-  static Silencer disable() noexcept { return Silencer(0xFFFF); }
+  static Silencer disable() noexcept { return Silencer(0xFFFF, 0xFFFF); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramSilencer(_step); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
+    return validate(native_methods::AUTDDatagramSilencer(_step_intensity, _step_phase));
+  }
 
  private:
-  uint16_t _step;
+  uint16_t _step_intensity;
+  uint16_t _step_phase;
 };
 
 /**
@@ -98,26 +104,6 @@ class ConfigureModDelay final : public Datagram {
   ConfigureModDelay() = default;
 
   [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigureModDelay(); }
-};
-
-/**
- * @brief Datagram to configure amp filter
- */
-class ConfigureAmpFilter final : public Datagram {
- public:
-  ConfigureAmpFilter() = default;
-
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigureAmpFilter(); }
-};
-
-/**
- * @brief Datagram to configure phase filter
- */
-class ConfigurePhaseFilter final : public Datagram {
- public:
-  ConfigurePhaseFilter() = default;
-
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return native_methods::AUTDDatagramConfigurePhaseFilter(); }
 };
 
 /**

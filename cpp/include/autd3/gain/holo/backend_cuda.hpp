@@ -3,7 +3,7 @@
 // Created Date: 08/06/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,19 +55,6 @@ class CUDABackend final : public Backend {
   [[nodiscard]] internal::native_methods::GainPtr sdp_with_constraint(const internal::native_methods::GainPtr ptr,
                                                                       const AmplitudeConstraint v) const override {
     return AUTDGainHoloCUDASDPWithConstraint(ptr, v.ptr());
-  }
-
-  internal::native_methods::GainPtr evp(const double* foci, const double* amps, const uint64_t size) const override {
-    return AUTDGainHoloCUDAEVP(this->_ptr, foci, amps, size);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr evp_with_gamma(const internal::native_methods::GainPtr ptr, const double v) const override {
-    return AUTDGainHoloCUDAEVPWithGamma(ptr, v);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr evp_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                      const AmplitudeConstraint v) const override {
-    return AUTDGainHoloCUDAEVPWithConstraint(ptr, v.ptr());
   }
 
   internal::native_methods::GainPtr gs(const double* foci, const double* amps, const uint64_t size) const override {

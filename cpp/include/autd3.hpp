@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,10 +26,12 @@
 #include "autd3/internal/controller.hpp"
 #include "autd3/internal/datagram.hpp"
 #include "autd3/internal/def.hpp"
+#include "autd3/internal/drive.hpp"
 #include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/geometry/device.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/geometry/transducer.hpp"
+#include "autd3/internal/sampling_config.hpp"
 #include "autd3/internal/special.hpp"
 #include "autd3/internal/stm.hpp"
 #include "autd3/modulation/cache.hpp"
@@ -37,7 +39,6 @@
 #include "autd3/modulation/modulation.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/sine.hpp"
-#include "autd3/modulation/sine_legacy.hpp"
 #include "autd3/modulation/square.hpp"
 #include "autd3/modulation/static.hpp"
 #include "autd3/modulation/transform.hpp"
@@ -62,13 +63,13 @@ using internal::Transducer;
 using internal::AUTD3;
 
 using gain::Gain;
-using internal::native_methods::Drive;
+using internal::Drive;
+using internal::EmitIntensity;
+using internal::SamplingConfiguration;
 using modulation::Modulation;
 
 using internal::Clear;
-using internal::ConfigureAmpFilter;
 using internal::ConfigureModDelay;
-using internal::ConfigurePhaseFilter;
 using internal::Silencer;
 using internal::Synchronize;
 using internal::UpdateFlags;

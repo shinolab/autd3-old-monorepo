@@ -93,6 +93,8 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "ResultBackend".to_string(),
             "ResultController".to_string(),
             "ResultGainCalcDrivesMap".to_string(),
+            "ResultDatagram".to_string(),
+            "Drive".to_string(),
         ],
         rename: vec![
             ("float".to_string(), "double".to_string()),

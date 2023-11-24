@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
-#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -28,8 +27,7 @@ class Fourier;
 class Sine final : public internal::ModulationWithFreqDiv<Sine>,
                    public IntoCache<Sine>,
                    public IntoTransform<Sine>,
-                   public IntoRadiationPressure<Sine>,
-                   public IntoFIR<Sine> {
+                   public IntoRadiationPressure<Sine> {
  public:
   /**
    * @brief Constructor.
@@ -51,7 +49,8 @@ class Sine final : public internal::ModulationWithFreqDiv<Sine>,
     if (_amp.has_value()) ptr = AUTDModulationSineWithAmp(ptr, _amp.value());
     if (_phase.has_value()) ptr = AUTDModulationSineWithPhase(ptr, _phase.value());
     if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value());
-    if (_freq_div.has_value()) ptr = AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    if (_config.has_value())
+      ptr = AUTDModulationSineWithSamplingConfig(ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
     return ptr;
   }
 

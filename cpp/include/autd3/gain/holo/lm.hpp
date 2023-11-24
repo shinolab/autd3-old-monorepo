@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,7 +51,8 @@ class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTran
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = this->_backend->lm(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    auto ptr = this->_backend->lm(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
+                                  this->_amps.size());
     if (_eps1.has_value()) ptr = this->_backend->lm_with_eps1(ptr, _eps1.value());
     if (_eps2.has_value()) ptr = this->_backend->lm_with_eps2(ptr, _eps2.value());
     if (_tau.has_value()) ptr = this->_backend->lm_with_tau(ptr, _tau.value());

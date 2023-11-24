@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,20 +20,15 @@
     return std::move(*this);                                              \
   }
 
-#define AUTD3_DEF_PARAM_AMP(T)                                                                     \
-  void with_amp(const double value)& { _amp = internal::EmitIntensity::new_normalized(value); }    \
-  [[nodiscard]] T&& with_amp(const double value)&& {                                               \
-    _amp = internal::EmitIntensity::new_normalized(value);                                         \
+#define AUTD3_DEF_PARAM_INTENSITY(T, PARAM_NAME)                                                   \
+  void with_##PARAM_NAME(const uint8_t value)& { _##PARAM_NAME = internal::EmitIntensity(value); } \
+  [[nodiscard]] T&& with_##PARAM_NAME(const uint8_t value)&& {                                     \
+    _##PARAM_NAME = internal::EmitIntensity(value);                                                \
     return std::move(*this);                                                                       \
   }                                                                                                \
-  void with_amp(const uint16_t value)& { _amp = internal::EmitIntensity::new_pulse_width(value); } \
-  [[nodiscard]] T&& with_amp(const uint16_t value)&& {                                             \
-    _amp = internal::EmitIntensity::new_pulse_width(value);                                        \
-    return std::move(*this);                                                                       \
-  }                                                                                                \
-  void with_amp(const internal::EmitIntensity value)& { _amp = value; }                            \
-  [[nodiscard]] T&& with_amp(const internal::EmitIntensity value)&& {                              \
-    _amp = value;                                                                                  \
+  void with_##PARAM_NAME(const internal::EmitIntensity value)& { _##PARAM_NAME = value; }          \
+  [[nodiscard]] T&& with_##PARAM_NAME(const internal::EmitIntensity value)&& {                     \
+    _##PARAM_NAME = value;                                                                         \
     return std::move(*this);                                                                       \
   }
 
@@ -42,8 +37,8 @@ namespace autd3::internal::native_methods {
 template <class T>
 concept ResultPtr = requires(T& x) { x.result._0; };
 
-template <typename T>
-inline constexpr auto validate(T res) {
+template <ResultPtr T>
+constexpr auto validate(T res) {
   const auto [result, err_len, err] = res;
   if (result._0 == nullptr) {
     const std::string err_str(err_len, ' ');
@@ -54,7 +49,7 @@ inline constexpr auto validate(T res) {
 }
 
 template <typename T = int32_t>
-inline constexpr T validate(ResultI32 res) {
+constexpr T validate(ResultI32 res) {
   const auto [result, err_len, err] = res;
   if (result == AUTD3_ERR) {
     const std::string err_str(err_len, ' ');
@@ -62,6 +57,16 @@ inline constexpr T validate(ResultI32 res) {
     throw AUTDException(err_str);
   }
   return static_cast<T>(result);
+}
+
+constexpr SamplingConfiguration validate(ResultSamplingConfig res) {
+  const auto [result, err_len, err] = res;
+  if (result.div == 0) {
+    const std::string err_str(err_len, ' ');
+    AUTDGetErr(err, const_cast<char*>(err_str.c_str()));
+    throw AUTDException(err_str);
+  }
+  return result;
 }
 
 }  // namespace autd3::internal::native_methods

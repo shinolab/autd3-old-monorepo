@@ -11,14 +11,14 @@ extern "C" {
 [[nodiscard]] ResultModulation AUTDModulationWav(const char *path);
 
 [[nodiscard]]
-ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m,
-                                                             uint32_t div);
+ModulationPtr AUTDModulationWavWithSamplingConfig(ModulationPtr m,
+                                                  SamplingConfiguration config);
 
 [[nodiscard]] ResultModulation AUTDModulationRawPCM(const char *path, uint32_t sample_rate);
 
 [[nodiscard]]
-ModulationPtr AUTDModulationRawPCMWithSamplingFrequencyDivision(ModulationPtr m,
-                                                                uint32_t div);
+ModulationPtr AUTDModulationRawPCMWithSamplingConfig(ModulationPtr m,
+                                                     SamplingConfiguration config);
 
 } // extern "C"
 

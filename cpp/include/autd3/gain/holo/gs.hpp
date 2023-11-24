@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,8 @@ class GS final : public Holo<GS<B>, B>, public IntoCache<GS<B>>, public IntoTran
   AUTD3_DEF_PARAM(GS, uint32_t, repeat)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = this->_backend->gs(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    auto ptr = this->_backend->gs(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
+                                  this->_amps.size());
     if (_repeat.has_value()) ptr = this->_backend->gs_with_repeat(ptr, _repeat.value());
     if (this->_constraint.has_value()) ptr = this->_backend->gs_with_constraint(ptr, this->_constraint.value());
     return ptr;
