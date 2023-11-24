@@ -32,8 +32,13 @@ async def group(autd: Controller) -> None:
             case _:
                 return None
 
-    autd.group(grouping).set_data("null", Static(), Null()).set_data(
-        "focus",
-        Sine(150),
-        Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])),
-    ).send_async()
+    await (
+        autd.group(grouping)
+        .set_data("null", Static(), Null())
+        .set_data(
+            "focus",
+            Sine(150),
+            Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])),
+        )
+        .send_async()
+    )
