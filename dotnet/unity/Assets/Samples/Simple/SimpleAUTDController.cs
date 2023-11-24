@@ -21,7 +21,7 @@ using UnityEngine;
 
 public class SimpleAUTDController : MonoBehaviour
 {
-    private Controller? _autd = null;
+    private Controller<AUTD3Sharp.Link.SOEM>? _autd = null;
     public GameObject? Target = null;
 
     private Vector3 _oldPosition;

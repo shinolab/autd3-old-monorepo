@@ -8,8 +8,19 @@
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
+
+
+#if UNITY_2018_3_OR_NEWER
+#define USE_SINGLE
+#endif
+
+#if USE_SINGLE
+using float_t = System.Single;
+#else
+using float_t = System.Double;
+#endif
 
 using System;
 using System.Runtime.InteropServices;
@@ -24,7 +35,7 @@ namespace AUTD3Sharp
 
     public enum GainSTMMode : byte
     {
-        PhaseDutyFull = 0,
+        PhaseIntensityFull = 0,
         PhaseFull = 1,
         PhaseHalf = 2,
     }
@@ -34,6 +45,13 @@ namespace AUTD3Sharp
         Sleep = 0,
         BusyWait = 1,
         NativeTimer = 2,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DriveRaw
+    {
+        public float_t Phase;
+        public byte intensity;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -121,7 +139,7 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ConstraintPtr
+    internal unsafe partial struct EmissionConstraintPtr
     {
         internal IntPtr Item1;
     }
@@ -142,6 +160,14 @@ namespace AUTD3Sharp
     internal unsafe partial struct GroupKVMapPtr
     {
         internal IntPtr Item1;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct ResultI32
+    {
+        internal int result;
+        internal uint err_len;
+        internal IntPtr err;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -176,6 +202,14 @@ namespace AUTD3Sharp
         internal IntPtr err;
     }
 
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct ResultDatagram
+    {
+        internal DatagramPtr result;
+        internal uint err_len;
+        internal IntPtr err;
+    }
 
     internal static class ResultExtensions
     {
@@ -238,6 +272,34 @@ namespace AUTD3Sharp
         internal static CachePtr Validate(this ResultCache res)
         {
             if (res.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static DatagramPtr Validate(this ResultDatagram res)
+        {
+            if (res.result.Item1 == IntPtr.Zero)
+            {
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+            return res.result;
+        }
+
+        internal static SamplingConfigurationRaw Validate(this ResultSamplingConfig res)
+        {
+            if (res.result.div == 0)
             {
                 var err = new byte[res.err_len];
                 unsafe

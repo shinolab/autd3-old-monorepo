@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,12 +14,6 @@
 use autd3capi_common::driver::defined::float;
 
 pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrection(value: u8) -> u8 {
-    AUTDEmitIntensityNewWithCorrectionAlpha(value, DEFAULT_CORRECTED_ALPHA)
-}
 
 #[no_mangle]
 #[must_use]

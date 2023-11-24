@@ -27,34 +27,43 @@ namespace AUTD3Sharp
         internal const int AUTD3_FALSE = 0;
 
 
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedFrom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern double AUTDEmitIntensityNormalizedFrom(ushort pulse_width);
-
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityDutyRatioFrom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern double AUTDEmitIntensityDutyRatioFrom(ushort pulse_width);
-
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultI32 AUTDEmitIntensityNormalizedInto(double value);
-
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNormalizedCorrectedInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultI32 AUTDEmitIntensityNormalizedCorrectedInto(double value, double alpha);
-
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityDutyRatioInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultI32 AUTDEmitIntensityDutyRatioInto(double value);
-
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityPulseWidthInto", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultI32 AUTDEmitIntensityPulseWidthInto(ushort value);
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNewWithCorrectionAlpha", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern byte AUTDEmitIntensityNewWithCorrectionAlpha(byte value, double alpha);
 
         [DllImport(__DllName, EntryPoint = "AUTDGetErr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDGetErr(IntPtr src, byte* dst);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithFrequencyDivision(uint div);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithFrequency(double f);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithPeriod(ulong p);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern uint AUTDSamplingConfigFrequencyDivision(SamplingConfigurationRaw config);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern double AUTDSamplingConfigFrequency(SamplingConfigurationRaw config);
+
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong AUTDSamplingConfigPeriod(SamplingConfigurationRaw config);
 
 
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultI32
+    internal unsafe partial struct SamplingConfigurationRaw
     {
-        public int result;
+        public uint div;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct ResultSamplingConfig
+    {
+        public SamplingConfigurationRaw result;
         public uint err_len;
         public IntPtr err;
     }

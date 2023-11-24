@@ -625,6 +625,11 @@ def cs_build(args):
             check=False,
             capture_output=True,
         )
+        _ = subprocess.run(
+            ["dotnet", "nuget", "locals", "all", "-c"],
+            check=False,
+            capture_output=True,
+        )
         bin_dir = "Release" if config.release else "Debug"
         subprocess.run(
             [
@@ -718,6 +723,10 @@ def unity_build(args):
     rmtree_f("dotnet/unity/Assets/Scripts/bin")
     rmtree_f("dotnet/unity/Assets/Scripts/native")
     rmtree_f("dotnet/unity/Assets/Scripts/Utils")
+    shutil.copy(
+        "dotnet/cs/src/NativeMethods/DefExt.cs",
+        "dotnet/unity/Assets/Scripts/NativeMethods/DefExt.cs",
+    )
 
     unity_dir = ""
     if config.is_windows():

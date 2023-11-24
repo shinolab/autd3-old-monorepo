@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,18 +20,18 @@ public class TransformTest
     {
         var autd = await AUTDTest.CreateController();
 
-        Assert.True(await autd.SendAsync(new Uniform(0.5).WithPhase(Math.PI).WithTransform((dev, _, d) =>
+        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI).WithTransform((dev, _, d) =>
             dev.Idx == 0 ? d with { Phase = d.Phase + Math.PI / 4 } : d with { Phase = d.Phase - Math.PI / 4 })));
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(85, d));
-            Assert.All(phases, p => Assert.Equal(256 + 64, p));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
+            Assert.All(phases, p => Assert.Equal(128 + 32, p));
         }
 
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(85, d));
-            Assert.All(phases, p => Assert.Equal(256 - 64, p));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
+            Assert.All(phases, p => Assert.Equal(128 - 32, p));
         }
     }
 
@@ -42,7 +42,7 @@ public class TransformTest
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(await autd.SendAsync(new Uniform(0.5).WithPhase(Math.PI)
+        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI)
         .WithTransform((dev, _, d) =>
         {
             check[dev.Idx] = true;
@@ -53,14 +53,14 @@ public class TransformTest
         Assert.True(check[1]);
 
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(85, d));
-            Assert.All(phases, p => Assert.Equal(256, p));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
+            Assert.All(phases, p => Assert.Equal(128, p));
         }
     }
 }

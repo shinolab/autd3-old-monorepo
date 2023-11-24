@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,16 +24,16 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
 
         Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(85, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
             Assert.Contains(phases, p => p != 0);
         }
     }
@@ -45,16 +45,16 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
             .WithConstraint(new Normalize());
 
         Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.Contains(duties, d => d != 0);
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.Contains(intensities, d => d != 0);
             Assert.Contains(phases, p => p != 0);
         }
     }
@@ -66,17 +66,17 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .WithConstraint(new Clamp(0.4, 0.5));
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .WithConstraint(new Clamp(new EmitIntensity(67), new EmitIntensity(85)));
 
         Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.True(67 <= d));
-            Assert.All(duties, d => Assert.True(d <= 85));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.True(67 <= d));
+            Assert.All(intensities, d => Assert.True(d <= 85));
             Assert.Contains(phases, p => p != 0);
         }
     }
@@ -88,16 +88,16 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5.0)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5.0)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
             .WithConstraint(new DontCare());
 
         Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.Contains(duties, d => d != 0);
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.Contains(intensities, d => d != 0);
             Assert.Contains(phases, p => p != 0);
         }
     }

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,24 +32,35 @@ namespace AUTD3Sharp.Modulation
     /// </summary>
     public sealed class Static : Internal.Modulation
     {
-        private float_t? _amp;
+        private EmitIntensity? _intensity;
 
         /// <summary>
         /// Set amplitude
         /// </summary>
-        /// <param name="amp">normalized amplitude (0.0 - 1.0)</param>
+        /// <param name="intensity">Emission intensity</param>
         /// <returns></returns>
-        public Static WithAmp(float_t amp)
+        public Static WithAmp(byte intensity)
         {
-            _amp = amp;
+            _intensity = new EmitIntensity(intensity);
+            return this;
+        }
+
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="intensity">Emission intensity</param>
+        /// <returns></returns>
+        public Static WithAmp(EmitIntensity intensity)
+        {
+            _intensity = intensity;
             return this;
         }
 
         internal override ModulationPtr ModulationPtr()
         {
             var ptr = NativeMethodsBase.AUTDModulationStatic();
-            if (_amp != null)
-                ptr = NativeMethodsBase.AUTDModulationStaticWithAmp(ptr, _amp.Value);
+            if (_intensity != null)
+                ptr = NativeMethodsBase.AUTDModulationStaticWithAmp(ptr, _intensity.Value.Value);
             return ptr;
         }
     }

@@ -4,7 +4,7 @@
  * Created Date: 08/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,13 +60,13 @@ namespace AUTD3Sharp.Gain.Holo
             Ptr.Item1 = IntPtr.Zero;
         }
 
-        internal override GainPtr Sdp(float_t[] foci, float_t[] amps, ulong size)
+        internal override GainPtr Sdp(float_t[] foci, Amplitude[] amps, ulong size)
         {
             unsafe
             {
                 fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDP(Ptr, fp, ap, size);
+                fixed (Amplitude* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDP(Ptr, fp, (float_t*)ap, size);
             }
         }
 
@@ -85,38 +85,18 @@ namespace AUTD3Sharp.Gain.Holo
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithLambda(ptr, v);
         }
 
-        internal override GainPtr SdpWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr SdpWithConstraint(GainPtr ptr, EmissionConstraintPtr v)
         {
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDASDPWithConstraint(ptr, v);
         }
 
-        internal override GainPtr Evp(float_t[] foci, float_t[] amps, ulong size)
+        internal override GainPtr Gs(float_t[] foci, Amplitude[] amps, ulong size)
         {
             unsafe
             {
                 fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVP(Ptr, fp, ap, size);
-            }
-        }
-
-        internal override GainPtr EvpWithGamma(GainPtr ptr, float_t v)
-        {
-            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVPWithGamma(ptr, v);
-        }
-
-        internal override GainPtr EvpWithConstraint(GainPtr ptr, ConstraintPtr v)
-        {
-            return NativeMethodsBackendCUDA.AUTDGainHoloCUDAEVPWithConstraint(ptr, v);
-        }
-
-        internal override GainPtr Gs(float_t[] foci, float_t[] amps, ulong size)
-        {
-            unsafe
-            {
-                fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGS(Ptr, fp, ap, size);
+                fixed (Amplitude* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGS(Ptr, fp, (float_t*)ap, size);
             }
         }
 
@@ -125,18 +105,18 @@ namespace AUTD3Sharp.Gain.Holo
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSWithRepeat(ptr, v);
         }
 
-        internal override GainPtr GsWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr GsWithConstraint(GainPtr ptr, EmissionConstraintPtr v)
         {
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSWithConstraint(ptr, v);
         }
 
-        internal override GainPtr Gspat(float_t[] foci, float_t[] amps, ulong size)
+        internal override GainPtr Gspat(float_t[] foci, Amplitude[] amps, ulong size)
         {
             unsafe
             {
                 fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPAT(Ptr, fp, ap, size);
+                fixed (Amplitude* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPAT(Ptr, fp, (float_t*)ap, size);
             }
         }
 
@@ -145,33 +125,33 @@ namespace AUTD3Sharp.Gain.Holo
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPATWithRepeat(ptr, v);
         }
 
-        internal override GainPtr GspatWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr GspatWithConstraint(GainPtr ptr, EmissionConstraintPtr v)
         {
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDAGSPATWithConstraint(ptr, v);
         }
 
-        internal override GainPtr Naive(float_t[] foci, float_t[] amps, ulong size)
+        internal override GainPtr Naive(float_t[] foci, Amplitude[] amps, ulong size)
         {
             unsafe
             {
                 fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDANaive(Ptr, fp, ap, size);
+                fixed (Amplitude* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDANaive(Ptr, fp, (float_t*)ap, size);
             }
         }
 
-        internal override GainPtr NaiveWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr NaiveWithConstraint(GainPtr ptr, EmissionConstraintPtr v)
         {
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDANaiveWithConstraint(ptr, v);
         }
 
-        internal override GainPtr Lm(float_t[] foci, float_t[] amps, ulong size)
+        internal override GainPtr Lm(float_t[] foci, Amplitude[] amps, ulong size)
         {
             unsafe
             {
                 fixed (float_t* fp = foci)
-                fixed (float_t* ap = amps)
-                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDALM(Ptr, fp, ap, size);
+                fixed (Amplitude* ap = amps)
+                    return NativeMethodsBackendCUDA.AUTDGainHoloCUDALM(Ptr, fp, (float_t*)ap, size);
             }
         }
 
@@ -204,7 +184,7 @@ namespace AUTD3Sharp.Gain.Holo
             }
         }
 
-        internal override GainPtr LmWithConstraint(GainPtr ptr, ConstraintPtr v)
+        internal override GainPtr LmWithConstraint(GainPtr ptr, EmissionConstraintPtr v)
         {
             return NativeMethodsBackendCUDA.AUTDGainHoloCUDALMWithConstraint(ptr, v);
         }

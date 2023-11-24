@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ module CustomTest =
             let mutable drive = new Drive();
             let dist = (tr.Position - point).L2Norm;
             drive.Phase <- dist * tr.Wavenumber(dev.SoundSpeed);
-            drive.Amp <- EmitIntensity.NewNormalized(1.0).PulseWidth;
+            drive.Intensity <- EmitIntensity.Max;
             drive
         override this.Calc (geometry: Geometry) = AUTD3Sharp.Gain.Gain.Transform(geometry, Calc_);
         

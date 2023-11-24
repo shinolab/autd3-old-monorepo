@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,8 +52,8 @@ namespace AUTD3Sharp.Modulation.AudioFile
                         throw new AUTDException(err);
                     }
                     var ptr = result.result;
-                    if (FreqDiv != null)
-                        ptr = NativeMethodsModulationAudioFile.AUTDModulationWavWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
+                    if (Config != null)
+                        ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCMWithSamplingConfig(ptr, Config.Value.Internal);
                     return ptr;
                 }
             }

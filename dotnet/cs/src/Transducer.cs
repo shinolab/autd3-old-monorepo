@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,12 +35,12 @@ namespace AUTD3Sharp
 {
     public sealed class Transducer
     {
-        private readonly TransducerPtr _ptr;
+        internal readonly TransducerPtr Ptr;
 
         internal Transducer(int localIdx, DevicePtr ptr)
         {
             LocalIdx = localIdx;
-            _ptr = NativeMethodsBase.AUTDTransducer(ptr, (uint)localIdx);
+            Ptr = NativeMethodsBase.AUTDTransducer(ptr, (uint)localIdx);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace AUTD3Sharp
                 {
                     fixed (float_t* p = pos)
                     {
-                        NativeMethodsBase.AUTDTransducerPosition(_ptr, p);
+                        NativeMethodsBase.AUTDTransducerPosition(Ptr, p);
                     }
                 }
                 return new Vector3(pos[0], pos[1], pos[2]);
@@ -79,7 +79,7 @@ namespace AUTD3Sharp
                 {
                     fixed (float_t* p = rot)
                     {
-                        NativeMethodsBase.AUTDTransducerRotation(_ptr, p);
+                        NativeMethodsBase.AUTDTransducerRotation(Ptr, p);
                     }
                 }
                 return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
@@ -98,7 +98,7 @@ namespace AUTD3Sharp
                 {
                     fixed (float_t* p = dir)
                     {
-                        NativeMethodsBase.AUTDTransducerDirectionX(_ptr, p);
+                        NativeMethodsBase.AUTDTransducerDirectionX(Ptr, p);
                     }
                 }
                 return new Vector3(dir[0], dir[1], dir[2]);
@@ -117,7 +117,7 @@ namespace AUTD3Sharp
                 {
                     fixed (float_t* p = dir)
                     {
-                        NativeMethodsBase.AUTDTransducerDirectionY(_ptr, p);
+                        NativeMethodsBase.AUTDTransducerDirectionY(Ptr, p);
                     }
                 }
                 return new Vector3(dir[0], dir[1], dir[2]);
@@ -136,7 +136,7 @@ namespace AUTD3Sharp
                 {
                     fixed (float_t* p = dir)
                     {
-                        NativeMethodsBase.AUTDTransducerDirectionZ(_ptr, p);
+                        NativeMethodsBase.AUTDTransducerDirectionZ(Ptr, p);
                     }
                 }
                 return new Vector3(dir[0], dir[1], dir[2]);
@@ -148,20 +148,20 @@ namespace AUTD3Sharp
         /// </summary>
         public ushort ModDelay
         {
-            get => NativeMethodsBase.AUTDTransducerModDelayGet(_ptr);
-            set => NativeMethodsBase.AUTDTransducerModDelaySet(_ptr, value);
+            get => NativeMethodsBase.AUTDTransducerModDelayGet(Ptr);
+            set => NativeMethodsBase.AUTDTransducerModDelaySet(Ptr, value);
         }
 
         public float_t AmpFilter
         {
-            get => NativeMethodsBase.AUTDTransducerAmpFilterGet(_ptr);
-            set => NativeMethodsBase.AUTDTransducerAmpFilterSet(_ptr, value);
+            get => NativeMethodsBase.AUTDTransducerAmpFilterGet(Ptr);
+            set => NativeMethodsBase.AUTDTransducerAmpFilterSet(Ptr, value);
         }
 
         public float_t PhaseFilter
         {
-            get => NativeMethodsBase.AUTDTransducerPhaseFilterGet(_ptr);
-            set => NativeMethodsBase.AUTDTransducerPhaseFilterSet(_ptr, value);
+            get => NativeMethodsBase.AUTDTransducerPhaseFilterGet(Ptr);
+            set => NativeMethodsBase.AUTDTransducerPhaseFilterSet(Ptr, value);
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace AUTD3Sharp
         /// </summary>
         /// <param name="soundSpeed">Speed of sound</param>
         /// <returns></returns>
-        public float_t Wavelength(float_t soundSpeed) => NativeMethodsBase.AUTDTransducerWavelength(_ptr, soundSpeed);
+        public float_t Wavelength(float_t soundSpeed) => NativeMethodsBase.AUTDTransducerWavelength(Ptr, soundSpeed);
 
         /// <summary>
         /// Wavenumber of the transducer

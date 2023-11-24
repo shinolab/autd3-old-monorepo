@@ -19,20 +19,20 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDGainBessel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainBessel(double x, double y, double z, double nx, double ny, double nz, double theta_z);
 
-        [DllImport(__DllName, EntryPoint = "AUTDGainBesselWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainBesselWithAmp(GainPtr bessel, ushort amp);
+        [DllImport(__DllName, EntryPoint = "AUTDGainBesselWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern GainPtr AUTDGainBesselWithIntensity(GainPtr bessel, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCustom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainCustom();
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCustomSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainCustomSet(GainPtr custom, uint dev_idx, Drive* ptr, uint len);
+        public static extern GainPtr AUTDGainCustomSet(GainPtr custom, uint dev_idx, DriveRaw* ptr, uint len);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainFocus", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainFocus(double x, double y, double z);
 
-        [DllImport(__DllName, EntryPoint = "AUTDGainFocusWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainFocusWithAmp(GainPtr focus, ushort amp);
+        [DllImport(__DllName, EntryPoint = "AUTDGainFocusWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern GainPtr AUTDGainFocusWithIntensity(GainPtr focus, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainGroupCreateMap", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GroupGainMapPtr AUTDGainGroupCreateMap(uint* device_indices_ptr, uint num_devices);
@@ -50,7 +50,7 @@ namespace AUTD3Sharp
         public static extern ResultGainCalcDrivesMap AUTDGainCalc(GainPtr gain, GeometryPtr geometry);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCalcGetResult", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, Drive* dst, uint idx);
+        public static extern void AUTDGainCalcGetResult(GainCalcDrivesMapPtr src, DriveRaw* dst, uint idx);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainCalcFreeResult", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDGainCalcFreeResult(GainCalcDrivesMapPtr src);
@@ -61,17 +61,17 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDGainPlane", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainPlane(double nx, double ny, double nz);
 
-        [DllImport(__DllName, EntryPoint = "AUTDGainPlaneWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainPlaneWithAmp(GainPtr plane, ushort amp);
+        [DllImport(__DllName, EntryPoint = "AUTDGainPlaneWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern GainPtr AUTDGainPlaneWithIntensity(GainPtr plane, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainTransducerTest", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainTransducerTest();
 
         [DllImport(__DllName, EntryPoint = "AUTDGainTransducerTestSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainTransducerTestSet(GainPtr trans_test, uint dev_idx, uint tr_idx, double phase, ushort pulse_width);
+        public static extern GainPtr AUTDGainTransducerTestSet(GainPtr trans_test, TransducerPtr tr, double phase, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainUniform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainUniform(ushort amp);
+        public static extern GainPtr AUTDGainUniform(byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainUniformWithPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
@@ -215,14 +215,8 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureModDelay", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
-        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureAmpFilter", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramConfigureAmpFilter();
-
-        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigurePhaseFilter", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramConfigurePhaseFilter();
-
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramSilencer(ushort step);
+        public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerSend", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultI32 AUTDControllerSend(ControllerPtr cnt, DatagramPtr d1, DatagramPtr d2, long timeout_ns);
@@ -309,17 +303,14 @@ namespace AUTD3Sharp
         [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool AUTDLinkAuditFpgaIsStmGainMode(LinkPtr audit, uint idx);
 
-        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaSilencerStep", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ushort AUTDLinkAuditFpgaSilencerStep(LinkPtr audit, uint idx);
+        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaSilencerStepIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ushort AUTDLinkAuditFpgaSilencerStepIntensity(LinkPtr audit, uint idx);
+
+        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaSilencerStepPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ushort AUTDLinkAuditFpgaSilencerStepPhase(LinkPtr audit, uint idx);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaModDelays", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint idx, ushort* delay);
-
-        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaDutyFilters", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDLinkAuditFpgaDutyFilters(LinkPtr audit, uint idx, short* filters);
-
-        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaPhaseFilters", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDLinkAuditFpgaPhaseFilters(LinkPtr audit, uint idx, short* filters);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaStmFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern uint AUTDLinkAuditFpgaStmFrequencyDivision(LinkPtr audit, uint idx);
@@ -345,8 +336,8 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaModulation", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDLinkAuditFpgaModulation(LinkPtr audit, uint idx, byte* data);
 
-        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaDutiesAndPhases", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDLinkAuditFpgaDutiesAndPhases(LinkPtr audit, uint idx, uint stm_idx, ushort* duties, ushort* phases);
+        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaIntensitiesAndPhases", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void AUTDLinkAuditFpgaIntensitiesAndPhases(LinkPtr audit, uint idx, uint stm_idx, byte* intensities, byte* phases);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkGet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern LinkPtr AUTDLinkGet(ControllerPtr cnt);
@@ -361,7 +352,7 @@ namespace AUTD3Sharp
         public static extern uint AUTDModulationCacheGetBufferLen(CachePtr m);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCacheGetBuffer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDModulationCacheGetBuffer(CachePtr m, double* buf);
+        public static extern void AUTDModulationCacheGetBuffer(CachePtr m, byte* buf);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCacheIntoModulation", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationCacheIntoModulation(CachePtr m);
@@ -370,19 +361,7 @@ namespace AUTD3Sharp
         public static extern void AUTDModulationCacheDelete(CachePtr m);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationCustom", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationCustom(uint freq_div, double* ptr, ulong len);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationWithLowPass", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationWithLowPass(ModulationPtr m, uint n_taps, double cutoff);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationWithHighPass", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationWithHighPass(ModulationPtr m, uint n_taps, double cutoff);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationWithBandPass", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationWithBandPass(ModulationPtr m, uint n_taps, double f_low, double f_high);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationWithBandStop", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationWithBandStop(ModulationPtr m, uint n_taps, double f_low, double f_high);
+        public static extern ModulationPtr AUTDModulationCustom(SamplingConfigurationRaw config, byte* ptr, ulong len);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationFourier", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationFourier(ModulationPtr m);
@@ -390,8 +369,8 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationFourierAddComponent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier, ModulationPtr m);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern uint AUTDModulationSamplingFrequencyDivision(ModulationPtr m);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SamplingConfigurationRaw AUTDModulationSamplingConfig(ModulationPtr m);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationIntoDatagram", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDModulationIntoDatagram(ModulationPtr m);
@@ -405,8 +384,8 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationSine", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSine(uint freq);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineWithSamplingFrequencyDivision(ModulationPtr m, uint div);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m, SamplingConfigurationRaw config);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
@@ -417,62 +396,47 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithOffset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineLegacy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineLegacy(double freq);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineLegacyWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineLegacyWithAmp(ModulationPtr m, double amp);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineLegacyWithOffset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineLegacyWithOffset(ModulationPtr m, double offset);
-
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineLegacyWithSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineLegacyWithSamplingFrequencyDivision(ModulationPtr m, uint div);
-
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquare", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquare(uint freq);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithLow", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSquareWithLow(ModulationPtr m, double low);
+        public static extern ModulationPtr AUTDModulationSquareWithLow(ModulationPtr m, byte low);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithHigh", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSquareWithHigh(ModulationPtr m, double high);
+        public static extern ModulationPtr AUTDModulationSquareWithHigh(ModulationPtr m, byte high);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithDuty", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquareWithDuty(ModulationPtr m, double duty);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSquareWithSamplingFrequencyDivision(ModulationPtr m, uint div);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m, SamplingConfigurationRaw config);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationStatic", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationStatic();
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationStaticWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, double amp);
+        public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationWithTransform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationWithTransform(ModulationPtr m, IntPtr f, IntPtr context);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMFocus", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDSTMFocus(STMPropsPtr props, double* points, byte* shift, ulong size);
+        public static extern ResultDatagram AUTDSTMFocus(STMPropsPtr props, double* points, byte* intensities, ulong size);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMGain", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDSTMGain(STMPropsPtr props, GainPtr* gains, uint size, GainSTMMode mode);
+        public static extern ResultDatagram AUTDSTMGain(STMPropsPtr props, GainPtr* gains, uint size, GainSTMMode mode);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMGainAddGain", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDSTMGainAddGain(DatagramPtr stm, GainPtr gain);
+        public static extern ResultDatagram AUTDSTMGainAddGain(DatagramPtr stm, GainPtr gain);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMProps", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMProps(double freq);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNew", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern STMPropsPtr AUTDSTMPropsNew(double freq);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsWithSamplingFreq", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMPropsWithSamplingFreq(double freq);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNewWithPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern STMPropsPtr AUTDSTMPropsNewWithPeriod(ulong p);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsWithSamplingFreqDiv", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMPropsWithSamplingFreqDiv(uint div);
-
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsWithSamplingPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMPropsWithSamplingPeriod(ulong period_ns);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNewWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern STMPropsPtr AUTDSTMPropsNewWithSamplingConfig(SamplingConfigurationRaw config);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMPropsWithStartIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern STMPropsPtr AUTDSTMPropsWithStartIdx(STMPropsPtr props, int idx);
@@ -483,14 +447,11 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDSTMPropsFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern double AUTDSTMPropsFrequency(STMPropsPtr props, ulong size);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsSamplingFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern double AUTDSTMPropsSamplingFrequency(STMPropsPtr props, ulong size);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ulong AUTDSTMPropsPeriod(STMPropsPtr props, ulong size);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsSamplingFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern uint AUTDSTMPropsSamplingFrequencyDivision(STMPropsPtr props, ulong size);
-
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsSamplingPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ulong AUTDSTMPropsSamplingPeriod(STMPropsPtr props, ulong size);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSTMPropsSamplingConfig(STMPropsPtr props, ulong size);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMPropsStartIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int AUTDSTMPropsStartIdx(STMPropsPtr props);
@@ -505,13 +466,6 @@ namespace AUTD3Sharp
     internal unsafe partial struct ControllerBuilderPtr
     {
         public IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Drive
-    {
-        public double Phase;
-        public ushort Amp;
     }
 
     [StructLayout(LayoutKind.Sequential)]

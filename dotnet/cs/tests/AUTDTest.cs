@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,19 +27,31 @@ public class AUTDTest
         var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
-            Assert.Equal(10, autd.Link.SilencerStep(dev.Idx));
+        {
+            Assert.Equal(256, autd.Link.SilencerStepIntensity(dev.Idx));
+            Assert.Equal(256, autd.Link.SilencerStepPhase(dev.Idx));
+        }
 
-        Assert.True(await autd.SendAsync(new Silencer(20)));
+        Assert.True(await autd.SendAsync(new Silencer(10, 20)));
         foreach (var dev in autd.Geometry)
-            Assert.Equal(20, autd.Link.SilencerStep(dev.Idx));
+        {
+            Assert.Equal(10, autd.Link.SilencerStepIntensity(dev.Idx));
+            Assert.Equal(20, autd.Link.SilencerStepPhase(dev.Idx));
+        }
 
         Assert.True(await autd.SendAsync(Silencer.Disable()));
         foreach (var dev in autd.Geometry)
-            Assert.Equal(0xFFFF, autd.Link.SilencerStep(dev.Idx));
+        {
+            Assert.Equal(0xFFFF, autd.Link.SilencerStepIntensity(dev.Idx));
+            Assert.Equal(0xFFFF, autd.Link.SilencerStepPhase(dev.Idx));
+        }
 
         Assert.True(await autd.SendAsync(new Silencer()));
         foreach (var dev in autd.Geometry)
-            Assert.Equal(10, autd.Link.SilencerStep(dev.Idx));
+        {
+            Assert.Equal(256, autd.Link.SilencerStepIntensity(dev.Idx));
+            Assert.Equal(256, autd.Link.SilencerStepPhase(dev.Idx));
+        }
     }
 
     [Fact]
@@ -172,7 +184,7 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
+            Assert.All(m, d => Assert.Equal(0xFF, d));
         }
         Assert.True(await autd.SendAsync(new Static()));
 
@@ -197,45 +209,45 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            Assert.All(m, d => Assert.Equal(0xFF, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
-        Assert.True(await autd.SendAsync(new Static(), new Uniform(1.0)));
+        Assert.True(await autd.SendAsync(new Static(), new Uniform(EmitIntensity.Max)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
             Assert.All(m, d => Assert.Equal(0xFF, d));
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
 
         autd.Link.Down();
-        Assert.False(await autd.SendAsync((new Static(), new Uniform(1.0))));
+        Assert.False(await autd.SendAsync((new Static(), new Uniform(EmitIntensity.Max))));
 
         autd.Link.BreakDown();
-        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static(), new Uniform(1.0)));
+        await Assert.ThrowsAsync<AUTDException>(async () => await autd.SendAsync(new Static(), new Uniform(EmitIntensity.Max)));
     }
 
     [Fact]
     public async Task TestSendSpecial()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(1.0)));
+        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max)));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, _) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
+            var (intensities, _) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
         }
         Assert.True(await autd.SendAsync(new Stop()));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, _) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, _) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
         }
 
         autd.Link.Down();
@@ -252,39 +264,39 @@ public class AUTDTest
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("0", (new Static(), new Null()))
-             .Set("1", new Sine(150), new Uniform(1.0))
+             .Set("1", new Sine(150), new Uniform(EmitIntensity.Max))
              .SendAsync();
         {
             var m = autd.Link.Modulation(0);
             Assert.Equal(2, m.Length);
             Assert.All(m, d => Assert.Equal(0xFF, d));
-            var (duties, phases) = autd.Link.DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
             var m = autd.Link.Modulation(1);
             Assert.Equal(80, m.Length);
-            var (duties, phases) = autd.Link.DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
 
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("1", new Stop())
-             .Set("0", (new Sine(150), new Uniform(1.0)))
+             .Set("0", (new Sine(150), new Uniform(EmitIntensity.Max)))
              .SendAsync();
         {
             var m = autd.Link.Modulation(0);
             Assert.Equal(80, m.Length);
-            var (duties, phases) = autd.Link.DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
-            var (duties, _) = autd.Link.DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, _) = autd.Link.IntensitiesAndPhases(1, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
         }
     }
 
@@ -300,21 +312,21 @@ public class AUTDTest
             check[dev.Idx] = true;
             return "0";
         })
-                 .Set("0", new Sine(150), new Uniform(0.5).WithPhase(Math.PI))
+                 .Set("0", new Sine(150), new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI))
                  .SendAsync();
 
         Assert.False(check[0]);
         Assert.True(check[1]);
 
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(0, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(1, 0);
-            Assert.All(duties, d => Assert.Equal(85, d));
-            Assert.All(phases, p => Assert.Equal(256, p));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
+            Assert.All(phases, p => Assert.Equal(128, p));
         }
     }
 
@@ -322,23 +334,23 @@ public class AUTDTest
     public async Task TestClear()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(1.0).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
-            Assert.All(phases, p => Assert.Equal(256, p));
+            Assert.All(m, d => Assert.Equal(0xFF, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
+            Assert.All(phases, p => Assert.Equal(128, p));
         }
 
         Assert.True(await autd.SendAsync(new Clear()));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
-            Assert.All(m, d => Assert.Equal(0, d));
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            Assert.All(m, d => Assert.Equal(0xFF, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
     }
@@ -347,19 +359,19 @@ public class AUTDTest
     public async Task TestStop()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(1.0).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(Math.PI)));
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(256, d));
-            Assert.All(phases, p => Assert.Equal(256, p));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0xFF, d));
+            Assert.All(phases, p => Assert.Equal(128, p));
         }
 
         Assert.True(await autd.SendAsync(new Stop()));
         foreach (var dev in autd.Geometry)
         {
-            var (duties, _) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, _) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
         }
     }
 
@@ -406,46 +418,6 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(1, d));
-        }
-    }
-
-    [Fact]
-    public async Task TestConfigureAmpFilter()
-    {
-        var autd = await CreateController();
-
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link.DutyFilters(dev.Idx), d => Assert.Equal(0, d));
-            foreach (var tr in dev)
-                tr.AmpFilter = -1;
-            Assert.All(autd.Link.DutyFilters(dev.Idx), d => Assert.Equal(0, d));
-        }
-
-        Assert.True(await autd.SendAsync(new ConfigureAmpFilter()));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link.DutyFilters(dev.Idx), d => Assert.Equal(-256, d));
-        }
-    }
-
-    [Fact]
-    public async Task TestConfigurePhaseFilter()
-    {
-        var autd = await CreateController();
-
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link.PhaseFilters(dev.Idx), d => Assert.Equal(0, d));
-            foreach (var tr in dev)
-                tr.PhaseFilter = -Math.PI;
-            Assert.All(autd.Link.PhaseFilters(dev.Idx), d => Assert.Equal(0, d));
-        }
-
-        Assert.True(await autd.SendAsync(new ConfigurePhaseFilter()));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.All(autd.Link.PhaseFilters(dev.Idx), d => Assert.Equal(-256, d));
         }
     }
 }

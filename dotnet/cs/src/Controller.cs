@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -170,7 +170,6 @@ namespace AUTD3Sharp
 
         private bool _isDisposed;
         internal ControllerPtr Ptr;
-        private T _link;
 
         #endregion
 
@@ -180,7 +179,7 @@ namespace AUTD3Sharp
         {
             Ptr = ptr;
             Geometry = geometry;
-            _link = link;
+            Link = link;
         }
 
         private static FirmwareInfo GetFirmwareInfo(FirmwareInfoListPtr handle, uint i)
@@ -319,7 +318,7 @@ namespace AUTD3Sharp
             }
         }
 
-        public T Link => _link;
+        public T Link { get; }
 
         #endregion
 
@@ -587,7 +586,7 @@ namespace AUTD3Sharp
 
     public class ControllerBuilder
     {
-        private ControllerBuilderPtr _ptr;
+        private ControllerBuilderPtr _ptr = NativeMethodsBase.AUTDControllerBuilder();
 
         /// <summary>
         /// Add device
@@ -631,7 +630,7 @@ namespace AUTD3Sharp
         /// <summary>
         /// Open controller
         /// </summary>
-        /// <param name="link">link</param>
+        /// <param name="linkBuilder">link</param>
         /// <returns>Controller</returns>
         public Controller<T> OpenWith<T>(ILinkBuilder<T> linkBuilder)
         {
@@ -649,11 +648,6 @@ namespace AUTD3Sharp
             var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
             var link = linkBuilder.ResolveLink(NativeMethodsBase.AUTDLinkGet(ptr));
             return new Controller<T>(geometry, ptr, link);
-        }
-
-        public ControllerBuilder()
-        {
-            _ptr = NativeMethodsBase.AUTDControllerBuilder();
         }
     }
 
@@ -698,39 +692,25 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// Datagram to configure amp filter
-    /// </summary>
-    public sealed class ConfigureAmpFilter : IDatagram
-    {
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureAmpFilter();
-    }
-
-
-    /// <summary>
-    /// Datagram to configure phase filter
-    /// </summary>
-    public sealed class ConfigurePhaseFilter : IDatagram
-    {
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigurePhaseFilter();
-    }
-
-    /// <summary>
     /// Datagram to configure silencer
     /// </summary>
     public sealed class Silencer : IDatagram
     {
-        private readonly ushort _step;
+        private readonly ushort _stepIntensity;
+        private readonly ushort _stepPhase;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="step">Update step of silencer. The smaller step is, the quieter the output is.</param>
-        public Silencer(ushort step = 10)
+        /// <param name="stepIntensity">Intensity update step of silencer. The smaller step is, the quieter the output is.</param>
+        /// <param name="stepPhase">Phase update step of silencer. The smaller step is, the quieter the output is.</param>
+        public Silencer(ushort stepIntensity = 256, ushort stepPhase = 256)
         {
-            _step = step;
+            _stepIntensity = stepIntensity;
+            _stepPhase = stepPhase;
         }
 
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramSilencer(_step);
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramSilencer(_stepIntensity, _stepPhase).Validate();
 
         /// <summary>
         /// Disable silencer
@@ -738,7 +718,7 @@ namespace AUTD3Sharp
         /// <returns></returns>
         public static Silencer Disable()
         {
-            return new Silencer(0xFFFF);
+            return new Silencer(0xFFFF, 0xFFFF);
         }
     }
 }
