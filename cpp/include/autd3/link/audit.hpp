@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,7 +68,10 @@ class Audit final {
 
   [[nodiscard]] int fpga_flags(const size_t idx) const { return AUTDLinkAuditCpuFpgaFlags(_ptr, static_cast<std::uint32_t>(idx)); }
 
-  [[nodiscard]] int silencer_step(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStep(_ptr, static_cast<std::uint32_t>(idx)); }
+  [[nodiscard]] int silencer_step_intensity(const size_t idx) const {
+    return AUTDLinkAuditFpgaSilencerStepIntensity(_ptr, static_cast<std::uint32_t>(idx));
+  }
+  [[nodiscard]] int silencer_step_phase(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStepPhase(_ptr, static_cast<std::uint32_t>(idx)); }
 
   void assert_thermal_sensor(const size_t idx) const { AUTDLinkAuditFpgaAssertThermalSensor(_ptr, static_cast<std::uint32_t>(idx)); }
 
@@ -92,25 +95,11 @@ class Audit final {
     return buf;
   }
 
-  [[nodiscard]] std::vector<std::int16_t> duty_filters(const size_t idx) const {
+  [[nodiscard]] std::pair<std::vector<std::uint8_t>, std::vector<std::uint8_t>> intensities_and_phases(const size_t idx, const int stm_idx) const {
     const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaDutyFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
-  }
-
-  [[nodiscard]] std::vector<std::int16_t> phase_filters(const size_t idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaPhaseFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
-  }
-
-  [[nodiscard]] std::pair<std::vector<std::uint16_t>, std::vector<std::uint16_t>> duties_and_phases(const size_t idx, const int stm_idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::uint16_t> duties(n);
-    std::vector<std::uint16_t> phases(n);
-    AUTDLinkAuditFpgaDutiesAndPhases(_ptr, static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(), phases.data());
+    std::vector<std::uint8_t> duties(n);
+    std::vector<std::uint8_t> phases(n);
+    AUTDLinkAuditFpgaIntensitiesAndPhases(_ptr, static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(), phases.data());
     return std::make_pair(duties, phases);
   }
 

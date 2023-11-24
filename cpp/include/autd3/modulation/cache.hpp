@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <memory>
 
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -28,8 +29,8 @@ class Cache final : public internal::Modulation {
   explicit Cache(M&& m) {
     static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
     auto cache = validate(internal::native_methods::AUTDModulationWithCache(m.modulation_ptr()));
-    _buffer.resize(internal::native_methods::AUTDModulationCacheGetBufferLen(cache));
-    AUTDModulationCacheGetBuffer(cache, _buffer.data());
+    _buffer.resize(internal::native_methods::AUTDModulationCacheGetBufferLen(cache), internal::EmitIntensity::minimum());
+    AUTDModulationCacheGetBuffer(cache, reinterpret_cast<uint8_t*>(_buffer.data()));
     _cache = std::shared_ptr<internal::native_methods::CachePtr>(
         new internal::native_methods::CachePtr(cache), [](const internal::native_methods::CachePtr* ptr) { AUTDModulationCacheDelete(*ptr); });
   }
@@ -43,17 +44,17 @@ class Cache final : public internal::Modulation {
     return internal::native_methods::AUTDModulationCacheIntoModulation(*_cache);
   }
 
-  [[nodiscard]] const std::vector<double>& buffer() const { return _buffer; }
+  [[nodiscard]] const std::vector<internal::EmitIntensity>& buffer() const { return _buffer; }
 
-  [[nodiscard]] std::vector<double>::const_iterator cbegin() const noexcept { return _buffer.cbegin(); }
-  [[nodiscard]] std::vector<double>::const_iterator cend() const noexcept { return _buffer.cend(); }
-  [[nodiscard]] std::vector<double>::const_iterator begin() const noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<double>::const_iterator end() const noexcept { return _buffer.end(); }
-  [[nodiscard]] const double& operator[](const size_t i) const { return _buffer[i]; }
+  [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator cbegin() const noexcept { return _buffer.cbegin(); }
+  [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator cend() const noexcept { return _buffer.cend(); }
+  [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator begin() const noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator end() const noexcept { return _buffer.end(); }
+  [[nodiscard]] const internal::EmitIntensity& operator[](const size_t i) const { return _buffer[i]; }
 
  private:
   std::shared_ptr<internal::native_methods::CachePtr> _cache;
-  std::vector<double> _buffer;
+  std::vector<internal::EmitIntensity> _buffer;
 };
 
 template <typename M>

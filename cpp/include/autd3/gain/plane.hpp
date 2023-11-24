@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,17 +31,17 @@ class Plane final : public internal::Gain, public IntoCache<Plane>, public IntoT
  public:
   explicit Plane(internal::Vector3 d) : _d(std::move(d)) {}
 
-  AUTD3_DEF_PARAM_AMP(Plane)
+  AUTD3_DEF_PARAM_INTENSITY(Plane, intensity)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainPlane(_d.x(), _d.y(), _d.z());
-    if (_amp.has_value()) ptr = AUTDGainPlaneWithAmp(ptr, _amp.value().pulse_width());
+    if (_intensity.has_value()) ptr = AUTDGainPlaneWithIntensity(ptr, _intensity.value().value());
     return ptr;
   }
 
  private:
   internal::Vector3 _d;
-  std::optional<internal::EmitIntensity> _amp;
+  std::optional<internal::EmitIntensity> _intensity;
 };
 
 }  // namespace autd3::gain

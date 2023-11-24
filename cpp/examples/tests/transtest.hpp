@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,9 @@ inline void tran_test(autd3::Controller<L>& autd) {
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
-  const auto g = autd3::gain::TransducerTest().set(0, 0, 0, 1.0).set(0, 248, 0, 1.0);
+  const autd3::gain::TransducerTest g = autd3::gain::TransducerTest()
+                     .set(autd.geometry()[0][0], 0, autd3::EmitIntensity::maximum())
+                     .set(autd.geometry()[0][248], 0, autd3::EmitIntensity::maximum());
 
   autd.send_async(m, g).get();
 }

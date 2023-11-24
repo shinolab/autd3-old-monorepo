@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,27 +18,27 @@
 TEST(Gain, Transform) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0.5)
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80)
                                   .with_phase(autd3::internal::pi)
                                   .with_transform([](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
                                                      const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
                                     if (dev.idx() == 0) {
-                                      return autd3::internal::native_methods::Drive{d.phase + autd3::internal::pi / 4, d.amp};
+                                      return autd3::internal::native_methods::Drive{d.phase + autd3::internal::pi / 4, d.intensity};
                                     }
-                                    return autd3::internal::native_methods::Drive{d.phase - autd3::internal::pi / 4, d.amp};
+                                    return autd3::internal::native_methods::Drive{d.phase - autd3::internal::pi / 4, d.intensity};
                                   }))
                   .get());
 
   {
-    auto [duties, phases] = autd.link().duties_and_phases(0, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256 + 64; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(0, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128 + 32; }));
   }
 
   {
-    auto [duties, phases] = autd.link().duties_and_phases(1, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256 - 64; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(1, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128 - 32; }));
   }
 }
 
@@ -47,7 +47,7 @@ TEST(Gain, TransformCheckOnlyForEnabled) {
   autd.geometry()[0].set_enable(false);
 
   std::vector cnt(autd.geometry().num_devices(), false);
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0.5)
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80)
                                   .with_phase(autd3::internal::pi)
                                   .with_transform([&cnt](const autd3::internal::Device& dev, const autd3::internal::Transducer&,
                                                          const autd3::internal::native_methods::Drive d) -> autd3::internal::native_methods::Drive {
@@ -60,13 +60,13 @@ TEST(Gain, TransformCheckOnlyForEnabled) {
   ASSERT_TRUE(cnt[1]);
 
   {
-    auto [duties, phases] = autd.link().duties_and_phases(0, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(0, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    auto [duties, phases] = autd.link().duties_and_phases(1, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 85; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 256; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(1, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128; }));
   }
 }
