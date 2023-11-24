@@ -165,9 +165,6 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDEmitIntensityNewWithCorrection.argtypes = [ctypes.c_uint8] 
-        self.dll.AUTDEmitIntensityNewWithCorrection.restype = ctypes.c_uint8
-
         self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
         self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.restype = ctypes.c_uint8
 
@@ -191,9 +188,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDSamplingConfigPeriod.argtypes = [SamplingConfiguration]  # type: ignore 
         self.dll.AUTDSamplingConfigPeriod.restype = ctypes.c_uint64
-
-    def emit_intensity_new_with_correction(self, value: int) -> ctypes.c_uint8:
-        return self.dll.AUTDEmitIntensityNewWithCorrection(value)
 
     def emit_intensity_new_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
         return self.dll.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha)
