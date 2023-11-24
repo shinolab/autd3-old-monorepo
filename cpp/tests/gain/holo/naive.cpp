@@ -36,7 +36,6 @@ TEST(Gain_Holo, Naive) {
 
   for (auto& dev : autd.geometry()) {
     auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
-    std::cout << intensities[0] << std::endl;
     ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
     ASSERT_TRUE(std::ranges::any_of(phases, [](auto p) { return p != 0; }));
   }
