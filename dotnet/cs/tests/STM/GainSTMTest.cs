@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,9 +39,9 @@ public class GainSTMTest
         }
 
         Assert.Equal(1, stm.Frequency);
-        Assert.Equal(2, stm.SamplingFrequency);
-        Assert.Equal(10240000u, stm.SamplingFrequencyDivision);
-        Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingPeriod);
+        Assert.Equal(2, stm.SamplingConfiguration.Frequency);
+        Assert.Equal(10240000u, stm.SamplingConfiguration.FrequencyDivision);
+        Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingConfiguration.Period);
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(10240000u, autd.Link.StmFrequencyDivision(dev.Idx));
@@ -75,34 +75,12 @@ public class GainSTMTest
             Assert.Equal(0, autd.Link.StmFinishIdx(dev.Idx));
         }
 
-        stm = GainSTM.WithSamplingFrequencyDivision(512).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
+        stm = GainSTM.NewWithSamplingConfiguration(SamplingConfiguration.NewWithFrequencyDivision(512)).AddGain(new Uniform(EmitIntensity.Max)).AddGain(new Uniform(new EmitIntensity(0x80)));
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
-        Assert.Equal(2 * 20000.0, stm.SamplingFrequency);
-        Assert.Equal(512u, stm.SamplingFrequencyDivision);
-        Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(512u, autd.Link.StmFrequencyDivision(dev.Idx));
-        }
-
-        stm = GainSTM.WithSamplingFrequency(20e3).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
-        Assert.True(await autd.SendAsync(stm));
-        Assert.Equal(10000, stm.Frequency);
-        Assert.Equal(2 * 10000, stm.SamplingFrequency);
-        Assert.Equal(1024u, stm.SamplingFrequencyDivision);
-        Assert.Equal(TimeSpan.FromMicroseconds(50), stm.SamplingPeriod);
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(1024u, autd.Link.StmFrequencyDivision(dev.Idx));
-        }
-
-        stm = GainSTM.WithSamplingPeriod(TimeSpan.FromMicroseconds(25)).AddGain(new Uniform(1.0)).AddGain(new Uniform(0.5));
-        Assert.True(await autd.SendAsync(stm));
-        Assert.Equal(20000.0, stm.Frequency);
-        Assert.Equal(2 * 20000.0, stm.SamplingFrequency);
-        Assert.Equal(512u, stm.SamplingFrequencyDivision);
-        Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingPeriod);
+        Assert.Equal(2 * 20000.0, stm.SamplingConfiguration.Frequency);
+        Assert.Equal(512u, stm.SamplingConfiguration.FrequencyDivision);
+        Assert.Equal(TimeSpan.FromMicroseconds(25), stm.SamplingConfiguration.Period);
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link.StmFrequencyDivision(dev.Idx));
@@ -112,13 +90,13 @@ public class GainSTMTest
         {
             Assert.Equal(2u, autd.Link.StmCycle(dev.Idx));
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-                Assert.All(duties, d => Assert.Equal(256, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+                Assert.All(intensities, d => Assert.Equal(0xFF, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 1);
-                Assert.All(duties, d => Assert.Equal(85, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 1);
+                Assert.All(intensities, d => Assert.Equal(0x80, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
         }
@@ -129,13 +107,13 @@ public class GainSTMTest
         {
             Assert.Equal(2u, autd.Link.StmCycle(dev.Idx));
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-                Assert.All(duties, d => Assert.Equal(256, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+                Assert.All(intensities, d => Assert.Equal(0xFF, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 1);
-                Assert.All(duties, d => Assert.Equal(256, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 1);
+                Assert.All(intensities, d => Assert.Equal(0xFF, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
         }
@@ -146,13 +124,13 @@ public class GainSTMTest
         {
             Assert.Equal(2u, autd.Link.StmCycle(dev.Idx));
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-                Assert.All(duties, d => Assert.Equal(256, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+                Assert.All(intensities, d => Assert.Equal(0xFF, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
             {
-                var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 1);
-                Assert.All(duties, d => Assert.Equal(256, d));
+                var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 1);
+                Assert.All(intensities, d => Assert.Equal(0xFF, d));
                 Assert.All(phases, p => Assert.Equal(0, p));
             }
         }

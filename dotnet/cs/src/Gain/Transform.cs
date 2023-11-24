@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@ using System.Linq;
 
 namespace AUTD3Sharp.Gain
 {
-
     public sealed class Transform : Internal.Gain
     {
         private readonly Internal.Gain _g;
@@ -38,7 +37,7 @@ namespace AUTD3Sharp.Gain
                 var d = new Drive[dev.NumTransducers];
                 unsafe
                 {
-                    fixed (Drive* p = d) NativeMethodsBase.AUTDGainCalcGetResult(res, p, (uint)dev.Idx);
+                    fixed (Drive* p = d) NativeMethodsBase.AUTDGainCalcGetResult(res, (DriveRaw*)p, (uint)dev.Idx);
                 }
 
                 foreach (var tr in dev)
@@ -52,7 +51,7 @@ namespace AUTD3Sharp.Gain
                 {
                     unsafe
                     {
-                        fixed (Drive* p = drives[dev.Idx]) return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, p, (uint)drives[dev.Idx].Length);
+                        fixed (Drive* p = drives[dev.Idx]) return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, (DriveRaw*)p, (uint)drives[dev.Idx].Length);
                     }
                 });
         }

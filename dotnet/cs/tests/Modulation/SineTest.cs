@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,108 +24,96 @@ public class SineTest
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link.Modulation(dev.Idx);
-            var modExpext = new byte[] {
-                85,
+            var modExpect = new byte[] {
+                128,
+                126,
+                121,
+                112,
+                101,
+                88,
+                74,
+                59,
+                44,
+                30,
+                19,
+                9,
+                3,
+                0,
+                1,
+                5,
+                12,
+                22,
+                35,
+                49,
+                64,
+                79,
+                93,
+                105,
+                115,
+                123,
+                127,
+                127,
+                124,
+                118,
+                109,
+                97,
                 83,
+                69,
+                54,
+                39,
+                26,
+                15,
+                7,
+                2,
+                0,
+                2,
+                7,
+                15,
+                26,
+                39,
+                54,
+                69,
+                83,
+                97,
+                109,
+                118,
+                124,
+                127,
+                127,
+                123,
+                115,
+                105,
+                93,
                 79,
-                73,
-                66,
-                57,
-                47,
-                37,
-                28,
-                19,
-                11,
+                64,
+                49,
+                35,
+                22,
+                12,
                 5,
                 1,
                 0,
-                0,
                 3,
-                7,
-                14,
-                22,
-                31,
-                41,
-                50,
-                60,
-                69,
-                76,
-                81,
-                84,
-                84,
-                82,
-                78,
-                71,
-                63,
-                54,
-                44,
-                34,
-                25,
-                16,
                 9,
-                4,
-                1,
-                0,
-                1,
-                4,
-                9,
-                16,
-                25,
-                34,
-                44,
-                54,
-                63,
-                71,
-                78,
-                82,
-                84,
-                84,
-                81,
-                76,
-                69,
-                60,
-                50,
-                41,
-                31,
-                22,
-                14,
-                7,
-                3,
-                0,
-                0,
-                1,
-                5,
-                11,
                 19,
-                28,
-                37,
-                47,
-                57,
-                66,
-                73,
-                79,
-                83 };
-            Assert.Equal(modExpext, mod);
+                30,
+                44,
+                59,
+                74,
+                88,
+                101,
+                112,
+                121,
+                126};
+            Assert.Equal(modExpect, mod);
             Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
 
 
-        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingFrequencyDivision(512)));
+        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingConfiguration(SamplingConfiguration.NewWithFrequencyDivision(512))));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link.ModulationFrequencyDivision(dev.Idx));
-        }
-
-        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingFrequency(8e3)));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(2560u, autd.Link.ModulationFrequencyDivision(dev.Idx));
-        }
-
-        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingPeriod(TimeSpan.FromMicroseconds(100))));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(2048u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
     }
 }

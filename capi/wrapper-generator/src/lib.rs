@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -169,18 +169,14 @@ pub fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
     let content = std::fs::read_to_string(&out_file)?;
     let content = content.replace("@float", if use_single { "float" } else { "double" });
     let content = content.replace("ConstPtr", "IntPtr");
-    let content = content.replace(
-        "internal unsafe partial struct Drive",
-        "public struct Drive",
-    );
-    let content = content.replace("public double phase;", "public double Phase;");
-    let content = content.replace("public ushort amp;", "public ushort Amp;");
+    let content = content.replace("SamplingConfiguration", "SamplingConfigurationRaw");
 
     let content = content.replace("internal enum CMap : byte", "public enum CMap : byte");
     let content = content.replace(
         "internal enum SyncMode : byte",
         "public enum SyncMode : byte",
     );
+    let content = content.replace("Drive*", "DriveRaw*");
 
     let content = if use_single {
         let re = regex::Regex::new(r"internal const float (.*) = (.*);").unwrap();

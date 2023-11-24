@@ -4,7 +4,7 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace AUTD3Sharp.Link
 {
     public sealed class Audit
     {
-        public sealed class AuditBuilder : Internal.ILinkBuilder<Audit>
+        public sealed class AuditBuilder : ILinkBuilder<Audit>
         {
             private LinkAuditBuilderPtr _ptr;
 
@@ -93,9 +93,14 @@ namespace AUTD3Sharp.Link
             return NativeMethodsBase.AUTDLinkAuditCpuFpgaFlags(_ptr, (uint)idx);
         }
 
-        public int SilencerStep(int idx)
+        public ushort SilencerStepIntensity(int idx)
         {
-            return NativeMethodsBase.AUTDLinkAuditFpgaSilencerStep(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaSilencerStepIntensity(_ptr, (uint)idx);
+        }
+
+        public ushort SilencerStepPhase(int idx)
+        {
+            return NativeMethodsBase.AUTDLinkAuditFpgaSilencerStepPhase(_ptr, (uint)idx);
         }
 
         public void AssertThermalSensor(int idx)
@@ -137,44 +142,20 @@ namespace AUTD3Sharp.Link
             return buf;
         }
 
-        public short[] DutyFilters(int idx)
+        public (byte[], byte[]) IntensitiesAndPhases(int idx, int stmIdx)
         {
             var n = (int)NativeMethodsBase.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new short[n];
+            var intensities = new byte[n];
+            var phases = new byte[n];
             unsafe
             {
-                fixed (short* p = buf)
-                    NativeMethodsBase.AUTDLinkAuditFpgaDutyFilters(_ptr, (uint)idx, p);
-            }
-            return buf;
-        }
-
-        public short[] PhaseFilters(int idx)
-        {
-            var n = (int)NativeMethodsBase.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new short[n];
-            unsafe
-            {
-                fixed (short* p = buf)
-                    NativeMethodsBase.AUTDLinkAuditFpgaPhaseFilters(_ptr, (uint)idx, p);
-            }
-            return buf;
-        }
-
-        public (ushort[], ushort[]) DutiesAndPhases(int idx, int stmIdx)
-        {
-            var n = (int)NativeMethodsBase.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var duties = new ushort[n];
-            var phases = new ushort[n];
-            unsafe
-            {
-                fixed (ushort* pd = duties)
-                fixed (ushort* pp = phases)
+                fixed (byte* pd = intensities)
+                fixed (byte* pp = phases)
                 {
-                    NativeMethodsBase.AUTDLinkAuditFpgaDutiesAndPhases(_ptr, (uint)idx, (uint)stmIdx, pd, pp);
+                    NativeMethodsBase.AUTDLinkAuditFpgaIntensitiesAndPhases(_ptr, (uint)idx, (uint)stmIdx, pd, pp);
                 }
             }
-            return (duties, phases);
+            return (intensities, phases);
         }
 
         public uint StmCycle(int idx)

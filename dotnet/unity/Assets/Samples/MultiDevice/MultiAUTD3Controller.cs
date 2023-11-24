@@ -22,7 +22,7 @@ using UnityEngine;
 
 public class MultiAUTD3Controller : MonoBehaviour
 {
-    private Controller? _autd = null;
+    private Controller<AUTD3Sharp.Link.Simulator>? _autd = null;
     public GameObject? Target = null;
     private Vector3 _oldPosition;
 

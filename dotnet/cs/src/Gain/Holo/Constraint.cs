@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public interface IAmplitudeConstraint
     {
-        internal ConstraintPtr Ptr();
+        internal EmissionConstraintPtr Ptr();
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public sealed class DontCare : IAmplitudeConstraint
     {
-        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintDotCare();
+        EmissionConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintDotCare();
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public sealed class Normalize : IAmplitudeConstraint
     {
-        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintNormalize();
+        EmissionConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintNormalize();
     }
 
     /// <summary>
@@ -55,22 +55,16 @@ namespace AUTD3Sharp.Gain.Holo
 
         internal readonly EmitIntensity Value;
 
-        public Uniform(float_t value)
+        public Uniform(byte value)
         {
-            Value = EmitIntensity.NewNormalized(value);
+            Value = new EmitIntensity(value);
         }
-
-        public Uniform(ushort value)
-        {
-            Value = EmitIntensity.NewPulseWidth(value);
-        }
-
         public Uniform(EmitIntensity value)
         {
             Value = value;
         }
 
-        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintUniform(Value.PulseWidth);
+        EmissionConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintUniform(Value.Value);
     }
 
     /// <summary>
@@ -78,15 +72,15 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     public sealed class Clamp : IAmplitudeConstraint
     {
-        internal readonly float_t Min;
-        internal readonly float_t Max;
+        internal readonly EmitIntensity Min;
+        internal readonly EmitIntensity Max;
 
-        public Clamp(float_t min = 0, float_t max = 1)
+        public Clamp(EmitIntensity min, EmitIntensity max)
         {
             Min = min;
             Max = max;
         }
 
-        ConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintClamp(Min, Max);
+        EmissionConstraintPtr IAmplitudeConstraint.Ptr() => NativeMethodsGainHolo.AUTDGainHoloConstraintClamp(Min.Value, Max.Value);
     }
 }

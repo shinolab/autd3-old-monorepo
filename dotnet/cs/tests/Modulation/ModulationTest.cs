@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,14 +17,14 @@ public class ModulationTest
 {
     public class Burst : AUTD3Sharp.Modulation.Modulation
     {
-        public Burst() : base(5120)
+        public Burst() : base(SamplingConfiguration.NewWithFrequency(4e3))
         {
         }
 
-        public override double[] Calc()
+        public override EmitIntensity[] Calc()
         {
-            var buf = new double[10];
-            buf[0] = 1;
+            var buf = new EmitIntensity[10];
+            buf[0] = EmitIntensity.Max;
             return buf;
         }
     }
@@ -38,8 +38,8 @@ public class ModulationTest
         foreach (var dev in autd.Geometry)
         {
             var mod = autd.Link.Modulation(dev.Idx);
-            var modExpext = new byte[] { 255, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            Assert.Equal(modExpext, mod);
+            var modExpect = new byte[] { 255, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Assert.Equal(modExpect, mod);
             Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
     }

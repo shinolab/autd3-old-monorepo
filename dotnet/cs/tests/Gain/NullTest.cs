@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@ public class NullTest
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link.DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(0, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0, d));
             Assert.All(phases, p => Assert.Equal(0, p));
         }
     }
