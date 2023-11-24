@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ int main() try {
   autd3::gain::Focus g1(autd.geometry().center() + autd3::Vector3(0, 0, 150));
   autd3::gain::Null g2;
 
-  const auto g = autd3::gain::Group([&cx](const autd3::Device& dev, const autd3::Transducer& tr) -> std::optional<const char*> {
+  const auto g = autd3::gain::Group([&cx](const autd3::Device&, const autd3::Transducer& tr) -> std::optional<const char*> {
                    if (tr.position().x() < cx) return "focus";
                    return "null";
                  })

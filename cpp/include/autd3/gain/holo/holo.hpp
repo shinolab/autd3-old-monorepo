@@ -11,24 +11,22 @@
 
 #pragma once
 
-#include <memory>
 #include <ranges>
 #include <vector>
 
 #include "autd3/gain/holo/amplitude.hpp"
-#include "autd3/gain/holo/backend.hpp"
 #include "autd3/gain/holo/constraint.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 
 namespace autd3::gain::holo {
 
-template <class H, class B>
+template <class R>
+concept holo_foci_range = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, std::pair<internal::Vector3, Amplitude>>;
+
+template <class H>
 class Holo : public internal::Gain {
  public:
-  explicit Holo(std::shared_ptr<B> backend) : _backend(std::move(backend)) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-  }
   Holo() = default;
 
   void add_focus(internal::Vector3 focus, Amplitude amp) & {
@@ -42,16 +40,16 @@ class Holo : public internal::Gain {
     return std::move(*static_cast<H*>(this));
   }
 
-  template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, std::pair<internal::Vector3, Amplitude>>>& {
+  template <holo_foci_range R>
+  void add_foci_from_iter(R&& iter) & {
     for (auto [focus, amp] : iter) {
       _foci.emplace_back(std::move(focus));
       _amps.emplace_back(amp);
     }
   }
 
-  template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, std::pair<internal::Vector3, Amplitude>>, H>&& {
+  template <holo_foci_range R>
+  H add_foci_from_iter(R&& iter) && {
     for (auto [focus, amp] : iter) {
       _foci.emplace_back(std::move(focus));
       _amps.emplace_back(amp);
@@ -67,7 +65,6 @@ class Holo : public internal::Gain {
   }
 
  protected:
-  std::shared_ptr<B> _backend;
   std::vector<internal::Vector3> _foci;
   std::vector<Amplitude> _amps;
   std::optional<AmplitudeConstraint> _constraint;

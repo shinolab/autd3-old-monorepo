@@ -33,10 +33,10 @@ namespace autd3::gain::holo {
  * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
  * * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
-template <class B>
-class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
+template <backend B>
+class LM final : public Holo<LM<B>>, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
  public:
-  explicit LM(std::shared_ptr<B> backend) : Holo<LM, B>(std::move(backend)) {}
+  explicit LM(std::shared_ptr<B> backend) : Holo<LM>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
@@ -63,6 +63,7 @@ class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTran
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<double> _eps1;
   std::optional<double> _eps2;
   std::optional<double> _tau;

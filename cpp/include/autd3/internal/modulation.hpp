@@ -18,14 +18,14 @@
 
 namespace autd3::internal {
 
-class Modulation : public Datagram {
+class Modulation {
  public:
-  explicit Modulation() : Datagram() {}
+  Modulation() = default;
   Modulation(const Modulation& obj) = default;
   Modulation& operator=(const Modulation& obj) = default;
   Modulation(Modulation&& obj) = default;
   Modulation& operator=(Modulation&& obj) = default;
-  ~Modulation() override = default;
+  virtual ~Modulation() = default;
 
   /**
    * @brief Get sampling frequency division
@@ -33,7 +33,7 @@ class Modulation : public Datagram {
    */
   [[nodiscard]] SamplingConfiguration sampling_config() const { return SamplingConfiguration(AUTDModulationSamplingConfig(modulation_ptr())); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override { return AUTDModulationIntoDatagram(modulation_ptr()); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const { return AUTDModulationIntoDatagram(modulation_ptr()); }
 
   [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 

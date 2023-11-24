@@ -35,9 +35,9 @@
 namespace autd3::internal::native_methods {
 
 template <class T>
-concept ResultPtr = requires(T& x) { x.result._0; };
+concept result_ptr = requires(T& x) { x.result._0; };
 
-template <ResultPtr T>
+template <result_ptr T>
 constexpr auto validate(T res) {
   const auto [result, err_len, err] = res;
   if (result._0 == nullptr) {

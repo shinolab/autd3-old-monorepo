@@ -29,12 +29,10 @@ namespace autd3::gain::holo {
  * @details Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE
  * World Haptics Conference (WHC). IEEE, 2015.
  */
-template <class B>
-class SDP final : public Holo<SDP<B>, B>, public IntoCache<SDP<B>>, public IntoTransform<SDP<B>> {
+template <backend B>
+class SDP final : public Holo<SDP<B>>, public IntoCache<SDP<B>>, public IntoTransform<SDP<B>> {
  public:
-  explicit SDP(std::shared_ptr<B> backend) : Holo<SDP, B>(std::move(backend)) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-  }
+  explicit SDP(std::shared_ptr<B> backend) : Holo<SDP>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(SDP, double, alpha)
   AUTD3_DEF_PARAM(SDP, uint32_t, repeat)
@@ -51,6 +49,7 @@ class SDP final : public Holo<SDP<B>, B>, public IntoCache<SDP<B>>, public IntoT
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<double> _alpha;
   std::optional<uint32_t> _repeat;
   std::optional<double> _lambda;

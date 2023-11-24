@@ -29,7 +29,7 @@ namespace autd3::gain::holo {
  * @details Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair
  * Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
  */
-class Greedy final : public Holo<Greedy, void>, public IntoCache<Greedy>, public IntoTransform<Greedy> {
+class Greedy final : public Holo<Greedy>, public IntoCache<Greedy>, public IntoTransform<Greedy> {
  public:
   Greedy() : Holo() {}
 

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,6 +28,9 @@
 namespace autd3::internal {
 
 class ControllerBuilder;
+
+template <class F>
+concept group_f = requires(F f, const internal::Device& dev) { typename std::invoke_result_t<F, const internal::Device&>::value_type; };
 
 /**
  * @brief Controller class for AUTD3
@@ -140,8 +143,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D, typename Rep, typename Period>
-  auto send(D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, bool> {
+  template <datagram D, typename Rep, typename Period>
+  bool send(D&& data, const std::chrono::duration<Rep, Period> timeout) {
     return send(std::forward<D>(data), std::optional(timeout));
   }
 
@@ -156,8 +159,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D, typename Rep, typename Period>
-  auto send_async(D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, std::future<bool>> {
+  template <datagram D, typename Rep, typename Period>
+  std::future<bool> send_async(D&& data, const std::chrono::duration<Rep, Period> timeout) {
     return send_async(std::forward<D>(data), std::optional(timeout));
   }
 
@@ -172,8 +175,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_datagram_v<D>, bool> {
+  template <datagram D, typename Rep = uint64_t, typename Period = std::milli>
+  bool send(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     return send(std::forward<D>(data), NullDatagram(), timeout);
   }
 
@@ -188,9 +191,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D, typename Rep = uint64_t, typename Period = std::milli>
-  auto send_async(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-      -> std::enable_if_t<is_datagram_v<D>, std::future<bool>> {
+  template <datagram D, typename Rep = uint64_t, typename Period = std::milli>
+  std::future<bool> send_async(D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     return send_async(std::forward<D>(data), NullDatagram(), timeout);
   }
 
@@ -207,9 +209,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D1, typename D2, typename Rep, typename Period>
-  auto send(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, bool> {
+  template <datagram D1, datagram D2, typename Rep, typename Period>
+  bool send(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout) {
     return send(std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
   }
 
@@ -226,9 +227,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D1, typename D2, typename Rep, typename Period>
-  auto send_async(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
+  template <datagram D1, datagram D2, typename Rep, typename Period>
+  std::future<bool> send_async(D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout) {
     return send_async(std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
   }
 
@@ -245,9 +245,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, bool> {
+  template <datagram D1, datagram D2, typename Rep = uint64_t, typename Period = std::milli>
+  bool send(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     const int64_t timeout_ns = timeout.has_value() ? std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count() : -1;
     return validate(AUTDControllerSend(_ptr, data1.ptr(_geometry), data2.ptr(_geometry), timeout_ns)) == native_methods::AUTD3_TRUE;
   }
@@ -265,9 +264,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
-  auto send_async(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-      -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, std::future<bool>> {
+  template <datagram D1, datagram D2, typename Rep = uint64_t, typename Period = std::milli>
+  std::future<bool> send_async(D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     return std::async(std::launch::deferred, [this, d1 = std::forward<D1>(data1), d2 = std::forward<D2>(data2), timeout]() -> bool {
       const int64_t timeout_ns = timeout.has_value() ? std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count() : -1;
       return validate(AUTDControllerSend(_ptr, d1.ptr(_geometry), d2.ptr(_geometry), timeout_ns)) == native_methods::AUTD3_TRUE;
@@ -285,8 +283,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename S, typename Rep, typename Period>
-  auto send(S&& s, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<S>, bool> {
+  template <special_datagram S, typename Rep, typename Period>
+  bool send(S&& s, const std::chrono::duration<Rep, Period> timeout) {
     return send(std::forward<S>(s), std::optional(timeout));
   }
 
@@ -301,8 +299,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename S, typename Rep, typename Period>
-  auto send_async(S&& s, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<S>, std::future<bool>> {
+  template <special_datagram S, typename Rep, typename Period>
+  std::future<bool> send_async(S&& s, const std::chrono::duration<Rep, Period> timeout) {
     return send_async(std::forward<S>(s), std::optional(timeout));
   }
 
@@ -317,8 +315,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename S, typename Rep = uint64_t, typename Period = std::milli>
-  auto send(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) -> std::enable_if_t<is_special_v<S>, bool> {
+  template <special_datagram S, typename Rep = uint64_t, typename Period = std::milli>
+  bool send(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     const int64_t timeout_ns =
         timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
     return validate(native_methods::AUTDControllerSendSpecial(_ptr, s.ptr(), timeout_ns)) == native_methods::AUTD3_TRUE;
@@ -335,9 +333,8 @@ class Controller {
    * @return If true, it is confirmed that the data has been successfully transmitted. Otherwise, there are no errors, but it is unclear whether the
    * data has been sent reliably or not.
    */
-  template <typename S, typename Rep = uint64_t, typename Period = std::milli>
-  auto send_async(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-      -> std::enable_if_t<is_special_v<S>, std::future<bool>> {
+  template <special_datagram S, typename Rep = uint64_t, typename Period = std::milli>
+  std::future<bool> send_async(S&& s, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
     return std::async(std::launch::deferred, [this, s_ = std::forward<S>(s), timeout]() -> bool {
       const int64_t timeout_ns =
           timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
@@ -345,7 +342,7 @@ class Controller {
     });
   }
 
-  template <typename F>
+  template <group_f F>
   class GroupGuard {
    public:
     using key_type = typename std::invoke_result_t<F, const Device&>::value_type;
@@ -353,9 +350,8 @@ class Controller {
     explicit GroupGuard(const F& map, Controller& controller)
         : _controller(controller), _map(map), _kv_map(native_methods::AUTDControllerGroupCreateKVMap()) {}
 
-    template <typename D, typename Rep = uint64_t, typename Period = std::milli>
-    auto set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-        -> std::enable_if_t<is_datagram_v<D>, GroupGuard> {
+    template <datagram D, typename Rep = uint64_t, typename Period = std::milli>
+    GroupGuard set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
       if (_keymap.contains(key)) throw AUTDException("Key already exists");
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr(_controller._geometry);
@@ -364,14 +360,13 @@ class Controller {
       return std::move(*this);
     }
 
-    template <typename D, typename Rep, typename Period>
-    auto set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_datagram_v<D>, GroupGuard> {
+    template <datagram D, typename Rep, typename Period>
+    GroupGuard set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) {
       return set(key, std::forward<D>(data), std::optional(timeout));
     }
 
-    template <typename D1, typename D2, typename Rep = uint64_t, typename Period = std::milli>
-    auto set(const key_type key, D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-        -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, GroupGuard> {
+    template <datagram D1, datagram D2, typename Rep = uint64_t, typename Period = std::milli>
+    GroupGuard set(const key_type key, D1&& data1, D2&& data2, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
       if (_keymap.contains(key)) throw AUTDException("Key already exists");
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr1 = data1.ptr(_controller._geometry);
@@ -381,15 +376,13 @@ class Controller {
       return std::move(*this);
     }
 
-    template <typename D1, typename D2, typename Rep, typename Period>
-    auto set(const key_type key, D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout)
-        -> std::enable_if_t<is_datagram_v<D1> && is_datagram_v<D2>, GroupGuard> {
+    template <datagram D1, datagram D2, typename Rep, typename Period>
+    GroupGuard set(const key_type key, D1&& data1, D2&& data2, const std::chrono::duration<Rep, Period> timeout) {
       return set(key, std::forward<D1>(data1), std::forward<D2>(data2), std::optional(timeout));
     }
 
-    template <typename D, typename Rep = uint64_t, typename Period = std::milli>
-    auto set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt)
-        -> std::enable_if_t<is_special_v<D>, GroupGuard> {
+    template <special_datagram D, typename Rep = uint64_t, typename Period = std::milli>
+    GroupGuard set(const key_type key, D&& data, const std::optional<std::chrono::duration<Rep, Period>> timeout = std::nullopt) {
       if (_keymap.contains(key)) throw AUTDException("Key already exists");
       const int64_t timeout_ns = timeout.has_value() ? timeout.value().count() : -1;
       const auto ptr = data.ptr();
@@ -398,8 +391,8 @@ class Controller {
       return std::move(*this);
     }
 
-    template <typename D, typename Rep, typename Period>
-    auto set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) -> std::enable_if_t<is_special_v<D>, GroupGuard> {
+    template <special_datagram D, typename Rep, typename Period>
+    GroupGuard set(const key_type key, D&& data, const std::chrono::duration<Rep, Period> timeout) {
       return set(key, std::forward<D>(data), std::optional(timeout));
     }
 
@@ -415,7 +408,7 @@ class Controller {
     }
 
     [[nodiscard]] std::future<bool> send_async() {
-      return std::async(std::launch::deferred, [this]() { return send(); });
+      return std::async(std::launch::deferred, [this] { return send(); });
     }
 
    private:
@@ -426,7 +419,7 @@ class Controller {
     int32_t _k{0};
   };
 
-  template <typename F>
+  template <group_f F>
   GroupGuard<F> group(const F& map) {
     return GroupGuard<F>(map, *this);
   }
@@ -466,11 +459,11 @@ class ControllerBuilder {
   /**
    * @brief Open controller
    *
-   * @tparam L LinkBuilder
-   * @param link link builder
+   * @tparam B LinkBuilder
+   * @param link_builder link builder
    * @return Controller
    */
-  template <LinkBuilder B>
+  template <link_builder B>
   [[nodiscard]] Controller<typename B::Link> open_with(B&& link_builder) {
     auto ptr = validate(AUTDControllerOpenWith(_ptr, link_builder.ptr()));
     Geometry geometry(AUTDGeometry(ptr));
@@ -480,11 +473,11 @@ class ControllerBuilder {
   /**
    * @brief Open controller
    *
-   * @tparam L LinkBuilder
-   * @param link link builder
+   * @tparam B LinkBuilder
+   * @param link_builder link builder
    * @return Controller
    */
-  template <LinkBuilder B>
+  template <link_builder B>
   [[nodiscard]] std::future<Controller<typename B::Link>> open_with_async(B&& link_builder) {
     return std::async(std::launch::deferred, [this, builder = std::forward<B>(link_builder)]() -> Controller<typename B::Link> {
       auto ptr = validate(AUTDControllerOpenWith(_ptr, builder.ptr()));

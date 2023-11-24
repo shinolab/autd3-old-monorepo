@@ -21,6 +21,9 @@
 
 namespace autd3::modulation {
 
+template <class R>
+concept fourier_sine_range = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, Sine>;
+
 /**
  * @brief Multi-frequency sine wave modulation
  */
@@ -41,8 +44,8 @@ class Fourier final : public internal::Modulation, public IntoCache<Fourier>, pu
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  auto add_components_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Sine>>& {
+  template <fourier_sine_range R>
+  void add_components_from_iter(R&& iter) & {
     for (Sine e : iter) _components.emplace_back(std::move(e));
   }
 
@@ -52,8 +55,8 @@ class Fourier final : public internal::Modulation, public IntoCache<Fourier>, pu
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  auto add_components_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Sine>, Fourier&&>&& {
+  template <fourier_sine_range R>
+  Fourier add_components_from_iter(R&& iter) && {
     for (Sine e : iter) _components.emplace_back(std::move(e));
     return std::move(*this);
   }

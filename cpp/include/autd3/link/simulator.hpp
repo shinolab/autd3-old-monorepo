@@ -3,7 +3,7 @@
 // Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
@@ -45,7 +44,7 @@ class Simulator final {
 
     explicit Builder(const uint16_t port) : _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
 
-    [[nodiscard]] Simulator resolve_link(const internal::native_methods::LinkPtr link) const { return Simulator{link}; }
+    [[nodiscard]] static Simulator resolve_link(const internal::native_methods::LinkPtr link) { return Simulator{link}; }
 
    public:
     using Link = Simulator;
@@ -76,7 +75,7 @@ class Simulator final {
   void update_geometry(const internal::Geometry& geometry) const { validate(AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr())); }
 
   [[nodiscard]] std::future<void> update_geometry_async(const internal::Geometry& geometry) const {
-    return std::async(std::launch::async, [this, geometry]() { return update_geometry(geometry); });
+    return std::async(std::launch::async, [this, geometry] { return update_geometry(geometry); });
   }
 };
 

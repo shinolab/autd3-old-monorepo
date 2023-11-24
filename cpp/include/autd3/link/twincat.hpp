@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 #include <string>
 
 #include "autd3/internal/exception.hpp"
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
@@ -40,7 +39,7 @@ class TwinCAT final {
 
     Builder() : _ptr(internal::native_methods::AUTDLinkTwinCAT()) {}
 
-    [[nodiscard]] TwinCAT resolve_link(internal::native_methods::LinkPtr) const { return TwinCAT{}; }
+    [[nodiscard]] static TwinCAT resolve_link(internal::native_methods::LinkPtr) { return TwinCAT{}; }
 
    public:
     using Link = TwinCAT;
@@ -75,7 +74,7 @@ class RemoteTwinCAT final {
       _ptr = validate(internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str()));
     }
 
-    [[nodiscard]] RemoteTwinCAT resolve_link(internal::native_methods::LinkPtr) const { return RemoteTwinCAT{}; }
+    [[nodiscard]] static RemoteTwinCAT resolve_link(internal::native_methods::LinkPtr) { return RemoteTwinCAT{}; }
 
    public:
     using Link = RemoteTwinCAT;

@@ -14,7 +14,6 @@
 #include <memory>
 
 #include "autd3/internal/emit_intensity.hpp"
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/modulation.hpp"
 #include "autd3/internal/native_methods.hpp"
 
@@ -27,7 +26,6 @@ class Cache final : public internal::Modulation {
  public:
   template <class M>
   explicit Cache(M&& m) {
-    static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
     auto cache = validate(internal::native_methods::AUTDModulationWithCache(m.modulation_ptr()));
     _buffer.resize(internal::native_methods::AUTDModulationCacheGetBufferLen(cache), internal::EmitIntensity::minimum());
     AUTDModulationCacheGetBuffer(cache, reinterpret_cast<uint8_t*>(_buffer.data()));
@@ -57,7 +55,7 @@ class Cache final : public internal::Modulation {
   std::vector<internal::EmitIntensity> _buffer;
 };
 
-template <typename M>
+template <class M>
 class IntoCache {
  public:
   [[nodiscard]] Cache with_cache() & { return Cache(*static_cast<M*>(this)); }

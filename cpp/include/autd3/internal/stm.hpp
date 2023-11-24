@@ -24,7 +24,7 @@
 
 namespace autd3::internal {
 
-class STM : public Datagram {
+class STM {
  public:
   explicit STM(const std::optional<double> freq, const std::optional<std::chrono::nanoseconds> period,
                const std::optional<SamplingConfiguration> config)
@@ -34,7 +34,7 @@ class STM : public Datagram {
   STM& operator=(const STM& obj) = default;
   STM(STM&& obj) = default;
   STM& operator=(STM&& obj) = default;
-  ~STM() override = default;
+  virtual ~STM() = default;
 
   [[nodiscard]] std::optional<uint16_t> finish_idx() const {
     const auto idx = AUTDSTMPropsFinishIdx(props());
@@ -90,6 +90,12 @@ struct ControlPoint {
   EmitIntensity intensity;
 };
 
+template <class R>
+concept focus_range_v = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, Vector3>;
+
+template <class R>
+concept focus_range_c = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, ControlPoint>;
+
 /**
  * @brief FocusSTM is an STM for moving Gain.
  * @details The sampling timing is determined by hardware, thus the sampling time is precise.
@@ -115,7 +121,7 @@ class FocusSTM final : public STM {
     return FocusSTM(std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period), std::nullopt);
   }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const {
     return validate(AUTDSTMFocus(props(), reinterpret_cast<const double*>(_points.data()), reinterpret_cast<const uint8_t*>(_intensities.data()),
                                  _intensities.size()));
   }
@@ -174,8 +180,8 @@ class FocusSTM final : public STM {
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>>& {
+  template <focus_range_v R>
+  void add_foci_from_iter(R&& iter) & {
     for (Vector3 e : iter) {
       _points.emplace_back(std::move(e));
       _intensities.emplace_back(EmitIntensity::maximum());
@@ -188,8 +194,8 @@ class FocusSTM final : public STM {
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  [[nodiscard]] auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Vector3>, FocusSTM&&>&& {
+  template <focus_range_v R>
+  [[nodiscard]] FocusSTM add_foci_from_iter(R&& iter) && {
     for (Vector3 e : iter) {
       _points.emplace_back(std::move(e));
       _intensities.emplace_back(EmitIntensity::maximum());
@@ -203,8 +209,8 @@ class FocusSTM final : public STM {
    * @tparam R
    * @param iter iterator of [ControlPoint]s
    */
-  template <std::ranges::viewable_range R>
-  auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>>& {
+  template <focus_range_c R>
+  void add_foci_from_iter(R&& iter) & {
     for (ControlPoint e : iter) {
       _points.emplace_back(std::move(e.point));
       _intensities.emplace_back(e.intensity);
@@ -217,8 +223,8 @@ class FocusSTM final : public STM {
    * @tparam R
    * @param iter iterator of [ControlPoint]s
    */
-  template <std::ranges::viewable_range R>
-  [[nodiscard]] auto add_foci_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, ControlPoint>, FocusSTM&&>&& {
+  template <focus_range_c R>
+  [[nodiscard]] FocusSTM add_foci_from_iter(R&& iter) && {
     for (ControlPoint e : iter) {
       _points.emplace_back(std::move(e.point));
       _intensities.emplace_back(e.intensity);
@@ -257,6 +263,9 @@ class FocusSTM final : public STM {
   std::vector<EmitIntensity> _intensities;
 };
 
+template <class R>
+concept gain_range = std::ranges::viewable_range<R> && gain<std::ranges::range_value_t<R>>;
+
 /**
  * @brief GainSTM is an STM for moving Gain.
  * @details The sampling timing is determined by hardware, thus the sampling time is precise.
@@ -292,7 +301,7 @@ class GainSTM final : public STM {
     return GainSTM(std::nullopt, std::nullopt, std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period));
   }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const override {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const {
     const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseIntensityFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
@@ -307,9 +316,8 @@ class GainSTM final : public STM {
    * @param gain gain
    * @return GainSTM
    */
-  template <typename G>
+  template <gain G>
   void add_gain(G&& gain) & {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
@@ -320,9 +328,8 @@ class GainSTM final : public STM {
    * @param gain gain
    * @return GainSTM
    */
-  template <typename G>
+  template <gain G>
   [[nodiscard]] GainSTM&& add_gain(G&& gain) && {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
     return std::move(*this);
   }
@@ -333,8 +340,8 @@ class GainSTM final : public STM {
    * @tparam R Iterator
    * @param iter gain iterator
    */
-  template <std::ranges::viewable_range R>
-  auto add_gains_from_iter(R&& iter) -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>>& {
+  template <gain_range R>
+  void add_gains_from_iter(R&& iter) & {
     for (auto e : iter)
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
   }
@@ -346,9 +353,8 @@ class GainSTM final : public STM {
    * @param iter gain iterator
    * @return GainSTM
    */
-  template <std::ranges::viewable_range R>
-  auto add_gains_from_iter(R&& iter)
-      -> std::enable_if_t<std::is_base_of_v<Gain, std::remove_reference_t<std::ranges::range_value_t<R>>>, GainSTM&&>&& {
+  template <gain_range R>
+  GainSTM add_gains_from_iter(R&& iter) && {
     for (auto e : iter)
       _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
     return std::move(*this);

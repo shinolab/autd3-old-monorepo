@@ -63,4 +63,9 @@ class Backend {
   internal::native_methods::BackendPtr _ptr;
 };
 
+template <class B>
+concept backend = requires(B b) {
+  { b.ptr() } -> std::same_as<internal::native_methods::BackendPtr>;
+};
+
 }  // namespace autd3::gain::holo
