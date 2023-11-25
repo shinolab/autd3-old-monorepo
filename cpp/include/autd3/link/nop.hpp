@@ -3,7 +3,7 @@
 // Created Date: 09/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ class Nop {
     friend class Nop;
     friend class internal::ControllerBuilder;
 
-    Builder() {}
+    Builder() = default;
 
     [[nodiscard]] static Nop resolve_link(const internal::native_methods::LinkPtr link) { return Nop{link}; }
 
@@ -41,6 +41,6 @@ class Nop {
     [[nodiscard]] static internal::native_methods::LinkBuilderPtr ptr() { return internal::native_methods::AUTDLinkNop(); }
   };
 
-  static Builder builder() { return Builder(); }
+  static Builder builder() { return {}; }
 };
 }  // namespace autd3::link

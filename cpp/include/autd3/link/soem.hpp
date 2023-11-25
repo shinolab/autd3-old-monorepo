@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <chrono>
 #include <string>
 
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
@@ -33,7 +32,7 @@ using OnErrCallback = void (*)(const char* msg);
  *
  */
 class SOEM {
-  SOEM() {}
+  SOEM() = default;
 
  public:
   class Builder final {
@@ -168,7 +167,7 @@ class SOEM {
  * @brief Link to connect to remote SOEMServer
  */
 class RemoteSOEM final {
-  RemoteSOEM() {}
+  RemoteSOEM() = default;
 
  public:
   class Builder final {

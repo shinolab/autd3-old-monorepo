@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -68,7 +68,7 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
     const std::vector<uint32_t> device_indices(view.begin(), view.end());
 
-    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), device_indices.size());
+    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));
     int32_t k = 0;
     for (const auto& dev : geometry.devices()) {
       std::vector<int32_t> m;
@@ -93,7 +93,7 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
       values.emplace_back(kv.second->gain_ptr(geometry));
     }
 
-    return AUTDGainGroup(map, keys.data(), values.data(), keys.size());
+    return AUTDGainGroup(map, keys.data(), values.data(), static_cast<uint32_t>(keys.size()));
   }
 
  private:
