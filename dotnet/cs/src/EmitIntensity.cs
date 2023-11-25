@@ -4,7 +4,7 @@
  * Created Date: 12/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 25/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,6 +32,8 @@ namespace AUTD3Sharp
 
         public static readonly EmitIntensity Max = new EmitIntensity(0xFF);
         public static readonly EmitIntensity Min = new EmitIntensity(0x00);
+
+        public static readonly float_t DefaultCorrectedAlpha = NativeMethodsDef.DEFAULT_CORRECTED_ALPHA;
 
         public EmitIntensity(byte value)
         {

@@ -3,7 +3,7 @@
 // Created Date: 12/11/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ class EmitIntensity final {
     return EmitIntensity(native_methods::AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha));
   }
 
-  [[nodiscard]] static EmitIntensity new_normalized_corrected(const uint8_t value) {
+  [[nodiscard]] static EmitIntensity new_with_correction(const uint8_t value) {
     return new_with_correction_alpha(value, native_methods::DEFAULT_CORRECTED_ALPHA);
   }
 

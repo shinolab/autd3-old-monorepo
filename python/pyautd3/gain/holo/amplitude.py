@@ -37,7 +37,7 @@ class Amplitude:
     @staticmethod
     def new_spl(value: float) -> "Amplitude":
         """Create by sound pressure level."""
-        return Amplitude.__private_new__(GainHolo().gain_holo_spl_to_pascal(value).value)
+        return Amplitude.__private_new__(float(GainHolo().gain_holo_spl_to_pascal(value)))
 
     @property
     def pascal(self: "Amplitude") -> float:
@@ -47,4 +47,4 @@ class Amplitude:
     @property
     def spl(self: "Amplitude") -> float:
         """Amplitude in sound pressure level."""
-        return GainHolo().gain_holo_pascal_to_spl(self._value).value
+        return float(GainHolo().gain_holo_pascal_to_spl(self._value))

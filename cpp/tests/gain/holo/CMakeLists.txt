@@ -6,4 +6,5 @@ target_sources(test_autd3 PRIVATE
   lm.cpp
   naive.cpp
   sdp.cpp
+  amp.cpp
 )

@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 25/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_new_with_correction() {
-        for i in 0..255 {
+        for i in 0..=0xFF {
             let intensity = EmitIntensity::new_with_correction(i);
             assert_eq!(
                 intensity.value(),
