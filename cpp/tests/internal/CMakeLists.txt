@@ -5,6 +5,8 @@ target_sources(test_autd3 PRIVATE
   fpga_info.cpp
   special.cpp
   stm.cpp
+  emit_intensity.cpp
+  sampling_config.cpp
 )
 
 add_subdirectory(geometry)
