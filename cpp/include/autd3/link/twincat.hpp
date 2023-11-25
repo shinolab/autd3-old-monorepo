@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <chrono>
 #include <string>
 
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 
@@ -28,7 +27,7 @@ namespace autd3::link {
  * @brief Link using TwinCAT3
  */
 class TwinCAT final {
-  TwinCAT() {}
+  TwinCAT() = default;
 
  public:
   class Builder final {
@@ -61,7 +60,7 @@ class TwinCAT final {
  * @brief Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
  */
 class RemoteTwinCAT final {
-  RemoteTwinCAT() {}
+  RemoteTwinCAT() = default;
 
  public:
   class Builder final {
