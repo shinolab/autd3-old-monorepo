@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ public class SDPTest
     [Fact]
     public async Task SDP()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new SDP<NalgebraBackend>(backend)
@@ -44,7 +44,7 @@ public class SDPTest
     [IgnoreIfCUDAIsNotFoundFact]
     public async Task SDPWithCUDA()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new CUDABackend();
         var g = new SDP<CUDABackend>(backend)

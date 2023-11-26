@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ public class NaiveTest
     [Fact]
     public async Task Naive()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
@@ -41,7 +41,7 @@ public class NaiveTest
     [IgnoreIfCUDAIsNotFoundFact]
     public async Task NaiveWithCUDA()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new CUDABackend();
         var g = new Naive<CUDABackend>(backend)

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@
 
 int main() try {
   auto autd = autd3::ControllerBuilder()
-                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                  .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
                   .open_with_async(autd3::link::SOEM::builder().with_on_lost(&on_lost))
                   .get();
 

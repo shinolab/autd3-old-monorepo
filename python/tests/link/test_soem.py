@@ -34,7 +34,7 @@ def test_soem():
     on_lost = OnErrFunc(on_lost_f)
     autd = (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(
             SOEM.builder()
             .with_ifname("")
@@ -56,7 +56,7 @@ def test_soem():
 def test_remote_soem():
     autd = (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
     )
 

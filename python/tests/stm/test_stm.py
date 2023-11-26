@@ -88,10 +88,7 @@ async def test_focus_stm():
 @pytest.mark.asyncio()
 async def test_gain_stm():
     autd: Controller[Audit] = (
-        await Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with_async(Audit.builder())
+        await Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Audit.builder())
     )
 
     size = 2

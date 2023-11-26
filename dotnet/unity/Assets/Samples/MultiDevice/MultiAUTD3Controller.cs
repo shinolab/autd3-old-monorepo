@@ -4,7 +4,7 @@
  * Created Date: 27/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ public class MultiAUTD3Controller : MonoBehaviour
     {
         var builder = new ControllerBuilder();
         foreach (var obj in FindObjectsOfType<AUTD3Device>(false).OrderBy(obj => obj.ID))
-            builder.AddDevice(new AUTD3(obj.transform.position, obj.transform.rotation));
+            builder.AddDevice(new AUTD3(obj.transform.position).WithRotation(obj.transform.rotation));
 
         try
         {

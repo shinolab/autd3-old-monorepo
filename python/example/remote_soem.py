@@ -23,7 +23,7 @@ from pyautd3.link.soem import RemoteSOEM
 async def main() -> None:
     with await (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(
             RemoteSOEM.builder("127.0.0.1:8080"),
         )

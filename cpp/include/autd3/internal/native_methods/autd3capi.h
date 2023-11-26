@@ -40,18 +40,10 @@ ControllerBuilderPtr AUTDControllerBuilderAddDevice(ControllerBuilderPtr builder
                                                     double x,
                                                     double y,
                                                     double z,
-                                                    double rz1,
-                                                    double ry,
-                                                    double rz2);
-
-ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder,
-                                                              double x,
-                                                              double y,
-                                                              double z,
-                                                              double qw,
-                                                              double qx,
-                                                              double qy,
-                                                              double qz);
+                                                    double qw,
+                                                    double qx,
+                                                    double qy,
+                                                    double qz);
 
 [[nodiscard]]
 ResultController AUTDControllerOpenWith(ControllerBuilderPtr builder,
@@ -218,6 +210,8 @@ void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
 void AUTDDeviceEnableSet(DevicePtr dev, bool value);
 
 [[nodiscard]] bool AUTDDeviceEnableGet(DevicePtr dev);
+
+void AUTDRotationFromEulerZYZ(double x, double y, double z, double *rot);
 
 [[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
 

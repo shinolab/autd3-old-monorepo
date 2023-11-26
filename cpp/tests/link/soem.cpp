@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,8 +42,9 @@ TEST(Link, SOEM) {
 
 #ifdef RUN_LINK_SOEM
   auto autd = autd3::internal::ControllerBuilder()
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                  .open_with_async(std::move(link)).get();
+                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                  .open_with_async(std::move(link))
+                  .get();
 
   autd.close();
 #else
@@ -56,8 +57,9 @@ TEST(Link, RemoteSOEM) {
 #ifdef RUN_LINK_REMOTE_SOEM
 
   auto autd = autd3::internal::ControllerBuilder()
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                  .open_with_async(std::move(link)).get();
+                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                  .open_with_async(std::move(link))
+                  .get();
 
   autd.close();
 #else

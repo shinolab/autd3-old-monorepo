@@ -22,7 +22,7 @@ from pyautd3.link.audit import Audit
 
 @pytest.mark.asyncio()
 async def test_greedy():
-    autd = await Controller[Audit].builder().add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])).open_with_async(Audit.builder())
+    autd = await Controller[Audit].builder().add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     g = (
         Greedy()

@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,8 +40,8 @@ TEST(Internal, ControllerClose) {
 TEST(Internal, ControllerSendTimeout) {
   {
     auto autd = autd3::internal::ControllerBuilder()
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
+                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(0)))
                     .get();
 
@@ -60,8 +60,8 @@ TEST(Internal, ControllerSendTimeout) {
 
   {
     auto autd = autd3::internal::ControllerBuilder()
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Vector3::Zero()))
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero(), autd3::internal::Quaternion::Identity()))
+                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(10)))
                     .get();
 

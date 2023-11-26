@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ public class LMTest
     [Fact]
     public async Task LM()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new LM<NalgebraBackend>(backend)
@@ -46,7 +46,7 @@ public class LMTest
     [IgnoreIfCUDAIsNotFoundFact]
     public async Task GSPATWithCUDA()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWithAsync(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new CUDABackend();
         var g = new LM<CUDABackend>(backend)

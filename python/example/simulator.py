@@ -22,8 +22,8 @@ from pyautd3.link.simulator import Simulator
 async def main() -> None:
     with await (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
+        .add_device(AUTD3([AUTD3.device_width(), 0.0, 0.0]))
         .open_with_async(Simulator.builder(8080))
     ) as autd:
         await runner.run(autd)

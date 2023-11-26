@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,26 +58,32 @@ class AUTD3 {
    * @brief Constructor
    *
    * @param pos Global position
-   * @param rot ZYZ euler angles
    */
-  AUTD3(Vector3 pos, Vector3 rot) : _pos(std::move(pos)), _rot(rot) {}
+  explicit AUTD3(Vector3 pos) : _pos(std::move(pos)) {}
 
   /**
-   * @brief Constructor
+   * @brief Set device rotation
    *
-   * @param pos Global position
-   * @param rot Rotation quaternion
+   * @param rot Rotation
    */
-  AUTD3(Vector3 pos, Quaternion rot) : _pos(std::move(pos)), _quat(rot) {}
+  void with_rotation(const Quaternion& rot) & { _rot = rot; }
+
+  /**
+   * @brief Set device rotation
+   *
+   * @param rot Rotation
+   */
+  AUTD3 with_rotation(const Quaternion& rot) && {
+    _rot = rot;
+    return std::move(*this);
+  }
 
   [[nodiscard]] Vector3 position() const { return _pos; }
-  [[nodiscard]] std::optional<Vector3> euler() const { return _rot; }
-  [[nodiscard]] std::optional<Quaternion> quaternion() const { return _quat; }
+  [[nodiscard]] std::optional<Quaternion> rotation() const { return _rot; }
 
  private:
   Vector3 _pos{};
-  std::optional<Vector3> _rot{std::nullopt};
-  std::optional<Quaternion> _quat{std::nullopt};
+  std::optional<Quaternion> _rot{std::nullopt};
 };
 
 class Geometry {

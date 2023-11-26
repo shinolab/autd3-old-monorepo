@@ -22,11 +22,7 @@ from pyautd3.link.twincat import RemoteTwinCAT, TwinCAT
 
 @pytest.mark.twincat()
 def test_twincat():
-    autd = (
-        Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .open_with_async(TwinCAT.builder().with_timeout(timedelta(milliseconds=200)))
-    )
+    autd = Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(TwinCAT.builder().with_timeout(timedelta(milliseconds=200)))
 
     autd.close_async()
 
@@ -35,7 +31,7 @@ def test_twincat():
 def test_remote_twincat():
     autd = (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(
             RemoteTwinCAT.builder("xxx.xxx.xxx.xxx.xxx.xxx")
             .with_server_ip("127.0.0.1")
