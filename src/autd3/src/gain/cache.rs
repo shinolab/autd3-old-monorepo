@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -131,10 +131,7 @@ mod tests {
 
     #[test]
     fn test_cache() {
-        let geometry: Geometry =
-            Geometry::new(vec![
-                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
-            ]);
+        let geometry: Geometry = Geometry::new(vec![AUTD3::new(Vector3::zeros()).into_device(0)]);
 
         let mut gain = Plane::new(Vector3::zeros()).with_cache();
 
@@ -181,10 +178,7 @@ mod tests {
 
     #[test]
     fn test_cache_calc_once() {
-        let geometry: Geometry =
-            Geometry::new(vec![
-                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
-            ]);
+        let geometry: Geometry = Geometry::new(vec![AUTD3::new(Vector3::zeros()).into_device(0)]);
 
         let calc_cnt = Arc::new(AtomicUsize::new(0));
 

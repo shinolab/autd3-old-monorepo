@@ -35,13 +35,7 @@ from pyautd3.modulation import Sine, Static
 
 
 async def create_controller() -> Controller[Audit]:
-    return await (
-        Controller[Audit]
-        .builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with_async(Audit.builder())
-    )
+    return await Controller[Audit].builder().add_device(AUTD3([0.0, 0.0, 0.0])).add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
 
 @pytest.mark.asyncio()
@@ -144,8 +138,8 @@ async def test_close_async():
 async def test_send_async_timeout():
     autd: Controller[Audit] = (
         await Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(Audit.builder().with_timeout(timeout=timedelta(microseconds=0)))
     )
 
@@ -167,8 +161,8 @@ async def test_send_async_timeout():
 
     autd: Controller[Audit] = (
         await Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(Audit.builder().with_timeout(timeout=timedelta(microseconds=10)))
     )
 
@@ -378,12 +372,7 @@ async def test_update_flags():
 
 @pytest.mark.asyncio()
 async def test_synchronize():
-    autd = (
-        await Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
-        .add_device(AUTD3.from_quaternion([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]))
-        .open_with_async(Audit.builder())
-    )
+    autd = await Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
     assert await autd.send_async(Synchronize())
 

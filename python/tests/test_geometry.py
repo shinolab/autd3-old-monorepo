@@ -15,9 +15,47 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 import pytest
 
-from pyautd3 import AUTD3, UpdateFlags
+from pyautd3 import AUTD3, Controller, UpdateFlags
+from pyautd3.geometry import Angle, EulerAngles
+from pyautd3.link.audit import Audit
 
 from .test_autd import create_controller
+
+
+def test_angle():
+    assert Angle.new_radian(np.pi / 2).radian == np.pi / 2
+    assert Angle.new_degree(90).radian == np.pi / 2
+
+
+@pytest.mark.asyncio()
+async def test_with_rotation():
+    async def open_with_rotation(q: np.ndarray):  # noqa: ANN202
+        return await Controller[Audit].builder().add_device(AUTD3([0.0, 0.0, 0.0]).with_rotation(q)).open_with_async(Audit.builder())
+
+    autd = await open_with_rotation(EulerAngles.from_zyz(Angle.new_degree(90), Angle.new_degree(0), Angle.new_degree(0)))
+    assert np.allclose(autd.geometry[0][0].x_direction, [0.0, 1.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].y_direction, [-1.0, 0.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].z_direction, [0.0, 0.0, 1.0])
+
+    autd = await open_with_rotation(EulerAngles.from_zyz(Angle.new_degree(0), Angle.new_degree(90), Angle.new_degree(0)))
+    assert np.allclose(autd.geometry[0][0].x_direction, [0.0, 0.0, -1.0])
+    assert np.allclose(autd.geometry[0][0].y_direction, [0.0, 1.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].z_direction, [1.0, 0.0, 0.0])
+
+    autd = await open_with_rotation(EulerAngles.from_zyz(Angle.new_degree(0), Angle.new_degree(0), Angle.new_degree(90)))
+    assert np.allclose(autd.geometry[0][0].x_direction, [0.0, 1.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].y_direction, [-1.0, 0.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].z_direction, [0.0, 0.0, 1.0])
+
+    autd = await open_with_rotation(EulerAngles.from_zyz(Angle.new_degree(0), Angle.new_degree(90), Angle.new_degree(90)))
+    assert np.allclose(autd.geometry[0][0].x_direction, [0.0, 1.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].y_direction, [0.0, 0.0, 1.0])
+    assert np.allclose(autd.geometry[0][0].z_direction, [1.0, 0.0, 0.0])
+
+    autd = await open_with_rotation(EulerAngles.from_zyz(Angle.new_degree(90), Angle.new_degree(90), Angle.new_degree(0)))
+    assert np.allclose(autd.geometry[0][0].x_direction, [0.0, 0.0, -1.0])
+    assert np.allclose(autd.geometry[0][0].y_direction, [-1.0, 0.0, 0.0])
+    assert np.allclose(autd.geometry[0][0].z_direction, [0.0, 1.0, 0.0])
 
 
 def test_autd3_props():

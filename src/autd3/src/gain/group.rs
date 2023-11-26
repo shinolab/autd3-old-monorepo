@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -232,10 +232,10 @@ mod tests {
     #[test]
     fn test_group() {
         let geometry: Geometry = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(2),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(3),
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
+            AUTD3::new(Vector3::zeros()).into_device(2),
+            AUTD3::new(Vector3::zeros()).into_device(3),
         ]);
 
         let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.tr_idx()) {
@@ -289,8 +289,8 @@ mod tests {
     #[test]
     fn test_group_unknown_key() {
         let geometry: Geometry = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
         let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
@@ -312,8 +312,8 @@ mod tests {
     #[test]
     fn test_group_unspecified_key() {
         let geometry: Geometry = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
         let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {

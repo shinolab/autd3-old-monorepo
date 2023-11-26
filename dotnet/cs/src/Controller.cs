@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -113,31 +113,22 @@ namespace AUTD3Sharp
         #endregion
 
         internal Vector3 Pos;
-        internal Vector3? Rot;
-        internal Quaternion? Quat;
+        internal Quaternion? Rot;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="pos">Global position</param>
-        /// <param name="rot">ZYZ euler angels</param>
-        public AUTD3(Vector3 pos, Vector3 rot)
-        {
-            Pos = pos;
-            Rot = rot;
-            Quat = null;
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="pos">Global position</param>
-        /// <param name="quat">Rotation quaternion</param>
-        public AUTD3(Vector3 pos, Quaternion quat)
+        public AUTD3(Vector3 pos)
         {
             Pos = pos;
             Rot = null;
-            Quat = quat;
+        }
+
+        public AUTD3 WithRotation(Quaternion rot)
+        {
+            Rot = rot;
+            return this;
         }
     }
 
@@ -595,12 +586,9 @@ namespace AUTD3Sharp
         /// <returns></returns>
         public ControllerBuilder AddDevice(AUTD3 device)
         {
-            if (device.Rot != null)
-                _ptr = NativeMethodsBase.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z, device.Rot.Value.x,
-                    device.Rot.Value.y, device.Rot.Value.z);
-            else if (device.Quat != null)
-                _ptr = NativeMethodsBase.AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
-                    device.Quat.Value.w, device.Quat.Value.x, device.Quat.Value.y, device.Quat.Value.z);
+            var rot = device.Rot ?? Quaternion.identity;
+            _ptr = NativeMethodsBase.AUTDControllerBuilderAddDevice(_ptr, device.Pos.x, device.Pos.y, device.Pos.z,
+                rot.w, rot.x, rot.y, rot.z);
             return this;
         }
 

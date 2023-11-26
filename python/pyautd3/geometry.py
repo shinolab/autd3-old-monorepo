@@ -33,53 +33,85 @@ from .native_methods.autd3capi_def import (
 )
 
 
+class Angle:
+    """Angle."""
+
+    _value: float
+
+    def __new__(cls: type["Angle"]) -> "Angle":
+        """DO NOT USE THIS CONSTRUCTOR."""
+        raise NotImplementedError
+
+    @classmethod
+    def __private_new__(cls: type["Angle"], value: float) -> "Angle":
+        ins = super().__new__(cls)
+        ins._value = value
+        return ins
+
+    @staticmethod
+    def new_radian(value: float) -> "Angle":
+        """Create by radian."""
+        return Angle.__private_new__(value)
+
+    @staticmethod
+    def new_degree(value: float) -> "Angle":
+        """Create by degree."""
+        return Angle.__private_new__(np.deg2rad(value))
+
+    @property
+    def radian(self: "Angle") -> float:
+        """Angle in radian."""
+        return self._value
+
+
+class EulerAngles:
+    """Euler angles."""
+
+    def __new__(cls: type["EulerAngles"]) -> "EulerAngles":
+        """DO NOT USE THIS CONSTRUCTOR."""
+        raise NotImplementedError
+
+    @staticmethod
+    def from_zyz(z1: Angle, y: Angle, z2: Angle) -> np.ndarray:
+        """Create from Euler ZYZ.
+
+        Arguments:
+        ---------
+            z1: First rotation angle
+            y: Second rotation angle
+            z2: Third rotation angle
+        """
+        v = np.zeros([4]).astype(c_double)
+        vp = np.ctypeslib.as_ctypes(v)
+        Base().rotation_from_euler_zyz(z1.radian, y.radian, z2.radian, vp)
+        return v
+
+
 class AUTD3:
     """AUTD3 device."""
 
     _pos: np.ndarray
     _rot: np.ndarray | None
-    _quat: np.ndarray | None
 
-    def __init__(
-        self: "AUTD3",
-        pos: np.ndarray,
-        rot: np.ndarray | None,
-        *,
-        quat: np.ndarray | None = None,
-    ) -> None:
+    def __init__(self: "AUTD3", pos: np.ndarray) -> None:
         """Constructor.
 
         Arguments:
         ---------
             pos: Position of the device
-            rot: Rotation of the device in Euler ZYZ
-            quat: Rotation of the device in quaternion
         """
         self._pos = pos
+        self._rot = None
+
+    def with_rotation(self: "AUTD3", rot: np.ndarray) -> "AUTD3":
+        """Set device rotation.
+
+        Arguments:
+        ---------
+            rot: Rotation of the device in quaternion
+        """
         self._rot = rot
-        self._quat = quat
-
-    @staticmethod
-    def from_quaternion(pos: np.ndarray, quat: np.ndarray) -> "AUTD3":
-        """Constructor.
-
-        Arguments:
-        ---------
-            pos: Position of the device
-            quat: Rotation of the device in quaternion
-        """
-        return AUTD3(pos, None, quat=quat)
-
-    @staticmethod
-    def from_euler_zyz(pos: np.ndarray, rot: np.ndarray) -> "AUTD3":
-        """Constructor.
-
-        Arguments:
-        ---------
-            pos: Position of the device
-            rot: Rotation of the device in Euler ZYZ
-        """
-        return AUTD3(pos, rot, quat=None)
+        return self
 
     @staticmethod
     def transducer_spacing() -> float:

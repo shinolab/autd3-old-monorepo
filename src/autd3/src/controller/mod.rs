@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -421,9 +421,9 @@ mod tests {
     #[tokio::test]
     async fn group() {
         let mut autd = Controller::builder()
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros()))
+            .add_device(AUTD3::new(Vector3::zeros()))
             .open_with(Audit::builder())
             .await
             .unwrap();

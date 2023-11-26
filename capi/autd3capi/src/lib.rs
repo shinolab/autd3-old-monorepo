@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,23 +52,6 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDevice(
     x: float,
     y: float,
     z: float,
-    rz1: float,
-    ry: float,
-    rz2: float,
-) -> ControllerBuilderPtr {
-    ControllerBuilderPtr(Box::into_raw(Box::new(
-        Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder).add_device(
-            AUTD3::new(Vector3::new(x, y, z), Vector3::new(rz1, ry, rz2)),
-        ),
-    )) as _)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
-    builder: ControllerBuilderPtr,
-    x: float,
-    y: float,
-    z: float,
     qw: float,
     qx: float,
     qy: float,
@@ -76,10 +59,9 @@ pub unsafe extern "C" fn AUTDControllerBuilderAddDeviceQuaternion(
 ) -> ControllerBuilderPtr {
     ControllerBuilderPtr(Box::into_raw(Box::new(
         Box::from_raw(builder.0 as *mut autd3::controller::builder::ControllerBuilder).add_device(
-            AUTD3::with_quaternion(
-                Vector3::new(x, y, z),
-                UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
-            ),
+            AUTD3::new(Vector3::new(x, y, z)).with_rotation(UnitQuaternion::from_quaternion(
+                Quaternion::new(qw, qx, qy, qz),
+            )),
         ),
     )) as _)
 }
@@ -437,9 +419,8 @@ mod tests {
 
     pub unsafe fn create_controller() -> ControllerPtr {
         let builder = AUTDControllerBuilder();
-        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let builder =
-            AUTDControllerBuilderAddDeviceQuaternion(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
         let link = make_nop_link();
         let cnt = AUTDControllerOpenWith(builder, link);

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -445,14 +445,9 @@ class ControllerBuilder {
    * @return Builder
    */
   ControllerBuilder add_device(const AUTD3& device) {
-    if (const auto euler = device.euler(); euler.has_value())
-      _ptr = AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(),
-                                            euler.value().y(), euler.value().z());
-    else if (const auto quat = device.quaternion(); quat.has_value())
-      _ptr = AUTDControllerBuilderAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
-                                                      quat.value().x(), quat.value().y(), quat.value().z());
-    else
-      throw std::runtime_error("unreachable!");
+    const auto rot = device.rotation().has_value() ? device.rotation().value() : Quaternion::Identity();
+    _ptr =
+        AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), rot.w(), rot.x(), rot.y(), rot.z());
     return *this;
   }
 

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ public class AUTDTest
 
     public static async Task<Controller<Audit>> CreateController()
     {
-        return await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity)).OpenWithAsync(Audit.Builder());
+        return await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class AUTDTest
     public async Task TestSendTimeout()
     {
         {
-            var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+            var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(0)));
 
             await autd.SendAsync(new UpdateFlags());
@@ -159,7 +159,7 @@ public class AUTDTest
         }
 
         {
-            var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+            var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(10)));
 
             await autd.SendAsync(new UpdateFlags());
@@ -395,7 +395,7 @@ public class AUTDTest
     [Fact]
     public async Task TestSynchronize()
     {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero, Quaterniond.identity))
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
             .OpenWithAsync(Audit.Builder());
 
         Assert.True(await autd.SendAsync(new Synchronize()));

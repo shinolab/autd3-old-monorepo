@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,9 @@
 
 use crate::{
     defined::{float, MILLIMETER},
-    geometry::{Device, IntoDevice, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4},
+    geometry::{
+        Device, IntoDevice, Matrix4, Rotation, Transducer, UnitQuaternion, Vector3, Vector4,
+    },
 };
 
 /// AUTD3 device
@@ -43,29 +45,18 @@ impl AUTD3 {
     /// # Arguments
     ///
     /// * `position` - Global position
-    /// * `euler_angles` - ZYZ Euler angles
     ///
-    pub fn new(position: Vector3, euler_angles: Vector3) -> Self {
-        let q = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.x)
-            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), euler_angles.y)
-            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.z);
-        Self::with_quaternion(position, q)
-    }
-
-    /// Constructor
-    ///
-    /// # Arguments
-    ///
-    /// * `position` - Global position
-    /// * `rotation` - Rotation quaternion
-    ///
-    pub fn with_quaternion<Q>(position: Vector3, rotation: Q) -> Self
-    where
-        UnitQuaternion: From<Q>,
-    {
+    pub fn new(position: Vector3) -> Self {
         Self {
             position,
-            rotation: UnitQuaternion::from(rotation),
+            rotation: UnitQuaternion::identity(),
+        }
+    }
+
+    pub fn with_rotation<Q: Into<Rotation>>(self, rotation: Q) -> Self {
+        Self {
+            rotation: rotation.into().value(),
+            ..self
         }
     }
 
@@ -149,11 +140,15 @@ impl IntoDevice for AUTD3 {
 
 #[cfg(test)]
 mod tests {
+    use rand::Rng;
+
+    use crate::geometry::{Deg, EulerAngle};
+
     use super::*;
 
     #[test]
     fn autd3_device() {
-        let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
+        let dev = AUTD3::new(Vector3::zeros());
         let dev: Device = dev.into_device(0);
         assert_eq!(dev.num_transducers(), 249);
 
@@ -166,17 +161,20 @@ mod tests {
     }
 
     #[test]
-    fn autd3_device_with_quaternion() {
-        let dev = AUTD3::with_quaternion(Vector3::zeros(), UnitQuaternion::identity());
-        let dev: Device = dev.into_device(0);
-        assert_eq!(dev.num_transducers(), 249);
+    fn autd3_device_with_rotation() {
+        let mut rng = rand::thread_rng();
+        let q = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), rng.gen())
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), rng.gen())
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), rng.gen());
+        let dev = AUTD3::new(Vector3::zeros()).with_rotation(q);
+        assert_eq!(dev.rotation, q);
 
-        assert_approx_eq::assert_approx_eq!(dev[0].position().x, 0.);
-        assert_approx_eq::assert_approx_eq!(dev[0].position().y, 0.);
-        assert_approx_eq::assert_approx_eq!(dev[1].position().x, AUTD3::TRANS_SPACING);
-        assert_approx_eq::assert_approx_eq!(dev[1].position().y, 0.);
-        assert_approx_eq::assert_approx_eq!(dev[18].position().x, 0.);
-        assert_approx_eq::assert_approx_eq!(dev[18].position().y, AUTD3::TRANS_SPACING);
+        let dev = AUTD3::new(Vector3::zeros()).with_rotation(EulerAngle::ZYZ(
+            0. * Deg,
+            0. * Deg,
+            0. * Deg,
+        ));
+        assert_eq!(dev.rotation, UnitQuaternion::identity());
     }
 
     #[test]

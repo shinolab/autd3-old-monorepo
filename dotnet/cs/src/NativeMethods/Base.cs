@@ -128,6 +128,9 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDGeometryNumDevices", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern uint AUTDGeometryNumDevices(GeometryPtr geo);
 
+        [DllImport(__DllName, EntryPoint = "AUTDRotationFromEulerZYZ", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void AUTDRotationFromEulerZYZ(double x, double y, double z, double* rot);
+
         [DllImport(__DllName, EntryPoint = "AUTDTransducer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern TransducerPtr AUTDTransducer(DevicePtr dev, uint tr_idx);
 
@@ -171,10 +174,7 @@ namespace AUTD3Sharp
         public static extern ControllerBuilderPtr AUTDControllerBuilder();
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerBuilderAddDevice", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ControllerBuilderPtr AUTDControllerBuilderAddDevice(ControllerBuilderPtr builder, double x, double y, double z, double rz1, double ry, double rz2);
-
-        [DllImport(__DllName, EntryPoint = "AUTDControllerBuilderAddDeviceQuaternion", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ControllerBuilderPtr AUTDControllerBuilderAddDeviceQuaternion(ControllerBuilderPtr builder, double x, double y, double z, double qw, double qx, double qy, double qz);
+        public static extern ControllerBuilderPtr AUTDControllerBuilderAddDevice(ControllerBuilderPtr builder, double x, double y, double z, double qw, double qx, double qy, double qz);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerOpenWith", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultController AUTDControllerOpenWith(ControllerBuilderPtr builder, LinkBuilderPtr link_builder);

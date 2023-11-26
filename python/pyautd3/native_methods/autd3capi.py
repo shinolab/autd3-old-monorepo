@@ -156,6 +156,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGeometryNumDevices.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDGeometryNumDevices.restype = ctypes.c_uint32
 
+        self.dll.AUTDRotationFromEulerZYZ.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDRotationFromEulerZYZ.restype = None
+
         self.dll.AUTDTransducer.argtypes = [DevicePtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDTransducer.restype = TransducerPtr
 
@@ -198,11 +201,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDControllerBuilder.argtypes = [] 
         self.dll.AUTDControllerBuilder.restype = ControllerBuilderPtr
 
-        self.dll.AUTDControllerBuilderAddDevice.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDControllerBuilderAddDevice.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDControllerBuilderAddDevice.restype = ControllerBuilderPtr
-
-        self.dll.AUTDControllerBuilderAddDeviceQuaternion.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDControllerBuilderAddDeviceQuaternion.restype = ControllerBuilderPtr
 
         self.dll.AUTDControllerOpenWith.argtypes = [ControllerBuilderPtr, LinkBuilderPtr]  # type: ignore 
         self.dll.AUTDControllerOpenWith.restype = ResultController
@@ -594,6 +594,9 @@ class NativeMethods(metaclass=Singleton):
     def geometry_num_devices(self, geo: GeometryPtr) -> ctypes.c_uint32:
         return self.dll.AUTDGeometryNumDevices(geo)
 
+    def rotation_from_euler_zyz(self, x: float, y: float, z: float, rot: ctypes.Array[ctypes.c_double] | None) -> None:
+        return self.dll.AUTDRotationFromEulerZYZ(x, y, z, rot)
+
     def transducer(self, dev: DevicePtr, tr_idx: int) -> TransducerPtr:
         return self.dll.AUTDTransducer(dev, tr_idx)
 
@@ -636,11 +639,8 @@ class NativeMethods(metaclass=Singleton):
     def controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilder()
 
-    def controller_builder_add_device(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, rz1: float, ry: float, rz2: float) -> ControllerBuilderPtr:
-        return self.dll.AUTDControllerBuilderAddDevice(builder, x, y, z, rz1, ry, rz2)
-
-    def controller_builder_add_device_quaternion(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> ControllerBuilderPtr:
-        return self.dll.AUTDControllerBuilderAddDeviceQuaternion(builder, x, y, z, qw, qx, qy, qz)
+    def controller_builder_add_device(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> ControllerBuilderPtr:
+        return self.dll.AUTDControllerBuilderAddDevice(builder, x, y, z, qw, qx, qy, qz)
 
     def controller_open_with(self, builder: ControllerBuilderPtr, link_builder: LinkBuilderPtr) -> ResultController:
         return self.dll.AUTDControllerOpenWith(builder, link_builder)

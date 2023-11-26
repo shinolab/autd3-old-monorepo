@@ -36,7 +36,7 @@ async def main() -> None:
     on_err_func = OnErrFunc(on_err)
     with await (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(
             SOEM.builder().with_on_lost(on_lost_func).with_on_err(on_err_func),
         )

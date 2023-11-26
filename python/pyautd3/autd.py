@@ -123,27 +123,17 @@ class _Builder(Generic[L]):
         ---------
             device: Device to add
         """
-        if device._rot is not None:
-            self._ptr = Base().controller_builder_add_device(
-                self._ptr,
-                device._pos[0],
-                device._pos[1],
-                device._pos[2],
-                device._rot[0],
-                device._rot[1],
-                device._rot[2],
-            )
-        elif device._quat is not None:
-            self._ptr = Base().controller_builder_add_device_quaternion(
-                self._ptr,
-                device._pos[0],
-                device._pos[1],
-                device._pos[2],
-                device._quat[0],
-                device._quat[1],
-                device._quat[2],
-                device._quat[3],
-            )
+        q = device._rot if device._rot is not None else np.array([1.0, 0.0, 0.0, 0.0])
+        self._ptr = Base().controller_builder_add_device(
+            self._ptr,
+            device._pos[0],
+            device._pos[1],
+            device._pos[2],
+            q[0],
+            q[1],
+            q[2],
+            q[3],
+        )
         return self
 
     async def open_with_async(self: "_Builder[L]", link: LinkBuilder[L]) -> "Controller[L]":

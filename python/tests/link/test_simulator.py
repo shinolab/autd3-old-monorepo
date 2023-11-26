@@ -24,7 +24,7 @@ from pyautd3.link.simulator import Simulator
 def test_simulator():
     autd = (
         Controller.builder()
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(Simulator.builder(8080).with_server_ip("127.0.0.1").with_timeout(timedelta(milliseconds=200)))
     )
 

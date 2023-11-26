@@ -4,7 +4,7 @@
  * Created Date: 14/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ var onLost = new SOEM.OnErrCallbackDelegate(msg =>
 });
 
 using var autd = await new ControllerBuilder().
-    AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+    AddDevice(new AUTD3(Vector3d.zero))
     .OpenWithAsync(SOEM.Builder()
         .WithOnLost(onLost));
 
