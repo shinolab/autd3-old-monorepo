@@ -11,8 +11,6 @@
  * 
  */
 
-
-
 namespace tests;
 
 public class RotationTest
@@ -27,7 +25,6 @@ public class RotationTest
         Assert.Equal(Math.PI / 2, angle.Radian);
     }
 
-
     [Fact]
     public async Task WithRotation()
     {
@@ -35,42 +32,47 @@ public class RotationTest
             await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero).WithRotation(q))
                 .OpenWithAsync(Audit.Builder());
 
+        var assert_near_vec3 = (Vector3d expected, Vector3d x) =>
+        {
+            Assert.True(Math.Abs(expected.x - x.x) < 1e-6);
+            Assert.True(Math.Abs(expected.y - x.y) < 1e-6);
+            Assert.True(Math.Abs(expected.z - x.z) < 1e-6);
+        };
+
         {
             var autd = await open(EulerAngles.FromZYZ(Angle.FromDegree(90), Angle.FromDegree(0),
                 Angle.FromDegree(0)));
-            Assert.Equal(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            Assert.Equal(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            Assert.Equal(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
+            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
         }
         {
             var autd = await open(EulerAngles.FromZYZ(Angle.FromDegree(0), Angle.FromDegree(90),
                 Angle.FromDegree(0)));
-            Assert.Equal(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
-            Assert.Equal(Vector3d.UnitY, autd.Geometry[0][0].YDirection);
-            Assert.Equal(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
+            assert_near_vec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
+            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].YDirection);
+            assert_near_vec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
         }
         {
             var autd = await open(EulerAngles.FromZYZ(Angle.FromDegree(0), Angle.FromDegree(0),
                 Angle.FromDegree(90)));
-            Assert.Equal(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            Assert.Equal(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            Assert.Equal(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
+            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
         }
         {
             var autd = await open(EulerAngles.FromZYZ(Angle.FromDegree(0), Angle.FromDegree(90),
                 Angle.FromDegree(90)));
-            Assert.Equal(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            Assert.Equal(Vector3d.UnitZ, autd.Geometry[0][0].YDirection);
-            Assert.Equal(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
+            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].YDirection);
+            assert_near_vec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
         }
         {
             var autd = await open(EulerAngles.FromZYZ(Angle.FromDegree(90), Angle.FromDegree(90),
                 Angle.FromDegree(0)));
-            Assert.Equal(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
-            Assert.Equal(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            Assert.Equal(Vector3d.UnitY, autd.Geometry[0][0].ZDirection);
+            assert_near_vec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
+            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].ZDirection);
         }
     }
-
-
 }
