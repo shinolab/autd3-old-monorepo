@@ -4,7 +4,7 @@
  * Created Date: 01/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,11 @@
 
 use std::time::Duration;
 
-use crate::{datagram::*, error::AUTDInternalError, fpga::SILENCER_STEP_DEFAULT};
+use crate::{
+    datagram::*,
+    error::AUTDInternalError,
+    fpga::{SILENCER_STEP_DEFAULT, SILENCER_STEP_MAX, SILENCER_STEP_MIN},
+};
 
 /// Datagram for configure silencer
 #[derive(Debug, Clone, Copy)]
@@ -27,18 +31,24 @@ impl Silencer {
     ///
     /// # Arguments
     /// * `step` - The update step of silencer. The lower the value, the stronger the silencer effect.
-    pub fn new(step_intensity: u16, step_phase: u16) -> Self {
-        Self {
+    pub fn new(step_intensity: u16, step_phase: u16) -> Result<Self, AUTDInternalError> {
+        if !(SILENCER_STEP_MIN..=SILENCER_STEP_MAX).contains(&step_intensity) {
+            return Err(AUTDInternalError::SilencerStepOutOfRange(step_intensity));
+        }
+        if !(SILENCER_STEP_MIN..=SILENCER_STEP_MAX).contains(&step_phase) {
+            return Err(AUTDInternalError::SilencerStepOutOfRange(step_phase));
+        }
+        Ok(Self {
             step_intensity,
             step_phase,
-        }
+        })
     }
 
     /// Disable silencer
     pub const fn disable() -> Self {
         Self {
-            step_intensity: 0xFFFF,
-            step_phase: 0xFFFF,
+            step_intensity: SILENCER_STEP_MAX,
+            step_phase: SILENCER_STEP_MAX,
         }
     }
 

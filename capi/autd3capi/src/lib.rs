@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ use autd3capi_def::{
         *,
     },
     ControllerPtr, DatagramPtr, DatagramSpecialPtr, FirmwareInfoListPtr, GroupKVMapPtr,
-    LinkBuilderPtr, ResultController, ResultI32,
+    LinkBuilderPtr, ResultController, ResultDatagram, ResultI32,
 };
 use std::{ffi::c_char, time::Duration};
 
@@ -195,8 +195,11 @@ pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramSilencer(step_intensity: u16, step_phase: u16) -> DatagramPtr {
-    DatagramPtr::new(Silencer::new(step_intensity, step_phase))
+pub unsafe extern "C" fn AUTDDatagramSilencer(
+    step_intensity: u16,
+    step_phase: u16,
+) -> ResultDatagram {
+    Silencer::new(step_intensity, step_phase).into()
 }
 
 #[no_mangle]
@@ -465,7 +468,7 @@ mod tests {
             let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 
-            let s = AUTDDatagramSilencer(256, 256);
+            let s = AUTDDatagramSilencer(256, 256).result;
             let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 
