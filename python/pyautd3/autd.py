@@ -67,7 +67,7 @@ class Silencer(Datagram):
         return Silencer(0xFFFF, 0xFFFF)
 
     def _datagram_ptr(self: "Silencer", _: Geometry) -> DatagramPtr:
-        return _validate_ptr(Base().datagram_silencer(self._step_intensity, self._step_phase))
+        return Base().datagram_silencer(self._step_intensity, self._step_phase)
 
 
 class FPGAInfo:
