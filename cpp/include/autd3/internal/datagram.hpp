@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 27/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
-#include "autd3/internal/utils.hpp"
 
 namespace autd3::internal {
 
@@ -58,9 +57,7 @@ class Silencer final {
    */
   static Silencer disable() noexcept { return Silencer(0xFFFF, 0xFFFF); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const {
-    return validate(native_methods::AUTDDatagramSilencer(_step_intensity, _step_phase));
-  }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const { return native_methods::AUTDDatagramSilencer(_step_intensity, _step_phase); }
 
  private:
   uint16_t _step_intensity;

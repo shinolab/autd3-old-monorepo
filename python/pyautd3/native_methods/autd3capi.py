@@ -232,7 +232,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
-        self.dll.AUTDDatagramSilencer.restype = ResultDatagram
+        self.dll.AUTDDatagramSilencer.restype = DatagramPtr
 
         self.dll.AUTDControllerSend.argtypes = [ControllerPtr, DatagramPtr, DatagramPtr, ctypes.c_int64]  # type: ignore 
         self.dll.AUTDControllerSend.restype = ResultI32
@@ -657,7 +657,7 @@ class NativeMethods(metaclass=Singleton):
     def datagram_configure_mod_delay(self) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureModDelay()
 
-    def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
+    def datagram_silencer(self, step_intensity: int, step_phase: int) -> DatagramPtr:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
 
     def controller_send(self, cnt: ControllerPtr, d1: DatagramPtr, d2: DatagramPtr, timeout_ns: int) -> ResultI32:

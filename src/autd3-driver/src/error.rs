@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,13 +23,6 @@ pub enum AUTDInternalError {
         MOD_BUF_SIZE_MAX
     )]
     ModulationSizeOutOfRange(usize),
-
-    #[error(
-        "Silencer step ({0}) is out of range ([{}, {}])",
-        SILENCER_STEP_MIN,
-        SILENCER_STEP_MAX
-    )]
-    SilencerStepOutOfRange(u16),
 
     #[error("Sampling frequency division ({0}) is out of range ([{1}, {2}])")]
     SamplingFreqDivOutOfRange(u32, u32, u32),
@@ -211,21 +204,6 @@ mod tests {
         let err = AUTDInternalError::GainSTMSizeOutOfRange(1);
         assert_eq!(err, AUTDInternalError::GainSTMSizeOutOfRange(1));
         assert_ne!(err, AUTDInternalError::GainSTMSizeOutOfRange(2));
-    }
-
-    #[test]
-    fn silencer_out_of_range() {
-        let err = AUTDInternalError::SilencerStepOutOfRange(1);
-        assert!(err.source().is_none());
-        assert_eq!(
-            format!("{}", err),
-            "Silencer step (1) is out of range ([1, 65535])"
-        );
-        assert_eq!(format!("{:?}", err), "SilencerStepOutOfRange(1)");
-
-        let err = AUTDInternalError::SilencerStepOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::SilencerStepOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::SilencerStepOutOfRange(2));
     }
 
     #[test]

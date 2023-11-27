@@ -73,7 +73,7 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
 
-[[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
+[[nodiscard]] DatagramPtr AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
 [[nodiscard]]
 ResultI32 AUTDControllerSend(ControllerPtr cnt,
