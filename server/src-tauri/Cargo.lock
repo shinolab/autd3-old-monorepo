@@ -281,6 +281,7 @@ dependencies = [
  "bitvec",
  "libc",
  "nalgebra",
+ "serde",
  "thiserror",
  "windows 0.52.0",
 ]

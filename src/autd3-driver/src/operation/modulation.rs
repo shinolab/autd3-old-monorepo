@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -101,11 +101,7 @@ impl Operation for ModulationOp {
         tx[3] = (mod_size >> 8) as u8;
 
         if sent == 0 {
-            let freq_div = if cfg!(feature = "firmware-v3") {
-                self.freq_div * 8
-            } else {
-                self.freq_div
-            };
+            let freq_div = self.freq_div;
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
