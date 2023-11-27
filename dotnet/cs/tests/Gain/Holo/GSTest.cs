@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 using AUTD3Sharp.Gain.Holo;
+using static AUTD3Sharp.Gain.Holo.Amplitude.Units;
 
 namespace tests.Gain.Holo;
 
@@ -24,8 +25,8 @@ public class GSTest
 
         var backend = new NalgebraBackend();
         var g = new GS<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), Amplitude.NewPascal(5e3))))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 5e3 * Pascal)))
             .WithRepeat(100)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
 
@@ -46,8 +47,8 @@ public class GSTest
 
         var backend = new CUDABackend();
         var g = new GS<CUDABackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), Amplitude.NewPascal(5e3))))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 5e3 * Pascal)))
             .WithRepeat(100)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
 

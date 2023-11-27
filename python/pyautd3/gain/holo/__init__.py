@@ -11,7 +11,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from .amplitude import Amplitude
+from .amplitude import Amplitude, dB, pascal
 from .backend_nalgebra import NalgebraBackend
 from .constraint import EmissionConstraint
 from .greedy import Greedy
@@ -22,6 +22,8 @@ from .naive import Naive
 from .sdp import SDP
 
 __all__ = [
+    "dB",
+    "pascal",
     "Amplitude",
     "NalgebraBackend",
     "EmissionConstraint",

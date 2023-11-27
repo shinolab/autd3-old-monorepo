@@ -48,3 +48,31 @@ class Amplitude:
     def spl(self: "Amplitude") -> float:
         """Amplitude in sound pressure level."""
         return float(GainHolo().gain_holo_pascal_to_spl(self._value))
+
+    class _UnitPascal:
+        def __new__(cls: type["Amplitude._UnitPascal"]) -> "Amplitude._UnitPascal":
+            """DO NOT USE THIS CONSTRUCTOR."""
+            raise NotImplementedError
+
+        @classmethod
+        def __private_new__(cls: type["Amplitude._UnitPascal"]) -> "Amplitude._UnitPascal":
+            return super().__new__(cls)
+
+        def __rmul__(self: "Amplitude._UnitPascal", other: float) -> "Amplitude":
+            return Amplitude.new_pascal(other)
+
+    class _UnitSPL:
+        def __new__(cls: type["Amplitude._UnitSPL"]) -> "Amplitude._UnitSPL":
+            """DO NOT USE THIS CONSTRUCTOR."""
+            raise NotImplementedError
+
+        @classmethod
+        def __private_new__(cls: type["Amplitude._UnitSPL"]) -> "Amplitude._UnitSPL":
+            return super().__new__(cls)
+
+        def __rmul__(self: "Amplitude._UnitSPL", other: float) -> "Amplitude":
+            return Amplitude.new_spl(other)
+
+
+pascal: Amplitude._UnitPascal = Amplitude._UnitPascal.__private_new__()
+dB: Amplitude._UnitSPL = Amplitude._UnitSPL.__private_new__()  # noqa: N816

@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3 import AUTD3, Controller
-from pyautd3.gain.holo import SDP, Amplitude, EmissionConstraint, NalgebraBackend
+from pyautd3.gain.holo import SDP, EmissionConstraint, NalgebraBackend, pascal
 from pyautd3.gain.holo.backend_cuda import CUDABackend
 from pyautd3.link.audit import Audit
 
@@ -28,8 +28,8 @@ async def test_sdp():
     backend = NalgebraBackend()
     g = (
         SDP(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_alpha(1e-3)
         .with_lambda(0.9)
         .with_repeat(10)
@@ -51,8 +51,8 @@ async def test_sdp_cuda():
     backend = CUDABackend()
     g = (
         SDP(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_alpha(1e-3)
         .with_lambda(0.9)
         .with_repeat(10)

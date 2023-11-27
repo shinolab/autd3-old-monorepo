@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3 import AUTD3, Controller
-from pyautd3.gain.holo import LM, Amplitude, EmissionConstraint, NalgebraBackend
+from pyautd3.gain.holo import LM, EmissionConstraint, NalgebraBackend, pascal
 from pyautd3.gain.holo.backend_cuda import CUDABackend
 from pyautd3.link.audit import Audit
 
@@ -28,8 +28,8 @@ async def test_lm():
     backend = NalgebraBackend()
     g = (
         LM(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_eps1(1e-3)
         .with_eps2(1e-3)
         .with_tau(1e-3)
@@ -53,8 +53,8 @@ async def test_lm_cuda():
     backend = CUDABackend()
     g = (
         LM(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_eps1(1e-3)
         .with_eps2(1e-3)
         .with_tau(1e-3)
