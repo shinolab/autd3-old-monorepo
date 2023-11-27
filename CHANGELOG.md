@@ -1,6 +1,5 @@
 # 17.0.1
 
-- Fix [#216](https://github.com/shinolab/autd3/issues/216): Silencer::new does not need to return Result
 - Fix [#217](https://github.com/shinolab/autd3/issues/217): v4.0.0 fpga firmware returns its version as v4.0.1
 
 # 17.0.0
