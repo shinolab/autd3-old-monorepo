@@ -186,18 +186,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDTransducerModDelaySet.argtypes = [TransducerPtr, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDTransducerModDelaySet.restype = None
 
-        self.dll.AUTDTransducerAmpFilterGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerAmpFilterGet.restype = ctypes.c_double
-
-        self.dll.AUTDTransducerAmpFilterSet.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDTransducerAmpFilterSet.restype = None
-
-        self.dll.AUTDTransducerPhaseFilterGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerPhaseFilterGet.restype = ctypes.c_double
-
-        self.dll.AUTDTransducerPhaseFilterSet.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDTransducerPhaseFilterSet.restype = None
-
         self.dll.AUTDControllerBuilder.argtypes = [] 
         self.dll.AUTDControllerBuilder.restype = ControllerBuilderPtr
 
@@ -623,18 +611,6 @@ class NativeMethods(metaclass=Singleton):
 
     def transducer_mod_delay_set(self, tr: TransducerPtr, delay: int) -> None:
         return self.dll.AUTDTransducerModDelaySet(tr, delay)
-
-    def transducer_amp_filter_get(self, tr: TransducerPtr) -> ctypes.c_double:
-        return self.dll.AUTDTransducerAmpFilterGet(tr)
-
-    def transducer_amp_filter_set(self, tr: TransducerPtr, value: float) -> None:
-        return self.dll.AUTDTransducerAmpFilterSet(tr, value)
-
-    def transducer_phase_filter_get(self, tr: TransducerPtr) -> ctypes.c_double:
-        return self.dll.AUTDTransducerPhaseFilterGet(tr)
-
-    def transducer_phase_filter_set(self, tr: TransducerPtr, value: float) -> None:
-        return self.dll.AUTDTransducerPhaseFilterSet(tr, value)
 
     def controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilder()

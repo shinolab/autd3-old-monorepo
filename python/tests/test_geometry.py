@@ -303,28 +303,6 @@ async def test_transducer_mod_delay():
 
 
 @pytest.mark.asyncio()
-async def test_transducer_amp_filter():
-    autd = await create_controller()
-
-    for dev in autd.geometry:
-        for tr in dev:
-            assert tr.amp_filter == 0
-            tr.amp_filter = -1
-            assert tr.amp_filter == -1
-
-
-@pytest.mark.asyncio()
-async def test_transducer_phase_filter():
-    autd = await create_controller()
-
-    for dev in autd.geometry:
-        for tr in dev:
-            assert tr.phase_filter == 0
-            tr.phase_filter = -1
-            assert tr.phase_filter == -1
-
-
-@pytest.mark.asyncio()
 async def test_transducer_wavelength():
     autd = await create_controller()
 

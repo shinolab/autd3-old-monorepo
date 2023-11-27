@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 27/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -91,12 +91,6 @@ class Transducer {
    * @brief Set modulation delay of the transducer
    */
   void set_mod_delay(const uint16_t delay) const { AUTDTransducerModDelaySet(_ptr, delay); }
-
-  [[nodiscard]] double amp_filter() const { return AUTDTransducerAmpFilterGet(_ptr); }
-  void set_amp_filter(const double value) const { AUTDTransducerAmpFilterSet(_ptr, value); }
-
-  [[nodiscard]] double phase_filter() const { return AUTDTransducerPhaseFilterGet(_ptr); }
-  void set_phase_filter(const double value) const { AUTDTransducerPhaseFilterSet(_ptr, value); }
 
   [[nodiscard]] native_methods::TransducerPtr ptr() const { return _ptr; }
 

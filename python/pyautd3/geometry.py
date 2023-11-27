@@ -242,36 +242,6 @@ class Transducer:
         """Set the modulation delay of the transducer."""
         return Base().transducer_mod_delay_set(self._ptr, delay)
 
-    @property
-    def amp_filter(self: "Transducer") -> float:
-        """Get the amp filter."""
-        return float(Base().transducer_amp_filter_get(self._ptr))
-
-    @amp_filter.setter
-    def amp_filter(self: "Transducer", value: float) -> None:
-        """Set the amp filter.
-
-        Arguments:
-        ---------
-            value: Amp filter value (from -1 to 1)
-        """
-        return Base().transducer_amp_filter_set(self._ptr, value)
-
-    @property
-    def phase_filter(self: "Transducer") -> float:
-        """Get the phase filter."""
-        return float(Base().transducer_phase_filter_get(self._ptr))
-
-    @phase_filter.setter
-    def phase_filter(self: "Transducer", value: float) -> None:
-        """Set the phase filter.
-
-        Arguments:
-        ---------
-            value: Phase filter value (from -2π to 2π)
-        """
-        return Base().transducer_phase_filter_set(self._ptr, value)
-
     def wavelength(self: "Transducer", sound_speed: float) -> float:
         """Get the wavelength of the transducer.
 

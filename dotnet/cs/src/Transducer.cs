@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -150,18 +150,6 @@ namespace AUTD3Sharp
         {
             get => NativeMethodsBase.AUTDTransducerModDelayGet(Ptr);
             set => NativeMethodsBase.AUTDTransducerModDelaySet(Ptr, value);
-        }
-
-        public float_t AmpFilter
-        {
-            get => NativeMethodsBase.AUTDTransducerAmpFilterGet(Ptr);
-            set => NativeMethodsBase.AUTDTransducerAmpFilterSet(Ptr, value);
-        }
-
-        public float_t PhaseFilter
-        {
-            get => NativeMethodsBase.AUTDTransducerPhaseFilterGet(Ptr);
-            set => NativeMethodsBase.AUTDTransducerPhaseFilterSet(Ptr, value);
         }
 
         /// <summary>
