@@ -18,7 +18,7 @@ num = "0.4.0"
 thiserror = "1.0.31"
 bitvec = "1.0.1"
 async-trait = "0.1.74"
-tokio = { version = "1.33.0", features = ["rt-multi-thread"], optional = true }
+tokio = { version = "1.34.0", features = ["rt-multi-thread"], optional = true }
 
 [features]
 default = []
@@ -31,8 +31,8 @@ use_meter = ["autd3-driver/use_meter"]
 assert_approx_eq = "1.1.0"
 rand = "0.8.5"
 criterion = { version = "0.5.1", features = ["html_reports"] }
-itertools = "0.11.0"
-tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
+itertools = "0.12.0"
+tokio = { version = "1.34.0", features = ["macros", "rt-multi-thread"] }
 
 [[bench]]
 name = "gain"
