@@ -204,7 +204,7 @@ namespace AUTD3Sharp
         public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
+        public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
 
         [DllImport(__DllName, EntryPoint = "AUTDControllerSend", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultI32 AUTDControllerSend(ControllerPtr cnt, DatagramPtr d1, DatagramPtr d2, long timeout_ns);
