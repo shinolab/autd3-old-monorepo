@@ -136,6 +136,10 @@ jobs:
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Build project x64
         run: |
           python3 build.py cpp build --release --no-examples
@@ -521,7 +525,7 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - name: build
         run: |
-          python3 build.py server build --release --external-only
+          python3 build.py server build --external-only
       - name: Load Release ID File from release job
         uses: actions/download-artifact@v1
         with:
