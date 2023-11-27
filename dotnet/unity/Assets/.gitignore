@@ -1,3 +1,5 @@
 *.cs
 CHANGELOG.md
 LICENSE.md
+*.tgz
+*.tgz.meta

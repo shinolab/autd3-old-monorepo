@@ -4,7 +4,7 @@
  * Created Date: 28/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -17,14 +17,25 @@ use bytemuck::{Pod, Zeroable};
 use scarlet::{colormap::ColorMap, prelude::*};
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},
-    command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, PrimaryCommandBufferAbstract},
+    command_buffer::{
+        AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo,
+        PrimaryCommandBufferAbstract,
+    },
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
     format::Format,
-    image::{view::ImageView, ImageDimensions, ImmutableImage, MipmapsCount},
-    memory::allocator::{AllocationCreateInfo, MemoryUsage},
-    pipeline::{ComputePipeline, Pipeline, PipelineBindPoint},
-    sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo, SamplerMipmapMode},
+    image::{
+        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo, SamplerMipmapMode},
+        view::ImageView,
+        Image, ImageCreateInfo, ImageType, ImageUsage,
+    },
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
+    pipeline::{
+        compute::ComputePipelineCreateInfo, layout::PipelineDescriptorSetLayoutCreateInfo,
+        ComputePipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
+    },
     sync::GpuFuture,
+    DeviceSize,
 };
 
 use crate::{
@@ -58,58 +69,65 @@ pub struct FieldComputePipeline {
 }
 
 impl FieldComputePipeline {
-    pub fn new(renderer: &Renderer, settings: &ViewerSettings) -> Self {
+    pub fn new(renderer: &Renderer, settings: &ViewerSettings) -> anyhow::Result<Self> {
         let pipeline_pressure = {
-            let shader = cs_pressure::load(renderer.device()).unwrap();
+            let shader = cs_pressure::load(renderer.device())?;
+            let cs = shader.entry_point("main").unwrap();
+            let stage = PipelineShaderStageCreateInfo::new(cs);
+            let layout = PipelineLayout::new(
+                renderer.device(),
+                PipelineDescriptorSetLayoutCreateInfo::from_stages([&stage])
+                    .into_pipeline_layout_create_info(renderer.device())?,
+            )?;
             ComputePipeline::new(
                 renderer.device(),
-                shader.entry_point("main").unwrap(),
-                &(),
                 None,
-                |_| {},
-            )
-            .unwrap()
+                ComputePipelineCreateInfo::stage_layout(stage, layout),
+            )?
         };
         let color_map_desc_set_pressure =
-            Self::create_color_map_desc_set(renderer, pipeline_pressure.clone(), settings);
+            Self::create_color_map_desc_set(renderer, pipeline_pressure.clone(), settings)?;
 
         let pipeline_radiation = {
-            let shader = cs_radiation::load(renderer.device()).unwrap();
+            let shader = cs_radiation::load(renderer.device())?;
+            let cs = shader.entry_point("main").unwrap();
+            let stage = PipelineShaderStageCreateInfo::new(cs);
+            let layout = PipelineLayout::new(
+                renderer.device(),
+                PipelineDescriptorSetLayoutCreateInfo::from_stages([&stage])
+                    .into_pipeline_layout_create_info(renderer.device())?,
+            )?;
             ComputePipeline::new(
                 renderer.device(),
-                shader.entry_point("main").unwrap(),
-                &(),
                 None,
-                |_| {},
-            )
-            .unwrap()
+                ComputePipelineCreateInfo::stage_layout(stage, layout),
+            )?
         };
         let color_map_desc_set_radiation =
-            Self::create_color_map_desc_set(renderer, pipeline_radiation.clone(), settings);
+            Self::create_color_map_desc_set(renderer, pipeline_radiation.clone(), settings)?;
 
-        Self {
+        Ok(Self {
             pipeline_pressure,
             pipeline_radiation,
             source_pos_buf: None,
             source_drive_buf: None,
             color_map_desc_set_pressure,
             color_map_desc_set_radiation,
-        }
+        })
     }
 
     fn create_color_map_desc_set(
         renderer: &Renderer,
         pipeline: Arc<ComputePipeline>,
         settings: &ViewerSettings,
-    ) -> Arc<PersistentDescriptorSet> {
+    ) -> anyhow::Result<Arc<PersistentDescriptorSet>> {
         let color_map_size = 100;
         let iter = (0..color_map_size).map(|x| x as f64 / color_map_size as f64);
         let mut uploads = AutoCommandBufferBuilder::primary(
             renderer.command_buffer_allocator(),
             renderer.queue().queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        )?;
         let texture = {
             let color_map: Vec<RGBColor> = match settings.color_map_type {
                 crate::viewer_settings::ColorMapType::Viridis => {
@@ -126,10 +144,7 @@ impl FieldComputePipeline {
                 }
             };
 
-            let dimensions = ImageDimensions::Dim1d {
-                width: color_map_size,
-                array_layers: 1,
-            };
+            let extent = [color_map_size, 1, 1];
             let alpha = (settings.slice_alpha * 255.) as u8;
             let texels = color_map
                 .iter()
@@ -143,27 +158,47 @@ impl FieldComputePipeline {
                 })
                 .collect::<Vec<_>>();
 
-            let image = ImmutableImage::from_iter(
+            let upload_buffer = Buffer::new_slice(
                 renderer.memory_allocator(),
-                texels,
-                dimensions,
-                MipmapsCount::One,
-                Format::R8G8B8A8_UNORM,
-                &mut uploads,
-            )
-            .unwrap();
-            ImageView::new_default(image).unwrap()
+                BufferCreateInfo {
+                    usage: BufferUsage::TRANSFER_SRC,
+                    ..Default::default()
+                },
+                AllocationCreateInfo {
+                    memory_type_filter: MemoryTypeFilter::PREFER_HOST
+                        | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                    ..Default::default()
+                },
+                (extent[0] * 4) as DeviceSize,
+            )?;
+
+            upload_buffer.write()?.copy_from_slice(&texels);
+
+            let image = Image::new(
+                renderer.memory_allocator(),
+                ImageCreateInfo {
+                    image_type: ImageType::Dim1d,
+                    format: Format::R8G8B8A8_UNORM,
+                    extent,
+                    usage: ImageUsage::TRANSFER_DST | ImageUsage::SAMPLED,
+                    ..Default::default()
+                },
+                AllocationCreateInfo::default(),
+            )?;
+
+            uploads.copy_buffer_to_image(CopyBufferToImageInfo::buffer_image(
+                upload_buffer,
+                image.clone(),
+            ))?;
+
+            ImageView::new_default(image)?
         };
 
         uploads
-            .build()
-            .unwrap()
-            .execute(renderer.queue())
-            .unwrap()
-            .then_signal_fence_and_flush()
-            .unwrap()
-            .wait(None)
-            .unwrap();
+            .build()?
+            .execute(renderer.queue())?
+            .then_signal_fence_and_flush()?
+            .wait(None)?;
 
         let sampler = Sampler::new(
             renderer.device(),
@@ -175,49 +210,45 @@ impl FieldComputePipeline {
                 mip_lod_bias: 0.0,
                 ..Default::default()
             },
-        )
-        .unwrap();
+        )?;
 
         let layout = pipeline.layout().set_layouts().get(3).unwrap();
-        PersistentDescriptorSet::new(
+        Ok(PersistentDescriptorSet::new(
             renderer.descriptor_set_allocator(),
             layout.clone(),
             [WriteDescriptorSet::image_view_sampler(0, texture, sampler)],
-        )
-        .unwrap()
+            [],
+        )?)
     }
 
-    pub fn init(&mut self, renderer: &Renderer, sources: &SoundSources) {
-        self.source_drive_buf = Some(
-            Buffer::from_iter(
-                renderer.memory_allocator(),
-                BufferCreateInfo {
-                    usage: BufferUsage::STORAGE_BUFFER,
-                    ..Default::default()
-                },
-                AllocationCreateInfo {
-                    usage: MemoryUsage::Upload,
-                    ..Default::default()
-                },
-                sources.drives().copied(),
-            )
-            .unwrap(),
-        );
-        self.source_pos_buf = Some(
-            Buffer::from_iter(
-                renderer.memory_allocator(),
-                BufferCreateInfo {
-                    usage: BufferUsage::STORAGE_BUFFER,
-                    ..Default::default()
-                },
-                AllocationCreateInfo {
-                    usage: MemoryUsage::Upload,
-                    ..Default::default()
-                },
-                sources.positions().copied().map(|p| p.into()),
-            )
-            .unwrap(),
-        );
+    pub fn init(&mut self, renderer: &Renderer, sources: &SoundSources) -> anyhow::Result<()> {
+        self.source_drive_buf = Some(Buffer::from_iter(
+            renderer.memory_allocator(),
+            BufferCreateInfo {
+                usage: BufferUsage::STORAGE_BUFFER,
+                ..Default::default()
+            },
+            AllocationCreateInfo {
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                ..Default::default()
+            },
+            sources.drives().copied(),
+        )?);
+        self.source_pos_buf = Some(Buffer::from_iter(
+            renderer.memory_allocator(),
+            BufferCreateInfo {
+                usage: BufferUsage::STORAGE_BUFFER,
+                ..Default::default()
+            },
+            AllocationCreateInfo {
+                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                ..Default::default()
+            },
+            sources.positions().copied().map(|p| p.into()),
+        )?);
+        Ok(())
     }
 
     pub fn update(
@@ -226,17 +257,22 @@ impl FieldComputePipeline {
         sources: &SoundSources,
         settings: &ViewerSettings,
         update_flag: &UpdateFlag,
-    ) {
+    ) -> anyhow::Result<()> {
         if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE)
             || update_flag.contains(UpdateFlag::UPDATE_SOURCE_FLAG)
         {
-            self.update_source(sources);
+            self.update_source(sources)?;
         }
 
         if update_flag.contains(UpdateFlag::UPDATE_COLOR_MAP) {
-            self.color_map_desc_set_pressure =
-                Self::create_color_map_desc_set(renderer, self.pipeline_pressure.clone(), settings);
+            self.color_map_desc_set_pressure = Self::create_color_map_desc_set(
+                renderer,
+                self.pipeline_pressure.clone(),
+                settings,
+            )?;
         }
+
+        Ok(())
     }
 
     pub fn compute(
@@ -245,7 +281,7 @@ impl FieldComputePipeline {
         config: Config,
         image: Subbuffer<[[f32; 4]]>,
         settings: &ViewerSettings,
-    ) -> Box<dyn GpuFuture> {
+    ) -> anyhow::Result<Box<dyn GpuFuture>> {
         let pipeline = if settings.show_radiation_pressure {
             self.pipeline_radiation.clone()
         } else {
@@ -258,8 +294,8 @@ impl FieldComputePipeline {
             renderer.descriptor_set_allocator(),
             layout.clone(),
             [WriteDescriptorSet::buffer(0, image)],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let layout = pipeline_layout.set_layouts().get(1).unwrap();
         let set_1 = PersistentDescriptorSet::new(
@@ -269,8 +305,8 @@ impl FieldComputePipeline {
                 0,
                 self.source_pos_buf.clone().unwrap(),
             )],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let layout = pipeline_layout.set_layouts().get(1).unwrap();
         let set_2 = PersistentDescriptorSet::new(
@@ -280,8 +316,8 @@ impl FieldComputePipeline {
                 0,
                 self.source_drive_buf.clone().unwrap(),
             )],
-        )
-        .unwrap();
+            [],
+        )?;
 
         let set_3 = if settings.show_radiation_pressure {
             self.color_map_desc_set_radiation.clone()
@@ -293,47 +329,45 @@ impl FieldComputePipeline {
             renderer.command_buffer_allocator(),
             renderer.queue().queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        )?;
 
         builder
-            .bind_pipeline_compute(pipeline.clone())
+            .bind_pipeline_compute(pipeline.clone())?
             .bind_descriptor_sets(
                 PipelineBindPoint::Compute,
                 pipeline_layout.clone(),
                 0,
                 (set_0, set_1, set_2, set_3),
-            )
-            .push_constants(pipeline_layout.clone(), 0, config)
-            .dispatch([(config.width - 1) / 32 + 1, (config.height - 1) / 32 + 1, 1])
-            .unwrap();
-        let command_buffer = builder.build().unwrap();
-        let finished = command_buffer.execute(renderer.queue()).unwrap();
-        finished.then_signal_fence_and_flush().unwrap().boxed()
+            )?
+            .push_constants(pipeline_layout.clone(), 0, config)?
+            .dispatch([(config.width - 1) / 32 + 1, (config.height - 1) / 32 + 1, 1])?;
+        let command_buffer = builder.build()?;
+        let finished = command_buffer.execute(renderer.queue())?;
+        Ok(finished.then_signal_fence_and_flush()?.boxed())
     }
 
-    fn update_source(&mut self, sources: &SoundSources) {
+    fn update_source(&mut self, sources: &SoundSources) -> anyhow::Result<()> {
         if let Some(data) = &mut self.source_drive_buf {
-            data.write()
-                .unwrap()
+            data.write()?
                 .iter_mut()
                 .zip(sources.drives())
                 .for_each(|(d, &drive)| {
                     *d = drive;
                 });
         }
+        Ok(())
     }
 
-    pub fn update_source_pos(&mut self, sources: &SoundSources) {
+    pub fn update_source_pos(&mut self, sources: &SoundSources) -> anyhow::Result<()> {
         if let Some(data) = &mut self.source_pos_buf {
-            data.write()
-                .unwrap()
+            data.write()?
                 .iter_mut()
                 .zip(sources.positions())
                 .for_each(|(d, &pos)| {
                     *d = pos.into();
                 });
         }
+        Ok(())
     }
 }
 

@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "AUTD Server",
-    "version": "16.0.3"
+    "version": "17.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -46,11 +46,6 @@
             "name": "SOEMAUTDServer",
             "sidecar": true,
             "args": true
-          },
-          {
-            "name": "LightweightTwinCATAUTDServer",
-            "sidecar": true,
-            "args": true
           }
         ]
       },
@@ -65,7 +60,7 @@
         "deb",
         "dmg"
       ],
-      "identifier": "com.shinolab.autd-server",
+      "identifier": "com.shinolab.autd3-server",
       "publisher": "Shun Suzuki",
       "icon": [
         "icons/32x32.png",
@@ -110,8 +105,7 @@
       },
       "externalBin": [
         "simulator",
-        "SOEMAUTDServer",
-        "LightweightTwinCATAUTDServer"
+        "SOEMAUTDServer"
       ],
       "windows": {
         "certificateThumbprint": null,
@@ -133,7 +127,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "AUTD Server v16.0.3",
+        "title": "AUTD Server v17.0.0",
         "width": 800
       }
     ]

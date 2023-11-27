@@ -6,6 +6,7 @@ Here, we will define a `FocalPoint` that generates a single focus just like `Foc
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # extern crate autd3_driver;
 use std::collections::HashMap;
 use autd3::{
@@ -25,11 +26,11 @@ impl FocalPoint {
     }
 }
 
-impl<T: Transducer> Gain<T> for FocalPoint {
-    fn calc(&self, geometry: &Geometry<T>, filter: GainFilter) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        Ok(Self::transform(geometry, filter, |dev, tr: &T| Drive {
+impl Gain for FocalPoint {
+    fn calc(&self, geometry: &Geometry, filter: GainFilter) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
+        Ok(Self::transform(geometry, filter, |dev, tr| Drive {
             phase: (tr.position() - self.position).norm() * tr.wavelength(dev.sound_speed),
-            amp: Amplitude::MAX,
+            intensity: EmitIntensity::MAX,
         }))
     }
 }
@@ -90,7 +91,7 @@ class Focus(Gain):
         self.point = np.array(point)
 
     def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        return Gain.transform(
+        return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
                 np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),

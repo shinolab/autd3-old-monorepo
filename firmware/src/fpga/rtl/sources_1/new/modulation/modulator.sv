@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/05/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module modulator #(
-    parameter int WIDTH = 13,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -22,11 +21,11 @@ module modulator #(
     input var [31:0] FREQ_DIV_M,
     cpu_bus_if.mod_port CPU_BUS,
     input var DIN_VALID,
-    input var [WIDTH-1:0] DUTY_IN,
-    input var [WIDTH-1:0] PHASE_IN,
+    input var [7:0] INTENSITY_IN,
+    input var [7:0] PHASE_IN,
     input var [15:0] DELAY_M[DEPTH],
-    output var [WIDTH-1:0] DUTY_OUT,
-    output var [WIDTH-1:0] PHASE_OUT,
+    output var [15:0] INTENSITY_OUT,
+    output var [7:0] PHASE_OUT,
     output var DOUT_VALID,
     output var [15:0] IDX
 );
@@ -48,7 +47,6 @@ module modulator #(
   );
 
   modulation_multiplier #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) modulation_multiplier (
       .CLK(CLK),
@@ -57,9 +55,9 @@ module modulator #(
       .IDX(IDX),
       .M_BUS(m_bus_if.sampler_port),
       .DELAY_M(DELAY_M),
-      .DUTY_IN(DUTY_IN),
+      .INTENSITY_IN(INTENSITY_IN),
       .PHASE_IN(PHASE_IN),
-      .DUTY_OUT(DUTY_OUT),
+      .INTENSITY_OUT(INTENSITY_OUT),
       .PHASE_OUT(PHASE_OUT),
       .DOUT_VALID(DOUT_VALID)
   );

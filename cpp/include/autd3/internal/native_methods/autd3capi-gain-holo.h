@@ -8,27 +8,23 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintDotCare();
+[[nodiscard]] double AUTDGainHoloSPLToPascal(double value);
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintNormalize();
+[[nodiscard]] double AUTDGainHoloPascalToSPL(double value);
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintUniform(double value);
+[[nodiscard]] EmissionConstraintPtr AUTDGainHoloConstraintDotCare();
 
-[[nodiscard]] ConstraintPtr AUTDGainHoloConstraintClamp(double min_v, double max_v);
+[[nodiscard]] EmissionConstraintPtr AUTDGainHoloConstraintNormalize();
 
-[[nodiscard]]
-GainPtr AUTDGainHoloEVP(BackendPtr backend,
-                        const double *points,
-                        const double *amps,
-                        uint64_t size);
+[[nodiscard]] EmissionConstraintPtr AUTDGainHoloConstraintUniform(uint8_t intensity);
 
-[[nodiscard]] GainPtr AUTDGainHoloEVPWithConstraint(GainPtr holo, ConstraintPtr constraint);
-
-[[nodiscard]] GainPtr AUTDGainHoloEVPWithGamma(GainPtr holo, double gamma);
+[[nodiscard]] EmissionConstraintPtr AUTDGainHoloConstraintClamp(uint8_t min_v, uint8_t max_v);
 
 [[nodiscard]] GainPtr AUTDGainHoloGreedy(const double *points, const double *amps, uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloGreedyWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloGreedyWithConstraint(GainPtr holo,
+                                         EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloGreedyWithPhaseDiv(GainPtr holo, uint32_t div);
 
@@ -38,7 +34,7 @@ GainPtr AUTDGainHoloGS(BackendPtr backend,
                        const double *amps,
                        uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloGSWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]] GainPtr AUTDGainHoloGSWithConstraint(GainPtr holo, EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloGSWithRepeat(GainPtr holo, uint32_t repeat);
 
@@ -48,7 +44,9 @@ GainPtr AUTDGainHoloGSPAT(BackendPtr backend,
                           const double *amps,
                           uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloGSPATWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloGSPATWithConstraint(GainPtr holo,
+                                        EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloGSPATWithRepeat(GainPtr holo, uint32_t repeat);
 
@@ -58,7 +56,7 @@ GainPtr AUTDGainHoloLM(BackendPtr backend,
                        const double *amps,
                        uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloLMWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]] GainPtr AUTDGainHoloLMWithConstraint(GainPtr holo, EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloLMWithEps1(GainPtr holo, double eps);
 
@@ -79,7 +77,9 @@ GainPtr AUTDGainHoloNaive(BackendPtr backend,
                           const double *amps,
                           uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloNaiveWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]]
+GainPtr AUTDGainHoloNaiveWithConstraint(GainPtr holo,
+                                        EmissionConstraintPtr constraint);
 
 [[nodiscard]] BackendPtr AUTDNalgebraBackend();
 
@@ -91,7 +91,7 @@ GainPtr AUTDGainHoloSDP(BackendPtr backend,
                         const double *amps,
                         uint64_t size);
 
-[[nodiscard]] GainPtr AUTDGainHoloSDPWithConstraint(GainPtr holo, ConstraintPtr constraint);
+[[nodiscard]] GainPtr AUTDGainHoloSDPWithConstraint(GainPtr holo, EmissionConstraintPtr constraint);
 
 [[nodiscard]] GainPtr AUTDGainHoloSDPWithAlpha(GainPtr holo, double alpha);
 

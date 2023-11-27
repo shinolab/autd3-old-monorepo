@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@ use autd3capi_def::{
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainUniform(amp: float) -> GainPtr {
-    GainPtr::new(Uniform::new(amp))
+pub unsafe extern "C" fn AUTDGainUniform(intensity: u8) -> GainPtr {
+    GainPtr::new(Uniform::new(intensity))
 }
 
 #[no_mangle]
@@ -30,35 +30,23 @@ pub unsafe extern "C" fn AUTDGainUniformWithPhase(uniform: GainPtr, phase: float
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::*;
 
     use crate::{gain::*, tests::*, *};
 
-    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_uniform() {
         unsafe {
             let cnt = create_controller();
 
-            let g = AUTDGainUniform(1.);
+            let g = AUTDGainUniform(0xFF);
             let g = AUTDGainUniformWithPhase(g, 1.);
             let g = AUTDGainIntoDatagram(g);
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    DatagramPtr(std::ptr::null()),
-                    g,
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }

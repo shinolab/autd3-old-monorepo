@@ -2,11 +2,15 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr
+from .autd3capi_def import GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32
 
 
 class LinkSimulatorBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class ResultLinkSimulatorBuilder(ctypes.Structure):
+    _fields_ = [("result", LinkSimulatorBuilderPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
 
 
 class Singleton(type):
@@ -32,8 +36,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkSimulator.argtypes = [ctypes.c_uint16] 
         self.dll.AUTDLinkSimulator.restype = LinkSimulatorBuilderPtr
 
-        self.dll.AUTDLinkSimulatorWithAddr.argtypes = [LinkSimulatorBuilderPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkSimulatorWithAddr.restype = LinkSimulatorBuilderPtr
+        self.dll.AUTDLinkSimulatorWithAddr.argtypes = [LinkSimulatorBuilderPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSimulatorWithAddr.restype = ResultLinkSimulatorBuilder
 
         self.dll.AUTDLinkSimulatorWithTimeout.argtypes = [LinkSimulatorBuilderPtr, ctypes.c_uint64]  # type: ignore 
         self.dll.AUTDLinkSimulatorWithTimeout.restype = LinkSimulatorBuilderPtr
@@ -41,14 +45,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkSimulatorIntoBuilder.argtypes = [LinkSimulatorBuilderPtr]  # type: ignore 
         self.dll.AUTDLinkSimulatorIntoBuilder.restype = LinkBuilderPtr
 
-        self.dll.AUTDLinkSimulatorUpdateGeometry.argtypes = [LinkPtr, GeometryPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDLinkSimulatorUpdateGeometry.restype = ctypes.c_int32
+        self.dll.AUTDLinkSimulatorUpdateGeometry.argtypes = [LinkPtr, GeometryPtr]  # type: ignore 
+        self.dll.AUTDLinkSimulatorUpdateGeometry.restype = ResultI32
 
     def link_simulator(self, port: int) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulator(port)
 
-    def link_simulator_with_addr(self, simulator: LinkSimulatorBuilderPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkSimulatorBuilderPtr:
-        return self.dll.AUTDLinkSimulatorWithAddr(simulator, addr, err)
+    def link_simulator_with_addr(self, simulator: LinkSimulatorBuilderPtr, addr: bytes) -> ResultLinkSimulatorBuilder:
+        return self.dll.AUTDLinkSimulatorWithAddr(simulator, addr)
 
     def link_simulator_with_timeout(self, simulator: LinkSimulatorBuilderPtr, timeout_ns: int) -> LinkSimulatorBuilderPtr:
         return self.dll.AUTDLinkSimulatorWithTimeout(simulator, timeout_ns)
@@ -56,5 +60,5 @@ class NativeMethods(metaclass=Singleton):
     def link_simulator_into_builder(self, simulator: LinkSimulatorBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkSimulatorIntoBuilder(simulator)
 
-    def link_simulator_update_geometry(self, simulator: LinkPtr, geometry: GeometryPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
-        return self.dll.AUTDLinkSimulatorUpdateGeometry(simulator, geometry, err)
+    def link_simulator_update_geometry(self, simulator: LinkPtr, geometry: GeometryPtr) -> ResultI32:
+        return self.dll.AUTDLinkSimulatorUpdateGeometry(simulator, geometry)

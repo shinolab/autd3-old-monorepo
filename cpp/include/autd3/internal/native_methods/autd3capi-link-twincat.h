@@ -14,6 +14,12 @@ struct LinkRemoteTwinCATBuilderPtr {
   void* _0;
 };
 
+struct ResultLinkRemoteTwinCATBuilder {
+  LinkRemoteTwinCATBuilderPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
 extern "C" {
 
 [[nodiscard]] LinkTwinCATBuilderPtr AUTDLinkTwinCAT();
@@ -24,9 +30,7 @@ LinkTwinCATBuilderPtr AUTDLinkTwinCATWithTimeout(LinkTwinCATBuilderPtr twincat,
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkTwinCATIntoBuilder(LinkTwinCATBuilderPtr twincat);
 
-[[nodiscard]]
-LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCAT(const char *server_ams_net_id,
-                                                  char *err);
+[[nodiscard]] ResultLinkRemoteTwinCATBuilder AUTDLinkRemoteTwinCAT(const char *server_ams_net_id);
 
 [[nodiscard]]
 LinkRemoteTwinCATBuilderPtr AUTDLinkRemoteTwinCATWithServerIP(LinkRemoteTwinCATBuilderPtr twincat,

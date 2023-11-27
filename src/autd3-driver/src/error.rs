@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,23 +17,32 @@ use crate::{defined::float, fpga::*, operation::GainSTMMode};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum AUTDInternalError {
-    #[error("Amplitude ({0}) is out of range ([0, 1])")]
-    AmplitudeOutOfRange(float),
-    #[error("Duty ratio ({0}) is out of range ([0, 0.5])")]
-    DutyRatioOutOfRange(float),
-
     #[error(
         "Modulation buffer size ({0}) is out of range ([{}, {}])",
         MOD_BUF_SIZE_MIN,
         MOD_BUF_SIZE_MAX
     )]
     ModulationSizeOutOfRange(usize),
+
     #[error(
-        "Frequency division ({0}) is out of range ([{}, {}])",
-        SAMPLING_FREQ_DIV_MIN,
-        SAMPLING_FREQ_DIV_MAX
+        "Silencer step ({0}) is out of range ([{}, {}])",
+        SILENCER_STEP_MIN,
+        SILENCER_STEP_MAX
     )]
-    ModFreqDivOutOfRange(u32),
+    SilencerStepOutOfRange(u16),
+
+    #[error("Sampling frequency division ({0}) is out of range ([{1}, {2}])")]
+    SamplingFreqDivOutOfRange(u32, u32, u32),
+    #[error("Sampling frequency ({0}) is out of range ([{1}, {2}])")]
+    SamplingFreqOutOfRange(float, float, float),
+    #[error("Sampling period ({0} ns) is out of range ([{1}, {2}])")]
+    SamplingPeriodOutOfRange(u128, u128, u128),
+
+    #[error("STM frequency ({1} Hz, size={0}) is out of range ([{2}, {3}])")]
+    STMFreqOutOfRange(usize, float, float, float),
+    #[error("STM period ({1} ns, size={0}) is out of range ([{2}, {3}])")]
+    STMPeriodOutOfRange(usize, u128, usize, usize),
+
     #[error("STM index is out of range")]
     STMStartIndexOutOfRange,
     #[error("STM finish is out of range")]
@@ -45,12 +54,6 @@ pub enum AUTDInternalError {
     )]
     FocusSTMPointSizeOutOfRange(usize),
     #[error(
-        "Frequency division ({0}) is out of range ([{}, {}])",
-        SAMPLING_FREQ_DIV_MIN,
-        SAMPLING_FREQ_DIV_MAX
-    )]
-    FocusSTMFreqDivOutOfRange(u32),
-    #[error(
         "Point ({0}, {1}, {2}) is out of range. Each parameter must be in [{}, {}].",
         FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_LOWER as float,
         FOCUS_STM_FIXED_NUM_UNIT * FOCUS_STM_FIXED_NUM_UPPER as float,
@@ -59,29 +62,9 @@ pub enum AUTDInternalError {
     #[error(
         "GainSTM size ({0}) is out of range ([{}, {}])",
         STM_BUF_SIZE_MIN,
-        GAIN_STM_LEGACY_BUF_SIZE_MAX
-    )]
-    GainSTMLegacySizeOutOfRange(usize),
-    #[error(
-        "GainSTM size ({0}) is out of range ([{}, {}])",
-        STM_BUF_SIZE_MIN,
         GAIN_STM_BUF_SIZE_MAX
     )]
     GainSTMSizeOutOfRange(usize),
-    #[error(
-        "Frequency division ({0}) is out of range ([{}, {}])",
-        SAMPLING_FREQ_DIV_MIN,
-        SAMPLING_FREQ_DIV_MAX
-    )]
-    GainSTMLegacyFreqDivOutOfRange(u32),
-    #[error(
-        "Frequency division ({0}) is out of range ([{}, {}])",
-        SAMPLING_FREQ_DIV_MIN,
-        SAMPLING_FREQ_DIV_MAX
-    )]
-    GainSTMFreqDivOutOfRange(u32),
-    #[error("Cycle ({0}) is out of range ([{}, {}])", MIN_CYCLE, MAX_CYCLE)]
-    CycleOutOfRange(u16),
 
     #[error("GainSTMMode ({0:?}) is not supported")]
     GainSTMModeNotSupported(GainSTMMode),
@@ -115,60 +98,43 @@ mod tests {
     use std::error::Error;
 
     #[test]
-    fn amplitude_out_of_range() {
-        let err = AUTDInternalError::AmplitudeOutOfRange(1.0);
-        assert!(err.source().is_none());
-        assert_eq!(format!("{}", err), "Amplitude (1) is out of range ([0, 1])");
-        assert_eq!(format!("{:?}", err), "AmplitudeOutOfRange(1.0)");
-
-        let err = AUTDInternalError::AmplitudeOutOfRange(1.0);
-        assert_eq!(err, AUTDInternalError::AmplitudeOutOfRange(1.0));
-        assert_ne!(err, AUTDInternalError::AmplitudeOutOfRange(2.0));
-    }
-
-    #[test]
-    fn duty_ratio_out_of_range() {
-        let err = AUTDInternalError::DutyRatioOutOfRange(1.0);
+    fn freq_div_out_of_range() {
+        let err = AUTDInternalError::SamplingFreqDivOutOfRange(
+            1,
+            SAMPLING_FREQ_DIV_MIN,
+            SAMPLING_FREQ_DIV_MAX,
+        );
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "Duty ratio (1) is out of range ([0, 0.5])"
+            "Sampling frequency division (1) is out of range ([512, 4294967295])"
         );
-        assert_eq!(format!("{:?}", err), "DutyRatioOutOfRange(1.0)");
-
-        let err = AUTDInternalError::DutyRatioOutOfRange(1.0);
-        assert_eq!(err, AUTDInternalError::DutyRatioOutOfRange(1.0));
-        assert_ne!(err, AUTDInternalError::DutyRatioOutOfRange(2.0));
-    }
-
-    #[test]
-    fn modulation_size_out_of_range() {
-        let err = AUTDInternalError::ModulationSizeOutOfRange(1);
-        assert!(err.source().is_none());
         assert_eq!(
-            format!("{}", err),
-            "Modulation buffer size (1) is out of range ([2, 65536])"
+            format!("{:?}", err),
+            "SamplingFreqDivOutOfRange(1, 512, 4294967295)"
         );
-        assert_eq!(format!("{:?}", err), "ModulationSizeOutOfRange(1)");
 
-        let err = AUTDInternalError::ModulationSizeOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::ModulationSizeOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::ModulationSizeOutOfRange(2));
-    }
-
-    #[test]
-    fn mod_freq_div_out_of_range() {
-        let err = AUTDInternalError::ModFreqDivOutOfRange(1);
-        assert!(err.source().is_none());
+        let err = AUTDInternalError::SamplingFreqDivOutOfRange(
+            1,
+            SAMPLING_FREQ_DIV_MIN,
+            SAMPLING_FREQ_DIV_MAX,
+        );
         assert_eq!(
-            format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
+            err,
+            AUTDInternalError::SamplingFreqDivOutOfRange(
+                1,
+                SAMPLING_FREQ_DIV_MIN,
+                SAMPLING_FREQ_DIV_MAX,
+            )
         );
-        assert_eq!(format!("{:?}", err), "ModFreqDivOutOfRange(1)");
-
-        let err = AUTDInternalError::ModFreqDivOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::ModFreqDivOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::ModFreqDivOutOfRange(2));
+        assert_ne!(
+            err,
+            AUTDInternalError::SamplingFreqDivOutOfRange(
+                2,
+                SAMPLING_FREQ_DIV_MIN,
+                SAMPLING_FREQ_DIV_MAX,
+            )
+        );
     }
 
     #[test]
@@ -209,21 +175,6 @@ mod tests {
     }
 
     #[test]
-    fn focus_stm_freq_div_out_of_range() {
-        let err = AUTDInternalError::FocusSTMFreqDivOutOfRange(1);
-        assert!(err.source().is_none());
-        assert_eq!(
-            format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
-        );
-        assert_eq!(format!("{:?}", err), "FocusSTMFreqDivOutOfRange(1)");
-
-        let err = AUTDInternalError::FocusSTMFreqDivOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::FocusSTMFreqDivOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::FocusSTMFreqDivOutOfRange(2));
-    }
-
-    #[test]
     fn focus_stm_point_out_of_range() {
         let err = AUTDInternalError::FocusSTMPointOutOfRange(1.0, 2.0, 3.0);
         assert!(err.source().is_none());
@@ -248,27 +199,12 @@ mod tests {
     }
 
     #[test]
-    fn gain_stm_legacy_size_out_of_range() {
-        let err = AUTDInternalError::GainSTMLegacySizeOutOfRange(1);
-        assert!(err.source().is_none());
-        assert_eq!(
-            format!("{}", err),
-            "GainSTM size (1) is out of range ([2, 2048])"
-        );
-        assert_eq!(format!("{:?}", err), "GainSTMLegacySizeOutOfRange(1)");
-
-        let err = AUTDInternalError::GainSTMLegacySizeOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::GainSTMLegacySizeOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::GainSTMLegacySizeOutOfRange(2));
-    }
-
-    #[test]
     fn gain_stm_size_out_of_range() {
         let err = AUTDInternalError::GainSTMSizeOutOfRange(1);
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "GainSTM size (1) is out of range ([2, 1024])"
+            "GainSTM size (1) is out of range ([2, 2048])"
         );
         assert_eq!(format!("{:?}", err), "GainSTMSizeOutOfRange(1)");
 
@@ -278,49 +214,37 @@ mod tests {
     }
 
     #[test]
-    fn gain_stm_freq_div_out_of_range() {
-        let err = AUTDInternalError::GainSTMFreqDivOutOfRange(1);
+    fn silencer_out_of_range() {
+        let err = AUTDInternalError::SilencerStepOutOfRange(1);
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "Frequency division (1) is out of range ([512, 536870911])"
+            "Silencer step (1) is out of range ([1, 65535])"
         );
-        assert_eq!(format!("{:?}", err), "GainSTMFreqDivOutOfRange(1)");
+        assert_eq!(format!("{:?}", err), "SilencerStepOutOfRange(1)");
 
-        let err = AUTDInternalError::GainSTMFreqDivOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::GainSTMFreqDivOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::GainSTMFreqDivOutOfRange(2));
-    }
-
-    #[test]
-    fn cycle_out_of_range() {
-        let err = AUTDInternalError::CycleOutOfRange(1);
-        assert!(err.source().is_none());
-        assert_eq!(format!("{}", err), "Cycle (1) is out of range ([2, 8191])");
-        assert_eq!(format!("{:?}", err), "CycleOutOfRange(1)");
-
-        let err = AUTDInternalError::CycleOutOfRange(1);
-        assert_eq!(err, AUTDInternalError::CycleOutOfRange(1));
-        assert_ne!(err, AUTDInternalError::CycleOutOfRange(2));
+        let err = AUTDInternalError::SilencerStepOutOfRange(1);
+        assert_eq!(err, AUTDInternalError::SilencerStepOutOfRange(1));
+        assert_ne!(err, AUTDInternalError::SilencerStepOutOfRange(2));
     }
 
     #[test]
     fn gain_stm_mode_not_supported() {
-        let err = AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseDutyFull);
+        let err = AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseIntensityFull);
         assert!(err.source().is_none());
         assert_eq!(
             format!("{}", err),
-            "GainSTMMode (PhaseDutyFull) is not supported"
+            "GainSTMMode (PhaseIntensityFull) is not supported"
         );
         assert_eq!(
             format!("{:?}", err),
-            "GainSTMModeNotSupported(PhaseDutyFull)"
+            "GainSTMModeNotSupported(PhaseIntensityFull)"
         );
 
-        let err = AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseDutyFull);
+        let err = AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseIntensityFull);
         assert_eq!(
             err,
-            AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseDutyFull)
+            AUTDInternalError::GainSTMModeNotSupported(GainSTMMode::PhaseIntensityFull)
         );
         assert_ne!(
             err,

@@ -1,4 +1,4 @@
-'''
+"""
 File: test_wav.py
 Project: audio_file
 Created Date: 20/09/2023
@@ -9,117 +9,116 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
-from datetime import timedelta
-import os
-from ...test_autd import create_controller
-
-from pyautd3.modulation.audio_file import Wav
+from pathlib import Path
 
 import numpy as np
+import pytest
+
+from pyautd3 import SamplingConfiguration
+from pyautd3.modulation.audio_file import Wav
+from tests.test_autd import create_controller
 
 
-def test_wav():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_wav():
+    autd = await create_controller()
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")))
+    assert await autd.send_async(Wav(Path(__file__).parent / "sin150.wav"))
 
     for dev in autd.geometry:
         mod = autd.link.modulation(dev.idx)
-        mod_expext = [
-            85,
-            107,
-            131,
+        mod_expect = [
+            128,
             157,
-            182,
-            209,
-            234,
-            240,
-            216,
-            191,
-            165,
-            140,
-            115,
-            92,
-            71,
-            51,
-            34,
-            20,
-            9,
-            3,
-            0,
-            3,
-            9,
-            20,
-            34,
-            51,
-            71,
-            92,
-            115,
-            140,
-            165,
-            191,
-            216,
-            240,
-            234,
-            209,
-            182,
-            157,
-            131,
-            107,
-            85,
-            64,
-            45,
-            29,
-            16,
-            7,
-            1,
+            185,
+            210,
+            230,
+            245,
+            253,
+            254,
+            248,
+            236,
+            217,
+            194,
+            167,
+            137,
+            109,
+            80,
+            54,
+            32,
+            15,
+            5,
             1,
             5,
-            12,
-            24,
-            39,
-            57,
-            78,
+            15,
+            32,
+            54,
+            80,
+            109,
+            137,
+            167,
+            194,
+            217,
+            236,
+            248,
+            254,
+            253,
+            245,
+            230,
+            210,
+            185,
+            157,
+            128,
             99,
-            123,
-            148,
-            174,
-            200,
-            226,
+            71,
+            46,
+            26,
+            11,
+            3,
+            2,
+            8,
+            20,
+            39,
+            62,
+            89,
+            119,
+            147,
+            176,
+            202,
+            224,
+            241,
+            251,
             255,
-            226,
-            200,
-            174,
-            148,
-            123,
-            99,
-            78,
-            57,
+            251,
+            241,
+            224,
+            202,
+            176,
+            147,
+            119,
+            89,
+            62,
             39,
-            24,
-            12,
-            5,
-            1,
-            1,
-            7,
-            16,
-            29,
-            45,
-            64]
-        assert np.array_equal(mod, mod_expext)
-        assert autd.link.modulation_frequency_division(dev.idx) == 40960
+            20,
+            8,
+            2,
+            3,
+            11,
+            26,
+            46,
+            71,
+            99,
+        ]
+        assert np.array_equal(mod, mod_expect)
+        assert autd.link.modulation_frequency_division(dev.idx) == 5120
 
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_frequency_division(4096 // 8))
+    assert await autd.send_async(
+        Wav(Path(__file__).parent / "sin150.wav").with_sampling_config(
+            SamplingConfiguration.new_with_frequency_division(512),
+        ),
+    )
     for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 4096
-
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_frequency(8e3))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 20480
-
-    assert autd.send(Wav(os.path.join(os.path.dirname(__file__), "sin150.wav")).with_sampling_period(timedelta(microseconds=100)))
-    for dev in autd.geometry:
-        assert autd.link.modulation_frequency_division(dev.idx) == 16384
+        assert autd.link.modulation_frequency_division(dev.idx) == 512

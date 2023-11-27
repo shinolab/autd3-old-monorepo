@@ -4,7 +4,7 @@
  * Created Date: 29/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,5 +27,3 @@ message Quaternion {
   float y = 3;
   float z = 4;
 }
-
-message Amplitude { float value = 1; }

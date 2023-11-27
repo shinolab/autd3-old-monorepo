@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,15 +14,15 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::{Amplitude, Drive},
+    common::{Drive, EmitIntensity},
     datagram::GainFilter,
     defined::PI,
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
+    geometry::Geometry,
 };
 use nalgebra::ComplexField;
 
-use crate::{Constraint, VectorXc};
+use crate::{EmissionConstraint, VectorXc};
 
 #[doc(hidden)]
 #[macro_export]
@@ -33,7 +33,7 @@ macro_rules! impl_holo {
             $backend: $crate::LinAlgBackend,
         {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: $crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
@@ -42,12 +42,12 @@ macro_rules! impl_holo {
             }
 
             /// Set constraint
-            pub fn with_constraint(self, constraint: Constraint) -> Self {
+            pub fn with_constraint(self, constraint: EmissionConstraint) -> Self {
                 Self { constraint, ..self }
             }
 
             /// Add foci
-            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, $crate::amp::Amplitude)>>(
                 self,
                 iter: I,
             ) -> Self {
@@ -62,12 +62,21 @@ macro_rules! impl_holo {
 
             pub fn foci(
                 &self,
-            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+            ) -> std::iter::Zip<
+                std::slice::Iter<'_, Vector3>,
+                std::slice::Iter<'_, $crate::amp::Amplitude>,
+            > {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub const fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &EmissionConstraint {
                 &self.constraint
+            }
+
+            fn amps_as_slice(&self) -> &[float] {
+                unsafe {
+                    std::slice::from_raw_parts(self.amps.as_ptr() as *const float, self.amps.len())
+                }
             }
         }
     };
@@ -75,7 +84,7 @@ macro_rules! impl_holo {
     ($t:ty) => {
         impl $t {
             /// Add focus
-            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+            pub fn add_focus(self, focus: Vector3, amp: $crate::amp::Amplitude) -> Self {
                 let mut foci = self.foci;
                 let mut amps = self.amps;
                 foci.push(focus);
@@ -84,12 +93,12 @@ macro_rules! impl_holo {
             }
 
             /// Set constraint
-            pub fn with_constraint(self, constraint: Constraint) -> Self {
+            pub fn with_constraint(self, constraint: EmissionConstraint) -> Self {
                 Self { constraint, ..self }
             }
 
             /// Add foci
-            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, $crate::amp::Amplitude)>>(
                 self,
                 iter: I,
             ) -> Self {
@@ -104,11 +113,14 @@ macro_rules! impl_holo {
 
             pub fn foci(
                 &self,
-            ) -> std::iter::Zip<std::slice::Iter<'_, Vector3>, std::slice::Iter<'_, float>> {
+            ) -> std::iter::Zip<
+                std::slice::Iter<'_, Vector3>,
+                std::slice::Iter<'_, $crate::amp::Amplitude>,
+            > {
                 self.foci.iter().zip(self.amps.iter())
             }
 
-            pub const fn constraint(&self) -> &Constraint {
+            pub const fn constraint(&self) -> &EmissionConstraint {
                 &self.constraint
             }
         }
@@ -116,10 +128,10 @@ macro_rules! impl_holo {
 }
 
 #[allow(clippy::uninit_vec)]
-pub fn generate_result<T: Transducer>(
-    geometry: &Geometry<T>,
+pub fn generate_result(
+    geometry: &Geometry,
     q: VectorXc,
-    constraint: &Constraint,
+    constraint: &EmissionConstraint,
     filter: GainFilter,
 ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
     let max_coefficient = q.camax().abs();
@@ -135,7 +147,10 @@ pub fn generate_result<T: Transducer>(
                             let phase = q[idx].argument() + PI;
                             let amp = constraint.convert(q[idx].abs(), max_coefficient);
                             idx += 1;
-                            Drive { amp, phase }
+                            Drive {
+                                intensity: amp,
+                                phase,
+                            }
                         })
                         .collect(),
                 )
@@ -148,12 +163,15 @@ pub fn generate_result<T: Transducer>(
                     (
                         dev.idx(),
                         dev.iter()
-                            .filter(|tr| filter[tr.local_idx()])
+                            .filter(|tr| filter[tr.tr_idx()])
                             .map(|_| {
                                 let phase = q[idx].argument() + PI;
                                 let amp = constraint.convert(q[idx].abs(), max_coefficient);
                                 idx += 1;
-                                Drive { amp, phase }
+                                Drive {
+                                    intensity: amp,
+                                    phase,
+                                }
                             })
                             .collect(),
                     )
@@ -163,7 +181,7 @@ pub fn generate_result<T: Transducer>(
                         dev.iter()
                             .map(|_| Drive {
                                 phase: 0.,
-                                amp: Amplitude::MIN,
+                                intensity: EmitIntensity::MIN,
                             })
                             .collect(),
                     )

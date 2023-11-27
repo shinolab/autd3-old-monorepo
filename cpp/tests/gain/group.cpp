@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,21 +22,22 @@ TEST(Gain, Group) {
 
   const auto cx = autd.geometry().center().x();
 
-  ASSERT_TRUE(autd.send(autd3::gain::Group([cx](const auto&, const auto& tr) -> std::optional<const char*> {
-                          if (tr.position().x() < cx) return "uniform";
-                          return "null";
-                        })
-                            .set("uniform", autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi))
-                            .set("null", autd3::gain::Null())));
+  ASSERT_TRUE(autd.send_async(autd3::gain::Group([cx](const auto&, const auto& tr) -> std::optional<const char*> {
+                                if (tr.position().x() < cx) return "uniform";
+                                return "null";
+                              })
+                                  .set("uniform", autd3::gain::Uniform(0x80).with_phase(autd3::internal::pi))
+                                  .set("null", autd3::gain::Null()))
+                  .get());
 
   for (auto& dev : autd.geometry()) {
-    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(dev.idx(), 0);
+    auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
     for (auto& tr : dev) {
       if (tr.position().x() < cx) {
-        ASSERT_EQ(680, duties[tr.local_idx()]);
-        ASSERT_EQ(2048, phases[tr.local_idx()]);
+        ASSERT_EQ(0x80, intensities[tr.local_idx()]);
+        ASSERT_EQ(128, phases[tr.local_idx()]);
       } else {
-        ASSERT_EQ(8, duties[tr.local_idx()]);
+        ASSERT_EQ(0, intensities[tr.local_idx()]);
         ASSERT_EQ(0, phases[tr.local_idx()]);
       }
     }
@@ -48,9 +49,10 @@ TEST(Gain, GroupUnkownKey) {
 
   bool caught_err = false;
   try {
-    autd.send(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; })
-                  .set("uniform", autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi))
-                  .set("null", autd3::gain::Null()));
+    autd.send_async(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; })
+                        .set("uniform", autd3::gain::Uniform(0x80).with_phase(autd3::internal::pi))
+                        .set("null", autd3::gain::Null()))
+        .get();
   } catch (autd3::internal::AUTDException& e) {
     caught_err = true;
     ASSERT_STREQ("Unknown group key", e.what());
@@ -64,7 +66,7 @@ TEST(Gain, GroupUnspecifiedKey) {
 
   bool caught_err = false;
   try {
-    autd.send(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; }));
+    autd.send_async(autd3::gain::Group([](const auto&, const auto&) -> std::optional<const char*> { return "null"; })).get();
   } catch (autd3::internal::AUTDException& e) {
     caught_err = true;
     ASSERT_STREQ("Unspecified group key", e.what());
@@ -78,22 +80,23 @@ TEST(Gain, GroupCheckOnlyForEnabled) {
   autd.geometry()[0].set_enable(false);
 
   std::vector check(autd.geometry().num_devices(), false);
-  ASSERT_TRUE(autd.send(autd3::gain::Group([&check](const auto& dev, const auto& tr) -> std::optional<int> {
-                          check[dev.idx()] = true;
-                          return 0;
-                        }).set(0, autd3::gain::Uniform(0.5).with_phase(autd3::internal::pi))));
+  ASSERT_TRUE(autd.send_async(autd3::gain::Group([&check](const auto& dev, const auto& tr) -> std::optional<int> {
+                                check[dev.idx()] = true;
+                                return 0;
+                              }).set(0, autd3::gain::Uniform(0x80).with_phase(autd3::internal::pi)))
+                  .get());
 
   ASSERT_FALSE(check[0]);
   ASSERT_TRUE(check[1]);
 
   {
-    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(0, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 0; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(0, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0; }));
   }
   {
-    auto [duties, phases] = autd.link<autd3::link::Audit>().duties_and_phases(1, 0);
-    ASSERT_TRUE(std::ranges::all_of(duties, [](auto d) { return d == 680; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 2048; }));
+    auto [intensities, phases] = autd.link().intensities_and_phases(1, 0);
+    ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128; }));
   }
 }

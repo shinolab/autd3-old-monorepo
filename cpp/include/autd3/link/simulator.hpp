@@ -3,7 +3,7 @@
 // Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,12 +12,16 @@
 #pragma once
 
 #include <chrono>
+#include <future>
 #include <string>
 
-#include "autd3/internal/exception.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
+
+namespace autd3::internal {
+class ControllerBuilder;
+}
 
 namespace autd3::link {
 
@@ -28,16 +32,23 @@ namespace autd3::link {
 class Simulator final {
   internal::native_methods::LinkPtr _ptr;
 
+  explicit Simulator(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class Simulator;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkSimulatorBuilderPtr _ptr;
 
-    explicit Builder(const uint16_t port) : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
+    explicit Builder(const uint16_t port) : _ptr(internal::native_methods::AUTDLinkSimulator(port)) {}
+
+    [[nodiscard]] static Simulator resolve_link(const internal::native_methods::LinkPtr link) { return Simulator{link}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkSimulatorIntoBuilder(_ptr); }
+    using Link = Simulator;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkSimulatorIntoBuilder(_ptr); }
 
     /**
      * @brief Set server IP address
@@ -46,9 +57,7 @@ class Simulator final {
      * @return Simulator
      */
     Builder with_server_ip(const std::string& ip) {
-      char err[256];
-      _ptr = AUTDLinkSimulatorWithAddr(_ptr, ip.c_str(), err);
-      if (_ptr._0 == nullptr) throw internal::AUTDException(err);
+      _ptr = validate(AUTDLinkSimulatorWithAddr(_ptr, ip.c_str()));
       return *this;
     }
 
@@ -62,13 +71,10 @@ class Simulator final {
 
   static Builder builder(const uint16_t port) { return Builder(port); }
 
-  Simulator() = delete;
+  void update_geometry(const internal::Geometry& geometry) const { validate(AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr())); }
 
-  explicit Simulator(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
-
-  void update_geometry(const internal::Geometry& geometry) const {
-    if (char err[256]; AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr(), err) == internal::native_methods::AUTD3_ERR)
-      throw internal::AUTDException(err);
+  [[nodiscard]] std::future<void> update_geometry_async(const internal::Geometry& geometry) const {
+    return std::async(std::launch::async, [this, geometry] { return update_geometry(geometry); });
   }
 };
 

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,10 +14,10 @@
 use std::{collections::HashMap, fmt};
 
 use crate::{
-    defined::{float, PI},
+    common::EmitIntensity,
     error::AUTDInternalError,
-    fpga::{FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
-    geometry::{Device, Geometry, Transducer},
+    fpga::MOD_BUF_SIZE_MAX,
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -58,20 +58,16 @@ impl fmt::Display for ModulationControlFlags {
 }
 
 pub struct ModulationOp {
-    buf: Vec<u8>,
+    buf: Vec<EmitIntensity>,
     freq_div: u32,
     remains: HashMap<usize, usize>,
     sent: HashMap<usize, usize>,
 }
 
 impl ModulationOp {
-    pub fn to_duty(amp: &float) -> u8 {
-        (amp.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8
-    }
-
-    pub fn new(buf: Vec<float>, freq_div: u32) -> Self {
+    pub fn new(buf: Vec<EmitIntensity>, freq_div: u32) -> Self {
         Self {
-            buf: buf.iter().map(Self::to_duty).collect(),
+            buf,
             freq_div,
             remains: HashMap::new(),
             sent: HashMap::new(),
@@ -79,8 +75,8 @@ impl ModulationOp {
     }
 }
 
-impl<T: Transducer> Operation<T> for ModulationOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for ModulationOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert!(self.remains[&device.idx()] > 0);
 
         tx[0] = TypeTag::Modulation as u8;
@@ -105,7 +101,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         tx[3] = (mod_size >> 8) as u8;
 
         if sent == 0 {
-            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            let freq_div = if cfg!(feature = "firmware-v3") {
+                self.freq_div * 8
+            } else {
+                self.freq_div
+            };
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
@@ -115,7 +115,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         unsafe {
             std::ptr::copy_nonoverlapping(
                 self.buf[sent..].as_ptr(),
-                tx[offset..].as_mut_ptr(),
+                tx[offset..].as_mut_ptr() as _,
                 mod_size,
             )
         }
@@ -128,7 +128,7 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                 + std::mem::size_of::<ModulationControlFlags>()
@@ -143,12 +143,9 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         }
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         if self.buf.len() < 2 || self.buf.len() > MOD_BUF_SIZE_MAX {
             return Err(AUTDInternalError::ModulationSizeOutOfRange(self.buf.len()));
-        }
-        if self.freq_div < SAMPLING_FREQ_DIV_MIN || self.freq_div > SAMPLING_FREQ_DIV_MAX {
-            return Err(AUTDInternalError::ModFreqDivOutOfRange(self.freq_div));
         }
 
         self.remains = geometry
@@ -160,11 +157,11 @@ impl<T: Transducer> Operation<T> for ModulationOp {
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains
             .insert(device.idx(), self.buf.len() - self.sent[&device.idx()]);
     }
@@ -176,8 +173,8 @@ mod tests {
 
     use super::*;
     use crate::{
-        fpga::SAMPLING_FREQ_DIV_MIN,
-        geometry::{tests::create_geometry, LegacyTransducer},
+        fpga::{SAMPLING_FREQ_DIV_MAX, SAMPLING_FREQ_DIV_MIN},
+        geometry::tests::create_geometry,
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -215,17 +212,18 @@ mod tests {
     fn modulation_op() {
         const MOD_SIZE: usize = 100;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + 4 + MOD_SIZE) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+        let buf: Vec<EmitIntensity> = (0..MOD_SIZE)
+            .map(|_| EmitIntensity::new(rng.gen()))
+            .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
         let mut op = ModulationOp::new(buf.clone(), freq_div);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -288,8 +286,8 @@ mod tests {
                 .skip((2 + 2 + 4 + MOD_SIZE) * dev.idx())
                 .skip(8)
                 .zip(buf.iter())
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
     }
@@ -299,13 +297,15 @@ mod tests {
         const FRAME_SIZE: usize = 30;
         const MOD_SIZE: usize = FRAME_SIZE - 4 + FRAME_SIZE * 2;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; (2 + 2 + FRAME_SIZE) * NUM_DEVICE];
 
         let mut rng = rand::thread_rng();
 
-        let buf: Vec<float> = (0..MOD_SIZE).map(|_| rng.gen()).collect();
+        let buf: Vec<EmitIntensity> = (0..MOD_SIZE)
+            .map(|_| EmitIntensity::new(rng.gen()))
+            .collect();
 
         let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
 
@@ -359,8 +359,8 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(8)
                 .zip(buf.iter().take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
 
@@ -408,8 +408,8 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(4)
                 .zip(buf.iter().skip(FRAME_SIZE - 4).take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
 
@@ -457,20 +457,20 @@ mod tests {
                 .skip((2 + 2 + FRAME_SIZE) * dev.idx())
                 .skip(4)
                 .zip(buf.iter().skip(FRAME_SIZE - 4 + FRAME_SIZE).take(mod_size))
-                .for_each(|(&d, m)| {
-                    assert_eq!(d, ModulationOp::to_duty(m));
+                .for_each(|(&d, &m)| {
+                    assert_eq!(d, m.value());
                 })
         });
     }
 
     #[test]
     fn modulation_op_buffer_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let check = |n: usize| {
             let mut rng = rand::thread_rng();
 
-            let buf: Vec<float> = (0..n).map(|_| rng.gen()).collect();
+            let buf: Vec<EmitIntensity> = (0..n).map(|_| EmitIntensity::new(rng.gen())).collect();
             let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
             let mut op = ModulationOp::new(buf.clone(), freq_div);
@@ -490,26 +490,5 @@ mod tests {
                 MOD_BUF_SIZE_MAX + 1
             ))
         );
-    }
-
-    #[test]
-    fn modulation_op_freq_div_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
-
-        let mut rng = rand::thread_rng();
-
-        let buf: Vec<float> = (0..MOD_BUF_SIZE_MAX).map(|_| rng.gen()).collect();
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN);
-        assert!(op.init(&geometry).is_ok());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MIN - 1);
-        assert!(op.init(&geometry).is_err());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX);
-        assert!(op.init(&geometry).is_ok());
-
-        let mut op = ModulationOp::new(buf.clone(), SAMPLING_FREQ_DIV_MAX + 1);
-        assert!(op.init(&geometry).is_err());
     }
 }

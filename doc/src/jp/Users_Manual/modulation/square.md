@@ -6,6 +6,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -35,13 +36,14 @@ Low/Highレベルの振幅はそれぞれ, `with_low`, `with_high`で指定で�
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main()  {
 let m = autd3::modulation::Square::new(150)
-        .with_low(0.)
-        .with_high(1.);
+        .with_low(EmitIntensity::MIN)
+        .with_high(EmitIntensity::MAX);
 # }
 ```
 
@@ -69,6 +71,7 @@ m = Square(150).with_low(0).with_high(1)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

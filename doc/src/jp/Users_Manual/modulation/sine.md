@@ -6,6 +6,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -41,19 +42,20 @@ $$
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main()  {
 let m = autd3::modulation::Sine::new(150)
-        .with_amp(1.)
+        .with_amp(1.0)
         .with_offset(0.5);
 # }
 ```
 
 ```cpp
 const auto m = autd3::modulation::Sine(150)
-                .with_amp(1.)
+                .with_intensity(EmitIntensity::MAX)
                 .with_offset(0.5);
 ```
 

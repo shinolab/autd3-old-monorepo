@@ -4,23 +4,24 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::Link;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::{Link, LinkBuilder},
+    geometry::Geometry,
+    link::{LinkSync, LinkSyncBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link to do nothing
-#[derive(Default)]
+#[derive(Link)]
 pub struct Nop {
     is_open: bool,
     cpus: Vec<CPUEmulator>,
@@ -34,16 +35,10 @@ impl NopBuilder {
     }
 }
 
-impl Nop {
-    pub fn builder() -> NopBuilder {
-        NopBuilder {}
-    }
-}
-
-impl<T: Transducer> LinkBuilder<T> for NopBuilder {
+impl LinkSyncBuilder for NopBuilder {
     type L = Nop;
 
-    fn open(self, geometry: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, geometry: &Geometry) -> Result<Self::L, AUTDInternalError> {
         Ok(Nop {
             is_open: true,
             cpus: geometry
@@ -59,7 +54,7 @@ impl<T: Transducer> LinkBuilder<T> for NopBuilder {
     }
 }
 
-impl Link for Nop {
+impl LinkSync for Nop {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         Ok(())
     }
@@ -95,5 +90,11 @@ impl Link for Nop {
 
     fn timeout(&self) -> std::time::Duration {
         std::time::Duration::ZERO
+    }
+}
+
+impl Nop {
+    pub fn builder() -> NopBuilder {
+        NopBuilder {}
     }
 }

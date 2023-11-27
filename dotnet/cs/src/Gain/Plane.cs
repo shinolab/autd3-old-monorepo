@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,6 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #endif
-
-using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -42,30 +40,41 @@ namespace AUTD3Sharp.Gain
     public sealed class Plane : Internal.Gain
     {
         private readonly Vector3 _dir;
-        private float_t? _amp;
+        private EmitIntensity? _intensity;
 
         public Plane(Vector3 dir)
         {
             _dir = dir;
-            _amp = null;
+            _intensity = null;
         }
 
         /// <summary>
         /// Set amplitude
         /// </summary>
-        /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+        /// <param name="intensity">Emission intensity</param>
         /// <returns></returns>
-        public Plane WithAmp(float_t amp)
+
+        public Plane WithIntensity(byte intensity)
         {
-            _amp = amp;
+            _intensity = new EmitIntensity(intensity);
+            return this;
+        }
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="intensity">Emission intensity</param>
+        /// <returns></returns>
+        public Plane WithIntensity(EmitIntensity intensity)
+        {
+            _intensity = intensity;
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
-            var ptr = Base.AUTDGainPlane(_dir.x, _dir.y, _dir.z);
-            if (_amp != null)
-                ptr = Base.AUTDGainPlaneWithAmp(ptr, _amp.Value);
+            var ptr = NativeMethodsBase.AUTDGainPlane(_dir.x, _dir.y, _dir.z);
+            if (_intensity != null)
+                ptr = NativeMethodsBase.AUTDGainPlaneWithIntensity(ptr, _intensity.Value.Value);
             return ptr;
         }
     }

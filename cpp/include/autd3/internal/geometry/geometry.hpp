@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/10/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,39 +50,40 @@ class AUTD3 {
   static constexpr double DEVICE_HEIGHT = native_methods::DEVICE_HEIGHT_MM;
 
   /**
-   * @brief FPGA main clock frequency
+   * @brief FPGA clock frequency
    */
   static constexpr double FPGA_CLK_FREQ = native_methods::FPGA_CLK_FREQ;
 
   /**
-   * @brief FPGA sub clock frequency
-   */
-  static constexpr double FPGA_SUB_CLK_FREQ = native_methods::FPGA_SUB_CLK_FREQ;
-
-  /**
    * @brief Constructor
    *
    * @param pos Global position
-   * @param rot ZYZ euler angles
    */
-  AUTD3(Vector3 pos, Vector3 rot) : _pos(std::move(pos)), _rot(rot) {}
+  explicit AUTD3(Vector3 pos) : _pos(std::move(pos)) {}
 
   /**
-   * @brief Constructor
+   * @brief Set device rotation
    *
-   * @param pos Global position
-   * @param rot Rotation quaternion
+   * @param rot Rotation
    */
-  AUTD3(Vector3 pos, Quaternion rot) : _pos(std::move(pos)), _quat(rot) {}
+  void with_rotation(const Quaternion& rot) & { _rot = rot; }
+
+  /**
+   * @brief Set device rotation
+   *
+   * @param rot Rotation
+   */
+  AUTD3 with_rotation(const Quaternion& rot) && {
+    _rot = rot;
+    return std::move(*this);
+  }
 
   [[nodiscard]] Vector3 position() const { return _pos; }
-  [[nodiscard]] std::optional<Vector3> euler() const { return _rot; }
-  [[nodiscard]] std::optional<Quaternion> quaternion() const { return _quat; }
+  [[nodiscard]] std::optional<Quaternion> rotation() const { return _rot; }
 
  private:
   Vector3 _pos{};
-  std::optional<Vector3> _rot{std::nullopt};
-  std::optional<Quaternion> _quat{std::nullopt};
+  std::optional<Quaternion> _rot{std::nullopt};
 };
 
 class Geometry {
@@ -99,7 +100,7 @@ class Geometry {
   };
 
  public:
-  Geometry(const native_methods::GeometryPtr ptr, const native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {
+  explicit Geometry(const native_methods::GeometryPtr ptr) : _ptr(ptr) {
     const auto size = AUTDGeometryNumDevices(_ptr);
     _devices.clear();
     _devices.reserve(size);
@@ -111,11 +112,6 @@ class Geometry {
   Geometry& operator=(const Geometry& obj) = default;
   Geometry(Geometry&& obj) = default;
   Geometry& operator=(Geometry&& obj) = default;
-
-  /**
-   * @brief Only for internal use
-   */
-  [[nodiscard]] native_methods::TransMode mode() const { return _mode; }
 
   /**
    * @brief Get the number of devices
@@ -180,7 +176,6 @@ class Geometry {
   [[nodiscard]] native_methods::GeometryPtr ptr() const noexcept { return _ptr; }
 
  private:
-  native_methods::TransMode _mode;
   native_methods::GeometryPtr _ptr;
   std::vector<Device> _devices{};
 };

@@ -18,7 +18,7 @@ jobs:
       status: ${{ steps.changed-files.outputs.modified_files }}
     steps:
       - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v37
+      - uses: tj-actions/changed-files@v40
         id: changed-files
         with:
           files: |
@@ -40,14 +40,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Setup
-        if: needs.check-src.outputs.status
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
-          cuda: true
-          shaderc: true
         
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -55,11 +47,31 @@ jobs:
         with:
           workspaces: './src -> target'
 
+      - name: Setup Python
+        if: needs.check-src.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Setup
+        if: needs.check-src.outputs.status
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ${{ matrix.os }}
+          shaderc: false
+
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --release
-          python3 build.py test --all --release --skip-cuda
+          python3 build.py build --release --all
+          python3 build.py test --release --all
+        shell: bash
+
+      - name: Test capi on ${{ matrix.os }}
+        if: needs.check-src.outputs.status
+        run: |
+          python3 build.py capi test --release --all
+        shell: bash
 
   build-linux-arm32-src:
     needs: check-src
@@ -77,8 +89,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           arch: 'arm32'
-          cuda: false
-          shaderc: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -89,7 +99,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch arm32 --release
+          python3 build.py build --all --arch arm32 --no-examples
 
   build-linux-aarch64-src:
     needs: check-src
@@ -106,8 +116,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           arch: 'aarch64'
-          cuda: false
-          shaderc: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -118,7 +126,7 @@ jobs:
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --all --arch aarch64 --release
+          python3 build.py build --all --arch arm32 --no-examples
 
   lint-src:
     needs: check-src
@@ -132,8 +140,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
-          cuda: true
-          shaderc: true
+          shaderc: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -144,66 +151,4 @@ jobs:
       - name: lint src
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py lint --release
-
-  check-server:
-    runs-on: ubuntu-latest
-    name: check if server files changed
-    outputs:
-      status: ${{ steps.changed-files.outputs.modified_files }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v37
-        id: changed-files
-        with:
-          files: |
-            server/**/*.rs
-            server/**/*.toml
-            server/**/*.ts
-            server/**/*.svelte
-            server/package.json
-
-  build-server:
-    needs: check-server
-    name: build-server
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        if: needs.check-src.outputs.status
-        uses: ./.github/actions/setup-build
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          os: ${{ matrix.os }}
-          cuda: false
-          shaderc: true
-
-      - name: Rust cache
-        if: needs.check-src.outputs.status
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './server/src-tauri -> target'
-
-      - name: install dependencies (ubuntu only)
-        if: needs.check-src.outputs.status && matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev librsvg2-dev
-
-      - name: Sync node version and setup cache
-        if: needs.check-src.outputs.status
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-          cache-dependency-path: server/package-lock.json
-  
-      - name: build server
-        if: needs.check-src.outputs.status
-        run: |
-          python3 build.py server build
+          python3 build.py lint --all

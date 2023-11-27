@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,10 +37,6 @@ class Backend {
   [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_lambda(internal::native_methods::GainPtr ptr, double v) const = 0;
   [[nodiscard]] virtual internal::native_methods::GainPtr sdp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
 
-  [[nodiscard]] virtual internal::native_methods::GainPtr evp(const double* foci, const double* amps, uint64_t size) const = 0;
-  [[nodiscard]] virtual internal::native_methods::GainPtr evp_with_gamma(internal::native_methods::GainPtr ptr, double v) const = 0;
-  [[nodiscard]] virtual internal::native_methods::GainPtr evp_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
-
   [[nodiscard]] virtual internal::native_methods::GainPtr gs(const double* foci, const double* amps, uint64_t size) const = 0;
   [[nodiscard]] virtual internal::native_methods::GainPtr gs_with_repeat(internal::native_methods::GainPtr ptr, uint32_t v) const = 0;
   [[nodiscard]] virtual internal::native_methods::GainPtr gs_with_constraint(internal::native_methods::GainPtr ptr, AmplitudeConstraint v) const = 0;
@@ -65,6 +61,11 @@ class Backend {
 
  protected:
   internal::native_methods::BackendPtr _ptr;
+};
+
+template <class B>
+concept backend = requires(B b) {
+  { b.ptr() } -> std::same_as<internal::native_methods::BackendPtr>;
 };
 
 }  // namespace autd3::gain::holo

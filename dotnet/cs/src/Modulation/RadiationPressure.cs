@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,8 +24,6 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Modulation for modulating radiation pressure
     /// </summary>
@@ -38,9 +36,9 @@ namespace AUTD3Sharp.Modulation
             _m = m;
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationWithRadiationPressure(_m.ModulationPtr());
+            return NativeMethodsBase.AUTDModulationWithRadiationPressure(_m.ModulationPtr());
         }
     }
 

@@ -18,7 +18,7 @@ jobs:
       status: ${{ steps.changed-files.outputs.modified_files }}
     steps:
       - uses: actions/checkout@v3
-      - uses: tj-actions/changed-files@v37
+      - uses: tj-actions/changed-files@v40
         id: changed-files
         with:
           files: |
@@ -28,6 +28,7 @@ jobs:
             dotnet/cs/src/AUTD3Sharp.nuspec
             dotnet/cs/*.cs
             dotnet/cs/**/*.cs
+            dotnet/fs/**/*.cs
             dotnet/unity/Assets/package.json
 
   build:
@@ -41,13 +42,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
 
       - name: Setup .NET Core
         if: needs.check.outputs.status
@@ -64,7 +70,7 @@ jobs:
       - name: Build cs library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py cs build --release
+          python3 build.py cs build
 
       - name: Test library on ${{ matrix.os }}
         if: needs.check.outputs.status
@@ -74,7 +80,7 @@ jobs:
       - name: Build fs library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py fs build --release
+          python3 build.py fs build
 
   build-unity:
     needs: check
@@ -87,13 +93,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        if: needs.check.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         if: needs.check.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
 
       - name: Setup .NET Core
         if: needs.check.outputs.status
@@ -110,4 +121,4 @@ jobs:
       - name: Build unity library on ${{ matrix.os }}
         if: needs.check.outputs.status
         run: |
-          python3 build.py unity build --release
+          python3 build.py unity build

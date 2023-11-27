@@ -4,7 +4,7 @@
  * Created Date: 23/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ impl Model {
 
     pub fn new() -> anyhow::Result<Self> {
         let glb = Self::load_autd3_model()?;
-        let (document, buffers, images) = gltf::import_slice(glb).unwrap();
+        let (document, buffers, images) = gltf::import_slice(glb)?;
         let node = document.scenes().next().unwrap().nodes().next().unwrap();
 
         let materials = Self::load_materials(&document);

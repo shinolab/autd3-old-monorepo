@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,35 +12,33 @@
  */
 
 `timescale 1ns / 1ps
-module mux #(
-    parameter int WIDTH = 13
-) (
-    input var CLK_L,
+module mux (
+    input var CLK,
     input var OP_MODE,
-    input var [WIDTH-1:0] DUTY_NORMAL,
-    input var [WIDTH-1:0] PHASE_NORMAL,
+    input var [7:0] INTENSITY_NORMAL,
+    input var [7:0] PHASE_NORMAL,
     input var DOUT_VALID_NORMAL,
-    input var [WIDTH-1:0] DUTY_STM,
-    input var [WIDTH-1:0] PHASE_STM,
+    input var [7:0] INTENSITY_STM,
+    input var [7:0] PHASE_STM,
     input var DOUT_VALID_STM,
     input var [15:0] STM_IDX,
     input var USE_STM_START_IDX,
     input var USE_STM_FINISH_IDX,
     input var [15:0] STM_START_IDX,
     input var [15:0] STM_FINISH_IDX,
-    output var [WIDTH-1:0] DUTY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] duty_stm_buf;
-  bit [WIDTH-1:0] phase_stm_buf;
-  bit dout_valid_stm_buf;
-  bit [WIDTH-1:0] duty_normal_buf;
-  bit [WIDTH-1:0] phase_normal_buf;
-  bit dout_valid_normal_buf;
+  logic [7:0] intensity_stm_buf;
+  logic [7:0] phase_stm_buf;
+  logic dout_valid_stm_buf;
+  logic [7:0] intensity_normal_buf;
+  logic [7:0] phase_normal_buf;
+  logic dout_valid_normal_buf;
 
-  typedef enum bit [1:0] {
+  typedef enum logic [1:0] {
     NORMAL,
     WAIT_START_STM,
     STM,
@@ -49,22 +47,22 @@ module mux #(
 
   stm_state_t stm_state = NORMAL;
 
-  bit output_stm;
+  logic output_stm;
   assign output_stm = (stm_state == STM) | (stm_state == WAIT_FINISH_STM);
-  assign DUTY = output_stm ? duty_stm_buf : duty_normal_buf;
+  assign INTENSITY = output_stm ? intensity_stm_buf : intensity_normal_buf;
   assign PHASE = output_stm ? phase_stm_buf : phase_normal_buf;
   assign DOUT_VALID = output_stm ? dout_valid_stm_buf : dout_valid_normal_buf;
 
-  always_ff @(posedge CLK_L) begin
-    duty_stm_buf <= DUTY_STM;
+  always_ff @(posedge CLK) begin
+    intensity_stm_buf <= INTENSITY_STM;
     phase_stm_buf <= PHASE_STM;
     dout_valid_stm_buf <= DOUT_VALID_STM;
-    duty_normal_buf <= DUTY_NORMAL;
+    intensity_normal_buf <= INTENSITY_NORMAL;
     phase_normal_buf <= PHASE_NORMAL;
     dout_valid_normal_buf <= DOUT_VALID_NORMAL;
   end
 
-  always_ff @(posedge CLK_L) begin
+  always_ff @(posedge CLK) begin
     case (stm_state)
       NORMAL: begin
         if (OP_MODE) begin

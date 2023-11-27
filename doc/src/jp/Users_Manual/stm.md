@@ -28,10 +28,12 @@ STMの周波数を取得する.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let stm = FocusSTM::new(1.0).with_start_idx(Some(0));
 # Ok(())
 # }
@@ -63,6 +65,7 @@ stm = FocusSTM(1).with_start_idx(0)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {

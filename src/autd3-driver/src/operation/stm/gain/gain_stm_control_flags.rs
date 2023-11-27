@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,6 @@ bitflags::bitflags! {
     impl GainSTMControlFlags : u8 {
         const NONE            = 0;
         const LEGACY          = 1 << 0;
-        const DUTY            = 1 << 1;
         const STM_BEGIN       = 1 << 2;
         const STM_END         = 1 << 3;
         const USE_START_IDX   = 1 << 4;
@@ -34,12 +33,6 @@ bitflags::bitflags! {
 impl fmt::Display for GainSTMControlFlags {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut flags = Vec::new();
-        if self.contains(GainSTMControlFlags::LEGACY) {
-            flags.push("LEGACY")
-        }
-        if self.contains(GainSTMControlFlags::DUTY) {
-            flags.push("DUTY")
-        }
         if self.contains(GainSTMControlFlags::STM_BEGIN) {
             flags.push("STM_BEGIN")
         }
@@ -75,7 +68,7 @@ mod tests {
     fn gain_stm_controll_flag() {
         assert_eq!(std::mem::size_of::<GainSTMControlFlags>(), 1);
 
-        let flags = GainSTMControlFlags::LEGACY | GainSTMControlFlags::DUTY;
+        let flags = GainSTMControlFlags::STM_BEGIN | GainSTMControlFlags::USE_START_IDX;
 
         let flagsc = Clone::clone(&flags);
         assert_eq!(flagsc.bits(), flags.bits());
@@ -84,8 +77,6 @@ mod tests {
     #[test]
     fn gain_stm_controll_flag_fmt() {
         assert_eq!(format!("{}", GainSTMControlFlags::NONE), "NONE");
-        assert_eq!(format!("{}", GainSTMControlFlags::LEGACY), "LEGACY");
-        assert_eq!(format!("{}", GainSTMControlFlags::DUTY), "DUTY");
         assert_eq!(format!("{}", GainSTMControlFlags::STM_BEGIN), "STM_BEGIN");
         assert_eq!(format!("{}", GainSTMControlFlags::STM_END), "STM_END");
         assert_eq!(
@@ -100,14 +91,12 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                GainSTMControlFlags::LEGACY
-                    | GainSTMControlFlags::DUTY
-                    | GainSTMControlFlags::STM_BEGIN
+                GainSTMControlFlags::STM_BEGIN
                     | GainSTMControlFlags::STM_END
                     | GainSTMControlFlags::USE_START_IDX
                     | GainSTMControlFlags::USE_FINISH_IDX
             ),
-            "LEGACY | DUTY | STM_BEGIN | STM_END | USE_START_IDX | USE_FINISH_IDX"
+            "STM_BEGIN | STM_END | USE_START_IDX | USE_FINISH_IDX"
         );
     }
 }

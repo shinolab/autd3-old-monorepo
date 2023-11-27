@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,44 +14,40 @@
 `timescale 1ns / 1ps
 module sim_mux ();
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME()
   );
 
-  localparam int WIDTH = 13;
   localparam int DEPTH = 249;
 
   sim_helper_random sim_helper_random ();
 
-  bit op_mode;
-  bit [WIDTH-1:0] duty_normal, phase_normal;
-  bit dout_valid_normal;
-  bit [WIDTH-1:0] duty_stm, phase_stm;
-  bit dout_valid_stm;
-  bit [15:0] stm_idx, stm_start_idx, stm_finish_idx;
-  bit use_stm_start_idx, use_stm_finish_idx;
-  bit [WIDTH-1:0] duty, phase;
-  bit dout_valid;
+  logic op_mode;
+  logic [7:0] intensity_normal, phase_normal;
+  logic dout_valid_normal;
+  logic [7:0] intensity_stm, phase_stm;
+  logic dout_valid_stm;
+  logic [15:0] stm_idx, stm_start_idx, stm_finish_idx;
+  logic use_stm_start_idx, use_stm_finish_idx;
+  logic [7:0] intensity, phase;
+  logic dout_valid;
 
-  bit [WIDTH-1:0] duty_buf_normal[DEPTH];
-  bit [WIDTH-1:0] phase_buf_normal[DEPTH];
-  bit [WIDTH-1:0] duty_buf_stm[DEPTH];
-  bit [WIDTH-1:0] phase_buf_stm[DEPTH];
+  logic [7:0] intensity_buf_normal[DEPTH];
+  logic [7:0] phase_buf_normal[DEPTH];
+  logic [7:0] intensity_buf_stm[DEPTH];
+  logic [7:0] phase_buf_stm[DEPTH];
 
-  mux #(
-      .WIDTH(WIDTH)
-  ) mux (
-      .CLK_L(CLK_20P48M),
+  mux mux (
+      .CLK(CLK_20P48M),
       .OP_MODE(op_mode),
-      .DUTY_NORMAL(duty_normal),
+      .INTENSITY_NORMAL(intensity_normal),
       .PHASE_NORMAL(phase_normal),
       .DOUT_VALID_NORMAL(dout_valid_normal),
-      .DUTY_STM(duty_stm),
+      .INTENSITY_STM(intensity_stm),
       .PHASE_STM(phase_stm),
       .DOUT_VALID_STM(dout_valid_stm),
       .STM_IDX(stm_idx),
@@ -59,35 +55,39 @@ module sim_mux ();
       .USE_STM_FINISH_IDX(use_stm_finish_idx),
       .STM_START_IDX(stm_start_idx),
       .STM_FINISH_IDX(stm_finish_idx),
-      .DUTY(duty),
+      .INTENSITY(intensity),
       .PHASE(phase),
       .DOUT_VALID(dout_valid)
   );
 
   task automatic set_normal();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf_normal[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf_normal[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      dout_valid_normal = 1'b1;
-      duty_normal = sim_helper_random.range(8000, 0);
-      phase_normal = sim_helper_random.range(8000, 0);
-      duty_buf_normal[i] = duty_normal;
-      phase_buf_normal[i] = phase_normal;
+      dout_valid_normal <= 1'b1;
+      intensity_normal <= intensity_buf_normal[i];
+      phase_normal <= phase_buf_normal[i];
     end
     @(posedge CLK_20P48M);
-    dout_valid_normal = 1'b0;
+    dout_valid_normal <= 1'b0;
   endtask
 
   task automatic set_stm();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf_stm[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf_stm[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      dout_valid_stm = 1'b1;
-      duty_stm = sim_helper_random.range(8000, 0);
-      phase_stm = sim_helper_random.range(8000, 0);
-      duty_buf_stm[i] = duty_stm;
-      phase_buf_stm[i] = phase_stm;
+      dout_valid_stm <= 1'b1;
+      intensity_stm <= intensity_buf_stm[i];
+      phase_stm <= phase_buf_stm[i];
     end
     @(posedge CLK_20P48M);
-    dout_valid_stm = 1'b0;
+    dout_valid_stm <= 1'b0;
   endtask
 
   task automatic check_normal();
@@ -99,11 +99,11 @@ module sim_mux ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_buf_normal[i] != duty) begin
-        $display("failed at duty[%d], %d!=%d", i, duty_buf_normal[i], duty);
+      if (intensity_buf_normal[i] !== intensity) begin
+        $display("failed at intensity[%d], %d!=%d", i, intensity_buf_normal[i], intensity);
         $finish();
       end
-      if (phase_buf_normal[i] != phase) begin
+      if (phase_buf_normal[i] !== phase) begin
         $display("failed at phase[%d], %d!=%d", i, phase_buf_normal[i], phase);
         $finish();
       end
@@ -120,11 +120,11 @@ module sim_mux ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_buf_stm[i] != duty) begin
-        $display("failed at duty[%d], %d!=%d", i, duty_buf_stm[i], duty);
+      if (intensity_buf_stm[i] !== intensity) begin
+        $display("failed at intensity[%d], %d!=%d", i, intensity_buf_stm[i], intensity);
         $finish();
       end
-      if (phase_buf_stm[i] != phase) begin
+      if (phase_buf_stm[i] !== phase) begin
         $display("failed at phase[%d], %d!=%d", i, phase_buf_stm[i], phase);
         $finish();
       end
@@ -133,6 +133,10 @@ module sim_mux ();
   endtask
 
   initial begin
+    op_mode = 0;
+    use_stm_start_idx = 0;
+    use_stm_finish_idx = 0;
+
     sim_helper_random.init();
 
     @(posedge locked);

@@ -1,4 +1,4 @@
-'''
+"""
 File: audio_file.py
 Project: modulation
 Created Date: 21/10/2022
@@ -9,18 +9,16 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-import ctypes
-from datetime import timedelta
+from pathlib import Path
 
+from pyautd3.internal.modulation import IModulationWithFreqDiv
+from pyautd3.internal.utils import _validate_ptr
+from pyautd3.native_methods.autd3capi_def import ModulationPtr
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
     NativeMethods as ModulationAudioFile,
 )
-from pyautd3.native_methods.autd3capi_def import ModulationPtr, FPGA_SUB_CLK_FREQ
-from pyautd3.autd_error import AUTDError
-
-from pyautd3.internal.modulation import IModulationWithFreqDiv
 
 
 class Wav(IModulationWithFreqDiv):
@@ -29,25 +27,20 @@ class Wav(IModulationWithFreqDiv):
     The data is resampled to the sampling frequency of the Modulation.
     """
 
-    _path: str
+    _path: Path
 
-    def __init__(self, path: str):
-        """Constructor
+    def __init__(self: "Wav", path: Path) -> None:
+        """Constructor.
 
         Arguments:
-        - `path` - Path to the wav file
+        ---------
+            path: Path to the wav file
         """
-
         super().__init__()
         self._path = path
 
-    def modulation_ptr(self) -> ModulationPtr:
-        err = ctypes.create_string_buffer(256)
-        ptr = ModulationAudioFile().modulation_wav(self._path.encode("utf-8"), err)
-        if ptr._0 is None:
-            raise AUTDError(err)
-        if self._freq_div is not None:
-            ptr = ModulationAudioFile().modulation_wav_with_sampling_frequency_division(
-                ptr, self._freq_div
-            )
+    def _modulation_ptr(self: "Wav") -> ModulationPtr:
+        ptr = _validate_ptr(ModulationAudioFile().modulation_wav(str(self._path).encode("utf-8")))
+        if self._config is not None:
+            ptr = ModulationAudioFile().modulation_wav_with_sampling_config(ptr, self._config._internal)
         return ptr

@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,45 +28,53 @@ impl MyUniform {
     }
 }
 
-impl<T: Transducer> Gain<T> for MyUniform {
+impl Gain for MyUniform {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
             phase: 0.0,
-            amp: Amplitude::MAX,
+            intensity: EmitIntensity::MAX,
         }))
     }
 }
 
 #[derive(Modulation, Clone, Copy)]
 pub struct Burst {
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Burst {
     pub fn new() -> Self {
-        Self { freq_div: 5120 }
+        Self {
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+        }
     }
 }
 
 impl Modulation for Burst {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok((0..4000)
-            .map(|i| if i == 3999 { 1.0 } else { 0.0 })
+            .map(|i| {
+                if i == 3999 {
+                    EmitIntensity::MAX
+                } else {
+                    EmitIntensity::MIN
+                }
+            })
             .collect())
     }
 }
 
-pub fn custom<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> anyhow::Result<bool> {
-    autd.send(Silencer::disable())?;
+pub async fn custom<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
+    autd.send(Silencer::disable()).await?;
 
     let g = MyUniform::new();
     let m = Burst::new();
 
-    autd.send((m, g))?;
+    autd.send((m, g)).await?;
 
     Ok(true)
 }

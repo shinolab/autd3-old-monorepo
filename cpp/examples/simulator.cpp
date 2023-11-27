@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 26/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,10 +18,11 @@
 // Run AUTD Simulator before running this example
 
 int main() try {
-  auto autd = autd3::Controller::builder()
-                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                  .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero()))
-                  .open_with(autd3::link::Simulator::builder(8080).with_timeout(std::chrono::milliseconds(200)));
+  auto autd = autd3::ControllerBuilder()
+                  .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
+                  .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0.0, 0.0)))
+                  .open_with_async(autd3::link::Simulator::builder(8080).with_timeout(std::chrono::milliseconds(200)))
+                  .get();
 
   return run(autd);
 } catch (std::exception& e) {

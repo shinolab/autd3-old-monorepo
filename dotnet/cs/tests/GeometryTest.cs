@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,36 +28,35 @@ public class GeometryTest
         Assert.Equal(14, AUTD3.NumTransInY);
         Assert.Equal(249, AUTD3.NumTransInUnit);
 
-        Assert.Equal(163.84e6, AUTD3.FPGAClkFreq);
-        Assert.Equal(20.48e6, AUTD3.FPGASubClkFreq);
+        Assert.Equal(20.48e6, AUTD3.FPGAClkFreq);
     }
 
     [Fact]
-    public void GeometryNumDevices()
+    public async Task GeometryNumDevices()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         Assert.Equal(2, autd.Geometry.NumDevices);
     }
 
     [Fact]
-    public void GeometryCenter()
+    public async Task GeometryCenter()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         Assert.Equal(new Vector3d(86.62522088353406, 66.71325301204821, 0), autd.Geometry.Center);
     }
 
     [Fact]
-    public void TestDeviceIdx()
+    public async Task TestDeviceIdx()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         Assert.Equal(0, autd.Geometry[0].Idx);
         Assert.Equal(1, autd.Geometry[1].Idx);
     }
 
     [Fact]
-    public void TestDeviceSoundSpeed()
+    public async Task TestDeviceSoundSpeed()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(340e3, dev.SoundSpeed);
@@ -67,9 +66,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceSetSoundSpeedFromTemp()
+    public async Task TestDeviceSetSoundSpeedFromTemp()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             dev.SetSoundSpeedFromTemp(15);
@@ -78,9 +77,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceAttenuation()
+    public async Task TestDeviceAttenuation()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(0.0, dev.Attenuation);
@@ -90,9 +89,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceEnable()
+    public async Task TestDeviceEnable()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             Assert.True(dev.Enable);
@@ -102,9 +101,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceNumTransducers()
+    public async Task TestDeviceNumTransducers()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(249, dev.NumTransducers);
@@ -112,9 +111,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceCenter()
+    public async Task TestDeviceCenter()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             var center = dev.Center;
@@ -125,35 +124,35 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceForceFan()
+    public async Task TestDeviceForceFan()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
-            Assert.Equal(0, autd.Link<Audit>().FpgaFlags(dev.Idx));
+            Assert.Equal(0, autd.Link.FpgaFlags(dev.Idx));
         }
 
         autd.Geometry[0].ForceFan = true;
         autd.Geometry[1].ForceFan = false;
 
-        autd.Send(new UpdateFlags());
+        await autd.SendAsync(new UpdateFlags());
 
-        Assert.Equal(1, autd.Link<Audit>().FpgaFlags(0));
-        Assert.Equal(0, autd.Link<Audit>().FpgaFlags(1));
+        Assert.Equal(1, autd.Link.FpgaFlags(0));
+        Assert.Equal(0, autd.Link.FpgaFlags(1));
 
         autd.Geometry[0].ForceFan = false;
         autd.Geometry[1].ForceFan = true;
 
-        autd.Send(new UpdateFlags());
+        await autd.SendAsync(new UpdateFlags());
 
-        Assert.Equal(0, autd.Link<Audit>().FpgaFlags(0));
-        Assert.Equal(1, autd.Link<Audit>().FpgaFlags(1));
+        Assert.Equal(0, autd.Link.FpgaFlags(0));
+        Assert.Equal(1, autd.Link.FpgaFlags(1));
     }
 
     [Fact]
-    public void TestDeviceTranslate()
+    public async Task TestDeviceTranslate()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             var originalPos = dev.Select(tr => tr.Position).ToArray();
@@ -167,9 +166,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceRotate()
+    public async Task TestDeviceRotate()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             var r = new Quaterniond(0, 0, 0.7071067811865476, 0.7071067811865476);
@@ -182,9 +181,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestDeviceAffine()
+    public async Task TestDeviceAffine()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             var originalPos = dev.Select(tr => tr.Position).ToArray();
@@ -204,9 +203,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerLocalIdx()
+    public async Task TestTransducerLocalIdx()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var (tr, i) in dev.Select((tr, i) => (tr, i)))
@@ -217,9 +216,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerPosition()
+    public async Task TestTransducerPosition()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         Assert.Equal(autd.Geometry[0][0].Position, new Vector3d(0.0, 0.0, 0.0));
         Assert.Equal(autd.Geometry[0][AUTD3.NumTransInUnit - 1].Position,
             new Vector3d((AUTD3.NumTransInX - 1) * AUTD3.TransSpacing, (AUTD3.NumTransInY - 1) * AUTD3.TransSpacing, 0.0));
@@ -230,9 +229,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerRotation()
+    public async Task TestTransducerRotation()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -243,9 +242,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerXDirection()
+    public async Task TestTransducerXDirection()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -256,9 +255,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerYDirection()
+    public async Task TestTransducerYDirection()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -269,9 +268,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerZDirection()
+    public async Task TestTransducerZDirection()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -282,39 +281,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerFrequency()
+    public async Task TestTransducerModDelay()
     {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(40e3, tr.Frequency);
-                tr.Frequency = 69.98718496369073e3;
-                Assert.Equal(69.98718496369073e3, tr.Frequency);
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerCycle()
-    {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(4096, tr.Cycle);
-                tr.Cycle = 3000;
-                Assert.Equal(3000, tr.Cycle);
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerModDelay()
-    {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -327,39 +296,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerAmpFilter()
+    public async Task TestTransducerWavelength()
     {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(0, tr.AmpFilter);
-                tr.AmpFilter = -1;
-                Assert.Equal(-1, tr.AmpFilter);
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerPhaseFilter()
-    {
-        var autd = AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(0, tr.PhaseFilter);
-                tr.PhaseFilter = -1;
-                Assert.Equal(-1, tr.PhaseFilter);
-            }
-        }
-    }
-
-    [Fact]
-    public void TestTransducerWavelength()
-    {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)
@@ -370,9 +309,9 @@ public class GeometryTest
     }
 
     [Fact]
-    public void TestTransducerWavenum()
+    public async Task TestTransducerWavenum()
     {
-        var autd = AUTDTest.CreateController();
+        var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var tr in dev)

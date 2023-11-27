@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,18 +15,8 @@
 #define USE_SINGLE
 #endif
 
-using System.Collections.Generic;
-using System.Linq;
-
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
-#endif
-
-#if UNITY_2018_3_OR_NEWER
-using UnityEngine;
-using Vector3 = UnityEngine.Vector3;
-#else
-using Vector3 = AUTD3Sharp.Utils.Vector3d;
 #endif
 
 #if USE_SINGLE
@@ -46,12 +36,10 @@ namespace AUTD3Sharp.Gain.Holo
     /// <para>K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.</para> 
     /// </remarks>
     /// <typeparam name="TB">Backend</typeparam>
-    public sealed class LM<TB> : Internal.Gain
+    public sealed class LM<TB> : Holo<LM<TB>>
         where TB : Backend
     {
         private readonly TB _backend;
-        private readonly List<float_t> _foci;
-        private readonly List<float_t> _amps;
         private float_t? _eps1;
         private float_t? _eps2;
         private float_t? _tau;
@@ -63,32 +51,6 @@ namespace AUTD3Sharp.Gain.Holo
         public LM(TB backend)
         {
             _backend = backend;
-            _foci = new List<float_t>();
-            _amps = new List<float_t>();
-        }
-
-        /// <summary>
-        /// Parameter. See the paper for details.
-        /// </summary>
-        /// <param name="focus"></param>
-        /// <param name="amp"></param>
-        /// <returns></returns>
-        public LM<TB> AddFocus(Vector3 focus, float_t amp)
-        {
-            _foci.Add(focus.x);
-            _foci.Add(focus.y);
-            _foci.Add(focus.z);
-            _amps.Add(amp);
-            return this;
-        }
-
-        /// <summary>
-        /// Add foci
-        /// </summary>
-        /// <param name="iter">Enumerable of foci and amps</param>
-        public LM<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
-        {
-            return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
         }
 
         /// <summary>
@@ -157,10 +119,10 @@ namespace AUTD3Sharp.Gain.Holo
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
-            var ptr = _backend.Lm(_foci.ToArray(), _amps.ToArray(),
-                (ulong)_amps.Count);
+            var ptr = _backend.Lm(Foci.ToArray(), Amps.ToArray(),
+                (ulong)Amps.Count);
             if (_eps1.HasValue) ptr = _backend.LmWithEps1(ptr, _eps1.Value);
             if (_eps2.HasValue) ptr = _backend.LmWithEps2(ptr, _eps2.Value);
             if (_tau.HasValue) ptr = _backend.LmWithTau(ptr, _tau.Value);

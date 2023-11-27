@@ -1,4 +1,4 @@
-'''
+"""
 File: stm.py
 Project: stm
 Created Date: 21/10/2022
@@ -9,103 +9,89 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-from abc import ABCMeta, abstractmethod
-from datetime import timedelta
-import functools
-from typing import Optional, List, Tuple
-from collections.abc import Iterable
 import ctypes
+import functools
+from abc import ABCMeta
+from collections.abc import Iterable
+from ctypes import c_uint8
+from datetime import timedelta
 
 import numpy as np
 
-from pyautd3.autd import Datagram
-from pyautd3.geometry import Geometry
+from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain.gain import IGain
+from pyautd3.geometry import Geometry
+from pyautd3.internal.datagram import Datagram
+from pyautd3.internal.utils import _validate_ptr, _validate_sampling_config
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import (
+    DatagramPtr,
     GainPtr,
     GainSTMMode,
-    DatagramPtr,
     STMPropsPtr,
 )
+from pyautd3.sampling_config import SamplingConfiguration
+
+__all__ = ["FocusSTM", "GainSTM"]  # type: ignore[var-annotated]
 
 
 class STM(Datagram, metaclass=ABCMeta):
-    _freq: Optional[float]
-    _sampling_freq: Optional[float]
-    _sampling_freq_div: Optional[int]
-    _sampling_period: Optional[timedelta]
+    _freq: float | None
+    _period: timedelta | None
+    _sampling_config: SamplingConfiguration | None
     _start_idx: int
     _finish_idx: int
 
     def __init__(
-        self,
-        freq: Optional[float],
-        sampling_freq: Optional[float],
-        sampling_freq_div: Optional[int],
-        sampling_period: Optional[timedelta]
-    ):
+        self: "STM",
+        freq: float | None,
+        period: timedelta | None,
+        sampling_config: SamplingConfiguration | None,
+    ) -> None:
         super().__init__()
         self._freq = freq
-        self._sampling_freq = sampling_freq
-        self._sampling_freq_div = sampling_freq_div
-        self._sampling_period = sampling_period
+        self._period = period
+        self._sampling_config = sampling_config
         self._start_idx = -1
         self._finish_idx = -1
 
     @property
-    def start_idx(self) -> Optional[int]:
-        """Start index of STM
-
-        """
-
+    def start_idx(self: "STM") -> int | None:
+        """Start index of STM."""
         idx = int(Base().stm_props_start_idx(self._props()))
         if idx < 0:
             return None
         return idx
 
     @property
-    def finish_idx(self) -> Optional[int]:
-        """Finish index of STM
-
-        """
-
+    def finish_idx(self: "STM") -> int | None:
+        """Finish index of STM."""
         idx = int(Base().stm_props_finish_idx(self._props()))
         if idx < 0:
             return None
         return idx
 
-    def _props(self) -> STMPropsPtr:
+    def _props(self: "STM") -> STMPropsPtr:
         ptr: STMPropsPtr
         if self._freq is not None:
-            ptr = Base().stm_props(self._freq)
-        if self._sampling_freq is not None:
-            ptr = Base().stm_props_with_sampling_freq(self._sampling_freq)
-        if self._sampling_freq_div is not None:
-            ptr = Base().stm_props_with_sampling_freq_div(self._sampling_freq_div)
-        if self._sampling_period is not None:
-            ptr = Base().stm_props_with_sampling_period(int(self._sampling_period.total_seconds() * 1000 * 1000 * 1000))
+            ptr = Base().stm_props_new(self._freq)
+        if self._period is not None:
+            ptr = Base().stm_props_new_with_period(int(self._period.total_seconds() * 1000 * 1000 * 1000))
+        if self._sampling_config is not None:
+            ptr = Base().stm_props_new_with_sampling_config(self._sampling_config._internal)
         ptr = Base().stm_props_with_start_idx(ptr, self._start_idx)
-        ptr = Base().stm_props_with_finish_idx(ptr, self._finish_idx)
-        return ptr
+        return Base().stm_props_with_finish_idx(ptr, self._finish_idx)
 
-    def _frequency_from_size(self, size: int) -> float:
+    def _frequency_from_size(self: "STM", size: int) -> float:
         return float(Base().stm_props_frequency(self._props(), size))
 
-    def _sampling_frequency_from_size(self, size: int) -> float:
-        return float(Base().stm_props_sampling_frequency(self._props(), size))
+    def _period_from_size(self: "STM", size: int) -> timedelta:
+        return timedelta(seconds=int(Base().stm_props_period(self._props(), size)) / 1000.0 / 1000.0 / 1000.0)
 
-    def _sampling_frequency_division_from_size(self, size: int) -> int:
-        return int(Base().stm_props_sampling_frequency_division(self._props(), size))
-
-    def _sampling_period_from_size(self, size: int) -> timedelta:
-        return timedelta(microseconds=int(Base().stm_props_sampling_period(self._props(), size)) / 1000)
-
-    @abstractmethod
-    def _ptr(self, _: Geometry) -> DatagramPtr:
-        pass
+    def _sampling_config_from_size(self: "STM", size: int) -> SamplingConfiguration:
+        return SamplingConfiguration.__private_new__(_validate_sampling_config(Base().stm_props_sampling_config(self._props(), size)))
 
 
 class FocusSTM(STM):
@@ -115,251 +101,248 @@ class FocusSTM(STM):
 
     FocusSTM has following restrictions:
     - The maximum number of sampling points is 65536.
-    - The sampling frequency is `pyautd3.AUTD3.fpga_sub_clk_freq()`/N, where `N` is a 32-bit unsigned integer.
+    - The sampling frequency is `pyautd3.AUTD3.fpga_clk_freq()`/N, where `N` is a 32-bit unsigned integer.
     """
 
-    _points: List[float]
-    _duty_shifts: List[int]
+    _points: list[float]
+    _intensities: list[EmitIntensity]
 
     def __init__(
-        self,
-        freq: Optional[float],
-        sampling_freq: Optional[float] = None,
-        sampling_freq_div: Optional[int] = None,
-        sampling_period: Optional[timedelta] = None,
-    ):
-        """Constructor
+        self: "FocusSTM",
+        freq: float | None,
+        *,
+        period: timedelta | None = None,
+        sampling_config: SamplingConfiguration | None = None,
+    ) -> None:
+        """Constructor.
 
         Arguments:
-        - `freq` - Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
+        ---------
+            freq: Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
+            period: only for internal use.
+            sampling_config: only for internal use.
         """
-
-        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
+        super().__init__(freq, period, sampling_config)
         self._points = []
-        self._duty_shifts = []
+        self._intensities = []
 
-    def _ptr(self, _: Geometry) -> DatagramPtr:
+    def _datagram_ptr(self: "FocusSTM", _: Geometry) -> DatagramPtr:
         points = np.ctypeslib.as_ctypes(np.array(self._points).astype(ctypes.c_double))
-        shifts = np.ctypeslib.as_ctypes(
-            np.array(self._duty_shifts).astype(ctypes.c_uint8)
+        intensities = np.fromiter((i.value for i in self._intensities), dtype=c_uint8)  # type: ignore[type-var,call-overload]
+        return _validate_ptr(
+            Base().stm_focus(
+                self._props(),
+                points,
+                intensities.ctypes.data_as(ctypes.POINTER(c_uint8)),  # type: ignore[arg-type]
+                len(self._intensities),
+            ),
         )
-        return Base().stm_focus(self._props(), points, shifts, len(self._duty_shifts))
 
     @staticmethod
-    def with_sampling_frequency(sampling_freq: float) -> "FocusSTM":
-        """Constructor
+    def new_with_period(period: timedelta) -> "FocusSTM":
+        """Constructor.
 
         Arguments:
-        - `sampling_freq` - Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
+        ---------
+            period: Period.
         """
-
-        return FocusSTM(None, sampling_freq, None, None)
+        return FocusSTM(None, period=period)
 
     @staticmethod
-    def with_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
-        """Constructor
+    def new_with_sampling_config(config: SamplingConfiguration) -> "FocusSTM":
+        """Constructor.
 
         Arguments:
-        - `sampling_freq_div` - Sampling frequency division.
+        ---------
+            config: Sampling configuration
         """
+        return FocusSTM(
+            None,
+            sampling_config=config,
+        )
 
-        return FocusSTM(None, None, sampling_freq_div, None)
-
-    @staticmethod
-    def with_sampling_period(sampling_period: timedelta) -> "FocusSTM":
-        """Constructor
+    def add_focus(self: "FocusSTM", point: np.ndarray, intensity: EmitIntensity | None = None) -> "FocusSTM":
+        """Add focus.
 
         Arguments:
-        - `sampling_period` - Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
+        ---------
+            point: Focal point
+            intensity: Emission intensity
         """
-
-        return FocusSTM(None, None, None, sampling_period)
-
-    def add_focus(self, point: np.ndarray, duty_shift: int = 0) -> "FocusSTM":
-        """Add focus
-
-        Arguments:
-        - `point` - Focal point
-        `duty_shift` - Duty shift. Duty ratio of ultrasound will be `50% >> shift`.
-        """
-
-        assert len(point) == 3
-
         self._points.append(point[0])
         self._points.append(point[1])
         self._points.append(point[2])
-        self._duty_shifts.append(duty_shift)
+        self._intensities.append(intensity if intensity is not None else EmitIntensity(0xFF))
         return self
 
-    def add_foci_from_iter(
-        self, iterable: Iterable[np.ndarray] | Iterable[Tuple[np.ndarray, int]]
-    ) -> "FocusSTM":
-        """Add foci
+    def add_foci_from_iter(self: "FocusSTM", iterable: Iterable[np.ndarray] | Iterable[tuple[np.ndarray, int]]) -> "FocusSTM":
+        """Add foci.
 
         Arguments:
-        - `iterable` - Iterable of focal points or tuples of focal points and duty shifts.
+        ---------
+            iterable: Iterable of focal points or tuples of focal points and duty shifts.
         """
-
         return functools.reduce(
-            lambda acc, x: acc.add_focus(x)
-            if isinstance(x, np.ndarray)
-            else acc.add_focus(x[0], x[1]),
+            lambda acc, x: acc.add_focus(x) if isinstance(x, np.ndarray) else acc.add_focus(x[0], x[1]),
             iterable,
             self,
         )
 
     @property
-    def frequency(self) -> float:
-        return self._frequency_from_size(len(self._duty_shifts))
+    def frequency(self: "FocusSTM") -> float:
+        """Frequency [Hz]."""
+        return self._frequency_from_size(len(self._intensities))
 
     @property
-    def sampling_frequency(self) -> float:
-        return self._sampling_frequency_from_size(len(self._duty_shifts))
+    def period(self: "FocusSTM") -> timedelta:
+        """Period."""
+        return self._period_from_size(len(self._intensities))
 
     @property
-    def sampling_frequency_division(self) -> int:
-        return self._sampling_frequency_division_from_size(len(self._duty_shifts))
+    def sampling_config(self: "FocusSTM") -> SamplingConfiguration:
+        """Sampling frequency [Hz]."""
+        return self._sampling_config_from_size(len(self._intensities))
 
-    @property
-    def sampling_period(self) -> timedelta:
-        return self._sampling_period_from_size(len(self._duty_shifts))
-
-    def with_start_idx(self, value: Optional[int]) -> "FocusSTM":
-        """Set the start index of STM
+    def with_start_idx(self: "FocusSTM", value: int | None) -> "FocusSTM":
+        """Set the start index of STM.
 
         Arguments:
-        - `value` - Start index of STM.
+        ---------
+            value: Start index of STM.
         """
-
         self._start_idx = -1 if value is None else value
         return self
 
-    def with_finish_idx(self, value: Optional[int]) -> "FocusSTM":
-        """Set the finish index of STM
+    def with_finish_idx(self: "FocusSTM", value: int | None) -> "FocusSTM":
+        """Set the finish index of STM.
 
         Arguments:
-        - `value` - Finish index of STM.
+        ---------
+            value: Finish index of STM.
         """
-
         self._finish_idx = -1 if value is None else value
         return self
 
 
 class GainSTM(STM):
-    _gains: List[IGain]
+    """GainSTM is an STM for moving any Gain."""
+
+    _gains: list[IGain]
     _mode: GainSTMMode
 
     def __init__(
-        self,
-        freq: Optional[float],
-        sampling_freq: Optional[float] = None,
-        sampling_freq_div: Optional[int] = None,
-        sampling_period: Optional[timedelta] = None,
-    ):
-        super().__init__(freq, sampling_freq, sampling_freq_div, sampling_period)
-        self._gains = []
-        self._mode = GainSTMMode.PhaseDutyFull
+        self: "GainSTM",
+        freq: float | None,
+        *,
+        period: timedelta | None = None,
+        sampling_config: SamplingConfiguration | None = None,
+    ) -> None:
+        """Constructor.
 
-    def _ptr(self, geometry: Geometry) -> DatagramPtr:
+        Arguments:
+        ---------
+            freq: Frequency of STM [Hz]. The frequency closest to `freq` from the possible frequencies is set.
+            period: only for internal use.
+            sampling_config: only for internal use.
+        """
+        super().__init__(freq, period, sampling_config)
+        self._gains = []
+        self._mode = GainSTMMode.PhaseIntensityFull
+
+    def _datagram_ptr(self: "GainSTM", geometry: Geometry) -> DatagramPtr:
         gains: np.ndarray = np.ndarray(len(self._gains), dtype=GainPtr)
         for i, g in enumerate(self._gains):
-            gains[i]["_0"] = g.gain_ptr(geometry)._0
-        return Base().stm_gain(self._props(),
-                               gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore
-                               len(self._gains), self._mode)
+            gains[i]["_0"] = g._gain_ptr(geometry)._0
+        return _validate_ptr(
+            Base().stm_gain(
+                self._props(),
+                gains.ctypes.data_as(ctypes.POINTER(GainPtr)),  # type: ignore[arg-type]
+                len(self._gains),
+                self._mode,
+            ),
+        )
 
     @staticmethod
-    def with_sampling_frequency(sampling_freq: float) -> "GainSTM":
-        """Constructor
+    def new_with_sampling_config(config: SamplingConfiguration) -> "GainSTM":
+        """Constructor.
 
         Arguments:
-        - `sampling_freq` - Sampling frequency [Hz]. The sampling frequency closest to `sampling_freq` from the possible frequencies is set.
+        ---------
+            config: Sampling configuration
         """
-
-        return GainSTM(None, sampling_freq, None)
+        return GainSTM(None, sampling_config=config)
 
     @staticmethod
-    def with_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
-        """Constructor
+    def new_with_period(period: timedelta) -> "GainSTM":
+        """Constructor.
 
         Arguments:
-        - `sampling_freq_div` - Sampling frequency division.
+        ---------
+            period: Period.
         """
+        return GainSTM(None, period=period)
 
-        return GainSTM(None, None, sampling_freq_div)
-
-    @staticmethod
-    def with_sampling_period(sampling_period: timedelta) -> "GainSTM":
-        """Constructor
+    def add_gain(self: "GainSTM", gain: IGain) -> "GainSTM":
+        """Add gain.
 
         Arguments:
-        - `sampling_period` - Sampling period. The sampling period closest to `sampling_period` from the possible periods is set.
+        ---------
+            gain: Gain
         """
-
-        return GainSTM(None, None, None, sampling_period)
-
-    def add_gain(self, gain: IGain) -> "GainSTM":
-        """Add gain
-
-        Arguments:
-        - `gain` - Gain
-        """
-
         self._gains.append(gain)
         return self
 
-    def add_gains_from_iter(self, iter: Iterable[IGain]) -> "GainSTM":
-        """Add gains
+    def add_gains_from_iter(self: "GainSTM", iterable: Iterable[IGain]) -> "GainSTM":
+        """Add gains.
 
         Arguments:
-        - `iter` - Iterable of gains
+        ---------
+            iterable: Iterable of gains
         """
-
-        self._gains.extend(iter)
+        self._gains.extend(iterable)
         return self
 
     @property
-    def frequency(self) -> float:
+    def frequency(self: "GainSTM") -> float:
+        """Frequency [Hz]."""
         return self._frequency_from_size(len(self._gains))
 
     @property
-    def sampling_frequency(self) -> float:
-        return self._sampling_frequency_from_size(len(self._gains))
+    def period(self: "GainSTM") -> timedelta:
+        """Period."""
+        return self._period_from_size(len(self._gains))
 
     @property
-    def sampling_frequency_division(self) -> int:
-        return self._sampling_frequency_division_from_size(len(self._gains))
+    def sampling_config(self: "GainSTM") -> SamplingConfiguration:
+        """Sampling configuration."""
+        return self._sampling_config_from_size(len(self._gains))
 
-    @property
-    def sampling_period(self) -> timedelta:
-        return self._sampling_period_from_size(len(self._gains))
-
-    def with_mode(self, mode: GainSTMMode) -> "GainSTM":
-        """Set GainSTMMode
+    def with_mode(self: "GainSTM", mode: GainSTMMode) -> "GainSTM":
+        """Set GainSTMMode.
 
         Arguments:
-        - `mode` - GainSTMMode
+        ---------
+            mode: GainSTMMode
         """
-
         self._mode = mode
         return self
 
-    def with_start_idx(self, value: Optional[int]) -> "GainSTM":
-        """Set the start index of STM
+    def with_start_idx(self: "GainSTM", value: int | None) -> "GainSTM":
+        """Set the start index of STM.
 
         Arguments:
-        - `value` - Start index of STM.
+        ---------
+            value: Start index of STM.
         """
-
         self._start_idx = -1 if value is None else value
         return self
 
-    def with_finish_idx(self, value: Optional[int]) -> "GainSTM":
-        """Set the finish index of STM
+    def with_finish_idx(self: "GainSTM", value: int | None) -> "GainSTM":
+        """Set the finish index of STM.
 
         Arguments:
-        - `value` - Finish index of STM.
+        ---------
+            value: Finish index of STM.
         """
-
         self._finish_idx = -1 if value is None else value
         return self

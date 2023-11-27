@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{
+    common::{autd3::modulation::Static, *},
+    take_mod, ModulationPtr,
+};
 
 #[no_mangle]
 #[must_use]
@@ -25,20 +28,18 @@ pub unsafe extern "C" fn AUTDModulationStatic() -> ModulationPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationStaticWithAmp(
     m: ModulationPtr,
-    amp: float,
+    intensity: u8,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Static).with_amp(amp))
+    ModulationPtr::new(take_mod!(m, Static).with_intensity(intensity))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::*;
 
     use crate::{modulation::*, tests::*, *};
 
-    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_static() {
@@ -46,22 +47,12 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationStatic();
-            let m = AUTDModulationStaticWithAmp(m, 1.);
+            let m = AUTDModulationStaticWithAmp(m, 0xFF);
 
             let m = AUTDModulationIntoDatagram(m);
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    m,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }

@@ -4,7 +4,7 @@
  * Created Date: 14/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,15 +16,16 @@ use std::{
     time::Duration,
 };
 
+use autd3_derive::Link;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::Transducer,
-    link::{Link, LinkBuilder},
+    link::{LinkSync, LinkSyncBuilder},
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 /// Link for test
+#[derive(Link)]
 pub struct Audit {
     is_open: bool,
     timeout: Duration,
@@ -45,12 +46,13 @@ impl AuditBuilder {
     }
 }
 
-impl<T: Transducer> LinkBuilder<T> for AuditBuilder {
+// #[async_trait::async_trait]
+impl LinkSyncBuilder for AuditBuilder {
     type L = Audit;
 
     fn open(
         self,
-        geometry: &autd3_driver::geometry::Geometry<T>,
+        geometry: &autd3_driver::geometry::Geometry,
     ) -> Result<Self::L, AUTDInternalError> {
         Ok(Audit {
             is_open: true,
@@ -121,7 +123,7 @@ impl DerefMut for Audit {
     }
 }
 
-impl Link for Audit {
+impl LinkSync for Audit {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         self.is_open = false;
         Ok(())

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,49 +12,29 @@
  */
 
 using AUTD3Sharp.Gain.Holo;
+using static AUTD3Sharp.Gain.Holo.Amplitude.Units;
 
 namespace tests.Gain.Holo;
 
 public class NaiveTest
 {
     [Fact]
-    public void Naive()
+    public async Task Naive()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 0.5)))
-            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 5e3 * Pascal)))
+            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
 
-        Assert.True(autd.Send(g));
-
-        foreach (var dev in autd.Geometry)
-        {
-            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
-            Assert.Contains(phases, p => p != 0);
-        }
-    }
-
-    [IgnoreIfCUDAIsNotFoundFact]
-    public void NaiveWithCUDA()
-    {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
-
-        var backend = new CUDABackend();
-        var g = new Naive<CUDABackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 0.5)
-            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 0.5)))
-            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0.5));
-
-        Assert.True(autd.Send(g));
+        Assert.True(await autd.SendAsync(g));
 
         foreach (var dev in autd.Geometry)
         {
-            var (duties, phases) = autd.Link<Audit>().DutiesAndPhases(dev.Idx, 0);
-            Assert.All(duties, d => Assert.Equal(680, d));
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            Assert.All(intensities, d => Assert.Equal(0x80, d));
             Assert.Contains(phases, p => p != 0);
         }
     }

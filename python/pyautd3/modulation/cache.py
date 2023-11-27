@@ -1,4 +1,4 @@
-'''
+"""
 File: cache.py
 Project: modulation
 Created Date: 10/10/2023
@@ -9,67 +9,55 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
+
+from collections.abc import Iterator
+from typing import TypeVar
 
 import numpy as np
-from ctypes import create_string_buffer
-from typing import Iterator
 
-from pyautd3.native_methods.autd3capi import ModulationCachePtr
-from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import ModulationPtr
-
-from pyautd3.autd_error import AUTDError
 from pyautd3.internal.modulation import IModulation
+from pyautd3.internal.utils import _validate_ptr
+from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi_def import CachePtr, ModulationPtr
+
+M = TypeVar("M", bound=IModulation)
 
 
 class Cache(IModulation):
-    """Modulation to cache the result of calculation
+    """Modulation to cache the result of calculation."""
 
-    """
-
-    _cache: ModulationCachePtr
+    _cache: CachePtr
     _buffer: np.ndarray
 
-    def __init__(self, m: IModulation):
-        err = create_string_buffer(256)
-        cache = Base().modulation_with_cache(m.modulation_ptr(), err)
-        if cache._0 is None:
-            raise AUTDError(err)
-        self._cache = cache
-
-        n = int(Base().modulation_cache_get_buffer_size(self._cache))
-        self._buffer = np.zeros(n, dtype=float)
+    def __init__(self: "Cache", m: M) -> None:
+        self._cache = _validate_ptr(Base().modulation_with_cache(m._modulation_ptr()))
+        n = int(Base().modulation_cache_get_buffer_len(self._cache))
+        self._buffer = np.zeros(n, dtype=np.uint8)
         Base().modulation_cache_get_buffer(self._cache, np.ctypeslib.as_ctypes(self._buffer))
 
     @property
-    def buffer(self) -> np.ndarray:
-        """get cached modulation data
-
-        """
-
+    def buffer(self: "Cache") -> np.ndarray:
+        """Get cached modulation data."""
         return self._buffer
 
-    def __getitem__(self, key: int) -> float:
+    def __getitem__(self: "Cache", key: int) -> float:
         return self._buffer[key]
 
-    def __iter__(self) -> Iterator[float]:
+    def __iter__(self: "Cache") -> Iterator[float]:
         return iter(self._buffer)
 
-    def modulation_ptr(self) -> ModulationPtr:
+    def _modulation_ptr(self: "Cache") -> ModulationPtr:
         return Base().modulation_cache_into_modulation(self._cache)
 
-    def __del__(self):
+    def __del__(self: "Cache") -> None:
         Base().modulation_cache_delete(self._cache)
 
 
-def __with_cache(self):
-    """Cache the result of calculation
-
-    """
-
+def __with_cache(self: M) -> Cache:
+    """Cache the result of calculation."""
     return Cache(self)
 
 
-IModulation.with_cache = __with_cache  # type: ignore
+IModulation.with_cache = __with_cache  # type: ignore[method-assign]

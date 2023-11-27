@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2023
+// Last Modified: 14/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,10 +20,10 @@ open AUTD3Sharp.Utils
 open System.Threading.Tasks
 
 module STMTest =
-    let GainSTMTest (autd : Controller) = 
-        (Silencer.Disable()) |> autd.Send |> ignore;
+    let GainSTMTest<'T> (autd : Controller<'T>) = 
+        (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
-        (new Static()) |> autd.Send |> ignore;
+        (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let stm = 
@@ -34,12 +34,12 @@ module STMTest =
             |> List.fold (fun (acc: GainSTM) v -> acc.AddGain v) (new GainSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
-        (stm )|> autd.Send |> ignore
+        (stm )|> autd.SendAsync  |> Async.AwaitTask|> ignore
 
-    let FocusSTMTest (autd : Controller) = 
-        (Silencer.Disable()) |> autd.Send |> ignore;
+    let FocusSTMTest<'T> (autd : Controller<'T>) = 
+        (Silencer.Disable()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
-        (new Static()) |> autd.Send |> ignore;
+        (new Static()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let stm = 
@@ -49,36 +49,4 @@ module STMTest =
             |> List.fold (fun (acc: FocusSTM) v -> acc.AddFocus v) (new FocusSTM(1.))
 
         printfn $"Actual frequency is {stm.Frequency}";
-        (stm)|> autd.Send |> ignore
-
-
-    let SoftwareSTMTest (autd: Controller) = 
-        (Silencer.Disable()) |> autd.Send |> ignore;
-
-        (new Static()) |> autd.Send |> ignore;
-         
-        let mutable fin = false;
-        let th : Task =
-            async {
-                printfn "press enter to stop software stm..."
-                System.Console.ReadKey true |> ignore;
-                fin <- true;
-            } |> Async.StartAsTask :> Task
-
-        let callback (autd:Controller) (i: int) (elapsed: TimeSpan): bool =
-            if fin 
-            then false
-            else
-                let theta = (2.0 * AUTD3.Pi * (float)i / 100.0);
-                let center = autd.Geometry.Center + Vector3d(0, 0, 150);
-
-                try 
-                    autd.Send(new Focus(center + 30.0 * Vector3d(cos(theta), sin(theta), 0.0)))    
-                with
-                    | _ -> false
-
-        autd.SoftwareSTM(
-            callback
-        ).WithTimerStrategy(TimerStrategy.NativeTimer).Start(TimeSpan.FromSeconds(1.0 / 1.0 / 100.0))
-
-        th.Wait();
+        (stm)|> autd.SendAsync  |> Async.AwaitTask|> ignore

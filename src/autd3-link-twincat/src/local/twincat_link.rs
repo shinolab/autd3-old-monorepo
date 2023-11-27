@@ -4,13 +4,14 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_derive::Link;
 use libloading as lib;
 
 use std::{ffi::c_void, time::Duration};
@@ -20,8 +21,8 @@ use lib::Library;
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::{Link, LinkBuilder},
+    geometry::Geometry,
+    link::{LinkSync, LinkSyncBuilder},
 };
 
 #[repr(C)]
@@ -44,6 +45,8 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 /// Link using TwinCAT3
+
+#[derive(Link)]
 pub struct TwinCAT {
     port: i32,
     send_addr: AmsAddr,
@@ -62,10 +65,10 @@ impl TwinCATBuilder {
     }
 }
 
-impl<T: Transducer> LinkBuilder<T> for TwinCATBuilder {
+impl LinkSyncBuilder for TwinCATBuilder {
     type L = TwinCAT;
 
-    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {
@@ -133,7 +136,7 @@ impl TwinCAT {
     }
 }
 
-impl Link for TwinCAT {
+impl LinkSync for TwinCAT {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             self.port_close()(self.port);

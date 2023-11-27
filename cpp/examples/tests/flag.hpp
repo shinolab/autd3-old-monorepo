@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,8 @@
 
 #include "autd3.hpp"
 
-inline void flag_test(autd3::Controller& autd) {
+template <typename L>
+inline void flag_test(autd3::Controller<L>& autd) {
   for (auto& dev : autd.geometry()) {
     dev.reads_fpga_info(true);
     dev.force_fan(true);
@@ -27,14 +28,14 @@ inline void flag_test(autd3::Controller& autd) {
   std::cout << "press any key to run fan..." << std::endl;
   std::cin.ignore();
 
-  autd.send(autd3::UpdateFlags());
+  autd.send_async(autd3::UpdateFlags()).get();
 
   bool fin = false;
   auto check_states_thread = std::thread([&] {
     const std::vector prompts = {'-', '/', '|', '\\'};
     size_t prompts_idx = 0;
     while (!fin) {
-      const auto states = autd.fpga_info();
+      const auto states = autd.fpga_info_async().get();
       std::cout << prompts[prompts_idx++ / 1000 % prompts.size()] << " FPGA Status...\n";
       std::copy(states.begin(), states.end(), std::ostream_iterator<autd3::FPGAInfo>(std::cout, "\n"));
       std::cout << "\033[" << states.size() + 1 << "A";
@@ -51,5 +52,5 @@ inline void flag_test(autd3::Controller& autd) {
     dev.reads_fpga_info(false);
     dev.force_fan(false);
   }
-  autd.send(autd3::UpdateFlags());
+  autd.send_async(autd3::UpdateFlags()).get();
 }

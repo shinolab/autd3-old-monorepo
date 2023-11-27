@@ -4,14 +4,15 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;
-# let gain : autd3::gain::Group<_, LegacyTransducer, _, _> =
-Group::new(|dev, tr: &LegacyTransducer| match tr.local_idx() {
+# let gain : autd3::gain::Group<_, _, _> =
+Group::new(|dev, tr| match tr.tr_idx() {
                 0..=100 => Some("null"),
                 101.. => Some("focus"),
                 _ => None,
@@ -39,7 +40,7 @@ var g = new Group((dev, tr) => tr.LocalIdx <= 100 ? "null" : "focus")
 ```python
 from pyautd3.gain import Focus, Null, Group
 
-g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set("null", Null()).set("focus", Focus(np.array([x, y, z])))
+g = Group(lambda _, tr: "null" if tr.local_idx <= 100 else "focus").set_gain("null", Null()).set_gain("focus", Focus(np.array([x, y, z])))
 
 ```
 

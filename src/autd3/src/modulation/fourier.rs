@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::ops::{Deref, DerefMut};
 use super::sine::Sine;
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use num::integer::lcm;
 
@@ -24,14 +24,14 @@ use num::integer::lcm;
 #[derive(Modulation, Clone)]
 pub struct Fourier {
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
     components: Vec<Sine>,
 }
 
 impl Fourier {
     pub fn new(sine: Sine) -> Self {
         Self {
-            freq_div: sine.sampling_frequency_division(),
+            config: sine.sampling_config(),
             components: vec![sine],
         }
     }
@@ -44,14 +44,16 @@ impl Fourier {
     pub fn add_component(self, sine: Sine) -> Self {
         let Self {
             mut components,
-            freq_div,
+            config,
         } = self;
-        let freq_div = freq_div.min(sine.sampling_frequency_division());
-        components.push(sine.with_sampling_frequency_division(freq_div));
-        Self {
-            components,
-            freq_div,
-        }
+        let config = SamplingConfiguration::new_with_frequency_division(
+            config
+                .frequency_division()
+                .min(sine.sampling_config().frequency_division()),
+        )
+        .unwrap();
+        components.push(sine.with_sampling_config(config));
+        Self { components, config }
     }
 
     /// Add sine wave components from iterator
@@ -65,21 +67,15 @@ impl Fourier {
     ) -> Self {
         let Self {
             mut components,
-            freq_div,
+            config,
         } = self;
         let append = iter.into_iter().map(|m| m.into()).collect::<Vec<_>>();
-        let freq_div = append
-            .iter()
-            .fold(freq_div, |acc, m| acc.min(m.sampling_frequency_division()));
-        components.extend(
-            append
-                .iter()
-                .map(|m| m.with_sampling_frequency_division(freq_div)),
-        );
-        Self {
-            components,
-            freq_div,
-        }
+        let freq_div = append.iter().fold(config.frequency_division(), |acc, m| {
+            acc.min(m.sampling_config().frequency_division())
+        });
+        let config = SamplingConfiguration::new_with_frequency_division(freq_div).unwrap();
+        components.extend(append.iter().map(|m| m.with_sampling_config(config)));
+        Self { components, config }
     }
 }
 
@@ -120,7 +116,7 @@ impl std::ops::Add<Sine> for Sine {
 }
 
 impl Modulation for Fourier {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         let n = self.components.len();
         let buffers = self
             .components
@@ -131,14 +127,14 @@ impl Modulation for Fourier {
         Ok(buffers
             .iter()
             .map(|b| b.iter().cycle().take(len).collect::<Vec<_>>())
-            .fold(vec![0.0; len], |acc, x| {
+            .fold(vec![0usize; len], |acc, x| {
                 acc.iter()
                     .zip(x.iter())
-                    .map(|(a, &b)| a + b)
+                    .map(|(a, &b)| a + b.value() as usize)
                     .collect::<Vec<_>>()
             })
             .iter()
-            .map(|x| x / n as float)
+            .map(|x| EmitIntensity::new((x / n) as u8))
             .collect::<Vec<_>>())
     }
 }
@@ -168,14 +164,14 @@ mod tests {
         let buf = f.calc().unwrap();
 
         for i in 0..buf.len() {
-            assert_approx_eq::assert_approx_eq!(
-                buf[i],
-                (f0_buf[i % f0_buf.len()]
-                    + f1_buf[i % f1_buf.len()]
-                    + f2_buf[i % f2_buf.len()]
-                    + f3_buf[i % f3_buf.len()]
-                    + f4_buf[i % f4_buf.len()])
-                    / 5.0
+            assert_eq!(
+                buf[i].value(),
+                ((f0_buf[i % f0_buf.len()].value() as usize
+                    + f1_buf[i % f1_buf.len()].value() as usize
+                    + f2_buf[i % f2_buf.len()].value() as usize
+                    + f3_buf[i % f3_buf.len()].value() as usize
+                    + f4_buf[i % f4_buf.len()].value() as usize)
+                    / 5) as u8
             );
         }
     }

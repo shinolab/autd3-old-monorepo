@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,19 +29,18 @@ namespace autd3::gain::holo {
  * @details Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE
  * World Haptics Conference (WHC). IEEE, 2015.
  */
-template <class B>
-class SDP final : public Holo<SDP<B>, B>, public IntoCache<SDP<B>>, public IntoTransform<SDP<B>> {
+template <backend B>
+class SDP final : public Holo<SDP<B>>, public IntoCache<SDP<B>>, public IntoTransform<SDP<B>> {
  public:
-  explicit SDP(std::shared_ptr<B> backend) : Holo<SDP, B>(std::move(backend)) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-  }
+  explicit SDP(std::shared_ptr<B> backend) : Holo<SDP>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(SDP, double, alpha)
   AUTD3_DEF_PARAM(SDP, uint32_t, repeat)
   AUTD3_DEF_PARAM(SDP, double, lambda)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = this->_backend->sdp(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    auto ptr = this->_backend->sdp(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
+                                   this->_amps.size());
     if (_alpha.has_value()) ptr = this->_backend->sdp_with_alpha(ptr, _alpha.value());
     if (_repeat.has_value()) ptr = this->_backend->sdp_with_repeat(ptr, _repeat.value());
     if (_lambda.has_value()) ptr = this->_backend->sdp_with_lambda(ptr, _lambda.value());
@@ -50,6 +49,7 @@ class SDP final : public Holo<SDP<B>, B>, public IntoCache<SDP<B>>, public IntoT
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<double> _alpha;
   std::optional<uint32_t> _repeat;
   std::optional<double> _lambda;

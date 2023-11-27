@@ -1,4 +1,4 @@
-'''
+"""
 File: test_gain.py
 Project: gain
 Created Date: 20/09/2023
@@ -9,66 +9,68 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-
-from typing import Dict
-
-from ..test_autd import create_controller
-
-from pyautd3 import Geometry, Drive
-from pyautd3.gain import Gain
 
 import numpy as np
+import pytest
+
+from pyautd3 import Device, Drive, Geometry, Transducer
+from pyautd3.emit_intensity import EmitIntensity
+from pyautd3.gain import Gain
+from tests.test_autd import create_controller
 
 
 class Uniform(Gain):
-    _amp: float
+    _intensity: EmitIntensity
     _phase: float
     check: np.ndarray
 
-    def __init__(self, amp, phase, check):
-        self._amp = amp
+    def __init__(self: "Uniform", intensity: int, phase: float, check: np.ndarray) -> None:
+        self._intensity = EmitIntensity(intensity)
         self._phase = phase
         self.check = check
 
-    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        def f(dev, tr):
+    def calc(self: "Uniform", geometry: Geometry) -> dict[int, np.ndarray]:
+        def f(dev: Device, _tr: Transducer) -> Drive:
             self.check[dev.idx] = True
             return Drive(
                 self._phase,
-                self._amp,
+                self._intensity,
             )
-        return Gain.transform(geometry, f)
+
+        return Gain._transform(geometry, f)
 
 
-def test_gain():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_gain():
+    autd = await create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    assert autd.send(Uniform(0.5, np.pi, check))
+    assert await autd.send_async(Uniform(0x80, np.pi, check))
 
     for dev in autd.geometry:
-        duties, phases = autd.link.duties_and_phases(dev.idx, 0)
-        assert np.all(duties == 680)
-        assert np.all(phases == 2048)
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0x80)
+        assert np.all(phases == 128)
 
 
-def test_gain_check_only_for_enabled():
-    autd = create_controller()
+@pytest.mark.asyncio()
+async def test_gain_check_only_for_enabled():
+    autd = await create_controller()
     autd.geometry[0].enable = False
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    g = Uniform(0.5, np.pi, check)
-    assert autd.send(g)
+    g = Uniform(0x80, np.pi, check)
+    assert await autd.send_async(g)
 
     assert not g.check[0]
     assert g.check[1]
 
-    duties, phases = autd.link.duties_and_phases(0, 0)
-    assert np.all(duties == 0)
+    intensities, phases = autd.link.intensities_and_phases(0, 0)
+    assert np.all(intensities == 0)
     assert np.all(phases == 0)
 
-    duties, phases = autd.link.duties_and_phases(1, 0)
-    assert np.all(duties == 680)
-    assert np.all(phases == 2048)
+    intensities, phases = autd.link.intensities_and_phases(1, 0)
+    assert np.all(intensities == 0x80)
+    assert np.all(phases == 128)

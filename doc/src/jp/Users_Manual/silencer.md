@@ -24,12 +24,14 @@ Silencerの設定には`Silencer`を送信する.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let config = Silencer::default();
-autd.send(config)?;
+autd.send(config).await?;
 # Ok(())
 # }
 ```
@@ -56,12 +58,15 @@ autd.send(config)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
-# let step = 10;
-let config = Silencer::new(step);
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
+# let step_intensity = 256;
+# let step_phase = 256;
+let config = Silencer::new(step_intensity, step_phase);
 # Ok(())
 # }
 ```
@@ -86,10 +91,12 @@ Silencerを無効化する場合は, 以下を送信する.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let config = Silencer::disable();
 # Ok(())
 # }

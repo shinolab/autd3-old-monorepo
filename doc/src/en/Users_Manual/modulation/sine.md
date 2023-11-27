@@ -6,6 +6,7 @@ Specify the frequency $f$ as an integer in the constructor.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -39,6 +40,7 @@ Note that the value that exceeds $\[0, 1\]$ is clamped in $\[0, 1\]$.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

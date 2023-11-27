@@ -10,7 +10,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(ENABLE_BACKEND_CUDA "ENABLE_BACKEND_CUDA" OFF)
 option(RUN_LINK_SOEM "RUN_LINK_SOEM" OFF)
 option(RUN_LINK_REMOTE_SOEM "RUN_LINK_REMOTE_SOEM" OFF)
 option(RUN_LINK_TWINCAT "RUN_LINK_TWINCAT" OFF)
@@ -31,9 +30,6 @@ FetchContent_Declare(
   autd3
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/..
 )
-if(APPLE)
-  set(ENABLE_LINK_VISUALIZER=OFF)
-endif()
 FetchContent_MakeAvailable(autd3)
 
 add_executable(test_autd3 main.cpp)
@@ -54,10 +50,6 @@ gtest_discover_tests(test_autd3)
 
 if(WIN32)
   target_link_options(test_autd3 PRIVATE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
-endif()
-
-if(ENABLE_BACKEND_CUDA)
-  target_compile_definitions(test_autd3 PRIVATE ENABLE_BACKEND_CUDA)
 endif()
 
 if(RUN_LINK_SOEM)

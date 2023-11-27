@@ -4,7 +4,7 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,14 +12,14 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 /// Modulation for modulating radiation pressure
 #[derive(Modulation)]
 pub struct RadiationPressure<M: Modulation> {
     m: M,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 pub trait IntoRadiationPressure<M: Modulation> {
@@ -30,14 +30,19 @@ pub trait IntoRadiationPressure<M: Modulation> {
 impl<M: Modulation> IntoRadiationPressure<M> for M {
     fn with_radiation_pressure(self) -> RadiationPressure<M> {
         RadiationPressure {
-            freq_div: self.sampling_frequency_division(),
+            config: self.sampling_config(),
             m: self,
         }
     }
 }
 
 impl<M: Modulation> Modulation for RadiationPressure<M> {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        Ok(self.m.calc()?.iter().map(|v| v.sqrt()).collect())
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
+        Ok(self
+            .m
+            .calc()?
+            .iter()
+            .map(|&v| EmitIntensity::new(((v.value() as float / 255.).sqrt() * 255.).round() as u8))
+            .collect())
     }
 }

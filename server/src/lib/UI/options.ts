@@ -4,7 +4,7 @@
  * Created Date: 10/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/08/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,12 +28,6 @@ export interface TwinCATOptions {
     keep: boolean;
 }
 
-export interface LightweightTwinCATOptions {
-    enable: boolean;
-    port: number;
-    timeout: Duration;
-}
-
 export interface SOEMOptions {
     ifname: string;
     port: number;
@@ -45,7 +39,6 @@ export interface SOEMOptions {
     state_check_interval: Duration;
     timeout: Duration;
     debug: boolean;
-    lightweight: boolean;
 }
 
 export interface SimulatorOptions {
@@ -58,7 +51,6 @@ export interface SimulatorOptions {
 
 export interface Options {
     twincat: TwinCATOptions;
-    lightweight_twincat: LightweightTwinCATOptions;
     soem: SOEMOptions;
     simulator: SimulatorOptions;
 }

@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-simulator"
-version = "16.0.3"
+version = "17.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -9,7 +9,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 autd3capi-def = { path = "../autd3capi-def" }
-autd3-link-simulator = { path = "../../src/autd3-link-simulator" }
+autd3-link-simulator = { path = "../../src/autd3-link-simulator", features = ["sync"] }
+tokio = { version = "1.34.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]
 wrapper-generator = { path = "../wrapper-generator" }

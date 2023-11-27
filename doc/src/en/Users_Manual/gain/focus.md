@@ -4,6 +4,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
@@ -28,20 +29,20 @@ from pyautd3.gain import Focus
 g = Focus([x, y, z])
 ```
 
-## Set amplitude
+## Set intensity
 
-You can change amplitude by `with_amp` method.
-The amplitude is normalized to 0-1 (1 by default).
+You can change emission intensity by `with_intensity` method.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;
-let g = autd3::gain::Focus::new(Vector3::new(x, y, z)).with_amp(1.);
+let g = autd3::gain::Focus::new(Vector3::new(x, y, z)).with_intensity(EmitIntensity::MAX);
 # }
 ```
 

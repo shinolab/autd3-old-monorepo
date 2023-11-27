@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,13 +13,13 @@
 
 use std::collections::HashMap;
 
-use crate::{constraint::Constraint, impl_holo, Complex};
+use crate::{constraint::EmissionConstraint, impl_holo, Amplitude, Complex};
 use autd3_derive::Gain;
 
 use autd3_driver::{
     acoustics::{directivity::Sphere, propagate},
-    common::Amplitude,
-    defined::PI,
+    common::EmitIntensity,
+    defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -34,9 +34,9 @@ use rand::seq::SliceRandom;
 #[derive(Gain)]
 pub struct Greedy {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     phase_div: usize,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
 }
 
 impl_holo!(Greedy);
@@ -47,7 +47,7 @@ impl Greedy {
             foci: vec![],
             amps: vec![],
             phase_div: 16,
-            constraint: Constraint::Uniform(Amplitude::MAX),
+            constraint: EmissionConstraint::Uniform(EmitIntensity::MAX),
         }
     }
 
@@ -55,15 +55,15 @@ impl Greedy {
         Self { phase_div, ..self }
     }
 
-    fn transfer_foci<T: Transducer>(
-        trans: &T,
+    fn transfer_foci(
+        trans: &Transducer,
         sound_speed: float,
         attenuation: float,
         foci: &[Vector3],
         res: &mut [Complex],
     ) {
         res.iter_mut().zip(foci.iter()).for_each(|(r, f)| {
-            *r = propagate::<Sphere, T>(trans, attenuation, sound_speed, f);
+            *r = propagate::<Sphere>(trans, attenuation, sound_speed, f) * T4010A1_AMPLITUDE;
         });
     }
 
@@ -72,10 +72,10 @@ impl Greedy {
     }
 }
 
-impl<T: Transducer> Gain<T> for Greedy {
+impl Gain for Greedy {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)
@@ -86,28 +86,34 @@ impl<T: Transducer> Gain<T> for Greedy {
 
         let mut cache = vec![Complex::new(0., 0.); m];
 
-        let amp = self.constraint.convert(1.0, 1.0);
+        let intensity = self.constraint.convert(1.0, 1.0);
         let mut res: HashMap<usize, Vec<Drive>> = geometry
             .devices()
             .map(|dev| {
                 (
                     dev.idx(),
-                    vec![Drive { amp, phase: 0.0 }; dev.num_transducers()],
+                    vec![
+                        Drive {
+                            intensity,
+                            phase: 0.0
+                        };
+                        dev.num_transducers()
+                    ],
                 )
             })
             .collect();
         let mut indices: Vec<_> = match filter {
             GainFilter::All => geometry
                 .devices()
-                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.local_idx())))
+                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.tr_idx())))
                 .collect(),
             GainFilter::Filter(filter) => geometry
                 .devices()
                 .filter_map(|dev| {
                     filter.get(&dev.idx()).map(|filter| {
                         dev.iter().filter_map(|tr| {
-                            if filter[tr.local_idx()] {
-                                Some((dev.idx(), tr.local_idx()))
+                            if filter[tr.tr_idx()] {
+                                Some((dev.idx(), tr.tr_idx()))
                             } else {
                                 None
                             }
@@ -134,7 +140,7 @@ impl<T: Transducer> Gain<T> for Greedy {
                 (0usize, float::INFINITY),
                 |acc, (idx, &phase)| {
                     let v = cache.iter().enumerate().fold(0., |acc, (j, c)| {
-                        acc + (self.amps[j] - (tmp[j] * phase + c).abs()).abs()
+                        acc + (self.amps[j].value - (tmp[j] * phase + c).abs()).abs()
                     });
                     if v < acc.1 {
                         (idx, v)

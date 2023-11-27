@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,19 +53,6 @@ class NalgebraBackend final : public Backend {
   [[nodiscard]] internal::native_methods::GainPtr sdp_with_constraint(const internal::native_methods::GainPtr ptr,
                                                                       const AmplitudeConstraint v) const override {
     return AUTDGainHoloSDPWithConstraint(ptr, v.ptr());
-  }
-
-  internal::native_methods::GainPtr evp(const double* foci, const double* amps, const uint64_t size) const override {
-    return AUTDGainHoloEVP(this->_ptr, foci, amps, size);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr evp_with_gamma(const internal::native_methods::GainPtr ptr, const double v) const override {
-    return AUTDGainHoloEVPWithGamma(ptr, v);
-  }
-
-  [[nodiscard]] internal::native_methods::GainPtr evp_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                      const AmplitudeConstraint v) const override {
-    return AUTDGainHoloEVPWithConstraint(ptr, v.ptr());
   }
 
   internal::native_methods::GainPtr gs(const double* foci, const double* amps, const uint64_t size) const override {

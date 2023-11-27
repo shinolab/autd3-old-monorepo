@@ -4,7 +4,7 @@
  * Created Date: 12/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,47 +14,39 @@
 module ultrasound_cnt_clk_gen (
     input var  clk_in1,
     input var  reset,
-    output var clk_out1,
-    output var clk_out2,
+    output var clk_out,
     output var locked
 );
 
-  bit CLKOUT0, CLKOUT1;
-  bit CLKFB, CLKFB_BUF;
+  logic CLKOUT;
+  logic CLKFB, CLKFB_BUF;
   BUFG clkf_buf (
       .O(CLKFB_BUF),
       .I(CLKFB)
   );
-  BUFG clkout1_buf (
-      .O(clk_out1),
-      .I(CLKOUT0)
-  );
-  BUFG clkout2_buf (
-      .O(clk_out2),
-      .I(CLKOUT1)
+  BUFG clkout_buf (
+      .O(clk_out),
+      .I(CLKOUT)
   );
 
   MMCME2_ADV #(
-      .BANDWIDTH("OPTIMIZED"),
-      .CLKFBOUT_MULT_F(40.000),
-      .CLKIN1_PERIOD(39.063),
-      .CLKOUT0_DIVIDE_F(6.250),
-      .CLKOUT1_DIVIDE(50),
-      .COMPENSATION("ZHOLD"),
-      .DIVCLK_DIVIDE(1),
-      .REF_JITTER1(0.010),
-      .REF_JITTER2(0.010),
-      .STARTUP_WAIT("FALSE"),
-      .SS_EN("FALSE"),
-      .SS_MODE("CENTER_HIGH"),
-      .SS_MOD_PERIOD(10000),
+      .BANDWIDTH           ("OPTIMIZED"),
+      .CLKOUT4_CASCADE     ("FALSE"),
+      .COMPENSATION        ("ZHOLD"),
+      .STARTUP_WAIT        ("FALSE"),
+      .DIVCLK_DIVIDE       (1),
+      .CLKFBOUT_MULT_F     (39.000),
+      .CLKFBOUT_PHASE      (0.000),
       .CLKFBOUT_USE_FINE_PS("FALSE"),
-      .CLKOUT0_USE_FINE_PS("FALSE"),
-      .CLKOUT1_USE_FINE_PS("FALSE")
+      .CLKOUT0_DIVIDE_F    (48.750),
+      .CLKOUT0_PHASE       (0.000),
+      .CLKOUT0_DUTY_CYCLE  (0.500),
+      .CLKOUT0_USE_FINE_PS ("FALSE"),
+      .CLKIN1_PERIOD       (39.063)
   ) MMCME2_ADV_inst (
-      .CLKOUT0(CLKOUT0),
+      .CLKOUT0(CLKOUT),
       .CLKOUT0B(),
-      .CLKOUT1(CLKOUT1),
+      .CLKOUT1(),
       .CLKOUT1B(),
       .CLKFBOUT(CLKFB),
       .CLKFBOUTB(),

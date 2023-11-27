@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,9 @@
 
 module sim_modulation_multiplier ();
 
-  bit CLK_20P48M;
-  bit locked;
+  logic CLK_20P48M;
+  logic locked;
   sim_helper_clk sim_helper_clk (
-      .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME()
@@ -25,22 +24,20 @@ module sim_modulation_multiplier ();
   sim_helper_random sim_helper_random ();
   sim_helper_bram sim_helper_bram ();
 
-  localparam int WIDTH = 13;
   localparam int DEPTH = 249;
 
-  bit din_valid, dout_valid;
-  bit [15:0] idx;
-  bit [15:0] cycle_m;
-  bit [15:0] delay_m[DEPTH];
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] duty_out;
-  bit [WIDTH-1:0] phase;
-  bit [WIDTH-1:0] phase_out;
+  logic din_valid, dout_valid;
+  logic [15:0] idx;
+  logic [15:0] cycle_m;
+  logic [15:0] delay_m[DEPTH];
+  logic [7:0] intensity;
+  logic [15:0] intensity_out;
+  logic [7:0] phase;
+  logic [7:0] phase_out;
 
-  bit [7:0] mod[65536];
-  bit [WIDTH-1:0] duty_buf[DEPTH];
-  bit [WIDTH-1:0] phase_buf[DEPTH];
-  bit [15:0] idx_buf;
+  logic [7:0] mod[65536];
+  logic [7:0] intensity_buf[DEPTH];
+  logic [7:0] phase_buf[DEPTH];
 
   modulation_bus_if m_bus ();
 
@@ -51,7 +48,6 @@ module sim_modulation_multiplier ();
   );
 
   modulation_multiplier #(
-      .WIDTH(WIDTH),
       .DEPTH(DEPTH)
   ) modulation_multiplier (
       .CLK(CLK_20P48M),
@@ -60,28 +56,30 @@ module sim_modulation_multiplier ();
       .IDX(idx),
       .M_BUS(m_bus.sampler_port),
       .DELAY_M(delay_m),
-      .DUTY_IN(duty),
+      .INTENSITY_IN(intensity),
       .PHASE_IN(phase),
-      .DUTY_OUT(duty_out),
+      .INTENSITY_OUT(intensity_out),
       .PHASE_OUT(phase_out),
       .DOUT_VALID(dout_valid)
   );
 
-  always @(posedge CLK_20P48M) idx = idx + 1'b1;
-
-  always @(posedge din_valid) idx_buf = idx;
+  always @(posedge din_valid) begin
+    idx <= idx === cycle_m ? 0 : idx + 1;
+  end
 
   task automatic set();
     for (int i = 0; i < DEPTH; i++) begin
+      intensity_buf[i] = sim_helper_random.range(8'hFF, 0);
+      phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
-      din_valid = 1'b1;
-      duty = sim_helper_random.range(8000, 0);
-      phase = sim_helper_random.range(8000, 0);
-      duty_buf[i] = duty;
-      phase_buf[i] = phase;
+      din_valid <= 1'b1;
+      intensity <= intensity_buf[i];
+      phase <=    phase_buf[i];
     end
     @(posedge CLK_20P48M);
-    din_valid = 1'b0;
+    din_valid <= 1'b0;
   endtask
 
   task automatic check();
@@ -93,12 +91,12 @@ module sim_modulation_multiplier ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_out != (duty_buf[i] * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)] / 255)) begin
-        $error("Failed at %d: d=%d, m=%d, d_m=%d", i, duty_buf[i],
-               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], duty_out);
+      if (intensity_out !== (intensity_buf[i] * mod[(idx-delay_m[i]+cycle_m+1)%(cycle_m+1)])) begin
+        $error("Failed at %d: d=%d, m=%d, d_m=%d", i, intensity_buf[i],
+               mod[(idx-delay_m[i]+cycle_m+1)%(cycle_m+1)], intensity_out);
         $finish();
       end
-      if (phase_out != phase_buf[i]) begin
+      if (phase_out !== phase_buf[i]) begin
         $error("Failed at %d: p=%d, p_m=%d", i, phase_buf[i], phase_out);
         $finish();
       end
@@ -108,12 +106,13 @@ module sim_modulation_multiplier ();
   endtask
 
   initial begin
+    idx = 0;
     din_valid = 0;
-    cycle_m   = 16'hFFFF;
+    cycle_m = 16'hFFFF;
     sim_helper_random.init();
 
     for (int i = 0; i < DEPTH; i++) begin
-      delay_m[i] = sim_helper_random.range(16'hFFFF, 0);
+      delay_m[i] = sim_helper_random.range(cycle_m, 0);
     end
 
     @(posedge locked);

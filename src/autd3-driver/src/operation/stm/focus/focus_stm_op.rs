@@ -4,7 +4,7 @@
  * Created Date: 06/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,8 @@ use std::collections::HashMap;
 use crate::{
     defined::METER,
     error::AUTDInternalError,
-    fpga::{
-        STMFocus, FOCUS_STM_BUF_SIZE_MAX, FPGA_SUB_CLK_FREQ_DIV, SAMPLING_FREQ_DIV_MAX,
-        SAMPLING_FREQ_DIV_MIN,
-    },
-    geometry::{Device, Geometry, Transducer},
+    fpga::{STMFocus, FOCUS_STM_BUF_SIZE_MAX},
+    geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
@@ -53,8 +50,8 @@ impl FocusSTMOp {
     }
 }
 
-impl<T: Transducer> Operation<T> for FocusSTMOp {
-    fn pack(&mut self, device: &Device<T>, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+impl Operation for FocusSTMOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert!(self.remains[&device.idx()] > 0);
 
         tx[0] = TypeTag::FocusSTM as u8;
@@ -85,7 +82,11 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         tx[3] = (send_num >> 8) as u8;
 
         if sent == 0 {
-            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            let freq_div = if cfg!(feature = "firmware-v3") {
+                self.freq_div * 8
+            } else {
+                self.freq_div
+            };
             tx[4] = (freq_div & 0xFF) as u8;
             tx[5] = ((freq_div >> 8) & 0xFF) as u8;
             tx[6] = ((freq_div >> 16) & 0xFF) as u8;
@@ -124,7 +125,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
                 .zip(self.points.iter().skip(sent).take(send_num))
                 .try_for_each(|(d, p)| {
                     let lp = device.to_local(p.point());
-                    d.set(lp.x, lp.y, lp.z, p.shift())
+                    d.set(lp.x, lp.y, lp.z, p.intensity())
                 })?
         }
 
@@ -146,7 +147,7 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         }
     }
 
-    fn required_size(&self, device: &Device<T>) -> usize {
+    fn required_size(&self, device: &Device) -> usize {
         if self.sent[&device.idx()] == 0 {
             std::mem::size_of::<TypeTag>()
                 + std::mem::size_of::<FocusSTMControlFlags>()
@@ -164,15 +165,13 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         }
     }
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
         if !(2..=FOCUS_STM_BUF_SIZE_MAX).contains(&self.points.len()) {
             return Err(AUTDInternalError::FocusSTMPointSizeOutOfRange(
                 self.points.len(),
             ));
         }
-        if !(SAMPLING_FREQ_DIV_MIN..=SAMPLING_FREQ_DIV_MAX).contains(&self.freq_div) {
-            return Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(self.freq_div));
-        }
+
         match self.start_idx {
             Some(idx) if idx >= self.points.len() as u16 => {
                 return Err(AUTDInternalError::STMStartIndexOutOfRange)
@@ -195,11 +194,11 @@ impl<T: Transducer> Operation<T> for FocusSTMOp {
         Ok(())
     }
 
-    fn remains(&self, device: &Device<T>) -> usize {
+    fn remains(&self, device: &Device) -> usize {
         self.remains[&device.idx()]
     }
 
-    fn commit(&mut self, device: &Device<T>) {
+    fn commit(&mut self, device: &Device) {
         self.remains
             .insert(device.idx(), self.points.len() - self.sent[&device.idx()]);
     }
@@ -212,8 +211,11 @@ mod tests {
     use super::*;
     use crate::{
         defined::{float, MILLIMETER},
-        fpga::{FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_WIDTH, SAMPLING_FREQ_DIV_MIN},
-        geometry::{tests::create_geometry, LegacyTransducer, Vector3},
+        fpga::{
+            FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_WIDTH, SAMPLING_FREQ_DIV_MAX,
+            SAMPLING_FREQ_DIV_MIN,
+        },
+        geometry::{tests::create_geometry, Vector3},
     };
 
     const NUM_TRANS_IN_UNIT: usize = 249;
@@ -224,7 +226,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -237,13 +239,12 @@ mod tests {
                     rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                     rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                 ))
-                .with_shift(rng.gen_range(0..0xFF))
+                .with_intensity(rng.gen::<u8>())
             })
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
 
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -323,7 +324,7 @@ mod tests {
                 .zip(points.iter())
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -343,7 +344,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = (FRAME_SIZE - 16) / std::mem::size_of::<STMFocus>()
             + (FRAME_SIZE - 4) / std::mem::size_of::<STMFocus>() * 2;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -356,12 +357,11 @@ mod tests {
                     rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                     rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                 ))
-                .with_shift(rng.gen_range(0..0xFF))
+                .with_intensity(rng.gen::<u8>())
             })
             .collect();
         let freq_div: u32 = rng.gen_range(SAMPLING_FREQ_DIV_MIN..SAMPLING_FREQ_DIV_MAX);
         let mut op = FocusSTMOp::new(points.clone(), freq_div, None, None);
-        let freq_div = freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
 
         assert!(op.init(&geometry).is_ok());
 
@@ -454,7 +454,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -518,7 +518,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -582,7 +582,7 @@ mod tests {
                 )
                 .for_each(|(d, p)| {
                     let mut f = STMFocus { buf: [0x0000; 4] };
-                    f.set(p.point().x, p.point().y, p.point().z, p.shift())
+                    f.set(p.point().x, p.point().y, p.point().z, p.intensity())
                         .unwrap();
                     assert_eq!(d[0], (f.buf[0] & 0xFF) as u8);
                     assert_eq!(d[1], ((f.buf[0] >> 8) & 0xFF) as u8);
@@ -601,7 +601,7 @@ mod tests {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
@@ -696,7 +696,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_buffer_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let test = |n: usize| {
             let mut rng = rand::thread_rng();
@@ -708,7 +708,7 @@ mod tests {
                         rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                         rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                     ))
-                    .with_shift(rng.gen_range(0..0xFF))
+                    .with_intensity(rng.gen::<u8>())
                 })
                 .collect();
             let mut op = FocusSTMOp::new(points, SAMPLING_FREQ_DIV_MIN, None, None);
@@ -730,55 +730,17 @@ mod tests {
     }
 
     #[test]
-    fn focus_stm_op_freq_div_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
-
-        let test = |d: u32| {
-            let mut rng = rand::thread_rng();
-
-            let points: Vec<ControlPoint> = (0..100)
-                .map(|_| {
-                    ControlPoint::new(Vector3::new(
-                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
-                        rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
-                        rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
-                    ))
-                    .with_shift(rng.gen_range(0..0xFF))
-                })
-                .collect();
-
-            let mut op = FocusSTMOp::new(points.clone(), d, None, None);
-            op.init(&geometry)
-        };
-
-        assert_eq!(
-            test(SAMPLING_FREQ_DIV_MIN - 1),
-            Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(
-                SAMPLING_FREQ_DIV_MIN - 1
-            ))
-        );
-        assert_eq!(test(SAMPLING_FREQ_DIV_MIN), Ok(()));
-        assert_eq!(test(SAMPLING_FREQ_DIV_MAX), Ok(()));
-        assert_eq!(
-            test(SAMPLING_FREQ_DIV_MAX + 1),
-            Err(AUTDInternalError::FocusSTMFreqDivOutOfRange(
-                SAMPLING_FREQ_DIV_MAX + 1
-            ))
-        );
-    }
-
-    #[test]
     fn focus_stm_op_point_out_of_range() {
         const FOCUS_STM_SIZE: usize = 100;
         const FRAME_SIZE: usize = 16 + 8 * FOCUS_STM_SIZE;
 
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = vec![0x00u8; FRAME_SIZE * NUM_DEVICE];
 
         let x = FOCUS_STM_FIXED_NUM_UNIT * (1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) as float;
         let points: Vec<ControlPoint> = (0..FOCUS_STM_SIZE)
-            .map(|_| ControlPoint::new(Vector3::new(x, x, x)).with_shift(0))
+            .map(|_| ControlPoint::new(Vector3::new(x, x, x)).with_intensity(0))
             .collect();
         let freq_div: u32 = SAMPLING_FREQ_DIV_MIN;
 
@@ -796,7 +758,7 @@ mod tests {
 
     #[test]
     fn focus_stm_op_stm_idx_out_of_range() {
-        let geometry = create_geometry::<LegacyTransducer>(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let test = |n: usize, start_idx: Option<u16>, finish_idx: Option<u16>| {
             let mut rng = rand::thread_rng();
@@ -808,7 +770,7 @@ mod tests {
                         rng.gen_range(-500.0 * MILLIMETER..500.0 * MILLIMETER),
                         rng.gen_range(0.0 * MILLIMETER..500.0 * MILLIMETER),
                     ))
-                    .with_shift(rng.gen_range(0..0xFF))
+                    .with_intensity(rng.gen::<u8>())
                 })
                 .collect();
 

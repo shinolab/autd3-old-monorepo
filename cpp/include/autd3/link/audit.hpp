@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,24 +14,34 @@
 #include <chrono>
 #include <utility>
 
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+
+namespace autd3::internal {
+class ControllerBuilder;
+}
 
 namespace autd3::link {
 
 class Audit final {
   internal::native_methods::LinkPtr _ptr;
 
+  explicit Audit(const internal::native_methods::LinkPtr ptr) : _ptr(ptr) {}
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class Audit;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkAuditBuilderPtr _ptr;
 
-    Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkAudit()) {}
+    Builder() : _ptr(internal::native_methods::AUTDLinkAudit()) {}
+
+    [[nodiscard]] static Audit resolve_link(const internal::native_methods::LinkPtr link) { return Audit{link}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkAuditIntoBuilder(_ptr); }
+    using Link = Audit;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkAuditIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
@@ -42,8 +52,6 @@ class Audit final {
   };
 
   static Builder builder() { return {}; }
-
-  explicit Audit(const internal::native_methods::LinkPtr ptr, const std::shared_ptr<void>&) : _ptr(ptr) {}
 
   void down() const { AUTDLinkAuditDown(_ptr); }
 
@@ -59,9 +67,10 @@ class Audit final {
 
   [[nodiscard]] int fpga_flags(const size_t idx) const { return AUTDLinkAuditCpuFpgaFlags(_ptr, static_cast<std::uint32_t>(idx)); }
 
-  [[nodiscard]] bool is_legacy(const size_t idx) const { return AUTDLinkAuditFpgaIsLegacyMode(_ptr, static_cast<std::uint32_t>(idx)); }
-
-  [[nodiscard]] int silencer_step(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStep(_ptr, static_cast<std::uint32_t>(idx)); }
+  [[nodiscard]] int silencer_step_intensity(const size_t idx) const {
+    return AUTDLinkAuditFpgaSilencerStepIntensity(_ptr, static_cast<std::uint32_t>(idx));
+  }
+  [[nodiscard]] int silencer_step_phase(const size_t idx) const { return AUTDLinkAuditFpgaSilencerStepPhase(_ptr, static_cast<std::uint32_t>(idx)); }
 
   void assert_thermal_sensor(const size_t idx) const { AUTDLinkAuditFpgaAssertThermalSensor(_ptr, static_cast<std::uint32_t>(idx)); }
 
@@ -78,13 +87,6 @@ class Audit final {
     return AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, static_cast<std::uint32_t>(idx));
   }
 
-  [[nodiscard]] std::vector<std::uint16_t> cycles(const size_t idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::uint16_t> buf(n);
-    AUTDLinkAuditFpgaCycles(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
-  }
-
   [[nodiscard]] std::vector<std::uint16_t> mod_delays(const size_t idx) const {
     const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
     std::vector<std::uint16_t> buf(n);
@@ -92,25 +94,11 @@ class Audit final {
     return buf;
   }
 
-  [[nodiscard]] std::vector<std::int16_t> duty_filters(const size_t idx) const {
+  [[nodiscard]] std::pair<std::vector<std::uint8_t>, std::vector<std::uint8_t>> intensities_and_phases(const size_t idx, const int stm_idx) const {
     const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaDutyFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
-  }
-
-  [[nodiscard]] std::vector<std::int16_t> phase_filters(const size_t idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::int16_t> buf(n);
-    AUTDLinkAuditFpgaPhaseFilters(_ptr, static_cast<std::uint32_t>(idx), buf.data());
-    return buf;
-  }
-
-  [[nodiscard]] std::pair<std::vector<std::uint16_t>, std::vector<std::uint16_t>> duties_and_phases(const size_t idx, const int stm_idx) const {
-    const auto n = AUTDLinkAuditCpuNumTransducers(_ptr, static_cast<std::uint32_t>(idx));
-    std::vector<std::uint16_t> duties(n);
-    std::vector<std::uint16_t> phases(n);
-    AUTDLinkAuditFpgaDutiesAndPhases(_ptr, static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(), phases.data());
+    std::vector<std::uint8_t> duties(n);
+    std::vector<std::uint8_t> phases(n);
+    AUTDLinkAuditFpgaIntensitiesAndPhases(_ptr, static_cast<std::uint32_t>(idx), static_cast<std::uint32_t>(stm_idx), duties.data(), phases.data());
     return std::make_pair(duties, phases);
   }
 

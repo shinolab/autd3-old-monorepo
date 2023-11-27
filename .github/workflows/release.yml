@@ -41,7 +41,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
-          cuda: true
           
       - name: publish to carate.io
         run: |
@@ -67,14 +66,6 @@ jobs:
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
           cd .. && sleep 60
-          cd autd3-backend-cuda
-          cargo publish --no-verify --dry-run
-          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-          cd .. && sleep 60
-          cd autd3-backend-arrayfire
-          cargo publish --no-verify --dry-run
-          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-          cd .. && sleep 60
           cd autd3-protobuf
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
@@ -88,10 +79,6 @@ jobs:
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
           cd ..
           cd autd3-link-simulator
-          cargo publish --no-verify --dry-run
-          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
-          cd ..
-          cd autd3-link-visualizer
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
           cd ..
@@ -138,8 +125,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: windows-latest
-          cuda: true
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version
@@ -213,8 +199,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
-          cuda: true
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version
@@ -401,7 +386,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: macos-latest
-          shaderc: true
+          shaderc: false
 
       - name: Get the version
         id: get_version
@@ -520,7 +505,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: false
           shaderc: true
 
       - name: install dependencies (ubuntu only)

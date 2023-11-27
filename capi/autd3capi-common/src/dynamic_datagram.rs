@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,88 +16,66 @@
 use std::time::Duration;
 
 use autd3::prelude::*;
-use autd3_driver::{datagram::Datagram, error::AUTDInternalError, operation::Operation};
-
-use crate::{
-    dynamic_op::{DynamicGainOp, DynamicGainSTMOp},
-    dynamic_transducer::{DynamicTransducer, TransMode},
-    G, M,
+use autd3_driver::{
+    datagram::Datagram, error::AUTDInternalError, fpga::SILENCER_STEP_DEFAULT, operation::Operation,
 };
+
+use crate::{G, M};
 
 pub trait DynamicDatagram {
     #[allow(clippy::type_complexity)]
-    fn operation(
-        &mut self,
-        mode: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    >;
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError>;
 
     fn timeout(&self) -> Option<Duration>;
 }
 
-impl Datagram<DynamicTransducer>
-    for (
-        TransMode,
-        Box<Box<dyn DynamicDatagram>>,
-        Option<std::time::Duration>,
-    )
-{
-    type O1 = Box<dyn Operation<DynamicTransducer>>;
-    type O2 = Box<dyn Operation<DynamicTransducer>>;
+pub struct DynamicDatagramPack {
+    pub d: Box<Box<dyn DynamicDatagram>>,
+    pub timeout: Option<std::time::Duration>,
+}
+
+impl Datagram for DynamicDatagramPack {
+    type O1 = Box<dyn Operation>;
+    type O2 = Box<dyn Operation>;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        let (mode, mut op, _) = self;
-        op.operation(mode)
+        let Self { mut d, .. } = self;
+        d.operation()
     }
 
     fn timeout(&self) -> Option<Duration> {
-        if self.2.is_some() {
-            self.2
+        if self.timeout.is_some() {
+            self.timeout
         } else {
-            self.1.timeout()
+            self.d.timeout()
         }
     }
 }
 
-impl Datagram<DynamicTransducer>
-    for (
-        TransMode,
-        Box<Box<dyn DynamicDatagram>>,
-        Box<Box<dyn DynamicDatagram>>,
-        Option<std::time::Duration>,
-    )
-{
-    type O1 = Box<dyn Operation<DynamicTransducer>>;
-    type O2 = Box<dyn Operation<DynamicTransducer>>;
+pub struct DynamicDatagramPack2 {
+    pub d1: Box<Box<dyn DynamicDatagram>>,
+    pub d2: Box<Box<dyn DynamicDatagram>>,
+    pub timeout: Option<std::time::Duration>,
+}
+
+impl Datagram for DynamicDatagramPack2 {
+    type O1 = Box<dyn Operation>;
+    type O2 = Box<dyn Operation>;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
-        let (mode, mut op1, mut op2, _) = self;
-        let (op1, _) = op1.operation(mode)?;
-        let (op2, _) = op2.operation(mode)?;
+        let Self { mut d1, mut d2, .. } = self;
+        let (op1, _) = d1.operation()?;
+        let (op2, _) = d2.operation()?;
         Ok((op1, op2))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        self.3
+        self.timeout
     }
 }
 
 impl DynamicDatagram for UpdateFlags {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
             Box::<crate::driver::operation::UpdateFlagsOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
@@ -105,21 +83,12 @@ impl DynamicDatagram for UpdateFlags {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for Synchronize {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
             Box::<crate::driver::operation::SyncOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
@@ -127,65 +96,44 @@ impl DynamicDatagram for Synchronize {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<LegacyTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for Stop {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(10)),
+            Box::new(<Self as Datagram>::O1::new(
+                SILENCER_STEP_DEFAULT,
+                SILENCER_STEP_DEFAULT,
+            )),
             Box::<crate::driver::operation::StopOp>::default(),
         ))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for Silencer {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(self.step())),
+            Box::new(<Self as Datagram>::O1::new(
+                self.step_intensity(),
+                self.step_phase(),
+            )),
             Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for Clear {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
             Box::<crate::driver::operation::ClearOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
@@ -193,21 +141,12 @@ impl DynamicDatagram for Clear {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for ConfigureModDelay {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
             Box::<crate::driver::operation::ConfigureModDelayOp>::default(),
             Box::<crate::driver::operation::NullOp>::default(),
@@ -215,68 +154,15 @@ impl DynamicDatagram for ConfigureModDelay {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
-    }
-}
-
-impl DynamicDatagram for ConfigureAmpFilter {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
-        Ok((
-            Box::<crate::driver::operation::ConfigureAmpFilterOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
-        ))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
-    }
-}
-
-impl DynamicDatagram for ConfigurePhaseFilter {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
-        Ok((
-            Box::<crate::driver::operation::ConfigurePhaseFilterOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
-        ))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
 impl DynamicDatagram for FocusSTM {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
-        let freq_div = self.sampling_frequency_division();
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
+        let freq_div = self.sampling_config().frequency_division();
         Ok((
-            Box::new(<Self as Datagram<DynamicTransducer>>::O1::new(
+            Box::new(<Self as Datagram>::O1::new(
                 self.clear(),
                 freq_div,
                 self.start_idx(),
@@ -287,25 +173,18 @@ impl DynamicDatagram for FocusSTM {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram<DynamicTransducer>>::timeout(self)
+        <Self as Datagram>::timeout(self)
     }
 }
 
-impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
+impl DynamicDatagram for GainSTM<Box<G>> {
     fn operation(
         &mut self,
-        mode: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        autd3_driver::error::AUTDInternalError,
-    > {
-        let freq_div = self.sampling_frequency_division();
+    ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), autd3_driver::error::AUTDInternalError>
+    {
+        let freq_div = self.sampling_config().frequency_division();
         Ok((
-            Box::new(DynamicGainSTMOp::new(
-                mode,
+            Box::new(<Self as Datagram>::O1::new(
                 self.clear(),
                 self.mode(),
                 freq_div,
@@ -321,51 +200,15 @@ impl DynamicDatagram for GainSTM<DynamicTransducer, Box<G>> {
     }
 }
 
-impl DynamicDatagram for Amplitudes {
-    fn operation(
-        &mut self,
-        mode: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        autd3_driver::error::AUTDInternalError,
-    > {
-        match mode {
-            TransMode::Legacy | TransMode::Advanced => {
-                Err(autd3_driver::error::AUTDInternalError::NotSupported(
-                    "Amplitudes can not be used in Legacy or Advanced mode".to_string(),
-                ))
-            }
-            TransMode::AdvancedPhase => Ok((
-                Box::new(<Self as Datagram<AdvancedPhaseTransducer>>::O1::new(
-                    self.amp(),
-                )),
-                Box::<crate::driver::operation::NullOp>::default(),
-            )),
-        }
-    }
-    fn timeout(&self) -> Option<Duration> {
-        None
-    }
-}
-
 impl DynamicDatagram for Box<G> {
     fn operation(
         &mut self,
-        mode: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        autd3_driver::error::AUTDInternalError,
-    > {
+    ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), autd3_driver::error::AUTDInternalError>
+    {
         let mut tmp: Box<G> = Box::<Null>::default();
         std::mem::swap(&mut tmp, self);
         Ok((
-            Box::new(DynamicGainOp::new(tmp, mode)),
+            Box::new(crate::driver::operation::GainOp::new(tmp)),
             Box::<crate::driver::operation::NullOp>::default(),
         ))
     }
@@ -376,17 +219,8 @@ impl DynamicDatagram for Box<G> {
 }
 
 impl DynamicDatagram for Box<M> {
-    fn operation(
-        &mut self,
-        _: TransMode,
-    ) -> Result<
-        (
-            Box<dyn Operation<DynamicTransducer>>,
-            Box<dyn Operation<DynamicTransducer>>,
-        ),
-        AUTDInternalError,
-    > {
-        let freq_div = self.sampling_frequency_division();
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
+        let freq_div = self.sampling_config().frequency_division();
         let buf = self.calc()?;
         Ok((
             Box::new(crate::driver::operation::ModulationOp::new(buf, freq_div)),

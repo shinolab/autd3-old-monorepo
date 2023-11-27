@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2023
+// Last Modified: 13/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,25 +54,25 @@ TEST(Internal_Geometry, DeviceNumTransducers) {
 
 TEST(Internal_Geometry, DeviceCenter) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    ASSERT_EQ(dev.center(), autd3::internal::Vector3(86.62522088353406, 66.71325301204821, 0));
+    ASSERT_NEAR_VECTOR3(dev.center(), autd3::internal::Vector3(86.62522088353406, 66.7132530125621, 0), 1e-6);
   }
 }
 
 TEST(Internal_Geometry, DeviceForceFan) {
   auto autd = create_controller();
-  for (auto& dev : autd.geometry()) ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(dev.idx()), 0);
+  for (auto& dev : autd.geometry()) ASSERT_EQ(autd.link().fpga_flags(dev.idx()), 0);
 
   autd.geometry()[0].force_fan(true);
   autd.geometry()[1].force_fan(false);
-  autd.send(autd3::internal::UpdateFlags());
-  ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(0), 1);
-  ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(1), 0);
+  autd.send_async(autd3::internal::UpdateFlags()).get();
+  ASSERT_EQ(autd.link().fpga_flags(0), 1);
+  ASSERT_EQ(autd.link().fpga_flags(1), 0);
 
   autd.geometry()[0].force_fan(false);
   autd.geometry()[1].force_fan(true);
-  autd.send(autd3::internal::UpdateFlags());
-  ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(0), 0);
-  ASSERT_EQ(autd.link<autd3::link::Audit>().fpga_flags(1), 1);
+  autd.send_async(autd3::internal::UpdateFlags()).get();
+  ASSERT_EQ(autd.link().fpga_flags(0), 0);
+  ASSERT_EQ(autd.link().fpga_flags(1), 1);
 }
 
 TEST(Internal_Geometry, DeviceEnable) {

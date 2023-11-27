@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-def"
-version = "16.0.3"
+version = "17.0.0"
 edition = "2021"
 license = "MIT"
 
@@ -16,3 +16,7 @@ wrapper-generator = { path = "../wrapper-generator" }
 [features]
 single_float = ["autd3capi-common/single_float"]
 use_meter = ["autd3capi-common/use_meter"]
+
+[dev-dependencies]
+assert_approx_eq = "1.1.0"
+memoffset = "0.9.0"

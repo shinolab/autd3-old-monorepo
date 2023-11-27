@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/09/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,20 +29,14 @@ pub enum AUTDProtoBufError {
     #[error("{0}")]
     TokioJoinError(String),
     #[error("{0}")]
-    AUTDError(autd3::prelude::AUTDError),
+    AUTDInternalError(autd3_driver::error::AUTDInternalError),
     #[error("This data is not supported.")]
     NotSupportedData,
 }
 
-impl From<autd3::prelude::AUTDError> for AUTDProtoBufError {
-    fn from(e: autd3::prelude::AUTDError) -> Self {
-        AUTDProtoBufError::AUTDError(e)
-    }
-}
-
 impl From<autd3_driver::error::AUTDInternalError> for AUTDProtoBufError {
     fn from(e: autd3_driver::error::AUTDInternalError) -> Self {
-        AUTDProtoBufError::AUTDError(e.into())
+        AUTDProtoBufError::AUTDInternalError(e)
     }
 }
 
@@ -55,18 +49,6 @@ impl From<tonic::Status> for AUTDProtoBufError {
 impl<T> From<std::sync::mpsc::SendError<T>> for AUTDProtoBufError {
     fn from(e: std::sync::mpsc::SendError<T>) -> Self {
         AUTDProtoBufError::SendError(e.to_string())
-    }
-}
-
-impl<T> From<tokio::sync::mpsc::error::SendError<T>> for AUTDProtoBufError {
-    fn from(e: tokio::sync::mpsc::error::SendError<T>) -> Self {
-        AUTDProtoBufError::TokioSendError(e.to_string())
-    }
-}
-
-impl From<tokio::task::JoinError> for AUTDProtoBufError {
-    fn from(e: tokio::task::JoinError) -> Self {
-        AUTDProtoBufError::TokioJoinError(e.to_string())
     }
 }
 

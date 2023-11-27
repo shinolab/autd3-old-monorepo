@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,21 +15,19 @@
 
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/modulation/cache.hpp"
-#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/sine.hpp"
 #include "autd3/modulation/transform.hpp"
 
 namespace autd3::modulation {
 
+template <class R>
+concept fourier_sine_range = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, Sine>;
+
 /**
  * @brief Multi-frequency sine wave modulation
  */
-class Fourier final : public internal::Modulation,
-                      public IntoCache<Fourier>,
-                      public IntoTransform<Fourier>,
-                      public IntoRadiationPressure<Fourier>,
-                      public IntoFIR<Fourier> {
+class Fourier final : public internal::Modulation, public IntoCache<Fourier>, public IntoTransform<Fourier>, public IntoRadiationPressure<Fourier> {
  public:
   explicit Fourier(Sine component) { _components.emplace_back(std::move(component)); }
 
@@ -46,8 +44,8 @@ class Fourier final : public internal::Modulation,
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  auto add_components_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Sine>>& {
+  template <fourier_sine_range R>
+  void add_components_from_iter(R&& iter) & {
     for (Sine e : iter) _components.emplace_back(std::move(e));
   }
 
@@ -57,8 +55,8 @@ class Fourier final : public internal::Modulation,
    * @tparam R
    * @param iter iterator of focus points
    */
-  template <std::ranges::viewable_range R>
-  auto add_components_from_iter(R&& iter) -> std::enable_if_t<std::same_as<std::ranges::range_value_t<R>, Sine>, Fourier&&>&& {
+  template <fourier_sine_range R>
+  Fourier add_components_from_iter(R&& iter) && {
     for (Sine e : iter) _components.emplace_back(std::move(e));
     return std::move(*this);
   }

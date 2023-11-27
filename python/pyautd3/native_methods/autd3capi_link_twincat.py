@@ -13,6 +13,10 @@ class LinkRemoteTwinCATBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class ResultLinkRemoteTwinCATBuilder(ctypes.Structure):
+    _fields_ = [("result", LinkRemoteTwinCATBuilderPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
 class Singleton(type):
     _instances = {}  # type: ignore
     _lock = threading.Lock()
@@ -42,8 +46,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkTwinCATIntoBuilder.argtypes = [LinkTwinCATBuilderPtr]  # type: ignore 
         self.dll.AUTDLinkTwinCATIntoBuilder.restype = LinkBuilderPtr
 
-        self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteTwinCAT.restype = LinkRemoteTwinCATBuilderPtr
+        self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCAT.restype = ResultLinkRemoteTwinCATBuilder
 
         self.dll.AUTDLinkRemoteTwinCATWithServerIP.argtypes = [LinkRemoteTwinCATBuilderPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDLinkRemoteTwinCATWithServerIP.restype = LinkRemoteTwinCATBuilderPtr
@@ -66,8 +70,8 @@ class NativeMethods(metaclass=Singleton):
     def link_twin_cat_into_builder(self, twincat: LinkTwinCATBuilderPtr) -> LinkBuilderPtr:
         return self.dll.AUTDLinkTwinCATIntoBuilder(twincat)
 
-    def link_remote_twin_cat(self, server_ams_net_id: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkRemoteTwinCATBuilderPtr:
-        return self.dll.AUTDLinkRemoteTwinCAT(server_ams_net_id, err)
+    def link_remote_twin_cat(self, server_ams_net_id: bytes) -> ResultLinkRemoteTwinCATBuilder:
+        return self.dll.AUTDLinkRemoteTwinCAT(server_ams_net_id)
 
     def link_remote_twin_cat_with_server_ip(self, twincat: LinkRemoteTwinCATBuilderPtr, addr: bytes) -> LinkRemoteTwinCATBuilderPtr:
         return self.dll.AUTDLinkRemoteTwinCATWithServerIP(twincat, addr)

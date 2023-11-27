@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -45,7 +44,7 @@ namespace AUTD3Sharp
         {
             Idx = idx;
             Ptr = ptr;
-            _transducers = Enumerable.Range(0, (int)Base.AUTDDeviceNumTransducers(Ptr)).Select(i => new Transducer(i, Ptr)).ToList();
+            _transducers = Enumerable.Range(0, (int)NativeMethodsBase.AUTDDeviceNumTransducers(Ptr)).Select(i => new Transducer(i, Ptr)).ToList();
         }
 
         /// <summary>
@@ -63,8 +62,8 @@ namespace AUTD3Sharp
         /// </summary>
         public float_t SoundSpeed
         {
-            get => Base.AUTDDeviceGetSoundSpeed(Ptr);
-            set => Base.AUTDDeviceSetSoundSpeed(Ptr, value);
+            get => NativeMethodsBase.AUTDDeviceGetSoundSpeed(Ptr);
+            set => NativeMethodsBase.AUTDDeviceSetSoundSpeed(Ptr, value);
         }
 
         /// <summary>
@@ -72,14 +71,14 @@ namespace AUTD3Sharp
         /// </summary>
         public float_t Attenuation
         {
-            get => Base.AUTDDeviceGetAttenuation(Ptr);
-            set => Base.AUTDDeviceSetAttenuation(Ptr, value);
+            get => NativeMethodsBase.AUTDDeviceGetAttenuation(Ptr);
+            set => NativeMethodsBase.AUTDDeviceSetAttenuation(Ptr, value);
         }
 
         public bool Enable
         {
-            get => Base.AUTDDeviceEnableGet(Ptr);
-            set => Base.AUTDDeviceEnableSet(Ptr, value);
+            get => NativeMethodsBase.AUTDDeviceEnableGet(Ptr);
+            set => NativeMethodsBase.AUTDDeviceEnableSet(Ptr, value);
         }
 
         /// <summary>
@@ -90,7 +89,11 @@ namespace AUTD3Sharp
             get
             {
                 var center = new float_t[3];
-                Base.AUTDDeviceCenter(Ptr, center);
+                unsafe
+                {
+                    fixed (float_t* p = center)
+                        NativeMethodsBase.AUTDDeviceCenter(Ptr, p);
+                }
                 return new Vector3(center[0], center[1], center[2]);
             }
         }
@@ -102,7 +105,7 @@ namespace AUTD3Sharp
         /// <param name="value"></param>
         public bool ForceFan
         {
-            set => Base.AUTDDeviceSetForceFan(Ptr, value);
+            set => NativeMethodsBase.AUTDDeviceSetForceFan(Ptr, value);
         }
 
         /// <summary>
@@ -111,22 +114,22 @@ namespace AUTD3Sharp
         /// <param name="value"></param>
         public bool ReadsFPGAInfo
         {
-            set => Base.AUTDDeviceSetReadsFPGAInfo(Ptr, value);
+            set => NativeMethodsBase.AUTDDeviceSetReadsFPGAInfo(Ptr, value);
         }
 
         public void Translate(Vector3 t)
         {
-            Base.AUTDDeviceTranslate(Ptr, t.x, t.y, t.z);
+            NativeMethodsBase.AUTDDeviceTranslate(Ptr, t.x, t.y, t.z);
         }
 
         public void Rotate(Quaternion r)
         {
-            Base.AUTDDeviceRotate(Ptr, r.w, r.x, r.y, r.z);
+            NativeMethodsBase.AUTDDeviceRotate(Ptr, r.w, r.x, r.y, r.z);
         }
 
         public void Affine(Vector3 t, Quaternion r)
         {
-            Base.AUTDDeviceAffine(Ptr, t.x, t.y, t.z, r.w, r.x, r.y, r.z);
+            NativeMethodsBase.AUTDDeviceAffine(Ptr, t.x, t.y, t.z, r.w, r.x, r.y, r.z);
         }
 
         /// <summary>
@@ -138,7 +141,7 @@ namespace AUTD3Sharp
         /// <param name="m">Molar mass</param>
         public void SetSoundSpeedFromTemp(float_t temp, float_t k = (float_t)1.4, float_t r = (float_t)8.31446261815324, float_t m = (float_t)28.9647e-3)
         {
-            Base.AUTDDeviceSetSoundSpeedFromTemp(Ptr, temp, k, r, m);
+            NativeMethodsBase.AUTDDeviceSetSoundSpeedFromTemp(Ptr, temp, k, r, m);
         }
 
         public Transducer this[int index] => _transducers[index];

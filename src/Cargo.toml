@@ -5,18 +5,16 @@ members = [
     "autd3-driver",
     "autd3-derive",
     "autd3-gain-holo",
-    "autd3-backend-cuda",
-    "autd3-backend-arrayfire",
     "autd3-link-simulator",
     "autd3-link-soem",
     "autd3-link-twincat",
-    "autd3-link-visualizer",
     "autd3-modulation-audio-file",
     "autd3-firmware-emulator",
     "autd3-protobuf",
-    "examples",
 ]
 
-default-members = ["autd3", "autd3-driver", "autd3-derive", "autd3-gain-holo", "autd3-firmware-emulator", "autd3-modulation-audio-file", "autd3-link-soem", "autd3-link-twincat", "examples"]
+default-members = ["autd3", "autd3-driver", "autd3-derive", "autd3-gain-holo", "autd3-firmware-emulator", "autd3-modulation-audio-file", "autd3-link-soem", "autd3-link-twincat"]
+
+exclude = ["examples"]
 
 resolver = "2"

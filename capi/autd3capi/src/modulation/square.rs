@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{
+    common::{autd3::modulation::Square, *},
+    take_mod, ModulationPtr, SamplingConfiguration,
+};
 
 #[no_mangle]
 #[must_use]
@@ -23,19 +26,13 @@ pub unsafe extern "C" fn AUTDModulationSquare(freq: u32) -> ModulationPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareWithLow(
-    m: ModulationPtr,
-    low: float,
-) -> ModulationPtr {
+pub unsafe extern "C" fn AUTDModulationSquareWithLow(m: ModulationPtr, low: u8) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Square).with_low(low))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareWithHigh(
-    m: ModulationPtr,
-    high: float,
-) -> ModulationPtr {
+pub unsafe extern "C" fn AUTDModulationSquareWithHigh(m: ModulationPtr, high: u8) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Square).with_high(high))
 }
 
@@ -50,22 +47,20 @@ pub unsafe extern "C" fn AUTDModulationSquareWithDuty(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareWithSamplingFrequencyDivision(
+pub unsafe extern "C" fn AUTDModulationSquareWithSamplingConfig(
     m: ModulationPtr,
-    div: u32,
+    config: SamplingConfiguration,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Square).with_sampling_frequency_division(div))
+    ModulationPtr::new(take_mod!(m, Square).with_sampling_config(config.into()))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::*;
 
     use crate::{modulation::*, tests::*, *};
 
-    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_square() {
@@ -73,26 +68,19 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationSquare(150);
-            let m = AUTDModulationSquareWithLow(m, 0.);
-            let m = AUTDModulationSquareWithHigh(m, 1.);
+            let m = AUTDModulationSquareWithLow(m, 0);
+            let m = AUTDModulationSquareWithHigh(m, 0xFF);
             let m = AUTDModulationSquareWithDuty(m, 0.5);
             let div = 10240;
-            let m = AUTDModulationSquareWithSamplingFrequencyDivision(m, div);
+            let m = AUTDModulationSquareWithSamplingConfig(
+                m,
+                AUTDSamplingConfigNewWithFrequencyDivision(div).result,
+            );
 
             let m = AUTDModulationIntoDatagram(m);
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    m,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
             AUTDControllerDelete(cnt);
         }

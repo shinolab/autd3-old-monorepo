@@ -120,7 +120,7 @@ set_msg_config -id {Synth 8-5640} -new_severity {ADVISORY}
 # set_msg_config -id {Synth 8-5858} -new_severity {ADVISORY}
 
 set_property top top [get_filesets sources_1]
-set_property top sim_pwm [get_filesets sim_1]
+set_property top sim_main [get_filesets sim_1]
 set_property top_lib xil_defaultlib [get_filesets sim_1]
 
 set_property -name {xsim.compile.tcl.pre} -value [file join $project_directory "rtl/sim_1/new/rand.tcl"] -objects [get_filesets sim_1]

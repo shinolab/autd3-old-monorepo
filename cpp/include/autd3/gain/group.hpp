@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@
 
 #include "autd3/gain/cache.hpp"
 #include "autd3/gain/transform.hpp"
+#include "autd3/internal/exception.hpp"
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -25,6 +26,11 @@
 namespace autd3::gain {
 
 template <class F>
+concept gain_group_f = requires(F f, const internal::Device& dev, const internal::Transducer& tr) {
+  typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
+};
+
+template <gain_group_f F>
 class Group final : public internal::Gain, public IntoCache<Group<F>>, public IntoTransform<Group<F>> {
  public:
   using key_type = typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
@@ -38,9 +44,8 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
    * @param key Key
    * @param gain Gain
    */
-  template <class G>
+  template <internal::gain G>
   void set(const key_type key, G&& gain) & {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
   }
 
@@ -51,9 +56,8 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
    * @param key Key
    * @param gain Gain
    */
-  template <class G>
+  template <internal::gain G>
   Group&& set(const key_type key, G&& gain) && {
-    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     _map[key] = std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain));
     return std::move(*this);
   }
@@ -64,7 +68,7 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
     const std::vector<uint32_t> device_indices(view.begin(), view.end());
 
-    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), device_indices.size());
+    auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));
     int32_t k = 0;
     for (const auto& dev : geometry.devices()) {
       std::vector<int32_t> m;
@@ -89,7 +93,7 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
       values.emplace_back(kv.second->gain_ptr(geometry));
     }
 
-    return AUTDGainGroup(map, keys.data(), values.data(), keys.size());
+    return AUTDGainGroup(map, keys.data(), values.data(), static_cast<uint32_t>(keys.size()));
   }
 
  private:

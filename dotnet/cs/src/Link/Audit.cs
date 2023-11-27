@@ -4,13 +4,14 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  * 
  */
 
+using AUTD3Sharp.Internal;
 using System;
 
 #if UNITY_2020_2_OR_NEWER
@@ -19,30 +20,38 @@ using System;
 
 namespace AUTD3Sharp.Link
 {
-    public sealed class Audit : Internal.ILink<Audit>
+    public sealed class Audit
     {
-        public sealed class AuditBuilder : Internal.ILinkBuilder
+        public sealed class AuditBuilder : ILinkBuilder<Audit>
         {
             private LinkAuditBuilderPtr _ptr;
 
             internal AuditBuilder()
             {
-                _ptr = NativeMethods.Base.AUTDLinkAudit();
+                _ptr = NativeMethodsBase.AUTDLinkAudit();
             }
 
             public AuditBuilder WithTimeout(TimeSpan timeout)
             {
-                _ptr = NativeMethods.Base.AUTDLinkAuditWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                _ptr = NativeMethodsBase.AUTDLinkAuditWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr ILinkBuilder<Audit>.Ptr()
             {
-                return NativeMethods.Base.AUTDLinkAuditIntoBuilder(_ptr);
+                return NativeMethodsBase.AUTDLinkAuditIntoBuilder(_ptr);
+            }
+
+            Audit ILinkBuilder<Audit>.ResolveLink(LinkPtr ptr)
+            {
+                return new Audit
+                {
+                    _ptr = ptr
+                };
             }
         }
 
-        private LinkPtr _ptr = new LinkPtr { _0 = IntPtr.Zero };
+        private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
 
         public static AuditBuilder Builder()
         {
@@ -51,144 +60,127 @@ namespace AUTD3Sharp.Link
 
         public void Down()
         {
-            NativeMethods.Base.AUTDLinkAuditDown(_ptr);
+            NativeMethodsBase.AUTDLinkAuditDown(_ptr);
         }
 
         public bool IsOpen()
         {
-            return NativeMethods.Base.AUTDLinkAuditIsOpen(_ptr);
+            return NativeMethodsBase.AUTDLinkAuditIsOpen(_ptr);
         }
 
         public ulong LastTimeoutNs()
         {
-            return NativeMethods.Base.AUTDLinkAuditLastTimeoutNs(_ptr);
+            return NativeMethodsBase.AUTDLinkAuditLastTimeoutNs(_ptr);
         }
 
         public void Up()
         {
-            NativeMethods.Base.AUTDLinkAuditUp(_ptr);
+            NativeMethodsBase.AUTDLinkAuditUp(_ptr);
         }
 
         public void BreakDown()
         {
-            NativeMethods.Base.AUTDLinkAuditBreakDown(_ptr);
+            NativeMethodsBase.AUTDLinkAuditBreakDown(_ptr);
         }
 
         public void Update(int idx)
         {
-            NativeMethods.Base.AUTDLinkAuditCpuUpdate(_ptr, (uint)idx);
+            NativeMethodsBase.AUTDLinkAuditCpuUpdate(_ptr, (uint)idx);
         }
 
         public int FpgaFlags(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditCpuFpgaFlags(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditCpuFpgaFlags(_ptr, (uint)idx);
         }
 
-        public bool IsLegacy(int idx)
+        public ushort SilencerStepIntensity(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaIsLegacyMode(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaSilencerStepIntensity(_ptr, (uint)idx);
         }
 
-        public int SilencerStep(int idx)
+        public ushort SilencerStepPhase(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaSilencerStep(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaSilencerStepPhase(_ptr, (uint)idx);
         }
 
         public void AssertThermalSensor(int idx)
         {
-            NativeMethods.Base.AUTDLinkAuditFpgaAssertThermalSensor(_ptr, (uint)idx);
+            NativeMethodsBase.AUTDLinkAuditFpgaAssertThermalSensor(_ptr, (uint)idx);
         }
 
         public void DeassertThermalSensor(int idx)
         {
-            NativeMethods.Base.AUTDLinkAuditFpgaDeassertThermalSensor(_ptr, (uint)idx);
+            NativeMethodsBase.AUTDLinkAuditFpgaDeassertThermalSensor(_ptr, (uint)idx);
         }
 
         public byte[] Modulation(int idx)
         {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditFpgaModulationCycle(_ptr, (uint)idx);
+            var n = (int)NativeMethodsBase.AUTDLinkAuditFpgaModulationCycle(_ptr, (uint)idx);
             var buf = new byte[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaModulation(_ptr, (uint)idx, buf);
+            unsafe
+            {
+                fixed (byte* p = buf)
+                    NativeMethodsBase.AUTDLinkAuditFpgaModulation(_ptr, (uint)idx, p);
+            }
             return buf;
         }
 
         public uint ModulationFrequencyDivision(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, (uint)idx);
-        }
-
-        public ushort[] Cycles(int idx)
-        {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new ushort[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaCycles(_ptr, (uint)idx, buf);
-            return buf;
+            return NativeMethodsBase.AUTDLinkAuditFpgaModulationFrequencyDivision(_ptr, (uint)idx);
         }
 
         public ushort[] ModDelays(int idx)
         {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
+            var n = (int)NativeMethodsBase.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
             var buf = new ushort[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaModDelays(_ptr, (uint)idx, buf);
+            unsafe
+            {
+                fixed (ushort* p = buf)
+                    NativeMethodsBase.AUTDLinkAuditFpgaModDelays(_ptr, (uint)idx, p);
+            }
             return buf;
         }
 
-        public short[] DutyFilters(int idx)
+        public (byte[], byte[]) IntensitiesAndPhases(int idx, int stmIdx)
         {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new short[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaDutyFilters(_ptr, (uint)idx, buf);
-            return buf;
-        }
-
-        public short[] PhaseFilters(int idx)
-        {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var buf = new short[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaPhaseFilters(_ptr, (uint)idx, buf);
-            return buf;
-        }
-
-        public (ushort[], ushort[]) DutiesAndPhases(int idx, int stmIdx)
-        {
-            var n = (int)NativeMethods.Base.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
-            var duties = new ushort[n];
-            var phases = new ushort[n];
-            NativeMethods.Base.AUTDLinkAuditFpgaDutiesAndPhases(_ptr, (uint)idx, (uint)stmIdx, duties, phases);
-            return (duties, phases);
+            var n = (int)NativeMethodsBase.AUTDLinkAuditCpuNumTransducers(_ptr, (uint)idx);
+            var intensities = new byte[n];
+            var phases = new byte[n];
+            unsafe
+            {
+                fixed (byte* pd = intensities)
+                fixed (byte* pp = phases)
+                {
+                    NativeMethodsBase.AUTDLinkAuditFpgaIntensitiesAndPhases(_ptr, (uint)idx, (uint)stmIdx, pd, pp);
+                }
+            }
+            return (intensities, phases);
         }
 
         public uint StmCycle(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaStmCycle(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaStmCycle(_ptr, (uint)idx);
         }
 
         public bool IsStmGainMode(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaIsStmGainMode(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaIsStmGainMode(_ptr, (uint)idx);
         }
 
         public uint StmFrequencyDivision(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaStmFrequencyDivision(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaStmFrequencyDivision(_ptr, (uint)idx);
         }
 
         public int StmStartIdx(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaStmStartIdx(_ptr, (uint)idx);
+            return NativeMethodsBase.AUTDLinkAuditFpgaStmStartIdx(_ptr, (uint)idx);
         }
 
         public int StmFinishIdx(int idx)
         {
-            return NativeMethods.Base.AUTDLinkAuditFpgaStmFinishIdx(_ptr, (uint)idx);
-        }
-
-        public Audit Create(LinkPtr ptr, object? _)
-        {
-            return new Audit
-            {
-                _ptr = ptr
-            };
+            return NativeMethodsBase.AUTDLinkAuditFpgaStmFinishIdx(_ptr, (uint)idx);
         }
     }
 }

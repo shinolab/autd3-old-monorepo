@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,35 +19,27 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-#if USE_SINGLE
-using float_t = System.Single;
-#else
-using float_t = System.Double;
-#endif
-
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Modulation to cache the result of calculation
     /// </summary>
-    public class Cache : Internal.Modulation, IEnumerable<float_t>, IDisposable
+    public class Cache : Internal.Modulation, IEnumerable<byte>, IDisposable
     {
         private bool _isDisposed;
 
-        private ModulationCachePtr _cache;
-        private readonly float_t[] _buffer;
+        private CachePtr _cache;
+        private readonly byte[] _buffer;
 
         public Cache(Internal.Modulation m)
         {
-            var err = new byte[256];
-            _cache = Base.AUTDModulationWithCache(m.ModulationPtr(), err);
-            if (_cache._0 == IntPtr.Zero) throw new AUTDException(err);
-
-            var n = Base.AUTDModulationCacheGetBufferSize(_cache);
-            _buffer = new float_t[n];
-            Base.AUTDModulationCacheGetBuffer(_cache, _buffer);
+            unsafe
+            {
+                _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr()).Validate();
+                _buffer = new byte[NativeMethodsBase.AUTDModulationCacheGetBufferLen(_cache)];
+                fixed (byte* p = _buffer)
+                    NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, p);
+            }
         }
 
         ~Cache()
@@ -59,25 +51,25 @@ namespace AUTD3Sharp.Modulation
         {
             if (_isDisposed) return;
 
-            if (_cache._0 != IntPtr.Zero) Base.AUTDModulationCacheDelete(_cache);
-            _cache._0 = IntPtr.Zero;
+            if (_cache.Item1 != IntPtr.Zero) NativeMethodsBase.AUTDModulationCacheDelete(_cache);
+            _cache.Item1 = IntPtr.Zero;
 
             _isDisposed = true;
             GC.SuppressFinalize(this);
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            return Base.AUTDModulationCacheIntoModulation(_cache);
+            return NativeMethodsBase.AUTDModulationCacheIntoModulation(_cache);
         }
 
-        public float_t this[int index] => _buffer[index];
+        public byte this[int index] => _buffer[index];
 
-        public ReadOnlyCollection<float_t> Buffer => Array.AsReadOnly(_buffer);
+        public ReadOnlyCollection<byte> Buffer => Array.AsReadOnly(_buffer);
 
-        public IEnumerator<float_t> GetEnumerator()
+        public IEnumerator<byte> GetEnumerator()
         {
-            return (IEnumerator<float_t>)_buffer.GetEnumerator();
+            return (IEnumerator<byte>)_buffer.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();

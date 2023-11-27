@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ pub use t4010a1::T4010A1;
 /// Directivity
 pub trait Directivity: Send + Sync {
     fn directivity(theta_deg: float) -> float;
-    fn directivity_from_tr<T: Transducer>(tr: &T, target: &Vector3) -> float {
+    fn directivity_from_tr(tr: &Transducer, target: &Vector3) -> float {
         let dir = tr.z_direction();
         Self::directivity((dir.cross(target).norm()).atan2(dir.dot(target)) * 180. / PI)
     }
@@ -48,7 +48,7 @@ pub mod tests {
     #[test]
     fn directivity_from_tr() {
         let tr =
-            crate::geometry::LegacyTransducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+            crate::geometry::Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
 
         assert_approx_eq::assert_approx_eq!(
             0.,

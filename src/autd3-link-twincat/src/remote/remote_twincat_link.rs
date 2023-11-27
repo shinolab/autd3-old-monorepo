@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 09/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,13 +16,14 @@ use std::{
     time::Duration,
 };
 
+use autd3_derive::Link;
 use itertools::Itertools;
 
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
     error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::{Link, LinkBuilder},
+    geometry::Geometry,
+    link::{LinkSync, LinkSyncBuilder},
 };
 
 use crate::{error::AdsError, remote::native_methods::*};
@@ -33,6 +34,7 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 /// Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
+#[derive(Link)]
 pub struct RemoteTwinCAT {
     port: c_long,
     net_id: AmsNetId,
@@ -46,10 +48,10 @@ pub struct RemoteTwinCATBuilder {
     timeout: Duration,
 }
 
-impl<T: Transducer> LinkBuilder<T> for RemoteTwinCATBuilder {
+impl LinkSyncBuilder for RemoteTwinCATBuilder {
     type L = RemoteTwinCAT;
 
-    fn open(self, _: &Geometry<T>) -> Result<Self::L, AUTDInternalError> {
+    fn open(self, _: &Geometry) -> Result<Self::L, AUTDInternalError> {
         let RemoteTwinCATBuilder {
             server_ams_net_id,
             mut server_ip,
@@ -153,7 +155,7 @@ impl RemoteTwinCAT {
     }
 }
 
-impl Link for RemoteTwinCAT {
+impl LinkSync for RemoteTwinCAT {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         if self.port == 0 {
             return Ok(());
