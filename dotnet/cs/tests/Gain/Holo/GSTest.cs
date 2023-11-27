@@ -39,26 +39,4 @@ public class GSTest
             Assert.Contains(phases, p => p != 0);
         }
     }
-
-    [IgnoreIfCUDAIsNotFoundFact]
-    public async Task GSWithCUDA()
-    {
-        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
-
-        var backend = new CUDABackend();
-        var g = new GS<CUDABackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
-            .AddFociFromIter(new double[] { -40 }.Select(x => (autd.Geometry.Center + new Vector3d(x, 0, 150), 5e3 * Pascal)))
-            .WithRepeat(100)
-            .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
-
-        Assert.True(await autd.SendAsync(g));
-
-        foreach (var dev in autd.Geometry)
-        {
-            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
-            Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.Contains(phases, p => p != 0);
-        }
-    }
 }

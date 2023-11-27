@@ -129,9 +129,6 @@ class Config:
     _platform: str
     _all: bool
     release: bool
-    cuda: bool
-    skip_cuda: bool
-    _af: bool
     shaderc: bool
     target: Optional[str]
     universal: bool
@@ -148,7 +145,6 @@ class Config:
         self._all = hasattr(args, "all") and args.all
         self.release = hasattr(args, "release") and args.release
         self.universal = hasattr(args, "universal") and args.universal
-        self.skip_cuda = hasattr(args, "skip_cuda") and args.skip_cuda
         self.no_examples = hasattr(args, "no_examples") and args.no_examples
         self.cmake_extra = (
             args.cmake_extra.split(" ")
@@ -156,27 +152,12 @@ class Config:
             else None
         )
 
-        if self.is_macos():
-            self.cuda = False
-        else:
-            if self.is_cuda_available():
-                self.cuda = True
-            else:
-                self.cuda = False
-
-        if self.is_arrayfire_available():
-            self._af = True
-        else:
-            self._af = False
-
         if self.is_shaderc_available():
             self.shaderc = True
         else:
             self.shaderc = False
 
         if self.is_linux() and hasattr(args, "arch") and args.arch is not None:
-            self.cuda = False
-            self._af = False
             self.shaderc = False
             match args.arch:
                 case "arm32":
@@ -188,12 +169,6 @@ class Config:
                     sys.exit(-1)
         else:
             self.target = None
-
-        if self._all:
-            if not self.cuda:
-                warn("Skip building crates using CUDA")
-            if not self._af:
-                warn("Skip building crates using ArrayFire")
 
     def cargo_command_base(self, subcommand):
         command = []
@@ -214,10 +189,6 @@ class Config:
         features = "remote"
         if self._all:
             command.append("--all")
-            if not self.cuda:
-                command.append("--exclude=autd3-backend-cuda")
-            if not self._af:
-                command.append("--exclude=autd3-backend-arrayfire")
         command.append("--features")
         command.append(features)
         return command
@@ -227,10 +198,6 @@ class Config:
         features = "test-utilities remote"
         if self._all:
             command.append("--all")
-            if not self.cuda or self.skip_cuda:
-                command.append("--exclude=autd3-backend-cuda")
-            if not self._af:
-                command.append("--exclude=autd3-backend-arrayfire")
         command.append("--features")
         command.append(features)
         return command
@@ -240,8 +207,6 @@ class Config:
         command.append("--bins")
         features = "soem twincat"
         if self._all:
-            if self.cuda and not self.skip_cuda:
-                features += " cuda"
             features += " simulator remote_soem remote_twincat"
         command.append("--features")
         command.append(features)
@@ -270,10 +235,6 @@ class Config:
         ]
         if self.release:
             command.append("--release")
-        if not self.cuda or self.skip_cuda:
-            command.append("--exclude=autd3-backend-cuda")
-        if not self._af:
-            command.append("--exclude=autd3-backend-arrayfire")
         return command
 
     def cargo_build_capi_command(self, features=None):
@@ -282,8 +243,6 @@ class Config:
         if features is not None:
             command.append("--features")
             command.append(features)
-        if not self.cuda or self.skip_cuda:
-            command.append("--exclude=autd3capi-backend-cuda")
 
         if self.is_macos() and self.universal:
             command_aarch64 = command.copy()
@@ -298,8 +257,6 @@ class Config:
         command = self.cargo_command_base("test")
         if self._all:
             command.append("--all")
-            if not self.cuda or self.skip_cuda:
-                command.append("--exclude=autd3capi-backend-cuda")
         return command
 
     def cargo_clippy_capi_command(self):
@@ -321,12 +278,6 @@ class Config:
 
     def exe_ext(self):
         return ".exe" if self.is_windows() else ""
-
-    def is_cuda_available(self):
-        return shutil.which("nvcc") is not None
-
-    def is_arrayfire_available(self):
-        return env_exists("AF_PATH")
 
     def is_shaderc_available(self):
         shaderc_lib_name = (
@@ -547,8 +498,6 @@ def cpp_test(args):
         os.makedirs("build", exist_ok=True)
         with working_dir("build"):
             command = ["cmake", ".."]
-            if config.cuda and not config.skip_cuda:
-                command.append("-DENABLE_BACKEND_CUDA=ON")
             if config.cmake_extra is not None:
                 for cmd in config.cmake_extra:
                     command.append(cmd)
@@ -1035,8 +984,6 @@ def py_test(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
-        if config.cuda and not config.skip_cuda:
-            command.append("--test_cuda")
         subprocess.run(command).check_returncode()
 
 
@@ -1164,7 +1111,6 @@ def doc_test(args):
             "--exclude",
             "autd3-backend-arrayfire",
             "--exclude",
-            "autd3-backend-cuda",
             "--no-run",
         ]
         subprocess.run(command).check_returncode()
@@ -1560,11 +1506,6 @@ if __name__ == "__main__":
         parser_build.add_argument(
             "--no-examples", action="store_true", help="skip building examples"
         )
-        parser_build.add_argument(
-            "--skip-cuda",
-            action="store_true",
-            help="force disable cuda features in examples",
-        )
         parser_build.set_defaults(handler=rust_build)
 
         # lint (rust)
@@ -1576,9 +1517,6 @@ if __name__ == "__main__":
         # test (rust)
         parser_test = subparsers.add_parser("test", help="see `test -h`")
         parser_test.add_argument("--all", action="store_true", help="test all crates")
-        parser_test.add_argument(
-            "--skip-cuda", action="store_true", help="force skip cuda test"
-        )
         parser_test.add_argument("--release", action="store_true", help="release build")
         parser_test.set_defaults(handler=rust_test)
 
@@ -1595,9 +1533,6 @@ if __name__ == "__main__":
         # coverage (rust)
         parser_cov = subparsers.add_parser("cov", help="see `cov -h`")
         parser_cov.add_argument("--release", action="store_true", help="release build")
-        parser_cov.add_argument(
-            "--skip-cuda", action="store_true", help="force skip cuda test"
-        )
         parser_cov.set_defaults(handler=rust_coverage)
 
         # capi
@@ -1608,9 +1543,6 @@ if __name__ == "__main__":
         parser_capi_test = subparsers_capi.add_parser("test", help="see `capi test -h`")
         parser_capi_test.add_argument(
             "--all", action="store_true", help="test all crates"
-        )
-        parser_capi_test.add_argument(
-            "--skip-cuda", action="store_true", help="force skip cuda test"
         )
         parser_capi_test.add_argument(
             "--release", action="store_true", help="release build"
@@ -1648,9 +1580,6 @@ if __name__ == "__main__":
 
         # cpp test
         parser_cpp_test = subparsers_cpp.add_parser("test", help="see `cpp test -h`")
-        parser_cpp_test.add_argument(
-            "--skip-cuda", action="store_true", help="force skip cuda test"
-        )
         parser_cpp_test.add_argument(
             "--release", action="store_true", help="release build"
         )
@@ -1796,9 +1725,6 @@ if __name__ == "__main__":
         parser_py_test = subparsers_py.add_parser("test", help="see `python test -h`")
         parser_py_test.add_argument(
             "--release", action="store_true", help="release build"
-        )
-        parser_py_test.add_argument(
-            "--skip-cuda", action="store_true", help="force skip cuda test"
         )
         parser_py_test.set_defaults(handler=py_test)
 

@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,11 +16,6 @@ use std::io::{self, Write};
 
 use autd3::prelude::*;
 pub use autd3_gain_holo::*;
-
-#[cfg(feature = "cuda")]
-pub use autd3_backend_cuda::CUDABackend as Backend;
-#[cfg(not(feature = "cuda"))]
-pub use NalgebraBackend as Backend;
 
 use super::{
     audio_file::*, bessel::*, custom::*, flag::*, focus::*, group::*, holo::*, plane::*, stm::*,

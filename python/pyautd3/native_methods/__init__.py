@@ -4,7 +4,7 @@ Project: native_methods
 Created Date: 09/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 11/11/2023
+Last Modified: 27/11/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,6 @@ from .autd3capi_modulation_audio_file import NativeMethods as ModulationAudioFil
 from .autd3capi_link_simulator import NativeMethods as LinkSimulator
 from .autd3capi_link_twincat import NativeMethods as LinkTwincAT
 from .autd3capi_link_soem import NativeMethods as LinkSOEM
-from .autd3capi_backend_cuda import NativeMethods as BackendCUDA
 
 _PLATFORM = platform.system()
 _PREFIX = ""
@@ -53,9 +52,3 @@ if sys.platform == "win32":
     except FileNotFoundError:
         pass
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
-if sys.platform == "win32":
-    try:
-        os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
-    except KeyError:
-        pass
-BackendCUDA().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)

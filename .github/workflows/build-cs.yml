@@ -54,7 +54,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
 
       - name: Setup .NET Core
         if: needs.check.outputs.status
@@ -106,7 +105,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
 
       - name: Setup .NET Core
         if: needs.check.outputs.status

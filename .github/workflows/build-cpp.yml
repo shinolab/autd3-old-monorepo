@@ -52,7 +52,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
           shaderc: false
 
       - name: Rust cache
@@ -67,7 +66,7 @@ jobs:
         if: needs.check.outputs.status
       - name: Run C++ tests on ${{ matrix.os }}
         run: |
-          python3 build.py cpp test --release --skip-cuda --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+          python3 build.py cpp test --release --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
         if: needs.check.outputs.status
 
 
@@ -85,7 +84,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: 'ubuntu-latest'
           arch: 'arm32'
-          cuda: false
 
       - name: Rust cache
         if: needs.check.outputs.status
@@ -113,7 +111,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: 'ubuntu-latest'
           arch: 'aarch64'
-          cuda: false
 
       - name: Rust cache
         if: needs.check.outputs.status

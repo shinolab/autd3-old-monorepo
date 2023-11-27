@@ -12,10 +12,6 @@ inputs:
     description: 'arch'
     required: false
     default: ''
-  cuda:
-    description: 'use cuda'
-    required: false
-    default: false
   shaderc:
     description: 'use shaderc'
     required: false
@@ -32,22 +28,6 @@ runs:
       uses: arduino/setup-protoc@v2
       with:
         repo-token: ${{ inputs.github-token }}
-
-    - uses: Jimver/cuda-toolkit@v0.2.11
-      if: inputs.cuda && inputs.os == 'windows-latest'
-      with:
-        cuda: '12.2.0'
-        method: 'network'
-        sub-packages: '["nvcc", "cudart", "cublas_dev", "cusolver_dev"]'
-    - name: install cuda
-      shell: bash
-      if: inputs.cuda && inputs.os == 'ubuntu-latest'
-      run: |
-        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-        sudo dpkg -i cuda-keyring_1.1-1_all.deb
-        sudo apt-get update
-        sudo apt-get -y install cuda-nvcc-12-2 libcublas-dev-12-2 libcusolver-dev-12-2
-        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
 
     - name: install shaderc
       shell: pwsh

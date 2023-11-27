@@ -58,21 +58,19 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: true
           shaderc: false
 
       - name: Test src on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py build --release --all --no-examples
-          python3 build.py build --release --all --skip-cuda
-          python3 build.py test --release --all --skip-cuda
+          python3 build.py build --release --all
+          python3 build.py test --release --all
         shell: bash
 
       - name: Test capi on ${{ matrix.os }}
         if: needs.check-src.outputs.status
         run: |
-          python3 build.py capi test --release --all --skip-cuda
+          python3 build.py capi test --release --all
         shell: bash
 
   build-linux-arm32-src:
@@ -91,7 +89,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           arch: 'arm32'
-          cuda: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -119,7 +116,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
           arch: 'aarch64'
-          cuda: false
 
       - name: Rust cache
         if: needs.check-src.outputs.status
@@ -144,7 +140,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
-          cuda: true
           shaderc: false
 
       - name: Rust cache
