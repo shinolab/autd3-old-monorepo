@@ -4,7 +4,7 @@
  * Created Date: 17/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,27 +13,26 @@
 
 `timescale 1ns / 1ps
 module time_cnt_generator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var [63:0] SYS_TIME,
     input var SKIP_ONE_ASSERT,
-    output var [WIDTH-1:0] TIME_CNT,
+    output var [8:0] TIME_CNT,
     output var UPDATE
 );
-  bit [WIDTH-1:0] t_buf0, t_buf1, t;
-  bit update;
+  logic [8:0] t_buf0, t_buf1, t;
+  logic update;
 
-  assign t_buf0   = SYS_TIME[WIDTH-1:0];
+  assign t_buf0   = SYS_TIME[8:0];
 
   assign UPDATE   = update;
   assign TIME_CNT = t;
 
-  bit cross0;
+  logic cross0;
   assign cross0 = t_buf0 == 9'd0;
 
-  bit cross0_with_skip;
+  logic cross0_with_skip;
   assign cross0_with_skip = (t_buf0 == 9'd1) & SKIP_ONE_ASSERT;
 
   always_ff @(posedge CLK) begin

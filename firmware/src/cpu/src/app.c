@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,12 +29,9 @@
 #define FOCUS_STM_BUF_PAGE_SIZE (1 << FOCUS_STM_BUF_PAGE_SIZE_WIDTH)
 #define FOCUS_STM_BUF_PAGE_SIZE_MASK (FOCUS_STM_BUF_PAGE_SIZE - 1)
 
-#define GAIN_STM_BUF_PAGE_SIZE_WIDTH (5)
+#define GAIN_STM_BUF_PAGE_SIZE_WIDTH (6)
 #define GAIN_STM_BUF_PAGE_SIZE (1 << GAIN_STM_BUF_PAGE_SIZE_WIDTH)
 #define GAIN_STM_BUF_PAGE_SIZE_MASK (GAIN_STM_BUF_PAGE_SIZE - 1)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH (6)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE (1 << GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH)
-#define GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK (GAIN_STM_LEGACY_BUF_PAGE_SIZE - 1)
 
 #define WDT_CNT_MAX (1000)
 
@@ -103,7 +100,7 @@ static volatile bool_t _read_fpga_info;
 static volatile uint32_t _mod_cycle = 0;
 
 static volatile uint32_t _stm_cycle = 0;
-static volatile uint16_t _gain_stm_mode = GAIN_STM_MODE_DUTY_PHASE_FULL;
+static volatile uint16_t _gain_stm_mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
 
 static volatile uint8_t _fpga_flags = 0;
 static volatile uint16_t _fpga_flags_internal = 0;
@@ -178,8 +175,11 @@ void write_mod(const volatile uint8_t* p_data) {
 }
 
 void config_silencer(const volatile uint8_t* p_data) {
-  uint16_t step = *((const uint16_t*)&p_data[0]);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
+  const uint16_t* p = (const uint16_t*)&p_data[0];
+  uint16_t step_intensity = p[0];
+  uint16_t step_phase = p[1];
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_INTENSITY_STEP, step_intensity);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_PHASE_STEP, step_phase);
 }
 
 static void write_mod_delay(const volatile uint8_t* p_data) {
@@ -187,23 +187,9 @@ static void write_mod_delay(const volatile uint8_t* p_data) {
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_DELAY_BASE, delay, TRANS_NUM);
 }
 
-inline static void write_duty_filter(const volatile uint8_t* p_data) {
-  const uint16_t* filter = (const uint16_t*)p_data;
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_DUTY_BASE, filter, TRANS_NUM);
-}
-
-inline static void write_phase_filter(const volatile uint8_t* p_data) {
-  const uint16_t* filter = (const uint16_t*)p_data;
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_PHASE_BASE, filter, TRANS_NUM);
-}
-
-static void write_filter(const volatile uint8_t* p_data) {
-  uint8_t flag = p_data[1];
-  if (flag == FILTER_ADD_DUTY) {
-    write_duty_filter(p_data + 2);
-  } else if (flag == FILTER_ADD_PHASE) {
-    write_phase_filter(p_data + 2);
-  }
+static void configure_debug(const volatile uint8_t* p_data) {
+  uint8_t idx = p_data[0];
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, idx);
 }
 
 static void write_gain(const volatile uint8_t* p_data) {
@@ -363,10 +349,10 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
   }
 
   src = src_base;
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
 
   switch (_gain_stm_mode) {
-    case GAIN_STM_MODE_DUTY_PHASE_FULL:
+    case GAIN_STM_MODE_INTENSITY_PHASE_FULL:
       dst = &base[addr];
       _stm_cycle += 1;
       cnt = TRANS_NUM;
@@ -380,7 +366,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) *dst++ = 0xFF00 | (((*src++) >> 8) & 0x00FF);
@@ -398,7 +384,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 1) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -410,7 +396,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 2) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -422,7 +408,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
 
       if (send > 3) {
         src = src_base;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) << 8);
+        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) << 8);
         dst = &base[addr];
         cnt = TRANS_NUM;
         while (cnt--) {
@@ -436,8 +422,7 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
       break;
   }
 
-  if ((_stm_cycle & GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) == 0)
-    change_stm_page((_stm_cycle & ~GAIN_STM_LEGACY_BUF_PAGE_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_PAGE_SIZE_WIDTH);
+  if ((_stm_cycle & GAIN_STM_BUF_PAGE_SIZE_MASK) == 0) change_stm_page((_stm_cycle & ~GAIN_STM_BUF_PAGE_SIZE_MASK) >> GAIN_STM_BUF_PAGE_SIZE_WIDTH);
 
   if ((flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
     _fpga_flags_internal |= CTL_FLAG_OP_MODE;
@@ -455,7 +440,8 @@ static void clear(void) {
   _fpga_flags_internal = 0;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_INTENSITY_STEP, 256);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_PHASE_STEP, 256);
 
   _stm_cycle = 0;
 
@@ -463,13 +449,11 @@ static void clear(void) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
   bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_4k, sizeof(uint32_t) >> 1);
   change_mod_page(0);
-  bram_write(BRAM_SELECT_MOD, 0, 0x0000);
+  bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
 
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
 
   bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_DELAY_BASE, 0x0000, TRANS_NUM);
-  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_DUTY_BASE, 0x0000, TRANS_NUM);
-  bram_set(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FILTER_PHASE_BASE, 0x0000, TRANS_NUM);
 }
 
 inline static uint16_t get_cpu_version(void) { return CPU_VERSION_MAJOR; }
@@ -508,10 +492,6 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
           _read_fpga_info = false;
           _rx_data = get_fpga_version_minor() & 0xFF;
           break;
-        case INFO_TYPE_FPGA_FUNCTIONS:
-          _read_fpga_info = false;
-          _rx_data = get_fpga_version() >> 8;
-          break;
         case INFO_TYPE_CLEAR:
           if (_read_fpga_info) {
             _rx_data = read_fpga_info();
@@ -541,8 +521,8 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
     case TAG_GAIN_STM:
       write_gain_stm(p_data);
       break;
-    case TAG_FILTER:
-      write_filter(p_data);
+    case TAG_DEBUG:
+      configure_debug(p_data + 2);
       break;
   }
 }

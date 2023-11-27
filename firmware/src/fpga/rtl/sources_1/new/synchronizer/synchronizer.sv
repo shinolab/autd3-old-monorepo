@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,34 +24,34 @@ module synchronizer (
 
   localparam int ADDSUB_LATENCY = 6;
 
-  localparam bit [31:0] ECAT_SYNC_BASE = 32'd500000;  // ns
-  localparam bit [17:0] ECAT_SYNC_BASE_CNT = 18'd10240;  // 20.48MHz * 500000ns
+  localparam logic [31:0] ECAT_SYNC_BASE = 32'd500000;  // ns
+  localparam logic [17:0] ECAT_SYNC_BASE_CNT = 18'd10240;  // 20.48MHz * 500000ns
 
-  bit [63:0] ecat_sync_time;
-  bit [63:0] lap;
-  bit [31:0] lap_rem_unused;
-  bit [63:0] sync_time_raw;
-  bit [13:0] sync_time_raw_unused;
-  bit [63:0] sync_time;
+  logic [63:0] ecat_sync_time;
+  logic [63:0] lap;
+  logic [31:0] lap_rem_unused;
+  logic [63:0] sync_time_raw;
+  logic [13:0] sync_time_raw_unused;
+  logic [63:0] sync_time;
 
   assign sync_time = sync_time_raw;
 
-  bit [2:0] sync_tri = 0;
-  bit sync;
+  logic [2:0] sync_tri = 0;
+  logic sync;
   assign SYNC = sync;
 
-  bit [63:0] sys_time = 0;
-  bit [63:0] next_sync_time = 0;
-  bit signed [64:0] sync_time_diff = 0;
-  bit [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_cnt = ADDSUB_LATENCY + 1;
-  bit [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_next_cnt = ADDSUB_LATENCY + 1;
-  bit set;
-  bit [17:0] next_sync_cnt = 0;
+  logic [63:0] sys_time = 0;
+  logic [63:0] next_sync_time = 0;
+  logic signed [64:0] sync_time_diff = 0;
+  logic [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_cnt = ADDSUB_LATENCY + 1;
+  logic [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_next_cnt = ADDSUB_LATENCY + 1;
+  logic set;
+  logic [17:0] next_sync_cnt = 0;
 
-  bit signed [64:0] a_diff, b_diff, s_diff;
-  bit signed [64:0] a_next, b_next, s_next;
+  logic signed [64:0] a_diff, b_diff, s_diff;
+  logic signed [64:0] a_next, b_next, s_next;
 
-  bit skip_one_assert;
+  logic skip_one_assert;
   assign SKIP_ONE_ASSERT = skip_one_assert;
 
   div_64_32 div_64_32_lap (
