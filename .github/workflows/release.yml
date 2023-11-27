@@ -120,6 +120,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
@@ -136,10 +141,6 @@ jobs:
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
       - name: Build project x64
         run: |
           python3 build.py cpp build --release --no-examples
@@ -504,6 +505,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Setup
         uses: ./.github/actions/setup-build
         with:
