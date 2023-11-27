@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,6 @@ pub struct Transducer {
     pos: Vector3,
     rot: UnitQuaternion,
     mod_delay: u16,
-    amp_filter: float,
-    phase_filter: float,
 }
 
 impl Transducer {
@@ -36,8 +34,6 @@ impl Transducer {
             pos,
             rot,
             mod_delay: 0,
-            amp_filter: 0.,
-            phase_filter: 0.,
         }
     }
 
@@ -104,26 +100,6 @@ impl Transducer {
         self.mod_delay = delay;
     }
 
-    /// Get the amp filter
-    pub const fn amp_filter(&self) -> float {
-        self.amp_filter
-    }
-
-    /// Set the amp filter
-    pub fn set_amp_filter(&mut self, value: float) {
-        self.amp_filter = value;
-    }
-
-    /// Set the amp filter
-    pub const fn phase_filter(&self) -> float {
-        self.phase_filter
-    }
-
-    /// Set the phase filter
-    pub fn set_phase_filter(&mut self, value: float) {
-        self.phase_filter = value;
-    }
-
     /// Get the wavelength of the transducer
     pub fn wavelength(&self, sound_speed: float) -> float {
         sound_speed / ULTRASOUND_FREQUENCY
@@ -187,22 +163,6 @@ mod tests {
         assert_eq!(0, tr.mod_delay());
         tr.set_mod_delay(1);
         assert_eq!(1, tr.mod_delay());
-    }
-
-    #[test]
-    fn amp_filter() {
-        let mut tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(0.0, tr.amp_filter());
-        tr.set_amp_filter(1.0);
-        assert_eq!(1.0, tr.amp_filter());
-    }
-
-    #[test]
-    fn phase_filter() {
-        let mut tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(0.0, tr.phase_filter());
-        tr.set_phase_filter(1.0);
-        assert_eq!(1.0, tr.phase_filter());
     }
 
     #[test]
