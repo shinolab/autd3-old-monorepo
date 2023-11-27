@@ -91,7 +91,7 @@ use autd3_link_twincat::TwinCAT;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #     .open_with(
 TwinCAT::builder()
 # ).await?;
@@ -176,7 +176,7 @@ use autd3_link_twincat::RemoteTwinCAT;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #      .open_with(
 RemoteTwinCAT::builder("172.16.99.111.1.1")
             .with_server_ip("172.16.99.104")

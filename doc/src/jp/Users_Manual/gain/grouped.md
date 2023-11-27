@@ -14,7 +14,7 @@
 # let y = 0.;
 # let z = 0.;
 # let gain : autd3::gain::Group<_, _, _> =
-Group::new(|dev, tr| match tr.local_idx() {
+Group::new(|dev, tr| match tr.tr_idx() {
                 0..=100 => Some("null"),
                 101.. => Some("focus"),
                 _ => None,

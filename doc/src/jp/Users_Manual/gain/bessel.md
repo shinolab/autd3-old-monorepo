@@ -43,8 +43,7 @@ g = Bessel([x, y, z], [nx, ny, nz], theta)
 
 ## 振幅の指定
 
-`with_amp`にて, 0-1の規格化された音圧振幅を指定できる.
-$\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
+`with_intensity`にて, 出力振幅を指定できる.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -60,13 +59,13 @@ $\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち,
 # let nz = 0.;
 # let theta = 0.;
 let g = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta)
-            .with_amp(1.);
+            .with_intensity(EmitIntensity::MAX);
 # }
 ```
 
 ```cpp
 const auto g = autd3::gain::Bessel(autd3::Vector3(x, y, z), theta)
-                .with_amp(1.);
+                .with_intensity(EmitIntensity::MAX);
 ```
 
 ```cs

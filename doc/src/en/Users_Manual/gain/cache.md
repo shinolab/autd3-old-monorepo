@@ -10,7 +10,7 @@ You can cache the calculation result of `Gain` by `with_cache` method.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #     .open_with(autd3::link::Nop::builder()).await?;
 # let g = Null::new();
 // g is some Gain

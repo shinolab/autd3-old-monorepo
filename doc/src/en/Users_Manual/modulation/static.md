@@ -39,7 +39,7 @@ The value is clamped to $\[0, 1\]$.
 
 # #[allow(unused_variables)]
 # fn main()  {
-let m = autd3::modulation::Static::new().with_amp(1.);
+let m = autd3::modulation::Static::new().with_intensity(EmitIntensity::MAX);
 # }
 ```
 

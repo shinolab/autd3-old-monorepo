@@ -23,8 +23,7 @@ use autd3_link_simulator::Simulator;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 Simulator::builder(8080)
 # ).await?;
@@ -63,8 +62,7 @@ use autd3_link_simulator::Simulator;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 Simulator::builder(8080)
     .with_server_ip("127.0.0.1".parse()?)
@@ -110,8 +108,7 @@ use autd3_link_simulator::Simulator;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(Simulator::builder(8080)).await?;
 autd.link.update_geometry(&autd.geometry).await?;
 # Ok(())

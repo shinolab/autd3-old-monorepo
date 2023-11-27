@@ -30,7 +30,7 @@ impl Gain for FocalPoint {
     fn calc(&self, geometry: &Geometry, filter: GainFilter) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |dev, tr| Drive {
             phase: (tr.position() - self.position).norm() * tr.wavelength(dev.sound_speed),
-            amp: EmitIntensity::MAX,
+            intensity: EmitIntensity::MAX,
         }))
     }
 }
