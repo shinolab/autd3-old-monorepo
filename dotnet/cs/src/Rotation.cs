@@ -4,7 +4,7 @@
  * Created Date: 26/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,6 +37,22 @@ namespace AUTD3Sharp
 
         public float_t Radian { get; }
 
+        public class UnitRadian
+        {
+            internal UnitRadian() { }
+            public static Angle operator *(float_t a, UnitRadian b) => Angle.FromRadian(a);
+        }
+        public class UnitDegree
+        {
+            internal UnitDegree() { }
+            public static Angle operator *(float_t a, UnitDegree b) => Angle.FromDegree(a);
+        }
+
+        public static class Units
+        {
+            public static UnitRadian Rad { get; } = new UnitRadian();
+            public static UnitDegree Deg { get; } = new UnitDegree();
+        }
 
         private Angle(float_t value)
         {
