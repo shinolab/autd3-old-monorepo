@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2023
+// Last Modified: 27/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,26 +62,6 @@ TEST(Internal_Geometry, TransducerModDelay) {
       ASSERT_EQ(tr.mod_delay(), 0);
       tr.set_mod_delay(1);
       ASSERT_EQ(tr.mod_delay(), 1);
-    }
-  }
-}
-
-TEST(Internal_Geometry, TransducerAmpFilter) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.amp_filter(), 0);
-      tr.set_amp_filter(-1);
-      ASSERT_EQ(tr.amp_filter(), -1);
-    }
-  }
-}
-
-TEST(Internal_Geometry, TransducerPhaseFilter) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.phase_filter(), 0);
-      tr.set_phase_filter(-autd3::internal::pi);
-      ASSERT_EQ(tr.phase_filter(), -autd3::internal::pi);
     }
   }
 }

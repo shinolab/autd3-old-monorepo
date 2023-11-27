@@ -158,18 +158,6 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDTransducerModDelaySet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDTransducerModDelaySet(TransducerPtr tr, ushort delay);
 
-        [DllImport(__DllName, EntryPoint = "AUTDTransducerAmpFilterGet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern float AUTDTransducerAmpFilterGet(TransducerPtr tr);
-
-        [DllImport(__DllName, EntryPoint = "AUTDTransducerAmpFilterSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDTransducerAmpFilterSet(TransducerPtr tr, float value);
-
-        [DllImport(__DllName, EntryPoint = "AUTDTransducerPhaseFilterGet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern float AUTDTransducerPhaseFilterGet(TransducerPtr tr);
-
-        [DllImport(__DllName, EntryPoint = "AUTDTransducerPhaseFilterSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDTransducerPhaseFilterSet(TransducerPtr tr, float value);
-
         [DllImport(__DllName, EntryPoint = "AUTDControllerBuilder", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ControllerBuilderPtr AUTDControllerBuilder();
 

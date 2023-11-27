@@ -231,14 +231,6 @@ void AUTDTransducerDirectionZ(TransducerPtr tr, double *dir);
 
 void AUTDTransducerModDelaySet(TransducerPtr tr, uint16_t delay);
 
-[[nodiscard]] double AUTDTransducerAmpFilterGet(TransducerPtr tr);
-
-void AUTDTransducerAmpFilterSet(TransducerPtr tr, double value);
-
-[[nodiscard]] double AUTDTransducerPhaseFilterGet(TransducerPtr tr);
-
-void AUTDTransducerPhaseFilterSet(TransducerPtr tr, double value);
-
 [[nodiscard]] LinkPtr AUTDLinkGet(ControllerPtr cnt);
 
 [[nodiscard]] LinkAuditBuilderPtr AUTDLinkAudit();

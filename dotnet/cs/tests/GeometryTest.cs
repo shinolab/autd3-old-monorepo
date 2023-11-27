@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -291,36 +291,6 @@ public class GeometryTest
                 Assert.Equal(0, tr.ModDelay);
                 tr.ModDelay = 1;
                 Assert.Equal(1, tr.ModDelay);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task TestTransducerAmpFilter()
-    {
-        var autd = await AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(0, tr.AmpFilter);
-                tr.AmpFilter = -1;
-                Assert.Equal(-1, tr.AmpFilter);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task TestTransducerPhaseFilter()
-    {
-        var autd = await AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(0, tr.PhaseFilter);
-                tr.PhaseFilter = -1;
-                Assert.Equal(-1, tr.PhaseFilter);
             }
         }
     }

@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -80,28 +80,6 @@ pub unsafe extern "C" fn AUTDTransducerModDelayGet(tr: TransducerPtr) -> u16 {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerModDelaySet(tr: TransducerPtr, delay: u16) {
     cast_mut!(tr.0, Transducer).set_mod_delay(delay)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerAmpFilterGet(tr: TransducerPtr) -> float {
-    cast!(tr.0, Transducer).amp_filter()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDTransducerAmpFilterSet(tr: TransducerPtr, value: float) {
-    cast_mut!(tr.0, Transducer).set_amp_filter(value)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerPhaseFilterGet(tr: TransducerPtr) -> float {
-    cast!(tr.0, Transducer).phase_filter()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDTransducerPhaseFilterSet(tr: TransducerPtr, value: float) {
-    cast_mut!(tr.0, Transducer).set_phase_filter(value)
 }
 
 #[cfg(test)]
