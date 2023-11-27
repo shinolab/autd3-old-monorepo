@@ -1108,9 +1108,6 @@ def doc_test(args):
             "--all",
             "--features",
             "remote",
-            "--exclude",
-            "autd3-backend-arrayfire",
-            "--exclude",
             "--no-run",
         ]
         subprocess.run(command).check_returncode()

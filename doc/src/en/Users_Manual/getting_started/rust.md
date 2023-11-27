@@ -25,9 +25,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Make a controller to control AUTD
     let mut autd = Controller::builder()
         // Configure the devices
-        // The first argument of AUTD3::new is position, and the second argument is rotation
-        // Here, the device is placed at the origin and does not rotate
-        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+        // The argument of AUTD3::new is position
+        // Here, the device is placed at the origin
+        .add_device(AUTD3::new(Vector3::zeros()))
         // Open controller with SOEM link
         // The callback specified by with_on_lost is called when SOEM loses the device
         .open_with(SOEM::builder().with_on_lost(|msg| {

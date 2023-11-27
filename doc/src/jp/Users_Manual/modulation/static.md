@@ -40,12 +40,12 @@ $\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち,
 
 # #[allow(unused_variables)]
 # fn main()  {
-let m = autd3::modulation::Static::new().with_amp(1.);
+let m = autd3::modulation::Static::new().with_intensity(EmitIntensity::MAX);
 # }
 ```
 
 ```cpp
-const auto m = autd3::modulation::Static().with_amp(1.);
+const auto m = autd3::modulation::Static().with_intensity(EmitIntensity::MAX);
 ```
 
 ```cs

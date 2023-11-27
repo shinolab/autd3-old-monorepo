@@ -9,7 +9,7 @@ use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let m = Sine::new(150).with_transform(|i, d| (d - 0.5).abs() + 0.5);
+let m = Sine::new(150).with_transform(|i, d| EmitIntensity::new(d.value() / 2));
 # }
 ```
 
@@ -25,4 +25,4 @@ var m = new Sine(150).WithTransform((i, d) => Math.Abs(d - 0.5) + 0.5);
 m = Sine(150).with_transform(lambda i, d: abs(d - 0.5) + 0.5)
 ```
 
-`with_transform` takes `Fn(usize, f64) -> f64` as an argument, where the first argument is the index and the second argument is the original modulation data.
+`with_transform` takes `Fn(usize, EmitIntensity) -> EmitIntensity` as an argument, where the first argument is the index and the second argument is the original modulation data.

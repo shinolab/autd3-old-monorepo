@@ -31,7 +31,7 @@ use autd3_link_soem::SOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_ifname("")
@@ -79,7 +79,7 @@ use autd3_link_soem::SOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_state_check_interval(std::time::Duration::from_millis(100))
@@ -144,7 +144,7 @@ use autd3_link_soem::SOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_on_lost(|msg| {
@@ -210,7 +210,7 @@ use autd3_link_soem::SOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync0_cycle(2)
@@ -261,7 +261,7 @@ use autd3_link_soem::SOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_timer_strategy(TimerStrategy::BusyWait)
@@ -316,7 +316,7 @@ use autd3_link_soem::{SOEM, SyncMode};
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 SOEM::builder()
     .with_sync_mode(SyncMode::DC)
@@ -392,7 +392,7 @@ use autd3_link_soem::RemoteSOEM;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #            .open_with(
 RemoteSOEM::builder("172.16.99.104:8080".parse()?)
 # ).await?;

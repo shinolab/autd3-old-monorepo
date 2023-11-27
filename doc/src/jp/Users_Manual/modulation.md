@@ -22,29 +22,27 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
   * [Fourier](./modulation/fourier.md)
-* [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
 * [RawPCM](./modulation/rawpcm.md)
 * [Cache](./modulation/cache.md)
 * [RadiationPressure](./modulation/radiation.md)
-* [FIR](./modulation/fir.md)
 * [Transform](./modulation/transform.md)
 
 ## Modulationの共通API
 
-### Sampling周波数
+### Sampling設定
 
-`sampling_frequency`でサンプリング周波数を取得できる.
-デフォルトは$\SI{4}{kHz}$である.
+`sampling_config`でサンプリング設定を取得できる.
+デフォルトのサンプリング周波数は$\SI{4}{kHz}$である.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
-# let m = autd3::modulation::SineLegacy::new(150.);
-let fs = m.sampling_frequency();
+# let m = autd3::modulation::Sine::new(150);
+let fs = m.sampling_config().frequency();
 # }
 ```
 
@@ -60,16 +58,17 @@ var fs = m.SamplingFrequency;
 fs = m.sampling_frequency
 ```
 
-また, 一部の`Modulation`は`with_sampling_frequency`でサンプリング周波数を設定できる.
-ただし, `Modulation`の制約上, 必ずしも指定したサンプリング周波数になるとは限らない.
+また, 一部の`Modulation`は`with_sampling_config`でサンプリングを設定できる.
+ただし, `Modulation`の制約上, 必ずしも指定した設定になるとは限らない.
 
 - e.g.,
   ```rust,edition2021
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main() {
-  let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
+  # fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let m = autd3::modulation::Sine::new(150).with_sampling_config(SamplingConfiguration::new_with_frequency(4e3)?);
+  Ok(())
   # }
   ```
 
@@ -85,58 +84,6 @@ fs = m.sampling_frequency
   m = Sine(150).with_sampling_frequency(4e3)
   ```
 
-### Sampling周波数分周比
-
-`sampling_frequency_division`でサンプリング周波数の分周比$N$を取得できる.
-
-サンプリング周波数の基本周波数は$\clkf$である.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let m = autd3::modulation::SineLegacy::new(150.);
-let div = m.sampling_frequency_division();
-# }
-```
-
-```cpp
-const auto div = m.sampling_frequency_division();
-```
-
-```cs
-var div = m.SamplingFrequencyDivision;
-```
-
-```python
-div = m.sampling_frequency_division
-```
-
-また, 一部の`Modulation`は`with_sampling_frequency_division`でサンプリング周波数分周比を設定できる.
-
-- e.g.,
-  ```rust,edition2021
-  # extern crate autd3;
-  # use autd3::prelude::*;
-  # #[allow(unused_variables)]
-  # fn main() {
-  let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
-  # }
-  ```
-
-  ```cpp
-  const auto m = autd3::modulation::Sine(150).with_sampling_frequency_division(5120);
-  ```
-
-  ```cs
-  var m = new Sine(150).WithSamplingFrequencyDivision(5120);
-  ```
-
-  ```python
-  m = Sine(150).with_sampling_frequency_division(5120)
-  ```
-
 ### 変調データサイズ
 
 変調データサイズは以下のように取得する.
@@ -146,7 +93,7 @@ div = m.sampling_frequency_division
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let m = autd3::modulation::SineLegacy::new(150.);
+# let m = autd3::modulation::Sine::new(150);
 let n = m.len();
 # Ok(())
 # }

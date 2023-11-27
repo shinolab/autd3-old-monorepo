@@ -16,7 +16,7 @@ Before using this, you need to set the `reads_fpga_info` flag in `Device`.
 # #[allow(unused_variables)]
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].reads_fpga_info = true;
 autd.send(UpdateFlags::new()).await?;
 
@@ -116,7 +116,7 @@ You can group the devices by using `group` function, and send different data to 
 # #[allow(unused_variables)]
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;

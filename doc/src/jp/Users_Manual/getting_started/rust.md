@@ -26,11 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // AUTDを操作するControllerの作成
     let mut autd = Controller::builder()
         // 接続しているデバイス情報の登録
-        // AUTD3::newの第1引数は位置, 第2引数は回転
+        // AUTD3::newの引数は位置
         // 位置は自分の設定した座標系におけるこのデバイスの位置を指定する
-        // 回転はZYZのオイラー角で指定する
-        // ここでは, デバイスは原点に置かれ, 回転もしていないとする
-        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+        // ここでは, デバイスは原点に置かれるする
+        .add_device(AUTD3::new(Vector3::zeros()))
         // SOEMリンクを使用してControllerをopenする
         // with_on_lostで指定したコールバックはSOEMがデバイスをロストしたときに呼ばれる 
         .open_with(SOEM::builder().with_on_lost(|msg| {

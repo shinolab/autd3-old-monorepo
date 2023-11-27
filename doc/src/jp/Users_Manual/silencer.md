@@ -64,8 +64,9 @@ autd.send(config)
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-# let step = 10;
-let config = Silencer::new(step);
+# let step_intensity = 256;
+# let step_phase = 256;
+let config = Silencer::new(step_intensity, step_phase);
 # Ok(())
 # }
 ```

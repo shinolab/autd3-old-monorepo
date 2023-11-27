@@ -30,8 +30,8 @@ Then, the code is as follows.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.)))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # Ok(())
 # }
@@ -75,8 +75,8 @@ Then, the code is as follows.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.)))
+    .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # Ok(())
 # }
@@ -115,8 +115,8 @@ Then, the code is as follows.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+    .add_device(AUTD3::new(Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH)).with_rotation(EulerAngle::ZYZ(0. * Rad, PI/2.0 * Rad, 0. * Rad)))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # Ok(())
 # }
@@ -164,8 +164,7 @@ You can get the number of devices and transducers by `num_devices` and `num_tran
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let num_dev = autd.geometry.num_devices();
 let num_tr = autd.geometry.num_transducers();
@@ -200,8 +199,7 @@ You can get the center of all devices with `center`.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let center = autd.geometry.center();
 # Ok(())
@@ -234,8 +232,7 @@ To access `Device`, use indexer.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let dev = &autd.geometry[0];
 # Ok(())
@@ -264,8 +261,7 @@ Or, you can use an iterator.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 for dev in &autd.geometry {
   // do something
@@ -310,8 +306,7 @@ If the flag is off, the device data will not be updated.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].enable = false;
 # Ok(())
@@ -346,8 +341,7 @@ The `sound_speed` member of `Geometry` represents this sound speed $v$.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].sound_speed = 340e3;
 # Ok(())
@@ -378,8 +372,7 @@ You can also set the sound speed from the temperature.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].set_sound_speed_from_temp(15.);
 # Ok(())
@@ -417,8 +410,7 @@ where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, a
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].attenuation = 0.;
 # Ok(())
@@ -456,8 +448,7 @@ To modify the position of the device added to `Geometry`, use the following func
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let t = Vector3::new(1., 0., 0.);
 let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
@@ -515,7 +506,7 @@ As shown in the figure below, the fan side is shorted to switch to Auto, the cen
 # #[allow(unused_variables)]
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].force_fan = true;
 # Ok(())
 # }
@@ -543,7 +534,7 @@ If you want to update only the flag, send `UpdateFlags`.
 # #[allow(unused_variables)]
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 autd.geometry[0].force_fan = true;
 autd.send(UpdateFlags::new()).await?;
 # Ok(())
@@ -585,8 +576,7 @@ To access `Transducer`, use the indexer.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let tr = &autd.geometry[0][0];
 # Ok(())
@@ -615,8 +605,7 @@ Or, you can use an iterator.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 for tr in &autd.geometry[0] {
   // do something
@@ -644,7 +633,7 @@ for tr in autd.geometry[0]:
 
 ## Transducer API
 
-### local_idx
+### tr_idx
 
 Get the local index of the transducer.
 
@@ -656,11 +645,10 @@ Get the local index of the transducer.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # let tr = &autd.geometry[0][0];
-let idx = tr.local_idx();
+let idx = tr.tr_idx();
 # Ok(())
 # }
 ```
@@ -690,8 +678,7 @@ The rotation is represented by a quaternion.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # let tr = &autd.geometry[0][0];
 let position = tr.position();
@@ -727,8 +714,7 @@ Get the direction of the transducer.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # let tr = &autd.geometry[0][0];
 let x_dir = tr.x_direction();
@@ -770,8 +756,7 @@ See [Modulation](./modulation.md) for more details.
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # let mut tr = &mut autd.geometry[0][0];
 let delay = tr.mod_delay();
@@ -795,52 +780,6 @@ delay = tr.mod_delay
 tr.mod_delay = 0
 ```
 
-### amp_filter/phase_filter
-
-Set/Get amplitude and phase filter.
-See [Filter](./filter.md) for details.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let mut tr = &mut autd.geometry[0][0];
-let amp_filter = tr.amp_filter();
-tr.set_amp_filter(-0.5);
-let phase_filter = tr.phase_filter();
-tr.set_phase_filter(PI);
-# Ok(())
-# }
-```
-
-```cpp
-const auto amp_filter = tr.amp_filter();
-tr.set_amp_filter(-0.5);
-const auto phase_filter = tr.phase_filter();
-tr.set_phase_filter(autd3::pi);
-```
-
-```cs
-var ampFilter = tr.AmpFilter;
-tr.AmpFilter = -0.5;
-var phaseFilter = tr.PhaseFilter;
-tr.PhaseFilter = Math.PI;
-```
-
-```python
-amp_filter = tr.amp_filter
-tr.amp_filter = -0.5
-phase_filter = tr.phase_filter
-tr.phase_filter = math.pi
-```
-
 ### wavelength/wavenumber
 
 Get the wavelength and wavenumber of the transducer.
@@ -855,8 +794,7 @@ You need to pass the speed of sound as an argument to `wavelength` and `wavenumb
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-#     .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH), Vector3::new(0., PI/2.0, 0.)))
+#     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 # let sound_speed = autd.geometry[0].sound_speed;
 # let mut tr = &mut autd.geometry[0][0];

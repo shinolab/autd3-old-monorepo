@@ -16,19 +16,19 @@ use autd3_driver::derive::prelude::*;
 
 #[derive(Modulation, Clone, Copy)]
 pub struct Burst {
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Burst {
     pub fn new() -> Self {
-        Self { freq_div: 5120 }
+        Self { config: SamplingConfiguration::new_with_frequency(4e3).unwrap() }
     }
 }
 
 impl Modulation for Burst {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok((0..4000)
-            .map(|i| if i == 3999 { 1.0 } else { 0.0 })
+            .map(|i| if i == 3999 { EmitIntensity::MAX } else { EmitIntensity::MIN })
             .collect())
     }
 }

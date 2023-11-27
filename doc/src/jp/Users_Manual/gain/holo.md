@@ -4,7 +4,6 @@
 多焦点を生成するアルゴリズムが幾つか提案されており, SDKには以下のアルゴリズムが実装されている.
 
 * `SDP` - Semidefinite programming, 井上らの論文[^inoue2015]に基づく
-* `EVP` - Eigen value decomposition, Longらの論文[^long2014]に基づく
 * `LSS` - Linear Synthesis Scheme 単一焦点解の重ね合わせ
 * `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
@@ -23,7 +22,7 @@ SDKには以下の`Backend`が用意されている
 # extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Pascal};
 
 # #[allow(unused_variables)]
 # #[tokio::main]
@@ -37,8 +36,8 @@ use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
 let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
-      .add_focus(Vector3::new(x1, y1, z1), 1.)
-      .add_focus(Vector3::new(x2, y2, z2), 1.);
+      .add_focus(Vector3::new(x1, y1, z1), 5e3 * Pascal)
+      .add_focus(Vector3::new(x2, y2, z2), 5e3 * Pascal);
 # Ok(())
 # }
 ```
@@ -77,9 +76,9 @@ g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 各アルゴリズムの計算結果の振幅は最終的に振動子が出力できる範囲に制限する必要がある.
 これは`with_constraint`で制御でき, 以下の4つのいずれかを指定する必要がある.
 
-- DontCare: 何もケアしない. (これは, 結局$\[0, 1\]$の範囲にクランプするのに等しい.)
+- DontCare: 何もケアしない.
 - Normalize: 振幅の最大値ですべての振動子の振幅を割り, 規格化する.
-- Uniform: すべての振動子の振幅を指定した値にする. ($\[0, 1\]$の範囲外の値は$\[0, 1\]$の範囲にクランプされる.)
+- Uniform: すべての振動子の振幅を指定した値にする.
 - Clamp: 振幅を指定の範囲にクランプする.
 
 ```rust,edition2021
@@ -87,7 +86,7 @@ g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
 # extern crate tokio;
 # extern crate autd3_gain_holo;
 # use autd3::prelude::*;
-use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
+use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, EmissionConstraint };
 
 # #[allow(unused_variables)]
 # #[tokio::main]
@@ -101,7 +100,7 @@ use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Constraint};
 let backend = NalgebraBackend::new()?;
 
 let g = GSPAT::new(backend)
-      .with_constraint(Constraint::Uniform(EmitIntensity::MAX));
+      .with_constraint(EmissionConstraint ::Uniform(EmitIntensity::MAX));
 # Ok(())
 # }
 ```
@@ -132,7 +131,7 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
     # extern crate tokio;
     # extern crate autd3_gain_holo;
     # use autd3::prelude::*;
-    # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT};
+    # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Pascal};
     # #[allow(unused_variables)]
     # #[tokio::main]
     # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -144,8 +143,8 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
     # let z2 = 0.;
     # let backend = NalgebraBackend::new()?;
     let g = GSPAT::new(backend).with_repeat(100)
-    #    .add_focus(Vector3::new(x1, y1, z1), 1.)
-    #    .add_focus(Vector3::new(x2, y2, z2), 1.);
+    #    .add_focus(Vector3::new(x1, y1, z1), 5e3 * Pascal)
+    #    .add_focus(Vector3::new(x2, y2, z2), 5e3 * Pascal);
     # Ok(())
     # }
     ```
@@ -165,8 +164,6 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
 各パラメータの詳細はそれぞれの論文を参照されたい.
 
 [^inoue2015]: Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
-
-[^long2014]: Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
 
 [^marzo2019]: Marzo, Asier, and Bruce W. Drinkwater. "Holographic acoustic tweezers." Proceedings of the National Academy of Sciences 116.1 (2019): 84-89.
 

@@ -21,28 +21,26 @@ The SDK has `Modulation` by default to generate several types of AM.
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
   * [Fourier](./modulation/fourier.md)
-* [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
 * [RawPCM](./modulation/rawpcm.md)
 * [Cache](./modulation/cache.md)
 * [RadiationPressure](./modulation/radiation.md)
-* [FIR](./modulation/fir.md)
 * [Transform](./modulation/transform.md)
 
 ## Modulation common API
 
-### Sampling frequency
+### Sampling configuration
 
-You can get the sampling frequency with `sampling_frequency`.
+You can get the sampling frequency with `sampling_config`.
 
 ```rust,edition2021
 # extern crate autd3;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {
-# let m = autd3::modulation::SineLegacy::new(150.);
-let fs = m.sampling_frequency();
+# let m = autd3::modulation::Sine::new(150);
+let fs = m.sampling_config().frequency();
 # }
 ```
 
@@ -58,7 +56,7 @@ var fs = m.SamplingFrequency;
 fs = m.sampling_frequency
 ```
 
-Some `Modulation` can set the sampling frequency with `with_sampling_frequency`.
+Some `Modulation` can set the sampling configuration with `with_sampling_config`.
 However, due to the constraints of `Modulation`, the sampling frequency may not be exactly the specified value.
 
 - e.g.,
@@ -66,8 +64,9 @@ However, due to the constraints of `Modulation`, the sampling frequency may not 
   # extern crate autd3;
   # use autd3::prelude::*;
   # #[allow(unused_variables)]
-  # fn main() {
-  let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
+  # fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let m = autd3::modulation::Sine::new(150).with_sampling_config(SamplingConfiguration::new_with_frequency(4e3)?);
+  Ok(())
   # }
   ```
 
@@ -83,56 +82,6 @@ However, due to the constraints of `Modulation`, the sampling frequency may not 
   m = Sine(150).with_sampling_frequency(4e3)
   ```
 
-### Sampling frequency division
-
-You can get the sampling frequency division $N$ with `sampling_frequency_division`.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let m = autd3::modulation::SineLegacy::new(150.);
-let div = m.sampling_frequency_division();
-# }
-```
-
-```cpp
-const auto div = m.sampling_frequency_division();
-```
-
-```cs
-var div = m.SamplingFrequencyDivision;
-```
-
-```python
-div = m.sampling_frequency_division
-```
-
-Some `Modulation` can set the sampling frequency division with `with_sampling_frequency_division`.
-
-- e.g.,
-  ```rust,edition2021
-  # extern crate autd3;
-  # use autd3::prelude::*;
-  # #[allow(unused_variables)]
-  # fn main() {
-  let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
-  # }
-  ```
-
-  ```cpp
-  const auto m = autd3::modulation::Sine(150).with_sampling_frequency_division(5120);
-  ```
-
-  ```cs
-  var m = new Sine(150).WithSamplingFrequencyDivision(5120);
-  ```
-
-  ```python
-  m = Sine(150).with_sampling_frequency_division(5120)
-  ```
-
 ### Modulation data size
 
 The modulation data size can be obtained as follows.
@@ -142,7 +91,7 @@ The modulation data size can be obtained as follows.
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let m = autd3::modulation::SineLegacy::new(150.);
+# let m = autd3::modulation::Sine::new(150);
 let n = m.len();
 # Ok(())
 # }

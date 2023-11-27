@@ -41,10 +41,9 @@ The first argument of the constructor is the apex of the virtual cone producing 
   <figcaption>Bessel beam[^hasegawa2017]</figcaption>
 </figure>
 
-## Set amplitude
+## Set intensity
 
-You can change amplitude by `with_amp` method.
-The amplitude is normalized to 0-1 (1 by default).
+You can change emission intensity by `with_intensity` method.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -60,7 +59,7 @@ The amplitude is normalized to 0-1 (1 by default).
 # let nz = 0.;
 # let theta = 0.;
 let g = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta)
-            .with_amp(1.);
+            .with_intensity(EmitIntensity::MAX);
 # }
 ```
 

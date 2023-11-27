@@ -11,7 +11,7 @@ THe following is an example of using `FocusSTM` to focus on a point $\SI{150}{mm
 # use autd3::prelude::*;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
 let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
@@ -19,7 +19,7 @@ let stm = FocusSTM::new(1.0).add_foci_from_iter((0..point_num).map(|i| {
     let theta = 2.0 * PI * i as float / point_num as float;
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
     center + p
-}));
+}))?;
 autd.send(stm).await?;
 # Ok(())
 # }
@@ -73,9 +73,9 @@ As a result, the specified frequency and the actual frequency are shifted.
 `frequency` can be used to check the actual frequency.
 
 
-## Specify the sampling frequency
+## Specify the sampling configuration
 
-You can specify the sampling frequency by `with_sampling_frequency` instead of frequency.
+You can specify the sampling frequency by `new_with_sampling_config` instead of frequency.
 
 ```rust,edition2021
 # extern crate autd3;
@@ -83,8 +83,8 @@ You can specify the sampling frequency by `with_sampling_frequency` instead of f
 # use autd3::prelude::*;
 # #[tokio::main]
 # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-let stm = FocusSTM::with_sampling_frequency(1.0);
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+let stm = FocusSTM::new_with_sampling_config(SamplingConfiguration::new_with_frequency(1.0)?);
 # Ok(())
 # }
 ```
@@ -101,32 +101,4 @@ var stm = FocusSTM.WithSamplingFrequency(1);
 from pyautd3.stm import FocusSTM
 
 stm = FocusSTM.with_sampling_frequency(1.0)
-```
-
-Also, you can specify the sampling frequency division ratio $N$ by `with_sampling_frequency_division`.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-let stm = FocusSTM::with_sampling_frequency_division(5120);
-# Ok(())
-# }
-```
-
-```cpp
-auto stm = autd3::FocusSTM::with_sampling_frequency_division(5120);
-```
-
-```cs
-var stm = FocusSTM.WithSamplingFrequencyDivision(5120);
-```
-
-```python
-from pyautd3.stm import FocusSTM
-
-stm = FocusSTM.with_sampling_frequency_division(5120)
 ```
