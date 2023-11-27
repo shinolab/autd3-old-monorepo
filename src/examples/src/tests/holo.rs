@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,8 +13,6 @@
 
 use autd3::prelude::*;
 use autd3_gain_holo::*;
-
-use super::test_runner::Backend;
 
 use colored::*;
 use std::io::{self, Write};
@@ -40,7 +38,7 @@ pub async fn holo<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     let mut s = String::new();
     io::stdin().read_line(&mut s)?;
 
-    let backend = Backend::new()?;
+    let backend = NalgebraBackend::new()?;
 
     let target_amp = 5e3 * autd.geometry.num_devices() as float * Pascal;
     match s.trim().parse::<usize>() {

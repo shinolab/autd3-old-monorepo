@@ -39,7 +39,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ubuntu-latest
-          cuda: true
           shaderc: false
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install cargo-llvm-cov
@@ -53,7 +52,7 @@ jobs:
 
       - name: Generate code coverage
         run: |
-          python build.py cov --skip-cuda
+          python build.py cov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:

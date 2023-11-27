@@ -53,7 +53,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           os: ${{ matrix.os }}
-          cuda: false
           shaderc: true
 
       - name: Rust cache

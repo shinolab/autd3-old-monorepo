@@ -22,8 +22,6 @@ def pytest_addoption(parser):
     parser.addoption("--test_soem", action="store_true", default=False, help="run soem tests")
     parser.addoption("--test_remote_soem", action="store_true", default=False, help="run remote soem tests")
 
-    parser.addoption("--test_cuda", action="store_true", default=False, help="run cuda tests")
-
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "simulator: mark test as simulator test")
@@ -31,7 +29,6 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "remote_twincat: mark test as remote twincat test")
     config.addinivalue_line("markers", "soem: mark test as soem test")
     config.addinivalue_line("markers", "remote_soem: mark test as remote soem test")
-    config.addinivalue_line("markers", "cuda: mark test as cuda test")
 
 
 def pytest_collection_modifyitems(session, config, items):
@@ -41,7 +38,6 @@ def pytest_collection_modifyitems(session, config, items):
         ("--test_remote_twincat", "remote_twincat"),
         ("--test_soem", "soem"),
         ("--test_remote_soem", "remote_soem"),
-        ("--test_cuda", "cuda"),
     ]
     for option, marker in option_lists:
         if config.getoption(option):
