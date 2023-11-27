@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/09/2023
+// Last Modified: 14/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ namespace Samples
 open AUTD3Sharp
 
 module SampleRunner =
-    let Run (autd : Controller) = 
+    let Run<'T> (autd : Controller<'T>) = 
         let examples = [
                 (FocusTest.Test, "Single focus test");
                 (BesselBeamTest.Test, "Bessel beam test");
@@ -22,7 +22,6 @@ module SampleRunner =
                 (WavTest.Test, "Wav modulation test");
                 (STMTest.FocusSTMTest, "FocusSTM test");
                 (STMTest.GainSTMTest, "GainSTM test");
-                (STMTest.SoftwareSTMTest, "SoftwareSTM test");
                 (GainHoloTest.Test, "Multiple foci test");
                 (CustomTest.Test, "Custom Gain & Modulation test");
                 (FlagTest.Test, "Flag test");
@@ -33,7 +32,7 @@ module SampleRunner =
 
 
         printfn "======== AUTD3 firmware information ========"
-        autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")
+        autd.FirmwareInfoListAsync() |> Async.AwaitTask |> Async.RunSynchronously |> Seq.iter (fun firm -> printfn $"{firm}")
         printfn "============================================"
 
         let rec run_example () =
@@ -55,12 +54,12 @@ module SampleRunner =
 
                     printfn "finish."
 
-                    (new Stop()) |> autd.Send |> ignore;
+                    (new Stop()) |> autd.SendAsync  |> Async.AwaitTask|> ignore;
 
                     run_example()
                 | _ -> ()
 
         run_example()
 
-        autd.Close() |> ignore;
+        autd.CloseAsync() |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
         autd.Dispose() |> ignore;

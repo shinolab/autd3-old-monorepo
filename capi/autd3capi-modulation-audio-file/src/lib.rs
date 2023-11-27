@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,25 +15,48 @@
 
 use std::ffi::{c_char, CStr};
 
-use autd3capi_def::{common::*, take_mod, ModulationPtr};
+use autd3capi_def::{common::*, take_mod, ModulationPtr, ResultModulation, SamplingConfiguration};
 
 use autd3_modulation_audio_file::{RawPCM, Wav};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char, err: *mut c_char) -> ModulationPtr {
-    let path = try_or_return!(CStr::from_ptr(path).to_str(), err, ModulationPtr(NULL));
-    let m = try_or_return!(Wav::new(path), err, ModulationPtr(NULL));
-    ModulationPtr::new(m)
+pub unsafe extern "C" fn AUTDModulationWav(path: *const c_char) -> ResultModulation {
+    let path = match CStr::from_ptr(path).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = e.to_string();
+            return ResultModulation {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            };
+        }
+    };
+    match Wav::new(path) {
+        Ok(v) => ResultModulation {
+            result: ModulationPtr::new(v),
+            err_len: 0,
+            err: std::ptr::null_mut(),
+        },
+        Err(e) => {
+            let err = e.to_string();
+            ResultModulation {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            }
+        }
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationWavWithSamplingFrequencyDivision(
+pub unsafe extern "C" fn AUTDModulationWavWithSamplingConfig(
     m: ModulationPtr,
-    div: u32,
+    config: SamplingConfiguration,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Wav).with_sampling_frequency_division(div))
+    ModulationPtr::new(take_mod!(m, Wav).with_sampling_config(config.into()))
 }
 
 #[no_mangle]
@@ -41,18 +64,40 @@ pub unsafe extern "C" fn AUTDModulationWavWithSamplingFrequencyDivision(
 pub unsafe extern "C" fn AUTDModulationRawPCM(
     path: *const c_char,
     sample_rate: u32,
-    err: *mut c_char,
-) -> ModulationPtr {
-    let path = try_or_return!(CStr::from_ptr(path).to_str(), err, ModulationPtr(NULL));
-    let m = try_or_return!(RawPCM::new(path, sample_rate), err, ModulationPtr(NULL));
-    ModulationPtr::new(m)
+) -> ResultModulation {
+    let path = match CStr::from_ptr(path).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = e.to_string();
+            return ResultModulation {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            };
+        }
+    };
+    match RawPCM::new(path, sample_rate) {
+        Ok(v) => ResultModulation {
+            result: ModulationPtr::new(v),
+            err_len: 0,
+            err: std::ptr::null_mut(),
+        },
+        Err(e) => {
+            let err = e.to_string();
+            ResultModulation {
+                result: ModulationPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            }
+        }
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationRawPCMWithSamplingFrequencyDivision(
+pub unsafe extern "C" fn AUTDModulationRawPCMWithSamplingConfig(
     m: ModulationPtr,
-    div: u32,
+    config: SamplingConfiguration,
 ) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, RawPCM).with_sampling_frequency_division(div))
+    ModulationPtr::new(take_mod!(m, RawPCM).with_sampling_config(config.into()))
 }

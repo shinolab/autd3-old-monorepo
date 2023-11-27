@@ -5,19 +5,9 @@ import os
 from enum import IntEnum
 
 class GainSTMMode(IntEnum):
-    PhaseDutyFull = 0
+    PhaseIntensityFull = 0
     PhaseFull = 1
     PhaseHalf = 2
-
-    @classmethod
-    def from_param(cls, obj):
-        return int(obj)
-
-
-class TransMode(IntEnum):
-    Legacy = 0
-    Advanced = 1
-    AdvancedPhase = 2
 
     @classmethod
     def from_param(cls, obj):
@@ -35,6 +25,18 @@ class TimerStrategy(IntEnum):
 
 
 class ControllerPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class FirmwareInfoListPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GroupKVMapPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GainCalcDrivesMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
@@ -74,6 +76,10 @@ class ModulationPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class CachePtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class STMPropsPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
@@ -82,11 +88,7 @@ class BackendPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class ConstraintPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
-
-
-class GainCalcDrivesMapPtr(ctypes.Structure):
+class EmissionConstraintPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
@@ -94,18 +96,119 @@ class GroupGainMapPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class GroupKVMapPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+class Drive(ctypes.Structure):
+    _fields_ = [("phase", ctypes.c_double), ("intensity", ctypes.c_uint8)]
 
 
+class ResultI32(ctypes.Structure):
+    _fields_ = [("result", ctypes.c_int32), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultController(ctypes.Structure):
+    _fields_ = [("result", ControllerPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultGainCalcDrivesMap(ctypes.Structure):
+    _fields_ = [("result", GainCalcDrivesMapPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultModulation(ctypes.Structure):
+    _fields_ = [("result", ModulationPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultBackend(ctypes.Structure):
+    _fields_ = [("result", BackendPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class ResultDatagram(ctypes.Structure):
+    _fields_ = [("result", DatagramPtr), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+class SamplingConfiguration(ctypes.Structure):
+    _fields_ = [("div", ctypes.c_uint32)]
+
+
+class ResultSamplingConfig(ctypes.Structure):
+    _fields_ = [("result", SamplingConfiguration), ("err_len", ctypes.c_uint32), ("err", ctypes.c_void_p)]
+
+
+DEFAULT_CORRECTED_ALPHA: float = 0.803
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14
 TRANS_SPACING_MM: float = 10.16
 DEVICE_HEIGHT_MM: float = 151.4
 DEVICE_WIDTH_MM: float = 192.0
-FPGA_CLK_FREQ: int = 163840000
-FPGA_SUB_CLK_FREQ: int = 20480000
+FPGA_CLK_FREQ: int = 20480000
+ULTRASOUND_FREQUENCY: float = 40000.0
 AUTD3_ERR: int = -1
 AUTD3_TRUE: int = 1
 AUTD3_FALSE: int = 0
+
+class Singleton(type):
+    _instances = {}  # type: ignore
+    _lock = threading.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with cls._lock:
+                if cls not in cls._instances:
+                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class NativeMethods(metaclass=Singleton):
+
+    def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
+        try:
+            self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_def{bin_ext}'))
+        except Exception:
+            return
+
+        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
+        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.restype = ctypes.c_uint8
+
+        self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDGetErr.restype = None
+
+        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.restype = ResultSamplingConfig
+
+        self.dll.AUTDSamplingConfigNewWithFrequency.argtypes = [ctypes.c_double] 
+        self.dll.AUTDSamplingConfigNewWithFrequency.restype = ResultSamplingConfig
+
+        self.dll.AUTDSamplingConfigNewWithPeriod.argtypes = [ctypes.c_uint64] 
+        self.dll.AUTDSamplingConfigNewWithPeriod.restype = ResultSamplingConfig
+
+        self.dll.AUTDSamplingConfigFrequencyDivision.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigFrequencyDivision.restype = ctypes.c_uint32
+
+        self.dll.AUTDSamplingConfigFrequency.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigFrequency.restype = ctypes.c_double
+
+        self.dll.AUTDSamplingConfigPeriod.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSamplingConfigPeriod.restype = ctypes.c_uint64
+
+    def emit_intensity_new_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
+        return self.dll.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha)
+
+    def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
+        return self.dll.AUTDGetErr(src, dst)
+
+    def sampling_config_new_with_frequency_division(self, div: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithFrequencyDivision(div)
+
+    def sampling_config_new_with_frequency(self, f: float) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithFrequency(f)
+
+    def sampling_config_new_with_period(self, p: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigNewWithPeriod(p)
+
+    def sampling_config_frequency_division(self, config: SamplingConfiguration) -> ctypes.c_uint32:
+        return self.dll.AUTDSamplingConfigFrequencyDivision(config)
+
+    def sampling_config_frequency(self, config: SamplingConfiguration) -> ctypes.c_double:
+        return self.dll.AUTDSamplingConfigFrequency(config)
+
+    def sampling_config_period(self, config: SamplingConfiguration) -> ctypes.c_uint64:
+        return self.dll.AUTDSamplingConfigPeriod(config)

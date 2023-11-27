@@ -6,7 +6,6 @@ LinkはAUTD3デバイスとのインターフェースである.
 - [TwinCAT/RemoteTwinCAT](./link/twincat.md)
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
-- [Visualizer](./link/visualize.md)
 
 ## Linkに共通のオプション
 
@@ -18,6 +17,7 @@ LinkはAUTD3デバイスとのインターフェースである.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() {

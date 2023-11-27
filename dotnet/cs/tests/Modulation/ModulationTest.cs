@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,30 +17,30 @@ public class ModulationTest
 {
     public class Burst : AUTD3Sharp.Modulation.Modulation
     {
-        public Burst() : base(5120)
+        public Burst() : base(SamplingConfiguration.NewWithFrequency(4e3))
         {
         }
 
-        public override double[] Calc()
+        public override EmitIntensity[] Calc()
         {
-            var buf = new double[10];
-            buf[0] = 1;
+            var buf = new EmitIntensity[10];
+            buf[0] = EmitIntensity.Max;
             return buf;
         }
     }
 
     [Fact]
-    public void Modulation()
+    public async Task Modulation()
     {
-        var autd = Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(Audit.Builder());
+        var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        Assert.True(autd.Send(new Burst()));
+        Assert.True(await autd.SendAsync(new Burst()));
         foreach (var dev in autd.Geometry)
         {
-            var mod = autd.Link<Audit>().Modulation(dev.Idx);
-            var modExpext = new byte[] { 255, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            Assert.Equal(modExpext, mod);
-            Assert.Equal(40960u, autd.Link<Audit>().ModulationFrequencyDivision(dev.Idx));
+            var mod = autd.Link.Modulation(dev.Idx);
+            var modExpect = new byte[] { 255, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Assert.Equal(modExpect, mod);
+            Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
     }
 }

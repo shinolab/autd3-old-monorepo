@@ -12,9 +12,7 @@ constexpr const uint32_t NUM_TRANS_IN_X = 18;
 
 constexpr const uint32_t NUM_TRANS_IN_Y = 14;
 
-constexpr const uint32_t FPGA_CLK_FREQ = 163840000;
-
-constexpr const uint32_t FPGA_SUB_CLK_FREQ = 20480000;
+constexpr const uint32_t FPGA_CLK_FREQ = 20480000;
 
 constexpr const int32_t AUTD3_ERR = -1;
 
@@ -23,7 +21,7 @@ constexpr const int32_t AUTD3_TRUE = 1;
 constexpr const int32_t AUTD3_FALSE = 0;
 
 enum class GainSTMMode : uint8_t {
-  PhaseDutyFull = 0,
+  PhaseIntensityFull = 0,
   PhaseFull = 1,
   PhaseHalf = 2,
 };
@@ -34,17 +32,33 @@ enum class TimerStrategy : uint8_t {
   NativeTimer = 2,
 };
 
-enum class TransMode : uint8_t {
-  Legacy = 0,
-  Advanced = 1,
-  AdvancedPhase = 2,
+struct SamplingConfiguration {
+  uint32_t div;
+};
+
+struct ResultSamplingConfig {
+  SamplingConfiguration result;
+  uint32_t err_len;
+  void* err;
 };
 
 struct ControllerPtr {
   void* _0;
 };
 
-struct ConstraintPtr {
+struct EmissionConstraintPtr {
+  void* _0;
+};
+
+struct FirmwareInfoListPtr {
+  void* _0;
+};
+
+struct GroupKVMapPtr {
+  void* _0;
+};
+
+struct CachePtr {
   void* _0;
 };
 
@@ -92,10 +106,6 @@ struct GroupGainMapPtr {
   void* _0;
 };
 
-struct GroupKVMapPtr {
-  void* _0;
-};
-
 struct GainCalcDrivesMapPtr {
   void* _0;
 };
@@ -104,10 +114,75 @@ struct LinkBuilderPtr {
   void* _0;
 };
 
+struct ResultI32 {
+  int32_t result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultModulation {
+  ModulationPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultBackend {
+  BackendPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultController {
+  ControllerPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultGainCalcDrivesMap {
+  GainCalcDrivesMapPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct ResultDatagram {
+  DatagramPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
+struct Drive {
+  double phase;
+  uint8_t intensity;
+};
+
 constexpr const double TRANS_SPACING_MM = 10.16;
 
 constexpr const double DEVICE_HEIGHT_MM = 151.4;
 
 constexpr const double DEVICE_WIDTH_MM = 192.0;
+
+constexpr const double ULTRASOUND_FREQUENCY = 40000.0;
+
+constexpr const double DEFAULT_CORRECTED_ALPHA = 0.803;
+
+extern "C" {
+
+[[nodiscard]] uint8_t AUTDEmitIntensityNewWithCorrectionAlpha(uint8_t value, double alpha);
+
+void AUTDGetErr(void* src, char *dst);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequencyDivision(uint32_t div);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequency(double f);
+
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithPeriod(uint64_t p);
+
+[[nodiscard]] uint32_t AUTDSamplingConfigFrequencyDivision(SamplingConfiguration config);
+
+[[nodiscard]] double AUTDSamplingConfigFrequency(SamplingConfiguration config);
+
+[[nodiscard]] uint64_t AUTDSamplingConfigPeriod(SamplingConfiguration config);
+
+} // extern "C"
 
 } // namespace autd3::internal::native_methods

@@ -4,12 +4,14 @@
  * Created Date: 10/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
+
+using AUTD3Sharp.Internal;
 
 namespace AUTD3Sharp.Link
 {
@@ -18,11 +20,16 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public class Nop
     {
-        public sealed class NopBuilder : Internal.ILinkBuilder
+        public sealed class NopBuilder : Internal.ILinkBuilder<Nop>
         {
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr ILinkBuilder<Nop>.Ptr()
             {
-                return NativeMethods.Base.AUTDLinkNop();
+                return NativeMethodsBase.AUTDLinkNop();
+            }
+
+            Nop ILinkBuilder<Nop>.ResolveLink(LinkPtr ptr)
+            {
+                return new Nop();
             }
         }
 

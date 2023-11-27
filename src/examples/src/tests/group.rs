@@ -4,7 +4,7 @@
  * Created Date: 15/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,8 @@
 
 use autd3::prelude::*;
 
-pub fn group<T: Transducer + 'static, L: Link>(
-    autd: &mut Controller<T, L>,
-) -> anyhow::Result<bool> {
-    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+pub async fn group<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
+    let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
     autd.group(|dev| match dev.idx() {
         0 => Some("null"),
@@ -25,7 +23,8 @@ pub fn group<T: Transducer + 'static, L: Link>(
     })
     .set("null", (Static::new(), Null::new()))?
     .set("focus", (Sine::new(150), Focus::new(center)))?
-    .send()?;
+    .send()
+    .await?;
 
     Ok(true)
 }

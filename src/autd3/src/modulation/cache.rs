@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,16 +12,16 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use std::ops::Deref;
 
 /// Modulation to cache the result of calculation
 #[derive(Modulation)]
 pub struct Cache {
-    cache: Vec<float>,
+    cache: Vec<EmitIntensity>,
     #[no_change]
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 pub trait IntoCache<M: Modulation> {
@@ -39,7 +39,7 @@ impl Clone for Cache {
     fn clone(&self) -> Self {
         Self {
             cache: self.cache.clone(),
-            freq_div: self.freq_div,
+            config: self.config,
         }
     }
 }
@@ -47,27 +47,27 @@ impl Clone for Cache {
 impl Cache {
     /// constructor
     pub fn new<M: Modulation>(modulation: M) -> Result<Self, AUTDInternalError> {
-        let freq_div = modulation.sampling_frequency_division();
+        let config = modulation.sampling_config();
         Ok(Self {
             cache: modulation.calc()?,
-            freq_div,
+            config,
         })
     }
 
     /// get cached modulation data
-    pub fn buffer(&self) -> &[float] {
+    pub fn buffer(&self) -> &[EmitIntensity] {
         &self.cache
     }
 }
 
 impl Modulation for Cache {
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok(self.cache.clone())
     }
 }
 
 impl Deref for Cache {
-    type Target = [float];
+    type Target = [EmitIntensity];
 
     fn deref(&self) -> &Self::Target {
         &self.cache
@@ -92,20 +92,20 @@ mod tests {
         let m = Static::new().with_cache().unwrap();
 
         for d in m.calc().unwrap() {
-            assert_eq!(d, 1.0);
+            assert_eq!(d.value(), 0xFF);
         }
     }
 
     #[derive(Modulation)]
     struct TestModulation {
         pub calc_cnt: Arc<AtomicUsize>,
-        pub freq_div: u32,
+        pub config: SamplingConfiguration,
     }
 
     impl Modulation for TestModulation {
-        fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
+        fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
-            Ok(vec![0.0; 2])
+            Ok(vec![EmitIntensity::new(0); 2])
         }
     }
 
@@ -115,7 +115,8 @@ mod tests {
 
         let modulation = TestModulation {
             calc_cnt: calc_cnt.clone(),
-            freq_div: 4096,
+            config: SamplingConfiguration::new_with_period(std::time::Duration::from_micros(250))
+                .unwrap(),
         }
         .with_cache()
         .unwrap();

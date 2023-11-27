@@ -4,6 +4,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -36,18 +37,18 @@ g = Plane([nx, ny, nz])
 
 ## 振幅の指定
 
-`with_amp`にて, 0-1の規格化された音圧振幅を指定できる.
-$\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
+`with_intensity`にて, 出力振幅を指定できる.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
 # let nx = 0.;
 # let ny = 0.;
 # let nz = 0.;
-let g = autd3::gain::Plane::new(Vector3::new(nx, ny, nz)).with_amp(1.);
+let g = autd3::gain::Plane::new(Vector3::new(nx, ny, nz)).with_intensity(EmitIntensity::MAX);
 # }
 ```
 

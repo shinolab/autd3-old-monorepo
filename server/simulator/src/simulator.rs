@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,13 +32,11 @@ use crate::{
     viewer_settings::ViewerSettings,
     Quaternion, Vector3, MILLIMETER,
 };
-use autd3_driver::{cpu::TxDatagram, fpga::FPGA_CLK_FREQ, geometry::Transducer};
-use autd3_firmware_emulator::CPUEmulator;
+use autd3_driver::cpu::TxDatagram;
+use autd3_firmware_emulator::{CPUEmulator, FPGAEmulator};
 use crossbeam_channel::{bounded, Receiver, Sender, TryRecvError};
 use vulkano::{
-    command_buffer::{
-        AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
-    },
+    command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo},
     sync::GpuFuture,
 };
 use winit::{
@@ -205,7 +203,6 @@ impl Simulator {
         let port = self.port.unwrap_or(self.settings.port);
 
         let rx_buf = Arc::new(RwLock::new(vec![]));
-
         let server_th = std::thread::spawn({
             let rx_buf = rx_buf.clone();
             move || {
@@ -253,7 +250,7 @@ impl Simulator {
             self.window_height.unwrap_or(self.settings.window_height) as _,
             self.vsync.unwrap_or(self.settings.vsync),
             self.gpu_idx.unwrap_or(self.settings.gpu_idx),
-        );
+        )?;
 
         render.move_camera(&self.settings);
 
@@ -261,113 +258,23 @@ impl Simulator {
         let mut cpus: Vec<CPUEmulator> = Vec::new();
         let mut body_pointer = vec![];
 
-        let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings);
-        let mut slice_viewer = SliceViewer::new(&render, &self.settings);
+        let mut field_compute_pipeline = FieldComputePipeline::new(&render, &self.settings)?;
+        let mut slice_viewer = SliceViewer::new(&render, &self.settings)?;
         let model = crate::device_viewer::Model::new()?;
-        let mut device_viewer = crate::device_viewer::DeviceViewer::new(&render, &model);
-        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &self.config_path, &render);
-        let mut trans_viewer = TransViewer::new(&render);
+        let mut device_viewer = crate::device_viewer::DeviceViewer::new(&render, &model)?;
+        let mut imgui = ImGuiRenderer::new(self.settings.clone(), &self.config_path, &render)?;
+        let mut trans_viewer = TransViewer::new(&render)?;
 
         let mut is_initialized = false;
         let mut is_source_update = false;
         let mut is_running = true;
 
         let server_th_ref = &server_th;
+
         let res = event_loop.run_return(move |event, _, control_flow| {
-            cpus.iter_mut().for_each(CPUEmulator::update);
-            if cpus.iter().any(CPUEmulator::should_update) {
-                rx_buf
-                    .write()
-                    .unwrap()
-                    .iter_mut()
-                    .zip(cpus.iter())
-                    .for_each(|(d, s)| {
-                        d.ack = s.ack();
-                        d.data = s.rx_data();
-                    });
-            }
-
-            match receiver.try_recv() {
-                Ok(Signal::ConfigGeometry(geometry)) => {
-                    sources.clear();
-                    cpus.clear();
-
-                    let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
-                    geometry.iter().for_each(|dev| {
-                        dev.iter().for_each(|tr| {
-                            let p = tr.position();
-                            let r = tr.rotation();
-                            sources.add(
-                                to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
-                                to_gl_rot(Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _)),
-                                Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
-                                1.0,
-                            );
-                        });
-                    });
-
-                    cpus = geometry
-                        .iter()
-                        .map(|dev| CPUEmulator::new(dev.idx(), dev.num_transducers()))
-                        .collect();
-
-                    cpus.iter_mut().for_each(|cpu| {
-                        let origin = geometry[cpu.idx()][0].position();
-                        let local_position = geometry[cpu.idx()]
-                            .iter()
-                            .map(|tr| tr.position() - origin)
-                            .collect();
-                        cpu.fpga_mut().configure_local_trans_pos(local_position);
-                    });
-
-                    body_pointer = [0usize]
-                        .into_iter()
-                        .chain(geometry.iter().map(|dev| dev.num_transducers()))
-                        .scan(0, |state, tr_num| {
-                            *state += tr_num;
-                            Some(*state)
-                        })
-                        .collect::<Vec<_>>();
-
-                    *rx_buf.write().unwrap() = vec![
-                        autd3_driver::cpu::RxMessage { ack: 0, data: 0 };
-                        geometry.num_devices()
-                    ];
-
-                    field_compute_pipeline.init(&render, &sources);
-                    trans_viewer.init(&render, &sources);
-                    slice_viewer.init(&self.settings);
-                    device_viewer.init(&geometry);
-                    imgui.init(geometry.num_devices());
-
-                    is_initialized = true;
-                }
-                Ok(Signal::UpdateGeometry(geometry)) => {
-                    let geometry = autd3_driver::geometry::Geometry::<_>::from_msg(&geometry);
-                    geometry
-                        .iter()
-                        .flat_map(|dev| {
-                            dev.iter().map(|tr| {
-                                let p = tr.position();
-                                let r = tr.rotation();
-                                (
-                                    Vector3::new(p.x as _, p.y as _, p.z as _),
-                                    Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _),
-                                )
-                            })
-                        })
-                        .enumerate()
-                        .for_each(|(i, (p, r))| sources.update_geometry(i, p, r));
-
-                    device_viewer.init(&geometry);
-                    field_compute_pipeline.update_source_pos(&sources);
-                    trans_viewer.update_source_pos(&sources);
-                }
-                Ok(Signal::Send(raw)) => {
-                    let tx = TxDatagram::from_msg(&raw);
-                    cpus.iter_mut().for_each(|cpu| {
-                        cpu.send(&tx);
-                    });
+            let mut run_loop = |event, control_flow: &mut ControlFlow| -> anyhow::Result<()> {
+                cpus.iter_mut().for_each(CPUEmulator::update);
+                if cpus.iter().any(CPUEmulator::should_update) {
                     rx_buf
                         .write()
                         .unwrap()
@@ -377,251 +284,334 @@ impl Simulator {
                             d.ack = s.ack();
                             d.data = s.rx_data();
                         });
-
-                    is_source_update = true;
                 }
-                Ok(Signal::Close) => {
-                    is_initialized = false;
-                    sources.clear();
-                    cpus.clear();
-                }
-                Err(TryRecvError::Empty) => {}
-                _ => {}
-            }
 
-            match event {
-                Event::WindowEvent {
-                    event: WindowEvent::CloseRequested,
-                    ..
-                } => {
-                    is_running = false;
+                match receiver.try_recv() {
+                    Ok(Signal::ConfigGeometry(geometry)) => {
+                        sources.clear();
+                        cpus.clear();
+
+                        let geometry = autd3_driver::geometry::Geometry::from_msg(&geometry);
+                        geometry.iter().for_each(|dev| {
+                            dev.iter().for_each(|tr| {
+                                let p = tr.position();
+                                let r = tr.rotation();
+                                sources.add(
+                                    to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                    to_gl_rot(Quaternion::new(
+                                        r.w as _, r.i as _, r.j as _, r.k as _,
+                                    )),
+                                    Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
+                                    1.0,
+                                );
+                            });
+                        });
+
+                        cpus = geometry
+                            .iter()
+                            .map(|dev| CPUEmulator::new(dev.idx(), dev.num_transducers()))
+                            .collect();
+
+                        body_pointer = [0usize]
+                            .into_iter()
+                            .chain(geometry.iter().map(|dev| dev.num_transducers()))
+                            .scan(0, |state, tr_num| {
+                                *state += tr_num;
+                                Some(*state)
+                            })
+                            .collect::<Vec<_>>();
+
+                        *rx_buf.write().unwrap() =
+                            vec![
+                                autd3_driver::cpu::RxMessage { ack: 0, data: 0 };
+                                geometry.num_devices()
+                            ];
+
+                        field_compute_pipeline.init(&render, &sources)?;
+                        trans_viewer.init(&render, &sources)?;
+                        slice_viewer.init(&self.settings);
+                        device_viewer.init(&geometry);
+                        imgui.init(geometry.num_devices());
+
+                        is_initialized = true;
+                    }
+                    Ok(Signal::UpdateGeometry(geometry)) => {
+                        let geometry = autd3_driver::geometry::Geometry::from_msg(&geometry);
+                        geometry
+                            .iter()
+                            .flat_map(|dev| {
+                                dev.iter().map(|tr| {
+                                    let p = tr.position();
+                                    let r = tr.rotation();
+                                    (
+                                        Vector3::new(p.x as _, p.y as _, p.z as _),
+                                        Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _),
+                                    )
+                                })
+                            })
+                            .enumerate()
+                            .for_each(|(i, (p, r))| sources.update_geometry(i, p, r));
+
+                        device_viewer.init(&geometry);
+                        field_compute_pipeline.update_source_pos(&sources)?;
+                        trans_viewer.update_source_pos(&sources)?;
+                    }
+                    Ok(Signal::Send(raw)) => {
+                        let tx = TxDatagram::from_msg(&raw);
+                        cpus.iter_mut().for_each(|cpu| {
+                            cpu.send(&tx);
+                        });
+                        rx_buf
+                            .write()
+                            .unwrap()
+                            .iter_mut()
+                            .zip(cpus.iter())
+                            .for_each(|(d, s)| {
+                                d.ack = s.ack();
+                                d.data = s.rx_data();
+                            });
+
+                        is_source_update = true;
+                    }
+                    Ok(Signal::Close) => {
+                        is_initialized = false;
+                        sources.clear();
+                        cpus.clear();
+                    }
+                    Err(TryRecvError::Empty) => {}
+                    _ => {}
+                }
+
+                match event {
+                    Event::WindowEvent {
+                        event: WindowEvent::CloseRequested,
+                        ..
+                    } => {
+                        is_running = false;
+                        *control_flow = ControlFlow::Exit;
+                    }
+                    Event::WindowEvent {
+                        event: WindowEvent::Resized(..),
+                        window_id,
+                    } if window_id == render.window().id() => {
+                        render.resize();
+                        imgui.resized(render.window(), &event);
+                    }
+                    Event::WindowEvent {
+                        event:
+                            WindowEvent::ScaleFactorChanged {
+                                scale_factor,
+                                new_inner_size,
+                            },
+                        window_id,
+                    } if window_id == render.window().id() => {
+                        *new_inner_size = render
+                            .window()
+                            .inner_size()
+                            .to_logical::<u32>(render.window().scale_factor())
+                            .to_physical(scale_factor);
+                        render.resize();
+                        let event_imgui: Event<'_, ()> = Event::WindowEvent {
+                            window_id,
+                            event: WindowEvent::ScaleFactorChanged {
+                                scale_factor,
+                                new_inner_size,
+                            },
+                        };
+                        imgui.resized(render.window(), &event_imgui);
+                    }
+                    Event::MainEventsCleared => {
+                        imgui.prepare_frame(render.window())?;
+                        render.window().request_redraw();
+                    }
+                    Event::NewEvents(_) => {
+                        imgui.update_delta_time();
+                        render.window().request_redraw();
+                    }
+                    Event::RedrawRequested(_) => {
+                        let before_pipeline_future = render.start_frame()?;
+
+                        let after_future = {
+                            let framebuffer = render.frame_buffer();
+
+                            let mut builder = AutoCommandBufferBuilder::primary(
+                                render.command_buffer_allocator(),
+                                render.queue().queue_family_index(),
+                                CommandBufferUsage::OneTimeSubmit,
+                            )?;
+
+                            let clear_values = vec![
+                                Some(self.settings.background.into()),
+                                Some(1f32.into()),
+                                None,
+                            ];
+                            builder
+                                .begin_render_pass(
+                                    RenderPassBeginInfo {
+                                        clear_values,
+                                        ..RenderPassBeginInfo::framebuffer(framebuffer)
+                                    },
+                                    Default::default(),
+                                )?
+                                .set_viewport(
+                                    0,
+                                    [render.viewport().clone()].into_iter().collect(),
+                                )?;
+
+                            if is_initialized {
+                                render.move_camera(&self.settings);
+                                let view = render.get_view();
+                                let proj = render.get_projection(&self.settings);
+                                let slice_model = slice_viewer.model();
+                                if self.settings.view_device {
+                                    device_viewer.render(
+                                        &model,
+                                        (view, proj),
+                                        &self.settings,
+                                        &imgui.visible(),
+                                        &mut builder,
+                                    )?;
+                                } else {
+                                    trans_viewer.render(view, proj, &mut builder)?;
+                                }
+                                slice_viewer.render(
+                                    &render,
+                                    view,
+                                    proj,
+                                    &self.settings,
+                                    &mut builder,
+                                )?;
+                                builder.end_render_pass(Default::default())?;
+
+                                let mut update_flag = imgui.update(
+                                    &mut cpus,
+                                    &mut sources,
+                                    &body_pointer,
+                                    &render,
+                                    &mut builder,
+                                    &mut self.settings,
+                                )?;
+                                if is_source_update {
+                                    update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
+                                    is_source_update = false;
+                                }
+
+                                if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
+                                    cpus.iter().for_each(|cpu| {
+                                        let idx = if cpu.fpga().is_stm_mode() {
+                                            ImGuiRenderer::stm_idx(imgui.system_time(), cpu)
+                                        } else {
+                                            0
+                                        };
+                                        let drives = cpu.fpga().intensities_and_phases(idx);
+                                        let m = if self.settings.mod_enable {
+                                            let mod_idx =
+                                                ImGuiRenderer::mod_idx(imgui.system_time(), cpu);
+                                            cpu.fpga().modulation_at(mod_idx)
+                                        } else {
+                                            0xFF
+                                        };
+                                        sources
+                                            .drives_mut()
+                                            .skip(body_pointer[cpu.idx()])
+                                            .take(cpu.num_transducers())
+                                            .enumerate()
+                                            .for_each(|(i, d)| {
+                                                d.amp = (PI
+                                                    * FPGAEmulator::to_pulse_width(drives[i].0, m)
+                                                        as f32
+                                                    / 512.0)
+                                                    .sin();
+                                                d.phase = 2. * PI * (drives[i].1 as f32) / 256.0;
+                                                d.set_wave_number(40e3, self.settings.sound_speed);
+                                            });
+                                    });
+                                }
+
+                                field_compute_pipeline.update(
+                                    &render,
+                                    &sources,
+                                    &self.settings,
+                                    &update_flag,
+                                )?;
+                                slice_viewer.update(&render, &self.settings, &update_flag)?;
+                                trans_viewer.update(&sources, &update_flag)?;
+                                let command_buffer = builder.build()?;
+
+                                let field_image = slice_viewer.field_image_view();
+
+                                if update_flag.contains(UpdateFlag::SAVE_IMAGE) {
+                                    let image_buffer_content = field_image.read()?;
+                                    let img_x = (self.settings.slice_width
+                                        / self.settings.slice_pixel_size)
+                                        as u32;
+                                    let img_y = (self.settings.slice_height
+                                        / self.settings.slice_pixel_size)
+                                        as u32;
+                                    let mut img_buf = image::ImageBuffer::new(img_x, img_y);
+                                    img_buf
+                                        .enumerate_pixels_mut()
+                                        .zip(image_buffer_content.iter())
+                                        .for_each(|((_, _, pixel), [r, g, b, a])| {
+                                            let r = (r * 255.0) as u8;
+                                            let g = (g * 255.0) as u8;
+                                            let b = (b * 255.0) as u8;
+                                            let a = (a * 255.0) as u8;
+                                            *pixel = image::Rgba([r, g, b, a]);
+                                        });
+                                    image::imageops::flip_vertical(&img_buf)
+                                        .save(&self.settings.image_save_path)?;
+                                }
+
+                                let config = Config {
+                                    source_num: sources.len() as _,
+                                    color_scale: self.settings.slice_color_scale,
+                                    width: (self.settings.slice_width
+                                        / self.settings.slice_pixel_size)
+                                        as _,
+                                    height: (self.settings.slice_height
+                                        / self.settings.slice_pixel_size)
+                                        as _,
+                                    pixel_size: self.settings.slice_pixel_size as _,
+                                    scale: MILLIMETER,
+                                    model: slice_model.into(),
+                                    ..Default::default()
+                                };
+                                let after_compute = field_compute_pipeline
+                                    .compute(&render, config, field_image, &self.settings)?
+                                    .join(before_pipeline_future);
+                                let future =
+                                    after_compute.then_execute(render.queue(), command_buffer)?;
+
+                                future.boxed()
+                            } else {
+                                builder.end_render_pass(Default::default())?;
+                                imgui.waiting(&render, &mut builder)?;
+
+                                let command_buffer = builder.build()?;
+
+                                let future = before_pipeline_future
+                                    .then_execute(render.queue(), command_buffer)?;
+
+                                future.boxed()
+                            }
+                        };
+
+                        render.finish_frame(after_future);
+                    }
+                    event => {
+                        imgui.handle_event(render.window(), &event);
+                    }
+                }
+
+                if server_th_ref.is_finished() || !is_running {
                     *control_flow = ControlFlow::Exit;
                 }
-                Event::WindowEvent {
-                    event: WindowEvent::Resized(..),
-                    window_id,
-                } if window_id == render.window().id() => {
-                    render.resize();
-                    imgui.resized(render.window(), &event);
-                }
-                Event::WindowEvent {
-                    event:
-                        WindowEvent::ScaleFactorChanged {
-                            scale_factor,
-                            new_inner_size,
-                        },
-                    window_id,
-                } if window_id == render.window().id() => {
-                    *new_inner_size = render
-                        .window()
-                        .inner_size()
-                        .to_logical::<u32>(render.window().scale_factor())
-                        .to_physical(scale_factor);
-                    render.resize();
-                    let event_imgui: Event<'_, ()> = Event::WindowEvent {
-                        window_id,
-                        event: WindowEvent::ScaleFactorChanged {
-                            scale_factor,
-                            new_inner_size,
-                        },
-                    };
-                    imgui.resized(render.window(), &event_imgui);
-                }
-                Event::MainEventsCleared => {
-                    imgui.prepare_frame(render.window());
-                    render.window().request_redraw();
-                }
-                Event::NewEvents(_) => {
-                    imgui.update_delta_time();
-                    render.window().request_redraw();
-                }
-                Event::RedrawRequested(_) => {
-                    let before_pipeline_future = match render.start_frame() {
-                        Err(e) => {
-                            eprintln!("{}", e);
-                            return;
-                        }
-                        Ok(future) => future,
-                    };
-                    let after_future = {
-                        let framebuffer = render.frame_buffer();
 
-                        let mut builder = AutoCommandBufferBuilder::primary(
-                            render.command_buffer_allocator(),
-                            render.queue().queue_family_index(),
-                            CommandBufferUsage::OneTimeSubmit,
-                        )
-                        .unwrap();
-
-                        let clear_values = vec![
-                            Some(self.settings.background.into()),
-                            Some(1f32.into()),
-                            None,
-                        ];
-                        builder
-                            .begin_render_pass(
-                                RenderPassBeginInfo {
-                                    clear_values,
-                                    ..RenderPassBeginInfo::framebuffer(framebuffer)
-                                },
-                                SubpassContents::Inline,
-                            )
-                            .unwrap()
-                            .set_viewport(0, [render.viewport()]);
-
-                        if is_initialized {
-                            render.move_camera(&self.settings);
-                            let view = render.get_view();
-                            let proj = render.get_projection(&self.settings);
-                            let slice_model = slice_viewer.model();
-                            if self.settings.view_device {
-                                device_viewer.render(
-                                    &model,
-                                    (view, proj),
-                                    &self.settings,
-                                    &imgui.visible(),
-                                    &mut builder,
-                                );
-                            } else {
-                                trans_viewer.render(view, proj, &mut builder);
-                            }
-                            slice_viewer.render(&render, view, proj, &self.settings, &mut builder);
-                            builder.end_render_pass().unwrap();
-
-                            let mut update_flag = imgui.update(
-                                &mut cpus,
-                                &mut sources,
-                                &body_pointer,
-                                &render,
-                                &mut builder,
-                                &mut self.settings,
-                            );
-                            if is_source_update {
-                                update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                                is_source_update = false;
-                            }
-
-                            if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
-                                cpus.iter().for_each(|cpu| {
-                                    let cycles = cpu.fpga().cycles();
-                                    let idx = if cpu.fpga().is_stm_mode() {
-                                        ImGuiRenderer::stm_idx(imgui.system_time(), cpu)
-                                    } else {
-                                        0
-                                    };
-                                    let drives = cpu.fpga().duties_and_phases(idx);
-                                    let duty_filter = cpu.fpga().duty_filters();
-                                    let phase_filter = cpu.fpga().phase_filters();
-                                    let m = if self.settings.mod_enable {
-                                        let mod_idx =
-                                            ImGuiRenderer::mod_idx(imgui.system_time(), cpu);
-                                        cpu.fpga().modulation_at(mod_idx) as f32 / 255.
-                                    } else {
-                                        1.
-                                    };
-                                    sources
-                                        .drives_mut()
-                                        .skip(body_pointer[cpu.idx()])
-                                        .take(cpu.num_transducers())
-                                        .enumerate()
-                                        .for_each(|(i, d)| {
-                                            d.amp = (PI
-                                                * (drives[i].0 as f32 + duty_filter[i] as f32)
-                                                * m
-                                                / cycles[i] as f32)
-                                                .sin();
-                                            d.phase = 2.
-                                                * PI
-                                                * (drives[i].1 as f32 + phase_filter[i] as f32)
-                                                / cycles[i] as f32;
-                                            d.set_wave_number(
-                                                FPGA_CLK_FREQ as f32 / cycles[i] as f32,
-                                                self.settings.sound_speed,
-                                            );
-                                        });
-                                });
-                            }
-
-                            field_compute_pipeline.update(
-                                &render,
-                                &sources,
-                                &self.settings,
-                                &update_flag,
-                            );
-                            slice_viewer.update(&render, &self.settings, &update_flag);
-                            trans_viewer.update(&sources, &update_flag);
-                            let command_buffer = builder.build().unwrap();
-
-                            let field_image = slice_viewer.field_image_view();
-
-                            if update_flag.contains(UpdateFlag::SAVE_IMAGE) {
-                                let image_buffer_content = field_image.read().unwrap();
-                                let img_x = (self.settings.slice_width
-                                    / self.settings.slice_pixel_size)
-                                    as u32;
-                                let img_y = (self.settings.slice_height
-                                    / self.settings.slice_pixel_size)
-                                    as u32;
-                                let mut img_buf = image::ImageBuffer::new(img_x, img_y);
-                                img_buf
-                                    .enumerate_pixels_mut()
-                                    .zip(image_buffer_content.iter())
-                                    .for_each(|((_, _, pixel), [r, g, b, a])| {
-                                        let r = (r * 255.0) as u8;
-                                        let g = (g * 255.0) as u8;
-                                        let b = (b * 255.0) as u8;
-                                        let a = (a * 255.0) as u8;
-                                        *pixel = image::Rgba([r, g, b, a]);
-                                    });
-                                image::imageops::flip_vertical(&img_buf)
-                                    .save(&self.settings.image_save_path)
-                                    .unwrap();
-                            }
-
-                            let config = Config {
-                                source_num: sources.len() as _,
-                                color_scale: self.settings.slice_color_scale,
-                                width: (self.settings.slice_width / self.settings.slice_pixel_size)
-                                    as _,
-                                height: (self.settings.slice_height
-                                    / self.settings.slice_pixel_size)
-                                    as _,
-                                pixel_size: self.settings.slice_pixel_size as _,
-                                scale: MILLIMETER,
-                                model: slice_model.into(),
-                                ..Default::default()
-                            };
-                            let after_compute = field_compute_pipeline
-                                .compute(&render, config, field_image, &self.settings)
-                                .join(before_pipeline_future);
-                            let future = after_compute
-                                .then_execute(render.queue(), command_buffer)
-                                .unwrap();
-
-                            future.boxed()
-                        } else {
-                            builder.end_render_pass().unwrap();
-
-                            imgui.waiting(&render, &mut builder);
-
-                            let command_buffer = builder.build().unwrap();
-
-                            let future = before_pipeline_future
-                                .then_execute(render.queue(), command_buffer)
-                                .unwrap();
-
-                            future.boxed()
-                        }
-                    };
-
-                    render.finish_frame(after_future);
-                }
-                event => {
-                    imgui.handle_event(render.window(), &event);
-                }
-            }
-
-            if server_th_ref.is_finished() || !is_running {
+                Ok(())
+            };
+            if let Err(e) = run_loop(event, control_flow) {
+                tracing::error!("{}", e);
                 *control_flow = ControlFlow::Exit;
             }
         });

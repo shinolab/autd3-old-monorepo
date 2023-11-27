@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/09/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,52 +14,45 @@
 
 `timescale 1ns / 1ps
 module pwm_preconditioner #(
-    parameter int WIDTH = 13,
     parameter int DEPTH = 249
 ) (
     input var CLK,
     input var DIN_VALID,
-    input var [WIDTH-1:0] CYCLE[DEPTH],
-    input var [WIDTH-1:0] DUTY,
-    input var [WIDTH-1:0] PHASE,
-    output var [WIDTH-1:0] RISE[DEPTH],
-    output var [WIDTH-1:0] FALL[DEPTH],
-    output var FULL_WIDTH[DEPTH],
+    input var [8:0] PULSE_WIDTH,
+    input var [7:0] PHASE,
+    output var [8:0] RISE[DEPTH],
+    output var [8:0] FALL[DEPTH],
     output var DOUT_VALID
 );
 
   localparam int AddSubLatency = 2;
 
-  bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
-  bit full_width[DEPTH];
+  logic [8:0] rise[DEPTH], fall[DEPTH];
 
-  bit signed [WIDTH+1:0] cycle_buf[6];
-  bit [WIDTH-1:0] duty_buf[4], phase_buf;
-  bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
-  bit full_width_buf[DEPTH];
+  logic [8:0] pulse_width_buf[4], phase_buf;
+  logic [8:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
-  bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
-  bit signed [WIDTH+1:0] a_duty_r, b_duty_r, s_duty_r;
-  bit signed [WIDTH+1:0] a_rise, b_rise, s_rise;
-  bit signed [WIDTH+1:0] a_fall, b_fall, s_fall;
-  bit signed [WIDTH+1:0] a_fold_rise, b_fold_rise, s_fold_rise;
-  bit fold_rise_addsub;
-  bit signed [WIDTH+1:0] a_fold_fall, b_fold_fall, s_fold_fall;
+  logic signed [10:0] a_phase, b_phase, s_phase;
+  logic signed [10:0] a_pulse_width_r, b_pulse_width_r, s_pulse_width_r;
+  logic signed [10:0] a_rise, b_rise, s_rise;
+  logic signed [10:0] a_fall, b_fall, s_fall;
+  logic signed [10:0] a_fold_rise, b_fold_rise, s_fold_rise;
+  logic fold_rise_addsub;
+  logic signed [10:0] a_fold_fall, b_fold_fall, s_fold_fall;
 
-  bit [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] cnt, lr_cnt, fold_cnt, set_cnt;
+  logic [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] cnt, lr_cnt, fold_cnt, set_cnt;
 
-  bit dout_valid;
+  logic dout_valid;
 
   assign DOUT_VALID = dout_valid;
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_rise_fall
     assign RISE[i] = rise[i];
     assign FALL[i] = fall[i];
-    assign FULL_WIDTH[i] = full_width[i];
   end
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) sub_phase (
       .CLK(CLK),
       .A  (a_phase),
@@ -68,17 +61,17 @@ module pwm_preconditioner #(
       .S  (s_phase)
   );
   addsub #(
-      .WIDTH(WIDTH + 2)
-  ) add_duty_r (
+      .WIDTH(11)
+  ) add_pulse_width_r (
       .CLK(CLK),
-      .A  (a_duty_r),
-      .B  (b_duty_r),
+      .A  (a_pulse_width_r),
+      .B  (b_pulse_width_r),
       .ADD(1'b1),
-      .S  (s_duty_r)
+      .S  (s_pulse_width_r)
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) sub_rise (
       .CLK(CLK),
       .A  (a_rise),
@@ -87,7 +80,7 @@ module pwm_preconditioner #(
       .S  (s_rise)
   );
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) add_fall (
       .CLK(CLK),
       .A  (a_fall),
@@ -97,7 +90,7 @@ module pwm_preconditioner #(
   );
 
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) add_fold_rise (
       .CLK(CLK),
       .A  (a_fold_rise),
@@ -106,7 +99,7 @@ module pwm_preconditioner #(
       .S  (s_fold_rise)
   );
   addsub #(
-      .WIDTH(WIDTH + 2)
+      .WIDTH(11)
   ) sub_fold_fall (
       .CLK(CLK),
       .A  (a_fold_fall),
@@ -115,7 +108,7 @@ module pwm_preconditioner #(
       .S  (s_fold_fall)
   );
 
-  typedef enum bit [2:0] {
+  typedef enum logic [2:0] {
     WAITING,
     RUN,
     DONE
@@ -138,39 +131,36 @@ module pwm_preconditioner #(
       end
       RUN: begin
         // step 1
-        a_phase <= {2'b00, CYCLE[cnt]};
+        a_phase <= 11'd512;
         b_phase <= {2'b00, phase_buf};
-        a_duty_r <= {3'b000, duty_buf[0][WIDTH-1:1]};
-        b_duty_r <= duty_buf[0][0];
+        a_pulse_width_r <= {3'b000, pulse_width_buf[0][8:1]};
+        b_pulse_width_r <= pulse_width_buf[0][0];
         cnt <= cnt + 1;
-        if (cnt < DEPTH) begin
-          full_width_buf[cnt] <= duty_buf[0] == CYCLE[cnt];
-        end
 
         // step 2
         a_rise <= s_phase;
-        b_rise <= {3'b000, duty_buf[1+AddSubLatency][WIDTH-1:1]};
+        b_rise <= {3'b000, pulse_width_buf[1+AddSubLatency][8:1]};
         a_fall <= s_phase;
-        b_fall <= s_duty_r;
+        b_fall <= s_pulse_width_r;
         if (cnt > AddSubLatency) begin
           lr_cnt <= lr_cnt + 1;
         end
 
         // step 3
         a_fold_rise <= s_rise;
-        if (s_rise[WIDTH+1] == 1'b1) begin
-          b_fold_rise <= cycle_buf[1+AddSubLatency+AddSubLatency];
+        if (s_rise[10] == 1'b1) begin
+          b_fold_rise <= 11'd512;
           fold_rise_addsub <= 1'b1;
-        end else if (cycle_buf[1+AddSubLatency+AddSubLatency] <= s_rise) begin
-          b_fold_rise <= cycle_buf[1+AddSubLatency+AddSubLatency];
+        end else if (11'd512 <= s_rise) begin
+          b_fold_rise <= 11'd512;
           fold_rise_addsub <= 1'b0;
         end else begin
           b_fold_rise <= 0;
           fold_rise_addsub <= 1'b1;
         end
         a_fold_fall <= s_fall;
-        if (cycle_buf[1+AddSubLatency+AddSubLatency] <= s_fall) begin
-          b_fold_fall <= cycle_buf[1+AddSubLatency+AddSubLatency];
+        if (11'd512 <= s_fall) begin
+          b_fold_fall <= 11'd512;
         end else begin
           b_fold_fall <= 0;
         end
@@ -180,8 +170,8 @@ module pwm_preconditioner #(
 
         // step 4
         if (fold_cnt > AddSubLatency) begin
-          rise_buf[set_cnt] <= s_fold_rise[WIDTH-1:0];
-          fall_buf[set_cnt] <= s_fold_fall[WIDTH-1:0];
+          rise_buf[set_cnt] <= s_fold_rise[8:0];
+          fall_buf[set_cnt] <= s_fold_fall[8:0];
 
           set_cnt <= set_cnt + 1;
         end
@@ -201,19 +191,12 @@ module pwm_preconditioner #(
   end
 
   always_ff @(posedge CLK) begin
-    duty_buf[0] <= DUTY;
-    duty_buf[1] <= duty_buf[0];
-    duty_buf[2] <= duty_buf[1];
-    duty_buf[3] <= duty_buf[2];
+    pulse_width_buf[0] <= PULSE_WIDTH;
+    pulse_width_buf[1] <= pulse_width_buf[0];
+    pulse_width_buf[2] <= pulse_width_buf[1];
+    pulse_width_buf[3] <= pulse_width_buf[2];
 
-    phase_buf <= PHASE;
-
-    cycle_buf[0] <= {2'b00, CYCLE[cnt]};
-    cycle_buf[1] <= cycle_buf[0];
-    cycle_buf[2] <= cycle_buf[1];
-    cycle_buf[3] <= cycle_buf[2];
-    cycle_buf[4] <= cycle_buf[3];
-    cycle_buf[5] <= cycle_buf[4];
+    phase_buf <= {PHASE, 1'b0};
   end
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_copy_buf
@@ -221,7 +204,6 @@ module pwm_preconditioner #(
       if (state == DONE) begin
         rise[i] <= rise_buf[i];
         fall[i] <= fall_buf[i];
-        full_width[i] <= full_width_buf[i];
       end
     end
   end

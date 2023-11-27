@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,4 +36,24 @@ pub use unit::*;
 
 pub const MILLIMETER: float = METER / 1000.0;
 
+pub const ULTRASOUND_FREQUENCY: float = 40e3;
+
 pub type Complex = nalgebra::Complex<float>;
+
+pub const ABSOLUTE_THRESHOLD_OF_HEARING: float = 20e-6;
+
+pub const T4010A1_AMPLITUDE: float = 23.77004454874038 * 300.0 * MILLIMETER; // [Pa*mm] (121.5 dB SPL @ 30cm)
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn t4010a1_amplitude() {
+        assert_approx_eq::assert_approx_eq!(
+            121.5,
+            20.0 * (T4010A1_AMPLITUDE * 1.0 / (300.0 * MILLIMETER) / ABSOLUTE_THRESHOLD_OF_HEARING)
+                .log10()
+        );
+    }
+}

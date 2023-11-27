@@ -4,7 +4,7 @@
  * Created Date: 27/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,19 +22,19 @@ using UnityEngine;
 
 public class MultiAUTD3Controller : MonoBehaviour
 {
-    private Controller? _autd = null;
+    private Controller<AUTD3Sharp.Link.Simulator>? _autd = null;
     public GameObject? Target = null;
     private Vector3 _oldPosition;
 
-    void Awake()
+    async void Awake()
     {
-        var builder = Controller.Builder();
+        var builder = new ControllerBuilder();
         foreach (var obj in FindObjectsOfType<AUTD3Device>(false).OrderBy(obj => obj.ID))
-            builder.AddDevice(new AUTD3(obj.transform.position, obj.transform.rotation));
+            builder.AddDevice(new AUTD3(obj.transform.position).WithRotation(obj.transform.rotation));
 
         try
         {
-            _autd = builder.OpenWith(AUTD3Sharp.Link.Simulator.Builder(8080));
+            _autd = await builder.OpenWithAsync(AUTD3Sharp.Link.Simulator.Builder(8080));
         }
         catch (Exception)
         {
@@ -46,17 +46,18 @@ public class MultiAUTD3Controller : MonoBehaviour
 #endif
         }
 
-        _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
+        await _autd!.SendAsync(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 
         if (Target == null) return;
-        _autd!.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        await _autd!.SendAsync(new AUTD3Sharp.Gain.Focus(Target.transform.position));
         _oldPosition = Target.transform.position;
     }
 
-    private void Update()
+    private async void Update()
     {
         if (Target == null || Target.transform.position == _oldPosition) return;
-        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        if (_autd == null) return;
+        await _autd.SendAsync(new AUTD3Sharp.Gain.Focus(Target.transform.position));
         _oldPosition = Target.transform.position;
     }
 

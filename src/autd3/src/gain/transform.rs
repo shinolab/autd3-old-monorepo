@@ -4,14 +4,14 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
 use autd3_driver::{
     derive::prelude::*,
@@ -19,41 +19,33 @@ use autd3_driver::{
 };
 
 /// Gain to transform gain data
-pub struct Transform<T: Transducer, G: Gain<T>, F: Fn(&Device<T>, &T, &Drive) -> Drive> {
+pub struct Transform<G: Gain, F: Fn(&Device, &Transducer, &Drive) -> Drive> {
     gain: G,
     f: F,
-    phantom: std::marker::PhantomData<T>,
 }
 
-pub trait IntoTransform<T: Transducer, G: Gain<T>> {
+pub trait IntoTransform<G: Gain> {
     /// transform gain data
     ///
     /// # Arguments
     ///
     /// * `f` - transform function. The first argument is the device, the second is transducer, and the third is the original drive data.
     ///
-    fn with_transform<F: Fn(&Device<T>, &T, &Drive) -> Drive>(self, f: F) -> Transform<T, G, F>;
+    fn with_transform<F: Fn(&Device, &Transducer, &Drive) -> Drive>(self, f: F) -> Transform<G, F>;
 }
 
-impl<T: Transducer, G: Gain<T>> IntoTransform<T, G> for G {
-    fn with_transform<F: Fn(&Device<T>, &T, &Drive) -> Drive>(self, f: F) -> Transform<T, G, F> {
-        Transform {
-            gain: self,
-            f,
-            phantom: PhantomData,
-        }
+impl<G: Gain> IntoTransform<G> for G {
+    fn with_transform<F: Fn(&Device, &Transducer, &Drive) -> Drive>(self, f: F) -> Transform<G, F> {
+        Transform { gain: self, f }
     }
 }
 
-impl<
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T, &Drive) -> Drive + 'static,
-    > autd3_driver::datagram::Datagram<T> for Transform<T, G, F>
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static>
+    autd3_driver::datagram::Datagram for Transform<G, F>
 where
-    autd3_driver::operation::GainOp<T, Self>: autd3_driver::operation::Operation<T>,
+    autd3_driver::operation::GainOp<Self>: autd3_driver::operation::Operation,
 {
-    type O1 = autd3_driver::operation::GainOp<T, Self>;
+    type O1 = autd3_driver::operation::GainOp<Self>;
     type O2 = autd3_driver::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
@@ -61,26 +53,20 @@ where
     }
 }
 
-impl<
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T, &Drive) -> Drive + 'static,
-    > autd3_driver::datagram::GainAsAny for Transform<T, G, F>
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static>
+    autd3_driver::datagram::GainAsAny for Transform<G, F>
 {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
 
-impl<
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T, &Drive) -> Drive + 'static,
-    > Gain<T> for Transform<T, G, F>
+impl<G: Gain + 'static, F: Fn(&Device, &Transducer, &Drive) -> Drive + 'static> Gain
+    for Transform<G, F>
 {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let mut g = self.gain.calc(geometry, filter)?;

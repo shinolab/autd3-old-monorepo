@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,21 +28,23 @@ namespace autd3::gain::holo {
  * @details Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on
  * Graphics (TOG), 39(4):138–1, 2020.
  */
-template <class B>
-class GSPAT final : public Holo<GSPAT<B>, B>, public IntoCache<GSPAT<B>>, public IntoTransform<GSPAT<B>> {
+template <backend B>
+class GSPAT final : public Holo<GSPAT<B>>, public IntoCache<GSPAT<B>>, public IntoTransform<GSPAT<B>> {
  public:
-  explicit GSPAT(std::shared_ptr<B> backend) : Holo<GSPAT, B>(std::move(backend)) {}
+  explicit GSPAT(std::shared_ptr<B> backend) : Holo<GSPAT>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(GSPAT, uint32_t, repeat)
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = this->_backend->gspat(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    auto ptr = this->_backend->gspat(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
+                                     this->_amps.size());
     if (_repeat.has_value()) ptr = this->_backend->gspat_with_repeat(ptr, _repeat.value());
     if (this->_constraint.has_value()) ptr = this->_backend->gspat_with_constraint(ptr, this->_constraint.value());
     return ptr;
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<uint32_t> _repeat;
 };
 

@@ -1,4 +1,4 @@
-'''
+"""
 File: plane.py
 Project: gain
 Created Date: 14/09/2023
@@ -9,51 +9,47 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 import numpy as np
-from typing import Optional
 
+from pyautd3.emit_intensity import EmitIntensity
+from pyautd3.geometry import Geometry
+from pyautd3.internal.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.geometry import Geometry
-from ..internal.gain import IGain
 
 
 class Plane(IGain):
-    """Gain to produce a plane wave
-
-    """
+    """Gain to produce a plane wave."""
 
     _d: np.ndarray
-    _amp: Optional[float]
+    _intensity: EmitIntensity | None
 
-    def __init__(self, dir: np.ndarray):
-        """Constructor
+    def __init__(self: "Plane", direction: np.ndarray) -> None:
+        """Constructor.
 
         Arguments:
-        - `dir` - Direction of the plane wave
+        ---------
+            direction: Direction of the plane wave
         """
-
-        assert len(dir) == 3
-
         super().__init__()
-        self._d = dir
-        self._amp = None
+        self._d = direction
+        self._intensity = None
 
-    def with_amp(self, amp: float) -> "Plane":
-        """Set amplitude
+    def with_intensity(self: "Plane", intensity: int | EmitIntensity) -> "Plane":
+        """Set amplitude.
 
         Arguments:
-        - `amp` - Normalized amplitude (from 0 to 1)
+        ---------
+            intensity: Emission intensity
         """
-
-        self._amp = amp
+        self._intensity = EmitIntensity._cast(intensity)
         return self
 
-    def gain_ptr(self, _: Geometry) -> GainPtr:
+    def _gain_ptr(self: "Plane", _: Geometry) -> GainPtr:
         ptr = Base().gain_plane(self._d[0], self._d[1], self._d[2])
-        if self._amp is not None:
-            ptr = Base().gain_plane_with_amp(ptr, self._amp)
+        if self._intensity is not None:
+            ptr = Base().gain_plane_with_intensity(ptr, self._intensity.value)
         return ptr

@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,12 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{common::*, create_holo, holo::*, take_gain, ConstraintPtr, GainPtr};
+use autd3capi_def::{
+    common::{driver::geometry::Vector3, *},
+    create_holo,
+    holo::*,
+    take_gain, EmissionConstraintPtr, GainPtr,
+};
 
 #[no_mangle]
 #[must_use]
@@ -29,7 +34,7 @@ pub unsafe extern "C" fn AUTDGainHoloGreedy(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGreedyWithConstraint(
     holo: GainPtr,
-    constraint: ConstraintPtr,
+    constraint: EmissionConstraintPtr,
 ) -> GainPtr {
     GainPtr::new(take_gain!(holo, Greedy).with_constraint(*Box::from_raw(constraint.0 as _)))
 }
@@ -60,9 +65,9 @@ mod tests {
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
             let constraint = AUTDGainHoloConstraintNormalize();
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(1.);
+            let constraint = AUTDGainHoloConstraintUniform(0xFF);
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintClamp(0., 1.);
+            let constraint = AUTDGainHoloConstraintClamp(0, 0xFF);
             let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
 
             let _ = AUTDGainHoloGreedyWithPhaseDiv(holo, 5);

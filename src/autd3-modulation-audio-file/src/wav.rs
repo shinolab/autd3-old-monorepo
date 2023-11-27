@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_derive::Modulation;
-use autd3_driver::derive::prelude::*;
+use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 use hound::SampleFormat;
 
 use std::path::Path;
@@ -27,7 +27,7 @@ pub struct Wav {
     channels: u16,
     sample_rate: u32,
     raw_buffer: Vec<f32>,
-    freq_div: u32,
+    config: SamplingConfiguration,
 }
 
 impl Wav {
@@ -60,7 +60,6 @@ impl Wav {
                 .samples::<i32>()
                 .map(|i| (i.unwrap() as i64 - std::i32::MIN as i64) as f32 / 4294967295.)
                 .collect(),
-            (SampleFormat::Float, 32) => reader.samples::<f32>().map(|i| i.unwrap()).collect(),
             _ => return Err(AudioFileError::Wav(hound::Error::Unsupported)),
         };
 
@@ -68,21 +67,24 @@ impl Wav {
             channels,
             sample_rate,
             raw_buffer,
-            freq_div: 5120,
+            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         })
     }
 }
 
 impl Modulation for Wav {
     #[allow(clippy::unnecessary_cast)]
-    fn calc(&self) -> Result<Vec<float>, AUTDInternalError> {
-        let sample_rate = self.sampling_frequency() as u32;
+    fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
+        let sample_rate = self.sampling_config().frequency() as u32;
         let samples = wav_io::resample::linear(
             self.raw_buffer.clone(),
             self.channels,
             self.sample_rate,
             sample_rate,
         );
-        Ok(samples.iter().map(|&d| d as float).collect())
+        Ok(samples
+            .iter()
+            .map(|&d| EmitIntensity::new((d * 255.).round() as u8))
+            .collect())
     }
 }

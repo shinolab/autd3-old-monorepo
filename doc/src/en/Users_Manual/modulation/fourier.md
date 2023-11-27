@@ -4,6 +4,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 
@@ -35,6 +36,7 @@ You can also use `+` operator.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 
@@ -58,6 +60,7 @@ For `Fourier`, `Sine` has a feature to specify the phase parameter.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 

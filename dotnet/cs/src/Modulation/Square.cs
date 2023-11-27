@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,16 +27,14 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Square wave modulation
     /// </summary>
     public sealed class Square : Internal.ModulationWithFreqDiv<Square>
     {
         private readonly int _freq;
-        private float_t? _low;
-        private float_t? _high;
+        private EmitIntensity? _low;
+        private EmitIntensity? _high;
         private float_t? _duty;
 
         public Square(int freq)
@@ -50,9 +48,20 @@ namespace AUTD3Sharp.Modulation
         /// <summary>
         /// Set low level amplitude
         /// </summary>
-        /// <param name="low">low level amplitude (0.0 - 1.0)</param>
+        /// <param name="low">low level intensity</param>
         /// <returns></returns>
-        public Square WithLow(float_t low)
+        public Square WithLow(byte low)
+        {
+            _low = new EmitIntensity(low);
+            return this;
+        }
+
+        /// <summary>
+        /// Set low level amplitude
+        /// </summary>
+        /// <param name="low">low level intensity</param>
+        /// <returns></returns>
+        public Square WithLow(EmitIntensity low)
         {
             _low = low;
             return this;
@@ -61,9 +70,20 @@ namespace AUTD3Sharp.Modulation
         /// <summary>
         /// Set high level amplitude
         /// </summary>
-        /// <param name="high">high level amplitude (0.0 - 1.0)</param>
+        /// <param name="high">high level intensity</param>
         /// <returns></returns>
-        public Square WithHigh(float_t high)
+        public Square WithHigh(byte high)
+        {
+            _high = new EmitIntensity(high);
+            return this;
+        }
+
+        /// <summary>
+        /// Set high level amplitude
+        /// </summary>
+        /// <param name="high">high level intensity</param>
+        /// <returns></returns>
+        public Square WithHigh(EmitIntensity high)
         {
             _high = high;
             return this;
@@ -81,17 +101,17 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            var ptr = Base.AUTDModulationSquare((uint)_freq);
+            var ptr = NativeMethodsBase.AUTDModulationSquare((uint)_freq);
             if (_low != null)
-                ptr = Base.AUTDModulationSquareWithLow(ptr, _low.Value);
+                ptr = NativeMethodsBase.AUTDModulationSquareWithLow(ptr, _low.Value.Value);
             if (_high != null)
-                ptr = Base.AUTDModulationSquareWithHigh(ptr, _high.Value);
+                ptr = NativeMethodsBase.AUTDModulationSquareWithHigh(ptr, _high.Value.Value);
             if (_duty != null)
-                ptr = Base.AUTDModulationSquareWithDuty(ptr, _duty.Value);
-            if (FreqDiv != null)
-                ptr = Base.AUTDModulationSquareWithSamplingFrequencyDivision(ptr, FreqDiv.Value);
+                ptr = NativeMethodsBase.AUTDModulationSquareWithDuty(ptr, _duty.Value);
+            if (Config != null)
+                ptr = NativeMethodsBase.AUTDModulationSquareWithSamplingConfig(ptr, Config.Value.Internal);
             return ptr;
         }
     }

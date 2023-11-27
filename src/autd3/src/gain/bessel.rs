@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::Amplitude,
+    common::EmitIntensity,
     derive::prelude::*,
     geometry::{Geometry, UnitQuaternion, Vector3},
 };
@@ -24,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a Bessel beam
 #[derive(Gain, Clone, Copy)]
 pub struct Bessel {
-    amp: Amplitude,
+    intensity: EmitIntensity,
     pos: Vector3,
     dir: Vector3,
     theta: float,
@@ -44,25 +44,25 @@ impl Bessel {
             pos,
             dir,
             theta,
-            amp: Amplitude::MAX,
+            intensity: EmitIntensity::MAX,
         }
     }
 
-    /// set amplitude
+    /// set emission intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - amplitude
+    /// * `intensity` - emission intensity
     ///
-    pub fn with_amp<A: Into<Amplitude>>(self, amp: A) -> Self {
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
         Self {
-            amp: amp.into(),
+            intensity: intensity.into(),
             ..self
         }
     }
 
-    pub fn amp(&self) -> Amplitude {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 
     pub fn pos(&self) -> Vector3 {
@@ -78,10 +78,10 @@ impl Bessel {
     }
 }
 
-impl<T: Transducer> Gain<T> for Bessel {
+impl Gain for Bessel {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let dir = self.dir.normalize();
@@ -99,7 +99,7 @@ impl<T: Transducer> Gain<T> for Bessel {
             let phase = dist * tr.wavenumber(dev.sound_speed);
             Drive {
                 phase,
-                amp: self.amp,
+                intensity: self.intensity,
             }
         }))
     }
@@ -109,21 +109,15 @@ impl<T: Transducer> Gain<T> for Bessel {
 mod tests {
     use rand::Rng;
 
-    use autd3_driver::{
-        defined::PI,
-        geometry::{IntoDevice, LegacyTransducer},
-    };
+    use autd3_driver::{autd3_device::AUTD3, defined::PI, geometry::IntoDevice};
 
     use super::*;
 
-    use crate::{autd3_device::AUTD3, tests::random_vector3};
+    use crate::tests::random_vector3;
 
     #[test]
     fn test_bessel() {
-        let geometry: Geometry<LegacyTransducer> =
-            Geometry::new(vec![
-                AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0)
-            ]);
+        let geometry: Geometry = Geometry::new(vec![AUTD3::new(Vector3::zeros()).into_device(0)]);
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
@@ -134,10 +128,12 @@ mod tests {
             .unwrap();
         assert_eq!(b.len(), 1);
         assert_eq!(b[&0].len(), geometry.num_transducers());
-        b[&0].iter().for_each(|d| assert_eq!(d.amp.value(), 1.0));
+        b[&0]
+            .iter()
+            .for_each(|d| assert_eq!(d.intensity.value(), 0xFF));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
-                let dir = d;
+                let dir = d.normalize();
                 let v = Vector3::new(dir.y, -dir.x, 0.);
                 let theta_v = v.norm().asin();
                 let rot = if let Some(v) = v.try_normalize(1.0e-6) {
@@ -157,15 +153,17 @@ mod tests {
         let d = random_vector3(-1.0..1.0, -1.0..1.0, -1.0..1.0).normalize();
         let theta = rng.gen_range(-PI..PI);
         let b = Bessel::new(f, d, theta)
-            .with_amp(0.5)
+            .with_intensity(0x1F)
             .calc(&geometry, GainFilter::All)
             .unwrap();
         assert_eq!(b.len(), 1);
         assert_eq!(b[&0].len(), geometry.num_transducers());
-        b[&0].iter().for_each(|b| assert_eq!(b.amp.value(), 0.5));
+        b[&0]
+            .iter()
+            .for_each(|b| assert_eq!(b.intensity.value(), 0x1F));
         b[&0].iter().zip(geometry[0].iter()).for_each(|(b, tr)| {
             let expected_phase = {
-                let dir = d;
+                let dir = d.normalize();
                 let v = Vector3::new(dir.y, -dir.x, 0.);
                 let theta_v = v.norm().asin();
                 let rot = if let Some(v) = v.try_normalize(1.0e-6) {

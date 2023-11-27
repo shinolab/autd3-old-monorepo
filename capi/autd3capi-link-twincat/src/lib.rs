@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,6 +58,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCATIntoBuilder(
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct LinkRemoteTwinCATBuilderPtr(pub ConstPtr);
 
 impl LinkRemoteTwinCATBuilderPtr {
@@ -66,17 +67,37 @@ impl LinkRemoteTwinCATBuilderPtr {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultLinkRemoteTwinCATBuilder {
+    pub result: LinkRemoteTwinCATBuilderPtr,
+    pub err_len: u32,
+    pub err: ConstPtr,
+}
+
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
     server_ams_net_id: *const c_char,
-    err: *mut c_char,
-) -> LinkRemoteTwinCATBuilderPtr {
-    LinkRemoteTwinCATBuilderPtr::new(RemoteTwinCAT::builder(try_or_return!(
-        CStr::from_ptr(server_ams_net_id).to_str(),
-        err,
-        LinkRemoteTwinCATBuilderPtr(NULL)
-    )))
+) -> ResultLinkRemoteTwinCATBuilder {
+    match CStr::from_ptr(server_ams_net_id).to_str() {
+        Ok(v) => {
+            let builder = RemoteTwinCAT::builder(v);
+            ResultLinkRemoteTwinCATBuilder {
+                result: LinkRemoteTwinCATBuilderPtr::new(builder),
+                err_len: 0,
+                err: std::ptr::null_mut(),
+            }
+        }
+        Err(e) => {
+            let err = e.to_string();
+            ResultLinkRemoteTwinCATBuilder {
+                result: LinkRemoteTwinCATBuilderPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            }
+        }
+    }
 }
 
 #[no_mangle]

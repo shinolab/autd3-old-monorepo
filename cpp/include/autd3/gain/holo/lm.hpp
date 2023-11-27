@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,10 +33,10 @@ namespace autd3::gain::holo {
  * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
  * * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
-template <class B>
-class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
+template <backend B>
+class LM final : public Holo<LM<B>>, public IntoCache<LM<B>>, public IntoTransform<LM<B>> {
  public:
-  explicit LM(std::shared_ptr<B> backend) : Holo<LM, B>(std::move(backend)) {}
+  explicit LM(std::shared_ptr<B> backend) : Holo<LM>(), _backend(std::move(backend)) {}
 
   AUTD3_DEF_PARAM(LM, double, eps1)
   AUTD3_DEF_PARAM(LM, double, eps2)
@@ -51,7 +51,8 @@ class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTran
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
-    auto ptr = this->_backend->lm(reinterpret_cast<const double*>(this->_foci.data()), this->_amps.data(), this->_amps.size());
+    auto ptr = this->_backend->lm(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
+                                  this->_amps.size());
     if (_eps1.has_value()) ptr = this->_backend->lm_with_eps1(ptr, _eps1.value());
     if (_eps2.has_value()) ptr = this->_backend->lm_with_eps2(ptr, _eps2.value());
     if (_tau.has_value()) ptr = this->_backend->lm_with_tau(ptr, _tau.value());
@@ -62,6 +63,7 @@ class LM final : public Holo<LM<B>, B>, public IntoCache<LM<B>>, public IntoTran
   }
 
  private:
+  std::shared_ptr<B> _backend;
   std::optional<double> _eps1;
   std::optional<double> _eps2;
   std::optional<double> _tau;

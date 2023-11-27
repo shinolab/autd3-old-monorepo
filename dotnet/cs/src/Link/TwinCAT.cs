@@ -4,13 +4,14 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 14/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+using AUTD3Sharp.Internal;
 using System;
 using System.Net;
 
@@ -21,24 +22,29 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class TwinCAT
     {
-        public sealed class TwinCATBuilder : Internal.ILinkBuilder
+        public sealed class TwinCATBuilder : Internal.ILinkBuilder<TwinCAT>
         {
             private LinkTwinCATBuilderPtr _ptr;
 
             internal TwinCATBuilder()
             {
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkTwinCAT();
+                _ptr = NativeMethodsLinkTwinCAT.AUTDLinkTwinCAT();
             }
 
             public TwinCATBuilder WithTimeout(TimeSpan timeout)
             {
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkTwinCATWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                _ptr = NativeMethodsLinkTwinCAT.AUTDLinkTwinCATWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr ILinkBuilder<TwinCAT>.Ptr()
             {
-                return NativeMethods.LinkTwinCAT.AUTDLinkTwinCATIntoBuilder(_ptr);
+                return NativeMethodsLinkTwinCAT.AUTDLinkTwinCATIntoBuilder(_ptr);
+            }
+
+            TwinCAT ILinkBuilder<TwinCAT>.ResolveLink(LinkPtr ptr)
+            {
+                return new TwinCAT { };
             }
         }
 
@@ -53,7 +59,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class RemoteTwinCAT
     {
-        public sealed class RemoteTwinCATBuilder : Internal.ILinkBuilder
+        public sealed class RemoteTwinCATBuilder : Internal.ILinkBuilder<RemoteTwinCAT>
         {
             private LinkRemoteTwinCATBuilderPtr _ptr;
 
@@ -64,10 +70,22 @@ namespace AUTD3Sharp.Link
             /// <exception cref="AUTDException"></exception>
             public RemoteTwinCATBuilder(string serverAmsNetId)
             {
-                var err = new byte[256];
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCAT(serverAmsNetId, err);
-                if (_ptr._0 == IntPtr.Zero)
-                    throw new AUTDException(err);
+                var serverAmsNetIdBytes = System.Text.Encoding.UTF8.GetBytes(serverAmsNetId);
+                unsafe
+                {
+                    fixed (byte* ap = serverAmsNetIdBytes)
+                    {
+                        var res = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCAT(ap);
+                        if (res.result.Item1 == IntPtr.Zero)
+                        {
+                            var err = new byte[res.err_len];
+                            fixed (byte* ep = err)
+                                NativeMethodsDef.AUTDGetErr(res.err, ep);
+                            throw new AUTDException(err);
+                        }
+                        _ptr = res.result;
+                    }
+                }
             }
 
             /// <summary>
@@ -77,7 +95,13 @@ namespace AUTD3Sharp.Link
             /// <returns></returns>
             public RemoteTwinCATBuilder WithServerIp(IPAddress serverIp)
             {
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithServerIP(_ptr, serverIp.ToString());
+                var serverIpBytes = serverIp.GetAddressBytes();
+                unsafe
+                {
+                    fixed (byte* ap = serverIpBytes)
+                        _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATWithServerIP(_ptr, ap);
+                }
+
                 return this;
             }
 
@@ -88,19 +112,29 @@ namespace AUTD3Sharp.Link
             /// <returns></returns>
             public RemoteTwinCATBuilder WithClientAmsNetId(string clientAmsNetId)
             {
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithClientAmsNetId(_ptr, clientAmsNetId);
+                var clientAmsNetIdBytes = System.Text.Encoding.UTF8.GetBytes(clientAmsNetId);
+                unsafe
+                {
+                    fixed (byte* ap = clientAmsNetIdBytes)
+                        _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATWithClientAmsNetId(_ptr, ap);
+                }
                 return this;
             }
 
             public RemoteTwinCATBuilder WithTimeout(TimeSpan timeout)
             {
-                _ptr = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATWithTimeout(_ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
-            public LinkBuilderPtr Ptr()
+            LinkBuilderPtr ILinkBuilder<RemoteTwinCAT>.Ptr()
             {
-                return NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATIntoBuilder(_ptr);
+                return NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATIntoBuilder(_ptr);
+            }
+
+            RemoteTwinCAT ILinkBuilder<RemoteTwinCAT>.ResolveLink(LinkPtr ptr)
+            {
+                return new RemoteTwinCAT { };
             }
         }
 

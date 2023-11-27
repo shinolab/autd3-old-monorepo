@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,57 +40,56 @@ using float_t = System.Double;
 
 namespace AUTD3Sharp
 {
-    using Base = NativeMethods.Base;
-
     namespace STM
     {
         public abstract class STM : IDatagram
         {
             private readonly float_t? _freq;
-            private readonly float_t? _samplingFreq;
-            private readonly uint? _samplingFreqDiv;
-            private readonly TimeSpan? _samplingPeriod;
+            private readonly TimeSpan? _period;
+            private readonly SamplingConfiguration? _samplingConfig;
             protected int StartIdxV;
             protected int FinishIdxV;
 
-            protected STM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplingPeriod)
+            protected STM(float_t? freq, TimeSpan? period, SamplingConfiguration? config)
             {
                 _freq = freq;
-                _samplingFreq = samplingFreq;
-                _samplingFreqDiv = sampleFreqDiv;
-                _samplingPeriod = samplingPeriod;
+                _period = period;
+                _samplingConfig = config;
                 StartIdxV = -1;
                 FinishIdxV = -1;
             }
 
-            public DatagramPtr Ptr(Geometry geometry) => STMPtr(geometry);
+            DatagramPtr IDatagram.Ptr(Geometry geometry) => STMPtr(geometry);
 
-            public abstract DatagramPtr STMPtr(Geometry geometry);
+            internal abstract DatagramPtr STMPtr(Geometry geometry);
 
             public ushort? StartIdx => StartIdxV == -1 ? null : (ushort?)StartIdxV;
 
             public ushort? FinishIdx => FinishIdxV == -1 ? null : (ushort?)FinishIdxV;
 
-            protected STMPropsPtr Props()
+            internal STMPropsPtr Props()
             {
                 var ptr = new STMPropsPtr();
                 if (_freq != null)
-                    ptr = Base.AUTDSTMProps(_freq.Value);
-                if (_samplingFreq != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreq(_samplingFreq.Value);
-                if (_samplingFreqDiv != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingFreqDiv(_samplingFreqDiv.Value);
-                if (_samplingPeriod != null)
-                    ptr = Base.AUTDSTMPropsWithSamplingPeriod((ulong)(_samplingPeriod.Value.TotalMilliseconds * 1000 * 1000));
-                ptr = Base.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
-                ptr = Base.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
+                    ptr = NativeMethodsBase.AUTDSTMPropsNew(_freq.Value);
+                if (_period != null)
+                    ptr = NativeMethodsBase.AUTDSTMPropsNewWithPeriod((ulong)(_period.Value.TotalSeconds * 1000 * 1000 *
+                                                                              1000));
+                if (_samplingConfig != null)
+                    ptr = NativeMethodsBase.AUTDSTMPropsNewWithSamplingConfig(_samplingConfig.Value.Internal);
+                ptr = NativeMethodsBase.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
+                ptr = NativeMethodsBase.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
                 return ptr;
             }
 
-            protected float_t FreqFromSize(int size) => Base.AUTDSTMPropsFrequency(Props(), (ulong)size);
-            protected float_t SamplingFreqFromSize(int size) => Base.AUTDSTMPropsSamplingFrequency(Props(), (ulong)size);
-            protected uint SamplingFreqDivFromSize(int size) => Base.AUTDSTMPropsSamplingFrequencyDivision(Props(), (ulong)size);
-            protected TimeSpan SamplingPeriodFromSize(int size) => TimeSpan.FromMilliseconds(Base.AUTDSTMPropsSamplingPeriod(Props(), (ulong)size) / 1000.0 / 1000.0);
+            protected float_t FreqFromSize(int size) => NativeMethodsBase.AUTDSTMPropsFrequency(Props(), (ulong)size);
+
+            protected TimeSpan PeriodFromSize(int size) =>
+                TimeSpan.FromSeconds(NativeMethodsBase.AUTDSTMPropsPeriod(Props(), (ulong)size) / 1000.0 / 1000.0 /
+                                     1000.0);
+
+            protected SamplingConfiguration SamplingConfigFromSize(int size) => new SamplingConfiguration(
+                NativeMethodsBase.AUTDSTMPropsSamplingConfig(Props(), (ulong)size).Validate());
         }
 
         /// <summary>
@@ -101,50 +100,46 @@ namespace AUTD3Sharp
         /// <para>FocusSTM has following restrictions:</para>
         /// <list>
         /// <item>The maximum number of sampling points is 65536.</item>
-        /// <item>The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FPGAClkFreq">AUTD3.FPGAClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
         /// </list></remarks>
         public sealed class FocusSTM : STM
         {
             private readonly List<float_t> _points;
-            private readonly List<byte> _shifts;
+            private readonly List<EmitIntensity> _intensities;
 
-            private FocusSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(freq, samplingFreq, sampleFreqDiv, samplePeriod)
+            private FocusSTM(float_t? freq, TimeSpan? period, SamplingConfiguration? config) : base(
+                freq, period, config)
             {
                 _points = new List<float_t>();
-                _shifts = new List<byte>();
+                _intensities = new List<EmitIntensity>();
             }
 
-            public FocusSTM(float_t freq) : this(freq, null, null, null)
+            public FocusSTM(float_t freq) : this(freq, null, null)
             {
             }
 
-            public static FocusSTM WithSamplingFrequency(float_t freq)
+            public static FocusSTM NewWithPeriod(TimeSpan period)
             {
-                return new FocusSTM(null, freq, null, null);
+                return new FocusSTM(null, period, null);
             }
 
-            public static FocusSTM WithSamplingFrequencyDivision(uint freqDiv)
+            public static FocusSTM NewWithSamplingConfig(SamplingConfiguration config)
             {
-                return new FocusSTM(null, null, freqDiv, null);
-            }
-
-            public static FocusSTM WithSamplingPeriod(TimeSpan period)
-            {
-                return new FocusSTM(null, null, null, period);
+                return new FocusSTM(null, null, config);
             }
 
             /// <summary>
             /// Add focus point
             /// </summary>
             /// <param name="point">Focus point</param>
-            /// <param name="shift">Duty shift. Duty ratio of ultrasound will be `50% >> duty_shift`. If `duty_shift` is 0, duty ratio is 50%, which means the amplitude is the maximum.</param>
+            /// <param name="intensity">Emission intensity</param>
             /// <returns></returns>
-            public FocusSTM AddFocus(Vector3 point, byte shift = 0)
+            public FocusSTM AddFocus(Vector3 point, EmitIntensity? intensity = null)
             {
                 _points.Add(point.x);
                 _points.Add(point.y);
                 _points.Add(point.z);
-                _shifts.Add(shift);
+                _intensities.Add(intensity ?? EmitIntensity.Max);
                 return this;
             }
 
@@ -161,7 +156,7 @@ namespace AUTD3Sharp
             /// Add foci
             /// </summary>
             /// <param name="iter">Enumerable of foci and duty shifts</param>
-            public FocusSTM AddFociFromIter(IEnumerable<(Vector3, byte)> iter)
+            public FocusSTM AddFociFromIter(IEnumerable<(Vector3, EmitIntensity)> iter)
             {
                 return iter.Aggregate(this, (stm, point) => stm.AddFocus(point.Item1, point.Item2));
             }
@@ -178,14 +173,19 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public float_t Frequency => FreqFromSize(_shifts.Count);
-            public float_t SamplingFrequency => SamplingFreqFromSize(_shifts.Count);
-            public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_shifts.Count);
-            public TimeSpan SamplingPeriod => SamplingPeriodFromSize(_shifts.Count);
+            public float_t Frequency => FreqFromSize(_intensities.Count);
+            public TimeSpan Period => PeriodFromSize(_intensities.Count);
+            public SamplingConfiguration SamplingConfiguration => SamplingConfigFromSize(_intensities.Count);
 
-            public override DatagramPtr STMPtr(Geometry geometry)
+            internal override DatagramPtr STMPtr(Geometry geometry)
             {
-                return Base.AUTDSTMFocus(Props(), _points.ToArray(), _shifts.ToArray(), (ulong)_shifts.Count);
+                unsafe
+                {
+                    fixed (float_t* pp = _points.ToArray())
+                    fixed (EmitIntensity* ps = _intensities.ToArray())
+                        return NativeMethodsBase.AUTDSTMFocus(Props(), pp, (byte*)ps, (ulong)_intensities.Count)
+                            .Validate();
+                }
             }
         }
 
@@ -196,37 +196,33 @@ namespace AUTD3Sharp
         /// <para>The sampling timing is determined by hardware, thus the sampling time is precise.</para>
         /// <para>FocusSTM has following restrictions:</para>
         /// <list>
-        /// <item>The maximum number of sampling Gain is 2048 (Legacy mode) or 1024 (Advanced/AdvancedPhase mode).</item>
-        /// <item>The sampling frequency is <see cref="AUTD3.FPGASubClkFreq">AUTD3.FPGASubClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
+        /// <item>The maximum number of sampling Gain is 2048.</item>
+        /// <item>The sampling frequency is <see cref="AUTD3.FPGAClkFreq">AUTD3.FPGAClkFreq</see>/N, where `N` is a 32-bit unsigned integer and must be at 4096.</item>
         /// </list></remarks>
         public sealed class GainSTM : STM
         {
             private readonly List<Internal.Gain> _gains;
             private GainSTMMode _mode;
 
-            private GainSTM(float_t? freq, float_t? samplingFreq, uint? sampleFreqDiv, TimeSpan? samplePeriod) : base(freq, samplingFreq, sampleFreqDiv, samplePeriod)
+            private GainSTM(float_t? freq, TimeSpan? period, SamplingConfiguration? config) : base(
+                freq, period, config)
             {
                 _gains = new List<Internal.Gain>();
-                _mode = GainSTMMode.PhaseDutyFull;
+                _mode = GainSTMMode.PhaseIntensityFull;
             }
 
-            public GainSTM(float_t freq) : this(freq, null, null, null)
+            public GainSTM(float_t freq) : this(freq, null, null)
             {
             }
 
-            public static GainSTM WithSamplingFrequency(float_t freq)
+            public static GainSTM NewWithPeriod(TimeSpan period)
             {
-                return new GainSTM(null, freq, null, null);
+                return new GainSTM(null, period, null);
             }
 
-            public static GainSTM WithSamplingFrequencyDivision(uint freqDiv)
+            public static GainSTM NewWithSamplingConfiguration(SamplingConfiguration config)
             {
-                return new GainSTM(null, null, freqDiv, null);
-            }
-
-            public static GainSTM WithSamplingPeriod(TimeSpan period)
-            {
-                return new GainSTM(null, null, null, period);
+                return new GainSTM(null, null, config);
             }
 
             /// <summary>
@@ -268,14 +264,18 @@ namespace AUTD3Sharp
             }
 
             public float_t Frequency => FreqFromSize(_gains.Count);
-            public float_t SamplingFrequency => SamplingFreqFromSize(_gains.Count);
-            public uint SamplingFrequencyDivision => SamplingFreqDivFromSize(_gains.Count);
-            public TimeSpan SamplingPeriod => SamplingPeriodFromSize(_gains.Count);
+            public TimeSpan Period => PeriodFromSize(_gains.Count);
+            public SamplingConfiguration SamplingConfiguration => SamplingConfigFromSize(_gains.Count);
 
-            public override DatagramPtr STMPtr(Geometry geometry)
+
+            internal override DatagramPtr STMPtr(Geometry geometry)
             {
                 var gains = _gains.Select(g => g.GainPtr(geometry)).ToArray();
-                return Base.AUTDSTMGain(Props(), gains, (uint)gains.Length, _mode);
+                unsafe
+                {
+                    fixed (GainPtr* gp = gains)
+                        return NativeMethodsBase.AUTDSTMGain(Props(), gp, (uint)gains.Length, _mode).Validate();
+                }
             }
         }
     }

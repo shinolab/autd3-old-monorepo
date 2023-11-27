@@ -11,19 +11,21 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
-let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
+let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 let point_num = 200;
 let radius = 30.0 * MILLIMETER;
 let stm = GainSTM::new(1.0).add_gains_from_iter((0..point_num).map(|i| {
     let theta = 2.0 * PI * i as float / point_num as float;
     let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
     Focus::new(center + p)
-}));
-autd.send(stm)?;
+}))?;
+autd.send(stm).await?;
 # Ok(())
 # }
 ```
@@ -75,12 +77,14 @@ autd.send(stm)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
-let stm = GainSTM::with_sampling_frequency(1.0);
-# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
-# autd.send(stm)?;
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
+let stm = GainSTM::new_with_sampling_config(SamplingConfiguration::new_with_frequency(1.0)?);
+# let stm = stm.add_gain(Null::default())?.add_gain(Null::default())?;
+# autd.send(stm).await?;
 # Ok(())
 # }
 ```
@@ -99,34 +103,6 @@ from pyautd3.stm import GainSTM
 stm = GainSTM.with_sampling_frequency(1.0)
 ```
 
-また, サンプリング周波数分周比$N$を指定することもできる.
-
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros())).open_with(autd3::link::Nop::builder())?;
-let stm = GainSTM::with_sampling_frequency_division(5120);
-# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
-# autd.send(stm)?;
-# Ok(())
-# }
-```
-
-```cpp
-auto stm = autd3::GainSTM::with_sampling_frequency_division(5120);
-```
-
-```cs
-var stm = GainSTM.WithSamplingFrequencyDivision(5120);
-```
-
-```python
-from pyautd3.stm import GainSTM
-
-stm = GainSTM.with_sampling_frequency_division(5120)
-```
-
 ## GainSTMMode
 
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
@@ -136,13 +112,15 @@ stm = GainSTM.with_sampling_frequency_division(5120)
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).unwrap();
+# #[tokio::main]
+# async fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
 let stm = GainSTM::new(1.0).with_mode(GainSTMMode::PhaseFull);
-# let stm = stm.add_gain(Null::default()).add_gain(Null::default());
-# autd.send(stm)?;
+# let stm = stm.add_gain(Null::default())?.add_gain(Null::default())?;
+# autd.send(stm).await?;
 # Ok(())
 # }
 ```

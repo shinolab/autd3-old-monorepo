@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import ModulationPtr
+from .autd3capi_def import ModulationPtr, ResultModulation, SamplingConfiguration
 
 
 class Singleton(type):
@@ -25,26 +25,26 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDModulationWav.restype = ModulationPtr
+        self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p] 
+        self.dll.AUTDModulationWav.restype = ResultModulation
 
-        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDModulationWavWithSamplingFrequencyDivision.restype = ModulationPtr
+        self.dll.AUTDModulationWavWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDModulationWavWithSamplingConfig.restype = ModulationPtr
 
-        self.dll.AUTDModulationRawPCM.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_char_p] 
-        self.dll.AUTDModulationRawPCM.restype = ModulationPtr
+        self.dll.AUTDModulationRawPCM.argtypes = [ctypes.c_char_p, ctypes.c_uint32] 
+        self.dll.AUTDModulationRawPCM.restype = ResultModulation
 
-        self.dll.AUTDModulationRawPCMWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDModulationRawPCMWithSamplingFrequencyDivision.restype = ModulationPtr
+        self.dll.AUTDModulationRawPCMWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDModulationRawPCMWithSamplingConfig.restype = ModulationPtr
 
-    def modulation_wav(self, path: bytes, err: ctypes.Array[ctypes.c_char]) -> ModulationPtr:
-        return self.dll.AUTDModulationWav(path, err)
+    def modulation_wav(self, path: bytes) -> ResultModulation:
+        return self.dll.AUTDModulationWav(path)
 
-    def modulation_wav_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
-        return self.dll.AUTDModulationWavWithSamplingFrequencyDivision(m, div)
+    def modulation_wav_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
+        return self.dll.AUTDModulationWavWithSamplingConfig(m, config)
 
-    def modulation_raw_pcm(self, path: bytes, sample_rate: int, err: ctypes.Array[ctypes.c_char]) -> ModulationPtr:
-        return self.dll.AUTDModulationRawPCM(path, sample_rate, err)
+    def modulation_raw_pcm(self, path: bytes, sample_rate: int) -> ResultModulation:
+        return self.dll.AUTDModulationRawPCM(path, sample_rate)
 
-    def modulation_raw_pcm_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
-        return self.dll.AUTDModulationRawPCMWithSamplingFrequencyDivision(m, div)
+    def modulation_raw_pcm_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
+        return self.dll.AUTDModulationRawPCMWithSamplingConfig(m, config)

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 22/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,7 +56,6 @@ pub struct ImGuiRenderer {
     enable: Vec<bool>,
     thermal: Vec<bool>,
     show_mod_plot: Vec<bool>,
-    show_mod_plot_raw: Vec<bool>,
     mod_plot_size: Vec<[f32; 2]>,
     real_time: u64,
     time_step: i32,
@@ -68,7 +67,7 @@ impl ImGuiRenderer {
         initial_settings: ViewerSettings,
         config_path: &Option<PathBuf>,
         renderer: &Renderer,
-    ) -> Self {
+    ) -> anyhow::Result<Self> {
         let mut imgui = Context::create();
         if let Some(path) = config_path {
             imgui.set_ini_filename(path.join("imgui.ini"));
@@ -87,10 +86,9 @@ impl ImGuiRenderer {
             renderer.device(),
             renderer.queue(),
             renderer.image_format(),
-        )
-        .expect("Failed to initialize renderer");
+        )?;
 
-        Self {
+        Ok(Self {
             imgui,
             platform,
             imgui_renderer,
@@ -104,10 +102,9 @@ impl ImGuiRenderer {
             real_time: get_current_ec_time(),
             time_step: 1000000,
             show_mod_plot: Vec::new(),
-            show_mod_plot_raw: Vec::new(),
             mod_plot_size: Vec::new(),
             initial_settings,
-        }
+        })
     }
 
     pub fn init(&mut self, dev_num: usize) {
@@ -115,7 +112,6 @@ impl ImGuiRenderer {
         self.enable = vec![true; dev_num];
         self.thermal = vec![false; dev_num];
         self.show_mod_plot = vec![false; dev_num];
-        self.show_mod_plot_raw = vec![false; dev_num];
         self.mod_plot_size = vec![[200., 50.]; dev_num];
     }
 
@@ -124,10 +120,8 @@ impl ImGuiRenderer {
             .handle_event(self.imgui.io_mut(), window, event);
     }
 
-    pub fn prepare_frame(&mut self, window: &Window) {
-        self.platform
-            .prepare_frame(self.imgui.io_mut(), window)
-            .expect("Failed to prepare frame");
+    pub fn prepare_frame(&mut self, window: &Window) -> anyhow::Result<()> {
+        Ok(self.platform.prepare_frame(self.imgui.io_mut(), window)?)
     }
 
     pub fn update_delta_time(&mut self) {
@@ -151,18 +145,16 @@ impl ImGuiRenderer {
         render: &Renderer,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
         settings: &mut ViewerSettings,
-    ) -> UpdateFlag {
+    ) -> anyhow::Result<UpdateFlag> {
         let mut update_flag = UpdateFlag::empty();
 
-        self.update_font(render);
+        self.update_font(render)?;
 
         let io = self.imgui.io_mut();
 
         let fps = io.framerate;
 
-        self.platform
-            .prepare_frame(io, render.window())
-            .expect("Failed to start frame");
+        self.platform.prepare_frame(io, render.window())?;
 
         let system_time = self.system_time();
         let ui = self.imgui.new_frame();
@@ -567,12 +559,8 @@ impl ImGuiRenderer {
                                 sources
                                     .drives_mut()
                                     .skip(body_pointer[cpu.idx()])
-                                    .zip(cpu.fpga().cycles())
-                                    .for_each(|(s, c)| {
-                                        s.set_wave_number(
-                                            FPGA_CLK_FREQ as f32 / c as f32,
-                                            settings.sound_speed,
-                                        );
+                                    .for_each(|s| {
+                                        s.set_wave_number(40e3, settings.sound_speed);
                                     });
                             });
                             update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
@@ -710,7 +698,11 @@ impl ImGuiRenderer {
                             TreeNodeFlags::DEFAULT_OPEN,
                         ) {
                             ui.text("Silencer");
-                            ui.text(format!("Step: {}", cpu.fpga().silencer_step()));
+                            ui.text(format!(
+                                "Step intensity: {}",
+                                cpu.fpga().silencer_step_intensity()
+                            ));
+                            ui.text(format!("Step phase: {}", cpu.fpga().silencer_step_phase()));
 
                             {
                                 ui.separator();
@@ -757,25 +749,6 @@ impl ImGuiRenderer {
                                     self.show_mod_plot[cpu.idx()] = !self.show_mod_plot[cpu.idx()];
                                 }
                                 if self.show_mod_plot[cpu.idx()] {
-                                    let mod_v: Vec<f32> = m
-                                        .iter()
-                                        .map(|&v| (v as f32 / 510.0 * std::f32::consts::PI).sin())
-                                        .collect();
-                                    ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
-                                        .graph_size(self.mod_plot_size[cpu.idx()])
-                                        .scale_min(0.)
-                                        .scale_max(1.)
-                                        .build();
-                                }
-
-                                if ui.radio_button_bool(
-                                    format!("Show mod plot (raw)##{}", cpu.idx()),
-                                    self.show_mod_plot_raw[cpu.idx()],
-                                ) {
-                                    self.show_mod_plot_raw[cpu.idx()] =
-                                        !self.show_mod_plot_raw[cpu.idx()];
-                                }
-                                if self.show_mod_plot_raw[cpu.idx()] {
                                     let mod_v: Vec<f32> =
                                         m.iter().map(|&v| v as f32 / 255.0).collect();
                                     ui.plot_lines(format!("##mod plot{}", cpu.idx()), &mod_v)
@@ -785,9 +758,7 @@ impl ImGuiRenderer {
                                         .build();
                                 }
 
-                                if self.show_mod_plot[cpu.idx()]
-                                    || self.show_mod_plot_raw[cpu.idx()]
-                                {
+                                if self.show_mod_plot[cpu.idx()] {
                                     unsafe {
                                         igDragFloat2(
                                             CString::new(format!("plot size##{}", cpu.idx()))
@@ -874,10 +845,7 @@ impl ImGuiRenderer {
                     ui.checkbox("Auto play", &mut settings.auto_play);
 
                     ui.text(format!("System time: {} [ns]", self.real_time));
-                    if settings.auto_play {
-                        update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-                        self.real_time = get_current_ec_time();
-                    } else {
+                    if !settings.auto_play {
                         ui.same_line();
                         if ui.button("+") {
                             self.real_time =
@@ -928,35 +896,36 @@ impl ImGuiRenderer {
             }
         });
 
+        if settings.auto_play {
+            update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
+            self.real_time = get_current_ec_time();
+        }
+
         self.font_size = font_size;
         self.do_update_font = update_font;
 
         self.platform.prepare_render(ui, render.window());
         let draw_data = self.imgui.render();
-        self.imgui_renderer
-            .draw_commands(
-                builder,
-                render.queue(),
-                ImageView::new_default(render.image()).unwrap(),
-                draw_data,
-            )
-            .expect("Rendering failed");
+        self.imgui_renderer.draw_commands(
+            builder,
+            render.queue(),
+            ImageView::new_default(render.image())?,
+            draw_data,
+        )?;
 
-        update_flag
+        Ok(update_flag)
     }
 
     pub(crate) fn waiting(
         &mut self,
         render: &Renderer,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
-    ) {
-        self.update_font(render);
+    ) -> anyhow::Result<()> {
+        self.update_font(render)?;
 
         let io = self.imgui.io_mut();
 
-        self.platform
-            .prepare_frame(io, render.window())
-            .expect("Failed to start frame");
+        self.platform.prepare_frame(io, render.window())?;
 
         let ui = self.imgui.new_frame();
 
@@ -966,17 +935,17 @@ impl ImGuiRenderer {
 
         self.platform.prepare_render(ui, render.window());
         let draw_data = self.imgui.render();
-        self.imgui_renderer
-            .draw_commands(
-                builder,
-                render.queue(),
-                ImageView::new_default(render.image()).unwrap(),
-                draw_data,
-            )
-            .expect("Rendering failed");
+        self.imgui_renderer.draw_commands(
+            builder,
+            render.queue(),
+            ImageView::new_default(render.image())?,
+            draw_data,
+        )?;
+
+        Ok(())
     }
 
-    fn update_font(&mut self, render: &Renderer) {
+    fn update_font(&mut self, render: &Renderer) -> anyhow::Result<()> {
         if self.do_update_font {
             self.imgui.fonts().clear();
             self.imgui.fonts().add_font(&[FontSource::TtfData {
@@ -988,11 +957,14 @@ impl ImGuiRenderer {
                     ..FontConfig::default()
                 }),
             }]);
-            self.imgui_renderer
-                .reload_font_texture(&mut self.imgui, render.device(), render.queue())
-                .expect("Failed to reload fonts");
+            self.imgui_renderer.reload_font_texture(
+                &mut self.imgui,
+                render.device(),
+                render.queue(),
+            )?;
             self.do_update_font = false;
         }
+        Ok(())
     }
 
     pub(crate) const fn system_time(&self) -> u64 {

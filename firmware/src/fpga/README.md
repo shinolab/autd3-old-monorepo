@@ -1,6 +1,6 @@
 # AUTD3-FPGA
 
-Version: 3.0.2
+Version: 4.0.0
 
 # Author
 

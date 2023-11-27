@@ -4,7 +4,7 @@
  * Created Date: 07/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 25/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -73,26 +73,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ])
             .spawn()?
             .wait()?;
-
-        std::fs::copy(
-            manifest_dir.join("./target/x86_64-apple-darwin/release/LightweightTwinCATAUTDServer"),
-            manifest_dir.join("LightweightTwinCATAUTDServer-x86_64-apple-darwin"),
-        )?;
-        std::fs::copy(
-            manifest_dir.join("./target/aarch64-apple-darwin/release/LightweightTwinCATAUTDServer"),
-            manifest_dir.join("LightweightTwinCATAUTDServer-aarch64-apple-darwin"),
-        )?;
-        Command::new("lipo")
-            .current_dir(manifest_dir)
-            .args([
-                "-create",
-                "LightweightTwinCATAUTDServer-x86_64-apple-darwin",
-                "LightweightTwinCATAUTDServer-aarch64-apple-darwin",
-                "-output",
-                "LightweightTwinCATAUTDServer-universal-apple-darwin",
-            ])
-            .spawn()?
-            .wait()?;
     } else {
         std::fs::copy(
             manifest_dir.join(format!("./target/release/simulator{}", ext)),
@@ -102,17 +82,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             manifest_dir.join(format!("./target/release/SOEMAUTDServer{}", ext)),
             manifest_dir.join(format!(
                 "SOEMAUTDServer-{}{}",
-                std::env::var("TARGET")?,
-                ext
-            )),
-        )?;
-        std::fs::copy(
-            manifest_dir.join(format!(
-                "./target/release/LightweightTwinCATAUTDServer{}",
-                ext
-            )),
-            manifest_dir.join(format!(
-                "LightweightTwinCATAUTDServer-{}{}",
                 std::env::var("TARGET")?,
                 ext
             )),
@@ -174,20 +143,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         write!(writer, "SOEMAUTDServer ")?;
         writer.write_all(file_content.as_bytes())?;
     }
-    {
-        let mut file_content = String::new();
-        File::open(manifest_dir.join("../LightweightTwinCATAUTDServer/ThirdPartyNotice.txt"))
-            .map(BufReader::new)?
-            .read_to_string(&mut file_content)?;
-        writeln!(writer)?;
-        writeln!(
-            writer,
-            "========================================================="
-        )?;
-        writeln!(writer)?;
-        write!(writer, "LightweightTwinCATAUTDServer ")?;
-        writer.write_all(file_content.as_bytes())?;
-    }
+
     writer.flush()?;
 
     // LICENSE

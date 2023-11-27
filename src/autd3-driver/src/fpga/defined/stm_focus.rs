@@ -4,14 +4,14 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{defined::float, derive::prelude::AUTDInternalError};
+use crate::{common::EmitIntensity, defined::float, derive::prelude::AUTDInternalError};
 
 use super::{FOCUS_STM_FIXED_NUM_LOWER, FOCUS_STM_FIXED_NUM_UNIT, FOCUS_STM_FIXED_NUM_UPPER};
 
@@ -26,7 +26,7 @@ impl STMFocus {
         x: float,
         y: float,
         z: float,
-        duty_shift: u8,
+        intensity: EmitIntensity,
     ) -> Result<(), AUTDInternalError> {
         let ix = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let iy = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
@@ -44,7 +44,7 @@ impl STMFocus {
         self.buf[2] = ((iz << 4) & 0xFFF0) as u16
             | ((iy >> 28) & 0x0008) as u16
             | ((iy >> 14) & 0x0007) as u16;
-        self.buf[3] = (((duty_shift as u16) << 6) & 0x3FC0)
+        self.buf[3] = (((intensity.value() as u16) << 6) & 0x3FC0)
             | ((iz >> 26) & 0x0020) as u16
             | ((iz >> 12) & 0x001F) as u16;
         Ok(())
@@ -64,9 +64,9 @@ mod tests {
         let x = FOCUS_STM_FIXED_NUM_UNIT;
         let y = 2. * FOCUS_STM_FIXED_NUM_UNIT;
         let z = 3. * FOCUS_STM_FIXED_NUM_UNIT;
-        let duty_shift = 4;
+        let intensity = EmitIntensity::new(4);
 
-        assert!(p.set(x, y, z, duty_shift).is_ok());
+        assert!(p.set(x, y, z, intensity).is_ok());
 
         assert_eq!(
             (p.buf[0] as u32) & ((1 << FOCUS_STM_FIXED_NUM_WIDTH) - 1),
@@ -85,9 +85,9 @@ mod tests {
         let x = -FOCUS_STM_FIXED_NUM_UNIT;
         let y = -2. * FOCUS_STM_FIXED_NUM_UNIT;
         let z = -3. * FOCUS_STM_FIXED_NUM_UNIT;
-        let duty_shift = 0xFF;
+        let intensity = EmitIntensity::new(0xFF);
 
-        assert!(p.set(x, y, z, duty_shift).is_ok());
+        assert!(p.set(x, y, z, intensity).is_ok());
 
         assert_eq!(p.buf[0], 0xFFFF);
         assert_eq!(p.buf[1] & 0b01, 0b01);
@@ -106,35 +106,35 @@ mod tests {
         let x = FOCUS_STM_FIXED_NUM_UNIT * ((1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) - 1) as float;
         let y = FOCUS_STM_FIXED_NUM_UNIT * ((1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) - 1) as float;
         let z = FOCUS_STM_FIXED_NUM_UNIT * ((1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) - 1) as float;
-        let duty_shift = 0;
+        let intensity = EmitIntensity::new(0);
 
-        assert!(p.set(x, y, z, duty_shift).is_ok());
+        assert!(p.set(x, y, z, intensity).is_ok());
 
         assert!(p
-            .set(x + FOCUS_STM_FIXED_NUM_UNIT, y, z, duty_shift)
+            .set(x + FOCUS_STM_FIXED_NUM_UNIT, y, z, intensity)
             .is_err());
         assert!(p
-            .set(x, y + FOCUS_STM_FIXED_NUM_UNIT, z, duty_shift)
+            .set(x, y + FOCUS_STM_FIXED_NUM_UNIT, z, intensity)
             .is_err());
         assert!(p
-            .set(x, y, z + FOCUS_STM_FIXED_NUM_UNIT, duty_shift)
+            .set(x, y, z + FOCUS_STM_FIXED_NUM_UNIT, intensity)
             .is_err());
 
         let x = -FOCUS_STM_FIXED_NUM_UNIT * (1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) as float;
         let y = -FOCUS_STM_FIXED_NUM_UNIT * (1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) as float;
         let z = -FOCUS_STM_FIXED_NUM_UNIT * (1 << (FOCUS_STM_FIXED_NUM_WIDTH - 1)) as float;
-        let duty_shift = 0;
+        let intensity = EmitIntensity::new(0);
 
-        assert!(p.set(x, y, z, duty_shift).is_ok());
+        assert!(p.set(x, y, z, intensity).is_ok());
 
         assert!(p
-            .set(x - FOCUS_STM_FIXED_NUM_UNIT, y, z, duty_shift)
+            .set(x - FOCUS_STM_FIXED_NUM_UNIT, y, z, intensity)
             .is_err());
         assert!(p
-            .set(x, y - FOCUS_STM_FIXED_NUM_UNIT, z, duty_shift)
+            .set(x, y - FOCUS_STM_FIXED_NUM_UNIT, z, intensity)
             .is_err());
         assert!(p
-            .set(x, y, z - FOCUS_STM_FIXED_NUM_UNIT, duty_shift)
+            .set(x, y, z - FOCUS_STM_FIXED_NUM_UNIT, intensity)
             .is_err());
     }
 }

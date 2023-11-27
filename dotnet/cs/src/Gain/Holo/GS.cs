@@ -4,35 +4,15 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  * 
  */
 
-#if UNITY_2018_3_OR_NEWER
-#define USE_SINGLE
-#endif
-
-using System.Collections.Generic;
-using System.Linq;
-
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
-#endif
-
-#if UNITY_2018_3_OR_NEWER
-using UnityEngine;
-using Vector3 = UnityEngine.Vector3;
-#else
-using Vector3 = AUTD3Sharp.Utils.Vector3d;
-#endif
-
-#if USE_SINGLE
-using float_t = System.Single;
-#else
-using float_t = System.Double;
 #endif
 
 namespace AUTD3Sharp.Gain.Holo
@@ -42,38 +22,16 @@ namespace AUTD3Sharp.Gain.Holo
     /// </summary>
     /// <remarks>Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.</remarks>
     /// <typeparam name="TB">Backend</typeparam>
-    public sealed class GS<TB> : Internal.Gain
+    public sealed class GS<TB> : Holo<GS<TB>>
         where TB : Backend
     {
         private readonly TB _backend;
-        private readonly List<float_t> _foci;
-        private readonly List<float_t> _amps;
         private uint? _repeat;
         private IAmplitudeConstraint? _constraint;
 
         public GS(TB backend)
         {
             _backend = backend;
-            _foci = new List<float_t>();
-            _amps = new List<float_t>();
-        }
-
-        public GS<TB> AddFocus(Vector3 focus, float_t amp)
-        {
-            _foci.Add(focus.x);
-            _foci.Add(focus.y);
-            _foci.Add(focus.z);
-            _amps.Add(amp);
-            return this;
-        }
-
-        /// <summary>
-        /// Add foci
-        /// </summary>
-        /// <param name="iter">Enumerable of foci and amps</param>
-        public GS<TB> AddFociFromIter(IEnumerable<(Vector3, float_t)> iter)
-        {
-            return iter.Aggregate(this, (holo, point) => holo.AddFocus(point.Item1, point.Item2));
         }
 
         /// <summary>
@@ -98,10 +56,10 @@ namespace AUTD3Sharp.Gain.Holo
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
-            var ptr = _backend.Gs(_foci.ToArray(), _amps.ToArray(),
-                (ulong)_amps.Count);
+            var ptr = _backend.Gs(Foci.ToArray(), Amps.ToArray(),
+                (ulong)Amps.Count);
             if (_repeat.HasValue) ptr = _backend.GsWithRepeat(ptr, _repeat.Value);
             if (_constraint != null) ptr = _backend.GsWithConstraint(ptr, _constraint.Ptr());
             return ptr;

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,17 +18,22 @@
 
 namespace autd3::modulation {
 
+template <class F>
+concept modulation_transform_f = requires(F f, size_t idx, internal::EmitIntensity d) {
+  { f(idx, d) } -> std::same_as<internal::EmitIntensity>;
+};
+
 /**
  * @brief Modulation to transform the result of calculation
  */
-template <class M, typename F>
+template <class M, modulation_transform_f F>
 class Transform final : public internal::Modulation, public IntoCache<Transform<M, F>>, public IntoRadiationPressure<Transform<M, F>> {
-  using transform_f = double (*)(const void*, uint32_t, double);
+  using transform_f = uint8_t (*)(const void*, uint32_t, uint8_t);
 
  public:
   Transform(M m, const F& f) : _m(std::move(m)), _f(f) {
-    _f_native = +[](const void* context, const uint32_t i, const double d) -> double {
-      return static_cast<const Transform*>(context)->_f(static_cast<size_t>(i), d);
+    _f_native = +[](const void* context, const uint32_t i, const uint8_t d) -> uint8_t {
+      return static_cast<const Transform*>(context)->_f(static_cast<size_t>(i), autd3::internal::EmitIntensity(d)).value();
     };
   }
 
@@ -43,14 +48,14 @@ class Transform final : public internal::Modulation, public IntoCache<Transform<
   transform_f _f_native;
 };
 
-template <typename M>
+template <class M>
 class IntoTransform {
  public:
-  template <typename F>
+  template <modulation_transform_f F>
   [[nodiscard]] Transform<M, F> with_transform(const F& f) & {
     return Transform(*static_cast<M*>(this), f);
   }
-  template <typename F>
+  template <modulation_transform_f F>
   [[nodiscard]] Transform<M, F> with_transform(const F& f) && {
     return Transform(std::move(*static_cast<M*>(this)), f);
   }

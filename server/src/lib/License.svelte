@@ -1,6 +1,6 @@
 <!--
 File: License.svelte
-Project: autd-server
+Project: autd3-server
 Created Date: 12/07/2023
 Author: Shun Suzuki
 -----

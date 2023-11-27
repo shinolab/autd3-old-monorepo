@@ -1,4 +1,4 @@
-'''
+"""
 File: gain.py
 Project: gain
 Created Date: 29/08/2023
@@ -9,46 +9,50 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 import functools
-import numpy as np
-from typing import Callable, Dict
 from abc import ABCMeta, abstractmethod
+from collections.abc import Callable
 from ctypes import POINTER
 
-from pyautd3.native_methods.autd3capi import Drive
+import numpy as np
+
+from pyautd3.drive import Drive
+from pyautd3.geometry import Device, Geometry, Transducer
+from pyautd3.internal.gain import IGain
+from pyautd3.native_methods.autd3capi import Drive as _Drive
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import GainPtr
-from pyautd3.geometry import Transducer, Geometry, Device
-from pyautd3.internal.gain import IGain
 
 
 class Gain(IGain, metaclass=ABCMeta):
-    """Base class of custom Gain
-
-    """
+    """Base class of custom Gain."""
 
     @abstractmethod
-    def calc(self, geometry: Geometry) -> Dict[int, np.ndarray]:
-        pass
+    def calc(self: "Gain", geometry: Geometry) -> dict[int, np.ndarray]:
+        """Calculate amp and phase for all transducers."""
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def _gain_ptr(self: "Gain", geometry: Geometry) -> GainPtr:
         drives = self.calc(geometry)
         return functools.reduce(
-            lambda acc, dev: Base().gain_custom_set(acc, dev.idx,
-                                                    drives[dev.idx].ctypes.data_as(POINTER(Drive)),  # type: ignore
-                                                    len(drives[dev.idx])),
+            lambda acc, dev: Base().gain_custom_set(
+                acc,
+                dev.idx,
+                drives[dev.idx].ctypes.data_as(POINTER(_Drive)),  # type: ignore[arg-type]
+                len(drives[dev.idx]),
+            ),
             geometry.devices(),
             Base().gain_custom(),
         )
 
     @staticmethod
-    def transform(geometry: Geometry, f: Callable[[Device, Transducer], Drive]) -> Dict[int, np.ndarray]:
-        return dict(
-            map(
-                lambda dev: (dev.idx, np.fromiter(map(lambda tr: np.void(f(dev, tr)), dev), dtype=Drive)),  # type: ignore
-                geometry.devices(),
+    def _transform(geometry: Geometry, f: Callable[[Device, Transducer], Drive]) -> dict[int, np.ndarray]:
+        return {
+            dev.idx: np.fromiter(
+                (np.void(_Drive(d.phase, d.intensity._value)) for d in (f(dev, tr) for tr in dev)),  # type: ignore[call-overload]
+                dtype=_Drive,
             )
-        )
+            for dev in geometry.devices()
+        }

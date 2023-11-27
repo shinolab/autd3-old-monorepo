@@ -4,14 +4,14 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram to set modulation delay
 #[derive(Default)]
@@ -23,7 +23,7 @@ impl ConfigureModDelay {
     }
 }
 
-impl<T: Transducer> Datagram<T> for ConfigureModDelay {
+impl Datagram for ConfigureModDelay {
     type O1 = crate::operation::ConfigureModDelayOp;
     type O2 = crate::operation::NullOp;
 
@@ -41,14 +41,14 @@ mod tests {
     #[test]
     fn test_mod_delay_timeout() {
         let delay = ConfigureModDelay::new();
-        let timeout = <ConfigureModDelay as Datagram<LegacyTransducer>>::timeout(&delay);
+        let timeout = <ConfigureModDelay as Datagram>::timeout(&delay);
         assert!(timeout.is_none());
     }
 
     #[test]
     fn test_mod_delay_operation() {
         let delay = ConfigureModDelay::default();
-        let r = <ConfigureModDelay as Datagram<LegacyTransducer>>::operation(delay);
+        let r = <ConfigureModDelay as Datagram>::operation(delay);
         assert!(r.is_ok());
         let _: (ConfigureModDelayOp, NullOp) = r.unwrap();
     }

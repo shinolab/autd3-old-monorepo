@@ -4,6 +4,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 
@@ -35,6 +36,7 @@ m = Fourier(Sine(100)).add_component(Sine(150)).add_components_from_iter([Sine(2
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 
@@ -58,6 +60,7 @@ var m = new Sine(100) + new Sine(150) + new Sine(200);
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 use autd3::modulation::Fourier;
 

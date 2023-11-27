@@ -1,3 +1,32 @@
+# 17.0.0
+
+- Update firmware to v4.0.0
+  - Remove variable frequency feature
+  - Remove filter feature
+- Add `EmitIntensity` instead of normalized amplitude
+  - Add `with_intensity` to `Gain` instead of `with_amp`
+  - Modulation data is now use `EmitIntensity` instead of normalized amplitude
+  - `FocusSTM` can now specify intensity instead of `duty_shift`
+- Change sampling frequency configuration API
+  - Add `with_sampling_config` to `Modulation`
+  - Add `new_with_sampling_config` to `GainSTM` and `FocusSTM`
+- Change device rotation API
+  - Add `with_rotation` to `AUTD3`
+- Change silencer API
+  - Silecer constructor now takes steps for intensity and phase, respectively
+- Update holo gain's `add_focus` methods to take target amplitude instead of normalized amplitude
+- Make functions of `Link` async
+- Remove `Controller::software_stm`
+- Remove `modulation::FIR`
+- Remove `modulation::SineLegacy`
+- Remove `gain::holo::EVP`
+- Remove `Lightweight` options
+- `modulation::Square` with out of range duty ratio now return Err
+- Purge `link-visualizer`, `backend-cuda`, `backend-arrayfire` crates into other repositories
+- Fix [#212](https://github.com/shinolab/autd3/issues/212): unity-linux and unity-mac packages are not published
+- Fix [#213](https://github.com/shinolab/autd3/issues/213): simulator settings file can not be saved on unity
+- Fix [#215](https://github.com/shinolab/autd3/issues/215): simulator auto_run works only in info tab
+
 # 16.0.3
 
 - Fix [#208](https://github.com/shinolab/autd3/issues/208): pyautd3-16.0.2-py3-none-linux_armv7l.whl contains aarch64 binary

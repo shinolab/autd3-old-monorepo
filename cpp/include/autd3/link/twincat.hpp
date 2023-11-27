@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,12 @@
 #include <chrono>
 #include <string>
 
-#include "autd3/internal/exception.hpp"
-#include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
+
+namespace autd3::internal {
+class ControllerBuilder;
+}
 
 namespace autd3::link {
 
@@ -24,16 +27,23 @@ namespace autd3::link {
  * @brief Link using TwinCAT3
  */
 class TwinCAT final {
+  TwinCAT() = default;
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class TwinCAT;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkTwinCATBuilderPtr _ptr;
 
-    Builder() : LinkBuilder(), _ptr(internal::native_methods::AUTDLinkTwinCAT()) {}
+    Builder() : _ptr(internal::native_methods::AUTDLinkTwinCAT()) {}
+
+    [[nodiscard]] static TwinCAT resolve_link(internal::native_methods::LinkPtr) { return TwinCAT{}; }
 
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkTwinCATIntoBuilder(_ptr); }
+    using Link = TwinCAT;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkTwinCATIntoBuilder(_ptr); }
 
     template <typename Rep, typename Period>
     Builder with_timeout(const std::chrono::duration<Rep, Period> timeout) {
@@ -44,28 +54,31 @@ class TwinCAT final {
   };
 
   static Builder builder() { return {}; }
-
-  TwinCAT() = delete;
 };
 
 /**
  * @brief Link for remote TwinCAT3 server via [ADS](https://github.com/Beckhoff/ADS) library
  */
 class RemoteTwinCAT final {
+  RemoteTwinCAT() = default;
+
  public:
-  class Builder final : public internal::LinkBuilder {
+  class Builder final {
     friend class RemoteTwinCAT;
+    friend class internal::ControllerBuilder;
 
     internal::native_methods::LinkRemoteTwinCATBuilderPtr _ptr;
 
-    explicit Builder(const std::string& server_ams_net_id) : LinkBuilder() {
-      char err[256];
-      _ptr = internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str(), err);
-      if (_ptr._0 == nullptr) throw internal::AUTDException(err);
+    explicit Builder(const std::string& server_ams_net_id) {
+      _ptr = validate(internal::native_methods::AUTDLinkRemoteTwinCAT(server_ams_net_id.c_str()));
     }
 
+    [[nodiscard]] static RemoteTwinCAT resolve_link(internal::native_methods::LinkPtr) { return RemoteTwinCAT{}; }
+
    public:
-    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const override { return AUTDLinkRemoteTwinCATIntoBuilder(_ptr); }
+    using Link = RemoteTwinCAT;
+
+    [[nodiscard]] internal::native_methods::LinkBuilderPtr ptr() const { return AUTDLinkRemoteTwinCATIntoBuilder(_ptr); }
 
     /**
      * @brief Set server IP address
@@ -103,8 +116,6 @@ class RemoteTwinCAT final {
    * @param server_ams_net_id Server AMS Net ID
    */
   static Builder builder(const std::string& server_ams_net_id) { return Builder(server_ams_net_id); }
-
-  RemoteTwinCAT() = delete;
 };
 
 }  // namespace autd3::link

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,12 +13,14 @@
 
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{constraint::Constraint, impl_holo, Complex, HoloError, LinAlgBackend, Trans};
+use crate::{
+    constraint::EmissionConstraint, impl_holo, Amplitude, Complex, HoloError, LinAlgBackend, Trans,
+};
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::Amplitude,
-    defined::PI,
+    common::EmitIntensity,
+    defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -32,13 +34,13 @@ use autd3_driver::{
 #[derive(Gain)]
 pub struct LM<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     eps_1: float,
     eps_2: float,
     tau: float,
     k_max: usize,
     initial: Vec<float>,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
     backend: Rc<B>,
 }
 
@@ -55,7 +57,7 @@ impl<B: LinAlgBackend> LM<B> {
             k_max: 5,
             initial: vec![],
             backend,
-            constraint: Constraint::Normalize,
+            constraint: EmissionConstraint::Normalize,
         }
     }
 
@@ -162,26 +164,29 @@ impl<B: LinAlgBackend> LM<B> {
     }
 }
 
-impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
+impl<B: LinAlgBackend> Gain for LM<B> {
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::uninit_vec)]
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
-        let g = self
+        let mut g = self
             .backend
             .generate_propagation_matrix(geometry, &self.foci, &filter)?;
+        self.backend
+            .scale_assign_cm(Complex::new(T4010A1_AMPLITUDE, 0.), &mut g)?;
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
 
         let n_param = n + m;
 
-        let mut bhb = self.backend.alloc_zeros_cm(n_param, n_param)?;
-        {
-            let mut amps = self.backend.from_slice_cv(&self.amps)?;
+        let bhb = {
+            let mut bhb = self.backend.alloc_zeros_cm(n_param, n_param)?;
+
+            let mut amps = self.backend.from_slice_cv(self.amps_as_slice())?;
 
             let mut p = self.backend.alloc_cm(n, n)?;
             self.backend
@@ -200,9 +205,10 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                 Complex::new(0., 0.),
                 &mut bhb,
             )?;
-        }
+            bhb
+        };
 
-        let mut x = self.backend.alloc_v(n_param)?;
+        let mut x = self.backend.alloc_zeros_v(n_param)?;
         self.backend.copy_from_slice_v(&self.initial, &mut x)?;
 
         let mut nu = 2.0;
@@ -313,7 +319,10 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                                 let phase = x[idx].rem_euclid(2.0 * PI);
                                 let amp = self.constraint.convert(1.0, 1.0);
                                 idx += 1;
-                                Drive { amp, phase }
+                                Drive {
+                                    intensity: amp,
+                                    phase,
+                                }
                             })
                             .collect(),
                     )
@@ -326,12 +335,15 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                         (
                             dev.idx(),
                             dev.iter()
-                                .filter(|tr| filter[tr.local_idx()])
+                                .filter(|tr| filter[tr.tr_idx()])
                                 .map(|_| {
                                     let phase = x[idx].rem_euclid(2.0 * PI);
                                     let amp = self.constraint.convert(1.0, 1.0);
                                     idx += 1;
-                                    Drive { amp, phase }
+                                    Drive {
+                                        intensity: amp,
+                                        phase,
+                                    }
                                 })
                                 .collect(),
                         )
@@ -341,7 +353,7 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for LM<B> {
                             dev.iter()
                                 .map(|_| Drive {
                                     phase: 0.,
-                                    amp: Amplitude::MIN,
+                                    intensity: EmitIntensity::MIN,
                                 })
                                 .collect(),
                         )

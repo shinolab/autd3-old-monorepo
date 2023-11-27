@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,8 +14,6 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #endif
-
-using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -44,32 +42,43 @@ namespace AUTD3Sharp.Gain
         private readonly Vector3 _point;
         private readonly Vector3 _dir;
         private readonly float_t _thetaZ;
-        private float_t? _amp;
+        private EmitIntensity? _intensity;
 
         public Bessel(Vector3 point, Vector3 dir, float_t thetaZ)
         {
             _point = point;
             _dir = dir;
             _thetaZ = thetaZ;
-            _amp = null;
+            _intensity = null;
         }
 
         /// <summary>
         /// Set amplitude
         /// </summary>
-        /// <param name="amp">normalized amplitude (from 0 to 1)</param>
+        /// <param name="intensity">Emission intensity</param>
         /// <returns></returns>
-        public Bessel WithAmp(float_t amp)
+        public Bessel WithIntensity(byte intensity)
         {
-            _amp = amp;
+            _intensity = new EmitIntensity(intensity);
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        /// <summary>
+        /// Set amplitude
+        /// </summary>
+        /// <param name="intensity">Emission intensity</param>
+        /// <returns></returns>
+        public Bessel WithIntensity(EmitIntensity intensity)
         {
-            var ptr = Base.AUTDGainBessel(_point.x, _point.y, _point.z, _dir.x, _dir.y, _dir.z, _thetaZ);
-            if (_amp != null)
-                ptr = Base.AUTDGainBesselWithAmp(ptr, _amp.Value);
+            _intensity = intensity;
+            return this;
+        }
+
+        internal override GainPtr GainPtr(Geometry geometry)
+        {
+            var ptr = NativeMethodsBase.AUTDGainBessel(_point.x, _point.y, _point.z, _dir.x, _dir.y, _dir.z, _thetaZ);
+            if (_intensity != null)
+                ptr = NativeMethodsBase.AUTDGainBesselWithIntensity(ptr, _intensity.Value.Value);
             return ptr;
         }
     }

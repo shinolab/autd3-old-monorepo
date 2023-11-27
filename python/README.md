@@ -2,8 +2,6 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for python3.10+
 
-version: 16.0.3
-
 ## Install
 
 ```

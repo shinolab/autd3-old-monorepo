@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -37,19 +37,19 @@ internal static class CustomTest
                 var tp = tr.Position;
                 var dist = (tp - _point).L2Norm;
                 var phase = dist * tr.Wavenumber(dev.SoundSpeed);
-                return new Drive { Phase = phase, Amp = 1.0 };
+                return new Drive { Phase = phase, Intensity = EmitIntensity.Max };
             });
         }
     }
 
-    public static void Test(Controller autd)
+    public static async Task Test<T>(Controller<T> autd)
     {
         var config = new Silencer();
-        autd.Send(config);
+        await autd.SendAsync(config);
 
         var m = new Sine(150);
         var g = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
 
-        autd.Send((m, g));
+        await autd.SendAsync((m, g));
     }
 }

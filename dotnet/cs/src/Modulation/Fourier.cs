@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,8 +16,6 @@ using System.Linq;
 
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Multi-frequency sine wave modulation
     /// </summary>
@@ -47,9 +45,9 @@ namespace AUTD3Sharp.Modulation
         public static Fourier operator +(Fourier a, Sine b)
             => a.AddComponent(b);
 
-        public override ModulationPtr ModulationPtr()
+        internal override ModulationPtr ModulationPtr()
         {
-            return _components.Skip(1).Aggregate(Base.AUTDModulationFourier(_components[0].ModulationPtr()), (current, sine) => Base.AUTDModulationFourierAddComponent(current, sine.ModulationPtr()));
+            return _components.Skip(1).Aggregate(NativeMethodsBase.AUTDModulationFourier(_components[0].ModulationPtr()), (current, sine) => NativeMethodsBase.AUTDModulationFourierAddComponent(current, sine.ModulationPtr()));
         }
     }
 }

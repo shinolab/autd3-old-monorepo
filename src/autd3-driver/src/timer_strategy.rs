@@ -4,17 +4,16 @@
  * Created Date: 08/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 15/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use serde::{Deserialize, Serialize};
-
 /// Timer strategy
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(u8)]
 pub enum TimerStrategy {
     /// Use `std::thread::sleep`
@@ -36,7 +35,7 @@ mod tests {
         let s = TimerStrategy::Sleep;
 
         let sc = Clone::clone(&s);
-        assert_eq!(s as u8, sc as u8);
+        assert_eq!(s, sc);
     }
 
     #[test]
@@ -45,6 +44,7 @@ mod tests {
         assert_eq!(format!("{:?}", s), "Sleep");
     }
 
+    #[cfg(feature = "serde")]
     #[test]
     fn serde() {
         let s = TimerStrategy::Sleep;

@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,63 +13,81 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use std::ffi::c_char;
-
 use autd3capi_def::{
-    common::{autd3::modulation::ModulationCache, *},
-    ModulationPtr,
+    common::{
+        autd3::modulation::{IntoCache, ModulationCache},
+        *,
+    },
+    CachePtr, ModulationPtr,
 };
 
-#[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct ModulationCachePtr(pub ConstPtr);
+#[derive(Debug, Clone, Copy)]
+pub struct ResultCache {
+    pub result: CachePtr,
+    pub err_len: u32,
+    pub err: ConstPtr,
+}
 
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDModulationWithCache(
-    m: ModulationPtr,
-    err: *mut c_char,
-) -> ModulationCachePtr {
-    try_or_return!(
-        Box::from_raw(m.0 as *mut Box<M>)
-            .with_cache().map(|m| ModulationCachePtr(Box::into_raw(Box::new(m)) as _)),
-        err,
-        ModulationCachePtr(std::ptr::null())
-    )
+impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>>
+    for ResultCache
+{
+    fn from(
+        r: Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>,
+    ) -> Self {
+        match r {
+            Ok(v) => Self {
+                result: CachePtr(Box::into_raw(Box::new(v)) as _),
+                err_len: 0,
+                err: std::ptr::null_mut(),
+            },
+            Err(e) => {
+                let err = e.to_string();
+                Self {
+                    result: CachePtr(NULL),
+                    err_len: err.as_bytes().len() as u32 + 1,
+                    err: Box::into_raw(Box::new(err)) as _,
+                }
+            }
+        }
+    }
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationCacheGetBufferSize(m: ModulationCachePtr) -> u32 {
+pub unsafe extern "C" fn AUTDModulationWithCache(m: ModulationPtr) -> ResultCache {
+    Box::from_raw(m.0 as *mut Box<M>).with_cache().into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDModulationCacheGetBufferLen(m: CachePtr) -> u32 {
     cast!(m.0, ModulationCache).buffer().len() as u32
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: ModulationCachePtr, buf: *mut float) {
+pub unsafe extern "C" fn AUTDModulationCacheGetBuffer(m: CachePtr, buf: *mut u8) {
     let cache = cast!(m.0, ModulationCache);
-    std::ptr::copy_nonoverlapping(cache.buffer().as_ptr(), buf, cache.buffer().len());
+    std::ptr::copy_nonoverlapping(cache.buffer().as_ptr() as _, buf, cache.buffer().len());
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: ModulationCachePtr) -> ModulationPtr {
+pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: CachePtr) -> ModulationPtr {
     ModulationPtr::new(cast!(m.0, ModulationCache).clone())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationCacheDelete(m: ModulationCachePtr) {
+pub unsafe extern "C" fn AUTDModulationCacheDelete(m: CachePtr) {
     let _ = Box::from_raw(m.0 as *mut ModulationCache);
 }
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::c_char;
-
     use super::{super::sine::AUTDModulationSine, *};
 
     use crate::{modulation::*, tests::*, *};
 
-    use autd3capi_def::{DatagramPtr, TransMode, AUTD3_TRUE};
+    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
 
     #[test]
     fn test_modulation_cache() {
@@ -78,25 +96,14 @@ mod tests {
 
             let m = AUTDModulationSine(150);
 
-            let mut err = vec![c_char::default(); 256];
-            let cache = AUTDModulationWithCache(m, err.as_mut_ptr());
-            assert!(!cache.0.is_null());
-            let m = AUTDModulationIntoDatagram(AUTDModulationCacheIntoModulation(cache));
+            let cache = AUTDModulationWithCache(m);
+            assert!(!cache.result.0.is_null());
+            let m = AUTDModulationIntoDatagram(AUTDModulationCacheIntoModulation(cache.result));
 
-            let mut err = vec![c_char::default(); 256];
-            assert_eq!(
-                AUTDControllerSend(
-                    cnt,
-                    TransMode::Legacy,
-                    m,
-                    DatagramPtr(std::ptr::null()),
-                    -1,
-                    err.as_mut_ptr(),
-                ),
-                AUTD3_TRUE
-            );
+            let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
+            assert_eq!(r.result, AUTD3_TRUE);
 
-            AUTDModulationCacheDelete(cache);
+            AUTDModulationCacheDelete(cache.result);
             AUTDControllerDelete(cnt);
         }
     }

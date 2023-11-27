@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 25/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@
 #include "autd3/internal/gain.hpp"
 #include "autd3/internal/geometry/geometry.hpp"
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 
 namespace autd3::gain {
 
@@ -29,9 +30,7 @@ namespace autd3::gain {
 template <class G>
 class Cache final : public internal::Gain {
  public:
-  explicit Cache(G g) : _g(std::move(g)), _cache(std::make_shared<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>>()) {
-    static_assert(std::is_base_of_v<Gain, G>, "This is not Gain");
-  }
+  explicit Cache(G g) : _g(std::move(g)), _cache(std::make_shared<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>>()) {}
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
@@ -39,9 +38,7 @@ class Cache final : public internal::Gain {
     if (std::vector<uint32_t> device_indices(view.begin(), view.end());
         _cache->size() != device_indices.size() ||
         std::any_of(device_indices.begin(), device_indices.end(), [this](const uint32_t idx) { return !_cache->contains(idx); })) {
-      char err[256]{};
-      auto res = internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr(), err);
-      if (res._0 == nullptr) throw internal::AUTDException(err);
+      const auto res = validate(internal::native_methods::AUTDGainCalc(_g.gain_ptr(geometry), geometry.ptr()));
       for (const auto& dev : geometry.devices()) {
         std::vector<internal::native_methods::Drive> drives;
         drives.resize(dev.num_transducers());
@@ -66,7 +63,7 @@ class Cache final : public internal::Gain {
   mutable std::shared_ptr<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>> _cache;
 };
 
-template <typename G>
+template <class G>
 class IntoCache {
  public:
   [[nodiscard]] Cache<G> with_cache() & { return Cache(*static_cast<G*>(this)); }

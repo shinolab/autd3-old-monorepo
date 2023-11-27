@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -14,10 +14,12 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
+    constraint::EmissionConstraint, helper::generate_result, impl_holo, Amplitude, Complex,
+    LinAlgBackend, Trans,
 };
 
 use autd3_driver::{
+    defined::T4010A1_AMPLITUDE,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -28,8 +30,8 @@ use autd3_derive::Gain;
 #[derive(Gain)]
 pub struct Naive<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
-    constraint: Constraint,
+    amps: Vec<Amplitude>,
+    constraint: EmissionConstraint,
     backend: Rc<B>,
 }
 
@@ -41,15 +43,15 @@ impl<B: LinAlgBackend + 'static> Naive<B> {
             foci: vec![],
             amps: vec![],
             backend,
-            constraint: Constraint::Normalize,
+            constraint: EmissionConstraint::Normalize,
         }
     }
 }
 
-impl<B: LinAlgBackend, T: Transducer> Gain<T> for Naive<B> {
+impl<B: LinAlgBackend> Gain for Naive<B> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
@@ -57,17 +59,23 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for Naive<B> {
             .generate_propagation_matrix(geometry, &self.foci, &filter)?;
 
         let m = self.backend.cols_c(&g)?;
+        let n = self.foci.len();
 
-        let p = self.backend.from_slice_cv(&self.amps)?;
+        let mut b = self.backend.alloc_cm(m, n)?;
+        self.backend.gen_back_prop(m, n, &g, &mut b)?;
+
+        let p = self.backend.from_slice_cv(self.amps_as_slice())?;
         let mut q = self.backend.alloc_zeros_cv(m)?;
         self.backend.gemv_c(
-            Trans::ConjTrans,
+            Trans::NoTrans,
             Complex::new(1., 0.),
-            &g,
+            &b,
             &p,
             Complex::new(0., 0.),
             &mut q,
         )?;
+        self.backend
+            .scale_assign_cv(Complex::new(1.0 / T4010A1_AMPLITUDE, 0.), &mut q)?;
 
         generate_result(
             geometry,

@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2023
+ * Last Modified: 30/10/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -23,29 +23,24 @@ use vulkano::{
         Device, DeviceCreateInfo, DeviceExtensions, Features, Queue, QueueCreateInfo, QueueFlags,
     },
     format::{Format, FormatFeatures},
-    image::{
-        view::ImageView, AttachmentImage, ImageAccess, ImageUsage, SampleCount, SampleCounts,
-        SwapchainImage,
-    },
+    image::{view::ImageView, Image, ImageCreateInfo, ImageUsage, SampleCount, SampleCounts},
     instance::{
         debug::{
             DebugUtilsMessageSeverity, DebugUtilsMessageType, DebugUtilsMessenger,
-            DebugUtilsMessengerCreateInfo,
+            DebugUtilsMessengerCallback, DebugUtilsMessengerCreateInfo,
         },
-        Instance, InstanceCreateInfo,
+        Instance, InstanceCreateFlags, InstanceCreateInfo,
     },
-    memory::allocator::StandardMemoryAllocator,
+    memory::allocator::{AllocationCreateInfo, StandardMemoryAllocator},
     pipeline::graphics::viewport::Viewport,
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
     swapchain::{
-        self, AcquireError, ColorSpace, FullScreenExclusive, PresentMode, Surface,
-        SurfaceTransform, Swapchain, SwapchainCreateInfo, SwapchainCreationError,
-        SwapchainPresentInfo,
+        self, ColorSpace, FullScreenExclusive, PresentMode, Surface, SurfaceTransform, Swapchain,
+        SwapchainCreateInfo, SwapchainPresentInfo,
     },
-    sync::{self, FlushError, GpuFuture},
-    VulkanLibrary,
+    sync::{self, GpuFuture},
+    Validated, VulkanError, VulkanLibrary,
 };
-use vulkano_win::VkSurfaceBuild;
 use winit::{
     event_loop::{EventLoop, EventLoopBuilder},
     window::{Window, WindowBuilder},
@@ -55,24 +50,27 @@ use crate::{camera_helper, viewer_settings::ViewerSettings, Matrix4, Vector3};
 
 /// List available GPUs
 pub fn available_gpus() -> anyhow::Result<Vec<(u32, String, PhysicalDeviceType)>> {
+    let event_loop = EventLoopBuilder::<()>::new().build();
+
     let library = VulkanLibrary::new()?;
-    let required_extensions = vulkano_win::required_extensions(&library);
+    let required_extensions = Surface::required_extensions(&event_loop);
     let instance = Instance::new(
         library,
         InstanceCreateInfo {
+            flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
             enabled_extensions: required_extensions,
-            enumerate_portability: true,
             ..Default::default()
         },
     )?;
 
-    let event_loop = EventLoopBuilder::<()>::new().build();
-
-    let surface = WindowBuilder::new()
-        .with_inner_size(winit::dpi::LogicalSize::new(1, 1))
-        .with_title("tmp")
-        .with_visible(false)
-        .build_vk_surface(&event_loop, instance.clone())?;
+    let window = Arc::new(
+        WindowBuilder::new()
+            .with_inner_size(winit::dpi::LogicalSize::new(1, 1))
+            .with_title("tmp")
+            .with_visible(false)
+            .build(&event_loop)?,
+    );
+    let surface = Surface::from_window(instance.clone(), window.clone())?;
 
     let device_extensions = DeviceExtensions {
         khr_swapchain: true,
@@ -112,7 +110,7 @@ pub struct Renderer {
     queue: Arc<Queue>,
     swap_chain: Arc<Swapchain>,
     image_index: u32,
-    images: Vec<Arc<SwapchainImage>>,
+    images: Vec<Arc<Image>>,
     recreate_swapchain: bool,
     previous_frame_end: Option<Box<dyn GpuFuture>>,
     frame_buffers: Vec<Arc<Framebuffer>>,
@@ -120,7 +118,7 @@ pub struct Renderer {
     viewport: Viewport,
     command_buffer_allocator: StandardCommandBufferAllocator,
     descriptor_set_allocator: StandardDescriptorSetAllocator,
-    memory_allocator: StandardMemoryAllocator,
+    memory_allocator: Arc<StandardMemoryAllocator>,
     camera: Camera<f32>,
     _debug_callback: Option<DebugUtilsMessenger>,
     msaa_sample: SampleCounts,
@@ -135,9 +133,9 @@ impl Renderer {
         height: f64,
         v_sync: bool,
         gpu_idx: i32,
-    ) -> Self {
-        let library = VulkanLibrary::new().unwrap();
-        let mut required_extensions = vulkano_win::required_extensions(&library);
+    ) -> anyhow::Result<Self> {
+        let library = VulkanLibrary::new()?;
+        let mut required_extensions = Surface::required_extensions(&event_loop);
         if cfg!(feature = "enable_debug") {
             required_extensions.ext_debug_utils = true;
         }
@@ -146,11 +144,10 @@ impl Renderer {
             library,
             InstanceCreateInfo {
                 enabled_extensions: required_extensions,
-                enumerate_portability: true,
+                flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
                 ..Default::default()
             },
-        )
-        .expect("Failed to create instance");
+        )?;
 
         let _debug_callback = if cfg!(feature = "enable_debug") {
             unsafe {
@@ -164,40 +161,55 @@ impl Renderer {
                         message_type: DebugUtilsMessageType::GENERAL
                             | DebugUtilsMessageType::VALIDATION
                             | DebugUtilsMessageType::PERFORMANCE,
-                        ..DebugUtilsMessengerCreateInfo::user_callback(Arc::new(|msg| {
-                            let severity = if msg
-                                .severity
-                                .intersects(DebugUtilsMessageSeverity::ERROR)
-                            {
-                                "error"
-                            } else if msg.severity.intersects(DebugUtilsMessageSeverity::WARNING) {
-                                "warning"
-                            } else if msg.severity.intersects(DebugUtilsMessageSeverity::INFO) {
-                                "information"
-                            } else if msg.severity.intersects(DebugUtilsMessageSeverity::VERBOSE) {
-                                "verbose"
-                            } else {
-                                panic!("no-impl");
-                            };
+                        ..DebugUtilsMessengerCreateInfo::user_callback(
+                            DebugUtilsMessengerCallback::new(
+                                |message_severity, message_type, callback_data| {
+                                    let severity = if message_severity
+                                        .intersects(DebugUtilsMessageSeverity::ERROR)
+                                    {
+                                        "error"
+                                    } else if message_severity
+                                        .intersects(DebugUtilsMessageSeverity::WARNING)
+                                    {
+                                        "warning"
+                                    } else if message_severity
+                                        .intersects(DebugUtilsMessageSeverity::INFO)
+                                    {
+                                        "information"
+                                    } else if message_severity
+                                        .intersects(DebugUtilsMessageSeverity::VERBOSE)
+                                    {
+                                        "verbose"
+                                    } else {
+                                        panic!("no-impl");
+                                    };
 
-                            let ty = if msg.ty.intersects(DebugUtilsMessageType::GENERAL) {
-                                "general"
-                            } else if msg.ty.intersects(DebugUtilsMessageType::VALIDATION) {
-                                "validation"
-                            } else if msg.ty.intersects(DebugUtilsMessageType::PERFORMANCE) {
-                                "performance"
-                            } else {
-                                panic!("no-impl");
-                            };
+                                    let ty = if message_type
+                                        .intersects(DebugUtilsMessageType::GENERAL)
+                                    {
+                                        "general"
+                                    } else if message_type
+                                        .intersects(DebugUtilsMessageType::VALIDATION)
+                                    {
+                                        "validation"
+                                    } else if message_type
+                                        .intersects(DebugUtilsMessageType::PERFORMANCE)
+                                    {
+                                        "performance"
+                                    } else {
+                                        panic!("no-impl");
+                                    };
 
-                            println!(
-                                "{} {} {}: {}",
-                                msg.layer_prefix.unwrap_or("unknown"),
-                                ty,
-                                severity,
-                                msg.description
-                            );
-                        }))
+                                    println!(
+                                        "{} {} {}: {}",
+                                        callback_data.message_id_name.unwrap_or("unknown"),
+                                        ty,
+                                        severity,
+                                        callback_data.message
+                                    );
+                                },
+                            ),
+                        )
                     },
                 )
                 .ok()
@@ -206,20 +218,22 @@ impl Renderer {
             None
         };
 
-        let surface = WindowBuilder::new()
-            .with_inner_size(winit::dpi::LogicalSize::new(width, height))
-            .with_title(title)
-            .build_vk_surface(event_loop, instance.clone())
-            .unwrap();
+        let window = Arc::new(
+            WindowBuilder::new()
+                .with_inner_size(winit::dpi::LogicalSize::new(width, height))
+                .with_title(title)
+                .build(&event_loop)?,
+        );
+        let surface = Surface::from_window(instance.clone(), window.clone())?;
 
-        let (device, queue) = Self::create_device(gpu_idx, instance, surface.clone());
+        let (device, queue) = Self::create_device(gpu_idx, instance, surface.clone())?;
 
         let msaa_sample = Self::get_max_usable_sample_count(device.physical_device().clone());
 
         let mut viewport = Viewport {
-            origin: [0.0, 0.0],
-            dimensions: [0.0, 0.0],
-            depth_range: 0.0..1.0,
+            offset: [0.0, 0.0],
+            extent: [0.0, 0.0],
+            depth_range: 0.0..=1.0,
         };
         let (swap_chain, images) = Self::create_swap_chain(
             surface.clone(),
@@ -230,7 +244,7 @@ impl Renderer {
             } else {
                 PresentMode::Immediate
             },
-        );
+        )?;
         let depth_format = [
             Format::D32_SFLOAT,
             Format::D32_SFLOAT_S8_UINT,
@@ -253,31 +267,30 @@ impl Renderer {
             device.clone(),
             attachments: {
                 intermediary: {
-                    load: Clear,
-                    store: DontCare,
                     format: swap_chain.image_format(),
                     samples: msaa_sample.max_count(),
+                    load_op: Clear,
+                    store_op: DontCare,
                 },
-                depth: {
-                    load: Clear,
-                    store: DontCare,
+                depth_stencil: {
                     format: depth_format,
                     samples: msaa_sample.max_count(),
+                    load_op: Clear,
+                    store_op: DontCare,
                 },
                 color: {
-                    load: DontCare,
-                    store: Store,
                     format: swap_chain.image_format(),
                     samples: 1,
+                    load_op: DontCare,
+                    store_op: Store,
                 }
             },
             pass: {
                 color: [intermediary],
-                depth_stencil: {depth},
-                resolve: [color],
+                color_resolve: [color],
+                depth_stencil: {depth_stencil},
             }
-        )
-        .unwrap();
+        )?;
         let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
         let frame_buffers = Self::window_size_dependent_setup(
             memory_allocator,
@@ -287,7 +300,7 @@ impl Renderer {
             swap_chain.image_format(),
             depth_format,
             msaa_sample.max_count(),
-        );
+        )?;
 
         let mut camera =
             FirstPerson::new([0., -500.0, 120.0], FirstPersonSettings::keyboard_wasd()).camera(0.);
@@ -295,12 +308,13 @@ impl Renderer {
 
         let command_buffer_allocator =
             StandardCommandBufferAllocator::new(queue.device().clone(), Default::default());
-        let descriptor_set_allocator = StandardDescriptorSetAllocator::new(queue.device().clone());
-        let memory_allocator = StandardMemoryAllocator::new_default(queue.device().clone());
+        let descriptor_set_allocator =
+            StandardDescriptorSetAllocator::new(queue.device().clone(), Default::default());
+        let memory_allocator =
+            Arc::new(StandardMemoryAllocator::new_default(queue.device().clone()));
 
         let previous_frame_end = Some(sync::now(device.clone()).boxed());
-
-        Renderer {
+        Ok(Renderer {
             device,
             surface,
             queue,
@@ -319,7 +333,7 @@ impl Renderer {
             camera,
             _debug_callback,
             msaa_sample,
-        }
+        })
     }
 
     fn get_max_usable_sample_count(physical: Arc<PhysicalDevice>) -> SampleCounts {
@@ -364,15 +378,14 @@ impl Renderer {
         gpu_idx: i32,
         instance: Arc<Instance>,
         surface: Arc<Surface>,
-    ) -> (Arc<Device>, Arc<Queue>) {
+    ) -> anyhow::Result<(Arc<Device>, Arc<Queue>)> {
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
             ..DeviceExtensions::default()
         };
 
         let available_properties = instance
-            .enumerate_physical_devices()
-            .unwrap()
+            .enumerate_physical_devices()?
             .filter(|p| p.supported_extensions().contains(&device_extensions))
             .filter_map(|p| {
                 p.queue_family_properties()
@@ -436,10 +449,9 @@ impl Renderer {
                     }],
                     ..Default::default()
                 },
-            )
-            .unwrap()
+            )?
         };
-        (device, queues.next().unwrap())
+        Ok((device, queues.next().unwrap()))
     }
 
     fn create_swap_chain(
@@ -447,14 +459,11 @@ impl Renderer {
         physical: Arc<PhysicalDevice>,
         device: Arc<Device>,
         present_mode: PresentMode,
-    ) -> (Arc<Swapchain>, Vec<Arc<SwapchainImage>>) {
-        let caps = physical
-            .surface_capabilities(&surface, Default::default())
-            .unwrap();
+    ) -> anyhow::Result<(Arc<Swapchain>, Vec<Arc<Image>>)> {
+        let caps = physical.surface_capabilities(&surface, Default::default())?;
         let alpha = caps.supported_composite_alpha.into_iter().next().unwrap();
         let format = physical
-            .surface_formats(&surface, Default::default())
-            .unwrap()
+            .surface_formats(&surface, Default::default())?
             .into_iter()
             .find(|&(f, c)| f == Format::B8G8R8A8_UNORM && c == ColorSpace::SrgbNonLinear);
         let image_extent: [u32; 2] = surface
@@ -464,12 +473,12 @@ impl Renderer {
             .unwrap()
             .inner_size()
             .into();
-        Swapchain::new(
+        Ok(Swapchain::new(
             device,
             surface,
             SwapchainCreateInfo {
                 min_image_count: caps.min_image_count,
-                image_format: format.map(|f| f.0),
+                image_format: format.map_or(Format::B8G8R8A8_UNORM, |f| f.0),
                 image_color_space: format.map_or(ColorSpace::SrgbNonLinear, |f| f.1),
                 image_extent,
                 image_array_layers: 1,
@@ -481,8 +490,7 @@ impl Renderer {
                 full_screen_exclusive: FullScreenExclusive::Default,
                 ..Default::default()
             },
-        )
-        .unwrap()
+        )?)
     }
 
     pub fn device(&self) -> Arc<Device> {
@@ -505,7 +513,7 @@ impl Renderer {
         self.frame_buffers[self.image_index as usize].clone()
     }
 
-    pub fn image(&self) -> Arc<SwapchainImage> {
+    pub fn image(&self) -> Arc<Image> {
         self.images[self.image_index as usize].clone()
     }
 
@@ -525,8 +533,8 @@ impl Renderer {
         &self.descriptor_set_allocator
     }
 
-    pub const fn memory_allocator(&self) -> &StandardMemoryAllocator {
-        &self.memory_allocator
+    pub fn memory_allocator(&self) -> Arc<StandardMemoryAllocator> {
+        self.memory_allocator.clone()
     }
 
     pub fn resize(&mut self) {
@@ -541,17 +549,17 @@ impl Renderer {
         self.msaa_sample.max_count()
     }
 
-    pub fn start_frame(&mut self) -> Result<Box<dyn GpuFuture>, AcquireError> {
+    pub fn start_frame(&mut self) -> anyhow::Result<Box<dyn GpuFuture>> {
         if self.recreate_swapchain {
-            self.recreate_swapchain_and_views();
+            self.recreate_swapchain_and_views()?;
         }
 
         let (image_num, suboptimal, acquire_future) =
             match swapchain::acquire_next_image(self.swap_chain.clone(), None) {
                 Ok(r) => r,
-                Err(AcquireError::OutOfDate) => {
+                Err(Validated::Error(VulkanError::OutOfDate)) => {
                     self.recreate_swapchain = true;
-                    return Err(AcquireError::OutOfDate);
+                    return Err(VulkanError::OutOfDate.into());
                 }
                 Err(e) => panic!("Failed to acquire next image: {:?}", e),
             };
@@ -583,7 +591,7 @@ impl Renderer {
                 }
                 self.previous_frame_end = Some(future.boxed());
             }
-            Err(FlushError::OutOfDate) => {
+            Err(Validated::Error(VulkanError::OutOfDate)) => {
                 self.recreate_swapchain = true;
                 self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
             }
@@ -594,26 +602,12 @@ impl Renderer {
         }
     }
 
-    fn recreate_swapchain_and_views(&mut self) {
+    fn recreate_swapchain_and_views(&mut self) -> anyhow::Result<()> {
         let dimensions: [u32; 2] = self.window().inner_size().into();
-        let (new_swapchain, new_images) = match self.swap_chain.recreate(SwapchainCreateInfo {
+        let (new_swapchain, new_images) = self.swap_chain.recreate(SwapchainCreateInfo {
             image_extent: dimensions,
             ..self.swap_chain.create_info()
-        }) {
-            Ok(r) => r,
-            Err(SwapchainCreationError::ImageExtentNotSupported {
-                provided,
-                min_supported,
-                max_supported,
-            }) => {
-                println!(
-                    "provided {:?}, min_supported = {:?}, max_supported = {:?}",
-                    provided, min_supported, max_supported
-                );
-                return;
-            }
-            Err(e) => panic!("Failed to recreate swapchain: {:?}", e),
-        };
+        })?;
 
         self.swap_chain = new_swapchain;
         let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(self.device.clone()));
@@ -626,49 +620,52 @@ impl Renderer {
             format,
             self.depth_format,
             self.msaa_sample.max_count(),
-        );
+        )?;
         self.images = new_images;
         self.recreate_swapchain = false;
+        Ok(())
     }
 
     fn window_size_dependent_setup(
         memory_allocator: Arc<StandardMemoryAllocator>,
-        images: &[Arc<SwapchainImage>],
+        images: &[Arc<Image>],
         render_pass: Arc<RenderPass>,
         viewport: &mut Viewport,
         color_format: Format,
         depth_format: Format,
         samples: SampleCount,
-    ) -> Vec<Arc<Framebuffer>> {
-        let dimensions = images[0].dimensions().width_height();
-        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
+    ) -> anyhow::Result<Vec<Arc<Framebuffer>>> {
+        let extent = images[0].extent();
+        viewport.extent = [extent[0] as f32, extent[1] as f32];
 
-        let color_image = ImageView::new_default(
-            AttachmentImage::transient_multisampled(
-                &memory_allocator,
-                dimensions,
+        let color_image = ImageView::new_default(Image::new(
+            memory_allocator.clone(),
+            ImageCreateInfo {
+                usage: ImageUsage::COLOR_ATTACHMENT | ImageUsage::TRANSFER_DST,
+                format: color_format,
+                extent,
                 samples,
-                color_format,
-            )
-            .unwrap(),
-        )
-        .unwrap();
+                ..Default::default()
+            },
+            AllocationCreateInfo::default(),
+        )?)?;
 
-        let depth_buffer = ImageView::new_default(
-            AttachmentImage::transient_multisampled(
-                &memory_allocator,
-                dimensions,
+        let depth_buffer = ImageView::new_default(Image::new(
+            memory_allocator.clone(),
+            ImageCreateInfo {
+                usage: ImageUsage::DEPTH_STENCIL_ATTACHMENT | ImageUsage::TRANSFER_DST,
+                format: depth_format,
+                extent,
                 samples,
-                depth_format,
-            )
-            .unwrap(),
-        )
-        .unwrap();
+                ..Default::default()
+            },
+            AllocationCreateInfo::default(),
+        )?)?;
 
-        images
+        Ok(images
             .iter()
             .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
+                let view = ImageView::new_default(image.clone())?;
                 Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
@@ -676,9 +673,8 @@ impl Renderer {
                         ..Default::default()
                     },
                 )
-                .unwrap()
             })
-            .collect::<Vec<_>>()
+            .collect::<Result<Vec<_>, _>>()?)
     }
 
     pub fn move_camera(&mut self, viewer_settings: &ViewerSettings) {

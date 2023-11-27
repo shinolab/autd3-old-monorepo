@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 07/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -56,41 +55,53 @@ namespace AUTD3Sharp.Gain
             return this;
         }
 
-        public override GainPtr GainPtr(Geometry geometry)
+        internal override GainPtr GainPtr(Geometry geometry)
         {
             var keymap = new Dictionary<object, int>();
             var deviceIndices = geometry.Devices().Select(dev => (uint)dev.Idx).ToArray();
-            var map = Base.AUTDGainGroupCreateMap(deviceIndices, (uint)deviceIndices.Length);
-            var k = 0;
-            foreach (var dev in geometry.Devices())
+            unsafe
             {
-                var m = new int[dev.NumTransducers];
-                foreach (var tr in dev)
+                fixed (uint* deviceIndicesPtr = deviceIndices)
                 {
-                    var key = _f(dev, tr);
-                    if (key != null)
+                    var map = NativeMethodsBase.AUTDGainGroupCreateMap(deviceIndicesPtr, (uint)deviceIndices.Length);
+                    var k = 0;
+                    foreach (var dev in geometry.Devices())
                     {
-                        if (!keymap.ContainsKey(key)) keymap[key] = k++;
-                        m[tr.LocalIdx] = keymap[key];
+                        var m = new int[dev.NumTransducers];
+                        foreach (var tr in dev)
+                        {
+                            var key = _f(dev, tr);
+                            if (key != null)
+                            {
+                                if (!keymap.ContainsKey(key)) keymap[key] = k++;
+                                m[tr.LocalIdx] = keymap[key];
+                            }
+                            else
+                                m[tr.LocalIdx] = -1;
+                        }
+
+                        fixed (int* p = m)
+                            map = NativeMethodsBase.AUTDGainGroupMapSet(map, (uint)dev.Idx, p);
                     }
-                    else
-                        m[tr.LocalIdx] = -1;
+
+                    var keys = new int[_map.Count];
+                    var values = new GainPtr[_map.Count];
+                    foreach (var (kv, i) in _map.Select((v, i) => (v, i)))
+                    {
+                        if (!keymap.ContainsKey(kv.Key)) throw new AUTDException("Unknown group key");
+                        keys[i] = keymap[kv.Key];
+                        values[i] = kv.Value.GainPtr(geometry);
+                    }
+
+                    fixed (int* keysPtr = keys)
+                    fixed (GainPtr* valuesPtr = values)
+                        return NativeMethodsBase.AUTDGainGroup(
+                            map,
+                            keysPtr,
+                            valuesPtr,
+                            (uint)values.Length);
                 }
-                map = Base.AUTDGainGroupMapSet(map, (uint)dev.Idx, m);
             }
-            var keys = new int[_map.Count];
-            var values = new GainPtr[_map.Count];
-            foreach (var (kv, i) in _map.Select((v, i) => (v, i)))
-            {
-                if (!keymap.ContainsKey(kv.Key)) throw new AUTDException("Unknown group key");
-                keys[i] = keymap[kv.Key];
-                values[i] = kv.Value.GainPtr(geometry);
-            }
-            return Base.AUTDGainGroup(
-                    map,
-                    keys,
-                    values,
-                    (uint)values.Length);
         }
     }
 

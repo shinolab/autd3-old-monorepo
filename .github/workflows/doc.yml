@@ -7,43 +7,54 @@ on:
 jobs:
   check-cs:
     name: doc-check-sample-cs
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps: 
-    - uses: actions/checkout@v3
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '6.0.x'
-    - name: build
-      run: |
-        dotnet build ./doc/samples/cs/cs.csproj -c:Release
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+      - name: build
+        run: |
+          dotnet build ./doc/samples/cs/cs.csproj -c:Release
 
   check-cpp:
     name: doc-check-sample-cpp
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps: 
-    - uses: actions/checkout@v3
-    - name: build
-      run: |
-        cd ./doc/samples/cpp
-        mkdir build
-        cd build
-        cmake ..
-        cmake --build .
+      - uses: actions/checkout@v3
+      - name: build
+        run: |
+          cd ./doc/samples/cpp
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12
+          cmake --build .
 
   check-python:
     name: doc-check-sample-python
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps: 
-    - uses: actions/checkout@v3
-    - name: install deps
-      run: |
-        python -m pip install --upgrade pyautd3
-        python -m pip install --upgrade numpy
-    - name: build
-      run: |
-        cd doc/samples/python
-        echo a | python main.py || true
+      - uses: actions/checkout@v3
+      - name: install deps
+        run: |
+          python3 -m pip install --upgrade pyautd3
+      - name: build
+        run: |
+          cd doc/samples/python
+          echo a | python3 main.py || true
 
   build:
     name: build-doc

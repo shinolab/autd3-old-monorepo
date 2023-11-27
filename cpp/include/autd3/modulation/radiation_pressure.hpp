@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,9 +23,7 @@ namespace autd3::modulation {
 template <class M>
 class RadiationPressure final : public internal::Modulation, public IntoCache<RadiationPressure<M>> {
  public:
-  explicit RadiationPressure(M m) : _m(std::move(m)) {
-    static_assert(std::is_base_of_v<Modulation, std::remove_reference_t<M>>, "This is not Modulation");
-  }
+  explicit RadiationPressure(M m) : _m(std::move(m)) {}
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     return internal::native_methods::AUTDModulationWithRadiationPressure(_m.modulation_ptr());
@@ -35,7 +33,7 @@ class RadiationPressure final : public internal::Modulation, public IntoCache<Ra
   M _m;
 };
 
-template <typename M>
+template <class M>
 class IntoRadiationPressure {
  public:
   [[nodiscard]] RadiationPressure<M> with_radiation_pressure() & { return RadiationPressure(*static_cast<M*>(this)); }

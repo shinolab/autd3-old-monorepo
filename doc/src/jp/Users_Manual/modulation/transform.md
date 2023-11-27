@@ -4,11 +4,12 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main() {
-let m = Sine::new(150).with_transform(|i, d| (d - 0.5).abs() + 0.5);
+let m = Sine::new(150).with_transform(|i, d| EmitIntensity::new(d.value() / 2));
 # }
 ```
 
@@ -24,4 +25,4 @@ var m = new Sine(150).WithTransform((i, d) => Math.Abs(d - 0.5) + 0.5);
 m = Sine(150).with_transform(lambda i, d: abs(d - 0.5) + 0.5)
 ```
 
-`with_transform`の引数は`Fn(usize, f64) -> f64`であり, 第1引数はインデックス, 第2引数は変調データである.
+`with_transform`の引数は`Fn(usize, EmitIntensity) -> EmitIntensity`であり, 第1引数はインデックス, 第2引数は変調データである.

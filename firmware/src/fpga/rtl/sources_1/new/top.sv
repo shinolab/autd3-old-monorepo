@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/08/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,16 +25,17 @@ module top (
     input var CAT_SYNC0,
     output var FORCE_FAN,
     input var THERMO,
-    output var [252:1] XDCR_OUT
+    output var [252:1] XDCR_OUT,
+    output var GPIO_OUT[2]
 );
 
   `include "cvt_uid.vh"
   `include "params.vh"
 
-  bit clk, clk_l;
-  bit reset;
+  logic clk;
+  logic reset;
 
-  bit PWM_OUT[NUM_TRANSDUCERS];
+  logic PWM_OUT[NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 
@@ -54,18 +55,15 @@ module top (
 
   ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen (
       .clk_in1(MRCC_25P6M),
-      .reset(reset),
-      .clk_out1(clk),
-      .clk_out2(clk_l),
-      .locked()
+      .reset  (reset),
+      .clk_out(clk),
+      .locked ()
   );
 
   main #(
-      .WIDTH(13),
       .DEPTH(NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
-      .CLK_L(clk_l),
       .CAT_SYNC0(CAT_SYNC0),
       .CPU_BUS_CTL(cpu_bus.ctl_port),
       .CPU_BUS_NORMAL(cpu_bus.normal_port),
@@ -73,7 +71,8 @@ module top (
       .CPU_BUS_MOD(cpu_bus.mod_port),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
-      .PWM_OUT(PWM_OUT)
+      .PWM_OUT(PWM_OUT),
+      .GPIO_OUT(GPIO_OUT)
   );
 
 endmodule

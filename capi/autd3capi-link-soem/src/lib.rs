@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2023
+ * Last Modified: 10/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 
 use std::{
     ffi::{c_char, CStr},
+    net::SocketAddr,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -217,6 +218,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMIntoBuilder(soem: LinkSOEMBuilderPtr) -> Li
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct LinkRemoteSOEMBuilderPtr(pub ConstPtr);
 
 impl LinkRemoteSOEMBuilderPtr {
@@ -225,22 +227,44 @@ impl LinkRemoteSOEMBuilderPtr {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ResultLinkRemoteSOEMBuilder {
+    pub result: LinkRemoteSOEMBuilderPtr,
+    pub err_len: u32,
+    pub err: ConstPtr,
+}
+
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteSOEM(
-    addr: *const c_char,
-    err: *mut c_char,
-) -> LinkRemoteSOEMBuilderPtr {
-    LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(try_or_return!(
-        try_or_return!(
-            CStr::from_ptr(addr).to_str(),
-            err,
-            LinkRemoteSOEMBuilderPtr(NULL)
-        )
-        .parse(),
-        err,
-        LinkRemoteSOEMBuilderPtr(NULL)
-    )))
+pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char) -> ResultLinkRemoteSOEMBuilder {
+    let addr = match CStr::from_ptr(addr).to_str() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = e.to_string();
+            return ResultLinkRemoteSOEMBuilder {
+                result: LinkRemoteSOEMBuilderPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            };
+        }
+    };
+    let addr = match addr.parse::<SocketAddr>() {
+        Ok(v) => v,
+        Err(e) => {
+            let err = e.to_string();
+            return ResultLinkRemoteSOEMBuilder {
+                result: LinkRemoteSOEMBuilderPtr(NULL),
+                err_len: err.as_bytes().len() as u32 + 1,
+                err: Box::into_raw(Box::new(err)) as _,
+            };
+        }
+    };
+    ResultLinkRemoteSOEMBuilder {
+        result: LinkRemoteSOEMBuilderPtr::new(RemoteSOEM::builder(addr)),
+        err_len: 0,
+        err: std::ptr::null_mut(),
+    }
 }
 
 #[no_mangle]
@@ -260,5 +284,5 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEMWithTimeout(
 pub unsafe extern "C" fn AUTDLinkRemoteSOEMIntoBuilder(
     soem: LinkRemoteSOEMBuilderPtr,
 ) -> LinkBuilderPtr {
-    LinkBuilderPtr::new(*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder))
+    LinkBuilderPtr::new((*Box::from_raw(soem.0 as *mut RemoteSOEMBuilder)).blocking())
 }

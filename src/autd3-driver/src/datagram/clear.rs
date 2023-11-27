@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2023
+ * Last Modified: 06/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use crate::{datagram::*, error::AUTDInternalError, geometry::*};
+use crate::{datagram::*, error::AUTDInternalError};
 
 /// Datagram for clear all data in devices
 #[derive(Default)]
@@ -25,7 +25,7 @@ impl Clear {
     }
 }
 
-impl<T: Transducer> Datagram<T> for Clear {
+impl Datagram for Clear {
     type O1 = crate::operation::ClearOp;
     type O2 = crate::operation::NullOp;
 
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_clear_timeout() {
         let clear = Clear::new();
-        let timeout = <Clear as Datagram<LegacyTransducer>>::timeout(&clear);
+        let timeout = <Clear as Datagram>::timeout(&clear);
         assert!(timeout.is_some());
         assert!(timeout.unwrap() > Duration::ZERO);
     }
@@ -55,7 +55,7 @@ mod tests {
     #[test]
     fn test_clear_operation() {
         let clear = Clear::default();
-        let r = <Clear as Datagram<LegacyTransducer>>::operation(clear);
+        let r = <Clear as Datagram>::operation(clear);
         assert!(r.is_ok());
         let _: (ClearOp, NullOp) = r.unwrap();
     }

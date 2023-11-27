@@ -19,6 +19,12 @@ struct LinkRemoteSOEMBuilderPtr {
   void* _0;
 };
 
+struct ResultLinkRemoteSOEMBuilder {
+  LinkRemoteSOEMBuilderPtr result;
+  uint32_t err_len;
+  void* err;
+};
+
 extern "C" {
 
 [[nodiscard]] void* AUTDAdapterPointer();
@@ -67,7 +73,7 @@ LinkSOEMBuilderPtr AUTDLinkSOEMWithTimeout(LinkSOEMBuilderPtr soem,
 
 [[nodiscard]] LinkBuilderPtr AUTDLinkSOEMIntoBuilder(LinkSOEMBuilderPtr soem);
 
-[[nodiscard]] LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEM(const char *addr, char *err);
+[[nodiscard]] ResultLinkRemoteSOEMBuilder AUTDLinkRemoteSOEM(const char *addr);
 
 [[nodiscard]]
 LinkRemoteSOEMBuilderPtr AUTDLinkRemoteSOEMWithTimeout(LinkRemoteSOEMBuilderPtr soem,

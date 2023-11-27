@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2023
+ * Last Modified: 23/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -14,11 +14,13 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    constraint::Constraint, helper::generate_result, impl_holo, Complex, LinAlgBackend, Trans,
+    constraint::EmissionConstraint, helper::generate_result, impl_holo, Amplitude, Complex,
+    LinAlgBackend, Trans,
 };
 use autd3_derive::Gain;
 
 use autd3_driver::{
+    defined::T4010A1_AMPLITUDE,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -30,9 +32,9 @@ use autd3_driver::{
 #[derive(Gain)]
 pub struct GS<B: LinAlgBackend + 'static> {
     foci: Vec<Vector3>,
-    amps: Vec<float>,
+    amps: Vec<Amplitude>,
     repeat: usize,
-    constraint: Constraint,
+    constraint: EmissionConstraint,
     backend: Rc<B>,
 }
 
@@ -45,7 +47,7 @@ impl<B: LinAlgBackend + 'static> GS<B> {
             amps: vec![],
             repeat: 100,
             backend,
-            constraint: Constraint::Normalize,
+            constraint: EmissionConstraint::Normalize,
         }
     }
 
@@ -58,10 +60,10 @@ impl<B: LinAlgBackend + 'static> GS<B> {
     }
 }
 
-impl<B: LinAlgBackend, T: Transducer> Gain<T> for GS<B> {
+impl<B: LinAlgBackend> Gain for GS<B> {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let g = self
@@ -70,14 +72,16 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for GS<B> {
 
         let m = self.backend.cols_c(&g)?;
         let n = self.foci.len();
+        let ones = vec![T4010A1_AMPLITUDE; m];
 
-        let ones = vec![1.; m];
+        let mut b = self.backend.alloc_cm(m, n)?;
+        self.backend.gen_back_prop(m, n, &g, &mut b)?;
+
         let mut q = self.backend.from_slice_cv(&ones)?;
-
-        let amps = self.backend.from_slice_cv(&self.amps)?;
 
         let q0 = self.backend.from_slice_cv(&ones)?;
 
+        let amps = self.backend.from_slice_cv(self.amps_as_slice())?;
         let mut p = self.backend.alloc_zeros_cv(n)?;
         for _ in 0..self.repeat {
             self.backend.gemv_c(
@@ -91,9 +95,9 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for GS<B> {
             self.backend.scaled_to_assign_cv(&amps, &mut p)?;
 
             self.backend.gemv_c(
-                Trans::ConjTrans,
+                Trans::NoTrans,
                 Complex::new(1., 0.),
-                &g,
+                &b,
                 &p,
                 Complex::new(0., 0.),
                 &mut q,
@@ -101,6 +105,9 @@ impl<B: LinAlgBackend, T: Transducer> Gain<T> for GS<B> {
 
             self.backend.scaled_to_assign_cv(&q0, &mut q)?;
         }
+
+        self.backend
+            .scale_assign_cv(Complex::new(1. / T4010A1_AMPLITUDE, 0.0), &mut q)?;
 
         generate_result(
             geometry,

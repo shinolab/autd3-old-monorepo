@@ -4,6 +4,7 @@ Without modulation.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -33,11 +34,12 @@ The value is clamped to $\[0, 1\]$.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main()  {
-let m = autd3::modulation::Static::new().with_amp(1.);
+let m = autd3::modulation::Static::new().with_intensity(EmitIntensity::MAX);
 # }
 ```
 

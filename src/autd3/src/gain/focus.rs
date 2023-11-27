@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use autd3_driver::{
-    common::Amplitude,
+    common::EmitIntensity,
     derive::prelude::*,
     geometry::{Geometry, Vector3},
 };
@@ -24,7 +24,7 @@ use autd3_derive::Gain;
 /// Gain to produce a focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Focus {
-    amp: Amplitude,
+    intensity: EmitIntensity,
     pos: Vector3,
 }
 
@@ -38,25 +38,25 @@ impl Focus {
     pub fn new(pos: Vector3) -> Self {
         Self {
             pos,
-            amp: Amplitude::MAX,
+            intensity: EmitIntensity::MAX,
         }
     }
 
-    /// set amplitude
+    /// set emission intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - amplitude
+    /// * `intensity` - emission intensity
     ///
-    pub fn with_amp<A: Into<Amplitude>>(self, amp: A) -> Self {
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
         Self {
-            amp: amp.into(),
+            intensity: intensity.into(),
             ..self
         }
     }
 
-    pub fn amp(&self) -> Amplitude {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 
     pub fn pos(&self) -> Vector3 {
@@ -64,17 +64,17 @@ impl Focus {
     }
 }
 
-impl<T: Transducer> Gain<T> for Focus {
+impl Gain for Focus {
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |dev, tr| {
             let phase = tr.align_phase_at(self.pos, dev.sound_speed);
             Drive {
                 phase,
-                amp: self.amp,
+                intensity: self.intensity,
             }
         }))
     }

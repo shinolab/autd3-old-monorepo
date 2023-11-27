@@ -6,6 +6,7 @@ Specify the frequency $f$ as an integer in the constructor.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
@@ -33,13 +34,14 @@ You can set the amplitude of the square wave with `with_low` and `with_high` for
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]
 # fn main()  {
 let m = autd3::modulation::Square::new(150)
-        .with_low(0.)
-        .with_high(1.);
+        .with_low(EmitIntensity::MIN)
+        .with_high(EmitIntensity::MAX);
 # }
 ```
 
@@ -67,6 +69,7 @@ You can set the duty ratio of the square wave with `with_duty`.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 
 # #[allow(unused_variables)]

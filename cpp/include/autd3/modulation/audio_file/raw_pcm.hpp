@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/10/2023
+// Last Modified: 24/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@
 #include <filesystem>
 
 #include "autd3/internal/native_methods.hpp"
+#include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
-#include "autd3/modulation/fir.hpp"
 #include "autd3/modulation/radiation_pressure.hpp"
 #include "autd3/modulation/transform.hpp"
 
@@ -29,8 +29,7 @@ namespace autd3::modulation::audio_file {
 class RawPCM final : public internal::ModulationWithFreqDiv<RawPCM>,
                      public IntoCache<RawPCM>,
                      public IntoRadiationPressure<RawPCM>,
-                     public IntoTransform<RawPCM>,
-                     public IntoFIR<RawPCM> {
+                     public IntoTransform<RawPCM> {
  public:
   /**
    * @brief Constructor
@@ -41,10 +40,10 @@ class RawPCM final : public internal::ModulationWithFreqDiv<RawPCM>,
   explicit RawPCM(std::filesystem::path path, const uint32_t sample_rate) : _sample_rate(sample_rate), _path(std::move(path)) {}
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    char err[256]{};
-    auto ptr = internal::native_methods::AUTDModulationRawPCM(_path.string().c_str(), _sample_rate, err);
-    if (ptr._0 == nullptr) throw internal::AUTDException(err);
-    if (_freq_div.has_value()) ptr = AUTDModulationRawPCMWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    auto ptr = validate(internal::native_methods::AUTDModulationRawPCM(_path.string().c_str(), _sample_rate));
+    if (_config.has_value())
+      ptr = internal::native_methods::AUTDModulationRawPCMWithSamplingConfig(
+          ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
     return ptr;
   }
 

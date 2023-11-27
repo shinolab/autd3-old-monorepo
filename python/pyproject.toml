@@ -1,3 +1,16 @@
 [build-system]
 requires = ["wheel", "setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+select = ["ALL"]
+ignore = ["SLF001", "C901", "D105", "D107", "D203", "D205", "D212", "D213", "D401", "PLR0913"]
+fixable = ["ALL"]
+target-version = "py310"
+line-length = 150
+exclude = [".venv", "venv", "pyautd3/native_methods/*.py"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*.py" = ["D", "S101", "T201", "ANN201", "PLR0915", "PLR2004"]
+"conftest.py" = ["ARG001", "ANN001"]
+"example/*.py" = ["D", "T201", "PLR2004"]

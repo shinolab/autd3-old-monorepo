@@ -4,48 +4,40 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2023
+ * Last Modified: 26/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{collections::HashMap, hash::Hash, marker::PhantomData};
+use std::{collections::HashMap, hash::Hash};
 
 use bitvec::prelude::*;
 
 use autd3_driver::{
-    common::Amplitude,
+    common::EmitIntensity,
     derive::prelude::*,
     geometry::{Device, Geometry},
 };
 
-pub struct Group<
-    K: Hash + Eq + Clone,
-    T: Transducer,
-    G: Gain<T>,
-    F: Fn(&Device<T>, &T) -> Option<K>,
-> {
+pub struct Group<K: Hash + Eq + Clone, G: Gain, F: Fn(&Device, &Transducer) -> Option<K>> {
     f: F,
     gain_map: HashMap<K, G>,
-    _phantom: PhantomData<T>,
 }
 
-impl<K: Hash + Eq + Clone, T: Transducer, F: Fn(&Device<T>, &T) -> Option<K>>
-    Group<K, T, Box<dyn Gain<T>>, F>
-{
+impl<K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, Box<dyn Gain>, F> {
     /// Group by transducer
     ///
     /// # Arguments
     /// `f` - function to get key from transducer (currentry, transducer type annotation is required)
     ///
-    /// # Examples
+    /// # Exintensityles
     ///
     /// ```
     /// # use autd3::prelude::*;
-    /// # let gain : autd3::gain::Group<_, LegacyTransducer, _, _> =
-    /// Group::new(|dev, tr: &LegacyTransducer| match tr.local_idx() {
+    /// # let gain : autd3::gain::Group<_, _, _> =
+    /// Group::new(|dev, tr| match tr.tr_idx() {
     ///                 0..=100 => Some("null"),
     ///                 101.. => Some("focus"),
     ///                 _ => None,
@@ -53,26 +45,23 @@ impl<K: Hash + Eq + Clone, T: Transducer, F: Fn(&Device<T>, &T) -> Option<K>>
     ///             .set("null", Null::new())
     ///             .set("focus", Focus::new(Vector3::new(0.0, 0.0, 150.0)));
     /// ```
-    pub fn new(f: F) -> Group<K, T, Box<dyn Gain<T>>, F> {
+    pub fn new(f: F) -> Group<K, Box<dyn Gain>, F> {
         Group {
             f,
             gain_map: HashMap::new(),
-            _phantom: PhantomData,
         }
     }
 }
 
-impl<K: Hash + Eq + Clone, T: Transducer, G: Gain<T>, F: Fn(&Device<T>, &T) -> Option<K>>
-    Group<K, T, G, F>
-{
+impl<K: Hash + Eq + Clone, G: Gain, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, G, F> {
     /// get gain map which maps device id to gain
     pub fn gain_map(&self) -> &HashMap<K, G> {
         &self.gain_map
     }
 }
 
-impl<'a, K: Hash + Eq + Clone, T: Transducer, F: Fn(&Device<T>, &T) -> Option<K>>
-    Group<K, T, Box<dyn Gain<T> + 'a>, F>
+impl<'a, K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>>
+    Group<K, Box<dyn Gain + 'a>, F>
 {
     /// set gain
     ///
@@ -81,15 +70,13 @@ impl<'a, K: Hash + Eq + Clone, T: Transducer, F: Fn(&Device<T>, &T) -> Option<K>
     /// * `key` - key
     /// * `gain` - Gain
     ///
-    pub fn set<G: Gain<T> + 'a>(mut self, key: K, gain: G) -> Self {
+    pub fn set<G: Gain + 'a>(mut self, key: K, gain: G) -> Self {
         self.gain_map.insert(key, Box::new(gain));
         self
     }
 }
 
-impl<K: Hash + Eq + Clone, T: Transducer + 'static, F: Fn(&Device<T>, &T) -> Option<K>>
-    Group<K, T, Box<dyn Gain<T>>, F>
-{
+impl<K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, Box<dyn Gain>, F> {
     /// get Gain of specified key
     ///
     /// # Arguments
@@ -100,7 +87,7 @@ impl<K: Hash + Eq + Clone, T: Transducer + 'static, F: Fn(&Device<T>, &T) -> Opt
     ///
     /// * Gain of specified key if exists and the type is matched, otherwise None
     ///
-    pub fn get<G: Gain<T> + 'static>(&self, key: K) -> Option<&G> {
+    pub fn get<G: Gain + 'static>(&self, key: K) -> Option<&G> {
         self.gain_map
             .get(&key)
             .and_then(|g| g.as_ref().as_any().downcast_ref::<G>())
@@ -109,14 +96,11 @@ impl<K: Hash + Eq + Clone, T: Transducer + 'static, F: Fn(&Device<T>, &T) -> Opt
 
 impl<
         K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T) -> Option<K> + 'static,
-    > autd3_driver::datagram::Datagram<T> for Group<K, T, G, F>
-where
-    autd3_driver::operation::GainOp<T, Self>: autd3_driver::operation::Operation<T>,
+        G: Gain + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+    > autd3_driver::datagram::Datagram for Group<K, G, F>
 {
-    type O1 = autd3_driver::operation::GainOp<T, Self>;
+    type O1 = autd3_driver::operation::GainOp<Self>;
     type O2 = autd3_driver::operation::NullOp;
 
     fn operation(self) -> Result<(Self::O1, Self::O2), autd3_driver::error::AUTDInternalError> {
@@ -126,10 +110,9 @@ where
 
 impl<
         K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T) -> Option<K> + 'static,
-    > GainAsAny for Group<K, T, G, F>
+        G: Gain + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+    > GainAsAny for Group<K, G, F>
 {
     fn as_any(&self) -> &dyn std::any::Any {
         self
@@ -138,15 +121,11 @@ impl<
 
 impl<
         K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T) -> Option<K> + 'static,
-    > Group<K, T, G, F>
+        G: Gain + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+    > Group<K, G, F>
 {
-    fn get_filters(
-        &self,
-        geometry: &Geometry<T>,
-    ) -> HashMap<K, HashMap<usize, BitVec<usize, Lsb0>>> {
+    fn get_filters(&self, geometry: &Geometry) -> HashMap<K, HashMap<usize, BitVec<usize, Lsb0>>> {
         let mut filters = HashMap::new();
         geometry.devices().for_each(|dev| {
             dev.iter().for_each(|tr| {
@@ -172,7 +151,7 @@ impl<
                         .unwrap()
                         .get_mut(&dev.idx())
                         .unwrap()
-                        .set(tr.local_idx(), true);
+                        .set(tr.tr_idx(), true);
                 }
             })
         });
@@ -182,15 +161,14 @@ impl<
 
 impl<
         K: Hash + Eq + Clone + 'static,
-        T: Transducer + 'static,
-        G: Gain<T> + 'static,
-        F: Fn(&Device<T>, &T) -> Option<K> + 'static,
-    > Gain<T> for Group<K, T, G, F>
+        G: Gain + 'static,
+        F: Fn(&Device, &Transducer) -> Option<K> + 'static,
+    > Gain for Group<K, G, F>
 {
     #[allow(clippy::uninit_vec)]
     fn calc(
         &self,
-        geometry: &Geometry<T>,
+        geometry: &Geometry,
         _filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         let filters = self.get_filters(geometry);
@@ -226,10 +204,10 @@ impl<
                                 "Unspecified group key".to_owned(),
                             ));
                         };
-                        d[tr.local_idx()] = g[&dev.idx()][tr.local_idx()];
+                        d[tr.tr_idx()] = g[&dev.idx()][tr.tr_idx()];
                     } else {
-                        d[tr.local_idx()] = Drive {
-                            amp: Amplitude::MIN,
+                        d[tr.tr_idx()] = Drive {
+                            intensity: EmitIntensity::MIN,
                             phase: 0.0,
                         }
                     }
@@ -242,35 +220,33 @@ impl<
 
 #[cfg(test)]
 mod tests {
-    use autd3_driver::geometry::{IntoDevice, LegacyTransducer, Vector3};
+    use autd3_driver::{
+        autd3_device::AUTD3,
+        geometry::{IntoDevice, Transducer, Vector3},
+    };
 
     use super::*;
 
-    use crate::{
-        autd3_device::AUTD3,
-        gain::{Focus, Null, Plane},
-    };
+    use crate::gain::{Focus, Null, Plane};
 
     #[test]
     fn test_group() {
-        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(2),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(3),
+        let geometry: Geometry = Geometry::new(vec![
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
+            AUTD3::new(Vector3::zeros()).into_device(2),
+            AUTD3::new(Vector3::zeros()).into_device(3),
         ]);
 
-        let gain = Group::new(
-            |dev, tr: &LegacyTransducer| match (dev.idx(), tr.local_idx()) {
-                (0, 0..=99) => Some("null"),
-                (0, 100..=199) => Some("plane"),
-                (1, 200..) => Some("plane2"),
-                _ => None,
-            },
-        )
+        let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.tr_idx()) {
+            (0, 0..=99) => Some("null"),
+            (0, 100..=199) => Some("plane"),
+            (1, 200..) => Some("plane2"),
+            _ => None,
+        })
         .set("null", Null::new())
         .set("plane", Plane::new(Vector3::zeros()))
-        .set("plane2", Plane::new(Vector3::zeros()).with_amp(0.5));
+        .set("plane2", Plane::new(Vector3::zeros()).with_intensity(0x1F));
 
         let drives = gain.calc(&geometry, GainFilter::All).unwrap();
         assert_eq!(drives.len(), 4);
@@ -279,45 +255,45 @@ mod tests {
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.value(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.value(), 1.0);
+                assert_eq!(d.intensity.value(), 0xFF);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.value(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.value(), 0.0);
+                assert_eq!(d.intensity.value(), 0);
             }
             _ => {
                 assert_eq!(d.phase, 0.0);
-                assert_eq!(d.amp.value(), 0.5);
+                assert_eq!(d.intensity.value(), 0x1F);
             }
         });
         drives[&2].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp.value(), 0.0);
+            assert_eq!(d.intensity.value(), 0);
         });
         drives[&3].iter().for_each(|d| {
             assert_eq!(d.phase, 0.0);
-            assert_eq!(d.amp.value(), 0.0);
+            assert_eq!(d.intensity.value(), 0);
         });
     }
 
     #[test]
     fn test_group_unknown_key() {
-        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
+        let geometry: Geometry = Geometry::new(vec![
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &LegacyTransducer| match tr.local_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,
@@ -335,12 +311,12 @@ mod tests {
 
     #[test]
     fn test_group_unspecified_key() {
-        let geometry: Geometry<LegacyTransducer> = Geometry::new(vec![
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(0),
-            AUTD3::new(Vector3::zeros(), Vector3::zeros()).into_device(1),
+        let geometry: Geometry = Geometry::new(vec![
+            AUTD3::new(Vector3::zeros()).into_device(0),
+            AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &LegacyTransducer| match tr.local_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,
@@ -358,27 +334,32 @@ mod tests {
 
     #[test]
     fn test_get() {
-        let gain: Group<_, LegacyTransducer, _, _> =
-            Group::new(|dev, _tr: &LegacyTransducer| match dev.idx() {
-                0 => Some("null"),
-                1 => Some("plane"),
-                2 | 3 => Some("plane2"),
-                _ => None,
-            })
-            .set("null", Null::new())
-            .set("plane", Plane::new(Vector3::zeros()))
-            .set("plane2", Plane::new(Vector3::zeros()).with_amp(0.5));
+        let gain: Group<_, _, _> = Group::new(|dev, _tr| match dev.idx() {
+            0 => Some("null"),
+            1 => Some("plane"),
+            2 | 3 => Some("plane2"),
+            _ => None,
+        })
+        .set("null", Null::new())
+        .set("plane", Plane::new(Vector3::zeros()))
+        .set("plane2", Plane::new(Vector3::zeros()).with_intensity(0x1F));
 
         assert!(gain.get::<Null>("null").is_some());
         assert!(gain.get::<Focus>("null").is_none());
 
         assert!(gain.get::<Plane>("plane").is_some());
         assert!(gain.get::<Null>("plane").is_none());
-        assert_eq!(gain.get::<Plane>("plane").unwrap().amp().value(), 1.0);
+        assert_eq!(
+            gain.get::<Plane>("plane").unwrap().intensity().value(),
+            0xFF
+        );
 
         assert!(gain.get::<Plane>("plane2").is_some());
         assert!(gain.get::<Null>("plane2").is_none());
-        assert_eq!(gain.get::<Plane>("plane2").unwrap().amp().value(), 0.5);
+        assert_eq!(
+            gain.get::<Plane>("plane2").unwrap().intensity().value(),
+            0x1F
+        );
 
         assert!(gain.get::<Null>("focus").is_none());
         assert!(gain.get::<Focus>("focus").is_none());

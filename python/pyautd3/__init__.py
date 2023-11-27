@@ -1,4 +1,4 @@
-'''
+"""
 File: __init__.py
 Project: pyautd3
 Created Date: 24/05/2021
@@ -9,21 +9,28 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
-from pyautd3.autd import Silencer
-from pyautd3.autd import Controller, FirmwareInfo
-from pyautd3.geometry import AUTD3, Geometry, Transducer, Device
-from pyautd3.autd import Amplitudes
+from pyautd3.autd import (
+    Clear,
+    ConfigureModDelay,
+    Controller,
+    FirmwareInfo,
+    Silencer,
+    Stop,
+    Synchronize,
+    UpdateFlags,
+)
+from pyautd3.drive import Drive
+from pyautd3.emit_intensity import EmitIntensity
+from pyautd3.geometry import AUTD3, Device, Geometry, Transducer
 from pyautd3.native_methods.autd3capi_def import TimerStrategy
-from pyautd3.autd import Clear, UpdateFlags, Synchronize
-from pyautd3.autd import ConfigureModDelay
-from pyautd3.autd import ConfigureAmpFilter, ConfigurePhaseFilter
-from pyautd3.autd import Stop
-from pyautd3.native_methods.autd3capi import Drive
+from pyautd3.sampling_config import SamplingConfiguration
 
 __all__ = [
+    "EmitIntensity",
+    "SamplingConfiguration",
     "Silencer",
     "Controller",
     "AUTD3",
@@ -32,15 +39,12 @@ __all__ = [
     "Transducer",
     "Drive",
     "FirmwareInfo",
-    "Amplitudes",
     "Clear",
     "UpdateFlags",
     "Synchronize",
     "ConfigureModDelay",
-    "ConfigureAmpFilter",
-    "ConfigurePhaseFilter",
     "Stop",
     "TimerStrategy",
 ]
 
-__version__ = "16.0.3"
+__version__ = "17.0.0"

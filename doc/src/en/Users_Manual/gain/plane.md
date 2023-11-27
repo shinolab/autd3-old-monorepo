@@ -4,6 +4,7 @@
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
@@ -34,20 +35,20 @@ g = Plane([nx, ny, nz])
 
 Specify the direction of the plane wave in the constructor of `Plane`.
 
-## Set amplitude
+## Set intensity
 
-You can change amplitude by `with_amp` method.
-The amplitude is normalized to 0-1 (1 by default).
+You can change emission intensity by `with_intensity` method.
 
 ```rust,edition2021
 # extern crate autd3;
+# extern crate tokio;
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main()  {
 # let nx = 0.;
 # let ny = 0.;
 # let nz = 0.;
-let g = autd3::gain::Plane::new(Vector3::new(nx, ny, nz)).with_amp(1.);
+let g = autd3::gain::Plane::new(Vector3::new(nx, ny, nz)).with_intensity(EmitIntensity::MAX);
 # }
 ```
 

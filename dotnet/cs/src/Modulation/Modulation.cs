@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2023
+ * Last Modified: 24/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,34 +15,30 @@
 #define USE_SINGLE
 #endif
 
-#if USE_SINGLE
-using float_t = System.Single;
-#else
-using float_t = System.Double;
-#endif
-
 namespace AUTD3Sharp.Modulation
 {
-    using Base = NativeMethods.Base;
-
     /// <summary>
     /// Base class for custom modulation
     /// </summary>
     public abstract class Modulation : Internal.Modulation
     {
-        private readonly uint _freqDiv;
+        private readonly SamplingConfiguration _config;
 
-        protected Modulation(uint freqDiv)
+        protected Modulation(SamplingConfiguration config)
         {
-            _freqDiv = freqDiv;
+            _config = config;
         }
 
-        public sealed override ModulationPtr ModulationPtr()
+        internal sealed override ModulationPtr ModulationPtr()
         {
             var data = Calc();
-            return Base.AUTDModulationCustom(_freqDiv, data, (ulong)data.Length);
+            unsafe
+            {
+                fixed (EmitIntensity* ptr = data)
+                    return NativeMethodsBase.AUTDModulationCustom(_config.Internal, (byte*)ptr, (ulong)data.Length);
+            }
         }
 
-        public abstract float_t[] Calc();
+        public abstract EmitIntensity[] Calc();
     }
 }

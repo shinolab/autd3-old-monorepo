@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/09/2023
+// Last Modified: 27/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,26 +56,6 @@ TEST(Internal_Geometry, TransducerDirectionZ) {
   }
 }
 
-TEST(Internal_Geometry, TransducerFrequency) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.frequency(), 40e3);
-      tr.set_frequency(69.98718496369073e3);
-      ASSERT_EQ(tr.frequency(), 69.98718496369073e3);
-    }
-  }
-}
-
-TEST(Internal_Geometry, TransducerCycle) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.cycle(), 4096);
-      tr.set_cycle(3000);
-      ASSERT_EQ(tr.cycle(), 3000);
-    }
-  }
-}
-
 TEST(Internal_Geometry, TransducerModDelay) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
     for (auto& tr : dev) {
@@ -86,30 +66,10 @@ TEST(Internal_Geometry, TransducerModDelay) {
   }
 }
 
-TEST(Internal_Geometry, TransducerAmpFilter) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.amp_filter(), 0);
-      tr.set_amp_filter(-1);
-      ASSERT_EQ(tr.amp_filter(), -1);
-    }
-  }
-}
-
-TEST(Internal_Geometry, TransducerPhaseFilter) {
-  for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    for (auto& tr : dev) {
-      ASSERT_EQ(tr.phase_filter(), 0);
-      tr.set_phase_filter(-autd3::internal::pi);
-      ASSERT_EQ(tr.phase_filter(), -autd3::internal::pi);
-    }
-  }
-}
-
 TEST(Internal_Geometry, TransducerWavelength) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
     for (auto& tr : dev) {
-      ASSERT_DOUBLE_EQ(tr.wavelength(340e3), 340e3 / tr.frequency());
+      ASSERT_DOUBLE_EQ(tr.wavelength(340e3), 340e3 / autd3::internal::native_methods::ULTRASOUND_FREQUENCY);
     }
   }
 }
@@ -117,7 +77,7 @@ TEST(Internal_Geometry, TransducerWavelength) {
 TEST(Internal_Geometry, TransducerWavenum) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
     for (auto& tr : dev) {
-      ASSERT_DOUBLE_EQ(tr.wavenumber(340e3), 2 * autd3::internal::pi * tr.frequency() / 340e3);
+      ASSERT_DOUBLE_EQ(tr.wavenumber(340e3), 2 * autd3::internal::pi * autd3::internal::native_methods::ULTRASOUND_FREQUENCY / 340e3);
     }
   }
 }

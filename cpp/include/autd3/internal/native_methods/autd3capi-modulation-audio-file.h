@@ -8,17 +8,17 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] ModulationPtr AUTDModulationWav(const char *path, char *err);
+[[nodiscard]] ResultModulation AUTDModulationWav(const char *path);
 
 [[nodiscard]]
-ModulationPtr AUTDModulationWavWithSamplingFrequencyDivision(ModulationPtr m,
-                                                             uint32_t div);
+ModulationPtr AUTDModulationWavWithSamplingConfig(ModulationPtr m,
+                                                  SamplingConfiguration config);
 
-[[nodiscard]] ModulationPtr AUTDModulationRawPCM(const char *path, uint32_t sample_rate, char *err);
+[[nodiscard]] ResultModulation AUTDModulationRawPCM(const char *path, uint32_t sample_rate);
 
 [[nodiscard]]
-ModulationPtr AUTDModulationRawPCMWithSamplingFrequencyDivision(ModulationPtr m,
-                                                                uint32_t div);
+ModulationPtr AUTDModulationRawPCMWithSamplingConfig(ModulationPtr m,
+                                                     SamplingConfiguration config);
 
 } // extern "C"
 
