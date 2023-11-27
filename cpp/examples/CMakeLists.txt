@@ -25,17 +25,17 @@ if(AUTD_LOCAL_TEST)
 elseif(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.0/autd3-v17.0.0
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.0/autd3-v17.0.0
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.0/autd3-v17.0.0
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
   )
 endif()
 FetchContent_MakeAvailable(autd3)
