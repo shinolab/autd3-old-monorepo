@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 using AUTD3Sharp.Gain.Holo;
+using static AUTD3Sharp.Gain.Holo.Amplitude.Units;
 
 namespace tests.Gain.Holo;
 
@@ -24,8 +25,8 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
             .WithConstraint(new AUTD3Sharp.Gain.Holo.Uniform(0x80));
 
         Assert.True(await autd.SendAsync(g));
@@ -45,8 +46,8 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
             .WithConstraint(new Normalize());
 
         Assert.True(await autd.SendAsync(g));
@@ -66,8 +67,8 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
             .WithConstraint(new Clamp(new EmitIntensity(67), new EmitIntensity(85)));
 
         Assert.True(await autd.SendAsync(g));
@@ -88,8 +89,8 @@ public class ConstraintTest
 
         var backend = new NalgebraBackend();
         var g = new Naive<NalgebraBackend>(backend)
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
-            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), Amplitude.NewPascal(5e3))
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
+            .AddFocus(autd.Geometry.Center + new Vector3d(30, 0, 150), 5e3 * Pascal)
             .WithConstraint(new DontCare());
 
         Assert.True(await autd.SendAsync(g));

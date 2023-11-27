@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3 import AUTD3, Controller
-from pyautd3.gain.holo import Amplitude, EmissionConstraint, Greedy
+from pyautd3.gain.holo import EmissionConstraint, Greedy, pascal
 from pyautd3.link.audit import Audit
 
 
@@ -26,8 +26,8 @@ async def test_greedy():
 
     g = (
         Greedy()
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), Amplitude.new_pascal(5e3)) for x in [-30])
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_phase_div(16)
         .with_constraint(EmissionConstraint.uniform(0x80))
     )

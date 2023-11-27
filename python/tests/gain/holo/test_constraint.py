@@ -15,7 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 import pytest
 
-from pyautd3.gain.holo import Amplitude, EmissionConstraint, Naive, NalgebraBackend
+from pyautd3.gain.holo import EmissionConstraint, Naive, NalgebraBackend, pascal
 from tests.test_autd import create_controller
 
 
@@ -26,8 +26,8 @@ async def test_constraint():
     backend = NalgebraBackend()
     g = (
         Naive(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5e3 * pascal)
         .with_constraint(EmissionConstraint.uniform(0x80))
     )
     assert await autd.send_async(g)
@@ -38,8 +38,8 @@ async def test_constraint():
 
     g = (
         Naive(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5e3 * pascal)
         .with_constraint(EmissionConstraint.normalize())
     )
     assert await autd.send_async(g)
@@ -50,8 +50,8 @@ async def test_constraint():
 
     g = (
         Naive(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5e3 * pascal)
         .with_constraint(EmissionConstraint.clamp(67, 85))
     )
     assert await autd.send_async(g)
@@ -63,8 +63,8 @@ async def test_constraint():
 
     g = (
         Naive(backend)
-        .add_focus(autd.geometry.center + np.array([30, 0, 150]), Amplitude.new_pascal(5e3))
-        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), Amplitude.new_pascal(5e3))
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_focus(autd.geometry.center + np.array([-30, 0, 150]), 5e3 * pascal)
         .with_constraint(EmissionConstraint.dont_care())
     )
     assert await autd.send_async(g)

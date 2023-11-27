@@ -12,16 +12,16 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3.gain.holo import Amplitude
+from pyautd3.gain.holo import dB, pascal
 
 
 def test_holo_amp_db():
-    amp = Amplitude.new_spl(121.5)
+    amp = 121.5 * dB
     assert amp.pascal == 23.77004454874038
     assert amp.spl == 121.5
 
 
 def test_holo_amp_pascal():
-    amp = Amplitude.new_pascal(23.77004454874038)
+    amp = 23.77004454874038 * pascal
     assert amp.pascal == 23.77004454874038
     assert amp.spl == 121.5

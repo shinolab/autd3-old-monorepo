@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ using AUTD3Sharp;
 using AUTD3Sharp.Gain.Holo;
 using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
+using static AUTD3Sharp.Gain.Holo.Amplitude.Units;
 
 namespace Samples;
 
@@ -29,8 +30,8 @@ internal static class GainHoloTest
 
         var backend = new NalgebraBackend();
         var g = new GSPAT<NalgebraBackend>(backend).WithConstraint(new Uniform(EmitIntensity.Max))
-            .AddFocus(center + 20.0 * Vector3d.UnitX, Amplitude.NewPascal(5e3))
-            .AddFocus(center - 20.0 * Vector3d.UnitX, Amplitude.NewPascal(5e3));
+            .AddFocus(center + 20.0 * Vector3d.UnitX, 5e3 * Pascal)
+            .AddFocus(center - 20.0 * Vector3d.UnitX, 5e3 * Pascal);
 
         var m = new Sine(150);
 
