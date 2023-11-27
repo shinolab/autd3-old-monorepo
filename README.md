@@ -28,18 +28,14 @@ This repository contains a client library to drive AUTD version 3 devices.
 This cross-platform library supports Windows, macOS, and Linux (including Single Board Computer such as Raspberry Pi).
 </p>
 
+> [!WARNING]  
+> From v17.0.0, the software is completely incompatible with v2.x and v3.x firmware.
+> Before using this library, write the latest firmware in `firmware`. For more information, please see [README](./firmware/README.md).
+
 ## Document
 
 * [日本語/Japanese](https://shinolab.github.io/autd3/book/jp)
 * [English](https://shinolab.github.io/autd3/book/en)
-
-## CAUTION
-
-* Before using, write the latest firmware in `firmware`. 
-    * For more information, please see [README](./firmware/README.md).
-
-> [!WARNING]  
-> From v17.0.0, the software is completely incompatible with v2.x and v3.x firmware.
 
 ## Example
 
