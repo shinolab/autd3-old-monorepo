@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,7 @@
 
 use crate::{
     defined::{float, MILLIMETER},
-    geometry::{
-        Device, IntoDevice, Matrix4, Rotation, Transducer, UnitQuaternion, Vector3, Vector4,
-    },
+    geometry::{Device, IntoDevice, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4},
 };
 
 /// AUTD3 device
@@ -53,9 +51,9 @@ impl AUTD3 {
         }
     }
 
-    pub fn with_rotation<Q: Into<Rotation>>(self, rotation: Q) -> Self {
+    pub fn with_rotation<Q: Into<UnitQuaternion>>(self, rotation: Q) -> Self {
         Self {
-            rotation: rotation.into().value(),
+            rotation: rotation.into(),
             ..self
         }
     }

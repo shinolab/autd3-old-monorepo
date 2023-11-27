@@ -63,6 +63,34 @@ class Angle:
         """Angle in radian."""
         return self._value
 
+    class _UnitRad:
+        def __new__(cls: type["Angle._UnitRad"]) -> "Angle._UnitRad":
+            """DO NOT USE THIS CONSTRUCTOR."""
+            raise NotImplementedError
+
+        @classmethod
+        def __private_new__(cls: type["Angle._UnitRad"]) -> "Angle._UnitRad":
+            return super().__new__(cls)
+
+        def __rmul__(self: "Angle._UnitRad", other: float) -> "Angle":
+            return Angle.new_radian(other)
+
+    class _UnitDegree:
+        def __new__(cls: type["Angle._UnitDegree"]) -> "Angle._UnitDegree":
+            """DO NOT USE THIS CONSTRUCTOR."""
+            raise NotImplementedError
+
+        @classmethod
+        def __private_new__(cls: type["Angle._UnitDegree"]) -> "Angle._UnitDegree":
+            return super().__new__(cls)
+
+        def __rmul__(self: "Angle._UnitDegree", other: float) -> "Angle":
+            return Angle.new_degree(other)
+
+
+rad: Angle._UnitRad = Angle._UnitRad.__private_new__()
+deg: Angle._UnitDegree = Angle._UnitDegree.__private_new__()
+
 
 class EulerAngles:
     """Euler angles."""
