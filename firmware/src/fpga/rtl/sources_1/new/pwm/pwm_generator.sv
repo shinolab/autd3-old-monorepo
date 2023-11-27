@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,20 +13,18 @@
 
 
 `timescale 1ns / 1ps
-module pwm_generator #(
-    parameter int WIDTH = 9
-) (
+module pwm_generator (
     input var CLK,
-    input var [WIDTH-1:0] TIME_CNT,
-    input var [WIDTH-1:0] RISE,
-    input var [WIDTH-1:0] FALL,
+    input var [8:0] TIME_CNT,
+    input var [8:0] RISE,
+    input var [8:0] FALL,
     output var PWM_OUT
 );
 
-  bit [WIDTH-1:0] t;
-  bit [WIDTH-1:0] R;
-  bit [WIDTH-1:0] F;
-  bit v;
+  logic [8:0] t;
+  logic [8:0] R;
+  logic [8:0] F;
+  logic v;
 
   assign t = TIME_CNT;
   assign R = RISE;

@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,27 +13,23 @@
 
 module sim_pwm_generator ();
 
-  bit CLK_20P48M;
-  bit locked;
-  bit [63:0] SYS_TIME;
+  logic CLK_20P48M;
+  logic locked;
+  logic [63:0] SYS_TIME;
   sim_helper_clk sim_helper_clk (
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
       .SYS_TIME(SYS_TIME)
   );
 
-  localparam int WIDTH = 9;
+  logic [8:0] time_cnt;
+  assign time_cnt = SYS_TIME[8:0];
 
-  bit [WIDTH-1:0] time_cnt;
-  assign time_cnt = SYS_TIME[WIDTH-1:0];
+  logic [8:0] rise, fall;
 
-  bit [WIDTH-1:0] rise, fall;
+  logic pwm_out;
 
-  bit pwm_out;
-
-  pwm_generator #(
-      .WIDTH(WIDTH)
-  ) pwm_generator (
+  pwm_generator pwm_generator (
       .CLK(CLK_20P48M),
       .TIME_CNT(time_cnt),
       .RISE(rise),
@@ -41,8 +37,8 @@ module sim_pwm_generator ();
       .PWM_OUT(pwm_out)
   );
 
-  task automatic set(bit [WIDTH-1:0] r, bit [WIDTH-1:0] f);
-    while (time_cnt != 512 - 1) @(posedge CLK_20P48M);
+  task automatic set(logic [8:0] r, logic [8:0] f);
+    while (time_cnt !== 512 - 1) @(posedge CLK_20P48M);
     rise = r;
     fall = f;
     @(posedge CLK_20P48M);
@@ -50,11 +46,11 @@ module sim_pwm_generator ();
     while (1) begin
       automatic int t = time_cnt;
       @(posedge CLK_20P48M);
-      if (pwm_out != (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
+      if (pwm_out !== (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
         $error("Failed at v=%u, t=%d, R=%d, F=%d", pwm_out, time_cnt, rise, fall);
         $finish();
       end
-      if (time_cnt == 512 - 1) begin
+      if (time_cnt === 512 - 1) begin
         break;
       end
     end

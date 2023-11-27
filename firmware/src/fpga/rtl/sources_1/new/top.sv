@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,16 +25,17 @@ module top (
     input var CAT_SYNC0,
     output var FORCE_FAN,
     input var THERMO,
-    output var [252:1] XDCR_OUT
+    output var [252:1] XDCR_OUT,
+    output var GPIO_OUT[2]
 );
 
   `include "cvt_uid.vh"
   `include "params.vh"
 
-  bit clk;
-  bit reset;
+  logic clk;
+  logic reset;
 
-  bit PWM_OUT[NUM_TRANSDUCERS];
+  logic PWM_OUT[NUM_TRANSDUCERS];
 
   assign reset = ~RESET_N;
 
@@ -60,7 +61,6 @@ module top (
   );
 
   main #(
-      .WIDTH(9),
       .DEPTH(NUM_TRANSDUCERS)
   ) main (
       .CLK(clk),
@@ -71,7 +71,8 @@ module top (
       .CPU_BUS_MOD(cpu_bus.mod_port),
       .THERMO(THERMO),
       .FORCE_FAN(FORCE_FAN),
-      .PWM_OUT(PWM_OUT)
+      .PWM_OUT(PWM_OUT),
+      .GPIO_OUT(GPIO_OUT)
   );
 
 endmodule

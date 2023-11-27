@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module stm_focus_operator #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -21,43 +20,39 @@ module stm_focus_operator #(
     input var UPDATE,
     stm_bus_if.focus_port STM_BUS,
     input var [31:0] SOUND_SPEED,
-    output var [WIDTH-1:0] DUTY,
-    output var [WIDTH-1:0] PHASE,
+    output var [7:0] INTENSITY,
+    output var [7:0] PHASE,
     output var DOUT_VALID
 );
 
-  localparam int SqrtLatency = 2 + 2 + 2 + 2 + 10 + 66;
-  localparam int DivLatency = SqrtLatency + 66 + 1;
+  localparam int DivLatency = 2 + 2 + 2 + 2 + 10 + 66 + 1;
   localparam int Latency = DivLatency + 249;
 
-  bit [WIDTH-1:0] duty;
-  bit [WIDTH-1:0] phase;
+  logic [7:0] intensity;
+  logic [7:0] phase;
 
-  bit [15:0] addr;
-  bit [127:0] data_out;
-  bit dout_valid;
+  logic [15:0] addr;
+  logic [127:0] data_out;
+  logic dout_valid;
 
-  bit [3:0] duty_shift;
-  bit signed [17:0] focus_x, focus_y, focus_z;
-  bit signed [15:0] trans_x, trans_y;
-  bit signed [17:0] dx, dy;
-  bit [35:0] dx2, dy2, dz2;
-  bit [36:0] dxy2;
-  bit [37:0] d2;
-  bit [23:0] sqrt_dout;
+  logic [7:0] intensity_buf;
+  logic signed [17:0] focus_x, focus_y, focus_z;
+  logic signed [15:0] trans_x, trans_y;
+  logic signed [17:0] dx, dy;
+  logic [35:0] dx2, dy2, dz2;
+  logic [36:0] dxy2;
+  logic [37:0] d2;
+  logic [23:0] sqrt_dout;
 
-  bit [63:0] quo;
-  bit [31:0] _unused_rem;
-  bit [15:0] divined;
-  bit [63:0] _unused_quo;
-  bit [15:0] rem;
+  logic [63:0] quo;
+  logic [31:0] _unused_rem;
 
-  bit [$clog2(Latency)-1:0] cnt;
-  bit [$clog2(DEPTH)-1:0] set_cnt;
+  logic [$clog2(Latency)-1:0] cnt;
+  logic [$clog2(DEPTH)-1:0] set_cnt;
 
-  bit [$clog2(DEPTH)-1:0] tr_idx;
+  logic [$clog2(DEPTH)-1:0] tr_idx;
 
-  typedef enum bit [2:0] {
+  typedef enum logic [2:0] {
     WAITING,
     BRAM_WAIT_0,
     BRAM_WAIT_1,
@@ -150,8 +145,8 @@ module stm_focus_operator #(
       .m_axis_dout_tdata(sqrt_dout)
   );
 
-  div_64_32_l div_64_32_quo (
-      .s_axis_dividend_tdata({21'd0, sqrt_dout, 19'd0}),
+  div_64_32 div_64_32_quo (
+      .s_axis_dividend_tdata({22'd0, sqrt_dout, 18'd0}),
       .s_axis_dividend_tvalid(1'b1),
       .s_axis_divisor_tdata(SOUND_SPEED),
       .s_axis_divisor_tvalid(1'b1),
@@ -160,20 +155,10 @@ module stm_focus_operator #(
       .m_axis_dout_tvalid()
   );
 
-  div_64_16_l div_64_16_rem (
-      .s_axis_dividend_tdata(quo),
-      .s_axis_dividend_tvalid(1'b1),
-      .s_axis_divisor_tdata(divined),
-      .s_axis_divisor_tvalid(1'b1),
-      .aclk(CLK),
-      .m_axis_dout_tdata({_unused_quo, rem}),
-      .m_axis_dout_tvalid()
-  );
-
   assign STM_BUS.FOCUS_ADDR = addr;
   assign data_out = STM_BUS.DATA_OUT;
 
-  assign DUTY = duty;
+  assign INTENSITY = intensity;
   assign PHASE = phase;
   assign DOUT_VALID = dout_valid;
 
@@ -196,7 +181,7 @@ module stm_focus_operator #(
         focus_x <= data_out[17:0];
         focus_y <= data_out[35:18];
         focus_z <= data_out[53:36];
-        duty_shift <= data_out[57:54];
+        intensity_buf <= data_out[61:54];
         tr_idx <= 0;
         cnt <= 0;
         set_cnt <= 0;
@@ -206,14 +191,13 @@ module stm_focus_operator #(
       CALC: begin
         tr_idx <= tr_idx + 1;
         cnt <= cnt + 1;
-        divined <= 15'd512;
 
         if (cnt >= DivLatency) begin
           dout_valid <= 1'b1;
           set_cnt <= set_cnt + 1;
 
-          phase <= rem[WIDTH-1:0];
-          duty <= 9'd256 >> duty_shift;
+          phase <= quo[7:0];
+          intensity <= intensity_buf;
         end
 
         if (set_cnt == DEPTH - 1) begin

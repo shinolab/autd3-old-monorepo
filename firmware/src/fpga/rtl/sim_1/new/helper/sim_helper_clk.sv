@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2023
+ * Last Modified: 17/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,12 +19,12 @@ module sim_helper_clk (
     output var [63:0] SYS_TIME
 );
 
-  bit MRCC_25P6M;
+  logic MRCC_25P6M;
 
-  bit clk_20P48M;
-  bit locked;
-  bit reset;
-  bit [63:0] sys_time;
+  logic clk_20P48M;
+  logic locked;
+  logic reset;
+  logic [63:0] sys_time;
 
   ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen (
       .clk_in1(MRCC_25P6M),

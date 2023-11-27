@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2023
+ * Last Modified: 21/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -13,7 +13,6 @@
 
 `timescale 1ns / 1ps
 module controller #(
-    parameter int WIDTH = 9,
     parameter int DEPTH = 249
 ) (
     input var CLK,
@@ -27,64 +26,56 @@ module controller #(
     output var [15:0] CYCLE_M,
     output var [31:0] FREQ_DIV_M,
     output var [15:0] DELAY_M[DEPTH],
-    output var signed [WIDTH:0] FILTER_DUTY[DEPTH],
-    output var signed [WIDTH:0] FILTER_PHASE[DEPTH],
-    output var [WIDTH-1:0] STEP_S,
+    output var [15:0] STEP_INTENSITY_S,
+    output var [15:0] STEP_PHASE_S,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
     output var [31:0] SOUND_SPEED,
     output var [15:0] STM_START_IDX,
     output var USE_STM_START_IDX,
     output var [15:0] STM_FINISH_IDX,
-    output var USE_STM_FINISH_IDX
+    output var USE_STM_FINISH_IDX,
+    output var [7:0] DEBUG_OUTPUT_IDX
 );
 
   `include "params.vh"
 
-  bit bus_clk;
-  bit ctl_ena;
-  bit wea;
-  bit [6:0] ctl_addr;
-  bit [7:0] dly_addr;
-  bit [7:0] flt_duty_addr;
-  bit [7:0] flt_phase_addr;
-  bit [15:0] cpu_data_in;
-  bit [15:0] cpu_data_out;
-  bit [6:0] addr;
-  bit we;
-  bit [15:0] din;
-  bit [15:0] dout;
+  logic bus_clk;
+  logic ctl_ena;
+  logic wea;
+  logic [6:0] ctl_addr;
+  logic [7:0] dly_addr;
+  logic [15:0] cpu_data_in;
+  logic [15:0] cpu_data_out;
+  logic [6:0] addr;
+  logic we;
+  logic [15:0] din;
+  logic [15:0] dout;
 
-  bit [7:0] dly_cnt = 0;
-  bit [7:0] dly_set = DEPTH - 2;
-  bit [15:0] dly_dout;
+  logic [7:0] dly_cnt = 0;
+  logic [7:0] dly_set = DEPTH - 2;
+  logic [15:0] dly_dout;
 
-  bit [7:0] flt_cnt = 0;
-  bit [7:0] flt_set = DEPTH - 2;
-  bit [15:0] flt_duty_dout;
-  bit [15:0] flt_phase_dout;
+  logic [15:0] ctl_reg;
 
-  bit [15:0] ctl_reg;
+  logic [63:0] ecat_sync_time;
+  logic sync_set;
 
-  bit [63:0] ecat_sync_time;
-  bit sync_set;
+  logic [15:0] cycle_m;
+  logic [31:0] freq_div_m;
+  logic [15:0] delay_m[DEPTH];
 
-  bit [15:0] cycle_m;
-  bit [31:0] freq_div_m;
-  bit [15:0] delay_m[DEPTH];
+  logic [15:0] step_intensity_s, step_phase_s;
 
-  bit signed [WIDTH:0] filter_duty[DEPTH];
-  bit signed [WIDTH:0] filter_phase[DEPTH];
+  logic [15:0] cycle_stm;
+  logic [31:0] freq_div_stm;
+  logic [31:0] sound_speed;
+  logic [15:0] stm_start_idx;
+  logic [15:0] stm_finish_idx;
 
-  bit [WIDTH-1:0] step_s;
+  logic [ 7:0] debug_output_idx;
 
-  bit [15:0] cycle_stm;
-  bit [31:0] freq_div_stm;
-  bit [31:0] sound_speed;
-  bit [15:0] stm_start_idx;
-  bit [15:0] stm_finish_idx;
-
-  bit [2:0] ctl_page;
+  logic [ 2:0] ctl_page;
 
   assign ctl_page = CPU_BUS.BRAM_ADDR[10:8];
   assign bus_clk = CPU_BUS.BUS_CLK;
@@ -93,10 +84,6 @@ module controller #(
   assign ctl_addr = CPU_BUS.BRAM_ADDR[6:0];
   assign dly_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_DELAY);
   assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_duty_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_DUTY);
-  assign flt_duty_addr = CPU_BUS.BRAM_ADDR[7:0];
-  assign flt_phase_ena = CPU_BUS.CTL_EN & (ctl_page == BRAM_SELECT_CONTROLLER_FILTER_PHASE);
-  assign flt_phase_addr = CPU_BUS.BRAM_ADDR[7:0];
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
@@ -110,17 +97,17 @@ module controller #(
   assign SYNC_SET = sync_set;
   assign CYCLE_M = cycle_m;
   assign FREQ_DIV_M = freq_div_m;
-  assign STEP_S = step_s;
+  assign STEP_INTENSITY_S = step_intensity_s;
+  assign STEP_PHASE_S = step_phase_s;
   assign CYCLE_STM = cycle_stm;
   assign FREQ_DIV_STM = freq_div_stm;
   assign SOUND_SPEED = sound_speed;
   assign STM_START_IDX = stm_start_idx;
   assign STM_FINISH_IDX = stm_finish_idx;
+  assign DEBUG_OUTPUT_IDX = debug_output_idx;
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_cycle_delay
     assign DELAY_M[i] = delay_m[i];
-    assign FILTER_DUTY[i] = filter_duty[i];
-    assign FILTER_PHASE[i] = filter_phase[i];
   end
 
   BRAM_CONTROLLER ctl_bram (
@@ -151,35 +138,7 @@ module controller #(
       .doutb(dly_dout)
   );
 
-  BRAM_FILTER flt_bram_duty (
-      .clka (bus_clk),
-      .ena  (flt_duty_ena),
-      .wea  (wea),
-      .addra(flt_duty_addr),
-      .dina (cpu_data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(flt_cnt),
-      .dinb (),
-      .doutb(flt_duty_dout)
-  );
-
-  BRAM_FILTER flt_bram_phase (
-      .clka (bus_clk),
-      .ena  (flt_phase_ena),
-      .wea  (wea),
-      .addra(flt_phase_addr),
-      .dina (cpu_data_in),
-      .douta(),
-      .clkb (CLK),
-      .web  (1'b0),
-      .addrb(flt_cnt),
-      .dinb (),
-      .doutb(flt_phase_dout)
-  );
-
-  typedef enum bit [4:0] {
+  typedef enum logic [4:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
@@ -188,11 +147,12 @@ module controller #(
 
     RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0,
     WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1,
-    RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE,
-    RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP,
-    RD_MOD_FREQ_DIV_1_REQ_RD_STM_CYCLE,
-    RD_SILENT_CYCLE_REQ_RD_STM_FREQ_DIV_0,
-    RD_SILENT_STEP_REQ_RD_STM_FREQ_DIV_1,
+    RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT,
+    RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY,
+    RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE,
+    RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE,
+    RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0,
+    RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1,
     RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0,
     RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1,
     RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
@@ -225,7 +185,7 @@ module controller #(
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
-        din   <= {ENABLED_FEATURES_BITS, VERSION_NUM};
+        din   <= {8'hFF, VERSION_NUM};
         addr  <= ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
@@ -262,38 +222,49 @@ module controller #(
       WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1: begin
         addr  <= ADDR_MOD_FREQ_DIV_1;
 
-        state <= RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE;
+        state <= RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT;
       end
-      RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE: begin
+      RD_MOD_CYCLE_REQ_RD_DEBUG_OUTPUT: begin
+        addr <= ADDR_DEBUG_OUT_IDX;
+
         cycle_m <= dout;
 
-        state   <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP;
+        state <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY;
       end
-      RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP: begin
-        addr <= ADDR_SILENT_STEP;
+      RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP_INTENSITY: begin
+        addr <= ADDR_SILENT_STEP_INTENSITY;
 
         freq_div_m[15:0] <= dout;
 
-        state <= RD_MOD_FREQ_DIV_1_REQ_RD_STM_CYCLE;
+        state <= RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE;
       end
-      RD_MOD_FREQ_DIV_1_REQ_RD_STM_CYCLE: begin
-        addr <= ADDR_STM_CYCLE;
+      RD_MOD_FREQ_DIV_1_REQ_RD_SILENT_STEP_PHASE: begin
+        addr <= ADDR_SILENT_STEP_PHASE;
 
         freq_div_m[31:16] <= dout;
 
-        state <= RD_SILENT_CYCLE_REQ_RD_STM_FREQ_DIV_0;
+        state <= RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE;
       end
-      RD_SILENT_CYCLE_REQ_RD_STM_FREQ_DIV_0: begin
-        addr  <= ADDR_STM_FREQ_DIV_0;
+      RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE: begin
+        addr <= ADDR_STM_CYCLE;
 
-        state <= RD_SILENT_STEP_REQ_RD_STM_FREQ_DIV_1;
+        debug_output_idx = dout[7:0];
+
+        state <= RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0;
       end
-      RD_SILENT_STEP_REQ_RD_STM_FREQ_DIV_1: begin
-        addr   <= ADDR_STM_FREQ_DIV_1;
+      RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0: begin
+        addr <= ADDR_STM_FREQ_DIV_0;
 
-        step_s <= dout[WIDTH-1:0];
+        step_intensity_s <= dout;
 
-        state  <= RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0;
+        state <= RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1;
+      end
+      RD_SILENT_STEP_PHASE_REQ_RD_STM_FREQ_DIV_1: begin
+        addr <= ADDR_STM_FREQ_DIV_1;
+
+        step_phase_s <= dout;
+
+        state <= RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0;
       end
       RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0: begin
         addr <= ADDR_SOUND_SPEED_0;
@@ -410,13 +381,6 @@ module controller #(
     dly_cnt <= (dly_cnt == DEPTH - 1) ? 0 : dly_cnt + 1;
     dly_set <= (dly_set == DEPTH - 1) ? 0 : dly_set + 1;
     delay_m[dly_set] <= dly_dout;
-  end
-
-  always_ff @(posedge CLK) begin
-    flt_cnt <= (flt_cnt == DEPTH - 1) ? 0 : flt_cnt + 1;
-    flt_set <= (flt_set == DEPTH - 1) ? 0 : flt_set + 1;
-    filter_duty[flt_set] <= flt_duty_dout;
-    filter_phase[flt_set] <= flt_phase_dout;
   end
 
 endmodule

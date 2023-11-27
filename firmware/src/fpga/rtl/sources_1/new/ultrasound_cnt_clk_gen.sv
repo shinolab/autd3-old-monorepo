@@ -4,7 +4,7 @@
  * Created Date: 12/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2023
+ * Last Modified: 20/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@ module ultrasound_cnt_clk_gen (
     output var locked
 );
 
-  bit CLKOUT;
-  bit CLKFB, CLKFB_BUF;
+  logic CLKOUT;
+  logic CLKFB, CLKFB_BUF;
   BUFG clkf_buf (
       .O(CLKFB_BUF),
       .I(CLKFB)
