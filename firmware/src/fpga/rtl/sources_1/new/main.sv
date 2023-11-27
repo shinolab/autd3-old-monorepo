@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 27/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,26 +32,26 @@ module main #(
   logic [63:0] sys_time;
   logic skip_one_assert;
 
-  (*mark_debug="true"*) logic [8:0] time_cnt;
-  (*mark_debug="true"*) logic update;
+  logic [8:0] time_cnt;
+  logic update;
 
   logic [63:0] ecat_sync_time;
   logic sync_set;
 
-  (*mark_debug="true"*) logic [7:0] intensity;
-  (*mark_debug="true"*) logic [7:0] phase;
-  (*mark_debug="true"*) logic dout_valid;
+  logic [7:0] intensity;
+  logic [7:0] phase;
+  logic dout_valid;
 
-  (*mark_debug="true"*) logic op_mode;
-  (*mark_debug="true"*) logic [7:0] intensity_normal;
-  (*mark_debug="true"*) logic [7:0] phase_normal;
-  (*mark_debug="true"*) logic dout_valid_normal;
+  logic op_mode;
+  logic [7:0] intensity_normal;
+  logic [7:0] phase_normal;
+  logic dout_valid_normal;
 
-  (*mark_debug="true"*) logic [7:0] intensity_stm;
-  (*mark_debug="true"*) logic [7:0] phase_stm;
-  (*mark_debug="true"*) logic dout_valid_stm;
-  (*mark_debug="true"*) logic [15:0] stm_idx;
-  (*mark_debug="true"*) logic stm_gain_mode;
+  logic [7:0] intensity_stm;
+  logic [7:0] phase_stm;
+  logic dout_valid_stm;
+  logic [15:0] stm_idx;
+  logic stm_gain_mode;
   logic [15:0] cycle_stm;
   logic [31:0] freq_div_stm;
   logic [31:0] sound_speed;
@@ -61,20 +61,20 @@ module main #(
 
   logic [15:0] cycle_m;
   logic [31:0] freq_div_m;
-  (*mark_debug="true"*) logic [15:0] intensity_m;
-  (*mark_debug="true"*) logic [7:0] phase_m;
+  logic [15:0] intensity_m;
+  logic [7:0] phase_m;
   logic [15:0] delay_m[DEPTH];
-  (*mark_debug="true"*) logic dout_valid_m;
+  logic dout_valid_m;
 
-  (*mark_debug="true"*) logic [15:0] step_intensity_s;
-  (*mark_debug="true"*) logic [15:0] step_phase_s;
-  (*mark_debug="true"*) logic [15:0] intensity_s;
-  (*mark_debug="true"*) logic [7:0] phase_s;
-  (*mark_debug="true"*) logic dout_valid_s;
+  logic [15:0] step_intensity_s;
+  logic [15:0] step_phase_s;
+  logic [15:0] intensity_s;
+  logic [7:0] phase_s;
+  logic dout_valid_s;
 
-  (*mark_debug="true"*) logic [8:0] pulse_width_e;
-  (*mark_debug="true"*) logic [7:0] phase_e;
-  (*mark_debug="true"*) logic dout_valid_e;
+  logic [8:0] pulse_width_e;
+  logic [7:0] phase_e;
+  logic dout_valid_e;
 
   logic [7:0] debug_output_idx;
 
