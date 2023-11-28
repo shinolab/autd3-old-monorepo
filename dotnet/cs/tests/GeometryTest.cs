@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -160,7 +160,7 @@ public class GeometryTest
             dev.Translate(t);
             foreach (var tr in dev)
             {
-                Assert.Equal(tr.Position, originalPos[tr.LocalIdx] + t);
+                Assert.Equal(tr.Position, originalPos[tr.TrIdx] + t);
             }
         }
     }
@@ -192,7 +192,7 @@ public class GeometryTest
             dev.Affine(t, r);
             foreach (var tr in dev)
             {
-                var op = originalPos[tr.LocalIdx];
+                var op = originalPos[tr.TrIdx];
                 var expected = new Vector3d(-op.y, op.x, op.z) + t;
                 Assert.True(Math.Abs(expected.x - tr.Position.x) < 1e-3);
                 Assert.True(Math.Abs(expected.y - tr.Position.y) < 1e-3);
@@ -203,14 +203,27 @@ public class GeometryTest
     }
 
     [Fact]
-    public async Task TestTransducerLocalIdx()
+    public async Task TestTransducerDevIdx()
     {
         var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var (tr, i) in dev.Select((tr, i) => (tr, i)))
             {
-                Assert.Equal(i, tr.LocalIdx);
+                Assert.Equal(dev.Idx, tr.DevIdx);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task TestTransducerTrIdx()
+    {
+        var autd = await AUTDTest.CreateController();
+        foreach (var dev in autd.Geometry)
+        {
+            foreach (var (tr, i) in dev.Select((tr, i) => (tr, i)))
+            {
+                Assert.Equal(i, tr.TrIdx);
             }
         }
     }

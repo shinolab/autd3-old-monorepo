@@ -1,3 +1,7 @@
+# 17.0.2
+
+- Fix [#218](https://github.com/shinolab/autd3/issues/218): [C++/C#/Python] Transducer does not have tr_idx and dev_idx methods
+
 # 17.0.1
 
 - Fix [#217](https://github.com/shinolab/autd3/issues/217): v4.0.0 fpga firmware returns its version as v4.0.1
