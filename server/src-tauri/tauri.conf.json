@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "AUTD Server",
-    "version": "17.0.1"
+    "version": "17.0.2"
   },
   "tauri": {
     "allowlist": {
@@ -127,7 +127,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "AUTD Server v17.0.1",
+        "title": "AUTD Server v17.0.2",
         "width": 800
       }
     ]
