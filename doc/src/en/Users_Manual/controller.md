@@ -10,40 +10,19 @@ Get the FPGA status.
 Before using this, you need to set the `reads_fpga_info` flag in `Device`.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].reads_fpga_info = true;
-autd.send(UpdateFlags::new()).await?;
-
-let info = autd.fpga_info();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/controller_0.rs}}
 ```
 
 ```cpp
-autd.geometry()[0].reads_fpga_info(true);
-autd.send(autd3::UpdateFlags());
-
-const auto info = autd.fpga_info();
+{{#include ../../codes/Users_Manual/controller_0.cpp}}
 ```
 
 ```cs
-autd.Geometry[0].ReadsFPGAInfo = true;
-autd.Send(new UpdateFlags());
-
-var info = autd.FPGAInfo;
+{{#include ../../codes/Users_Manual/controller_0.cs}}
 ```
 
 ```python
-autd.geometry[0].reads_fpga_info = True
-autd.send(UpdateFlags())
-
-info = autd.fpga_info
+{{#include ../../codes/Users_Manual/controller_0.py}}
 ```
 
 You can get the following information about the FPGA.
@@ -62,30 +41,19 @@ You can specify the timeout time with `with_timeout`.
 If you omit this, the timeout time set by [Link](./link.md) will be used.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-# let m = Static::new();
-# let g = Null::new();
-autd.send((m, g).with_timeout(std::time::Duration::from_millis(20))).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/controller_1.rs}}
 ```
 
 ```cpp
-autd.send(m, g, std::chrono::milliseconds(20));
+{{#include ../../codes/Users_Manual/controller_1.cpp}}
 ```
 
 ```cs
-autd.Send((m, g), TimeSpan.FromMilliseconds(20));
+{{#include ../../codes/Users_Manual/controller_1.cs}}
 ```
 
 ```python
-autd.send((m, g), timeout=timedelta(milliseconds=20))
+{{#include ../../codes/Users_Manual/controller_1.py}}
 ```
 
 If the timeout time is greater than 0, the `send` function waits until the sent data is processed by the device or the specified timeout time elapses.
@@ -110,71 +78,19 @@ You can clear the flags and `Gain`/`Modulation` data in the device by sending `C
 You can group the devices by using `group` function, and send different data to each group.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-autd.group(|dev| match dev.idx() {
-    0 => Some("focus"),
-    1 => Some("null"),
-    _ => None,
-})
-.set("null", Null::new())?
-.set("focus", Focus::new(Vector3::new(x, y, z)))?
-.send().await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/controller_2.rs}}
 ```
 
 ```cpp
-autd.group([](const autd3::Device& dev) -> std::optional<const char*> {
-    if (dev.idx() == 0) {
-        return "null";
-    } else if (dev.idx() == 1) {
-        return "focus";
-    } else {
-        return std::nullopt;
-    }
-    })
-    .set("null", autd3::gain::Null())
-    .set("focus", autd3::gain::Focus(x, y, z))
-    .send();
+{{#include ../../codes/Users_Manual/controller_2.cpp}}
 ```
 
 ```cs
-autd.Group(dev =>
-    {
-        return dev.Idx switch
-        {
-            0 => "null",
-            1 => "focus",
-            _ => null
-        };
-    })
-    .Set("null", new Null())
-    .Set("focus", new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150)))
-    .Send();
+{{#include ../../codes/Users_Manual/controller_2.cs}}
 ```
 
 ```python
-def grouping(dev):
-    if dev.idx == 0:
-        return "null"
-    elif dev.idx == 1:
-        return "focus"
-    else:
-        return None
-
-autd.group(grouping)\
-    .set_data("null", Null())\
-    .set_data("focus", Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0])))\
-    .send()
+{{#include ../../codes/Users_Manual/controller_2.py}}
 ```
 
 Unlike `gain::Group`, you can use any data that can be sent with `send` as a value.

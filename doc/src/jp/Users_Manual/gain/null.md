@@ -2,26 +2,19 @@
 
 `Null`は振幅0の`Gain`である.
 
+
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-let g = autd3::gain::Null::new();
-# }
+{{#include ../../../codes/Users_Manual/gain/null_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Null();
+{{#include ../../../codes/Users_Manual/gain/null_0.cpp}}
 ```
 
 ```cs
-var g = new Null();
+{{#include ../../../codes/Users_Manual/gain/null_0.cs}}
 ```
 
 ```python
-from pyautd3.gain import Null
-
-g = Null()
+{{#include ../../../codes/Users_Manual/gain/null_0.py}}
 ```

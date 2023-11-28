@@ -14,17 +14,17 @@ include(FetchContent)
 if(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1-win-x64.zip
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1-macos-universal.tar.gz
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1
+    URL https://github.com/shinolab/autd3/releases/download/v17.0.1/autd3-v17.0.1-linux-x64.tar.gz
   )
 endif()
 set(USE_SYSTEM_EIGEN OFF)

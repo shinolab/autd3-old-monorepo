@@ -4,34 +4,19 @@
 この`Gain`は長谷川らの論文[^hasegawa2017]に基づく.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-# let nx = 0.;
-# let ny = 0.;
-# let nz = 0.;
-# let theta = 0.;
-let g = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta);
-# }
+{{#include ../../../codes/Users_Manual/gain/bessel_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Bessel(autd3::Vector3(x, y, z), autd3::Vector3(nx, ny, nz), theta);
+{{#include ../../../codes/Users_Manual/gain/bessel_0.cpp}}
 ```
 
 ```cs
-var g = new Bessel(new Vector3d(x, y, z), new Vector3d(nx, ny, nz), theta);
+{{#include ../../../codes/Users_Manual/gain/bessel_0.cs}}
 ```
 
 ```python
-from pyautd3.gain import Bessel
-
-g = Bessel([x, y, z], [nx, ny, nz], theta)
+{{#include ../../../codes/Users_Manual/gain/bessel_0.py}}
 ```
 
 コンストラクタの第1引数はビームを生成する仮想円錐の頂点であり, 第2引数はビームの方向, 第3引数はビームに垂直な面とビームを生成する仮想円錐の側面となす角度である (下図の$\theta_z$).
@@ -46,35 +31,19 @@ g = Bessel([x, y, z], [nx, ny, nz], theta)
 `with_intensity`にて, 出力振幅を指定できる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-# let nx = 0.;
-# let ny = 0.;
-# let nz = 0.;
-# let theta = 0.;
-let g = autd3::gain::Bessel::new(Vector3::new(x, y, z), Vector3::new(nx, ny, nz), theta)
-            .with_intensity(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/gain/bessel_1.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Bessel(autd3::Vector3(x, y, z), theta)
-                .with_intensity(EmitIntensity::MAX);
+{{#include ../../../codes/Users_Manual/gain/bessel_1.cpp}}
 ```
 
 ```cs
-var g = new Bessel(new Vector3d(x, y, z), new Vector3d(nx, ny, nz), theta)
-            .WithAmp(1);
+{{#include ../../../codes/Users_Manual/gain/bessel_1.cs}}
 ```
 
 ```python
-g = Bessel([x, y, z], [nx, ny, nz], theta).with_amp(1)
+{{#include ../../../codes/Users_Manual/gain/bessel_1.py}}
 ```
 
 [^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.

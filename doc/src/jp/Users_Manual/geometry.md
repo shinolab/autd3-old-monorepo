@@ -27,36 +27,19 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を**接
 さらに, グローバル座標を1台目のローカル座標と同じようにとるとすると,
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.)))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_0.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+{{#include ../../codes/Users_Manual/geometry_0.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
+{{#include ../../codes/Users_Manual/geometry_0.cs}}
 ```
 
 ```python
-auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_0.py}}
 ```
 
 とすれば良い.
@@ -72,37 +55,21 @@ auto = Controller.builder()\
 また, 例えば上図のように, グローバル座標を2台目のローカル座標と同じようにとるとすると,
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.)))
-    .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_1.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+{{#include ../../codes/Users_Manual/geometry_1.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(new Vector3d(-AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+{{#include ../../codes/Users_Manual/geometry_1.cs}}
 ```
 
 ```python
-auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([-AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_1.py}}
 ```
+
 とすれば良い.
 
 <figure>
@@ -112,36 +79,19 @@ auto = Controller.builder()\
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH)).with_rotation(EulerAngle::ZYZ(0. * Rad, PI/2.0 * Rad, 0. * Rad)))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_2.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
+{{#include ../../codes/Users_Manual/geometry_2.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .AddDevice(new AUTD3(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi/2, 0)))
+{{#include ../../codes/Users_Manual/geometry_2.cs}}
 ```
 
 ```python
-autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3.device_width()], [0.0, np.pi/2, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_2.py}}
 ```
 
 のように指定する.
@@ -164,681 +114,137 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
 
 ## GeometryのAPI
 
-### num_devices/num_transducers
-
-`num_devices`でデバイスの数, `num_transducers`で全振動子の数を取得できる.
+- `num_devices`: デバイスの数を取得
+- `num_transducers`: 全振動子の数を取得
+- `center`: 全振動子の中心を取得
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let num_dev = autd.geometry.num_devices();
-let num_tr = autd.geometry.num_transducers();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_3.rs}}
 ```
 
 ```cpp
-const auto num_dev = autd.geometry().num_devices();
-const auto num_tr= autd.geometry().num_transducers();
+{{#include ../../codes/Users_Manual/geometry_3.cpp}}
 ```
 
 ```cs
-var numDev = autd.Geometry.NumDevices;
-var numTr = autd.Geometry.NumTransducers;
+{{#include ../../codes/Users_Manual/geometry_3.cs}}
 ```
 
 ```python
-num_dev = autd.geometry.num_devices
-num_tr = autd.geometry.num_transducers
+{{#include ../../codes/Users_Manual/geometry_3.py}}
 ```
-
-### center
-
-`center`で全振動子の中心を取得できる.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let center = autd.geometry.center();
-# Ok(())
-# }
-```
-
-```cpp
-const autd3::Vector3 center = autd.geometry().center();
-```
-
-```cs
-var center = autd.Geometry.Center;
-```
-
-```python
-center = autd.geometry.center
-```
-
-### 音速の設定
-
-`set_sound_speed_from_temp`/`set_sound_speed_from_temp_with`ですべてのデバイスに対して音速を設定できる.
-詳しくは, [DeviceのAPI/音速の設定](#音速の設定-1)を参照.
 
 ### Deviceの取得
 
 `Geometry`は`Device`のコンテナになっており, `Device`が`Transducer`のコンテナになっている.
 
 `Device`を取得するには, インデクサを使用する.
-例えば, 0番目のデバイスを取得するには以下のようにする.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let dev = &autd.geometry[0];
-# Ok(())
-# }
-```
-
-```cpp
-const auto& dev = autd.geometry()[0];
-```
-
-```cs
-var dev = autd.Geometry[0];
-```
-
-```python
-dev = autd.geometry[0]
-```
-
 あるいは, イテレータを使用することもできる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-for dev in &autd.geometry {
-  // do something
-}
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_4.rs}}
 ```
 
 ```cpp
-for (const auto& dev : autd.geometry()){
-  // do something
-}
+{{#include ../../codes/Users_Manual/geometry_4.cpp}}
 ```
 
 ```cs
-foreach (var dev in autd.Geometry) {
-  // do something
-}
+{{#include ../../codes/Users_Manual/geometry_4.cs}}
 ```
 
 ```python
-for dev in autd.geometry:
-  # do something
+{{#include ../../codes/Users_Manual/geometry_4.py}}
 ```
 
 ## DeviceのAPI
 
-### Idx
-
-デバイスのインデックスを取得する.
-
-### Enable
-
-enableフラグをオフにすると, 以降, そのデバイスのデータは更新されなくなる.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].enable = false;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_enable(false);
-```
-
-```cs
-autd.Geometry[0].Enable = false;
-```
-
-```python
-autd.geometry[0].enable = False
-```
-
-> NOTE: 更新されなくなるだけで, 出力が止まるわけではないことに注意.
-
-### 音速の設定
-
-振動子の位相を計算する際に, 波長が必要な場面がある.
-音波の波長$\lambda$は, 音速$v$と周波数$f$から$\lambda = v/f$と計算される.
-`Device`の`sound_speed`メンバーがこの音速$v$を表している.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].sound_speed = 340e3;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_sound_speed(340e3);
-```
-
-```cs
-autd.Geometry[0].SoundSpeed = 340e3;
-```
-
-```python
-autd.geometry[0].sound_speed = 340e3
-```
-
-音速の単位はmm/sである.
-
-温度からも音速を設定できる.
-これには, `set_sound_speed_from_temp`関数を使用する.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].set_sound_speed_from_temp(15.);
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_sound_speed_from_temp(15);
-```
-
-```cs
-autd.Geometry[0].SetSoundSpeedFromTemp(15);
-```
-
-```python
-autd.geometry[0].set_sound_speed_from_temp(15)
-```
-
-温度の単位は摂氏である.
-
-デフォルトの音速は$340\times 10^{3}\,\mathrm{mm/s}$となっており, これは, およそ摂氏15度での空気の音速に相当する.
-
-なお, `Geometry`にも同名の関数があり, それを使用することですべてのデバイスに対して温度から音速を設定できる.
-
-### 減衰係数の設定
-
-SDKでは, 振動子から放射された超音波の位置$\br$における音圧$p(\br)$は
-$$
-  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|}
-$$
-のようにモデル化されている.
-ここで, $D(\theta)$は指向性, $k = 2\pi / \lambda$は波数であり, $\alpha$が減衰係数である.
-`Device`の`attenuation`メンバーがこの減衰係数$\alpha$を表している.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].attenuation = 0.;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_attenuation(0.0);
-```
-
-```cs
-autd.Geometry[0].Attenuation = 0.0;
-```
-
-```python
-autd.geometry[0].attenuation = 0.0
-```
-
-単位はNp/mmである.
-
-デフォルトでは, $0$に設定されている.
-
-### デバイスの移動/回転
-
-デバイスの位置関係を変更するには, 以下の関数を使用する.
-
+- `idx`: デバイスのインデックス
+- `enable`: enableフラグ. オフにすると, 以降, そのデバイスのデータは更新されなくなる.
+  - 更新されなくなるだけで, 出力が止まるわけではないことに注意.
+- `sound_speed`: 音速の取得/設定. 単位はmm/s.
+- `set_sound_speed_from_temp`: 温度から音速を設定. 温度の単位は摂氏である.デフォルトの音速は$340\times 10^{3}\,\mathrm{mm/s}$となっており, これは, およそ摂氏15度での空気の音速に相当する.なお, `Geometry`にも同名の関数があり, それを使用することですべてのデバイスに対して温度から音速を設定できる.
+- `attenuation`: 減衰係数の取得/設定. 単位はNp/mm. デフォルトでは, $0$に設定されている.
 - `translate`: 平行移動
 - `rotate`: 回転
 - `affine`: アフィン変換 (平行移動/回転)
+- `force_fan`: ファン強制起動フラグ.
+  - AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る. Autoモードでは温度監視ICがICの温度を監視し, 一定温度以上になると自動でファンを起動する.Offモードではファンは常時オフであり, Onモードでは常時オンになる. モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 以下の図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
+    <figure>
+      <img src="../fig/Users_Manual/fan.jpg"/>
+      <figcaption>AUTDファン制御用のジャンパスイッチ</figcaption>
+    </figure>
+  - Autoモードの場合は温度が高くなると自動的にファンが起動する.
+  `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
+  - 実際にフラグが更新されるのは何らかのデータを送信したときになる. フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
+- `reads_fpga_info`: FPGAの状態を取得するかどうか. 詳しくは[Controller/fpga_info](./controller.md#fpga_info)を参照.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let t = Vector3::new(1., 0., 0.);
-let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
-autd.geometry[0].translate(t);
-autd.geometry[0].rotate(r);
-autd.geometry[0].affine(t, r);
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/device_0.rs}}
 ```
 
 ```cpp
-const autd3::Vector3 t(1, 0, 0);
-const autd3::Quaternion r(1, 0, 0, 0);
-autd.geometry()[0].translate(t);
-autd.geometry()[0].rotate(r);
-autd.geometry()[0].affine(t, r);
+{{#include ../../codes/Users_Manual/device_0.cpp}}
 ```
 
 ```cs
-var t = new Vector3d(1, 0, 0);
-var r = new Quaterniond(1, 0, 0, 0);
-autd.Geometry[0].Translate(t);
-autd.Geometry[0].Rotate(r);
-autd.Geometry[0].Affine(t, r);
+{{#include ../../codes/Users_Manual/device_0.cs}}
 ```
 
 ```python
-t = np.array([1.0, 0.0, 0.0])
-r = np.array([1.0, 0.0, 0.0, 0.0])
-autd.geometry[0].translate(t)
-autd.geometry[0].rotate(r)
-autd.geometry[0].affine(t, r)
+{{#include ../../codes/Users_Manual/device_0.py}}
 ```
-
-### force_fan
-
-AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る.
-Autoモードでは温度監視ICがICの温度を監視し, 一定温度以上になると自動でファンを起動する.
-Offモードではファンは常時オフであり, Onモードでは常時オンになる.
-
-モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 以下の図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
-
-<figure>
-  <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>AUTDファン制御用のジャンパスイッチ</figcaption>
-</figure>
-
-Autoモードの場合は温度が高くなると自動的にファンが起動する.
-`force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].force_fan = true;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].force_fan(true);
-```
-
-```cs
-autd.Geometry[0].ForceFan = true;
-```
-
-```python
-autd.geometry[0].force_fan = True
-```
-
-実際にフラグが更新されるのは何らかのデータを送信したときになる.
-フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].force_fan = true;
-autd.send(UpdateFlags::new()).await?;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].force_fan(true);
-autd.send(autd3::UpdateFlags());
-```
-
-```cs
-autd.Geometry[0].ForceFan = true;
-autd.Send(new UpdateFlags());
-```
-
-```python
-autd.force_fan(True)
-autd.geometry[0].force_fan = True
-```
-
-## reads_fpga_info
-
-FPGAの状態を取得するかどうか.
-
-詳しくは[Controller/fpga_info](./controller.md#fpga_info)を参照.
 
 ### Transducerの取得
 
 `Device`は`Transducer`のコンテナになっており, `Transducer`は各振動子の情報を格納している.
 
 `Transducer`を取得するには, インデクサを使用する.
-例えば, 0番目デバイスの0番目の振動子を取得するには以下のようにする.
+また, イテレータを使用することもできる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let tr = &autd.geometry[0][0];
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/device_1.rs}}
 ```
 
 ```cpp
-const auto& tr = autd.geometry()[0][0];
+{{#include ../../codes/Users_Manual/device_1.cpp}}
 ```
 
 ```cs
-var tr = autd.Geometry[0][0];
+{{#include ../../codes/Users_Manual/device_1.cs}}
 ```
 
 ```python
-tr = autd.geometry[0][0]
-```
-
-あるいは, イテレータを使用することもできる.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-for tr in &autd.geometry[0] {
-  // do something
-}
-# Ok(())
-# }
-```
-
-```cpp
-for (const auto& tr : autd.geometry()[0]) {
-  // do something
-}
-```
-
-```cs
-foreach (var tr in autd.Geometry[0]) {
-  // do something
-}
-```
-
-```python
-for tr in autd.geometry[0]:
-  # do something
+{{#include ../../codes/Users_Manual/device_1.py}}
 ```
 
 ## TransducerのAPI
 
-### tr_idx
+以下の情報を取得できる.
 
-振動子の(ローカル)インデックスを取得する.
+- `tr_idx`: 振動子の(ローカル)インデックス
+- `dev_idx`: 振動子が属するデバイスのインデックス
+- `position`: 振動子の位置
+- `rotation`: 振動子の回転. 回転はクオータニオンで表される.
+- `x_direction`: 振動子のx方向ベクトル
+- `y_direction`: 振動子のy方向ベクトル
+- `z_direction`: 振動子のz方向ベクトル
+- `wavelength`: 振動子の波長. 引数に音速を渡す必要がある.
+- `wavenumber`: 振動子の波数. 引数に音速を渡す必要がある.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let idx = tr.tr_idx();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/transducer_0.rs}}
 ```
 
 ```cpp
-const auto idx = tr.local_idx();
+{{#include ../../codes/Users_Manual/transducer_0.cpp}}
 ```
 
 ```cs
-var idx = tr.LocalIdx;
+{{#include ../../codes/Users_Manual/transducer_0.cs}}
 ```
 
 ```python
-idx = tr.local_idx
+{{#include ../../codes/Users_Manual/transducer_0.py}}
 ```
 
-### position/rotation
-
-位置, 及び, 回転を取得する.
-回転はクオータニオンで表される.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let position = tr.position();
-let rotation = tr.rotation();
-# Ok(())
-# }
-```
-
-```cpp
-const auto position = tr.position();
-const auto rotation = tr.rotation();
-```
-
-```cs
-var position = tr.Position;
-var rotation = tr.Rotation;
-```
-
-```python
-position = tr.position
-rotation = tr.rotation
-```
-
-### x_direction/y_direction/z_direction
-
-振動子のx,y,z方向ベクトルを取得する.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let x_dir = tr.x_direction();
-let y_dir = tr.y_direction();
-let z_dir = tr.z_direction();
-# Ok(())
-# }
-```
-
-```cpp
-const auto x_dir = tr.x_direction();
-const auto y_dir = tr.y_direction();
-const auto z_dir = tr.z_direction();
-```
-
-```cs
-var xDir = tr.XDirection;
-var yDir = tr.YDirection;
-var zDir = tr.ZDirection;
-```
-
-```python
-x_dir = tr.x_direction
-y_dir = tr.y_direction
-z_dir = tr.z_direction
-```
-
-### mod_delay
-
-振動子のModulation delayを取得/設定する.
-詳細は「[Modulation](./modulation.md)」を参照されたい.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let mut tr = &mut autd.geometry[0][0];
-let delay = tr.mod_delay();
-tr.set_mod_delay(0);
-# Ok(())
-# }
-```
-
-```cpp
-const auto delay = tr.mod_delay();
-tr.set_mod_delay(0);
-```
-
-```cs
-var delay = tr.ModDelay;
-tr.ModDelay = 0;
-```
-
-```python
-delay = tr.mod_delay
-tr.mod_delay = 0
-```
-
-### wavelength/wavenumber
-
-波長, 及び, 波数を取得する.
-
-引数に音速を渡す必要がある.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let sound_speed = autd.geometry[0].sound_speed;
-# let mut tr = &mut autd.geometry[0][0];
-let wavelen = tr.wavelength(sound_speed);
-let wavenum = tr.wavenumber(sound_speed);
-# Ok(())
-# }
-```
-
-```cpp
-const auto wavelen = tr.wavelength(sound_speed);
-const auto wavenum = tr.wavenumber(sound_speed);
-```
-
-```cs
-var wavelen = tr.Wavelength(soundSpeed);
-var wavenum = tr.Wavenumber(soundSpeed);
-```
-
-```python
-wavelen = tr.wavelength(sound_speed)
-wavenum = tr.wavenumber(sound_speed)
-```

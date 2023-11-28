@@ -3,55 +3,37 @@
 複数の周波数の正弦波を重ね合わせた波形を生成する`Modulation`.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-use autd3::modulation::Fourier;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = Fourier::from(Sine::new(100))
-        .add_component(Sine::new(150))
-        .add_components_from_iter([Sine::new(200)]);
-# }
+{{#include ../../../codes/Users_Manual/modulation/fourier_0.rs}}
 ```
 
 ```cpp
-auto m = autd3::modulation::Fourier(autd3::modulation::Sine(100))
-             .add_component(autd3::modulation::Sine(150))
-             .add_components_from_iter(std::vector{autd3::modulation::Sine(200)});
+{{#include ../../../codes/Users_Manual/modulation/fourier_0.cpp}}
 ```
 
 ```cs
-var m = new Fourier(new Sine(100))
-        .AddComponent(new Sine(150))
-        .AddComponentsFromIter(new []{new Sine(200)});
+{{#include ../../../codes/Users_Manual/modulation/fourier_0.cs}}
 ```
 
 ```python
-m = Fourier(Sine(100)).add_component(Sine(150)).add_components_from_iter([Sine(200)])
+{{#include ../../../codes/Users_Manual/modulation/fourier_0.py}}
 ```
 
 `+`演算子も定義されている.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-use autd3::modulation::Fourier;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m: Fourier = Sine::new(100) + Sine::new(150) + Sine::new(200);
-# }
+{{#include ../../../codes/Users_Manual/modulation/fourier_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(100) + autd3::modulation::Sine(150) + autd3::modulation::Sine(200);
+{{#include ../../../codes/Users_Manual/modulation/fourier_1.cpp}}
 ```
 
 ```cs
-var m = new Sine(100) + new Sine(150) + new Sine(200);
+{{#include ../../../codes/Users_Manual/modulation/fourier_1.cs}}
+```
+
+```python
+{{#include ../../../codes/Users_Manual/modulation/fourier_1.py}}
 ```
 
 ## 位相パラメータ
@@ -59,25 +41,17 @@ var m = new Sine(100) + new Sine(150) + new Sine(200);
 `Fourier`のために, `Sine`には位相パラメータを指定する機能がある.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-use autd3::modulation::Fourier;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m: Fourier = Sine::new(100) + Sine::new(150).with_phase(PI / 2.0);
-# }
+{{#include ../../../codes/Users_Manual/modulation/fourier_2.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(100) + autd3::modulation::Sine(150).with_phase(autd3::pi / 2.0);
+{{#include ../../../codes/Users_Manual/modulation/fourier_2.cpp}}
 ```
 
 ```cs
-var m = new Sine(100) + new Sine(150).WithPhase(AUTD3.Pi / 2.0);
+{{#include ../../../codes/Users_Manual/modulation/fourier_2.cs}}
 ```
 
 ```python
-m = Fourier(Sine(100)) + Sine(150).with_phase(np.pi / 2.0)
+{{#include ../../../codes/Users_Manual/modulation/fourier_2.py}}
 ```
