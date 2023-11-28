@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,13 +35,13 @@ public class GroupTest
             {
                 if (tr.Position.x < cx)
                 {
-                    Assert.Equal(0x80, intensities[tr.LocalIdx]);
-                    Assert.Equal(128, phases[tr.LocalIdx]);
+                    Assert.Equal(0x80, intensities[tr.TrIdx]);
+                    Assert.Equal(128, phases[tr.TrIdx]);
                 }
                 else
                 {
-                    Assert.Equal(0, intensities[tr.LocalIdx]);
-                    Assert.Equal(0, phases[tr.LocalIdx]);
+                    Assert.Equal(0, intensities[tr.TrIdx]);
+                    Assert.Equal(0, phases[tr.TrIdx]);
                 }
             }
         }
