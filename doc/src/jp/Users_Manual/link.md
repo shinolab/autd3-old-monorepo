@@ -16,33 +16,19 @@ LinkはAUTD3デバイスとのインターフェースである.
 * タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let link = autd3::link::Nop::builder();
-// linkは何らかのLink
-# let link =
-link.with_timeout(std::time::Duration::from_millis(20));
-# }
+{{#include ../../codes/Users_Manual/link_0.rs}}
 ```
 
 ```cpp
-// linkは何らかのLink
-link.with_timeout(std::chrono::milliseconds(20));
+{{#include ../../codes/Users_Manual/link_0.cpp}}
 ```
 
 ```cs
-// linkは何らかのLink
-link.WithTimeout(TimeSpan.FromMilliseconds(20))
+{{#include ../../codes/Users_Manual/link_0.cs}}
 ```
 
 ```python
-from datetime import timedelta
-
-# linkは何らかのLink
-link.with_timeout(timedelta(milliseconds=20))
+{{#include ../../codes/Users_Manual/link_0.py}}
 ```
 
 デフォルトで各Linkに対して適当な値が設定されている.

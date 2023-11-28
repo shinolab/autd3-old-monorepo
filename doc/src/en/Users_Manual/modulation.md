@@ -34,79 +34,43 @@ The SDK has `Modulation` by default to generate several types of AM.
 
 You can get the sampling frequency with `sampling_config`.
 
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let m = autd3::modulation::Sine::new(150);
-let fs = m.sampling_config().frequency();
-# }
-```
-
-```cpp
-const auto fs = m.sampling_frequency();
-```
-
-```cs
-var fs = m.SamplingFrequency;
-```
-
-```python
-fs = m.sampling_frequency
-```
-
 Some `Modulation` can set the sampling configuration with `with_sampling_config`.
 However, due to the constraints of `Modulation`, the sampling frequency may not be exactly the specified value.
 
-- e.g.,
-  ```rust,edition2021
-  # extern crate autd3;
-  # use autd3::prelude::*;
-  # #[allow(unused_variables)]
-  # fn main() -> Result<(), Box<dyn std::error::Error>> {
-  let m = autd3::modulation::Sine::new(150).with_sampling_config(SamplingConfiguration::new_with_frequency(4e3)?);
-  Ok(())
-  # }
-  ```
+```rust,edition2021
+{{#include ../../codes/Users_Manual/modulation_0.rs}}
+```
 
-  ```cpp
-  const auto m = autd3::modulation::Sine(150).with_sampling_frequency(4e3);
-  ```
+```cpp
+{{#include ../../codes/Users_Manual/modulation_0.cpp}}
+```
 
-  ```cs
-  var m = new Sine(150).WithSamplingFrequency(4e3);
-  ```
+```cs
+{{#include ../../codes/Users_Manual/modulation_0.cs}}
+```
 
-  ```python
-  m = Sine(150).with_sampling_frequency(4e3)
-  ```
+```python
+{{#include ../../codes/Users_Manual/modulation_0.py}}
+```
 
 ### Modulation data size
 
 The modulation data size can be obtained as follows.
 
 ```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let m = autd3::modulation::Sine::new(150);
-let n = m.len();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/modulation_1.rs}}
 ```
 
 ```cpp
-const auto n = m.size();
+{{#include ../../codes/Users_Manual/modulation_1.cpp}}
 ```
 
 ```cs
-var n = m.Length;
+{{#include ../../codes/Users_Manual/modulation_1.cs}}
 ```
 
 ```python
-n = len(m)
+{{#include ../../codes/Users_Manual/modulation_1.py}}
 ```
 
 
@@ -120,34 +84,19 @@ To compensate for this, each transducer has a function to delay the sampling ind
 The following example shows how to set the delay of the $0$-th transducer of $0$-th device to $1$.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0][0].set_mod_delay(1);
-autd.send(ConfigureModDelay::new()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/modulation_2.rs}}
 ```
 
 ```cpp
-autd.geometry()[0][0].set_mod_delay(1);
-autd.send(autd3::ConfigureModDelay());
+{{#include ../../codes/Users_Manual/modulation_2.cpp}}
 ```
 
 ```cs
-autd.Geometry[0][0].ModDelay = 1;
-autd.Send(new ConfigureModDelay());
+{{#include ../../codes/Users_Manual/modulation_2.cs}}
 ```
 
 ```python
-from pyautd3 import ConfigureModDelay
-
-autd.geometry[0][0].mod_delay = 1
-autd.send(ConfigureModDelay())
+{{#include ../../codes/Users_Manual/modulation_2.py}}
 ```
 
 The delay is the delay for the index to be sampled, so the delay time depends on the sampling frequency of `Modulation`.
