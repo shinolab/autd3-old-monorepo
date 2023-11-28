@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ pub unsafe extern "C" fn AUTDModulationStatic() -> ModulationPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationStaticWithAmp(
+pub unsafe extern "C" fn AUTDModulationStaticWithIntensity(
     m: ModulationPtr,
     intensity: u8,
 ) -> ModulationPtr {
@@ -47,7 +47,7 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationStatic();
-            let m = AUTDModulationStaticWithAmp(m, 0xFF);
+            let m = AUTDModulationStaticWithIntensity(m, 0xFF);
 
             let m = AUTDModulationIntoDatagram(m);
 
