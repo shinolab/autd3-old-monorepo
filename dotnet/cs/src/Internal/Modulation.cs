@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,8 +31,8 @@ namespace AUTD3Sharp.Internal
         public int Length => NativeMethodsBase.AUTDModulationSize(ModulationPtr()).Validate();
     }
 
-    public abstract class ModulationWithFreqDiv<T> : Modulation
-        where T : ModulationWithFreqDiv<T>
+    public abstract class ModulationWithSamplingConfig<T> : Modulation
+        where T : ModulationWithSamplingConfig<T>
     {
         protected SamplingConfiguration? Config;
 
@@ -41,7 +41,7 @@ namespace AUTD3Sharp.Internal
         /// </summary>
         /// <param name="config">Sampling configuration.</param>
         /// <returns></returns>
-        public T WithSamplingConfiguration(SamplingConfiguration config)
+        public T WithSamplingConfig(SamplingConfiguration config)
         {
             Config = config;
             return (T)this;

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -110,7 +110,7 @@ public class SineTest
         }
 
 
-        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingConfiguration(SamplingConfiguration.NewWithFrequencyDivision(512))));
+        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingConfig(SamplingConfiguration.NewWithFrequencyDivision(512))));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link.ModulationFrequencyDivision(dev.Idx));

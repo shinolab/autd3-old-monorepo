@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ namespace autd3::modulation {
 /**
  * @brief Square wave modulation
  */
-class Square final : public internal::ModulationWithFreqDiv<Square>,
+class Square final : public internal::ModulationWithSamplingConfig<Square>,
                      public IntoCache<Square>,
                      public IntoTransform<Square>,
                      public IntoRadiationPressure<Square> {
