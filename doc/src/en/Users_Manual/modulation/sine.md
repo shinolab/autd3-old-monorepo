@@ -5,28 +5,19 @@
 Specify the frequency $f$ as an integer in the constructor.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Sine::new(150);
-# }
+{{#include ../../../codes/Users_Manual/modulation/sine_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(150);
+{{#include ../../../codes/Users_Manual/modulation/sine_0.cpp}}
 ```
 
 ```cs
-var m = new Sine(150);
+{{#include ../../../codes/Users_Manual/modulation/sine_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Sine
-
-m = Sine(150)
+{{#include ../../../codes/Users_Manual/modulation/sine_0.py}}
 ```
 
 ## Set amplitude and offset
@@ -39,30 +30,17 @@ Here, $amplitude$ and $offset$ can be specified by `with_amp` and `with_offset`,
 Note that the value that exceeds $\[0, 1\]$ is clamped in $\[0, 1\]$.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Sine::new(150)
-        .with_amp(1.)
-        .with_offset(0.5);
-# }
+{{#include ../../../codes/Users_Manual/modulation/sine_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(150)
-                .with_amp(1.)
-                .with_offset(0.5);
+{{#include ../../../codes/Users_Manual/modulation/sine_1.cpp}}
 ```
 
 ```cs
-var m = new Sine(150)
-        .WithAmp(1)
-        .WithOffset(0.5);
+{{#include ../../../codes/Users_Manual/modulation/sine_1.cs}}
 ```
 
 ```python
-m = Sine(150).with_amp(1).with_offset(0.5)
+{{#include ../../../codes/Users_Manual/modulation/sine_1.py}}
 ```

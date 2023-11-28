@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ namespace AUTD3Sharp.Modulation
     /// <summary>
     /// Square wave modulation
     /// </summary>
-    public sealed class Square : Internal.ModulationWithFreqDiv<Square>
+    public sealed class Square : Internal.ModulationWithSamplingConfig<Square>
     {
         private readonly int _freq;
         private EmitIntensity? _low;

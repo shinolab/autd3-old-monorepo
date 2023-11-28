@@ -426,8 +426,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationStatic.argtypes = [] 
         self.dll.AUTDModulationStatic.restype = ModulationPtr
 
-        self.dll.AUTDModulationStaticWithAmp.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
-        self.dll.AUTDModulationStaticWithAmp.restype = ModulationPtr
+        self.dll.AUTDModulationStaticWithIntensity.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
+        self.dll.AUTDModulationStaticWithIntensity.restype = ModulationPtr
 
         self.dll.AUTDModulationWithTransform.argtypes = [ModulationPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
         self.dll.AUTDModulationWithTransform.restype = ModulationPtr
@@ -852,8 +852,8 @@ class NativeMethods(metaclass=Singleton):
     def modulation_static(self) -> ModulationPtr:
         return self.dll.AUTDModulationStatic()
 
-    def modulation_static_with_amp(self, m: ModulationPtr, intensity: int) -> ModulationPtr:
-        return self.dll.AUTDModulationStaticWithAmp(m, intensity)
+    def modulation_static_with_intensity(self, m: ModulationPtr, intensity: int) -> ModulationPtr:
+        return self.dll.AUTDModulationStaticWithIntensity(m, intensity)
 
     def modulation_with_transform(self, m: ModulationPtr, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None) -> ModulationPtr:
         return self.dll.AUTDModulationWithTransform(m, f, context)

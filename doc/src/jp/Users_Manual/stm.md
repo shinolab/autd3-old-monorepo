@@ -13,13 +13,9 @@ SDKには単一焦点のみをサポートする`FocusSTM`と, 任意の`Gain`�
 
 STMの周波数を取得する.
 
-### sampling_frequency
+### sampling_config
 
-サンプリング周波数を取得する.
-
-### sampling_frequency_division
-
-サンプリング周波数の分周比を取得する.
+サンプリング設定を取得する.
 
 ### start_idx/finish_idx
 
@@ -27,28 +23,19 @@ STMの周波数を取得する.
 これを指定するには, 以下のように`with_start_idx`で指定する.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let stm = FocusSTM::new(1.0).with_start_idx(Some(0));
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/stm_0.rs}}
 ```
 
 ```cpp
-auto stm = autd3::FocusSTM(1).with_start_idx(0);
+{{#include ../../codes/Users_Manual/stm_0.cpp}}
 ```
 
 ```cs
-var stm = new FocusSTM(1).WithStartIdx(0);
+{{#include ../../codes/Users_Manual/stm_0.cs}}
 ```
 
 ```python
-stm = FocusSTM(1).with_start_idx(0)
+{{#include ../../codes/Users_Manual/stm_0.py}}
 ```
 
 これにより, `start_idx`で指定したインデックスの焦点/`Gain`からスタートするようになる.
@@ -62,26 +49,18 @@ stm = FocusSTM(1).with_start_idx(0)
 
 これらの設定を無効 (デフォルト) にするには, 以下のようにする.
 
-
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-let stm = FocusSTM::new(1.0).with_start_idx(None);
-# }
+{{#include ../../codes/Users_Manual/stm_1.rs}}
 ```
 
 ```cpp
-auto stm = autd3::FocusSTM(1).with_start_idx(std::nullopt);
+{{#include ../../codes/Users_Manual/stm_1.cpp}}
 ```
 
 ```cs
-var stm = new FocusSTM(1).WithStartIdx(null);
+{{#include ../../codes/Users_Manual/stm_1.cs}}
 ```
 
 ```python
-stm = FocusSTM(1).with_start_idx(None)
+{{#include ../../codes/Users_Manual/stm_1.py}}
 ```
-

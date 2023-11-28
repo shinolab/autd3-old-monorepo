@@ -5,62 +5,39 @@
 Specify the frequency $f$ as an integer in the constructor.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150);
+{{#include ../../../codes/Users_Manual/modulation/square_0.cpp}}
 ```
 
 ```cs
-var m = new Square(150);
+{{#include ../../../codes/Users_Manual/modulation/square_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150)
+{{#include ../../../codes/Users_Manual/modulation/square_0.py}}
 ```
+
 ## Set amplitude
 
 You can set the amplitude of the square wave with `with_low` and `with_high` for low level and high level, respectively.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150)
-        .with_low(EmitIntensity::MIN)
-        .with_high(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150)
-        .with_low(0.)
-        .with_high(1.);
+{{#include ../../../codes/Users_Manual/modulation/square_1.cpp}}
 ```
 
 ```cs
-var m = new Square(150)
-        .WithLow(0)
-        .WithHigh(1);
+{{#include ../../../codes/Users_Manual/modulation/square_1.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150).with_low(0).with_high(1)
+{{#include ../../../codes/Users_Manual/modulation/square_1.py}}
 ```
 
 ## Set duty ratio
@@ -68,29 +45,17 @@ m = Square(150).with_low(0).with_high(1)
 You can set the duty ratio of the square wave with `with_duty`.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150)
-        .with_duty(0.5);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_2.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150)
-        .with_duty(0.5);
+{{#include ../../../codes/Users_Manual/modulation/square_2.cpp}}
 ```
 
 ```cs
-var m = new Square(150)
-        .WithDuty(0.5);
+{{#include ../../../codes/Users_Manual/modulation/square_2.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150).with_duty(0.5)
+{{#include ../../../codes/Users_Manual/modulation/square_2.py}}
 ```

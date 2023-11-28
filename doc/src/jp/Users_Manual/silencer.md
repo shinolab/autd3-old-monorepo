@@ -22,97 +22,28 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 Silencerの設定には`Silencer`を送信する.
 
+
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let config = Silencer::default();
-autd.send(config).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/silencer_0.rs}}
 ```
 
 ```cpp
-autd3::Silencer config;
-autd.send(config);
+{{#include ../../codes/Users_Manual/silencer_0.cpp}}
 ```
 
 ```cs
-var config = new Silencer();
-autd.Send(config);
+{{#include ../../codes/Users_Manual/silencer_0.cs}}
 ```
 
 ```python
-from pyautd3 import Silencer
-
-config = Silencer()
-autd.send(config)
+{{#include ../../codes/Users_Manual/silencer_0.py}}
 ```
 
 `Silencer`には`step`を設定できる.
 詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
 
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-# let step_intensity = 256;
-# let step_phase = 256;
-let config = Silencer::new(step_intensity, step_phase);
-# Ok(())
-# }
-```
-
-```cpp
-autd3::Silencer config(step);
-```
-
-```cs
-var config = new Silencer(step);
-```
-
-```python
-config = Silencer(step)
-```
-
-## Silencerの無効化
-
 Silencerはデフォルトで適当な値に設定されている.
-
 Silencerを無効化する場合は, 以下を送信する.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let config = Silencer::disable();
-# Ok(())
-# }
-```
-
-```cpp
-const auto config = autd3::Silencer::disable();
-```
-
-```cs
-var config = Silencer.Disable();
-```
-
-```python
-config = Silencer.disable()
-```
 
 ## Silencerによる位相の変化
 

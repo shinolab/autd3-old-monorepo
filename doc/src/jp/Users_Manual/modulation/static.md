@@ -2,58 +2,38 @@
 
 変調なし.
 
-
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Static::new();
-# }
+{{#include ../../../codes/Users_Manual/modulation/static_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Static();
+{{#include ../../../codes/Users_Manual/modulation/static_0.cpp}}
 ```
 
 ```cs
-var m = new Static();
+{{#include ../../../codes/Users_Manual/modulation/static_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Static
-
-m = Static()
+{{#include ../../../codes/Users_Manual/modulation/static_0.py}}
 ```
 
 ## 振幅の指定
 
-`with_amp`にて, 0-1の規格化された音圧振幅を指定できる.
-$\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
+`with_intensity`にて, 出力振幅を指定できる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Static::new().with_intensity(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/modulation/static_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Static().with_intensity(EmitIntensity::MAX);
+{{#include ../../../codes/Users_Manual/modulation/static_1.cpp}}
 ```
 
 ```cs
-var m = new Static().WithAmp(1);
+{{#include ../../../codes/Users_Manual/modulation/static_1.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Static
-
-m = Static().with_amp(1)
+{{#include ../../../codes/Users_Manual/modulation/static_1.py}}
 ```

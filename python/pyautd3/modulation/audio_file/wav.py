@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from pathlib import Path
 
-from pyautd3.internal.modulation import IModulationWithFreqDiv
+from pyautd3.internal.modulation import IModulationWithSamplingConfig
 from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
@@ -21,7 +21,7 @@ from pyautd3.native_methods.autd3capi_modulation_audio_file import (
 )
 
 
-class Wav(IModulationWithFreqDiv):
+class Wav(IModulationWithSamplingConfig):
     """Modulation constructed from a wav file.
 
     The data is resampled to the sampling frequency of the Modulation.

@@ -3,30 +3,19 @@
 `Focus` generates a single focal point.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-let g = autd3::gain::Focus::new(Vector3::new(x, y, z));
-# }
+{{#include ../../../codes/Users_Manual/gain/focus_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Focus(autd3::Vector3(x, y, z));
+{{#include ../../../codes/Users_Manual/gain/focus_0.cpp}}
 ```
 
 ```cs
-var g = new Focus(new Vector3d(x, y, z));
+{{#include ../../../codes/Users_Manual/gain/focus_0.cs}}
 ```
 
 ```python
-from pyautd3.gain import Focus
-
-g = Focus([x, y, z])
+{{#include ../../../codes/Users_Manual/gain/focus_0.py}}
 ```
 
 ## Set intensity
@@ -34,26 +23,17 @@ g = Focus([x, y, z])
 You can change emission intensity by `with_intensity` method.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-# let x = 0.;
-# let y = 0.;
-# let z = 0.;
-let g = autd3::gain::Focus::new(Vector3::new(x, y, z)).with_intensity(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/gain/focus_1.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Focus(autd3::Vector3(x, y, z)).with_amp(1.);
+{{#include ../../../codes/Users_Manual/gain/focus_1.cpp}}
 ```
 
 ```cs
-var g = new Focus(new Vector3d(x, y, z)).WithAmp(1);
+{{#include ../../../codes/Users_Manual/gain/focus_1.cs}}
 ```
 
 ```python
-g = Focus([x, y, z]).with_amp(1)
+{{#include ../../../codes/Users_Manual/gain/focus_1.py}}
 ```

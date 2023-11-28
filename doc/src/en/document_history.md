@@ -56,3 +56,4 @@
 | 2023/10/04 | Version 15.3.0 Initial release                |
 | 2023/10/04 | Version 15.3.1 Initial release                |
 | 2023/10/14 | Version 16.0.0 Initial release                |
+| 2023/11/28 | Version 17.0.2 Initial release                |

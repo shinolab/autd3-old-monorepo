@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ class Fourier;
 /**
  * @brief Sine wave modulation
  */
-class Sine final : public internal::ModulationWithFreqDiv<Sine>,
+class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
                    public IntoCache<Sine>,
                    public IntoTransform<Sine>,
                    public IntoRadiationPressure<Sine> {
