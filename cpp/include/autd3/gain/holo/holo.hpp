@@ -3,7 +3,7 @@
 // Created Date: 10/10/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,9 +57,9 @@ class Holo : public internal::Gain {
     return std::move(*static_cast<H*>(this));
   }
 
-  void with_constraint(const AmplitudeConstraint value) & { _constraint = value; }
+  void with_constraint(const EmissionConstraint value) & { _constraint = value; }
 
-  [[nodiscard]] H with_constraint(const AmplitudeConstraint value) && {
+  [[nodiscard]] H with_constraint(const EmissionConstraint value) && {
     _constraint = value;
     return std::move(*static_cast<H*>(this));
   }
@@ -67,7 +67,7 @@ class Holo : public internal::Gain {
  protected:
   std::vector<internal::Vector3> _foci;
   std::vector<Amplitude> _amps;
-  std::optional<AmplitudeConstraint> _constraint;
+  std::optional<EmissionConstraint> _constraint;
 };
 
 }  // namespace autd3::gain::holo

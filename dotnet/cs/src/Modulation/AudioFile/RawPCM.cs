@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ namespace AUTD3Sharp.Modulation.AudioFile
     /// Modulation constructed from raw pcm data file
     /// <remarks>The wav data is re-sampled to the sampling frequency of Modulation.</remarks>
     /// </summary>
-    public sealed class RawPCM : Internal.ModulationWithFreqDiv<RawPCM>
+    public sealed class RawPCM : Internal.ModulationWithSamplingConfig<RawPCM>
     {
         private readonly string _filename;
         private readonly uint _sampleRate;

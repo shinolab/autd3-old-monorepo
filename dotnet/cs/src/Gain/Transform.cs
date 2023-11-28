@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ namespace AUTD3Sharp.Gain
                 }
 
                 foreach (var tr in dev)
-                    d[tr.LocalIdx] = _f(dev, tr, d[tr.LocalIdx]);
+                    d[tr.TrIdx] = _f(dev, tr, d[tr.TrIdx]);
                 drives[dev.Idx] = d;
             }
 

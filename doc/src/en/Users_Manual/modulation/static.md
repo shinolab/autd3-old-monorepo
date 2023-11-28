@@ -3,56 +3,37 @@
 Without modulation.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Static::new();
-# }
+{{#include ../../../codes/Users_Manual/modulation/static_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Static();
+{{#include ../../../codes/Users_Manual/modulation/static_0.cpp}}
 ```
 
 ```cs
-var m = new Static();
+{{#include ../../../codes/Users_Manual/modulation/static_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Static
-
-m = Static()
+{{#include ../../../codes/Users_Manual/modulation/static_0.py}}
 ```
 
-## Set amplitude
+## Set intensity
 
-You can set the amplitude of the static wave with `with_amp`.
-The value is clamped to $\[0, 1\]$.
+You can set the emission intensity by `with_intensity`.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Static::new().with_intensity(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/modulation/static_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Static().with_amp(1.);
+{{#include ../../../codes/Users_Manual/modulation/static_1.cpp}}
 ```
 
 ```cs
-var m = new Static().WithAmp(1);
+{{#include ../../../codes/Users_Manual/modulation/static_1.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Static
-
-m = Static().with_amp(1)
+{{#include ../../../codes/Users_Manual/modulation/static_1.py}}
 ```

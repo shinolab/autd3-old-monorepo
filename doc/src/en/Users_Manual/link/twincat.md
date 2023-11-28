@@ -81,39 +81,21 @@ If you got a message like "AUTDs are found and added", it is successful.
 ### Constructor
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_twincat;
-# use autd3::prelude::*;
-use autd3_link_twincat::TwinCAT;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#     .open_with(
-TwinCAT::builder()
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/twincat_0.rs}}
 ```
 
 ```cpp
-#include "autd3/link/twincat.hpp"
-
-autd3::link::TwinCAT::builder();
+{{#include ../../../codes/Users_Manual/link/twincat_0.cpp}}
 ```
 
 ```cs
-TwinCAT.Builder()
+{{#include ../../../codes/Users_Manual/link/twincat_0.cs}}
 ```
 
 ```python
-from pyautd3.link.twincat import TwinCAT
-
-TwinCAT.builder()
+{{#include ../../../codes/Users_Manual/link/twincat_0.py}}
 ```
+
 ## Troubleshooting
 
 When using a large number of devices, the following error may occur.
@@ -166,46 +148,19 @@ Also, specify the IP address of the server in the `with_server_ip` method.
 These two values is optional, but it is recommended to specify them.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_twincat;
-# use autd3::prelude::*;
-use autd3_link_twincat::RemoteTwinCAT;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#      .open_with(
-RemoteTwinCAT::builder("172.16.99.111.1.1")
-            .with_server_ip("172.16.99.104")
-            .with_client_ams_net_id("172.16.99.62.1.1")
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/remote_twincat_0.rs}}
 ```
 
 ```cpp
-#include "autd3/link/twincat.hpp"
-
-autd3::link::RemoteTwinCAT::builder("172.16.99.111.1.1")
-				.with_server_ip("172.16.99.104")
-				.with_client_ams_net_id("172.16.99.62.1.1");
+{{#include ../../../codes/Users_Manual/link/remote_twincat_0.cpp}}
 ```
 
 ```cs
-RemoteTwinCAT.Builder("172.16.99.111.1.1")
-        .WithServerIp(IPAddress.Parse("172.16.99.104"))
-        .WithClientAmsNetId("172.16.99.62.1.1");
+{{#include ../../../codes/Users_Manual/link/remote_twincat_0.cs}}
 ```
 
 ```python
-from pyautd3.link.twincat import RemoteTwinCAT
-
-RemoteTwinCAT.builder("172.16.99.111.1.1")\
-    .with_server_ip("172.16.99.104")\
-    .with_client_ams_net_id("172.16.99.62.1.1")
+{{#include ../../../codes/Users_Manual/link/remote_twincat_0.py}}
 ```
 
 ## Firewall

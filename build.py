@@ -1136,13 +1136,13 @@ def util_update_ver(args):
             with open(toml, "r") as f:
                 content = f.read()
                 content = re.sub(
-                    r'^version = "(.*)"',
+                    r'^version = "(.*?)"',
                     f'version = "{version}"',
                     content,
                     flags=re.MULTILINE,
                 )
                 content = re.sub(
-                    r'^autd3(.*)version = "(.*)"',
+                    r'^autd3(.*)version = "(.*?)"',
                     f'autd3\\1version = "{version}"',
                     content,
                     flags=re.MULTILINE,
@@ -1155,7 +1155,7 @@ def util_update_ver(args):
             with open(toml, "r") as f:
                 content = f.read()
                 content = re.sub(
-                    r'^version = "(.*)"',
+                    r'^version = "(.*?)"',
                     f'version = "{version}"',
                     content,
                     flags=re.MULTILINE,
@@ -1220,7 +1220,7 @@ def util_update_ver(args):
         with open("examples/CMakeLists.txt", "r") as f:
             content = f.read()
             content = re.sub(
-                r"v(.*)/autd3-v(.*)",
+                r"v(.*)/autd3-v(\d*\.\d*\.\d*)",
                 f"v{version}/autd3-v{version}",
                 content,
                 flags=re.MULTILINE,
@@ -1232,7 +1232,7 @@ def util_update_ver(args):
         with open("samples/cpp/CMakeLists.txt", "r") as f:
             content = f.read()
             content = re.sub(
-                r"v(.*)/autd3-v(.*)",
+                r"v(.*)/autd3-v(\d*\.\d*\.\d*)",
                 f"v{version}/autd3-v{version}",
                 content,
                 flags=re.MULTILINE,
@@ -1387,13 +1387,13 @@ def util_update_ver(args):
             with open(toml, "r") as f:
                 content = f.read()
                 content = re.sub(
-                    r'^version = "(.*)"',
+                    r'^version = "(.*?)"',
                     f'version = "{version}"',
                     content,
                     flags=re.MULTILINE,
                 )
                 content = re.sub(
-                    r'^autd3(.*)version = "(.*)"',
+                    r'^autd3(.*)version = "(.*?)"',
                     f'autd3\\1version = "{version}"',
                     content,
                     flags=re.MULTILINE,

@@ -36,80 +36,45 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 `sampling_config`でサンプリング設定を取得できる.
 デフォルトのサンプリング周波数は$\SI{4}{kHz}$である.
 
-```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-# let m = autd3::modulation::Sine::new(150);
-let fs = m.sampling_config().frequency();
-# }
-```
-
-```cpp
-const auto fs = m.sampling_frequency();
-```
-
-```cs
-var fs = m.SamplingFrequency;
-```
-
-```python
-fs = m.sampling_frequency
-```
-
 また, 一部の`Modulation`は`with_sampling_config`でサンプリングを設定できる.
 ただし, `Modulation`の制約上, 必ずしも指定した設定になるとは限らない.
 
-- e.g.,
-  ```rust,edition2021
-  # extern crate autd3;
-  # use autd3::prelude::*;
-  # #[allow(unused_variables)]
-  # fn main() -> Result<(), Box<dyn std::error::Error>> {
-  let m = autd3::modulation::Sine::new(150).with_sampling_config(SamplingConfiguration::new_with_frequency(4e3)?);
-  Ok(())
-  # }
-  ```
+```rust,edition2021
+{{#include ../../codes/Users_Manual/modulation_0.rs}}
+```
 
-  ```cpp
-  const auto m = autd3::modulation::Sine(150).with_sampling_frequency(4e3);
-  ```
+```cpp
+{{#include ../../codes/Users_Manual/modulation_0.cpp}}
+```
 
-  ```cs
-  var m = new Sine(150).WithSamplingFrequency(4e3);
-  ```
+```cs
+{{#include ../../codes/Users_Manual/modulation_0.cs}}
+```
 
-  ```python
-  m = Sine(150).with_sampling_frequency(4e3)
-  ```
+```python
+{{#include ../../codes/Users_Manual/modulation_0.py}}
+```
 
 ### 変調データサイズ
 
 変調データサイズは以下のように取得する.
 
 ```rust,edition2021
-# extern crate autd3;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let m = autd3::modulation::Sine::new(150);
-let n = m.len();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/modulation_1.rs}}
 ```
 
 ```cpp
-const auto n = m.size();
+{{#include ../../codes/Users_Manual/modulation_1.cpp}}
 ```
 
 ```cs
-var n = m.Length;
+{{#include ../../codes/Users_Manual/modulation_1.cs}}
 ```
 
 ```python
-n = len(m)
+{{#include ../../codes/Users_Manual/modulation_1.py}}
 ```
+
 
 ## Modulation Delay
 
@@ -121,34 +86,19 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 例えば, 以下のようにすると, $0$番目のデバイスの$0$番目のの振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0][0].set_mod_delay(1);
-autd.send(ConfigureModDelay::new()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/modulation_2.rs}}
 ```
 
 ```cpp
-autd.geometry()[0][0].set_mod_delay(1);
-autd.send(autd3::ConfigureModDelay());
+{{#include ../../codes/Users_Manual/modulation_2.cpp}}
 ```
 
 ```cs
-autd.Geometry[0][0].ModDelay = 1;
-autd.Send(new ConfigureModDelay());
+{{#include ../../codes/Users_Manual/modulation_2.cs}}
 ```
 
 ```python
-from pyautd3 import ConfigureModDelay
-
-autd.geometry[0][0].mod_delay = 1
-autd.send(ConfigureModDelay())
+{{#include ../../codes/Users_Manual/modulation_2.py}}
 ```
 
 サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかは`Modulation`のサンプリング周波数に依存する.

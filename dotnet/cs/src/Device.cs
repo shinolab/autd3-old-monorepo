@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,7 +44,7 @@ namespace AUTD3Sharp
         {
             Idx = idx;
             Ptr = ptr;
-            _transducers = Enumerable.Range(0, (int)NativeMethodsBase.AUTDDeviceNumTransducers(Ptr)).Select(i => new Transducer(i, Ptr)).ToList();
+            _transducers = Enumerable.Range(0, (int)NativeMethodsBase.AUTDDeviceNumTransducers(Ptr)).Select(i => new Transducer(idx, i, Ptr)).ToList();
         }
 
         /// <summary>

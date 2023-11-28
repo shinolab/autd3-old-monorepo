@@ -1,3 +1,11 @@
+# 17.0.2
+
+- Fix [#218](https://github.com/shinolab/autd3/issues/218): [C++/C#/Python] Transducer does not have tr_idx and dev_idx methods
+- Fix [#219](https://github.com/shinolab/autd3/issues/219): [C++] inconsistent name autd3::gain::holo::AmplitudeConstraint
+- Fix [#220](https://github.com/shinolab/autd3/issues/220): [C#] missing WithIntensity in Modulation.Static
+- Fix [#221](https://github.com/shinolab/autd3/issues/221): [C++] inconsistent api name Focus::new_with_sampling_configuration
+- Fix [#222](https://github.com/shinolab/autd3/issues/222): [C++] inconsistent api name ModulationWithFreqDiv::with_sampling_configuration
+
 # 17.0.1
 
 - Fix [#217](https://github.com/shinolab/autd3/issues/217): v4.0.0 fpga firmware returns its version as v4.0.1
