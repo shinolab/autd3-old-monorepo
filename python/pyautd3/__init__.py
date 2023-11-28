@@ -47,4 +47,4 @@ __all__ = [
     "TimerStrategy",
 ]
 
-__version__ = "17.0.1"
+__version__ = "17.0.2"
