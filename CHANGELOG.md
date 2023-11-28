@@ -1,3 +1,7 @@
+# 17.0.2
+
+- Fix [#221](https://github.com/shinolab/autd3/issues/221): [C++] inconsistent api name Focus::new_with_sampling_configuration
+
 # 17.0.1
 
 - Fix [#217](https://github.com/shinolab/autd3/issues/217): v4.0.0 fpga firmware returns its version as v4.0.1
