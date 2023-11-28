@@ -362,7 +362,7 @@ ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationStatic();
 
-[[nodiscard]] ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, uint8_t intensity);
+[[nodiscard]] ModulationPtr AUTDModulationStaticWithIntensity(ModulationPtr m, uint8_t intensity);
 
 [[nodiscard]] ModulationPtr AUTDModulationWithTransform(ModulationPtr m, void* f, void* context);
 

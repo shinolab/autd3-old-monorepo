@@ -402,8 +402,8 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationStatic", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationStatic();
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationStaticWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationStaticWithAmp(ModulationPtr m, byte intensity);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationStaticWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationStaticWithIntensity(ModulationPtr m, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationWithTransform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationWithTransform(ModulationPtr m, IntPtr f, IntPtr context);

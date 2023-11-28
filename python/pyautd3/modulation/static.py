@@ -39,5 +39,5 @@ class Static(IModulation):
     def _modulation_ptr(self: "Static") -> ModulationPtr:
         ptr = Base().modulation_static()
         if self._intensity is not None:
-            ptr = Base().modulation_static_with_amp(ptr, self._intensity.value)
+            ptr = Base().modulation_static_with_intensity(ptr, self._intensity.value)
         return ptr
