@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ namespace AUTD3Sharp.Modulation
         /// </summary>
         /// <param name="intensity">Emission intensity</param>
         /// <returns></returns>
-        public Static WithAmp(byte intensity)
+        public Static WithIntensity(byte intensity)
         {
             _intensity = new EmitIntensity(intensity);
             return this;
@@ -50,7 +50,7 @@ namespace AUTD3Sharp.Modulation
         /// </summary>
         /// <param name="intensity">Emission intensity</param>
         /// <returns></returns>
-        public Static WithAmp(EmitIntensity intensity)
+        public Static WithIntensity(EmitIntensity intensity)
         {
             _intensity = intensity;
             return this;
@@ -60,7 +60,7 @@ namespace AUTD3Sharp.Modulation
         {
             var ptr = NativeMethodsBase.AUTDModulationStatic();
             if (_intensity != null)
-                ptr = NativeMethodsBase.AUTDModulationStaticWithAmp(ptr, _intensity.Value.Value);
+                ptr = NativeMethodsBase.AUTDModulationStaticWithIntensity(ptr, _intensity.Value.Value);
             return ptr;
         }
     }

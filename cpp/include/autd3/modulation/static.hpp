@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ class Static final : public internal::Modulation, public IntoCache<Static>, publ
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationStatic();
-    if (_intensity.has_value()) ptr = AUTDModulationStaticWithAmp(ptr, _intensity.value().value());
+    if (_intensity.has_value()) ptr = AUTDModulationStaticWithIntensity(ptr, _intensity.value().value());
     return ptr;
   }
 
