@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,16 +37,22 @@ namespace AUTD3Sharp
     {
         internal readonly TransducerPtr Ptr;
 
-        internal Transducer(int localIdx, DevicePtr ptr)
+        internal Transducer(int devIdx, int trIdx, DevicePtr ptr)
         {
-            LocalIdx = localIdx;
-            Ptr = NativeMethodsBase.AUTDTransducer(ptr, (uint)localIdx);
+            TrIdx = trIdx;
+            DevIdx = devIdx;
+            Ptr = NativeMethodsBase.AUTDTransducer(ptr, (uint)trIdx);
         }
 
         /// <summary>
         /// Index of the transducer
         /// </summary>
-        public int LocalIdx { get; }
+        public int TrIdx { get; }
+
+        /// <summary>
+        /// Index of the device
+        /// </summary>
+        public int DevIdx { get; }
 
         /// <summary>
         /// Position of the transducer

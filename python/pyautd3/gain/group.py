@@ -70,9 +70,9 @@ class Group(IGain, Generic[K]):
                     if key not in keymap:
                         keymap[key] = k
                         k += 1
-                    m[tr.local_idx] = keymap[key]
+                    m[tr.tr_idx] = keymap[key]
                 else:
-                    m[tr.local_idx] = -1
+                    m[tr.tr_idx] = -1
             gain_group_map = Base().gain_group_map_set(gain_group_map, dev.idx, np.ctypeslib.as_ctypes(m.astype(c_int32)))
 
         keys: np.ndarray = np.ndarray(len(self._map), dtype=np.int32)

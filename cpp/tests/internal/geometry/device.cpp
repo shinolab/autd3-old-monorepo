@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,13 +54,16 @@ TEST(Internal_Geometry, DeviceNumTransducers) {
 
 TEST(Internal_Geometry, DeviceCenter) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    ASSERT_NEAR_VECTOR3(dev.center(), autd3::internal::Vector3(86.62522088353406, 66.7132530125621, 0), 1e-6);
+    ASSERT_NEAR_VECTOR3(
+        dev.center(),
+        autd3::internal::Vector3(86.62522088353406, 66.7132530125621, 0), 1e-6);
   }
 }
 
 TEST(Internal_Geometry, DeviceForceFan) {
   auto autd = create_controller();
-  for (auto& dev : autd.geometry()) ASSERT_EQ(autd.link().fpga_flags(dev.idx()), 0);
+  for (auto& dev : autd.geometry())
+    ASSERT_EQ(autd.link().fpga_flags(dev.idx()), 0);
 
   autd.geometry()[0].force_fan(true);
   autd.geometry()[1].force_fan(false);
@@ -87,11 +90,16 @@ TEST(Internal_Geometry, DeviceEnable) {
 
 TEST(Internal_Geometry, DeviceTranslate) {
   for (auto autd = create_controller(); const auto& dev : autd.geometry()) {
-    auto original_pos_view = dev.transducers() | std::views::transform([](const auto& tr) { return tr.position(); });
-    std::vector original_pos(original_pos_view.begin(), original_pos_view.end());
+    auto original_pos_view =
+        dev.transducers() |
+        std::views::transform([](const auto& tr) { return tr.position(); });
+    std::vector original_pos(original_pos_view.begin(),
+                             original_pos_view.end());
     autd3::internal::Vector3 t(1, 2, 3);
     dev.translate(t);
-    std::ranges::for_each(dev.transducers(), [&t, &original_pos](auto& tr) { ASSERT_EQ(tr.position(), original_pos[tr.local_idx()] + t); });
+    std::ranges::for_each(dev.transducers(), [&t, &original_pos](auto& tr) {
+      ASSERT_EQ(tr.position(), original_pos[tr.tr_idx()] + t);
+    });
   }
 }
 
@@ -99,20 +107,25 @@ TEST(Internal_Geometry, DeviceRotate) {
   for (auto autd = create_controller(); const auto& dev : autd.geometry()) {
     autd3::internal::Quaternion r(0.7071067811865476, 0, 0, 0.7071067811865476);
     dev.rotate(r);
-    std::ranges::for_each(dev.transducers(), [&r](auto& tr) { ASSERT_EQ(tr.rotation(), r); });
+    std::ranges::for_each(dev.transducers(),
+                          [&r](auto& tr) { ASSERT_EQ(tr.rotation(), r); });
   }
 }
 
 TEST(Internal_Geometry, DeviceAffine) {
   for (auto autd = create_controller(); const auto& dev : autd.geometry()) {
-    auto original_pos_view = dev.transducers() | std::views::transform([](const auto& tr) { return tr.position(); });
-    std::vector original_pos(original_pos_view.begin(), original_pos_view.end());
+    auto original_pos_view =
+        dev.transducers() |
+        std::views::transform([](const auto& tr) { return tr.position(); });
+    std::vector original_pos(original_pos_view.begin(),
+                             original_pos_view.end());
     autd3::internal::Vector3 t(1, 2, 3);
     autd3::internal::Quaternion r(0.7071067811865476, 0, 0, 0.7071067811865476);
     dev.affine(t, r);
     std::ranges::for_each(dev.transducers(), [&r, &t, &original_pos](auto& tr) {
-      auto op = original_pos[tr.local_idx()];
-      autd3::internal::Vector3 expected = autd3::internal::Vector3(-op.y(), op.x(), op.z()) + t;
+      auto op = original_pos[tr.tr_idx()];
+      autd3::internal::Vector3 expected =
+          autd3::internal::Vector3(-op.y(), op.x(), op.z()) + t;
       ASSERT_DOUBLE_EQ(tr.position().x(), expected.x());
       ASSERT_DOUBLE_EQ(tr.position().y(), expected.y());
       ASSERT_DOUBLE_EQ(tr.position().z(), expected.z());
@@ -123,6 +136,8 @@ TEST(Internal_Geometry, DeviceAffine) {
 
 TEST(Internal_Geometry, TransducerLocal) {
   for (auto autd = create_controller(); auto& dev : autd.geometry()) {
-    std::ranges::for_each(std::views::iota(0) | std::views::take(dev.num_transducers()), [&dev](auto i) { ASSERT_EQ(dev[i].local_idx(), i); });
+    std::ranges::for_each(
+        std::views::iota(0) | std::views::take(dev.num_transducers()),
+        [&dev](auto i) { ASSERT_EQ(dev[i].tr_idx(), i); });
   }
 }
