@@ -31,5 +31,5 @@ Then, run `firmware/autd_firmware_writer.ps1` in [SDK](https://github.com/shinol
 - [Rust](./getting_started/rust.md)
 - [C++](./getting_started/cpp.md)
 - [C#](./getting_started/cs.md)
-- [Unity](./getting_started/unity.md)
+    - [Unity](./getting_started/unity.md)
 - [Python](./getting_started/python.md)

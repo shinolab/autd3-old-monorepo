@@ -17,331 +17,38 @@ If you are using Linux/macOS, no special preparation is required.
 
 ## SOEM link API
 
-### Interface name
-
-You can specify the network interface on which the AUTD3 device is connected with `with_ifname`.
+Following options can be specified for SOEM link.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::SOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_ifname("")
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/soem_0.rs}}
 ```
 
 ```cpp
-#include "autd3/link/soem.hpp"
-
-autd3::link::SOEM::builder()
-	.with_ifname("")
+{{#include ../../../codes/Users_Manual/link/soem_0.cpp}}
 ```
 
 ```cs
-SOEM.Builder()
-    .WithIfname("")
+{{#include ../../../codes/Users_Manual/link/soem_0.cs}}
 ```
 
 ```python
-from pyautd3.link.soem import SOEM
-
-SOEM.builder()\
-    .with_ifname("")
+{{#include ../../../codes/Users_Manual/link/soem_0.py}}
 ```
 
-By default, it is blank, and if it is blank, the network interface to which the AUTD3 device is connected is automatically selected.
-
-### Callback when error occurs
-
-You can set a callback with `with_on_err` function when an error occurs.
-
-The interval of error status check is specified by `with_state_check_interval` function. (Default is $\SI{100}{ms}$.)
-
-```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::SOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_state_check_interval(std::time::Duration::from_millis(100))
-    .with_on_err(|msg| {
-            eprintln!("Unrecoverable error occurred: {msg}");
-        })
-# ).await?;
-# Ok(())
-# }
-```
-
-```cpp
-#include "autd3/link/soem.hpp"
-
-void on_err(const char* msg) {
-  std::cerr << msg;
-}
-
-autd3::link::SOEM::builder()
-    .with_state_check_interval(std::chrono::milliseconds(100))
-    .with_on_err(&on_err)
-```
-
-```cs
-var onErr = new SOEM.OnErrCallbackDelegate((string msg) =>
-{
-    Console.WriteLine(msg);
-});
-
-SOEM.Builder()
-    .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
-    .WithOnErr(onErr)
-```
-
-```python
-from pyautd3.link.soem import SOEM, OnErrFunc
-from datetime import timedelta
-
-def on_err(msg: ctypes.c_char_p):
-    print(msg.decode("utf-8"), end="")
-
-on_err_func = OnErrFunc(on_err)
-
-SOEM.builder()\
-    .with_state_check_interval(timedelta(milliseconds=100))\
-    .with_on_err(on_err_func)
-```
-
-### Callback when link is lost
-
-You can set a callback with `with_on_lost` function when an unrecoverable error (e.g., cable is unplugged) occurs[^fn_soem_err].
-The callback take an error message as an argument.
-
-```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::SOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_on_lost(|msg| {
-            eprintln!("Unrecoverable error occurred: {msg}");
-            std::process::exit(-1);
-        })
-# ).await?;
-# Ok(())
-# }
-```
-
-```cpp
-#include "autd3/link/soem.hpp"
-
-void on_lost(const char* msg) {
-  std::cerr << "Link is lost\n";
-  std::cerr << msg;
-  exit(-1);
-}
-
-autd3::link::SOEM::builder()
-    .with_on_lost(&on_lost)
-```
-
-```cs
-var onLost = new SOEM.OnErrCallbackDelegate((string msg) =>
-{
-    Console.WriteLine($"Unrecoverable error occurred: {msg}");
-    Environment.Exit(-1);
-});
-
-SOEM.Builder()
-    .WithOnLost(onLost)
-```
-
-```python
-from pyautd3.link.soem import SOEM, OnErrFunc
-
-def on_lost(msg: ctypes.c_char_p):
-    print(msg.decode("utf-8"), end="")
-    os._exit(-1)
-
-on_lost_func = OnErrFunc(on_lost)
-
-SOEM.builder()\
-    .with_on_lost(on_lost_func)
-```
-
-### Sync signal/Send cycle
-
-`SOEM` might behave unstably when a large number of devices are connected[^fn_soem].
-In this case, use the `with_sync0_cycle` and `with_send_cycle` functions to increase the values.
-
-```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::SOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_sync0_cycle(2)
-    .with_send_cycle(2)
-# ).await?;
-# Ok(())
-# }
-```
-
-```cpp
-#include "autd3/link/soem.hpp"
-
-autd3::link::SOEM::builder()
-    .with_sync0_cycle(2)
-    .with_send_cycle(2)
-```
-
-```cs
-SOEM.Builder()
-    .WithSync0Cycle(2)
-    .WithSendCycle(2)
-```
-
-```python
-from pyautd3.link.soem import SOEM
-
-SOEM.builder()\
-    .with_sync0_cycle(2)\
-    .with_send_cycle(2)
-```
-
-This value should be as small as possible without causing an error.
-
-### Timer strategy
-
-EhterCAT works by sending frames periodically at regular intervals.
-You can specify how to send these periodic frames with `timer_strategy`.
-
-```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::SOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_timer_strategy(TimerStrategy::BusyWait)
-# ).await?;
-# Ok(())
-# }
-```
-
-```cpp
-#include "autd3/link/soem.hpp"
-
-autd3::link::SOEM::builder()
-    .with_timer_strategy(autd3::TimerStrategy::BusyWait)
-```
-
-```cs
-SOEM.Builder()
-    .WithTimerStrategy(TimerStrategy.BusyWait)
-```
-
-```python
-from pyautd3 import TimerStrategy
-from pyautd3.link.soem import SOEM
-
-SOEM.builder()\
-    .with_timer_strategy(TimerStrategy.BusyWait)
-```
-
-* `Sleep`       : Use sleep function. Low resolution but low CPU load.
-* `BusyWait`    : Use busywait (spinloop). High resolution but high CPU load.
-* `NativeTimer` : Use OS native timer.
-    - TimerQueueTimer on Windows, POSIX timer on Linux, Grand Central Dispatch Timer on macOS
-
-The default is `Sleep`.
-
-### Sync mode
-
-You can set the EtherCAT sync mode (`DC` or `FreeRun`) with `with_sync_mode`.
-
-- Please refer to [Beckhoff's explanation](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for details.
-
-
-```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::{SOEM, SyncMode};
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-SOEM::builder()
-    .with_sync_mode(SyncMode::DC)
-# ).await?;
-# Ok(())
-# }
-```
-
-```cpp
-#include "autd3/link/soem.hpp"
-
-autd3::link::SOEM::builder()
-    .with_sync_mode(autd3::link::SyncMode::DC)
-```
-
-```cs
-SOEM.Builder()
-    .WithSyncMode(SyncMode.Dc)
-```
-
-```python
-from pyautd3.link.soem import SOEM, SyncMode
-
-SOEM.builder()\
-    .with_sync_mode(SyncMode.DC)
-```
-
-The default is `FreeRun`.
+- `ifname`: Network interface name. The default is blank, and if it is blank, the network interface to which the AUTD3 device is connected is automatically selected.
+- `buf_size`: Send queue buffer size. Usually, you don't need to change it.
+- `on_err`: Callback when some error occurs. The callback function takes an error message as an argument.
+- `state_check_interval`: Interval to check if there is an error. The default is $\SI{100}{ms}$.
+- `on_lost`: Callback when an unrecoverable error (e.g., cable is disconnected) occurs.[^fn_soem_err] The callback function takes an error message as an argument.
+- `sync0_cycle`: Synchronization signal cycle. The default is 2 (unit is $\SI{500}{us}$).
+- `send_cycle`: Send cycle. The default is 2 (unit is $\SI{500}{us}$).
+    - `SOEM` may become unstable when a large number of devices are connected[^fn_soem]. In this case, increase the values of `sync0_cycle` and `send_cycle`. These values should be as small as possible without causing errors. The default is 2, and the value depends on the number of devices connected. For example, if there are 9 devices, set the value to 3 or 4.
+- `timer_strategy`: Timer strategy. The default is `Sleep`.
+    - `Sleep`       : Use standard library sleep
+    - `BusyWait`    : Use busy wait. High resolution but high CPU load.
+    - `NativeTimer` : Use OS timer function
+        - TimerQueueTimer on Windows, POSIX timer on linux, Grand Central Dispatch Timer on macOS
+- `sync_mode`: Synchronization mode. See [Beckhoff's explanation](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for details.
 
 # RemoteSOEM
 
@@ -376,38 +83,19 @@ Set port number and click "Run" button.
 `RemoteSOEM` constructor takes <server ip address:port> as an argument.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_soem;
-# use autd3::prelude::*;
-use autd3_link_soem::RemoteSOEM;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-RemoteSOEM::builder("172.16.99.104:8080".parse()?)
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/remote_soem_0.rs}}
 ```
 
 ```cpp
-#include "autd3/link/soem.hpp"
-
-autd3::link::RemoteSOEM::builder("172.16.99.104:8080")
+{{#include ../../../codes/Users_Manual/link/remote_soem_0.cpp}}
 ```
 
 ```cs
-RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.16.99.104"), 8080))
+{{#include ../../../codes/Users_Manual/link/remote_soem_0.cs}}
 ```
 
 ```python
-from pyautd3.link.soem import RemoteSOEM
-
-RemoteSOEM.builder("172.16.99.104:8080")
+{{#include ../../../codes/Users_Manual/link/remote_soem_0.py}}
 ```
 
 ## SOEMAUTDServer

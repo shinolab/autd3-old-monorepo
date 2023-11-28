@@ -5,28 +5,19 @@
 コンストラクタには周波数$f$を整数で指定する.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Sine::new(150);
-# }
+{{#include ../../../codes/Users_Manual/modulation/sine_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(150);
+{{#include ../../../codes/Users_Manual/modulation/sine_0.cpp}}
 ```
 
 ```cs
-var m = new Sine(150);
+{{#include ../../../codes/Users_Manual/modulation/sine_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Sine
-
-m = Sine(150)
+{{#include ../../../codes/Users_Manual/modulation/sine_0.py}}
 ```
 
 ## 振幅とオフセットの指定
@@ -41,30 +32,17 @@ $$
 ただし, 上記で$\[0, 1\]$を超えるような値は$\[0, 1\]$に収まるように変換される.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Sine::new(150)
-        .with_amp(1.0)
-        .with_offset(0.5);
-# }
+{{#include ../../../codes/Users_Manual/modulation/sine_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(150)
-                .with_intensity(EmitIntensity::MAX)
-                .with_offset(0.5);
+{{#include ../../../codes/Users_Manual/modulation/sine_1.cpp}}
 ```
 
 ```cs
-var m = new Sine(150)
-        .WithAmp(1)
-        .WithOffset(0.5);
+{{#include ../../../codes/Users_Manual/modulation/sine_1.cs}}
 ```
 
 ```python
-m = Sine(150).with_amp(1).with_offset(0.5)
+{{#include ../../../codes/Users_Manual/modulation/sine_1.py}}
 ```

@@ -20,95 +20,27 @@ As a rough outline,
 To configure the silencer, send `Silencer` to the controller.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let config = Silencer::default();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/silencer_0.rs}}
 ```
 
 ```cpp
-autd3::Silencer config;
-autd.send(config);
+{{#include ../../codes/Users_Manual/silencer_0.cpp}}
 ```
 
 ```cs
-var config = new Silencer();
-autd.Send(config);
+{{#include ../../codes/Users_Manual/silencer_0.cs}}
 ```
 
 ```python
-from pyautd3 import Silencer
-
-config = Silencer()
-autd.send(config)
+{{#include ../../codes/Users_Manual/silencer_0.py}}
 ```
 
 You can set `step` to `Silencer`.
 Refer to the followwing for details.
 Roughly, the smaller the `step`, the quieter it becomes.
 
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-# let step_intensity = 256;
-# let step_phase = 256;
-let config = Silencer::new(step_intensity, step_phase);
-# Ok(())
-# }
-```
-
-```cpp
-autd3::Silencer config(step);
-```
-
-```cs
-var config = new Silencer(step);
-```
-
-```python
-config = Silencer(step)
-```
-
-## Disabling Silencer
-
 The silencer is enabled by default.
-To disable the silencer, do the following.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let config = Silencer::disable();
-# Ok(())
-# }
-```
-
-```cpp
-const auto config = autd3::Silencer::disable();
-```
-
-```cs
-var config = Silencer.Disable();
-```
-
-```python
-config = Silencer.disable()
-```
+To disable the silencer, send `Silencer::disable`.
 
 ## Phase change by Silencer
 

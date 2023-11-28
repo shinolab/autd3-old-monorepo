@@ -11,37 +11,41 @@ void on_lost(const char* msg) {
 
 int main() try {
   // create and open controller
-  auto autd = autd3::Controller::builder()
-                  // The first argument is the position, the second is the rotation.
-                  // The position is the origin of the device in the global coordinate system you set.
-                  // The rotation is specified in ZYZ Euler angles or quaternions.
-                  // Here, neither rotation nor translation is assumed.
-                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                  .open_with(autd3::link::SOEM::builder().with_on_lost(&on_lost));
+  auto autd =
+      autd3::ControllerBuilder()
+          // The  argument is the position.
+          // The position is the origin of the device in the global coordinate
+          // system you set.
+          .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
+          .open_with_async(autd3::link::SOEM::builder().with_on_lost(&on_lost))
+          .get();
 
   // check firmware version
-  const auto firm_infos = autd.firmware_infos();
-  std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
+  const auto firm_infos = autd.firmware_infos_async().get();
+  std::copy(firm_infos.begin(), firm_infos.end(),
+            std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
-  // Silencer is used to quiet down the transducers' noise by passing the phase/amplitude parameters through a low-pass filter.
+  // Silencer is used to quiet down the transducers' noise by passing the
+  // phase/amplitude parameters through a low-pass filter.
   autd3::Silencer silencer;
-  autd.send(silencer);
+  autd.send_async(silencer).get();
 
   // focus is 150.0 mm above array center
-  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  const autd3::Vector3 focus =
+      autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
 
   // Amplitude Modulation of 150 Hz sine wave
   autd3::modulation::Sine m(150);
 
   // send data
-  autd.send(m, g);
+  autd.send_async(m, g).get();
 
   std::cout << "press enter to finish..." << std::endl;
   std::cin.ignore();
 
   // close controller
-  autd.close();
+  (void)autd.close_async().get();
 
   return 0;
 } catch (std::exception& ex) {

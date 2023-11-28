@@ -3,27 +3,19 @@
 `Uniform` set the same amplitude and phase to all transducers.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-let g = autd3::gain::Uniform::new(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/gain/uniform_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Uniform(1.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_0.cpp}}
 ```
 
 ```cs
-var g = new Uniform(1.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_0.cs}}
 ```
 
 ```python
-from pyautd3.gain import Uniform
-
-g = Uniform(1.0)
+{{#include ../../../codes/Users_Manual/gain/uniform_0.py}}
 ```
 
 Specify the amplitude in the constructor of `Uniform`.
@@ -33,27 +25,19 @@ Specify the amplitude in the constructor of `Uniform`.
 `with_phase` method sets the phase.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-let g = autd3::gain::Uniform::new(EmitIntensity::MAX).with_phase(0.0);
-# }
+{{#include ../../../codes/Users_Manual/gain/uniform_1.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Uniform(1.0).with_phase(0.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_1.cpp}}
 ```
 
 ```cs
-var g = new Uniform(1.0).WithPhase(0.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_1.cs}}
 ```
 
 ```python
-from pyautd3.gain import Uniform
-
-g = Uniform(1.0).with_phase(0.0)
+{{#include ../../../codes/Users_Manual/gain/uniform_1.py}}
 ```
 
 The default phase is $0$.

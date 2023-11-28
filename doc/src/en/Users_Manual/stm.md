@@ -13,13 +13,9 @@ The SDK provides `FocusSTM` that supports only a single focus and `GainSTM` that
 
 Get the frequency of STM.
 
-### sampling_frequency
+### sampling_config
 
-Get the sampling frequency of STM.
-
-### sampling_frequency_division
-
-Get the sampling frequency division of STM.
+Get the sampling configuration of STM.
 
 ### start_idx/finish_idx
 
@@ -27,28 +23,19 @@ Get the sampling frequency division of STM.
 To specify this, use `with_start_idx` as follows.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder().open_with(autd3::link::Nop::builder()).await?;
-let stm = FocusSTM::new(1.0).with_start_idx(Some(0));
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/stm_0.rs}}
 ```
 
 ```cpp
-auto stm = autd3::FocusSTM(1).with_start_idx(0);
+{{#include ../../codes/Users_Manual/stm_0.cpp}}
 ```
 
 ```cs
-var stm = new FocusSTM(1).WithStartIdx(0);
+{{#include ../../codes/Users_Manual/stm_0.cs}}
 ```
 
 ```python
-stm = FocusSTM(1).with_start_idx(0)
+{{#include ../../codes/Users_Manual/stm_0.py}}
 ```
 
 This allows you to start from the focus/`Gain` specified by the index `start_idx`.
@@ -63,23 +50,17 @@ The STM output a focus/`Gain` one before `finish_idx`, and then the STM ends.
 To disable these settings, do the following.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main() {
-let stm = FocusSTM::new(1.0).with_start_idx(None);
-# }
+{{#include ../../codes/Users_Manual/stm_1.rs}}
 ```
 
 ```cpp
-auto stm = autd3::FocusSTM(1).with_start_idx(std::nullopt);
+{{#include ../../codes/Users_Manual/stm_1.cpp}}
 ```
 
 ```cs
-var stm = new FocusSTM(1).WithStartIdx(null);
+{{#include ../../codes/Users_Manual/stm_1.cs}}
 ```
 
 ```python
-stm = FocusSTM(1).with_start_idx(None)
+{{#include ../../codes/Users_Manual/stm_1.py}}
 ```

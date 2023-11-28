@@ -9,24 +9,17 @@
 </figure>
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main() {
-let m = Sine::new(150).with_radiation_pressure();
-# }
+{{#include ../../../codes/Users_Manual/modulation/radiation_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Sine(150).with_radiation_pressure();
+{{#include ../../../codes/Users_Manual/modulation/radiation_0.cpp}}
 ```
 
 ```cs
-var m = new Sine(150).WithRadiationPressure();
+{{#include ../../../codes/Users_Manual/modulation/radiation_0.cs}}
 ```
 
 ```python
-m = Sine(150).with_radiation_pressure()
+{{#include ../../../codes/Users_Manual/modulation/radiation_0.py}}
 ```
