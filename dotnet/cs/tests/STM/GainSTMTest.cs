@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,7 +75,7 @@ public class GainSTMTest
             Assert.Equal(0, autd.Link.StmFinishIdx(dev.Idx));
         }
 
-        stm = GainSTM.NewWithSamplingConfiguration(SamplingConfiguration.NewWithFrequencyDivision(512)).AddGain(new Uniform(EmitIntensity.Max)).AddGain(new Uniform(new EmitIntensity(0x80)));
+        stm = GainSTM.NewWithSamplingConfig(SamplingConfiguration.NewWithFrequencyDivision(512)).AddGain(new Uniform(EmitIntensity.Max)).AddGain(new Uniform(new EmitIntensity(0x80)));
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingConfiguration.Frequency);

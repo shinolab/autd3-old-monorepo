@@ -14,7 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 from pathlib import Path
 
-from pyautd3.internal.modulation import IModulationWithFreqDiv
+from pyautd3.internal.modulation import IModulationWithSamplingConfig
 from pyautd3.internal.utils import _validate_ptr
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
@@ -22,7 +22,7 @@ from pyautd3.native_methods.autd3capi_modulation_audio_file import (
 )
 
 
-class RawPCM(IModulationWithFreqDiv):
+class RawPCM(IModulationWithSamplingConfig):
     """Modulation constructed from a raw PCM data.
 
     The data must be 8bit unsinged integer.
