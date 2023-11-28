@@ -3,43 +3,19 @@
 `Transform`は`Gain`になんらかの後処理を適用するための機能である.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main() {
-let g = Uniform::new(EmitIntensity::MAX).with_transform(|dev, tr, d| Drive {
-    intensity: EmitIntensity::new(d.intensity.value() / 2),
-    phase: d.phase + PI,
-});
-# }
+{{#include ../../../codes/Users_Manual/gain/transform_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Uniform(1.0).with_transform([](const autd3::Device& dev, const autd3::Transducer& tr,  autd3::Drive d) -> autd3::Drive
-{
-        d.amp -= 0.5;
-        d.phase += autd3::pi;
-        return d;
-});
+{{#include ../../../codes/Users_Manual/gain/transform_0.cpp}}
 ```
 
 ```cs
-var g = new Uniform(1.0).WithTransform((dev, tr, d) =>
-{
-    d.Amp -= 0.5;
-    d.Phase += AUTD3.Pi;
-    return d;
-});
+{{#include ../../../codes/Users_Manual/gain/transform_0.cs}}
 ```
 
 ```python
-def f(dev, tr, d):
-    d.amp -= 0.5
-    d.phase += np.pi
-    return d
-g = Uniform(1.0).with_transform(f)
+{{#include ../../../codes/Users_Manual/gain/transform_0.py}}
 ```
 
 `with_transform`の引数は`Fn(&Device, &Transducer, &Drive) -> Drive`であり, 第1引数はデバイス, 第2引数は振動子, 第3引数は元の振幅/位相データである.

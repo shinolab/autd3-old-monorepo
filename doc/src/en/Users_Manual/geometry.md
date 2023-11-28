@@ -23,36 +23,19 @@ The left device is the first device, and the right device is the second device.
 Then, the code is as follows.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.)))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_0.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+{{#include ../../codes/Users_Manual/geometry_0.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
+{{#include ../../codes/Users_Manual/geometry_0.cs}}
 ```
 
 ```python
-auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_0.py}}
 ```
 
 Here, the first argument of the `AUTD3` constructor is the position, and the second argument is the rotation.
@@ -68,36 +51,19 @@ And, for example, suppose you have two devices as shown in the figure above, whe
 Then, the code is as follows.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.)))
-    .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_1.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+{{#include ../../codes/Users_Manual/geometry_1.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(new Vector3d(-AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+{{#include ../../codes/Users_Manual/geometry_1.cs}}
 ```
 
 ```python
-auto = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([-AUTD3.device_width(), 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_1.py}}
 ```
 
 <figure>
@@ -108,36 +74,19 @@ Furthermore, for example, suppose you have two devices as shown in the figure ab
 Then, the code is as follows.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let autd = Controller::builder()
-    .add_device(AUTD3::new(Vector3::zeros()))
-    .add_device(AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH)).with_rotation(EulerAngle::ZYZ(0. * Rad, PI/2.0 * Rad, 0. * Rad)))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_2.rs}}
 ```
 
 ```cpp
-auto autd = autd3::Controller::builder()
-                .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi/2.0, 0)))
+{{#include ../../codes/Users_Manual/geometry_2.cpp}}
 ```
 
 ```cs
-var autd = Controller.Builder()
-    .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
-    .AddDevice(new AUTD3(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi/2, 0)))
+{{#include ../../codes/Users_Manual/geometry_2.cs}}
 ```
 
 ```python
-autd = Controller.builder()\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))\
-        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, AUTD3.device_width()], [0.0, np.pi/2, 0.0]))\
+{{#include ../../codes/Users_Manual/geometry_2.py}}
 ```
 
 <figure>
@@ -152,70 +101,24 @@ Also, each device has 249 transducers, and local indices are assigned ([see the 
 
 ## Geometry API
 
-### num_devices/num_transducers
-
-You can get the number of devices and transducers by `num_devices` and `num_transducers` methods.
+- `num_devices`: Get the number of devices
+- `num_transducers`: Get the number of all transducers
+- `center`: Get the center of all transducers
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let num_dev = autd.geometry.num_devices();
-let num_tr = autd.geometry.num_transducers();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_3.rs}}
 ```
 
 ```cpp
-const auto num_dev = autd.geometry().num_devices();
-const auto num_tr= autd.geometry().num_transducers();
+{{#include ../../codes/Users_Manual/geometry_3.cpp}}
 ```
 
 ```cs
-var numDev = autd.Geometry.NumDevices;
-var numTr = autd.Geometry.NumTransducers;
+{{#include ../../codes/Users_Manual/geometry_3.cs}}
 ```
 
 ```python
-num_dev = autd.geometry.num_devices
-num_tr = autd.geometry.num_transducers
-```
-
-### center
-
-You can get the center of all devices with `center`.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let center = autd.geometry.center();
-# Ok(())
-# }
-```
-
-```cpp
-const autd3::Vector3 center = autd.geometry().center();
-```
-
-```cs
-var center = autd.Geometry.Center;
-```
-
-```python
-center = autd.geometry.center
+{{#include ../../codes/Users_Manual/geometry_3.py}}
 ```
 
 ### Device access
@@ -223,598 +126,110 @@ center = autd.geometry.center
 `Geometry` is a container of `Device`.
 
 To access `Device`, use indexer.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let dev = &autd.geometry[0];
-# Ok(())
-# }
-```
-
-```cpp
-const auto& dev = autd.geometry()[0];
-```
-
-```cs
-var dev = autd.Geometry[0];
-```
-
-```python
-dev = autd.geometry[0]
-```
-
 Or, you can use an iterator.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-for dev in &autd.geometry {
-  // do something
-}
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/geometry_4.rs}}
 ```
 
 ```cpp
-for (const auto& dev : autd.geometry()){
-  // do something
-}
+{{#include ../../codes/Users_Manual/geometry_4.cpp}}
 ```
 
 ```cs
-foreach (var dev in autd.Geometry) {
-  // do something
-}
+{{#include ../../codes/Users_Manual/geometry_4.cs}}
 ```
 
 ```python
-for dev in autd.geometry:
-  # do something
+{{#include ../../codes/Users_Manual/geometry_4.py}}
 ```
 
 ## Device API
 
-### Idx
-
-Get the index of the device with `idx` method.
-
-### Enable
-
-`enable` flag is a flag to enable/disable the device.
-If the flag is off, the device data will not be updated.
+- `idx`: Index of the device
+- `enable`: Enable flag. If it is off, the data of the device will not be updated.
+  - Note that this only controls whether the data is updated or not, and does not stop the output.
+- `sound_speed`: Get/set the speed of sound. The unit is mm/s.
+- `set_sound_speed_from_temp`: Set the sound speed from the temperature. The unit of the temperature is Celsius. The default sound speed is $340\times 10^{3}\,\mathrm{mm/s}$, which corresponds to the sound speed of air at about 15 degrees Celsius. Note that there is a function with the same name in `Geometry`, and you can set the sound speed from the temperature for all devices by using it.
+- `attenuation`: Get/set the attenuation coefficient. The unit is Np/mm.
+- `translate`: Apply translation
+- `rotate`: Apply rotation
+- `affine`: Apply affine transformation (translation/rotation)
+- `force_fan`: flag to force the fan to start in Auto mode.
+  - AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On. In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically. In Off mode, the fan is always off, and in On mode, the fan is always on. The fan mode is switched by the jumper switch next to the fan. As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.
+    <figure>
+      <img src="../fig/Users_Manual/fan.jpg"/>
+    <figcaption>Jumper switch to specify fan mode</figcaption>
+    </figure>
+  - `force_fan` flag is a flag to force the fan to start in Auto mode.
+  - The flag is actually updated when some data is sent. If you want to update only the flag, send `UpdateFlags`.
+- `reads_fpga_info`: flag to read the FPGA status. See [Controller/fpga_info](./controller.md#fpga_info) for details.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].enable = false;
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/device_0.rs}}
 ```
 
 ```cpp
-autd.geometry()[0].set_enable(false);
+{{#include ../../codes/Users_Manual/device_0.cpp}}
 ```
 
 ```cs
-autd.Geometry[0].Enable = false;
+{{#include ../../codes/Users_Manual/device_0.cs}}
 ```
 
 ```python
-autd.geometry[0].enable = False
+{{#include ../../codes/Users_Manual/device_0.py}}
 ```
-
-> NOTE: This flag controls whether the data is updated or not, and does not stop the output.
-
-### Speed of sound
-
-When calculating the phase of the transducer, there are some cases where the wavelength is required.
-The wavelength $\lambda$ of the sound wave is calculated from the sound speed $v$ and the frequency $f$ as $\lambda = v/f$.
-The `sound_speed` member of `Geometry` represents this sound speed $v$.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].sound_speed = 340e3;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_sound_speed(340e3);
-```
-
-```cs
-autd.Geometry[0].SoundSpeed = 340e3;
-```
-
-```python
-autd.geometry[0].sound_speed = 340e3
-```
-
-The unit of the sound speed is mm/s.
-
-You can also set the sound speed from the temperature.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].set_sound_speed_from_temp(15.);
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_sound_speed_from_temp(15);
-```
-
-```cs
-autd.Geometry[0].SetSoundSpeedFromTemp(15);
-```
-
-```python
-autd.geometry[0].set_sound_speed_from_temp(15)
-```
-
-The unit of the temperature is Celsius.
-
-### Attenuation coefficient
-
-In the SDK, the sound pressure $p(\br)$ at the position $\br$ of the emitted ultrasonic wave from the transducer is modeled as
-$$
-  p(\br) = \frac{D(\theta)}{\|\br\|}\rme^{-\|\br\|\alpha}\rme^{-\im k \|\br\|}
-$$
-where $D(\theta)$ is the directivity, $k = 2\pi / \lambda$ is the wave number, and $\alpha$ is the attenuation coefficient.
-`attenuation` member of `Device` represents this attenuation coefficient $\alpha$.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].attenuation = 0.;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].set_attenuation(0.0);
-```
-
-```cs
-autd.Geometry[0].Attenuation = 0.0;
-```
-
-```python
-autd.geometry[0].attenuation = 0.0
-```
-
-The unit of the attenuation coefficient is Np/mm
-
-The default value is 0.0.
-
-### Affine transformation
-
-To modify the position of the device added to `Geometry`, use the following functions.
-- `translate`
-- `rotate`
-- `affine`
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let t = Vector3::new(1., 0., 0.);
-let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
-autd.geometry[0].translate(t);
-autd.geometry[0].rotate(r);
-autd.geometry[0].affine(t, r);
-# Ok(())
-# }
-```
-
-```cpp
-const autd3::Vector3 t(1, 0, 0);
-const autd3::Quaternion r(1, 0, 0, 0);
-autd.geometry()[0].translate(t);
-autd.geometry()[0].rotate(r);
-autd.geometry()[0].affine(t, r);
-```
-
-```cs
-var t = new Vector3d(1, 0, 0);
-var r = new Quaterniond(1, 0, 0, 0);
-autd.Geometry[0].Translate(t);
-autd.Geometry[0].Rotate(r);
-autd.Geometry[0].Affine(t, r);
-```
-
-```python
-t = np.array([1.0, 0.0, 0.0])
-r = np.array([1.0, 0.0, 0.0, 0.0])
-autd.geometry[0].translate(t)
-autd.geometry[0].rotate(r)
-autd.geometry[0].affine(t, r)
-```
-
-### force_fan
-
-AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On.
-In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically.
-In Off mode, the fan is always off, and in On mode, the fan is always on.
-
-The fan mode is switched by the jumper switch next to the fan.
-As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.
-
-<figure>
-  <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>Jumper switch to specify fan mode</figcaption>
-</figure>
-
-`force_fan` flag is a flag to force the fan to start in Auto mode.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].force_fan = true;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].force_fan(true);
-```
-
-```cs
-autd.Geometry[0].ForceFan = true;
-```
-
-```python
-autd.geometry[0].force_fan = True
-```
-
-The flag is actually updated when some data is sent.
-If you want to update only the flag, send `UpdateFlags`.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().add_device(AUTD3::new(Vector3::zeros())).open_with(autd3::link::Nop::builder()).await?;
-autd.geometry[0].force_fan = true;
-autd.send(UpdateFlags::new()).await?;
-# Ok(())
-# }
-```
-
-```cpp
-autd.geometry()[0].force_fan(true);
-autd.send(autd3::UpdateFlags());
-```
-
-```cs
-autd.Geometry[0].ForceFan = true;
-autd.Send(new UpdateFlags());
-```
-
-```python
-autd.force_fan(True)
-autd.geometry[0].force_fan = True
-```
-
-## reads_fpga_info
-
-`reads_fpga_info` flag is a flag to read the FPGA status.
-
-See [Controller/fpga_info](./controller.md#fpga_info) for details.
 
 ### Transducer access
 
 `Device` is a container of `Transducer`, and `Transducer` contains information of each transducer.
 
 To access `Transducer`, use the indexer.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-let tr = &autd.geometry[0][0];
-# Ok(())
-# }
-```
-
-```cpp
-const auto& tr = autd.geometry()[0][0];
-```
-
-```cs
-var tr = autd.Geometry[0][0];
-```
-
-```python
-tr = autd.geometry[0][0]
-```
-
 Or, you can use an iterator.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-for tr in &autd.geometry[0] {
-  // do something
-}
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/device_1.rs}}
 ```
 
 ```cpp
-for (const auto& tr : autd.geometry()[0]) {
-  // do something
-}
+{{#include ../../codes/Users_Manual/device_1.cpp}}
 ```
 
 ```cs
-foreach (var tr in autd.Geometry[0]) {
-  // do something
-}
+{{#include ../../codes/Users_Manual/device_1.cs}}
 ```
 
 ```python
-for tr in autd.geometry[0]:
-  # do something
+{{#include ../../codes/Users_Manual/device_1.py}}
 ```
 
 ## Transducer API
 
-### tr_idx
+Following methods are available for `Transducer`.
 
-Get the local index of the transducer.
+- `tr_idx`: Get the local index of the transducer.
+- `dev_idx`: Get the index of the device to which the transducer belongs.
+- `position`: Get the position of the transducer.
+- `rotation`: Get the rotation of the transducer. The rotation is represented by a quaternion.
+- `x_direction`: Get the x direction vector of the transducer.
+- `y_direction`: Get the y direction vector of the transducer.
+- `z_direction`: Get the z direction vector of the transducer.
+- `wavelength`: Get the wavelength of the transducer. You need to pass the sound speed as an argument.
+- `wavenumber`: Get the wavenumber of the transducer. You need to pass the sound speed as an argument.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let idx = tr.tr_idx();
-# Ok(())
-# }
+{{#include ../../codes/Users_Manual/transducer_0.rs}}
 ```
 
 ```cpp
-const auto idx = tr.local_idx();
+{{#include ../../codes/Users_Manual/transducer_0.cpp}}
 ```
 
 ```cs
-var idx = tr.LocalIdx;
+{{#include ../../codes/Users_Manual/transducer_0.cs}}
 ```
 
 ```python
-idx = tr.local_idx
-```
-
-### position/rotation
-
-Get the position and rotation of the transducer.
-The rotation is represented by a quaternion.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let position = tr.position();
-let rotation = tr.rotation();
-# Ok(())
-# }
-```
-
-```cpp
-const auto position = tr.position();
-const auto rotation = tr.rotation();
-```
-
-```cs
-var position = tr.Position;
-var rotation = tr.Rotation;
-```
-
-```python
-position = tr.position
-rotation = tr.rotation
-```
-
-### x_direction/y_direction/z_direction
-
-Get the direction of the transducer.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let tr = &autd.geometry[0][0];
-let x_dir = tr.x_direction();
-let y_dir = tr.y_direction();
-let z_dir = tr.z_direction();
-# Ok(())
-# }
-```
-
-```cpp
-const auto x_dir = tr.x_direction();
-const auto y_dir = tr.y_direction();
-const auto z_dir = tr.z_direction();
-```
-
-```cs
-var xDir = tr.XDirection;
-var yDir = tr.YDirection;
-var zDir = tr.ZDirection;
-```
-
-```python
-x_dir = tr.x_direction
-y_dir = tr.y_direction
-z_dir = tr.z_direction
-```
-
-### mod_delay
-
-Set/get the modulation delay of the transducer.
-
-See [Modulation](./modulation.md) for more details.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let mut tr = &mut autd.geometry[0][0];
-let delay = tr.mod_delay();
-tr.set_mod_delay(0);
-# Ok(())
-# }
-```
-
-```cpp
-const auto delay = tr.mod_delay();
-tr.set_mod_delay(0);
-```
-
-```cs
-var delay = tr.ModDelay;
-tr.ModDelay = 0;
-```
-
-```python
-delay = tr.mod_delay
-tr.mod_delay = 0
-```
-
-### wavelength/wavenumber
-
-Get the wavelength and wavenumber of the transducer.
-
-You need to pass the speed of sound as an argument to `wavelength` and `wavenumber`.
-
-```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# 
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#    .open_with(autd3::link::Nop::builder()).await?;
-# let sound_speed = autd.geometry[0].sound_speed;
-# let mut tr = &mut autd.geometry[0][0];
-let wavelen = tr.wavelength(sound_speed);
-let wavenum = tr.wavenumber(sound_speed);
-# Ok(())
-# }
-```
-
-```cpp
-const auto wavelen = tr.wavelength(sound_speed);
-const auto wavenum = tr.wavenumber(sound_speed);
-```
-
-```cs
-var wavelen = tr.Wavelength(soundSpeed);
-var wavenum = tr.Wavenumber(soundSpeed);
-```
-
-```python
-wavelen = tr.wavelength(sound_speed)
-wavenum = tr.wavenumber(sound_speed)
+{{#include ../../codes/Users_Manual/transducer_0.py}}
 ```

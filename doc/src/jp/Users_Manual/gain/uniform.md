@@ -3,27 +3,19 @@
 `Uniform`はすべての振動子に同じ位相/振幅を設定する.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-let g = autd3::gain::Uniform::new(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/gain/uniform_0.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Uniform(1.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_0.cpp}}
 ```
 
 ```cs
-var g = new Uniform(1.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_0.cs}}
 ```
 
 ```python
-from pyautd3.gain import Uniform
-
-g = Uniform(1.0)
+{{#include ../../../codes/Users_Manual/gain/uniform_0.py}}
 ```
 
 コンストラクタには振幅を指定する.
@@ -33,27 +25,19 @@ g = Uniform(1.0)
 `with_phase`にて, 位相を指定できる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-# #[allow(unused_variables)]
-# fn main()  {
-let g = autd3::gain::Uniform::new(EmitIntensity::MAX).with_phase(0.0);
-# }
+{{#include ../../../codes/Users_Manual/gain/uniform_1.rs}}
 ```
 
 ```cpp
-const auto g = autd3::gain::Uniform(1.0).with_phase(0.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_1.cpp}}
 ```
 
 ```cs
-var g = new Uniform(1.0).WithPhase(0.0);
+{{#include ../../../codes/Users_Manual/gain/uniform_1.cs}}
 ```
 
 ```python
-from pyautd3.gain import Uniform
-
-g = Uniform(1.0).with_phase(0.0)
+{{#include ../../../codes/Users_Manual/gain/uniform_1.py}}
 ```
 
 デフォルトの位相は$0$である.

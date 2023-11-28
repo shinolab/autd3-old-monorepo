@@ -16,54 +16,19 @@ You can select the backend for the calculation of the algorithm from the followi
 * `CUDABackend` - uses CUDA, which runs on GPUs
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_gain_holo;
-# use autd3::prelude::*;
-use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Pascal};
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let x1 = 0.;
-# let y1 = 0.;
-# let z1 = 0.;
-# let x2 = 0.;
-# let y2 = 0.;
-# let z2 = 0.;
-let backend = NalgebraBackend::new()?;
-
-let g = GSPAT::new(backend)
-      .add_focus(Vector3::new(x1, y1, z1), 5e3 * Pascal)
-      .add_focus(Vector3::new(x2, y2, z2), 5e3 * Pascal);
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/gain/holo_0.rs}}
 ```
 
 ```cpp
-#include "autd3/gain/holo.hpp"
-
-const auto backend = std::make_shared<autd3::gain::holo::NalgebraBackend>();
-
-auto g = autd3::gain::holo::GSPAT(backend)
-            .add_focus(autd3::Vector3(x1, y1, z1), 1.0)
-            .add_focus(autd3::Vector3(x2, y2, z2), 1.0);
+{{#include ../../../codes/Users_Manual/gain/holo_0.cpp}}
 ```
 
 ```cs
-var backend = new NalgebraBackend();
-
-var g = new GSPAT<NalgebraBackend>(backend)
-            .AddFocus(new Vector3d(x1, y1, z1), 1.0)
-            .AddFocus(new Vector3d(x2, y2, z2), 1.0);
+{{#include ../../../codes/Users_Manual/gain/holo_0.cs}}
 ```
 
 ```python
-from pyautd3.gain.holo import GSPAT, NalgebraBackend
-
-backend = NalgebraBackend()
-
-g = GSPAT(backend).add_focus([x1, y1, z1], 1.0).add_focus([x2, y2, z2], 1.0)
+{{#include ../../../codes/Users_Manual/gain/holo_0.py}}
 ```
 
 The constructor argument of each algorithm is `backend`.
@@ -81,42 +46,19 @@ This can be controlled by `with_constraint`, and one of the following four must 
 - Clamp: Clamp the amplitude to the specified range.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_gain_holo;
-# use autd3::prelude::*;
-use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, EmissionConstraint};
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let x1 = 0.;
-# let y1 = 0.;
-# let z1 = 0.;
-# let x2 = 0.;
-# let y2 = 0.;
-# let z2 = 0.;
-let backend = NalgebraBackend::new()?;
-
-let g = GSPAT::new(backend)
-      .with_constraint(EmissionConstraint::Uniform(EmitIntensity::MAX));
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/gain/holo_1.rs}}
 ```
 
 ```cpp
-auto g = autd3::gain::holo::GSPAT(backend)
-		.with_constraint(autd3::gain::holo::AmplitudeConstraint::uniform(1.));
+{{#include ../../../codes/Users_Manual/gain/holo_1.cpp}}
 ```
 
 ```cs
-var g = new GSPAT<NalgebraBackend>(backend).WithConstraint(new Uniform(1.0));
+{{#include ../../../codes/Users_Manual/gain/holo_1.cs}}
 ```
 
 ```python
-from pyautd3.gain.holo import AmplitudeConstraint
-
-g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
+{{#include ../../../codes/Users_Manual/gain/holo_1.py}}
 ```
 
 ## Optimization parameters
@@ -124,41 +66,21 @@ g = GSPAT(backend).with_constraint(AmplitudeConstraint.uniform(1.0))
 Each algorithm has additional parameters.
 These are all specified by `with_xxx`.
 
-- e.g.,
-    ```rust,edition2021
-    # extern crate autd3;
-    # extern crate tokio;
-    # extern crate autd3_gain_holo;
-    # use autd3::prelude::*;
-    # use autd3_gain_holo::{LinAlgBackend, NalgebraBackend, GSPAT, Pascal};
-    # #[allow(unused_variables)]
-    # #[tokio::main]
-    # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    # let x1 = 0.;
-    # let y1 = 0.;
-    # let z1 = 0.;
-    # let x2 = 0.;
-    # let y2 = 0.;
-    # let z2 = 0.;
-    # let backend = NalgebraBackend::new()?;
-    let g = GSPAT::new(backend).with_repeat(100)
-    #    .add_focus(Vector3::new(x1, y1, z1), 5e3 * Pascal)
-    #    .add_focus(Vector3::new(x2, y2, z2), 5e3 * Pascal);
-    # Ok(())
-    # }
-    ```
+```rust,edition2021
+{{#include ../../../codes/Users_Manual/gain/holo_2.rs}}
+```
 
-    ```cpp
-    autd3::gain::holo::GSPAT g(backend).with_repeat(100);
-    ```
+```cpp
+{{#include ../../../codes/Users_Manual/gain/holo_2.cpp}}
+```
 
-    ```cs
-    var g = new GSPAT(backend).WithRepeat(100);
-    ```
+```cs
+{{#include ../../../codes/Users_Manual/gain/holo_2.cs}}
+```
 
-    ```python
-    g = GSPAT(backend).with_repeat(100)
-    ```
+```python
+{{#include ../../../codes/Users_Manual/gain/holo_2.py}}
+```
 
 Please refar to each paper for more details.
 

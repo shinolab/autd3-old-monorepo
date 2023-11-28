@@ -5,64 +5,39 @@
 コンストラクタには周波数$f$を整数で指定する.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_0.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150);
+{{#include ../../../codes/Users_Manual/modulation/square_0.cpp}}
 ```
 
 ```cs
-var m = new Square(150);
+{{#include ../../../codes/Users_Manual/modulation/square_0.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150)
+{{#include ../../../codes/Users_Manual/modulation/square_0.py}}
 ```
 
 ## 振幅の指定
 
 Low/Highレベルの振幅はそれぞれ, `with_low`, `with_high`で指定できる.
 
-
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150)
-        .with_low(EmitIntensity::MIN)
-        .with_high(EmitIntensity::MAX);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_1.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150)
-        .with_low(0.)
-        .with_high(1.);
+{{#include ../../../codes/Users_Manual/modulation/square_1.cpp}}
 ```
 
 ```cs
-var m = new Square(150)
-        .WithLow(0)
-        .WithHigh(1);
+{{#include ../../../codes/Users_Manual/modulation/square_1.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150).with_low(0).with_high(1)
+{{#include ../../../codes/Users_Manual/modulation/square_1.py}}
 ```
 
 ## Duty比の指定
@@ -70,29 +45,17 @@ m = Square(150).with_low(0).with_high(1)
 `with_duty`で矩形波のDuty比を指定できる.
 
 ```rust,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# use autd3::prelude::*;
-
-# #[allow(unused_variables)]
-# fn main()  {
-let m = autd3::modulation::Square::new(150)
-        .with_duty(0.5);
-# }
+{{#include ../../../codes/Users_Manual/modulation/square_2.rs}}
 ```
 
 ```cpp
-const auto m = autd3::modulation::Square(150)
-        .with_duty(0.5);
+{{#include ../../../codes/Users_Manual/modulation/square_2.cpp}}
 ```
 
 ```cs
-var m = new Square(150)
-        .WithDuty(0.5);
+{{#include ../../../codes/Users_Manual/modulation/square_2.cs}}
 ```
 
 ```python
-from pyautd3.modulation import Square
-
-m = Square(150).with_duty(0.5)
+{{#include ../../../codes/Users_Manual/modulation/square_2.py}}
 ```

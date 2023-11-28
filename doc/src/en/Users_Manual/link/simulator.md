@@ -13,38 +13,19 @@ Before using this link, you need to start AUTD simulator.
 Simulator link's constructor takes a port number of AUTD simulator.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_simulator;
-# use autd3::prelude::*;
-use autd3_link_simulator::Simulator;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-Simulator::builder(8080)
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/simulator_0.rs}}
 ```
 
 ```cpp
-#include "autd3/link/simulator.hpp"
-
-autd3::link::Simulator::builder(8080)
+{{#include ../../../codes/Users_Manual/link/simulator_0.cpp}}
 ```
 
 ```cs
-Simulator.Builder(8080)
+{{#include ../../../codes/Users_Manual/link/simulator_0.cs}}
 ```
 
 ```python
-from pyautd3.link.simulator import Simulator
-
-Simulator.builder(8080)
+{{#include ../../../codes/Users_Manual/link/simulator_0.py}}
 ```
 
 ### AUTD simulator server IP address
@@ -52,42 +33,19 @@ Simulator.builder(8080)
 You can specify the IP address of the server running AUTD simulator with `with_server_ip`.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_simulator;
-# use autd3::prelude::*;
-use autd3_link_simulator::Simulator;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(
-Simulator::builder(8080)
-    .with_server_ip("127.0.0.1".parse()?)
-# ).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/simulator_1.rs}}
 ```
 
 ```cpp
-#include "autd3/link/simulator.hpp"
-
-autd3::link::Simulator::builder(8080)
-    .with_server_ip("127.0.0.1")
+{{#include ../../../codes/Users_Manual/link/simulator_1.cpp}}
 ```
 
 ```cs
-Simulator.Builder(8080)
-    .WithServerIp(IPAddress.Parse("127.0.0.1"))
+{{#include ../../../codes/Users_Manual/link/simulator_1.cs}}
 ```
 
 ```python
-from pyautd3.link.simulator import Simulator
-
-Simulator.builder(8080)\
-    .with_server_ip("127.0.0.1")
+{{#include ../../../codes/Users_Manual/link/simulator_1.py}}
 ```
 
 The default server IP address is localhost.
@@ -99,31 +57,17 @@ If you update `Geometry`, the geometry in the simulator side will not be updated
 To update `Geometry`, use `update_geometry` function.
 
 ```rust,should_panic,edition2021
-# extern crate autd3;
-# extern crate tokio;
-# extern crate autd3_link_simulator;
-# use autd3::prelude::*;
-use autd3_link_simulator::Simulator;
-
-# #[allow(unused_variables)]
-# #[tokio::main]
-# async fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder()
-#     .add_device(AUTD3::new(Vector3::zeros()))
-#            .open_with(Simulator::builder(8080)).await?;
-autd.link.update_geometry(&autd.geometry).await?;
-# Ok(())
-# }
+{{#include ../../../codes/Users_Manual/link/simulator_2.rs}}
 ```
 
 ```cpp
-autd.link<autd3::link::Simulator>().update_geometry(autd.geometry());
+{{#include ../../../codes/Users_Manual/link/simulator_2.cpp}}
 ```
 
 ```cs
-autd.Link<Simulator>().UpdateGeometry(autd.Geometry);
+{{#include ../../../codes/Users_Manual/link/simulator_2.cs}}
 ```
 
 ```python
-autd.link.update_geometry(autd.geometry)
+{{#include ../../../codes/Users_Manual/link/simulator_2.py}}
 ```
