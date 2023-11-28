@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ TEST(Gain_Holo, Greedy) {
                                      return std::make_pair(p, 5e3 * autd3::gain::holo::Pascal);
                                    }))
                .with_phase_div(16)
-               .with_constraint(autd3::gain::holo::AmplitudeConstraint::uniform(0x80));
+               .with_constraint(autd3::gain::holo::EmissionConstraint::uniform(0x80));
 
   ASSERT_TRUE(autd.send_async(g).get());
 

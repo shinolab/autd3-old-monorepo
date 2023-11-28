@@ -1,6 +1,7 @@
 # 17.0.2
 
 - Fix [#218](https://github.com/shinolab/autd3/issues/218): [C++/C#/Python] Transducer does not have tr_idx and dev_idx methods
+- Fix [#219](https://github.com/shinolab/autd3/issues/219): [C++] inconsistent name autd3::gain::holo::AmplitudeConstraint
 
 # 17.0.1
 
