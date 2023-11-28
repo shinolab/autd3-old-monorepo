@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ TEST(STMTest, FocusSTM) {
     ASSERT_EQ(0, autd.link().stm_finish_idx(dev.idx()));
   }
 
-  stm = autd3::internal::FocusSTM::new_with_sampling_configuration(autd3::internal::SamplingConfiguration::new_with_frequency_division(512))
+  stm = autd3::internal::FocusSTM::new_with_sampling_config(autd3::internal::SamplingConfiguration::new_with_frequency_division(512))
             .add_focus(center)
             .add_focus(center);
   ASSERT_TRUE(autd.send_async(stm).get());
