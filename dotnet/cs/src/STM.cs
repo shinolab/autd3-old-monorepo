@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -220,7 +220,7 @@ namespace AUTD3Sharp
                 return new GainSTM(null, period, null);
             }
 
-            public static GainSTM NewWithSamplingConfiguration(SamplingConfiguration config)
+            public static GainSTM NewWithSamplingConfig(SamplingConfiguration config)
             {
                 return new GainSTM(null, null, config);
             }

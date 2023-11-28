@@ -13,12 +13,12 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from pyautd3.emit_intensity import EmitIntensity
-from pyautd3.internal.modulation import IModulationWithFreqDiv
+from pyautd3.internal.modulation import IModulationWithSamplingConfig
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 
 
-class Square(IModulationWithFreqDiv):
+class Square(IModulationWithSamplingConfig):
     """Square wave modulation."""
 
     _freq: int
