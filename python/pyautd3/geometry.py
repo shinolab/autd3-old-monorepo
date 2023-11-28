@@ -180,17 +180,24 @@ class AUTD3:
 class Transducer:
     """Transducer."""
 
-    _local_idx: int
+    _dev_idx: int
+    _tr_idx: int
     _ptr: TransducerPtr
 
-    def __init__(self: "Transducer", local_idx: int, ptr: DevicePtr) -> None:
-        self._local_idx = local_idx
-        self._ptr = Base().transducer(ptr, local_idx)
+    def __init__(self: "Transducer", dev_idx: int, tr_idx: int, ptr: DevicePtr) -> None:
+        self._dev_idx = dev_idx
+        self._tr_idx = tr_idx
+        self._ptr = Base().transducer(ptr, tr_idx)
 
     @property
-    def local_idx(self: "Transducer") -> int:
+    def tr_idx(self: "Transducer") -> int:
         """Get the local index of the transducer."""
-        return self._local_idx
+        return self._tr_idx
+
+    @property
+    def dev_idx(self: "Transducer") -> int:
+        """Get the device index of the transducer."""
+        return self._dev_idx
 
     @property
     def position(self: "Transducer") -> np.ndarray:
@@ -268,10 +275,10 @@ class Device:
     _ptr: DevicePtr
     _transducers: list[Transducer]
 
-    def __init__(self: "Device", i: int, ptr: DevicePtr) -> None:
-        self._idx = i
+    def __init__(self: "Device", idx: int, ptr: DevicePtr) -> None:
+        self._idx = idx
         self._ptr = ptr
-        self._transducers = [Transducer(i, self._ptr) for i in range(int(Base().device_num_transducers(self._ptr)))]
+        self._transducers = [Transducer(idx, i, self._ptr) for i in range(int(Base().device_num_transducers(self._ptr)))]
 
     @property
     def idx(self: "Device") -> int:

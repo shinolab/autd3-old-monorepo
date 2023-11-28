@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2023
+ * Last Modified: 28/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,10 +74,10 @@ namespace AUTD3Sharp.Gain
                             if (key != null)
                             {
                                 if (!keymap.ContainsKey(key)) keymap[key] = k++;
-                                m[tr.LocalIdx] = keymap[key];
+                                m[tr.TrIdx] = keymap[key];
                             }
                             else
-                                m[tr.LocalIdx] = -1;
+                                m[tr.TrIdx] = -1;
                         }
 
                         fixed (int* p = m)

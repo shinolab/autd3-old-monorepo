@@ -199,7 +199,7 @@ async def test_device_translate():
         t = [1, 2, 3]
         dev.translate(t)
         for tr in dev:
-            assert np.allclose(tr.position, original_pos[tr.local_idx] + t)
+            assert np.allclose(tr.position, original_pos[tr.tr_idx] + t)
 
 
 @pytest.mark.asyncio()
@@ -223,19 +223,28 @@ async def test_device_affine():
         r = [0.70710678, 0.0, 0.0, 0.70710678]
         dev.affine(t, r)
         for tr in dev:
-            op = original_pos[tr.local_idx]
+            op = original_pos[tr.tr_idx]
             expected = np.array([-op[1], op[0], op[2]]) + t
             assert np.allclose(tr.position, expected)
             assert np.allclose(tr.rotation, r)
 
 
 @pytest.mark.asyncio()
-async def test_transducer_local_idx():
+async def test_transducer_dev_idx():
+    autd = await create_controller()
+
+    for dev in autd.geometry:
+        for tr in dev:
+            assert tr.dev_idx == dev.idx
+
+
+@pytest.mark.asyncio()
+async def test_transducer_tr_idx():
     autd = await create_controller()
 
     for dev in autd.geometry:
         for i, tr in enumerate(dev):
-            assert tr.local_idx == i
+            assert tr.tr_idx == i
 
 
 @pytest.mark.asyncio()

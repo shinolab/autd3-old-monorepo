@@ -37,11 +37,11 @@ async def test_group():
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         for tr in dev:
             if tr.position[0] < cx:
-                assert np.all(intensities[tr.local_idx] == 0x80)
-                assert np.all(phases[tr.local_idx] == 128)
+                assert np.all(intensities[tr.tr_idx] == 0x80)
+                assert np.all(phases[tr.tr_idx] == 128)
             else:
-                assert np.all(intensities[tr.local_idx] == 0)
-                assert np.all(phases[tr.local_idx] == 0)
+                assert np.all(intensities[tr.tr_idx] == 0)
+                assert np.all(phases[tr.tr_idx] == 0)
 
 
 @pytest.mark.asyncio()
