@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 __all__ = []  # type: ignore[var-annotated]
 
 M = TypeVar("M", bound="IModulation")
-MF = TypeVar("MF", bound="IModulationWithFreqDiv")
+MF = TypeVar("MF", bound="IModulationWithSamplingConfig")
 
 
 class IModulation(Datagram, metaclass=ABCMeta):
@@ -66,10 +66,10 @@ class IModulation(Datagram, metaclass=ABCMeta):
         pass
 
 
-class IModulationWithFreqDiv(IModulation):
+class IModulationWithSamplingConfig(IModulation):
     _config: SamplingConfiguration | None
 
-    def __init__(self: "IModulationWithFreqDiv") -> None:
+    def __init__(self: "IModulationWithSamplingConfig") -> None:
         super().__init__()
         self._config = None
 
