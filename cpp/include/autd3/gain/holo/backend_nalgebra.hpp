@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 28/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ class NalgebraBackend final : public Backend {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr sdp_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                      const AmplitudeConstraint v) const override {
+                                                                      const EmissionConstraint v) const override {
     return AUTDGainHoloSDPWithConstraint(ptr, v.ptr());
   }
 
@@ -64,7 +64,7 @@ class NalgebraBackend final : public Backend {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gs_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                     const AmplitudeConstraint v) const override {
+                                                                     const EmissionConstraint v) const override {
     return AUTDGainHoloGSWithConstraint(ptr, v.ptr());
   }
 
@@ -77,7 +77,7 @@ class NalgebraBackend final : public Backend {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr gspat_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                        const AmplitudeConstraint v) const override {
+                                                                        const EmissionConstraint v) const override {
     return AUTDGainHoloGSWithConstraint(ptr, v.ptr());
   }
 
@@ -86,7 +86,7 @@ class NalgebraBackend final : public Backend {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr naive_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                        const AmplitudeConstraint v) const override {
+                                                                        const EmissionConstraint v) const override {
     return AUTDGainHoloNaiveWithConstraint(ptr, v.ptr());
   }
 
@@ -116,7 +116,7 @@ class NalgebraBackend final : public Backend {
   }
 
   [[nodiscard]] internal::native_methods::GainPtr lm_with_constraint(const internal::native_methods::GainPtr ptr,
-                                                                     const AmplitudeConstraint v) const override {
+                                                                     const EmissionConstraint v) const override {
     return AUTDGainHoloLMWithConstraint(ptr, v.ptr());
   }
 };
