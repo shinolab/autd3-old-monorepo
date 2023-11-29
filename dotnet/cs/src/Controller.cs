@@ -681,6 +681,22 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
+    /// Datagram to configure debug output
+    /// </summary>
+    public sealed class ConfigureDebugOutoutIdx : IDatagram
+    {
+        private readonly List<Transducer> _tr = new List<Transducer>();
+
+        public ConfigureDebugOutoutIdx Set(Transducer tr)
+        {
+            _tr.Add(tr);
+            return this;
+        }
+
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => _tr.Aggregate(NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdx(), (ptr, tr) => NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdxSet(ptr, tr.Ptr));
+    }
+
+    /// <summary>
     /// Datagram to configure silencer
     /// </summary>
     public sealed class Silencer : IDatagram

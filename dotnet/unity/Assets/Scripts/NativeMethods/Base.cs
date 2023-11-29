@@ -203,6 +203,12 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureModDelay", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
+
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdxSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
 

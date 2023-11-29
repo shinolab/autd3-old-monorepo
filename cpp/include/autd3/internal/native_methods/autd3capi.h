@@ -73,6 +73,10 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
 
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
+
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+
 [[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
 [[nodiscard]]
