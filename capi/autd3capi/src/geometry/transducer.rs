@@ -13,10 +13,7 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{
-    common::{driver::geometry::Transducer, *},
-    DevicePtr, TransducerPtr,
-};
+use autd3capi_def::{driver::geometry::Transducer, *};
 
 #[no_mangle]
 #[must_use]

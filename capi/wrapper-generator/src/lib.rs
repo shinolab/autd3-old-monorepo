@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -96,6 +96,7 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "ResultDatagram".to_string(),
             "Drive".to_string(),
         ],
+        exclude: vec!["ConstPtr".to_string()],
         rename: vec![
             ("float".to_string(), "double".to_string()),
             ("ConstPtr".to_string(), "void*".to_string()),
@@ -167,6 +168,7 @@ pub fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
     let content = std::fs::read_to_string(&out_file)?;
     let content = content.replace("@float", if use_single { "float" } else { "double" });
     let content = content.replace("ConstPtr", "IntPtr");
+    let content = content.replace("void*", "IntPtr");
     let content = content.replace("SamplingConfiguration", "SamplingConfigurationRaw");
 
     let content = content.replace("internal enum CMap : byte", "public enum CMap : byte");

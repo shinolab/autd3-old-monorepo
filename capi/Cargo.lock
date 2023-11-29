@@ -224,22 +224,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "autd3capi-common"
+name = "autd3capi-def"
 version = "17.0.2"
 dependencies = [
+ "assert_approx_eq",
  "autd3",
  "autd3-derive",
  "autd3-driver",
  "autd3-gain-holo",
  "libc",
-]
-
-[[package]]
-name = "autd3capi-def"
-version = "17.0.2"
-dependencies = [
- "assert_approx_eq",
- "autd3capi-common",
  "memoffset",
  "wrapper-generator",
 ]

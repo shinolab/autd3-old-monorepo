@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,11 +14,8 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{
-    common::{
-        autd3::modulation::{IntoCache, ModulationCache},
-        *,
-    },
-    CachePtr, ModulationPtr,
+    autd3::modulation::{IntoCache, ModulationCache},
+    *,
 };
 
 #[repr(C)]
@@ -29,11 +26,11 @@ pub struct ResultCache {
     pub err: ConstPtr,
 }
 
-impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>>
+impl From<Result<autd3capi_def::autd3::modulation::ModulationCache, AUTDInternalError>>
     for ResultCache
 {
     fn from(
-        r: Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTDInternalError>,
+        r: Result<autd3capi_def::autd3::modulation::ModulationCache, AUTDInternalError>,
     ) -> Self {
         match r {
             Ok(v) => Self {
@@ -44,7 +41,7 @@ impl From<Result<autd3capi_def::common::autd3::modulation::ModulationCache, AUTD
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: CachePtr(NULL),
+                    result: CachePtr(std::ptr::null()),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }

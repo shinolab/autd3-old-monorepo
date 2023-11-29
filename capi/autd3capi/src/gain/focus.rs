@@ -4,17 +4,14 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3capi_def::{
-    common::{autd3::gain::Focus, driver::geometry::Vector3, *},
-    take_gain, GainPtr,
-};
+use autd3capi_def::{autd3::gain::Focus, driver::geometry::Vector3, *};
 
 #[no_mangle]
 #[must_use]

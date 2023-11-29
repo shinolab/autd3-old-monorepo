@@ -1,16 +1,6 @@
 [workspace]
 
 members = ["wrapper-generator", "autd3capi", "autd3capi-def", "autd3capi-gain-holo", "autd3capi-link-simulator", "autd3capi-link-soem", "autd3capi-link-twincat", "autd3capi-modulation-audio-file"]
-default-members = [
-    "wrapper-generator",
-    "autd3capi",
-    "autd3capi-def",
-    "autd3capi-gain-holo",
-    "autd3capi-link-simulator",
-    "autd3capi-link-soem",
-    "autd3capi-link-twincat",
-    "autd3capi-modulation-audio-file",
-]
 
 resolver = "2"
 

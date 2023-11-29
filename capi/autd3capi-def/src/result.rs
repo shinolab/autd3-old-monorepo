@@ -4,7 +4,7 @@
  * Created Date: 10/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,10 +16,9 @@ use std::{
     ffi::{c_char, CStr, CString},
 };
 
-use autd3capi_common::{
-    driver::common::Drive, libc, AUTDError, AUTDInternalError, ConstPtr, Controller,
-    DynamicDatagram, L, NULL,
-};
+use crate::{ConstPtr, DynamicDatagram, L};
+use autd3::prelude::*;
+use autd3_driver::{common::Drive, error::AUTDInternalError};
 
 use crate::{
     BackendPtr, ControllerPtr, DatagramPtr, GainCalcDrivesMapPtr, ModulationPtr, AUTD3_ERR,
@@ -141,7 +140,7 @@ impl From<Result<Controller<Box<L>>, AUTDError>> for ResultController {
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: ControllerPtr(NULL),
+                    result: ControllerPtr(std::ptr::null()),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }
@@ -169,7 +168,7 @@ impl From<Result<HashMap<usize, Vec<Drive>>, AUTDInternalError>> for ResultGainC
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: GainCalcDrivesMapPtr(NULL),
+                    result: GainCalcDrivesMapPtr(std::ptr::null()),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }
@@ -213,7 +212,7 @@ impl<T: DynamicDatagram> From<Result<T, AUTDInternalError>> for ResultDatagram {
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: DatagramPtr(NULL),
+                    result: DatagramPtr(std::ptr::null()),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }

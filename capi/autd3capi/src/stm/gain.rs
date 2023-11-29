@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,10 +14,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3_driver::datagram::STMProps;
-use autd3capi_def::{
-    common::{driver::datagram::GainSTM, *},
-    DatagramPtr, GainPtr, GainSTMMode, ResultDatagram, STMPropsPtr,
-};
+use autd3capi_def::{driver::datagram::GainSTM, *};
 
 #[no_mangle]
 #[must_use]
