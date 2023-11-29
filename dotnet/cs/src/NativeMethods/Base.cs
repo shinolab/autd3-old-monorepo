@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsBase
+    public static unsafe partial class NativeMethodsBase
     {
         const string __DllName = "autd3capi";
 
@@ -451,13 +451,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ControllerBuilderPtr
+    public unsafe partial struct ControllerBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultFirmwareInfoList
+    public unsafe partial struct ResultFirmwareInfoList
     {
         public FirmwareInfoListPtr result;
         public uint err_len;
@@ -465,7 +465,7 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultGroupKVMap
+    public unsafe partial struct ResultGroupKVMap
     {
         public GroupKVMapPtr result;
         public uint err_len;
@@ -473,13 +473,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkAuditBuilderPtr
+    public unsafe partial struct LinkAuditBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultCache
+    public unsafe partial struct ResultCache
     {
         public CachePtr result;
         public uint err_len;

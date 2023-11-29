@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsLinkSimulator
+    public static unsafe partial class NativeMethodsLinkSimulator
     {
         const string __DllName = "autd3capi_link_simulator";
 
@@ -35,13 +35,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkSimulatorBuilderPtr
+    public unsafe partial struct LinkSimulatorBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultLinkSimulatorBuilder
+    public unsafe partial struct ResultLinkSimulatorBuilder
     {
         public LinkSimulatorBuilderPtr result;
         public uint err_len;

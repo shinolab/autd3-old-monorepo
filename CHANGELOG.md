@@ -1,3 +1,11 @@
+# 17.0.3
+
+- Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
+
+# 17.0.2
+
+- Make `mod_delay` member in `Transducer` public
+
 # 17.0.2
 
 - Fix [#218](https://github.com/shinolab/autd3/issues/218): [C++/C#/Python] Transducer does not have tr_idx and dev_idx methods

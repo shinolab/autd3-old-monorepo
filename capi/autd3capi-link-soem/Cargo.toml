@@ -12,4 +12,4 @@ autd3capi-def = { path = "../autd3capi-def" }
 autd3-link-soem = { path = "../../src/autd3-link-soem", features = ["local", "remote", "sync"] }
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator" }

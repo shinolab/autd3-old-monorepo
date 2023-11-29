@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsLinkSOEM
+    public static unsafe partial class NativeMethodsLinkSOEM
     {
         const string __DllName = "autd3capi_link_soem";
 
@@ -77,19 +77,19 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkSOEMBuilderPtr
+    public unsafe partial struct LinkSOEMBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkRemoteSOEMBuilderPtr
+    public unsafe partial struct LinkRemoteSOEMBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultLinkRemoteSOEMBuilder
+    public unsafe partial struct ResultLinkRemoteSOEMBuilder
     {
         public LinkRemoteSOEMBuilderPtr result;
         public uint err_len;
