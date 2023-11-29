@@ -27,7 +27,8 @@ jobs:
         npm install
     - name: Check license
       run: |
-        cd license-checker
+        git submodule update --init tools/autd3-license-check
+        cd tools/license-checker
         cargo run
 
   build:
