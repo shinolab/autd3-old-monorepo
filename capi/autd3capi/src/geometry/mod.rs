@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ pub mod device;
 pub mod rotation;
 pub mod transducer;
 
-use autd3capi_def::{common::*, ControllerPtr, GeometryPtr};
+use autd3capi_def::*;
 
 #[no_mangle]
 #[must_use]

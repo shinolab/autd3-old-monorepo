@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,22 +13,40 @@
 
 #![allow(clippy::missing_safety_doc)]
 
+mod custom;
 mod drive;
+mod dynamic_datagram;
+mod dynamic_link;
 mod result;
 mod sampling_config;
 
-pub use autd3capi_common as common;
-pub use autd3capi_common::holo;
-
+pub use autd3::{controller::Controller, error::AUTDError};
+pub use autd3_driver::{
+    datagram::{Datagram, Gain, GainAsAny, GainFilter, Modulation, STMProps},
+    defined::float,
+    error::AUTDInternalError,
+    firmware_version::FirmwareInfo,
+    geometry::{Device, Geometry, Vector3},
+    link::{LinkSync, LinkSyncBuilder},
+};
+pub use custom::{CustomGain, CustomModulation};
 pub use drive::*;
+pub use dynamic_datagram::{DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2};
+pub use dynamic_link::DynamicLinkBuilder;
+pub use libc::c_void;
 pub use result::*;
 pub use sampling_config::*;
 
-use autd3capi_common::float;
-use common::{
-    driver::link::LinkSyncBuilder, ConstPtr, DynamicDatagram, DynamicLinkBuilder, Gain, Modulation,
-    STMProps, G, M,
-};
+pub use autd3;
+pub use autd3_driver as driver;
+pub use autd3_gain_holo as holo;
+pub use libc;
+
+pub type ConstPtr = *const c_void;
+pub type L = dyn LinkSync;
+pub type G = dyn Gain;
+pub type M = dyn Modulation;
+pub type Cnt = Controller<Box<L>>;
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
 pub const NUM_TRANS_IN_X: u32 = 18;
@@ -43,6 +61,20 @@ pub const AUTD3_ERR: i32 = -1;
 pub const AUTD3_TRUE: i32 = 1;
 pub const AUTD3_FALSE: i32 = 0;
 
+#[macro_export]
+macro_rules! cast {
+    ($ptr:expr, $type:ty) => {
+        ($ptr as *const $type).as_ref().unwrap()
+    };
+}
+
+#[macro_export]
+macro_rules! cast_mut {
+    ($ptr:expr, $type:ty) => {
+        ($ptr as *mut $type).as_mut().unwrap()
+    };
+}
+
 #[repr(u8)]
 pub enum GainSTMMode {
     PhaseIntensityFull = 0,
@@ -50,14 +82,12 @@ pub enum GainSTMMode {
     PhaseHalf = 2,
 }
 
-impl From<GainSTMMode> for common::autd3::prelude::GainSTMMode {
+impl From<GainSTMMode> for autd3::prelude::GainSTMMode {
     fn from(mode: GainSTMMode) -> Self {
         match mode {
-            GainSTMMode::PhaseIntensityFull => {
-                common::autd3::prelude::GainSTMMode::PhaseIntensityFull
-            }
-            GainSTMMode::PhaseFull => common::autd3::prelude::GainSTMMode::PhaseFull,
-            GainSTMMode::PhaseHalf => common::autd3::prelude::GainSTMMode::PhaseHalf,
+            GainSTMMode::PhaseIntensityFull => autd3::prelude::GainSTMMode::PhaseIntensityFull,
+            GainSTMMode::PhaseFull => autd3::prelude::GainSTMMode::PhaseFull,
+            GainSTMMode::PhaseHalf => autd3::prelude::GainSTMMode::PhaseHalf,
         }
     }
 }
@@ -69,12 +99,12 @@ pub enum TimerStrategy {
     NativeTimer = 2,
 }
 
-impl From<TimerStrategy> for common::autd3::prelude::TimerStrategy {
+impl From<TimerStrategy> for autd3::prelude::TimerStrategy {
     fn from(strategy: TimerStrategy) -> Self {
         match strategy {
-            TimerStrategy::Sleep => common::autd3::prelude::TimerStrategy::Sleep,
-            TimerStrategy::NativeTimer => common::autd3::prelude::TimerStrategy::NativeTimer,
-            TimerStrategy::BusyWait => common::autd3::prelude::TimerStrategy::BusyWait,
+            TimerStrategy::Sleep => autd3::prelude::TimerStrategy::Sleep,
+            TimerStrategy::NativeTimer => autd3::prelude::TimerStrategy::NativeTimer,
+            TimerStrategy::BusyWait => autd3::prelude::TimerStrategy::BusyWait,
         }
     }
 }
@@ -253,15 +283,15 @@ mod tests {
     fn test_timer_strategy() {
         assert_eq!(
             TimerStrategy::Sleep as u8,
-            common::autd3::prelude::TimerStrategy::Sleep as u8
+            autd3::prelude::TimerStrategy::Sleep as u8
         );
         assert_eq!(
             TimerStrategy::BusyWait as u8,
-            common::autd3::prelude::TimerStrategy::BusyWait as u8
+            autd3::prelude::TimerStrategy::BusyWait as u8
         );
         assert_eq!(
             TimerStrategy::NativeTimer as u8,
-            common::autd3::prelude::TimerStrategy::NativeTimer as u8
+            autd3::prelude::TimerStrategy::NativeTimer as u8
         );
     }
 }

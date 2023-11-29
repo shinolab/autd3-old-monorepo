@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,10 +22,7 @@ pub mod naive;
 pub mod nalgebra_backend;
 pub mod sdp;
 
-use autd3capi_def::common::{
-    driver::defined::float,
-    holo::{dB, Pascal},
-};
+use autd3capi_def::{holo::*, *};
 
 #[no_mangle]
 #[must_use]

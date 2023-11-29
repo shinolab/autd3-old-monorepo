@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,17 +19,7 @@ pub mod link;
 pub mod modulation;
 pub mod stm;
 
-use autd3capi_def::{
-    common::{
-        autd3::prelude::{
-            Clear, ConfigureModDelay, Silencer, Stop, Synchronize, UpdateFlags, AUTD3,
-        },
-        driver::geometry::{Quaternion, UnitQuaternion, Vector3},
-        *,
-    },
-    ControllerPtr, DatagramPtr, DatagramSpecialPtr, FirmwareInfoListPtr, GroupKVMapPtr,
-    LinkBuilderPtr, ResultController, ResultDatagram, ResultI32,
-};
+use autd3capi_def::{autd3::prelude::*, *};
 use std::{ffi::c_char, time::Duration};
 
 #[derive(Debug, Clone, Copy)]
@@ -122,7 +112,7 @@ impl From<Result<Vec<FirmwareInfo>, AUTDError>> for ResultFirmwareInfoList {
             Err(e) => {
                 let err = e.to_string();
                 Self {
-                    result: FirmwareInfoListPtr(NULL),
+                    result: FirmwareInfoListPtr(std::ptr::null()),
                     err_len: err.as_bytes().len() as u32 + 1,
                     err: Box::into_raw(Box::new(err)) as _,
                 }
@@ -424,7 +414,7 @@ mod tests {
 
         let link = make_nop_link();
         let cnt = AUTDControllerOpenWith(builder, link);
-        assert_ne!(cnt.result.0, NULL);
+        assert_ne!(cnt.result.0, std::ptr::null());
         cnt.result
     }
 
@@ -435,7 +425,7 @@ mod tests {
 
             let firm_p = AUTDControllerFirmwareInfoListPointer(cnt);
             let firm_p = firm_p.result;
-            assert_ne!(firm_p.0, NULL);
+            assert_ne!(firm_p.0, std::ptr::null());
             (0..2).for_each(|i| {
                 let mut info = vec![c_char::default(); 256];
                 AUTDControllerFirmwareInfoGet(firm_p, i as _, info.as_mut_ptr());
