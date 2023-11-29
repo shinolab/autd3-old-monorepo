@@ -185,6 +185,23 @@ pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutoutIdx() -> DatagramPtr {
+    DatagramPtr::new(ConfigureDebugOutoutIdx::new())
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutoutIdxSet(
+    dbg: DatagramPtr,
+    tr: TransducerPtr,
+) -> DatagramPtr {
+    let dbg =
+        Box::from_raw(dbg.0 as *mut Box<dyn DynamicDatagram> as *mut Box<ConfigureDebugOutoutIdx>);
+    DatagramPtr::new(dbg.set(cast!(tr.0, Transducer)))
+}
+
+#[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDDatagramSilencer(
     step_intensity: u16,
     step_phase: u16,
