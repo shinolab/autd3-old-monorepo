@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import BackendPtr, EmissionConstraintPtr, GainPtr
+from pyautd3.native_methods.autd3capi_def import BackendPtr, EmissionConstraintPtr, GainPtr
 
 
 class Singleton(type):
