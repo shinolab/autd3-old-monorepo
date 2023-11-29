@@ -158,6 +158,21 @@ impl DynamicDatagram for ConfigureModDelay {
     }
 }
 
+impl DynamicDatagram for ConfigureDebugOutoutIdx {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
+        Ok((
+            Box::new(autd3_driver::operation::DebugOutIdxOp::new(
+                self.idx().clone(),
+            )),
+            Box::<autd3_driver::operation::NullOp>::default(),
+        ))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        <Self as Datagram>::timeout(self)
+    }
+}
+
 impl DynamicDatagram for FocusSTM {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         let freq_div = self.sampling_config().frequency_division();

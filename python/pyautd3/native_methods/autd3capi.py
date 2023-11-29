@@ -231,6 +231,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramConfigureModDelay.argtypes = [] 
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdx.argtypes = [] 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdx.restype = DatagramPtr
+
+        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.argtypes = [DatagramPtr, TransducerPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.restype = DatagramPtr
+
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = ResultDatagram
 
@@ -656,6 +662,12 @@ class NativeMethods(metaclass=Singleton):
 
     def datagram_configure_mod_delay(self) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureModDelay()
+
+    def datagram_configure_debug_outout_idx(self) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutoutIdx()
+
+    def datagram_configure_debug_outout_idx_set(self, dbg: DatagramPtr, tr: TransducerPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutoutIdxSet(dbg, tr)
 
     def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
