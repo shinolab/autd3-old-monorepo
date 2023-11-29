@@ -2,6 +2,7 @@
 
 - Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
 - Fix [#225](https://github.com/shinolab/autd3/issues/225): Modulation::Sine::with_amp should be with_intensity
+- Fix [#226](https://github.com/shinolab/autd3/issues/226): Cannot use autd_firmware_writer.ps1 if PATH to JDK jlink is set
 - Make `mod_delay` member in `Transducer` public
 
 # 17.0.2
