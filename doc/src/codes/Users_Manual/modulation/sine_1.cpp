@@ -1,3 +1,5 @@
 #include "autd3.hpp"
 
-const auto m = autd3::modulation::Sine(150).with_amp(1.).with_offset(0.5);
+const auto m = autd3::modulation::Sine(150)
+                   .with_intensity(autd3::EmitIntensity::maximum())
+                   .with_offset(autd3::EmitIntensity::maximum() / 2);

@@ -27,9 +27,7 @@ $$
     \frac{amplitude}{2} \times \sin(2\pi ft) + offset
 $$
 となるようなAMをかける.
-ここで, $amplitude$と$offset$はそれぞれ, `with_amp`と`with_offset`にて指定できる (デフォルトはそれぞれ$1$, $0.5$).
-
-ただし, 上記で$\[0, 1\]$を超えるような値は$\[0, 1\]$に収まるように変換される.
+ここで, $amplitude$と$offset$はそれぞれ, `with_intensity`と`with_offset`にて指定できる (デフォルトはそれぞれ`EmitIntensity::MAX`, `EmitIntensity::MAX/2`).
 
 ```rust,edition2021
 {{#include ../../../codes/Users_Manual/modulation/sine_1.rs}}
