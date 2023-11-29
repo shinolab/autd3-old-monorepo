@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 30/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,14 +71,13 @@ pub struct T4010A1 {}
 impl Directivity for T4010A1 {
     #[allow(clippy::many_single_char_names)]
     fn directivity(theta_deg: float) -> float {
-        let mut theta_deg = theta_deg.abs();
-
-        while theta_deg > 90.0 {
-            theta_deg = (180.0 - theta_deg).abs();
-        }
-
+        let theta_deg = theta_deg.abs() % 180.0;
+        let theta_deg = if theta_deg > 90.0 {
+            180.0 - theta_deg
+        } else {
+            theta_deg
+        };
         let i = (theta_deg / 10.0).ceil() as usize;
-
         if i == 0 {
             1.0
         } else {
@@ -114,11 +113,15 @@ mod tests {
         ];
 
         expects.iter().enumerate().for_each(|(i, expect)| {
-            assert_approx_eq!(T4010A1::directivity(-(i as float)), expect);
+            assert_approx_eq!(T4010A1::directivity(i as float), expect);
         });
 
         expects.iter().enumerate().for_each(|(i, expect)| {
-            assert_approx_eq!(T4010A1::directivity(i as float), expect);
+            assert_approx_eq!(T4010A1::directivity(i as float + 180.), expect);
+        });
+
+        expects.iter().enumerate().for_each(|(i, expect)| {
+            assert_approx_eq!(T4010A1::directivity(-(i as float)), expect);
         });
 
         expects.iter().enumerate().for_each(|(i, expect)| {
