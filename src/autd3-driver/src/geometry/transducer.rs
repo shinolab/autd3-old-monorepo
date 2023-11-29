@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ pub struct Transducer {
     dev_idx: u16,
     pos: Vector3,
     rot: UnitQuaternion,
-    mod_delay: u16,
+    pub mod_delay: u16,
 }
 
 impl Transducer {
@@ -91,11 +91,13 @@ impl Transducer {
     }
 
     /// Get the modulation delay of the transducer
+    #[deprecated(since = "17.0.3", note = "use mod_delay directly")]
     pub const fn mod_delay(&self) -> u16 {
         self.mod_delay
     }
 
     /// Set the modulation delay of the transducer
+    #[deprecated(since = "17.0.3", note = "use mod_delay directly")]
     pub fn set_mod_delay(&mut self, delay: u16) {
         self.mod_delay = delay;
     }
@@ -160,9 +162,9 @@ mod tests {
     #[test]
     fn mod_delay() {
         let mut tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(0, tr.mod_delay());
-        tr.set_mod_delay(1);
-        assert_eq!(1, tr.mod_delay());
+        assert_eq!(0, tr.mod_delay);
+        tr.mod_delay = 1;
+        assert_eq!(1, tr.mod_delay);
     }
 
     #[test]
