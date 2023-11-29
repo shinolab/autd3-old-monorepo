@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 30/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ mod sphere;
 mod t4010a1;
 
 use crate::{
-    defined::{float, PI},
+    defined::float,
     geometry::{Transducer, Vector3},
 };
 
@@ -27,7 +27,11 @@ pub trait Directivity: Send + Sync {
     fn directivity(theta_deg: float) -> float;
     fn directivity_from_tr(tr: &Transducer, target: &Vector3) -> float {
         let dir = tr.z_direction();
-        Self::directivity((dir.cross(target).norm()).atan2(dir.dot(target)) * 180. / PI)
+        Self::directivity(
+            (dir.cross(target).norm())
+                .atan2(dir.dot(target))
+                .to_degrees(),
+        )
     }
 }
 
