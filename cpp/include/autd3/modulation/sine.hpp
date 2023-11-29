@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 29/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "autd3/internal/emit_intensity.hpp"
 #include "autd3/internal/native_methods.hpp"
 #include "autd3/internal/utils.hpp"
 #include "autd3/modulation/cache.hpp"
@@ -38,17 +39,17 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
    */
   explicit Sine(const int32_t freq) : _freq(freq) {}
 
-  AUTD3_DEF_PARAM(Sine, double, amp)
+  AUTD3_DEF_PARAM_INTENSITY(Sine, intensity)
+  AUTD3_DEF_PARAM_INTENSITY(Sine, offset)
   AUTD3_DEF_PARAM(Sine, double, phase)
-  AUTD3_DEF_PARAM(Sine, double, offset)
 
   friend Fourier operator+(Sine&& lhs, const Sine& rhs);
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSine(_freq);
-    if (_amp.has_value()) ptr = AUTDModulationSineWithAmp(ptr, _amp.value());
+    if (_intensity.has_value()) ptr = AUTDModulationSineWithIntensity(ptr, _intensity.value().value());
     if (_phase.has_value()) ptr = AUTDModulationSineWithPhase(ptr, _phase.value());
-    if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value());
+    if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value().value());
     if (_config.has_value())
       ptr = AUTDModulationSineWithSamplingConfig(ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
     return ptr;
@@ -56,9 +57,9 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
 
  private:
   int32_t _freq;
-  std::optional<double> _amp;
+  std::optional<internal::EmitIntensity> _intensity;
   std::optional<double> _phase;
-  std::optional<double> _offset;
+  std::optional<internal::EmitIntensity> _offset;
 };
 
 }  // namespace autd3::modulation

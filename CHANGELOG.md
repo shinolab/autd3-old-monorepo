@@ -1,6 +1,7 @@
 # 17.0.3
 
 - Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
+- Fix [#225](https://github.com/shinolab/autd3/issues/225): Modulation::Sine::with_amp should be with_intensity
 - Make `mod_delay` member in `Transducer` public
 
 # 17.0.2

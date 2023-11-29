@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,16 +20,16 @@ use num::integer::gcd;
 #[derive(Modulation, Clone, Copy)]
 pub struct Sine {
     freq: usize,
-    amp: float,
+    intensity: EmitIntensity,
     phase: float,
-    offset: float,
+    offset: EmitIntensity,
     config: SamplingConfiguration,
 }
 
 impl Sine {
     /// constructor
     ///
-    /// The sine wave is defined as `amp / 2 * sin(2π * freq * t + phase) + offset`, where `t` is time, and `amp = 1`, `phase = 0`, `offset = 0.5` by default.
+    /// The sine wave is defined as `intensity / 2 * sin(2π * freq * t + phase) + offset`, where `t` is time, and `amp = EmitIntensity::MAX`, `phase = 0`, `offset = EmitIntensity::MAX/2` by default.
     ///
     /// # Arguments
     ///
@@ -38,21 +38,24 @@ impl Sine {
     pub fn new(freq: usize) -> Self {
         Self {
             freq,
-            amp: 1.0,
+            intensity: EmitIntensity::MAX,
             phase: 0.0,
-            offset: 0.5,
+            offset: EmitIntensity::MAX / 2,
             config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
         }
     }
 
-    /// set amplitude
+    /// set intensity
     ///
     /// # Arguments
     ///
-    /// * `amp` - peek to peek amplitude of the wave
+    /// * `intensity` - peek to peek intensity
     ///
-    pub fn with_amp(self, amp: float) -> Self {
-        Self { amp, ..self }
+    pub fn with_intensity<A: Into<EmitIntensity>>(self, intensity: A) -> Self {
+        Self {
+            intensity: intensity.into(),
+            ..self
+        }
     }
 
     /// set offset
@@ -61,8 +64,11 @@ impl Sine {
     ///
     /// * `offset` - Offset of the wave
     ///
-    pub fn with_offset(self, offset: float) -> Self {
-        Self { offset, ..self }
+    pub fn with_offset<A: Into<EmitIntensity>>(self, offset: A) -> Self {
+        Self {
+            offset: offset.into(),
+            ..self
+        }
     }
 
     /// set phase
@@ -79,11 +85,11 @@ impl Sine {
         self.freq
     }
 
-    pub fn amp(&self) -> float {
-        self.amp
+    pub fn intensity(&self) -> EmitIntensity {
+        self.intensity
     }
 
-    pub fn offset(&self) -> float {
+    pub fn offset(&self) -> EmitIntensity {
         self.offset
     }
 
@@ -101,10 +107,13 @@ impl Modulation for Sine {
         let rep = freq / d;
         Ok((0..n)
             .map(|i| {
-                self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float + self.phase).sin()
-                    + self.offset
+                EmitIntensity::new(
+                    (((self.intensity / 2).value() as float
+                        * (2.0 * PI * (rep * i) as float / n as float + self.phase).sin())
+                    .round()
+                        + self.offset.value() as float) as u8,
+                )
             })
-            .map(|v| EmitIntensity::new((v * 255.0).round() as u8))
             .collect())
     }
 }
@@ -116,13 +125,16 @@ mod tests {
     #[test]
     fn test_sine() {
         let expect = [
-            128, 157, 185, 210, 231, 245, 253, 255, 249, 236, 218, 194, 167, 138, 108, 79, 53, 31,
-            14, 4, 0, 4, 14, 31, 53, 79, 108, 138, 167, 194, 218, 236, 249, 255, 253, 245, 231,
-            210, 185, 157, 128, 98, 70, 45, 24, 10, 2, 0, 6, 19, 37, 61, 88, 117, 147, 176, 202,
-            224, 241, 251, 255, 251, 241, 224, 202, 176, 147, 117, 88, 61, 37, 19, 6, 0, 2, 10, 24,
-            45, 70, 98,
+            127, 157, 185, 209, 230, 244, 252, 254, 248, 235, 217, 193, 166, 137, 107, 78, 52, 30,
+            14, 4, 0, 4, 14, 30, 52, 78, 107, 137, 166, 193, 217, 235, 248, 254, 252, 244, 230,
+            209, 185, 157, 127, 97, 69, 45, 24, 10, 2, 0, 6, 19, 37, 61, 88, 117, 147, 176, 202,
+            224, 240, 250, 254, 250, 240, 224, 202, 176, 147, 117, 88, 61, 37, 19, 6, 0, 2, 10, 24,
+            45, 69, 97,
         ];
         let m = Sine::new(150);
+        for d in m.calc().unwrap().iter() {
+            print!("{}, ", d.value());
+        }
         assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
@@ -137,42 +149,41 @@ mod tests {
     fn test_sine_new() {
         let m = Sine::new(100);
         assert_eq!(m.freq(), 100);
-        assert_eq!(m.amp(), 1.0);
-        assert_eq!(m.offset(), 0.5);
+        assert_eq!(m.intensity(), EmitIntensity::MAX);
+        assert_eq!(m.offset(), EmitIntensity::MAX / 2);
         assert_eq!(m.phase(), 0.0);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .map(|&x| x.value() as float / 255.)
-            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .all(|&x| x >= m.offset - m.intensity / 2 && x <= m.offset + m.intensity / 2));
     }
 
     #[test]
-    fn test_sine_with_amp() {
-        let m = Sine::new(100).with_amp(0.5);
-        assert_eq!(m.amp, 0.5);
+    fn test_sine_with_intensity() {
+        let m = Sine::new(100).with_intensity(EmitIntensity::MAX / 2);
+        assert_eq!(m.intensity, EmitIntensity::MAX / 2);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .map(|&x| x.value() as float / 255.)
-            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .all(|&x| x >= m.offset - m.intensity / 2 && x <= m.offset + m.intensity / 2));
     }
 
     #[test]
     fn test_sine_with_offset() {
-        let m = Sine::new(100).with_offset(1.0);
-        assert_eq!(m.offset, 1.0);
+        let m = Sine::new(100)
+            .with_offset(EmitIntensity::MAX / 4)
+            .with_intensity(EmitIntensity::MAX / 2);
+        assert_eq!(m.offset, EmitIntensity::MAX / 4);
 
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .map(|&x| x.value() as float / 255.)
-            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .all(|&x| x >= m.offset - m.intensity / 2 && x <= m.offset + m.intensity / 2));
     }
 
     #[test]
@@ -184,7 +195,6 @@ mod tests {
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
-            .map(|&x| x.value() as float / 255.)
-            .all(|x| x >= m.offset - m.amp / 2.0 && x <= m.offset + m.amp / 2.0));
+            .all(|&x| x >= m.offset - m.intensity / 2 && x <= m.offset + m.intensity / 2));
     }
 }

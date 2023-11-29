@@ -84,7 +84,7 @@ mod tests {
             let mut drives0 = {
                 let num_trans = AUTDDeviceNumTransducers(dev0);
                 vec![
-                    Drive {
+                    autd3capi_def::Drive {
                         intensity: 0,
                         phase: 0.
                     };
@@ -94,7 +94,7 @@ mod tests {
             let mut drives1 = {
                 let num_trans = AUTDDeviceNumTransducers(dev1);
                 vec![
-                    Drive {
+                    autd3capi_def::Drive {
                         intensity: 0,
                         phase: 0.
                     };
