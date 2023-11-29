@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,7 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{
-    common::{autd3::link::audit::*, driver::link::LinkSync, *},
-    LinkBuilderPtr, LinkPtr,
-};
+use autd3capi_def::{autd3::link::audit::*, driver::link::LinkSync, *};
 use std::time::Duration;
 
 #[repr(C)]
@@ -309,7 +306,7 @@ mod tests {
         let audit = AUTDLinkAuditIntoBuilder(audit);
 
         let cnt = AUTDControllerOpenWith(builder, audit);
-        assert_ne!(cnt.result.0, NULL);
+        assert_ne!(cnt.result.0, std::ptr::null());
         cnt.result
     }
 

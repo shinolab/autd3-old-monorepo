@@ -1,3 +1,11 @@
+# 17.0.3
+
+- Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
+- Fix [#225](https://github.com/shinolab/autd3/issues/225): Modulation::Sine::with_amp should be with_intensity
+- Fix [#226](https://github.com/shinolab/autd3/issues/226): Cannot use autd_firmware_writer.ps1 if PATH to JDK jlink is set
+- Fix [#227](https://github.com/shinolab/autd3/issues/227): missing ConfigureDebugOutoutIdx in C++/C#/Python
+- Make `mod_delay` member in `Transducer` public
+
 # 17.0.2
 
 - Fix [#218](https://github.com/shinolab/autd3/issues/218): [C++/C#/Python] Transducer does not have tr_idx and dev_idx methods

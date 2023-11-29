@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -564,7 +564,7 @@ pub mod tests {
         let mut device = Device::new(0, transducers);
 
         for tr in &mut device {
-            tr.set_mod_delay(1);
+            tr.mod_delay = 1;
         }
     }
 }

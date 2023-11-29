@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-link-simulator"
-version = "17.0.2"
+version = "17.0.3"
 edition = "2021"
 license = "MIT"
 
@@ -13,4 +13,4 @@ autd3-link-simulator = { path = "../../src/autd3-link-simulator", features = ["s
 tokio = { version = "1.34.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator" }

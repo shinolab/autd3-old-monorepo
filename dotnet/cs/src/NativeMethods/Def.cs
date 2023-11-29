@@ -8,23 +8,23 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsDef
+    public static unsafe partial class NativeMethodsDef
     {
         const string __DllName = "autd3capi_def";
 
-        internal const double DEFAULT_CORRECTED_ALPHA = 0.803;
-        internal const uint NUM_TRANS_IN_UNIT = 249;
-        internal const uint NUM_TRANS_IN_X = 18;
-        internal const uint NUM_TRANS_IN_Y = 14;
-        internal const double TRANS_SPACING_MM = 10.16;
-        internal const double DEVICE_HEIGHT_MM = 151.4;
-        internal const double DEVICE_WIDTH_MM = 192;
-        internal const uint FPGA_CLK_FREQ = 20480000;
-        internal const double ULTRASOUND_FREQUENCY = 40000;
-        internal const int AUTD3_TRUE = 1;
-        internal const int AUTD3_FALSE = 0;
+        public const double DEFAULT_CORRECTED_ALPHA = 0.803;
+        public const uint NUM_TRANS_IN_UNIT = 249;
+        public const uint NUM_TRANS_IN_X = 18;
+        public const uint NUM_TRANS_IN_Y = 14;
+        public const double TRANS_SPACING_MM = 10.16;
+        public const double DEVICE_HEIGHT_MM = 151.4;
+        public const double DEVICE_WIDTH_MM = 192;
+        public const uint FPGA_CLK_FREQ = 20480000;
+        public const double ULTRASOUND_FREQUENCY = 40000;
+        public const int AUTD3_TRUE = 1;
+        public const int AUTD3_FALSE = 0;
 
 
         [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNewWithCorrectionAlpha", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -55,13 +55,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct SamplingConfigurationRaw
+    public unsafe partial struct SamplingConfigurationRaw
     {
         public uint div;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultSamplingConfig
+    public unsafe partial struct ResultSamplingConfig
     {
         public SamplingConfigurationRaw result;
         public uint err_len;

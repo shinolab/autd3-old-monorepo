@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import LinkBuilderPtr
+from pyautd3.native_methods.autd3capi_def import LinkBuilderPtr
 
 
 class LinkTwinCATBuilderPtr(ctypes.Structure):

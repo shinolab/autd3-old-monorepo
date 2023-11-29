@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ impl Operation for ConfigureModDelayOp {
             );
             dst.iter_mut()
                 .zip(device.iter())
-                .for_each(|(d, s)| *d = s.mod_delay());
+                .for_each(|(d, s)| *d = s.mod_delay);
         }
 
         Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
@@ -83,7 +83,7 @@ mod tests {
         let mut rng = rand::thread_rng();
         geometry.devices_mut().for_each(|dev| {
             dev.iter_mut().for_each(|tr| {
-                tr.set_mod_delay(rng.gen_range(0x0000..0xFFFFu16));
+                tr.mod_delay = rng.gen_range(0x0000..0xFFFFu16);
             })
         });
 
@@ -126,7 +126,7 @@ mod tests {
                 .skip(1)
                 .zip(dev.iter())
                 .for_each(|(d, tr)| {
-                    let delay = tr.mod_delay();
+                    let delay = tr.mod_delay;
                     assert_eq!(d[0], (delay & 0xFF) as u8);
                     assert_eq!(d[1], (delay >> 8) as u8);
                 })

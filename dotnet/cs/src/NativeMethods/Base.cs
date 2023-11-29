@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsBase
+    public static unsafe partial class NativeMethodsBase
     {
         const string __DllName = "autd3capi";
 
@@ -203,6 +203,12 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureModDelay", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
+
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdxSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
 
@@ -375,14 +381,14 @@ namespace AUTD3Sharp
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m, SamplingConfigurationRaw config);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSineWithIntensity(ModulationPtr m, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithOffset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
+        public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, byte offset);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquare", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquare(uint freq);
@@ -451,13 +457,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ControllerBuilderPtr
+    public unsafe partial struct ControllerBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultFirmwareInfoList
+    public unsafe partial struct ResultFirmwareInfoList
     {
         public FirmwareInfoListPtr result;
         public uint err_len;
@@ -465,7 +471,7 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultGroupKVMap
+    public unsafe partial struct ResultGroupKVMap
     {
         public GroupKVMapPtr result;
         public uint err_len;
@@ -473,13 +479,13 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkAuditBuilderPtr
+    public unsafe partial struct LinkAuditBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultCache
+    public unsafe partial struct ResultCache
     {
         public CachePtr result;
         public uint err_len;

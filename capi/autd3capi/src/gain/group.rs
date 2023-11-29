@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,7 @@
 
 use std::collections::HashMap;
 
-use autd3capi_def::{
-    common::{autd3::gain::Group, driver::autd3_device::AUTD3, *},
-    GainPtr, GroupGainMapPtr,
-};
+use autd3capi_def::{autd3::gain::Group, driver::autd3_device::AUTD3, *};
 
 type M = HashMap<usize, Vec<i32>>;
 

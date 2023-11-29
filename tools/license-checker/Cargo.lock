@@ -44,6 +44,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "autd3-license-check"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cargo-license",
+ "cargo_metadata",
+ "console",
+ "csv",
+ "glob",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "similar",
+ "toml 0.8.2",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -586,16 +603,9 @@ name = "license-checker"
 version = "0.2.0"
 dependencies = [
  "anyhow",
+ "autd3-license-check",
  "cargo-license",
  "cargo_metadata",
- "console",
- "csv",
- "glob",
- "reqwest",
- "serde",
- "serde_json",
- "similar",
- "toml 0.8.2",
 ]
 
 [[package]]

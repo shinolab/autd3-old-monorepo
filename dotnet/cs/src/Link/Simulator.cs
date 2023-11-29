@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,8 @@ using AUTD3Sharp.Internal;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using AUTD3Sharp.NativeMethods;
+
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable

@@ -4,7 +4,7 @@
  * Created Date: 12/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,9 @@
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
 #endif
+
+using System;
+using AUTD3Sharp.NativeMethods;
 
 #if USE_SINGLE
 using float_t = System.Single;
@@ -43,5 +46,11 @@ namespace AUTD3Sharp
         public static EmitIntensity NewWithCorrectionAlpha(byte value, float_t alpha) => new EmitIntensity(NativeMethodsDef.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha));
 
         public static EmitIntensity NewWithCorrection(byte value) => NewWithCorrectionAlpha(value, NativeMethodsDef.DEFAULT_CORRECTED_ALPHA);
+
+        public static EmitIntensity operator /(EmitIntensity a, int b)
+        {
+            if (b == 0) throw new DivideByZeroException();
+            return new EmitIntensity((byte)(a.Value / b));
+        }
     }
 }

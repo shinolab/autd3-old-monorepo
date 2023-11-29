@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 29/11/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ constexpr double pi = internal::pi;
 /**
  * @brief AUTD3 software version
  */
-static inline std::string version = "17.0.2";
+static inline std::string version = "17.0.3";
 
 using internal::deg;
 using internal::Device;
@@ -73,6 +73,7 @@ using internal::SamplingConfiguration;
 using modulation::Modulation;
 
 using internal::Clear;
+using internal::ConfigureDebugOutoutIdx;
 using internal::ConfigureModDelay;
 using internal::Silencer;
 using internal::Synchronize;

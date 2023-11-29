@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
+use cargo_metadata::MetadataCommand;
 use convert_case::{Case, Casing};
 use parse::{parse_const, parse_enum, parse_func, parse_struct};
 use python::PythonGenerator;
@@ -32,7 +33,11 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
 ) -> Result<()> {
     std::fs::create_dir_all(path.as_ref())?;
 
-    let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
+    let metadata = MetadataCommand::new()
+        .manifest_path(crate_path.as_ref().join("Cargo.toml"))
+        .exec()?;
+
+    let crate_name = metadata.root_package().unwrap().name.as_str();
 
     glob::glob(&format!(
         "{}/**/*.rs",
@@ -49,8 +54,70 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
     .write(path, crate_name)
 }
 
-fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
-    let out_file = Path::new("../../cpp/include/autd3/internal/native_methods").join(format!(
+fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
+    path: P1,
+    crate_path: P2,
+    use_single: bool,
+) -> Result<()> {
+    let sub_abbr =
+        |str: String| -> String { str.replace("Twincat", "TwinCAT").replace("Soem", "SOEM") };
+
+    let to_pascal = |name: &str| -> String {
+        let res = name.to_case(Case::Pascal);
+        sub_abbr(res)
+    };
+
+    let to_class_name = |name: &str| {
+        if name.split('-').count() == 1 {
+            return "Base".to_string();
+        }
+        to_pascal(&name.replace("autd3capi-", ""))
+    };
+
+    let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
+    let out_file = Path::new(path.as_ref()).join(format!("{}.cs", to_class_name(crate_name)));
+    let dll_name = crate_name.replace('-', "_");
+    let class_name = to_class_name(crate_name);
+
+    glob::glob(&format!(
+        "{}/**/*.rs",
+        crate_path.as_ref().join("src").display()
+    ))?
+    .try_fold(csbindgen::Builder::default(), |acc, path| -> Result<_> {
+        let path = path?;
+        Ok(acc.input_extern_file(path))
+    })?
+    .csharp_dll_name(dll_name)
+    .csharp_class_name(format!("NativeMethods{}", class_name))
+    .csharp_namespace("AUTD3Sharp.NativeMethods")
+    .csharp_generate_const_filter(|_| true)
+    .csharp_class_accessibility("public")
+    .generate_csharp_file(&out_file)
+    .map_err(|_| anyhow::anyhow!("failed to generate cs wrapper"))?;
+
+    let content = std::fs::read_to_string(&out_file)?;
+    let content = content.replace("@float", if use_single { "float" } else { "double" });
+    let content = content.replace("ConstPtr", "IntPtr");
+    let content = content.replace("void*", "IntPtr");
+    let content = content.replace("SamplingConfiguration", "SamplingConfigurationRaw");
+
+    let content = content.replace("Drive*", "DriveRaw*");
+
+    let content = if use_single {
+        let re = regex::Regex::new(r"public const float (.*) = (.*);").unwrap();
+        re.replace_all(&content, "public const float $1 = ${2}f;")
+            .to_string()
+    } else {
+        content
+    };
+
+    std::fs::write(&out_file, content)?;
+
+    Ok(())
+}
+
+pub fn gen_c<P1: AsRef<Path>, P2: AsRef<Path>>(crate_path: P1, dest_dir: P2) -> Result<()> {
+    let out_file = dest_dir.as_ref().join(format!(
         "{}.h",
         crate_path.as_ref().file_name().unwrap().to_str().unwrap()
     ));
@@ -96,6 +163,7 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             "ResultDatagram".to_string(),
             "Drive".to_string(),
         ],
+        exclude: vec!["ConstPtr".to_string()],
         rename: vec![
             ("float".to_string(), "double".to_string()),
             ("ConstPtr".to_string(), "void*".to_string()),
@@ -124,80 +192,29 @@ fn generate_c<P: AsRef<Path>>(crate_path: P) -> Result<()> {
     Ok(())
 }
 
-pub fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
-    path: P1,
-    crate_path: P2,
-    use_single: bool,
-) -> Result<()> {
-    let sub_abbr =
-        |str: String| -> String { str.replace("Twincat", "TwinCAT").replace("Soem", "SOEM") };
+pub fn gen_py<P1: AsRef<Path>, P2: AsRef<Path>>(crate_path: P1, dest_dir: P2) -> Result<()> {
+    gen::<PythonGenerator, _, _>(dest_dir, crate_path, false)
+}
 
-    let to_pascal = |name: &str| -> String {
-        let res = name.to_case(Case::Pascal);
-        sub_abbr(res)
-    };
+pub fn gen_cs<P1: AsRef<Path>, P2: AsRef<Path>>(crate_path: P1, dest_dir: P2) -> Result<()> {
+    generate_cs(dest_dir, crate_path, false)
+}
 
-    let to_class_name = |name: &str| {
-        if name.split('-').count() == 1 {
-            return "Base".to_string();
-        }
-        to_pascal(&name.replace("autd3capi-", ""))
-    };
-
-    let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
-    let out_file = Path::new(path.as_ref()).join(format!("{}.cs", to_class_name(crate_name)));
-    let dll_name = crate_name.replace('-', "_");
-    let class_name = to_class_name(crate_name);
-
-    glob::glob(&format!(
-        "{}/**/*.rs",
-        crate_path.as_ref().join("src").display()
-    ))?
-    .try_fold(csbindgen::Builder::default(), |acc, path| -> Result<_> {
-        let path = path?;
-        Ok(acc.input_extern_file(path))
-    })?
-    .csharp_dll_name(dll_name)
-    .csharp_class_name(format!("NativeMethods{}", class_name))
-    .csharp_namespace("AUTD3Sharp")
-    .csharp_generate_const_filter(|_| true)
-    .generate_csharp_file(&out_file)
-    .map_err(|_| anyhow::anyhow!("failed to generate cs wrapper"))?;
-
-    let content = std::fs::read_to_string(&out_file)?;
-    let content = content.replace("@float", if use_single { "float" } else { "double" });
-    let content = content.replace("ConstPtr", "IntPtr");
-    let content = content.replace("SamplingConfiguration", "SamplingConfigurationRaw");
-
-    let content = content.replace("internal enum CMap : byte", "public enum CMap : byte");
-    let content = content.replace(
-        "internal enum SyncMode : byte",
-        "public enum SyncMode : byte",
-    );
-    let content = content.replace("Drive*", "DriveRaw*");
-
-    let content = if use_single {
-        let re = regex::Regex::new(r"internal const float (.*) = (.*);").unwrap();
-        re.replace_all(&content, "internal const float $1 = ${2}f;")
-            .to_string()
-    } else {
-        content
-    };
-
-    std::fs::write(&out_file, content)?;
-
-    Ok(())
+pub fn gen_unity<P1: AsRef<Path>, P2: AsRef<Path>>(crate_path: P1, dest_dir: P2) -> Result<()> {
+    generate_cs(dest_dir, crate_path, true)
 }
 
 pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
-    gen::<PythonGenerator, _, _>("../../python/pyautd3/native_methods", &crate_path, false)?;
+    gen_py(&crate_path, "../../python/pyautd3/native_methods")?;
 
-    generate_c(&crate_path)?;
-    generate_cs("../../dotnet/cs/src/NativeMethods", &crate_path, false)?;
-    generate_cs(
-        "../../dotnet/unity/Assets/Scripts/NativeMethods",
+    gen_c(
         &crate_path,
-        true,
+        "../../cpp/include/autd3/internal/native_methods",
+    )?;
+    gen_cs(&crate_path, "../../dotnet/cs/src/NativeMethods")?;
+    gen_unity(
+        &crate_path,
+        "../../dotnet/unity/Assets/Scripts/NativeMethods",
     )?;
 
     Ok(())

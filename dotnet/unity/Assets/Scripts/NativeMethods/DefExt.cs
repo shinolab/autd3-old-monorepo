@@ -4,7 +4,7 @@
  * Created Date: 07/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,12 +27,6 @@ using System.Runtime.InteropServices;
 
 namespace AUTD3Sharp
 {
-
-    internal static unsafe partial class NativeMethodsDef
-    {
-        internal const int AUTD3_ERR = -1;
-    }
-
     public enum GainSTMMode : byte
     {
         PhaseIntensityFull = 0,
@@ -47,268 +41,296 @@ namespace AUTD3Sharp
         NativeTimer = 2,
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DriveRaw
+    public enum SyncMode : byte
     {
-        public float_t Phase;
-        public byte intensity;
+        FreeRun = 0,
+        DC = 1,
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ControllerPtr
+    public static class SyncModeExt
     {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct GeometryPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct DevicePtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct TransducerPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkBuilderPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct DatagramPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct DatagramSpecialPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct GainPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ModulationPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct STMPropsPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct BackendPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct CachePtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct FirmwareInfoListPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct EmissionConstraintPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct GainCalcDrivesMapPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct GroupGainMapPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct GroupKVMapPtr
-    {
-        internal IntPtr Item1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultI32
-    {
-        internal int result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultGainCalcDrivesMap
-    {
-        internal GainCalcDrivesMapPtr result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultModulation
-    {
-        internal ModulationPtr result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultController
-    {
-        internal ControllerPtr result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultBackend
-    {
-        internal BackendPtr result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ResultDatagram
-    {
-        internal DatagramPtr result;
-        internal uint err_len;
-        internal IntPtr err;
-    }
-
-    internal static class ResultExtensions
-    {
-        internal static int Validate(this ResultI32 res)
+        public static NativeMethods.SyncMode Into(this SyncMode mode)
         {
-            if (res.result == NativeMethodsDef.AUTD3_ERR)
+            return mode switch
             {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+                SyncMode.FreeRun => NativeMethods.SyncMode.FreeRun,
+                SyncMode.DC => NativeMethods.SyncMode.DC,
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+            };
+        }
+    }
+
+    namespace NativeMethods
+    {
+
+        public static unsafe partial class NativeMethodsDef
+        {
+            public const int AUTD3_ERR = -1;
         }
 
-        internal static GainCalcDrivesMapPtr Validate(this ResultGainCalcDrivesMap res)
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DriveRaw
         {
-            if (res.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+            public float_t Phase;
+            public byte intensity;
         }
 
-        internal static FirmwareInfoListPtr Validate(this ResultFirmwareInfoList res)
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct ControllerPtr
         {
-            if (res.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+            public IntPtr Item1;
         }
 
-        internal static GroupKVMapPtr Validate(this ResultGroupKVMap res)
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct GeometryPtr
         {
-            if (res.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+            public IntPtr Item1;
         }
 
-        internal static CachePtr Validate(this ResultCache res)
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct DevicePtr
         {
-            if (res.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+            public IntPtr Item1;
         }
 
-        internal static DatagramPtr Validate(this ResultDatagram res)
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct TransducerPtr
         {
-            if (res.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                }
-                throw new AUTDException(err);
-            }
-            return res.result;
+            public IntPtr Item1;
         }
 
-        internal static SamplingConfigurationRaw Validate(this ResultSamplingConfig res)
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct LinkBuilderPtr
         {
-            if (res.result.div == 0)
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct LinkPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct DatagramPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct DatagramSpecialPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct GainPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct ModulationPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct STMPropsPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct BackendPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct CachePtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct FirmwareInfoListPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct EmissionConstraintPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct GainCalcDrivesMapPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct GroupGainMapPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe partial struct GroupKVMapPtr
+        {
+            public IntPtr Item1;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultI32
+        {
+            public int result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultGainCalcDrivesMap
+        {
+            public GainCalcDrivesMapPtr result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultModulation
+        {
+            public ModulationPtr result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultController
+        {
+            public ControllerPtr result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultBackend
+        {
+            public BackendPtr result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ResultDatagram
+        {
+            public DatagramPtr result;
+            public uint err_len;
+            public IntPtr err;
+        }
+
+        public static class ResultExtensions
+        {
+            public static int Validate(this ResultI32 res)
             {
-                var err = new byte[res.err_len];
-                unsafe
+                if (res.result == NativeMethodsDef.AUTD3_ERR)
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
                 }
-                throw new AUTDException(err);
+                return res.result;
             }
-            return res.result;
+
+            public static GainCalcDrivesMapPtr Validate(this ResultGainCalcDrivesMap res)
+            {
+                if (res.result.Item1 == IntPtr.Zero)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
+
+            public static FirmwareInfoListPtr Validate(this ResultFirmwareInfoList res)
+            {
+                if (res.result.Item1 == IntPtr.Zero)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
+
+            public static GroupKVMapPtr Validate(this ResultGroupKVMap res)
+            {
+                if (res.result.Item1 == IntPtr.Zero)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
+
+            public static CachePtr Validate(this ResultCache res)
+            {
+                if (res.result.Item1 == IntPtr.Zero)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
+
+            public static DatagramPtr Validate(this ResultDatagram res)
+            {
+                if (res.result.Item1 == IntPtr.Zero)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
+
+            public static SamplingConfigurationRaw Validate(this ResultSamplingConfig res)
+            {
+                if (res.result.div == 0)
+                {
+                    var err = new byte[res.err_len];
+                    unsafe
+                    {
+                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    }
+                    throw new AUTDException(err);
+                }
+                return res.result;
+            }
         }
     }
 }
