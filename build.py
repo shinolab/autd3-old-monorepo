@@ -1164,6 +1164,12 @@ def util_update_ver(args):
                     content,
                     flags=re.MULTILINE,
                 )
+                content = re.sub(
+                    r'^autd3(.*)version = "(.*?)"',
+                    f'autd3\\1version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
             with open(toml, "w") as f:
                 f.write(content)
 

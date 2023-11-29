@@ -46,31 +46,31 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 17.0.3 (MIT)
+autd3 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 17.0.3 (MIT)
+autd3-derive 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 17.0.3 (MIT)
+autd3-driver 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 17.0.3 (MIT)
+autd3-firmware-emulator 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 17.0.3 (MIT)
+autd3-gain-holo 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 17.0.3 (MIT)
+autd3-link-simulator 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 17.0.3
+autd3-link-soem 18.0.0
 https://github.com/shinolab/autd3
 
 ---
@@ -136,7 +136,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 17.0.3
+autd3-link-twincat 18.0.0
 https://github.com/shinolab/autd3
 
 ---
@@ -188,37 +188,37 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 17.0.3 (MIT)
+autd3-modulation-audio-file 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 17.0.3 (MIT)
+autd3-protobuf 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 17.0.3 (MIT)
+autd3capi 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 17.0.3 (MIT)
+autd3capi-def 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi-gain-holo 17.0.3 (MIT)
+autd3capi-gain-holo 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 17.0.3 (MIT)
+autd3capi-link-simulator 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 17.0.3 (MIT)
+autd3capi-link-soem 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 17.0.3 (MIT)
+autd3capi-link-twincat 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 17.0.3 (MIT)
+autd3capi-modulation-audio-file 18.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-wrapper-generator 17.0.5 (MIT)
+autd3capi-wrapper-generator 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
