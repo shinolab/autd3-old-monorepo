@@ -46,31 +46,31 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 17.0.2 (MIT)
+autd3 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 17.0.2 (MIT)
+autd3-derive 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 17.0.2 (MIT)
+autd3-driver 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 17.0.2 (MIT)
+autd3-firmware-emulator 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 17.0.2 (MIT)
+autd3-gain-holo 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 17.0.2 (MIT)
+autd3-link-simulator 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 17.0.2
+autd3-link-soem 17.0.3
 https://github.com/shinolab/autd3
 
 ---
@@ -136,7 +136,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 17.0.2
+autd3-link-twincat 17.0.3
 https://github.com/shinolab/autd3
 
 ---
@@ -188,36 +188,36 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 17.0.2 (MIT)
+autd3-modulation-audio-file 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 17.0.2 (MIT)
+autd3-protobuf 17.0.3 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 17.0.2 (MIT)
+autd3capi 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-common 17.0.2 (MIT)
+autd3capi-common 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 17.0.2 (MIT)
+autd3capi-def 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-gain-holo 17.0.2 (MIT)
+autd3capi-gain-holo 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 17.0.2 (MIT)
+autd3capi-link-simulator 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 17.0.2 (MIT)
+autd3capi-link-soem 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 17.0.2 (MIT)
+autd3capi-link-twincat 17.0.3 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 17.0.2 (MIT)
+autd3capi-modulation-audio-file 17.0.3 (MIT)
 ---------------------------------------------------------
 
 autocfg 1.1.0 (Apache-2.0 OR MIT)
@@ -924,7 +924,7 @@ windows_x86_64_msvc 0.52.0 (Apache-2.0 OR MIT)
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
-wrapper-generator 17.0.2 (MIT)
+wrapper-generator 17.0.3 (MIT)
 ---------------------------------------------------------
 
 wyz 0.5.1 (MIT)
