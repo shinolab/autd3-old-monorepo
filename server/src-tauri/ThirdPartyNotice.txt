@@ -1568,7 +1568,7 @@ wasm-bindgen-shared 0.2.89 (Apache-2.0 OR MIT)
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/shared
 ---------------------------------------------------------
 
-web-sys 0.3.65 (Apache-2.0 OR MIT)
+web-sys 0.3.66 (Apache-2.0 OR MIT)
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys
 ---------------------------------------------------------
 

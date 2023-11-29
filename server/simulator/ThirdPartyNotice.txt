@@ -1296,7 +1296,7 @@ wayland-sys 0.29.5 (MIT)
 https://github.com/smithay/wayland-rs
 ---------------------------------------------------------
 
-web-sys 0.3.65 (Apache-2.0 OR MIT)
+web-sys 0.3.66 (Apache-2.0 OR MIT)
 https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys
 ---------------------------------------------------------
 
