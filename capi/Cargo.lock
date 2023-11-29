@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-wrapper-generator"
-version = "17.0.2"
+version = "17.0.3"
 dependencies = [
  "anyhow",
  "cbindgen",

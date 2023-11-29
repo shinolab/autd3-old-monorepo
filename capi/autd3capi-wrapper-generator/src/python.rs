@@ -277,7 +277,7 @@ import os"
         if crate_name != "autd3capi-def" && !used_ty.is_empty() {
             writeln!(
                 w,
-                r"from .autd3capi_def import {}
+                r"from pyautd3.native_methods.autd3capi_def import {}
 ",
                 used_ty.iter().sorted().join(", ")
             )?;

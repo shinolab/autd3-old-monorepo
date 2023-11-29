@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
+from pyautd3.native_methods.autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
