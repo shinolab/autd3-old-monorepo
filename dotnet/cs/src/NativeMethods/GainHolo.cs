@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsGainHolo
+    public static unsafe partial class NativeMethodsGainHolo
     {
         const string __DllName = "autd3capi_gain_holo";
 

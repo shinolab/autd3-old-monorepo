@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-wrapper-generator"
-version = "17.0.4"
+version = "17.0.5"
 edition = "2021"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 
