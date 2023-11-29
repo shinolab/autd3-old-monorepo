@@ -8,14 +8,14 @@ license = "MIT"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3 = { path = "../../src/autd3", default-features = false, features = ["sync"] }
-autd3-driver = { path = "../../src/autd3-driver", features = ["sync"] }
-autd3-gain-holo = { path = "../../src/autd3-gain-holo" }
-autd3-derive = { path = "../../src/autd3-derive" }
+autd3 = { path = "../../src/autd3", default-features = false, features = ["sync"], version = "17.0.2" }
+autd3-driver = { path = "../../src/autd3-driver", features = ["sync"], version = "17.0.2" }
+autd3-gain-holo = { path = "../../src/autd3-gain-holo", version = "17.0.2" }
+autd3-derive = { path = "../../src/autd3-derive", version = "17.0.2" }
 libc = "0.2.144"
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator", version = "17.0.2" }
 
 [features]
 single_float = ["autd3/single_float", "autd3-driver/single_float", "autd3-gain-holo/single_float"]

@@ -220,7 +220,7 @@ dependencies = [
  "assert_approx_eq",
  "autd3-driver",
  "autd3capi-def",
- "wrapper-generator",
+ "autd3capi-wrapper-generator",
 ]
 
 [[package]]
@@ -232,9 +232,9 @@ dependencies = [
  "autd3-derive",
  "autd3-driver",
  "autd3-gain-holo",
+ "autd3capi-wrapper-generator",
  "libc",
  "memoffset",
- "wrapper-generator",
 ]
 
 [[package]]
@@ -242,7 +242,7 @@ name = "autd3capi-gain-holo"
 version = "17.0.2"
 dependencies = [
  "autd3capi-def",
- "wrapper-generator",
+ "autd3capi-wrapper-generator",
 ]
 
 [[package]]
@@ -251,8 +251,8 @@ version = "17.0.2"
 dependencies = [
  "autd3-link-simulator",
  "autd3capi-def",
+ "autd3capi-wrapper-generator",
  "tokio",
- "wrapper-generator",
 ]
 
 [[package]]
@@ -261,7 +261,7 @@ version = "17.0.2"
 dependencies = [
  "autd3-link-soem",
  "autd3capi-def",
- "wrapper-generator",
+ "autd3capi-wrapper-generator",
 ]
 
 [[package]]
@@ -270,7 +270,7 @@ version = "17.0.2"
 dependencies = [
  "autd3-link-twincat",
  "autd3capi-def",
- "wrapper-generator",
+ "autd3capi-wrapper-generator",
 ]
 
 [[package]]
@@ -279,7 +279,21 @@ version = "17.0.2"
 dependencies = [
  "autd3-modulation-audio-file",
  "autd3capi-def",
- "wrapper-generator",
+ "autd3capi-wrapper-generator",
+]
+
+[[package]]
+name = "autd3capi-wrapper-generator"
+version = "17.0.2"
+dependencies = [
+ "anyhow",
+ "cbindgen",
+ "convert_case",
+ "csbindgen",
+ "glob",
+ "itertools 0.12.0",
+ "regex",
+ "syn 2.0.39",
 ]
 
 [[package]]
@@ -1895,20 +1909,6 @@ name = "windows_x86_64_msvc"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
-
-[[package]]
-name = "wrapper-generator"
-version = "17.0.2"
-dependencies = [
- "anyhow",
- "cbindgen",
- "convert_case",
- "csbindgen",
- "glob",
- "itertools 0.12.0",
- "regex",
- "syn 2.0.39",
-]
 
 [[package]]
 name = "wyz"
