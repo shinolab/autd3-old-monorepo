@@ -11,14 +11,17 @@
  *
  */
 
-use std::env;
-
-use autd3capi_wrapper_generator::generate;
-
+#[cfg(feature = "generate_wrapper")]
 fn main() {
+    use autd3capi_wrapper_generator::generate;
+    use std::env;
+
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     if let Err(e) = generate(crate_dir) {
         eprintln!("{}", e);
     }
 }
+
+#[cfg(not(feature = "generate_wrapper"))]
+fn main() {}

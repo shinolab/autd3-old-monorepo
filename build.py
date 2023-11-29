@@ -240,9 +240,13 @@ class Config:
     def cargo_build_capi_command(self, features=None):
         command = self.cargo_command_base("build")
         command.append("--all")
-        if features is not None:
-            command.append("--features")
-            command.append(features)
+        features = (
+            "generate_wrapper " + features
+            if features is not None
+            else "generate_wrapper"
+        )
+        command.append("--features")
+        command.append(features)
 
         if self.is_macos() and self.universal:
             command_aarch64 = command.copy()
