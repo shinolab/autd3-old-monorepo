@@ -14,6 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import asyncio
 import ctypes
+import functools
 from collections.abc import Callable
 from datetime import timedelta
 from typing import Generic, TypeVar
@@ -21,7 +22,7 @@ from typing import Generic, TypeVar
 import numpy as np
 
 from .autd_error import InvalidDatagramTypeError, KeyAlreadyExistsError
-from .geometry import AUTD3, Device, Geometry
+from .geometry import AUTD3, Device, Geometry, Transducer
 from .internal.datagram import Datagram, SpecialDatagram
 from .internal.link import Link, LinkBuilder
 from .internal.utils import _validate_int, _validate_ptr
@@ -608,3 +609,36 @@ class ConfigureModDelay(Datagram):
 
     def _datagram_ptr(self: "ConfigureModDelay", _: Geometry) -> DatagramPtr:
         return Base().datagram_configure_mod_delay()
+
+
+class ConfigureDebugOutoutIdx(Datagram):
+    """Datagram to configure debug output index."""
+
+    _tr: list[Transducer]
+
+    def __init__(self: "ConfigureDebugOutoutIdx") -> None:
+        super().__init__()
+        self._tr = []
+
+    def set_tr(
+        self: "ConfigureDebugOutoutIdx",
+        tr: Transducer,
+    ) -> "ConfigureDebugOutoutIdx":
+        """Set transducer.
+
+        Arguments:
+        ---------
+            tr: transducer
+        """
+        self._tr.append(tr)
+        return self
+
+    def _datagram_ptr(self: "ConfigureDebugOutoutIdx", _: Geometry) -> DatagramPtr:
+        return functools.reduce(
+            lambda acc, v: Base().datagram_configure_debug_outout_idx_set(
+                acc,
+                v._ptr,
+            ),
+            self._tr,
+            Base().datagram_configure_debug_outout_idx(),
+        )
