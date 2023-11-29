@@ -85,6 +85,15 @@ jobs:
           cd autd3-modulation-audio-file
           cargo publish --no-verify --dry-run
           cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
+          cd ../..
+          cd capi
+          cd autd3capi-wrapper-generator
+          cargo publish --no-verify --dry-run
+          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
+          cd .. && sleep 60
+          cd autd3capi-def
+          cargo publish --no-verify --dry-run
+          cargo publish --no-verify --token ${{ secrets.CRATEIO_TOKEN }} || true
 
   release:
     needs: [license-check, build]
