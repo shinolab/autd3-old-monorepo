@@ -1,3 +1,7 @@
+# 17.0.3
+
+- Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
+
 # 17.0.2
 
 - Make `mod_delay` member in `Transducer` public
