@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -77,8 +77,8 @@ impl Datagram for DynamicDatagramPack2 {
 impl DynamicDatagram for UpdateFlags {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::<crate::driver::operation::UpdateFlagsOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::UpdateFlagsOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -90,8 +90,8 @@ impl DynamicDatagram for UpdateFlags {
 impl DynamicDatagram for Synchronize {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::<crate::driver::operation::SyncOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::SyncOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -107,7 +107,7 @@ impl DynamicDatagram for Stop {
                 SILENCER_STEP_DEFAULT,
                 SILENCER_STEP_DEFAULT,
             )),
-            Box::<crate::driver::operation::StopOp>::default(),
+            Box::<autd3_driver::operation::StopOp>::default(),
         ))
     }
 
@@ -123,7 +123,7 @@ impl DynamicDatagram for Silencer {
                 self.step_intensity(),
                 self.step_phase(),
             )),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -135,8 +135,8 @@ impl DynamicDatagram for Silencer {
 impl DynamicDatagram for Clear {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::<crate::driver::operation::ClearOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::ClearOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -148,8 +148,8 @@ impl DynamicDatagram for Clear {
 impl DynamicDatagram for ConfigureModDelay {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::<crate::driver::operation::ConfigureModDelayOp>::default(),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::ConfigureModDelayOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -168,7 +168,7 @@ impl DynamicDatagram for FocusSTM {
                 self.start_idx(),
                 self.finish_idx(),
             )),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -191,7 +191,7 @@ impl DynamicDatagram for GainSTM<Box<G>> {
                 self.start_idx(),
                 self.finish_idx(),
             )),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -208,8 +208,8 @@ impl DynamicDatagram for Box<G> {
         let mut tmp: Box<G> = Box::<Null>::default();
         std::mem::swap(&mut tmp, self);
         Ok((
-            Box::new(crate::driver::operation::GainOp::new(tmp)),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::new(autd3_driver::operation::GainOp::new(tmp)),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
@@ -223,8 +223,8 @@ impl DynamicDatagram for Box<M> {
         let freq_div = self.sampling_config().frequency_division();
         let buf = self.calc()?;
         Ok((
-            Box::new(crate::driver::operation::ModulationOp::new(buf, freq_div)),
-            Box::<crate::driver::operation::NullOp>::default(),
+            Box::new(autd3_driver::operation::ModulationOp::new(buf, freq_div)),
+            Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 

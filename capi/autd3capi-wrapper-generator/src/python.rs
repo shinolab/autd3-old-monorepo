@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -215,7 +215,16 @@ impl Generator for PythonGenerator {
     }
 
     fn register_struct(mut self, e: Vec<crate::parse::Struct>) -> Self {
-        self.structs.extend(e);
+        self.structs.extend(e.into_iter().filter(|s| {
+            !matches!(
+                s.name.as_str(),
+                "CustomGain"
+                    | "CustomModulation"
+                    | "DynamicDatagramPack"
+                    | "DynamicDatagramPack2"
+                    | "DynamicLinkBuilder"
+            )
+        }));
         self
     }
 
@@ -268,7 +277,7 @@ import os"
         if crate_name != "autd3capi-def" && !used_ty.is_empty() {
             writeln!(
                 w,
-                r"from .autd3capi_def import {}
+                r"from pyautd3.native_methods.autd3capi_def import {}
 ",
                 used_ty.iter().sorted().join(", ")
             )?;

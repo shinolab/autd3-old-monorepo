@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use std::{
     time::Duration,
 };
 
-use autd3capi_def::{common::*, GeometryPtr, LinkBuilderPtr, LinkPtr, ResultI32};
+use autd3capi_def::*;
 
 use autd3_link_simulator::*;
 
@@ -58,7 +58,7 @@ pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
         Err(e) => {
             let err = e.to_string();
             return ResultLinkSimulatorBuilder {
-                result: LinkSimulatorBuilderPtr(NULL),
+                result: LinkSimulatorBuilderPtr(std::ptr::null()),
                 err_len: err.as_bytes().len() as u32 + 1,
                 err: Box::into_raw(Box::new(err)) as _,
             };
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn AUTDLinkSimulatorWithAddr(
         Err(e) => {
             let err = e.to_string();
             return ResultLinkSimulatorBuilder {
-                result: LinkSimulatorBuilderPtr(NULL),
+                result: LinkSimulatorBuilderPtr(std::ptr::null()),
                 err_len: err.as_bytes().len() as u32 + 1,
                 err: Box::into_raw(Box::new(err)) as _,
             };

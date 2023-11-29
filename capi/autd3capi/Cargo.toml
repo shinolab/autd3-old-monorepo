@@ -12,7 +12,7 @@ autd3capi-def = { path = "../autd3capi-def" }
 autd3-driver = { path = "../../src/autd3-driver" }
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator" }
 
 [features]
 single_float = ["autd3capi-def/single_float", "autd3-driver/single_float"]
