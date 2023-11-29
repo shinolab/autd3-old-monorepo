@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-wrapper-generator"
-version = "17.0.3"
+version = "17.0.4"
 edition = "2021"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 
@@ -19,3 +19,4 @@ cbindgen = "0.26.0"
 glob = "0.3.1"
 csbindgen = "1.8.3"
 regex = "1.10.2"
+cargo_metadata = "0.18.1"

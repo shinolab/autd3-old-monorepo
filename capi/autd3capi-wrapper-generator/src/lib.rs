@@ -20,6 +20,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
+use cargo_metadata::MetadataCommand;
 use convert_case::{Case, Casing};
 use parse::{parse_const, parse_enum, parse_func, parse_struct};
 use python::PythonGenerator;
@@ -32,7 +33,11 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
 ) -> Result<()> {
     std::fs::create_dir_all(path.as_ref())?;
 
-    let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
+    let metadata = MetadataCommand::new()
+        .manifest_path(crate_path.as_ref().join("Cargo.toml"))
+        .exec()?;
+
+    let crate_name = metadata.root_package().unwrap().name.as_str();
 
     glob::glob(&format!(
         "{}/**/*.rs",
