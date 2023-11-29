@@ -12,4 +12,4 @@ autd3capi-def = { path = "../autd3capi-def" }
 autd3-modulation-audio-file = { path = "../../src/autd3-modulation-audio-file" }
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator" }

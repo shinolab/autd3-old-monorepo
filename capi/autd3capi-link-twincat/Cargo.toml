@@ -12,4 +12,4 @@ autd3capi-def = { path = "../autd3capi-def" }
 autd3-link-twincat = { path = "../../src/autd3-link-twincat", features = ["local", "remote"] }
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator" }

@@ -1,5 +1,5 @@
 [package]
-name = "wrapper-generator"
+name = "autd3capi-wrapper-generator"
 version = "17.0.2"
 edition = "2021"
 license = "MIT"
