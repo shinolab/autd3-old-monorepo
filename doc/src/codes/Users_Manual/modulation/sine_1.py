@@ -1,3 +1,8 @@
+from pyautd3 import EmitIntensity
 from pyautd3.modulation import Sine
 
-m = Sine(150).with_amp(1).with_offset(0.5)
+m = (
+    Sine(150)
+    .with_intensity(EmitIntensity.minimum())
+    .with_offset(EmitIntensity.minimum() / 2)
+)

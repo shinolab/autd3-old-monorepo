@@ -375,14 +375,14 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m, SamplingConfigurationRaw config);
 
-        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithAmp", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithIntensity", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSineWithIntensity(ModulationPtr m, byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithOffset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
+        public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, byte offset);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquare", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquare(uint freq);

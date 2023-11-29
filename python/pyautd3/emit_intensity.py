@@ -61,3 +61,7 @@ class EmitIntensity:
     def minimum() -> "EmitIntensity":
         """Minimum intensity."""
         return EmitIntensity(0x00)
+
+    def __floordiv__(self: "EmitIntensity", other: int) -> "EmitIntensity":
+        """Divide by integer."""
+        return EmitIntensity(self.value // other)

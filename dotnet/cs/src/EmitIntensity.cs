@@ -15,6 +15,7 @@
 #define USE_SINGLE
 #endif
 
+using System;
 using AUTD3Sharp.NativeMethods;
 
 #if USE_SINGLE
@@ -45,5 +46,11 @@ namespace AUTD3Sharp
         public static EmitIntensity NewWithCorrectionAlpha(byte value, float_t alpha) => new EmitIntensity(NativeMethodsDef.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha));
 
         public static EmitIntensity NewWithCorrection(byte value) => NewWithCorrectionAlpha(value, NativeMethodsDef.DEFAULT_CORRECTED_ALPHA);
+
+        public static EmitIntensity operator /(EmitIntensity a, int b)
+        {
+            if (b == 0) throw new DivideByZeroException();
+            return new EmitIntensity((byte)(a.Value / b));
+        }
     }
 }
