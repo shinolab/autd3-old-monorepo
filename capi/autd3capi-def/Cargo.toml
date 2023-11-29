@@ -2,7 +2,13 @@
 name = "autd3capi-def"
 version = "17.0.2"
 edition = "2021"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+
 license = "MIT"
+description = "Base library for autd3 C API"
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
 
 [lib]
 crate-type = ["rlib", "cdylib"]
