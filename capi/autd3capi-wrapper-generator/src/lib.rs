@@ -89,8 +89,9 @@ fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
     })?
     .csharp_dll_name(dll_name)
     .csharp_class_name(format!("NativeMethods{}", class_name))
-    .csharp_namespace("AUTD3Sharp")
+    .csharp_namespace("AUTD3Sharp.NativeMethods")
     .csharp_generate_const_filter(|_| true)
+    .csharp_class_accessibility("public")
     .generate_csharp_file(&out_file)
     .map_err(|_| anyhow::anyhow!("failed to generate cs wrapper"))?;
 
@@ -100,16 +101,11 @@ fn generate_cs<P1: AsRef<Path>, P2: AsRef<Path>>(
     let content = content.replace("void*", "IntPtr");
     let content = content.replace("SamplingConfiguration", "SamplingConfigurationRaw");
 
-    let content = content.replace("internal enum CMap : byte", "public enum CMap : byte");
-    let content = content.replace(
-        "internal enum SyncMode : byte",
-        "public enum SyncMode : byte",
-    );
     let content = content.replace("Drive*", "DriveRaw*");
 
     let content = if use_single {
-        let re = regex::Regex::new(r"internal const float (.*) = (.*);").unwrap();
-        re.replace_all(&content, "internal const float $1 = ${2}f;")
+        let re = regex::Regex::new(r"public const float (.*) = (.*);").unwrap();
+        re.replace_all(&content, "public const float $1 = ${2}f;")
             .to_string()
     } else {
         content

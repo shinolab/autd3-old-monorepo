@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsModulationAudioFile
+    public static unsafe partial class NativeMethodsModulationAudioFile
     {
         const string __DllName = "autd3capi_modulation_audio_file";
 
