@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,6 +46,30 @@ impl EmitIntensity {
 impl From<u8> for EmitIntensity {
     fn from(v: u8) -> Self {
         Self::new(v)
+    }
+}
+
+impl std::ops::Div<u8> for EmitIntensity {
+    type Output = Self;
+
+    fn div(self, rhs: u8) -> Self::Output {
+        Self::new(self.value / rhs)
+    }
+}
+
+impl std::ops::Add<EmitIntensity> for EmitIntensity {
+    type Output = Self;
+
+    fn add(self, rhs: EmitIntensity) -> Self::Output {
+        Self::new(self.value + rhs.value)
+    }
+}
+
+impl std::ops::Sub<EmitIntensity> for EmitIntensity {
+    type Output = Self;
+
+    fn sub(self, rhs: EmitIntensity) -> Self::Output {
+        Self::new(self.value - rhs.value)
     }
 }
 
