@@ -6,7 +6,7 @@ The license terms for each of these components are provided later in this notice
 
 ---------------------------------------------------------
 
-SOEMAUTDServer 17.0.3 (MIT)
+SOEMAUTDServer 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -70,15 +70,15 @@ async-trait 0.1.74 (Apache-2.0 OR MIT)
 https://github.com/dtolnay/async-trait
 ---------------------------------------------------------
 
-autd3-derive 17.0.3 (MIT)
+autd3-derive 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 17.0.3 (MIT)
+autd3-driver 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 17.0.3
+autd3-link-soem 18.0.0
 https://github.com/shinolab/autd3
 
 ---
@@ -144,7 +144,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-protobuf 17.0.3 (MIT)
+autd3-protobuf 18.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 

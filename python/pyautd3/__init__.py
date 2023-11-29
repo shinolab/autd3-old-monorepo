@@ -39,4 +39,4 @@ __all__ = [
     "ConfigureDebugOutoutIdx",
 ]
 
-__version__ = "17.0.3"
+__version__ = "18.0.0"
