@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-from .autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
+from pyautd3.native_methods.autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
@@ -231,6 +231,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramConfigureModDelay.argtypes = [] 
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdx.argtypes = [] 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdx.restype = DatagramPtr
+
+        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.argtypes = [DatagramPtr, TransducerPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.restype = DatagramPtr
+
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = ResultDatagram
 
@@ -399,13 +405,13 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
         self.dll.AUTDModulationSineWithSamplingConfig.restype = ModulationPtr
 
-        self.dll.AUTDModulationSineWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
-        self.dll.AUTDModulationSineWithAmp.restype = ModulationPtr
+        self.dll.AUTDModulationSineWithIntensity.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
+        self.dll.AUTDModulationSineWithIntensity.restype = ModulationPtr
 
         self.dll.AUTDModulationSineWithPhase.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDModulationSineWithPhase.restype = ModulationPtr
 
-        self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
         self.dll.AUTDModulationSquare.argtypes = [ctypes.c_uint32] 
@@ -657,6 +663,12 @@ class NativeMethods(metaclass=Singleton):
     def datagram_configure_mod_delay(self) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureModDelay()
 
+    def datagram_configure_debug_outout_idx(self) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutoutIdx()
+
+    def datagram_configure_debug_outout_idx_set(self, dbg: DatagramPtr, tr: TransducerPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutoutIdxSet(dbg, tr)
+
     def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
 
@@ -825,13 +837,13 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithSamplingConfig(m, config)
 
-    def modulation_sine_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
-        return self.dll.AUTDModulationSineWithAmp(m, amp)
+    def modulation_sine_with_intensity(self, m: ModulationPtr, intensity: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithIntensity(m, intensity)
 
     def modulation_sine_with_phase(self, m: ModulationPtr, phase: float) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithPhase(m, phase)
 
-    def modulation_sine_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
+    def modulation_sine_with_offset(self, m: ModulationPtr, offset: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
 
     def modulation_square(self, freq: int) -> ModulationPtr:

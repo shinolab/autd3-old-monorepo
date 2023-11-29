@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AUTD3Sharp.Internal;
+using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -677,6 +678,22 @@ namespace AUTD3Sharp
     public sealed class ConfigureModDelay : IDatagram
     {
         DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureModDelay();
+    }
+
+    /// <summary>
+    /// Datagram to configure debug output
+    /// </summary>
+    public sealed class ConfigureDebugOutoutIdx : IDatagram
+    {
+        private readonly List<Transducer> _tr = new List<Transducer>();
+
+        public ConfigureDebugOutoutIdx Set(Transducer tr)
+        {
+            _tr.Add(tr);
+            return this;
+        }
+
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => _tr.Aggregate(NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdx(), (ptr, tr) => NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdxSet(ptr, tr.Ptr));
     }
 
     /// <summary>

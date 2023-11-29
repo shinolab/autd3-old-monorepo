@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,10 +16,8 @@
 use std::rc::Rc;
 
 use autd3capi_def::{
-    common::{driver::geometry::Vector3, *},
-    create_holo,
     holo::*,
-    take_gain, BackendPtr, EmissionConstraintPtr, GainPtr,
+    {driver::geometry::Vector3, *},
 };
 
 #[no_mangle]

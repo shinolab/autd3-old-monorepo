@@ -1,6 +1,6 @@
 [metadata]
 name = pyautd3
-version = 17.0.2
+version = 17.0.3
 description = AUTD3 library wrapper for python
 long_description = file: README.md
 long_description_content_type = text/markdown
@@ -31,6 +31,9 @@ python_requires = >=3.10
 include_package_data = True
 install_requires =
     numpy
+
+[options.package_data]
+pyautd3 = py.typed
 
 [bdist_wheel]
 plat_name = ${plat_name}

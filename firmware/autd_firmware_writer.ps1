@@ -3,7 +3,7 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 27/11/2023
+# Last Modified: 29/11/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -34,20 +34,16 @@ function GetInstallLocation($displayNamePattern) {
 }
 
 function UpdateCPU([string]$cpuFirmwareFile) {
-    $can_use_jlink = TestCommand jlink
-    if (-not $can_use_jlink) {
-        ColorEcho "Green" "INFO" "J-Link is not found in PATH. Looking for J-Link..."
-        $jlink_path = GetInstallLocation 'J-Link'
-        if ($jlink_path -eq "NULL") {
-            ColorEcho "Red" "Error" "J-Link is not found. Install J-Link or add J-Link install folder to PATH."
-            Stop-Transcript | Out-Null
-            ColorEcho "Green" "INFO" "Press any key to exit..."
-            $host.UI.RawUI.ReadKey() | Out-Null
-            exit
-        }
-        else {
-            $env:Path = $env:Path + ";" + $jlink_path
-        }
+    $jlink_path = GetInstallLocation 'J-Link'
+    if ($jlink_path -eq "NULL") {
+        ColorEcho "Red" "Error" "J-Link is not found. PLease install J-Link."
+        Stop-Transcript | Out-Null
+        ColorEcho "Green" "INFO" "Press any key to exit..."
+        $host.UI.RawUI.ReadKey() | Out-Null
+        exit
+    }
+    else {
+        $env:Path = $jlink_path + ";" + $env:Path
     }
     ColorEcho "Green" "INFO" "Find J-Link"
 

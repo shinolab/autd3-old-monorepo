@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,7 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use autd3capi_def::{
-    common::{autd3::modulation::Sine, *},
-    take_mod, ModulationPtr, SamplingConfiguration,
-};
+use autd3capi_def::{autd3::modulation::Sine, *};
 
 #[no_mangle]
 #[must_use]
@@ -35,8 +32,11 @@ pub unsafe extern "C" fn AUTDModulationSineWithSamplingConfig(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSineWithAmp(m: ModulationPtr, amp: float) -> ModulationPtr {
-    ModulationPtr::new(take_mod!(m, Sine).with_amp(amp))
+pub unsafe extern "C" fn AUTDModulationSineWithIntensity(
+    m: ModulationPtr,
+    intensity: u8,
+) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(m, Sine).with_intensity(intensity))
 }
 
 #[no_mangle]
@@ -52,7 +52,7 @@ pub unsafe extern "C" fn AUTDModulationSineWithPhase(
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationSineWithOffset(
     m: ModulationPtr,
-    offset: float,
+    offset: u8,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Sine).with_offset(offset))
 }
@@ -71,9 +71,9 @@ mod tests {
             let cnt = create_controller();
 
             let m = AUTDModulationSine(150);
-            let m = AUTDModulationSineWithAmp(m, 1.);
+            let m = AUTDModulationSineWithIntensity(m, 255);
             let m = AUTDModulationSineWithPhase(m, 0.);
-            let m = AUTDModulationSineWithOffset(m, 0.5);
+            let m = AUTDModulationSineWithOffset(m, 127);
             let div = 10240;
             let m = AUTDModulationSineWithSamplingConfig(
                 m,

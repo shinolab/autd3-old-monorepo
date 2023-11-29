@@ -1,21 +1,32 @@
 [package]
 name = "autd3capi-def"
-version = "17.0.2"
+version = "17.0.3"
 edition = "2021"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+
 license = "MIT"
+description = "Base library for autd3 C API"
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
 
 [lib]
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3capi-common = { path = "../autd3capi-common" }
+autd3 = { path = "../../src/autd3", default-features = false, features = ["sync"], version = "17.0.3" }
+autd3-driver = { path = "../../src/autd3-driver", features = ["sync"], version = "17.0.3" }
+autd3-gain-holo = { path = "../../src/autd3-gain-holo", version = "17.0.3" }
+autd3-derive = { path = "../../src/autd3-derive", version = "17.0.3" }
+libc = "0.2.144"
 
 [build-dependencies]
-wrapper-generator = { path = "../wrapper-generator" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator", version = "17.0.5" }
 
 [features]
-single_float = ["autd3capi-common/single_float"]
-use_meter = ["autd3capi-common/use_meter"]
+single_float = ["autd3/single_float", "autd3-driver/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3/use_meter", "autd3-driver/use_meter", "autd3-gain-holo/use_meter"]
+generate_wrapper = []
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"

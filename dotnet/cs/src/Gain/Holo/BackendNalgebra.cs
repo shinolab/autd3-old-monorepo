@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #endif
 
 using System;
+using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -51,7 +52,7 @@ namespace AUTD3Sharp.Gain.Holo
             unsafe
             {
                 fixed (float_t* pf = foci)
-                fixed (Amplitude* pa =  amps)
+                fixed (Amplitude* pa = amps)
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloSDP(Ptr, pf, (float_t*)pa, size);
                 }
@@ -105,7 +106,7 @@ namespace AUTD3Sharp.Gain.Holo
             unsafe
             {
                 fixed (float_t* pf = foci)
-                fixed (Amplitude* pa =  amps)
+                fixed (Amplitude* pa = amps)
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloGSPAT(Ptr, pf, (float_t*)pa, size);
                 }
@@ -127,7 +128,7 @@ namespace AUTD3Sharp.Gain.Holo
             unsafe
             {
                 fixed (float_t* pf = foci)
-                fixed (Amplitude* pa =  amps)
+                fixed (Amplitude* pa = amps)
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloNaive(Ptr, pf, (float_t*)pa, size);
                 }
@@ -144,7 +145,7 @@ namespace AUTD3Sharp.Gain.Holo
             unsafe
             {
                 fixed (float_t* pf = foci)
-                fixed (Amplitude* pa =  amps)
+                fixed (Amplitude* pa = amps)
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloLM(Ptr, pf, (float_t*)pa, size);
                 }

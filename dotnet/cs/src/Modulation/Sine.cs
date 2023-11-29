@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,8 @@
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
 #endif
+
+using AUTD3Sharp.NativeMethods;
 
 #if USE_SINGLE
 using float_t = System.Single;
@@ -33,31 +35,42 @@ namespace AUTD3Sharp.Modulation
     public sealed class Sine : Internal.ModulationWithSamplingConfig<Sine>
     {
         private readonly int _freq;
-        private float_t? _amp;
-        private float_t? _offset;
+        private EmitIntensity? _intensity;
+        private EmitIntensity? _offset;
         private float_t? _phase;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="freq">Frequency of sine wave</param>
-        /// <remarks>The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.</remarks>
+        /// <remarks>The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = EmitIntensity.Max`, `offset = EmitIntensity.Max/2` by default.</remarks>
         public Sine(int freq)
         {
             _freq = freq;
-            _amp = null;
+            _intensity = null;
             _phase = null;
             _offset = null;
         }
 
         /// <summary>
-        /// Set amplitude
+        /// Set intensity
         /// </summary>
-        /// <param name="amp">normalized amplitude (0.0 - 1.0)</param>
+        /// <param name="intensity">Intensity</param>
         /// <returns></returns>
-        public Sine WithAmp(float_t amp)
+        public Sine WithIntensity(EmitIntensity intensity)
         {
-            _amp = amp;
+            _intensity = intensity;
+            return this;
+        }
+
+        /// <summary>
+        /// Set intensity
+        /// </summary>
+        /// <param name="intensity">Intensity</param>
+        /// <returns></returns>
+        public Sine WithIntensity(byte intensity)
+        {
+            _intensity = new EmitIntensity(intensity);
             return this;
         }
 
@@ -66,7 +79,18 @@ namespace AUTD3Sharp.Modulation
         /// </summary>
         /// <param name="offset">Offset of the sine wave</param>
         /// <returns></returns>
-        public Sine WithOffset(float_t offset)
+        public Sine WithOffset(byte offset)
+        {
+            _offset = new EmitIntensity(offset);
+            return this;
+        }
+
+        /// <summary>
+        /// Set offset
+        /// </summary>
+        /// <param name="offset">Offset of the sine wave</param>
+        /// <returns></returns>
+        public Sine WithOffset(EmitIntensity offset)
         {
             _offset = offset;
             return this;
@@ -90,10 +114,10 @@ namespace AUTD3Sharp.Modulation
         internal override ModulationPtr ModulationPtr()
         {
             var ptr = NativeMethodsBase.AUTDModulationSine((uint)_freq);
-            if (_amp != null)
-                ptr = NativeMethodsBase.AUTDModulationSineWithAmp(ptr, _amp.Value);
+            if (_intensity != null)
+                ptr = NativeMethodsBase.AUTDModulationSineWithIntensity(ptr, _intensity.Value.Value);
             if (_offset != null)
-                ptr = NativeMethodsBase.AUTDModulationSineWithOffset(ptr, _offset.Value);
+                ptr = NativeMethodsBase.AUTDModulationSineWithOffset(ptr, _offset.Value.Value);
             if (_phase != null)
                 ptr = NativeMethodsBase.AUTDModulationSineWithPhase(ptr, _phase.Value);
             if (Config != null)

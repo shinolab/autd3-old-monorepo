@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,8 @@
 
 use std::collections::HashMap;
 
-use crate::{
-    derive::{Gain, Modulation},
-    driver::derive::prelude::*,
-};
+use autd3_derive::{Gain, Modulation};
+use autd3_driver::derive::prelude::*;
 
 #[derive(Gain, Default)]
 pub struct CustomGain {
@@ -37,7 +35,7 @@ impl CustomGain {
     }
 }
 
-impl crate::driver::datagram::Gain for CustomGain {
+impl autd3_driver::datagram::Gain for CustomGain {
     fn calc(
         &self,
         _geometry: &Geometry,
@@ -53,7 +51,7 @@ pub struct CustomModulation {
     pub config: SamplingConfiguration,
 }
 
-impl crate::driver::datagram::Modulation for CustomModulation {
+impl autd3_driver::datagram::Modulation for CustomModulation {
     fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         Ok(self.buf.clone())
     }

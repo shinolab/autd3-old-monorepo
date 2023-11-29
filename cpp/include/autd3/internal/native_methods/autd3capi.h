@@ -73,6 +73,10 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
 
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
+
+[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+
 [[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
 [[nodiscard]]
@@ -342,11 +346,11 @@ ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
 ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
                                                    SamplingConfiguration config);
 
-[[nodiscard]] ModulationPtr AUTDModulationSineWithAmp(ModulationPtr m, double amp);
+[[nodiscard]] ModulationPtr AUTDModulationSineWithIntensity(ModulationPtr m, uint8_t intensity);
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithPhase(ModulationPtr m, double phase);
 
-[[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, double offset);
+[[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, uint8_t offset);
 
 [[nodiscard]] ModulationPtr AUTDModulationSquare(uint32_t freq);
 

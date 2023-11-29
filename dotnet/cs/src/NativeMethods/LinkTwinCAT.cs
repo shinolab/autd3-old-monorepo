@@ -8,9 +8,9 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace AUTD3Sharp
+namespace AUTD3Sharp.NativeMethods
 {
-    internal static unsafe partial class NativeMethodsLinkTwinCAT
+    public static unsafe partial class NativeMethodsLinkTwinCAT
     {
         const string __DllName = "autd3capi_link_twincat";
 
@@ -44,19 +44,19 @@ namespace AUTD3Sharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkTwinCATBuilderPtr
+    public unsafe partial struct LinkTwinCATBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct LinkRemoteTwinCATBuilderPtr
+    public unsafe partial struct LinkRemoteTwinCATBuilderPtr
     {
         public IntPtr Item1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct ResultLinkRemoteTwinCATBuilder
+    public unsafe partial struct ResultLinkRemoteTwinCATBuilder
     {
         public LinkRemoteTwinCATBuilderPtr result;
         public uint err_len;

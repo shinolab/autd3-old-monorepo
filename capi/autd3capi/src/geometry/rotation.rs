@@ -4,7 +4,7 @@
  * Created Date: 26/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_driver::geometry::UnitQuaternion;
-use autd3capi_def::common::driver::{
+use autd3capi_def::driver::{
     defined::float,
     geometry::{EulerAngle, Rad},
 };
