@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 29/11/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,12 +74,12 @@ pub unsafe extern "C" fn AUTDTransducerWavelength(tr: TransducerPtr, sound_speed
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerModDelayGet(tr: TransducerPtr) -> u16 {
-    cast!(tr.0, Transducer).mod_delay()
+    cast!(tr.0, Transducer).mod_delay
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransducerModDelaySet(tr: TransducerPtr, delay: u16) {
-    cast_mut!(tr.0, Transducer).set_mod_delay(delay)
+    cast_mut!(tr.0, Transducer).mod_delay = delay;
 }
 
 #[cfg(test)]
