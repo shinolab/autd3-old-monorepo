@@ -32,5 +32,8 @@ include_package_data = True
 install_requires =
     numpy
 
+[options.package_data]
+pyautd3 = py.typed
+
 [bdist_wheel]
 plat_name = ${plat_name}
