@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/07/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ impl EthernetAdapters {
             while !adapter.is_null() {
                 let desc = CStr::from_ptr(((*adapter).desc).as_ptr())
                     .to_str()
-                    .unwrap()
+                    .unwrap_or("")
                     .to_string();
                 let name = CStr::from_ptr(((*adapter).name).as_ptr())
                     .to_str()
