@@ -1,3 +1,8 @@
+# 18.0.0
+
+- Update firmware to v4.0.1
+  - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+
 # 17.0.3
 
 - Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3
