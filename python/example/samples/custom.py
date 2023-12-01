@@ -37,7 +37,7 @@ class Burst(Modulation):
     _length: int
 
     def __init__(self: "Burst", length: int, config: SamplingConfiguration = None) -> None:
-        super().__init__(config if config is not None else SamplingConfiguration.new_with_frequency(4e3))
+        super().__init__(config if config is not None else SamplingConfiguration.from_frequency(4e3))
         self._length = length
 
     def calc(self: "Burst") -> np.ndarray:

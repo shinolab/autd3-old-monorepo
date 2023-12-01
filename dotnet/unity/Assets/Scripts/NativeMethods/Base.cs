@@ -426,11 +426,11 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNew", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern STMPropsPtr AUTDSTMPropsNew(float freq);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNewWithPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMPropsNewWithPeriod(ulong p);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsFromPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern STMPropsPtr AUTDSTMPropsFromPeriod(ulong p);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsNewWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern STMPropsPtr AUTDSTMPropsNewWithSamplingConfig(SamplingConfigurationRaw config);
+        [DllImport(__DllName, EntryPoint = "AUTDSTMPropsFromSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern STMPropsPtr AUTDSTMPropsFromSamplingConfig(SamplingConfigurationRaw config);
 
         [DllImport(__DllName, EntryPoint = "AUTDSTMPropsWithStartIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern STMPropsPtr AUTDSTMPropsWithStartIdx(STMPropsPtr props, int idx);

@@ -2,6 +2,8 @@
 
 - Update firmware to v4.0.1
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+- Rename `SamplingConfiguration::new_with_*` to `SamplingConfiguration::from_*`
+- Rename `EmitIntensity::new_with_*` to `EmitIntensity::with_*`
 
 # 17.0.3
 

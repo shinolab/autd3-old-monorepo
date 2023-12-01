@@ -372,9 +372,9 @@ ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsNew(double freq);
 
-[[nodiscard]] STMPropsPtr AUTDSTMPropsNewWithPeriod(uint64_t p);
+[[nodiscard]] STMPropsPtr AUTDSTMPropsFromPeriod(uint64_t p);
 
-[[nodiscard]] STMPropsPtr AUTDSTMPropsNewWithSamplingConfig(SamplingConfiguration config);
+[[nodiscard]] STMPropsPtr AUTDSTMPropsFromSamplingConfig(SamplingConfiguration config);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithStartIdx(STMPropsPtr props, int32_t idx);
 

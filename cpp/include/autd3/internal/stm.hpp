@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,10 +52,10 @@ class STM {
     native_methods::STMPropsPtr ptr{nullptr};
     if (_freq.has_value()) ptr = native_methods::AUTDSTMPropsNew(_freq.value());
     if (_period.has_value())
-      ptr = native_methods::AUTDSTMPropsNewWithPeriod(
+      ptr = native_methods::AUTDSTMPropsFromPeriod(
           static_cast<uint64_t>(_period.value().count()));
     if (_config.has_value())
-      ptr = AUTDSTMPropsNewWithSamplingConfig(
+      ptr = AUTDSTMPropsFromSamplingConfig(
           static_cast<native_methods::SamplingConfiguration>(_config.value()));
     if (ptr._0 == nullptr) throw std::runtime_error("unreachable!");
     ptr = AUTDSTMPropsWithStartIdx(ptr, _start_idx);
@@ -131,12 +131,12 @@ class FocusSTM final : public STM {
   FocusSTM& operator=(FocusSTM&& obj) = default;
   ~FocusSTM() override = default;
 
-  static FocusSTM new_with_sampling_config(const SamplingConfiguration config) {
+  static FocusSTM from_sampling_config(const SamplingConfiguration config) {
     return FocusSTM(std::nullopt, std::nullopt, config);
   }
 
   template <typename Rep, typename Period>
-  static FocusSTM new_with_period(
+  static FocusSTM from_period(
       const std::chrono::duration<Rep, Period> period) {
     return FocusSTM(
         std::nullopt,
@@ -337,12 +337,12 @@ class GainSTM final : public STM {
    * @param config Sampling configuration
    * @return GainSTM
    */
-  static GainSTM new_with_sampling_config(const SamplingConfiguration config) {
+  static GainSTM from_sampling_config(const SamplingConfiguration config) {
     return GainSTM(std::nullopt, std::nullopt, config);
   }
 
   template <typename Rep, typename Period>
-  static GainSTM new_with_period(
+  static GainSTM from_period(
       const std::chrono::duration<Rep, Period> period) {
     return GainSTM(
         std::nullopt, std::nullopt, std::nullopt,

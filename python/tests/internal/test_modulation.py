@@ -42,7 +42,7 @@ class CacheTest(Modulation):
     calc_cnt: int
 
     def __init__(self: "CacheTest") -> None:
-        super().__init__(SamplingConfiguration.new_with_frequency(4e3))
+        super().__init__(SamplingConfiguration.from_frequency(4e3))
         self.calc_cnt = 0
 
     def calc(self: "CacheTest"):

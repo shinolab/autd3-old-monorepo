@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@ pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDEmitIntensityNewWithCorrectionAlpha(value: u8, alpha: float) -> u8 {
-    autd3_driver::common::EmitIntensity::new_with_correction_alpha(value, alpha).value()
+pub unsafe extern "C" fn AUTDEmitIntensityWithCorrectionAlpha(value: u8, alpha: float) -> u8 {
+    autd3_driver::common::EmitIntensity::with_correction_alpha(value, alpha).value()
 }
 
 #[derive(Debug, Clone, Copy)]

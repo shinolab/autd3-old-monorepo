@@ -450,11 +450,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSTMPropsNew.argtypes = [ctypes.c_double] 
         self.dll.AUTDSTMPropsNew.restype = STMPropsPtr
 
-        self.dll.AUTDSTMPropsNewWithPeriod.argtypes = [ctypes.c_uint64] 
-        self.dll.AUTDSTMPropsNewWithPeriod.restype = STMPropsPtr
+        self.dll.AUTDSTMPropsFromPeriod.argtypes = [ctypes.c_uint64] 
+        self.dll.AUTDSTMPropsFromPeriod.restype = STMPropsPtr
 
-        self.dll.AUTDSTMPropsNewWithSamplingConfig.argtypes = [SamplingConfiguration]  # type: ignore 
-        self.dll.AUTDSTMPropsNewWithSamplingConfig.restype = STMPropsPtr
+        self.dll.AUTDSTMPropsFromSamplingConfig.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSTMPropsFromSamplingConfig.restype = STMPropsPtr
 
         self.dll.AUTDSTMPropsWithStartIdx.argtypes = [STMPropsPtr, ctypes.c_int32]  # type: ignore 
         self.dll.AUTDSTMPropsWithStartIdx.restype = STMPropsPtr
@@ -882,11 +882,11 @@ class NativeMethods(metaclass=Singleton):
     def stm_props_new(self, freq: float) -> STMPropsPtr:
         return self.dll.AUTDSTMPropsNew(freq)
 
-    def stm_props_new_with_period(self, p: int) -> STMPropsPtr:
-        return self.dll.AUTDSTMPropsNewWithPeriod(p)
+    def stm_props_from_period(self, p: int) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsFromPeriod(p)
 
-    def stm_props_new_with_sampling_config(self, config: SamplingConfiguration) -> STMPropsPtr:
-        return self.dll.AUTDSTMPropsNewWithSamplingConfig(config)
+    def stm_props_from_sampling_config(self, config: SamplingConfiguration) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsFromSamplingConfig(config)
 
     def stm_props_with_start_idx(self, props: STMPropsPtr, idx: int) -> STMPropsPtr:
         return self.dll.AUTDSTMPropsWithStartIdx(props, idx)

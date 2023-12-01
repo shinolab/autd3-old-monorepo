@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ impl Sine {
             intensity: EmitIntensity::MAX,
             phase: 0.0,
             offset: EmitIntensity::MAX / 2,
-            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            config: SamplingConfiguration::from_frequency(4e3).unwrap(),
         }
     }
 

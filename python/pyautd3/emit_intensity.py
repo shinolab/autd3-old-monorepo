@@ -27,14 +27,14 @@ class EmitIntensity:
         self._value = c_uint8(intensity)
 
     @staticmethod
-    def new_with_correction_alpha(value: int, alpha: float) -> "EmitIntensity":
+    def with_correction_alpha(value: int, alpha: float) -> "EmitIntensity":
         """Create by normalized intensity with correction."""
-        return EmitIntensity(int(Def().emit_intensity_new_with_correction_alpha(value, alpha)))
+        return EmitIntensity(int(Def().emit_intensity_with_correction_alpha(value, alpha)))
 
     @staticmethod
-    def new_with_correction(value: int) -> "EmitIntensity":
+    def with_correction(value: int) -> "EmitIntensity":
         """Create by normalized intensity with correction."""
-        return EmitIntensity.new_with_correction_alpha(value, DEFAULT_CORRECTED_ALPHA)
+        return EmitIntensity.with_correction_alpha(value, DEFAULT_CORRECTED_ALPHA)
 
     @property
     def value(self: "EmitIntensity") -> int:

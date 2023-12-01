@@ -9,7 +9,7 @@ class BurstModulation final : public autd3::Modulation {
   }
 
   explicit BurstModulation(const size_t buf_size = 4000) noexcept
-      : autd3::Modulation(autd3::SamplingConfiguration::new_with_frequency(4e3)), _buf_size(buf_size) {}
+      : autd3::Modulation(autd3::SamplingConfiguration::from_frequency(4e3)), _buf_size(buf_size) {}
 
  private:
   size_t _buf_size;

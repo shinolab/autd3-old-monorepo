@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ impl FocusSTM {
     /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
     ///
     pub fn new(freq: float) -> Self {
-        Self::new_with_props(STMProps::new(freq))
+        Self::from_props(STMProps::new(freq))
     }
 
     /// constructor
@@ -48,8 +48,8 @@ impl FocusSTM {
     ///
     /// * `period` - Period. The period closest to `period` from the possible periods is set.
     ///
-    pub fn new_with_period(period: std::time::Duration) -> Self {
-        Self::new_with_props(STMProps::new_with_period(period))
+    pub fn from_period(period: std::time::Duration) -> Self {
+        Self::from_props(STMProps::from_period(period))
     }
 
     /// constructor
@@ -58,8 +58,8 @@ impl FocusSTM {
     ///
     /// * `config` - Sampling configuration
     ///
-    pub fn new_with_sampling_config(config: SamplingConfiguration) -> Self {
-        Self::new_with_props(STMProps::new_with_sampling_config(config))
+    pub fn from_sampling_config(config: SamplingConfiguration) -> Self {
+        Self::from_props(STMProps::from_sampling_config(config))
     }
 
     /// constructor
@@ -67,7 +67,7 @@ impl FocusSTM {
     /// # Arguments
     ///
     /// * `props` - STMProps
-    pub fn new_with_props(props: STMProps) -> Self {
+    pub fn from_props(props: STMProps) -> Self {
         Self {
             control_points: Vec::new(),
             props,
@@ -181,8 +181,8 @@ mod tests {
     }
 
     #[test]
-    fn new_with_period() {
-        let stm = FocusSTM::new_with_period(std::time::Duration::from_micros(250))
+    fn from_period() {
+        let stm = FocusSTM::from_period(std::time::Duration::from_micros(250))
             .add_foci_from_iter((0..10).map(|_| Vector3::zeros()))
             .unwrap();
 
@@ -194,9 +194,9 @@ mod tests {
     }
 
     #[test]
-    fn new_with_sampling_config() {
-        let stm = FocusSTM::new_with_sampling_config(
-            SamplingConfiguration::new_with_period(std::time::Duration::from_micros(25)).unwrap(),
+    fn from_sampling_config() {
+        let stm = FocusSTM::from_sampling_config(
+            SamplingConfiguration::from_period(std::time::Duration::from_micros(25)).unwrap(),
         )
         .add_foci_from_iter((0..10).map(|_| Vector3::zeros()))
         .unwrap();

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ public class FocusSTMTest
             Assert.Equal(0, autd.Link.StmFinishIdx(dev.Idx));
         }
 
-        stm = FocusSTM.NewWithSamplingConfig(SamplingConfiguration.NewWithFrequencyDivision(512)).AddFocus(center).AddFocus(center);
+        stm = FocusSTM.FromSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512)).AddFocus(center).AddFocus(center);
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal(20000.0, stm.Frequency);
         Assert.Equal(2 * 20000.0, stm.SamplingConfiguration.Frequency);

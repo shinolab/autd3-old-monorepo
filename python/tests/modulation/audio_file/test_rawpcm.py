@@ -116,7 +116,7 @@ async def test_rawpcm():
 
     assert await autd.send_async(
         RawPCM(Path(__file__).parent / "sin150.dat", 4000).with_sampling_config(
-            SamplingConfiguration.new_with_frequency_division(512),
+            SamplingConfiguration.from_frequency_division(512),
         ),
     )
     for dev in autd.geometry:

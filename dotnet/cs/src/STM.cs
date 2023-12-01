@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,10 +74,10 @@ namespace AUTD3Sharp
                 if (_freq != null)
                     ptr = NativeMethodsBase.AUTDSTMPropsNew(_freq.Value);
                 if (_period != null)
-                    ptr = NativeMethodsBase.AUTDSTMPropsNewWithPeriod((ulong)(_period.Value.TotalSeconds * 1000 * 1000 *
+                    ptr = NativeMethodsBase.AUTDSTMPropsFromPeriod((ulong)(_period.Value.TotalSeconds * 1000 * 1000 *
                                                                               1000));
                 if (_samplingConfig != null)
-                    ptr = NativeMethodsBase.AUTDSTMPropsNewWithSamplingConfig(_samplingConfig.Value.Internal);
+                    ptr = NativeMethodsBase.AUTDSTMPropsFromSamplingConfig(_samplingConfig.Value.Internal);
                 ptr = NativeMethodsBase.AUTDSTMPropsWithStartIdx(ptr, StartIdxV);
                 ptr = NativeMethodsBase.AUTDSTMPropsWithFinishIdx(ptr, FinishIdxV);
                 return ptr;
@@ -119,12 +119,12 @@ namespace AUTD3Sharp
             {
             }
 
-            public static FocusSTM NewWithPeriod(TimeSpan period)
+            public static FocusSTM FromPeriod(TimeSpan period)
             {
                 return new FocusSTM(null, period, null);
             }
 
-            public static FocusSTM NewWithSamplingConfig(SamplingConfiguration config)
+            public static FocusSTM FromSamplingConfig(SamplingConfiguration config)
             {
                 return new FocusSTM(null, null, config);
             }
@@ -216,12 +216,12 @@ namespace AUTD3Sharp
             {
             }
 
-            public static GainSTM NewWithPeriod(TimeSpan period)
+            public static GainSTM FromPeriod(TimeSpan period)
             {
                 return new GainSTM(null, period, null);
             }
 
-            public static GainSTM NewWithSamplingConfig(SamplingConfiguration config)
+            public static GainSTM FromSamplingConfig(SamplingConfiguration config)
             {
                 return new GainSTM(null, null, config);
             }

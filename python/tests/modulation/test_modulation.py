@@ -22,7 +22,7 @@ from tests.test_autd import create_controller
 
 class Burst(Modulation):
     def __init__(self: "Burst") -> None:
-        super().__init__(SamplingConfiguration.new_with_frequency(4e3))
+        super().__init__(SamplingConfiguration.from_frequency(4e3))
 
     def calc(self: "Burst"):
         buf = np.array([EmitIntensity(0)] * 10)

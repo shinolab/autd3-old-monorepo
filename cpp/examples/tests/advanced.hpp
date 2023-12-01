@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ class BurstModulation final : public autd3::Modulation {
   }
 
   explicit BurstModulation(const size_t buf_size = 4000,
-                           const autd3::SamplingConfiguration config = autd3::SamplingConfiguration::new_with_frequency(4e3)) noexcept
+                           const autd3::SamplingConfiguration config = autd3::SamplingConfiguration::from_frequency(4e3)) noexcept
       : autd3::Modulation(config), _buf_size(buf_size) {}
 
  private:

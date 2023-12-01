@@ -117,7 +117,7 @@ async def test_wav():
 
     assert await autd.send_async(
         Wav(Path(__file__).parent / "sin150.wav").with_sampling_config(
-            SamplingConfiguration.new_with_frequency_division(512),
+            SamplingConfiguration.from_frequency_division(512),
         ),
     )
     for dev in autd.geometry:

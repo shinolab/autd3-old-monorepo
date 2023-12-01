@@ -66,7 +66,7 @@ async def test_focus_stm():
         assert autd.link.stm_start_idx(dev.idx) == -1
         assert autd.link.stm_finish_idx(dev.idx) == 0
 
-    stm = FocusSTM.new_with_sampling_config(SamplingConfiguration.new_with_frequency_division(512)).add_focus(center).add_focus(center)
+    stm = FocusSTM.from_sampling_config(SamplingConfiguration.from_frequency_division(512)).add_focus(center).add_focus(center)
     assert await autd.send_async(stm)
     assert stm.frequency == 20000.0
     assert stm.sampling_config.frequency == 2 * 20000.0
@@ -126,7 +126,7 @@ async def test_gain_stm():
         assert autd.link.stm_start_idx(dev.idx) == -1
         assert autd.link.stm_finish_idx(dev.idx) == 0
 
-    stm = GainSTM.new_with_sampling_config(SamplingConfiguration.new_with_frequency_division(512)).add_gain(Uniform(0xFF)).add_gain(Uniform(0x80))
+    stm = GainSTM.from_sampling_config(SamplingConfiguration.from_frequency_division(512)).add_gain(Uniform(0xFF)).add_gain(Uniform(0x80))
     assert await autd.send_async(stm)
 
     assert stm.frequency == 20000.0

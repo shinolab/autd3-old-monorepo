@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,18 +27,16 @@ pub unsafe extern "C" fn AUTDSTMPropsNew(freq: float) -> STMPropsPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsNewWithPeriod(p: u64) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::new_with_period(std::time::Duration::from_nanos(
-        p,
-    )))
+pub unsafe extern "C" fn AUTDSTMPropsFromPeriod(p: u64) -> STMPropsPtr {
+    STMPropsPtr::new(STMProps::from_period(std::time::Duration::from_nanos(p)))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsNewWithSamplingConfig(
+pub unsafe extern "C" fn AUTDSTMPropsFromSamplingConfig(
     config: SamplingConfiguration,
 ) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::new_with_sampling_config(config.into()))
+    STMPropsPtr::new(STMProps::from_sampling_config(config.into()))
 }
 
 #[no_mangle]
@@ -112,7 +110,7 @@ pub unsafe extern "C" fn AUTDSTMPropsFinishIdx(props: STMPropsPtr) -> i32 {
 mod tests {
 
     use autd3capi_def::{
-        AUTDSamplingConfigFrequencyDivision, AUTDSamplingConfigNewWithFrequencyDivision,
+        AUTDSamplingConfigFrequencyDivision, AUTDSamplingConfigFromFrequencyDivision,
     };
 
     use super::*;
@@ -123,9 +121,8 @@ mod tests {
             let props = AUTDSTMPropsNew(1.);
             assert_eq!(1., AUTDSTMPropsFrequency(props, 0));
 
-            let props = AUTDSTMPropsNewWithSamplingConfig(
-                AUTDSamplingConfigNewWithFrequencyDivision(512).result,
-            );
+            let props =
+                AUTDSTMPropsFromSamplingConfig(AUTDSamplingConfigFromFrequencyDivision(512).result);
             assert_eq!(
                 512,
                 AUTDSamplingConfigFrequencyDivision(AUTDSTMPropsSamplingConfig(props, 0).result)
