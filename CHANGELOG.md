@@ -4,6 +4,8 @@
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
 - Rename `SamplingConfiguration::new_with_*` to `SamplingConfiguration::from_*`
 - Rename `EmitIntensity::new_with_*` to `EmitIntensity::with_*`
+- Change `ConfigureDebugOutputIdx` API
+  - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
 
 # 17.0.3
 
