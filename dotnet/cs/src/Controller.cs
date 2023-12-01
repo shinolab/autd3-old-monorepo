@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AUTD3Sharp.Internal;
 using AUTD3Sharp.NativeMethods;
@@ -683,17 +684,22 @@ namespace AUTD3Sharp
     /// <summary>
     /// Datagram to configure debug output
     /// </summary>
-    public sealed class ConfigureDebugOutoutIdx : IDatagram
+    public sealed class ConfigureDebugOutputIdx : IDatagram
     {
-        private readonly List<Transducer> _tr = new List<Transducer>();
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate byte DebugOutputDelegate(IntPtr context, GeometryPtr geometryPtr, uint devIdx);
 
-        public ConfigureDebugOutoutIdx Set(Transducer tr)
+        private readonly DebugOutputDelegate _f;
+
+        public ConfigureDebugOutputIdx(Func<Device, Transducer?> f)
         {
-            _tr.Add(tr);
-            return this;
+            _f = (context, geometryPtr, devIdx) =>
+            {
+                var tr = f(new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx)));
+                return (byte)(tr?.TrIdx ?? 0xFF);
+            };
         }
 
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => _tr.Aggregate(NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdx(), (ptr, tr) => NativeMethodsBase.AUTDDatagramConfigureDebugOutoutIdxSet(ptr, tr.Ptr));
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureDebugOutputIdx(Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero, geometry.Ptr);
     }
 
     /// <summary>

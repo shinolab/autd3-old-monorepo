@@ -2,6 +2,8 @@
 
 - Update firmware to v4.0.1
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+- Change `ConfigureDebugOutputIdx` API
+  - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
 
 # 17.0.3
 

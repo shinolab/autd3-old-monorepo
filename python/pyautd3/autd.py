@@ -14,7 +14,6 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import asyncio
 import ctypes
-import functools
 from collections.abc import Callable
 from datetime import timedelta
 from typing import Generic, TypeVar
@@ -33,6 +32,7 @@ from .native_methods.autd3capi_def import (
     ControllerPtr,
     DatagramPtr,
     DatagramSpecialPtr,
+    GeometryPtr,
     GroupKVMapPtr,
 )
 
@@ -611,34 +611,17 @@ class ConfigureModDelay(Datagram):
         return Base().datagram_configure_mod_delay()
 
 
-class ConfigureDebugOutoutIdx(Datagram):
+class ConfigureDebugOutputIdx(Datagram):
     """Datagram to configure debug output index."""
 
-    _tr: list[Transducer]
-
-    def __init__(self: "ConfigureDebugOutoutIdx") -> None:
+    def __init__(self: "ConfigureDebugOutputIdx", f: Callable[[Device], Transducer | None]) -> None:
         super().__init__()
-        self._tr = []
 
-    def set_tr(
-        self: "ConfigureDebugOutoutIdx",
-        tr: Transducer,
-    ) -> "ConfigureDebugOutoutIdx":
-        """Set transducer.
+        def f_native(_context: ctypes.c_void_p, geometry_ptr: GeometryPtr, dev_idx: int) -> int:
+            tr = f(Device(dev_idx, Base().device(geometry_ptr, dev_idx)))
+            return tr.tr_idx if tr is not None else 0xFF
 
-        Arguments:
-        ---------
-            tr: transducer
-        """
-        self._tr.append(tr)
-        return self
+        self._f_native = ctypes.CFUNCTYPE(ctypes.c_uint8, ctypes.c_void_p, GeometryPtr, ctypes.c_uint32)(f_native)
 
-    def _datagram_ptr(self: "ConfigureDebugOutoutIdx", _: Geometry) -> DatagramPtr:
-        return functools.reduce(
-            lambda acc, v: Base().datagram_configure_debug_outout_idx_set(
-                acc,
-                v._ptr,
-            ),
-            self._tr,
-            Base().datagram_configure_debug_outout_idx(),
-        )
+    def _datagram_ptr(self: "ConfigureDebugOutputIdx", geometry: Geometry) -> DatagramPtr:
+        return Base().datagram_configure_debug_output_idx(self._f_native, None, geometry._ptr)  # type: ignore[arg-type]
