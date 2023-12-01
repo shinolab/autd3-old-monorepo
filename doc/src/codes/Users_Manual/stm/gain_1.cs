@@ -1,4 +1,4 @@
 using AUTD3Sharp;
 using AUTD3Sharp.STM;
 
-var stm = GainSTM.NewWithSamplingConfig(SamplingConfiguration.NewWithFrequency(1));
+var stm = GainSTM.FromSamplingConfig(SamplingConfiguration.FromFrequency(1));

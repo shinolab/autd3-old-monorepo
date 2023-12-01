@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ public class ModulationTest
 {
     public class Burst : AUTD3Sharp.Modulation.Modulation
     {
-        public Burst() : base(SamplingConfiguration.NewWithFrequency(4e3))
+        public Burst() : base(SamplingConfiguration.FromFrequency(4e3))
         {
         }
 

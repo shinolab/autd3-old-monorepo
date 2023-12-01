@@ -2,7 +2,7 @@ public class Burst : Modulation
 {
     private readonly int _length;
 
-    public Burst(int length) : base(SamplingConfiguration.NewWithFrequency(4e3))
+    public Burst(int length) : base(SamplingConfiguration.FromFrequency(4e3))
     {
         _length = length;
     }

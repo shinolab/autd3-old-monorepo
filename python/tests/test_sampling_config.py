@@ -28,42 +28,42 @@ PERIOD_MIN = int(1000000000 / FPGA_CLK_FREQ * SAMPLING_FREQ_DIV_MIN)
 PERIOD_MAX = int(1000000000 / FPGA_CLK_FREQ * SAMPLING_FREQ_DIV_MAX)
 
 
-def test_sampl_config_new_with_freq_div():
-    config = SamplingConfiguration.new_with_frequency_division(SAMPLING_FREQ_DIV_MIN)
+def test_sampl_config_from_freq_div():
+    config = SamplingConfiguration.from_frequency_division(SAMPLING_FREQ_DIV_MIN)
     assert config.frequency_division == 512
     assert config.frequency == 40e3
     assert config.period == timedelta(microseconds=25)
 
     with pytest.raises(AUTDError) as e:
-        config = SamplingConfiguration.new_with_frequency_division(SAMPLING_FREQ_DIV_MIN - 1)
+        config = SamplingConfiguration.from_frequency_division(SAMPLING_FREQ_DIV_MIN - 1)
     assert e.value.msg == "Sampling frequency division (511) is out of range ([512, 4294967295])"
 
 
-def test_sampl_config_new_with_freq():
-    config = SamplingConfiguration.new_with_frequency(40e3)
+def test_sampl_config_from_freq():
+    config = SamplingConfiguration.from_frequency(40e3)
     assert config.frequency_division == 512
     assert config.frequency == 40e3
     assert config.period == timedelta(microseconds=25)
 
     with pytest.raises(AUTDError) as e:
-        config = SamplingConfiguration.new_with_frequency(FREQ_MIN - 0.1)
+        config = SamplingConfiguration.from_frequency(FREQ_MIN - 0.1)
     assert e.value.msg == "Sampling frequency (-0.09523162841685853) is out of range ([0.004768371583141473, 40000])"
 
     with pytest.raises(AUTDError) as e:
-        config = SamplingConfiguration.new_with_frequency(FREQ_MAX + 0.1)
+        config = SamplingConfiguration.from_frequency(FREQ_MAX + 0.1)
     assert e.value.msg == "Sampling frequency (40000.1) is out of range ([0.004768371583141473, 40000])"
 
 
-def test_sampl_config_new_with_period():
-    config = SamplingConfiguration.new_with_period(timedelta(microseconds=25))
+def test_sampl_config_from_period():
+    config = SamplingConfiguration.from_period(timedelta(microseconds=25))
     assert config.frequency_division == 512
     assert config.frequency == 40e3
     assert config.period == timedelta(microseconds=25)
 
     with pytest.raises(AUTDError) as e:
-        config = SamplingConfiguration.new_with_period(timedelta(microseconds=PERIOD_MIN / 1000 - 1))
+        config = SamplingConfiguration.from_period(timedelta(microseconds=PERIOD_MIN / 1000 - 1))
     assert e.value.msg == "Sampling period (24000 ns) is out of range ([25000, 209715199951])"
 
     with pytest.raises(AUTDError) as e:
-        config = SamplingConfiguration.new_with_period(timedelta(microseconds=PERIOD_MAX / 1000 + 1))
+        config = SamplingConfiguration.from_period(timedelta(microseconds=PERIOD_MAX / 1000 + 1))
     assert e.value.msg == "Sampling period (209715201000 ns) is out of range ([25000, 209715199951])"

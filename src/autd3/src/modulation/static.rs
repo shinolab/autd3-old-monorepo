@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ impl Static {
     pub fn new() -> Self {
         Self {
             intensity: EmitIntensity::MAX,
-            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            config: SamplingConfiguration::from_frequency(4e3).unwrap(),
         }
     }
 

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ public class CacheTest
     {
         internal int CalcCnt;
 
-        public ForCacheTest() : base(SamplingConfiguration.NewWithFrequencyDivision(5120))
+        public ForCacheTest() : base(SamplingConfiguration.FromFrequencyDivision(5120))
         {
             CalcCnt = 0;
         }

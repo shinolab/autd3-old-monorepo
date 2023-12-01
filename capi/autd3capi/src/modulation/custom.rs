@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ mod tests {
 
             let buf = [0xFF, 0xFF];
             let m = AUTDModulationCustom(
-                AUTDSamplingConfigNewWithFrequencyDivision(5120).result,
+                AUTDSamplingConfigFromFrequencyDivision(5120).result,
                 buf.as_ptr(),
                 buf.len() as _,
             );

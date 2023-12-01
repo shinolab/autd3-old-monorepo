@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,13 +47,13 @@ impl STMSamplingConfiguration {
             Self::Frequency(f) => {
                 let min = SamplingConfiguration::MIN.frequency() * size as float;
                 let max = SamplingConfiguration::MAX.frequency() * size as float;
-                SamplingConfiguration::new_with_frequency(f * size as float)
+                SamplingConfiguration::from_frequency(f * size as float)
                     .map_err(|_| AUTDInternalError::STMFreqOutOfRange(size, *f, min, max))
             }
             Self::Period(p) => {
                 let min = SamplingConfiguration::MIN.period().as_nanos() as usize / size;
                 let max = SamplingConfiguration::MAX.period().as_nanos() as usize / size;
-                SamplingConfiguration::new_with_period(std::time::Duration::from_nanos(
+                SamplingConfiguration::from_period(std::time::Duration::from_nanos(
                     (p.as_nanos() as usize / size) as _,
                 ))
                 .map_err(|_| AUTDInternalError::STMPeriodOutOfRange(size, p.as_nanos(), min, max))
@@ -81,7 +81,7 @@ impl STMProps {
         }
     }
 
-    pub fn new_with_period(period: std::time::Duration) -> Self {
+    pub fn from_period(period: std::time::Duration) -> Self {
         Self {
             sampling: STMSamplingConfiguration::Period(period),
             start_idx: None,
@@ -89,7 +89,7 @@ impl STMProps {
         }
     }
 
-    pub fn new_with_sampling_config(sampling: SamplingConfiguration) -> Self {
+    pub fn from_sampling_config(sampling: SamplingConfiguration) -> Self {
         Self {
             sampling: STMSamplingConfiguration::SamplingConfiguration(sampling),
             start_idx: None,
@@ -145,11 +145,11 @@ mod tests {
         assert_eq!(config.period(2), std::time::Duration::from_micros(250));
         assert_eq!(
             config.sampling(1).unwrap(),
-            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+            SamplingConfiguration::from_frequency(4e3).unwrap()
         );
         assert_eq!(
             config.sampling(2).unwrap(),
-            SamplingConfiguration::new_with_frequency(8e3).unwrap()
+            SamplingConfiguration::from_frequency(8e3).unwrap()
         );
     }
 
@@ -162,18 +162,18 @@ mod tests {
         assert_eq!(config.period(2), std::time::Duration::from_micros(250));
         assert_eq!(
             config.sampling(1).unwrap(),
-            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+            SamplingConfiguration::from_frequency(4e3).unwrap()
         );
         assert_eq!(
             config.sampling(2).unwrap(),
-            SamplingConfiguration::new_with_frequency(8e3).unwrap()
+            SamplingConfiguration::from_frequency(8e3).unwrap()
         );
     }
 
     #[test]
     fn test_sampling() {
         let config = STMSamplingConfiguration::SamplingConfiguration(
-            SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            SamplingConfiguration::from_frequency(4e3).unwrap(),
         );
         assert_eq!(config.frequency(1), 4e3);
         assert_eq!(config.frequency(2), 2e3);
@@ -181,11 +181,11 @@ mod tests {
         assert_eq!(config.period(2), std::time::Duration::from_micros(500));
         assert_eq!(
             config.sampling(1).unwrap(),
-            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+            SamplingConfiguration::from_frequency(4e3).unwrap()
         );
         assert_eq!(
             config.sampling(2).unwrap(),
-            SamplingConfiguration::new_with_frequency(4e3).unwrap()
+            SamplingConfiguration::from_frequency(4e3).unwrap()
         );
     }
 
@@ -194,7 +194,7 @@ mod tests {
         let config = STMSamplingConfiguration::Frequency(40e3);
         assert_eq!(
             config.sampling(1),
-            Ok(SamplingConfiguration::new_with_frequency(40e3).unwrap())
+            Ok(SamplingConfiguration::from_frequency(40e3).unwrap())
         );
         assert_eq!(
             config.sampling(2),
@@ -212,7 +212,7 @@ mod tests {
         let config = STMSamplingConfiguration::Period(std::time::Duration::from_micros(25));
         assert_eq!(
             config.sampling(1),
-            Ok(SamplingConfiguration::new_with_frequency(40e3).unwrap())
+            Ok(SamplingConfiguration::from_frequency(40e3).unwrap())
         );
         assert_eq!(
             config.sampling(2),

@@ -4,7 +4,7 @@
  * Created Date: 25/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,37 +24,37 @@ public class SamplingConfigTest
     private const ulong PeriodMax = (ulong)(1000000000.0 / AUTD3.FPGAClkFreq * SamplingFreqDivMax);
 
     [Fact]
-    public void SamplingConfigNewWithFreqDiv()
+    public void SamplingConfigFromFreqDiv()
     {
-        var config = SamplingConfiguration.NewWithFrequencyDivision(SamplingFreqDivMin);
+        var config = SamplingConfiguration.FromFrequencyDivision(SamplingFreqDivMin);
         Assert.Equal(512u, config.FrequencyDivision);
         Assert.Equal(40e3, config.Frequency);
         Assert.Equal(TimeSpan.FromMicroseconds(25), config.Period);
 
-        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.NewWithFrequencyDivision(SamplingFreqDivMin-1));
+        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.FromFrequencyDivision(SamplingFreqDivMin - 1));
     }
 
     [Fact]
-    public void SamplingConfigNewWithFreq()
+    public void SamplingConfigFromFreq()
     {
-        var config = SamplingConfiguration.NewWithFrequency(40e3);
+        var config = SamplingConfiguration.FromFrequency(40e3);
         Assert.Equal(512u, config.FrequencyDivision);
         Assert.Equal(40e3, config.Frequency);
         Assert.Equal(TimeSpan.FromMicroseconds(25), config.Period);
 
-        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.NewWithFrequency(FreqMin - 0.1));
-        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.NewWithFrequency(FreqMax + 0.1));
+        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.FromFrequency(FreqMin - 0.1));
+        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.FromFrequency(FreqMax + 0.1));
     }
 
     [Fact]
-    public void SamplingConfigNewWithPeriod()
+    public void SamplingConfigFromPeriod()
     {
-        var config = SamplingConfiguration.NewWithPeriod(TimeSpan.FromMicroseconds(25));
+        var config = SamplingConfiguration.FromPeriod(TimeSpan.FromMicroseconds(25));
         Assert.Equal(512u, config.FrequencyDivision);
         Assert.Equal(40e3, config.Frequency);
         Assert.Equal(TimeSpan.FromMicroseconds(25), config.Period);
 
-        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.NewWithPeriod(TimeSpan.FromMicroseconds(PeriodMin/1000.0 - 1.0)));
-        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.NewWithPeriod(TimeSpan.FromMicroseconds(PeriodMax / 1000.0 + 1.0)));
+        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.FromPeriod(TimeSpan.FromMicroseconds(PeriodMin / 1000.0 - 1.0)));
+        Assert.Throws<AUTDException>(() => _ = SamplingConfiguration.FromPeriod(TimeSpan.FromMicroseconds(PeriodMax / 1000.0 + 1.0)));
     }
 }

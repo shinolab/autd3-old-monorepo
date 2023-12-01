@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,7 @@ impl Fourier {
             mut components,
             config,
         } = self;
-        let config = SamplingConfiguration::new_with_frequency_division(
+        let config = SamplingConfiguration::from_frequency_division(
             config
                 .frequency_division()
                 .min(sine.sampling_config().frequency_division()),
@@ -73,7 +73,7 @@ impl Fourier {
         let freq_div = append.iter().fold(config.frequency_division(), |acc, m| {
             acc.min(m.sampling_config().frequency_division())
         });
-        let config = SamplingConfiguration::new_with_frequency_division(freq_div).unwrap();
+        let config = SamplingConfiguration::from_frequency_division(freq_div).unwrap();
         components.extend(append.iter().map(|m| m.with_sampling_config(config)));
         Self { components, config }
     }
