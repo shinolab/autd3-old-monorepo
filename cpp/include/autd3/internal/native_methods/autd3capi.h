@@ -73,9 +73,10 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
 
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
-
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureDebugOutputIdx(void* f,
+                                                void* context,
+                                                GeometryPtr geometry);
 
 [[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
@@ -284,6 +285,8 @@ void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint32_t idx);
 [[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStepIntensity(LinkPtr audit, uint32_t idx);
 
 [[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStepPhase(LinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint8_t AUTDLinkAuditFpgaDebugOutputIdx(LinkPtr audit, uint32_t idx);
 
 void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint32_t idx, uint16_t *delay);
 

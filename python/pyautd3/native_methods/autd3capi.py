@@ -231,11 +231,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramConfigureModDelay.argtypes = [] 
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdx.argtypes = [] 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdx.restype = DatagramPtr
-
-        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.argtypes = [DatagramPtr, TransducerPtr]  # type: ignore 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.restype = DatagramPtr
+        self.dll.AUTDDatagramConfigureDebugOutputIdx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureDebugOutputIdx.restype = DatagramPtr
 
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = ResultDatagram
@@ -326,6 +323,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkAuditFpgaSilencerStepPhase.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaSilencerStepPhase.restype = ctypes.c_uint16
+
+        self.dll.AUTDLinkAuditFpgaDebugOutputIdx.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaDebugOutputIdx.restype = ctypes.c_uint8
 
         self.dll.AUTDLinkAuditFpgaModDelays.argtypes = [LinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaModDelays.restype = None
@@ -663,11 +663,8 @@ class NativeMethods(metaclass=Singleton):
     def datagram_configure_mod_delay(self) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureModDelay()
 
-    def datagram_configure_debug_outout_idx(self) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureDebugOutoutIdx()
-
-    def datagram_configure_debug_outout_idx_set(self, dbg: DatagramPtr, tr: TransducerPtr) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureDebugOutoutIdxSet(dbg, tr)
+    def datagram_configure_debug_output_idx(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutputIdx(f, context, geometry)
 
     def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
@@ -758,6 +755,9 @@ class NativeMethods(metaclass=Singleton):
 
     def link_audit_fpga_silencer_step_phase(self, audit: LinkPtr, idx: int) -> ctypes.c_uint16:
         return self.dll.AUTDLinkAuditFpgaSilencerStepPhase(audit, idx)
+
+    def link_audit_fpga_debug_output_idx(self, audit: LinkPtr, idx: int) -> ctypes.c_uint8:
+        return self.dll.AUTDLinkAuditFpgaDebugOutputIdx(audit, idx)
 
     def link_audit_fpga_mod_delays(self, audit: LinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaModDelays(audit, idx, delay)

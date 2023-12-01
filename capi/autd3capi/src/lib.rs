@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -185,19 +185,21 @@ pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutoutIdx() -> DatagramPtr {
-    DatagramPtr::new(ConfigureDebugOutoutIdx::new())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutoutIdxSet(
-    dbg: DatagramPtr,
-    tr: TransducerPtr,
+pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutputIdx(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
 ) -> DatagramPtr {
-    let dbg =
-        Box::from_raw(dbg.0 as *mut Box<dyn DynamicDatagram> as *mut Box<ConfigureDebugOutoutIdx>);
-    DatagramPtr::new(dbg.set(cast!(tr.0, Transducer)))
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> u8,
+    >(f);
+    DatagramPtr::new(DynamicConfigureDebugOutputIdx::new(
+        geo.devices()
+            .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
+            .collect(),
+    ))
 }
 
 #[no_mangle]

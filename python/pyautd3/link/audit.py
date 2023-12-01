@@ -78,6 +78,9 @@ class Audit(Link):
     def silencer_step_phase(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_fpga_silencer_step_phase(self._ptr, idx))
 
+    def debug_output_idx(self: "Audit", idx: int) -> int:
+        return int(LinkAudit().link_audit_fpga_debug_output_idx(self._ptr, idx))
+
     def assert_thermal_sensor(self: "Audit", idx: int) -> None:
         LinkAudit().link_audit_fpga_assert_thermal_sensor(self._ptr, idx)
 

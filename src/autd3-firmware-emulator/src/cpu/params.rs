@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 pub const CPU_VERSION_MAJOR: u16 = 0x8B;
-pub const CPU_VERSION_MINOR: u16 = 0x00;
+pub const CPU_VERSION_MINOR: u16 = 0x01;
 
 pub const BRAM_SELECT_CONTROLLER: u8 = 0x0;
 pub const BRAM_SELECT_MOD: u8 = 0x1;
@@ -39,6 +39,7 @@ pub const BRAM_ADDR_STM_FREQ_DIV_0: u16 = 0x052;
 pub const BRAM_ADDR_SOUND_SPEED_0: u16 = 0x054;
 pub const BRAM_ADDR_STM_START_IDX: u16 = 0x056;
 pub const BRAM_ADDR_STM_FINISH_IDX: u16 = 0x057;
+pub const BRAM_ADDR_DEBUG_OUT_IDX: u16 = 0x0F0;
 pub const BRAM_ADDR_MOD_DELAY_BASE: u16 = 0x200;
 
 pub const MOD_BUF_PAGE_SIZE_WIDTH: u32 = 15;
