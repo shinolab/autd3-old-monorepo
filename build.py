@@ -191,6 +191,8 @@ class Config:
             command.append("--all")
         command.append("--features")
         command.append(features)
+        command.append("--exclude")
+        command.append("examples")
         return command
 
     def cargo_test_command(self):
