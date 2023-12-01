@@ -6,6 +6,7 @@
 - Rename `EmitIntensity::new_with_*` to `EmitIntensity::with_*`
 - Change `ConfigureDebugOutputIdx` API
   - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
+- Fix [#234](https://github.com/shinolab/autd3/issues/234): cannot use autd3-link-soem with Utf8Error
 
 # 17.0.3
 
