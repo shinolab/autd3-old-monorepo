@@ -2,6 +2,7 @@
 
 - Update firmware to v4.0.1
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+- Fix [#234](https://github.com/shinolab/autd3/issues/234): cannot use autd3-link-soem with Utf8Error
 
 # 17.0.3
 
