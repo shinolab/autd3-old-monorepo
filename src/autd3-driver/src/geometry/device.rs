@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -186,7 +186,7 @@ pub mod tests {
         Device::new(
             idx,
             (0..n)
-                .map(|i| Transducer::new(idx, i, Vector3::zeros(), UnitQuaternion::identity()))
+                .map(|i| Transducer::new(i, Vector3::zeros(), UnitQuaternion::identity()))
                 .collect(),
         )
     }
@@ -212,7 +212,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -234,7 +233,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -255,7 +253,6 @@ pub mod tests {
                 .enumerate()
                 .map(|(i, (y, x))| {
                     Transducer::new(
-                        0,
                         i,
                         10.16 * Vector3::new(x as float, y as float, 0.),
                         UnitQuaternion::identity(),
@@ -277,7 +274,6 @@ pub mod tests {
                 .enumerate()
                 .map(|(i, (y, x))| {
                     Transducer::new(
-                        0,
                         i,
                         10.16 * Vector3::new(x as float, y as float, 0.) + p,
                         UnitQuaternion::identity(),
@@ -296,7 +292,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    Transducer::new(0, i, 10.16 * Vector3::new(x as float, y as float, 0.), q)
+                    Transducer::new(i, 10.16 * Vector3::new(x as float, y as float, 0.), q)
                 })
                 .collect::<Vec<_>>();
 
@@ -314,12 +310,7 @@ pub mod tests {
             let transducers = itertools::iproduct!((0..18), (0..14))
                 .enumerate()
                 .map(|(i, (y, x))| {
-                    Transducer::new(
-                        0,
-                        i,
-                        10.16 * Vector3::new(x as float, y as float, 0.) + p,
-                        q,
-                    )
+                    Transducer::new(i, 10.16 * Vector3::new(x as float, y as float, 0.) + p, q)
                 })
                 .collect::<Vec<_>>();
 
@@ -339,7 +330,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -367,7 +357,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -409,7 +398,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -436,7 +424,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -492,7 +479,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -532,7 +518,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -543,7 +528,7 @@ pub mod tests {
         let device = Device::new(0, transducers);
 
         for tr in &device {
-            let _ = tr.tr_idx();
+            let _ = tr.idx();
         }
     }
 
@@ -553,7 +538,6 @@ pub mod tests {
             .enumerate()
             .map(|(i, (y, x))| {
                 Transducer::new(
-                    0,
                     i,
                     10.16 * Vector3::new(x as float, y as float, 0.),
                     UnitQuaternion::identity(),
@@ -564,7 +548,7 @@ pub mod tests {
         let mut device = Device::new(0, transducers);
 
         for tr in &mut device {
-            tr.mod_delay = 1;
+            let _ = tr.idx();
         }
     }
 }

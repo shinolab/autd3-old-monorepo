@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ pub trait Gain: GainAsAny {
                             dev.idx(),
                             dev.iter()
                                 .map(|tr| {
-                                    if filter[tr.tr_idx()] {
+                                    if filter[tr.idx()] {
                                         f(dev, tr)
                                     } else {
                                         Drive {
@@ -157,7 +157,7 @@ mod tests {
         let filter = geometry
             .iter()
             .take(2)
-            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.tr_idx() < 100).collect()))
+            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.idx() < 100).collect()))
             .collect::<HashMap<_, _>>();
         let g = NullGain {}
             .calc(&geometry, GainFilter::Filter(&filter))
@@ -201,7 +201,7 @@ mod tests {
 
         let filter = geometry
             .iter()
-            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.tr_idx() < 100).collect()))
+            .map(|dev| (dev.idx(), dev.iter().map(|tr| tr.idx() < 100).collect()))
             .collect::<HashMap<_, _>>();
         let g = NullGain {}
             .calc(&geometry, GainFilter::Filter(&filter))

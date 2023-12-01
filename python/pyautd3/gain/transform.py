@@ -50,8 +50,8 @@ class Transform(IGain, Generic[G]):
 
             Base().gain_calc_get_result(res, d.ctypes.data_as(POINTER(_Drive)), dev.idx)  # type: ignore[arg-type]
             for tr in dev:
-                drive = self._f(dev, tr, Drive(d[tr.tr_idx]["phase"], int(d[tr.tr_idx]["intensity"])))
-                d[tr.tr_idx] = np.void(_Drive(drive.phase, drive.intensity._value))  # type: ignore[call-overload]
+                drive = self._f(dev, tr, Drive(d[tr.idx]["phase"], int(d[tr.idx]["intensity"])))
+                d[tr.idx] = np.void(_Drive(drive.phase, drive.intensity._value))  # type: ignore[call-overload]
             drives[dev.idx] = d
 
         Base().gain_calc_free_result(res)

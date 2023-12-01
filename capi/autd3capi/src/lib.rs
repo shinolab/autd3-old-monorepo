@@ -179,8 +179,28 @@ pub unsafe extern "C" fn AUTDDatagramStop() -> DatagramSpecialPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramConfigureModDelay() -> DatagramPtr {
-    DatagramPtr::new(ConfigureModDelay::new())
+pub unsafe extern "C" fn AUTDDatagramConfigureModDelay(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
+) -> DatagramPtr {
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32, u8) -> u16,
+    >(f);
+    DatagramPtr::new(DynamicConfigureModDelay::new(
+        geo.devices()
+            .flat_map(move |dev| {
+                dev.iter().map(move |tr| {
+                    (
+                        (dev.idx(), tr.idx()),
+                        f(context, geometry, dev.idx() as u32, tr.idx() as u8),
+                    )
+                })
+            })
+            .collect(),
+    ))
 }
 
 #[no_mangle]
@@ -471,10 +491,6 @@ mod tests {
 
             let s = AUTDDatagramStop();
             let r = AUTDControllerSendSpecial(cnt, s, -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            let s = AUTDDatagramConfigureModDelay();
-            let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
             assert_eq!(r.result, AUTD3_TRUE);
 
             let s = AUTDDatagramSilencer(256, 256).result;

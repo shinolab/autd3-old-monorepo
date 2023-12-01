@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ namespace autd3::internal {
 class ControllerBuilder;
 
 template <class F>
-concept group_f = requires(F f, const internal::Device& dev) { typename std::invoke_result_t<F, const internal::Device&>::value_type; };
+concept group_f = requires(F f, const Device& dev) { typename std::invoke_result_t<F, const Device&>::value_type; };
 
 /**
  * @brief Controller class for AUTD3

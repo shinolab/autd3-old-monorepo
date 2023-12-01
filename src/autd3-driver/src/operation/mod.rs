@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -318,7 +318,6 @@ pub mod tests {
             0,
             vec![Transducer::new(
                 0,
-                0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
             )],
@@ -398,7 +397,6 @@ pub mod tests {
             0,
             vec![Transducer::new(
                 0,
-                0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
             )],
@@ -448,7 +446,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -500,7 +497,6 @@ pub mod tests {
             0,
             vec![Transducer::new(
                 0,
-                0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
             )],
@@ -547,7 +543,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -618,7 +613,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),

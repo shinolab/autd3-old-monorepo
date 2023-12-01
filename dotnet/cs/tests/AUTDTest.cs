@@ -430,12 +430,9 @@ public class AUTDTest
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(0, d));
-            foreach (var tr in dev)
-                tr.ModDelay = 1;
-            Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(0, d));
         }
 
-        Assert.True(await autd.SendAsync(new ConfigureModDelay()));
+        Assert.True(await autd.SendAsync(new ConfigureModDelay((dev, tr) => 1)));
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(1, d));

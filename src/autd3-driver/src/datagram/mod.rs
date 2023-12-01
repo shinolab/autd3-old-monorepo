@@ -68,7 +68,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::operation::{ClearOp, ConfigureModDelayOp, NullOp};
+    use crate::operation::{ClearOp, NullOp};
 
     use super::*;
 
@@ -92,7 +92,7 @@ mod tests {
         pub err: bool,
     }
     impl Datagram for TestDatagram2 {
-        type O1 = ConfigureModDelayOp;
+        type O1 = NullOp;
         type O2 = NullOp;
 
         fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn test_datagram_tuple() {
         let d = (TestDatagram1 { err: false }, TestDatagram2 { err: false });
-        let _: (ClearOp, ConfigureModDelayOp) =
+        let _: (ClearOp, NullOp) =
             <(TestDatagram1, TestDatagram2) as Datagram>::operation(d).unwrap();
     }
 

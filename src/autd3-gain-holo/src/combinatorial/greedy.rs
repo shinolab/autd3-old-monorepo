@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -105,15 +105,15 @@ impl Gain for Greedy {
         let mut indices: Vec<_> = match filter {
             GainFilter::All => geometry
                 .devices()
-                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.tr_idx())))
+                .flat_map(|dev| dev.iter().map(|tr| (dev.idx(), tr.idx())))
                 .collect(),
             GainFilter::Filter(filter) => geometry
                 .devices()
                 .filter_map(|dev| {
                     filter.get(&dev.idx()).map(|filter| {
                         dev.iter().filter_map(|tr| {
-                            if filter[tr.tr_idx()] {
-                                Some((dev.idx(), tr.tr_idx()))
+                            if filter[tr.idx()] {
+                                Some((dev.idx(), tr.idx()))
                             } else {
                                 None
                             }
@@ -128,9 +128,9 @@ impl Gain for Greedy {
         indices.shuffle(&mut rng);
 
         let mut tmp = vec![Complex::new(0., 0.); m];
-        indices.iter().for_each(|&(dev_idx, tr_idx)| {
+        indices.iter().for_each(|&(dev_idx, idx)| {
             Self::transfer_foci(
-                &geometry[dev_idx][tr_idx],
+                &geometry[dev_idx][idx],
                 geometry[dev_idx].sound_speed,
                 geometry[dev_idx].attenuation,
                 &self.foci,
@@ -153,7 +153,7 @@ impl Gain for Greedy {
             cache.iter_mut().zip(tmp.iter()).for_each(|(c, a)| {
                 *c += a * phase;
             });
-            res.get_mut(&dev_idx).unwrap()[tr_idx].phase = phase.argument() + PI;
+            res.get_mut(&dev_idx).unwrap()[idx].phase = phase.argument() + PI;
         });
         Ok(res)
     }

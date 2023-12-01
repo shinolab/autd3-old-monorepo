@@ -678,7 +678,21 @@ namespace AUTD3Sharp
     /// </summary>
     public sealed class ConfigureModDelay : IDatagram
     {
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureModDelay();
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate ushort ConfigureModDelayDelegate(IntPtr context, GeometryPtr geometryPtr, uint devIdx, byte trIdx);
+
+        private readonly ConfigureModDelayDelegate _f;
+
+        public ConfigureModDelay(Func<Device, Transducer, ushort> f)
+        {
+            _f = (context, geometryPtr, devIdx, trIdx) =>
+            {
+                var dev = new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx));
+                var tr = new Transducer(trIdx, dev.Ptr);
+                return f(dev, tr);
+            };
+        }
+
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureModDelay(Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero, geometry.Ptr);
     }
 
     /// <summary>
@@ -695,7 +709,7 @@ namespace AUTD3Sharp
             _f = (context, geometryPtr, devIdx) =>
             {
                 var tr = f(new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx)));
-                return (byte)(tr?.TrIdx ?? 0xFF);
+                return (byte)(tr?.Idx ?? 0xFF);
             };
         }
 

@@ -30,7 +30,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class Simulator
     {
-        public sealed class SimulatorBuilder : Internal.ILinkBuilder<Simulator>
+        public sealed class SimulatorBuilder : ILinkBuilder<Simulator>
         {
             private LinkSimulatorBuilderPtr _ptr;
 

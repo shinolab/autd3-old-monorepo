@@ -38,7 +38,7 @@ impl<F: Fn(&Device) -> Option<&Transducer>> Operation for DebugOutIdxOp<F> {
     fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
         tx[0] = TypeTag::Debug as u8;
-        tx[2] = (self.f)(device).map(|tr| tr.tr_idx() as u8).unwrap_or(0xFF);
+        tx[2] = (self.f)(device).map(|tr| tr.idx() as u8).unwrap_or(0xFF);
         Ok(4)
     }
 
@@ -69,12 +69,12 @@ mod tests {
     const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn silencer_op() {
+    fn debug_op() {
         let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx = [0x00u8; 4 * NUM_DEVICE];
 
-        let mut op = DebugOutIdxOp::new(|dev| Some(&dev[0]));
+        let mut op = DebugOutIdxOp::new(|dev| Some(&dev[10]));
 
         assert!(op.init(&geometry).is_ok());
 
@@ -98,7 +98,7 @@ mod tests {
         geometry.devices().for_each(|dev| {
             assert_eq!(tx[dev.idx() * 4], TypeTag::Debug as u8);
             assert_eq!(tx[dev.idx() * 4 + 1], 0x00);
-            assert_eq!(tx[dev.idx() * 4 + 2], dev.idx() as u8);
+            assert_eq!(tx[dev.idx() * 4 + 2], 10);
             assert_eq!(tx[dev.idx() * 4 + 3], 0x00);
         });
     }

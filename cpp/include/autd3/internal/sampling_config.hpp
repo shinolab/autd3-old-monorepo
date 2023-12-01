@@ -32,15 +32,15 @@ class SamplingConfiguration final {
   }
   template <typename Rep, typename Period>
   [[nodiscard]] static SamplingConfiguration from_period(const std::chrono::duration<Rep, Period> period) {
-    return SamplingConfiguration(validate(native_methods::AUTDSamplingConfigFromPeriod(
-        static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count()))));
+    return SamplingConfiguration(validate(
+        native_methods::AUTDSamplingConfigFromPeriod(static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(period).count()))));
   }
 
-  [[nodiscard]] double frequency() const { return native_methods::AUTDSamplingConfigFrequency(_internal); }
+  [[nodiscard]] double frequency() const { return AUTDSamplingConfigFrequency(_internal); }
 
-  [[nodiscard]] uint32_t frequency_division() const { return native_methods::AUTDSamplingConfigFrequencyDivision(_internal); }
+  [[nodiscard]] uint32_t frequency_division() const { return AUTDSamplingConfigFrequencyDivision(_internal); }
 
-  [[nodiscard]] std::chrono::nanoseconds period() const { return std::chrono::nanoseconds(native_methods::AUTDSamplingConfigPeriod(_internal)); }
+  [[nodiscard]] std::chrono::nanoseconds period() const { return std::chrono::nanoseconds(AUTDSamplingConfigPeriod(_internal)); }
 
   explicit operator native_methods::SamplingConfiguration() const { return _internal; }
 

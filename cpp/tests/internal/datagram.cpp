@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 
 #include <autd3/datagram/debug.hpp>
+#include <autd3/datagram/mod_delay.hpp>
 #include <autd3/gain/uniform.hpp>
 #include <autd3/internal/datagram.hpp>
 
@@ -114,11 +115,11 @@ TEST(Internal, ConfigureModDelay) {
 
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link().mod_delays(dev.idx()), [](auto d) { return d == 0; }));
-    for (auto& tr : dev) tr.set_mod_delay(1);
-    ASSERT_TRUE(std::ranges::all_of(autd.link().mod_delays(dev.idx()), [](auto d) { return d == 0; }));
   }
 
-  ASSERT_TRUE(autd.send_async(autd3::internal::ConfigureModDelay()).get());
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureModDelay(
+                                  [](const autd3::internal::Device& dev, const autd3::internal::Transducer& tr) -> uint16_t { return 1; }))
+                  .get());
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link().mod_delays(dev.idx()), [](auto d) { return d == 1; }));
   }

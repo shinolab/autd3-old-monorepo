@@ -13,6 +13,8 @@
 
 #include <string>
 
+#include "autd3/datagram/debug.hpp"
+#include "autd3/datagram/mod_delay.hpp"
 #include "autd3/gain/bessel.hpp"
 #include "autd3/gain/cache.hpp"
 #include "autd3/gain/focus.hpp"
@@ -72,9 +74,9 @@ using internal::EmitIntensity;
 using internal::SamplingConfiguration;
 using modulation::Modulation;
 
+using datagram::ConfigureDebugOutputIdx;
+using datagram::ConfigureModDelay;
 using internal::Clear;
-using internal::ConfigureDebugOutputIdx;
-using internal::ConfigureModDelay;
 using internal::Silencer;
 using internal::Synchronize;
 using internal::UpdateFlags;

@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn latest_firmware_version() {
-        assert_eq!("v4.0.0", FirmwareInfo::latest_version());
+        assert_eq!("v4.0.1", FirmwareInfo::latest_version());
     }
 
     #[test]

@@ -21,7 +21,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public class Nop
     {
-        public sealed class NopBuilder : Internal.ILinkBuilder<Nop>
+        public sealed class NopBuilder : ILinkBuilder<Nop>
         {
             LinkBuilderPtr ILinkBuilder<Nop>.Ptr()
             {

@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,9 +38,7 @@ class Cache final : public internal::Modulation {
   Cache& operator=(Cache&& obj) noexcept = default;
   ~Cache() noexcept override = default;
 
-  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
-    return internal::native_methods::AUTDModulationCacheIntoModulation(*_cache);
-  }
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override { return AUTDModulationCacheIntoModulation(*_cache); }
 
   [[nodiscard]] const std::vector<internal::EmitIntensity>& buffer() const { return _buffer; }
 

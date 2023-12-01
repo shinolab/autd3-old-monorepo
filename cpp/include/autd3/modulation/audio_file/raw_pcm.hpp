@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,8 +42,7 @@ class RawPCM final : public internal::ModulationWithSamplingConfig<RawPCM>,
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = validate(internal::native_methods::AUTDModulationRawPCM(_path.string().c_str(), _sample_rate));
     if (_config.has_value())
-      ptr = internal::native_methods::AUTDModulationRawPCMWithSamplingConfig(
-          ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
+      ptr = AUTDModulationRawPCMWithSamplingConfig(ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
     return ptr;
   }
 

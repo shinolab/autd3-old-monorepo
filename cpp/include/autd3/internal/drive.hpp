@@ -3,7 +3,7 @@
 // Created Date: 24/11/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,9 @@ namespace autd3::internal {
 struct Drive final {
   double phase;
   EmitIntensity intensity;
+
+  explicit Drive(const double phase, const EmitIntensity intensity) : phase(phase), intensity(intensity) {}
+  explicit Drive(const double phase, const uint8_t intensity) : phase(phase), intensity(intensity) {}
 };
 
 }  // namespace autd3::internal

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -160,7 +160,7 @@ public class GeometryTest
             dev.Translate(t);
             foreach (var tr in dev)
             {
-                Assert.Equal(tr.Position, originalPos[tr.TrIdx] + t);
+                Assert.Equal(tr.Position, originalPos[tr.Idx] + t);
             }
         }
     }
@@ -192,7 +192,7 @@ public class GeometryTest
             dev.Affine(t, r);
             foreach (var tr in dev)
             {
-                var op = originalPos[tr.TrIdx];
+                var op = originalPos[tr.Idx];
                 var expected = new Vector3d(-op.y, op.x, op.z) + t;
                 Assert.True(Math.Abs(expected.x - tr.Position.x) < 1e-3);
                 Assert.True(Math.Abs(expected.y - tr.Position.y) < 1e-3);
@@ -203,27 +203,14 @@ public class GeometryTest
     }
 
     [Fact]
-    public async Task TestTransducerDevIdx()
+    public async Task TestTransducerIdx()
     {
         var autd = await AUTDTest.CreateController();
         foreach (var dev in autd.Geometry)
         {
             foreach (var (tr, i) in dev.Select((tr, i) => (tr, i)))
             {
-                Assert.Equal(dev.Idx, tr.DevIdx);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task TestTransducerTrIdx()
-    {
-        var autd = await AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var (tr, i) in dev.Select((tr, i) => (tr, i)))
-            {
-                Assert.Equal(i, tr.TrIdx);
+                Assert.Equal(i, tr.Idx);
             }
         }
     }
@@ -289,21 +276,6 @@ public class GeometryTest
             foreach (var tr in dev)
             {
                 Assert.Equal(tr.ZDirection, new Vector3d(0.0, 0.0, 1.0));
-            }
-        }
-    }
-
-    [Fact]
-    public async Task TestTransducerModDelay()
-    {
-        var autd = await AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            foreach (var tr in dev)
-            {
-                Assert.Equal(0, tr.ModDelay);
-                tr.ModDelay = 1;
-                Assert.Equal(1, tr.ModDelay);
             }
         }
     }

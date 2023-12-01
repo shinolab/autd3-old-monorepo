@@ -1,4 +1,3 @@
 using AUTD3Sharp;
 
-autd.Geometry[0][0].ModDelay = 1;
-autd.Send(new ConfigureModDelay());
+autd.Send(new ConfigureModDelay((dev, tr) => return dev.Idx == 0 && tr.Idx == 0 ? 1 : 0));

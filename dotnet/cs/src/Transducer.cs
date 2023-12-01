@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,22 +39,16 @@ namespace AUTD3Sharp
     {
         internal readonly TransducerPtr Ptr;
 
-        internal Transducer(int devIdx, int trIdx, DevicePtr ptr)
+        internal Transducer(int trIdx, DevicePtr ptr)
         {
-            TrIdx = trIdx;
-            DevIdx = devIdx;
+            Idx = trIdx;
             Ptr = NativeMethodsBase.AUTDTransducer(ptr, (uint)trIdx);
         }
 
         /// <summary>
         /// Index of the transducer
         /// </summary>
-        public int TrIdx { get; }
-
-        /// <summary>
-        /// Index of the device
-        /// </summary>
-        public int DevIdx { get; }
+        public int Idx { get; }
 
         /// <summary>
         /// Position of the transducer
@@ -149,15 +143,6 @@ namespace AUTD3Sharp
                 }
                 return new Vector3(dir[0], dir[1], dir[2]);
             }
-        }
-
-        /// <summary>
-        /// Modulation delay of the transducer
-        /// </summary>
-        public ushort ModDelay
-        {
-            get => NativeMethodsBase.AUTDTransducerModDelayGet(Ptr);
-            set => NativeMethodsBase.AUTDTransducerModDelaySet(Ptr, value);
         }
 
         /// <summary>
