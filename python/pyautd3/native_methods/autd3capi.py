@@ -5,6 +5,10 @@ import os
 from pyautd3.native_methods.autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
 
 
+class ContextPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class ControllerBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
@@ -93,11 +97,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainPlaneWithIntensity.argtypes = [GainPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDGainPlaneWithIntensity.restype = GainPtr
 
-        self.dll.AUTDGainTransducerTest.argtypes = [] 
+        self.dll.AUTDGainTransducerTest.argtypes = [ctypes.c_void_p, ContextPtr, GeometryPtr]  # type: ignore 
         self.dll.AUTDGainTransducerTest.restype = GainPtr
-
-        self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, TransducerPtr, ctypes.c_double, ctypes.c_uint8]  # type: ignore 
-        self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
         self.dll.AUTDGainUniform.argtypes = [ctypes.c_uint8] 
         self.dll.AUTDGainUniform.restype = GainPtr
@@ -180,12 +181,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDTransducerWavelength.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDTransducerWavelength.restype = ctypes.c_double
 
-        self.dll.AUTDTransducerModDelayGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerModDelayGet.restype = ctypes.c_uint16
-
-        self.dll.AUTDTransducerModDelaySet.argtypes = [TransducerPtr, ctypes.c_uint16]  # type: ignore 
-        self.dll.AUTDTransducerModDelaySet.restype = None
-
         self.dll.AUTDControllerBuilder.argtypes = [] 
         self.dll.AUTDControllerBuilder.restype = ControllerBuilderPtr
 
@@ -228,7 +223,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramStop.argtypes = [] 
         self.dll.AUTDDatagramStop.restype = DatagramSpecialPtr
 
-        self.dll.AUTDDatagramConfigureModDelay.argtypes = [] 
+        self.dll.AUTDDatagramConfigureModDelay.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
         self.dll.AUTDDatagramConfigureDebugOutputIdx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
@@ -525,11 +520,8 @@ class NativeMethods(metaclass=Singleton):
     def gain_plane_with_intensity(self, plane: GainPtr, intensity: int) -> GainPtr:
         return self.dll.AUTDGainPlaneWithIntensity(plane, intensity)
 
-    def gain_transducer_test(self) -> GainPtr:
-        return self.dll.AUTDGainTransducerTest()
-
-    def gain_transducer_test_set(self, trans_test: GainPtr, tr: TransducerPtr, phase: float, intensity: int) -> GainPtr:
-        return self.dll.AUTDGainTransducerTestSet(trans_test, tr, phase, intensity)
+    def gain_transducer_test(self, f: ctypes.c_void_p | None, context: ContextPtr, geometry: GeometryPtr) -> GainPtr:
+        return self.dll.AUTDGainTransducerTest(f, context, geometry)
 
     def gain_uniform(self, intensity: int) -> GainPtr:
         return self.dll.AUTDGainUniform(intensity)
@@ -591,8 +583,8 @@ class NativeMethods(metaclass=Singleton):
     def rotation_from_euler_zyz(self, x: float, y: float, z: float, rot: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDRotationFromEulerZYZ(x, y, z, rot)
 
-    def transducer(self, dev: DevicePtr, tr_idx: int) -> TransducerPtr:
-        return self.dll.AUTDTransducer(dev, tr_idx)
+    def transducer(self, dev: DevicePtr, idx: int) -> TransducerPtr:
+        return self.dll.AUTDTransducer(dev, idx)
 
     def transducer_position(self, tr: TransducerPtr, pos: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerPosition(tr, pos)
@@ -611,12 +603,6 @@ class NativeMethods(metaclass=Singleton):
 
     def transducer_wavelength(self, tr: TransducerPtr, sound_speed: float) -> ctypes.c_double:
         return self.dll.AUTDTransducerWavelength(tr, sound_speed)
-
-    def transducer_mod_delay_get(self, tr: TransducerPtr) -> ctypes.c_uint16:
-        return self.dll.AUTDTransducerModDelayGet(tr)
-
-    def transducer_mod_delay_set(self, tr: TransducerPtr, delay: int) -> None:
-        return self.dll.AUTDTransducerModDelaySet(tr, delay)
 
     def controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilder()
@@ -660,8 +646,8 @@ class NativeMethods(metaclass=Singleton):
     def datagram_stop(self) -> DatagramSpecialPtr:
         return self.dll.AUTDDatagramStop()
 
-    def datagram_configure_mod_delay(self) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureModDelay()
+    def datagram_configure_mod_delay(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureModDelay(f, context, geometry)
 
     def datagram_configure_debug_output_idx(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureDebugOutputIdx(f, context, geometry)

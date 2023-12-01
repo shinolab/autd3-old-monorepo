@@ -4,7 +4,7 @@
  * Created Date: 08/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,8 +51,7 @@ pub mod tests {
 
     #[test]
     fn directivity_from_tr() {
-        let tr =
-            crate::geometry::Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = crate::geometry::Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         assert_approx_eq::assert_approx_eq!(
             0.,

@@ -32,7 +32,7 @@ namespace AUTD3Sharp.Link
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnErrCallbackDelegate(string str);
 
-        public sealed class SOEMBuilder : Internal.ILinkBuilder<SOEM>
+        public sealed class SOEMBuilder : ILinkBuilder<SOEM>
         {
             private LinkSOEMBuilderPtr _ptr;
 
@@ -97,7 +97,7 @@ namespace AUTD3Sharp.Link
             /// <remarks>See <see href="https://infosys.beckhoff.com/content/1033/ethercatsystem/2469122443.html">Beckhoff's site</see> for more details.</remarks>
             /// <param name="syncMode"></param>
             /// <returns></returns>
-            public SOEMBuilder WithSyncMode(AUTD3Sharp.SyncMode syncMode)
+            public SOEMBuilder WithSyncMode(SyncMode syncMode)
             {
                 _ptr = NativeMethodsLinkSOEM.AUTDLinkSOEMWithSyncMode(_ptr, syncMode.Into());
                 return this;
@@ -161,7 +161,7 @@ namespace AUTD3Sharp.Link
 
             SOEM ILinkBuilder<SOEM>.ResolveLink(LinkPtr ptr)
             {
-                return new SOEM { };
+                return new SOEM();
             }
         }
 
@@ -200,7 +200,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class RemoteSOEM
     {
-        public sealed class RemoteSOEMBuilder : Internal.ILinkBuilder<RemoteSOEM>
+        public sealed class RemoteSOEMBuilder : ILinkBuilder<RemoteSOEM>
         {
             private LinkRemoteSOEMBuilderPtr _ptr;
 
@@ -243,7 +243,7 @@ namespace AUTD3Sharp.Link
 
             RemoteSOEM ILinkBuilder<RemoteSOEM>.ResolveLink(LinkPtr ptr)
             {
-                return new RemoteSOEM { };
+                return new RemoteSOEM();
             }
         }
 

@@ -22,6 +22,10 @@ struct ResultGroupKVMap {
   void* err;
 };
 
+struct ContextPtr {
+  void* _0;
+};
+
 struct LinkAuditBuilderPtr {
   void* _0;
 };
@@ -71,7 +75,10 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramSpecialPtr AUTDDatagramStop();
 
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureModDelay(void* f,
+                                          void* context,
+                                          GeometryPtr geometry);
 
 [[nodiscard]]
 DatagramPtr AUTDDatagramConfigureDebugOutputIdx(void* f,
@@ -163,13 +170,7 @@ GainPtr AUTDGainGroup(GroupGainMapPtr map,
 
 [[nodiscard]] GainPtr AUTDGainPlaneWithIntensity(GainPtr plane, uint8_t intensity);
 
-[[nodiscard]] GainPtr AUTDGainTransducerTest();
-
-[[nodiscard]]
-GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
-                                  TransducerPtr tr,
-                                  double phase,
-                                  uint8_t intensity);
+[[nodiscard]] GainPtr AUTDGainTransducerTest(void* f, ContextPtr context, GeometryPtr geometry);
 
 [[nodiscard]] GainPtr AUTDGainUniform(uint8_t intensity);
 
@@ -218,7 +219,7 @@ void AUTDDeviceEnableSet(DevicePtr dev, bool value);
 
 void AUTDRotationFromEulerZYZ(double x, double y, double z, double *rot);
 
-[[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
+[[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t idx);
 
 void AUTDTransducerPosition(TransducerPtr tr, double *pos);
 
@@ -231,10 +232,6 @@ void AUTDTransducerDirectionY(TransducerPtr tr, double *dir);
 void AUTDTransducerDirectionZ(TransducerPtr tr, double *dir);
 
 [[nodiscard]] double AUTDTransducerWavelength(TransducerPtr tr, double sound_speed);
-
-[[nodiscard]] uint16_t AUTDTransducerModDelayGet(TransducerPtr tr);
-
-void AUTDTransducerModDelaySet(TransducerPtr tr, uint16_t delay);
 
 [[nodiscard]] LinkPtr AUTDLinkGet(ControllerPtr cnt);
 

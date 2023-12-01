@@ -1,6 +1,5 @@
 const auto tr = autd.geometry()[0][0];
-const auto tr_idx = tr.tr_idx();
-const auto dev_idx = tr.dev_idx();
+const auto idx = tr.idx();
 const auto position = tr.position();
 const auto rotation = tr.rotation();
 const auto x_dir = tr.x_direction();

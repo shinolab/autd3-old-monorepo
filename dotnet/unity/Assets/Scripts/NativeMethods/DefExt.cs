@@ -63,7 +63,7 @@ namespace AUTD3Sharp
     namespace NativeMethods
     {
 
-        public static unsafe partial class NativeMethodsDef
+        public static partial class NativeMethodsDef
         {
             public const int AUTD3_ERR = -1;
         }
@@ -76,115 +76,115 @@ namespace AUTD3Sharp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct ControllerPtr
+        public struct ControllerPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct GeometryPtr
+        public struct GeometryPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct DevicePtr
+        public struct DevicePtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct TransducerPtr
+        public struct TransducerPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct LinkBuilderPtr
+        public struct LinkBuilderPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct LinkPtr
+        public struct LinkPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct DatagramPtr
+        public struct DatagramPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct DatagramSpecialPtr
+        public struct DatagramSpecialPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct GainPtr
+        public struct GainPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct ModulationPtr
+        public struct ModulationPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct STMPropsPtr
+        public struct STMPropsPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct BackendPtr
+        public struct BackendPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct CachePtr
+        public struct CachePtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct FirmwareInfoListPtr
+        public struct FirmwareInfoListPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct EmissionConstraintPtr
+        public struct EmissionConstraintPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct GainCalcDrivesMapPtr
+        public struct GainCalcDrivesMapPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct GroupGainMapPtr
+        public struct GroupGainMapPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe partial struct GroupKVMapPtr
+        public struct GroupKVMapPtr
         {
             public IntPtr Item1;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultI32
+        public struct ResultI32
         {
             public int result;
             public uint err_len;
@@ -192,7 +192,7 @@ namespace AUTD3Sharp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultGainCalcDrivesMap
+        public struct ResultGainCalcDrivesMap
         {
             public GainCalcDrivesMapPtr result;
             public uint err_len;
@@ -200,7 +200,7 @@ namespace AUTD3Sharp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultModulation
+        public struct ResultModulation
         {
             public ModulationPtr result;
             public uint err_len;
@@ -208,7 +208,7 @@ namespace AUTD3Sharp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultController
+        public struct ResultController
         {
             public ControllerPtr result;
             public uint err_len;
@@ -216,7 +216,7 @@ namespace AUTD3Sharp
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultBackend
+        public struct ResultBackend
         {
             public BackendPtr result;
             public uint err_len;
@@ -225,7 +225,7 @@ namespace AUTD3Sharp
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ResultDatagram
+        public struct ResultDatagram
         {
             public DatagramPtr result;
             public uint err_len;
@@ -236,100 +236,79 @@ namespace AUTD3Sharp
         {
             public static int Validate(this ResultI32 res)
             {
-                if (res.result == NativeMethodsDef.AUTD3_ERR)
+                if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static GainCalcDrivesMapPtr Validate(this ResultGainCalcDrivesMap res)
             {
-                if (res.result.Item1 == IntPtr.Zero)
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static FirmwareInfoListPtr Validate(this ResultFirmwareInfoList res)
             {
-                if (res.result.Item1 == IntPtr.Zero)
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static GroupKVMapPtr Validate(this ResultGroupKVMap res)
             {
-                if (res.result.Item1 == IntPtr.Zero)
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static CachePtr Validate(this ResultCache res)
             {
-                if (res.result.Item1 == IntPtr.Zero)
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static DatagramPtr Validate(this ResultDatagram res)
             {
-                if (res.result.Item1 == IntPtr.Zero)
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
 
             public static SamplingConfigurationRaw Validate(this ResultSamplingConfig res)
             {
-                if (res.result.div == 0)
+                if (res.result.div != 0) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
                 {
-                    var err = new byte[res.err_len];
-                    unsafe
-                    {
-                        fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
-                    }
-                    throw new AUTDException(err);
+                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
-                return res.result;
+                throw new AUTDException(err);
             }
         }
     }

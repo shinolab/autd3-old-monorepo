@@ -33,17 +33,17 @@ class ConfigureDebugOutputIdx final {
   using native_f = uint8_t (*)(const void*, internal::native_methods::GeometryPtr, uint32_t);
 
  public:
-  ConfigureDebugOutputIdx(const F& f) : _f(f) {
+  explicit ConfigureDebugOutputIdx(const F& f) : _f(f) {
     _f_native = +[](const void* context, const internal::native_methods::GeometryPtr geometry_ptr, const uint32_t dev_idx) -> uint8_t {
-      const internal::Device dev(static_cast<size_t>(dev_idx), AUTDDevice(geometry_ptr, dev_idx));
+      const internal::Device dev(dev_idx, AUTDDevice(geometry_ptr, dev_idx));
       const auto* tr = static_cast<const ConfigureDebugOutputIdx*>(context)->_f(dev);
-      return tr != nullptr ? static_cast<uint8_t>(tr->tr_idx()) : 0xFF;
+      return tr != nullptr ? static_cast<uint8_t>(tr->idx()) : 0xFF;
     };
   }
 
   [[nodiscard]] internal::native_methods::DatagramPtr ptr(const internal::Geometry& geometry) const {
-    return internal::native_methods::AUTDDatagramConfigureDebugOutputIdx(const_cast<void*>(reinterpret_cast<const void*>(_f_native)),
-                                                                         const_cast<void*>(static_cast<const void*>(this)), geometry.ptr());
+    return AUTDDatagramConfigureDebugOutputIdx(const_cast<void*>(reinterpret_cast<const void*>(_f_native)),
+                                               const_cast<void*>(static_cast<const void*>(this)), geometry.ptr());
   }
 
  private:

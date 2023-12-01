@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -335,7 +335,7 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                         (
                             dev.idx(),
                             dev.iter()
-                                .filter(|tr| filter[tr.tr_idx()])
+                                .filter(|tr| filter[tr.idx()])
                                 .map(|_| {
                                     let phase = x[idx].rem_euclid(2.0 * PI);
                                     let amp = self.constraint.convert(1.0, 1.0);

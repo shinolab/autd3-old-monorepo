@@ -32,7 +32,8 @@ pub use autd3_driver::{
 pub use custom::{CustomGain, CustomModulation};
 pub use drive::*;
 pub use dynamic_datagram::{
-    DynamicConfigureDebugOutputIdx, DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2,
+    DynamicConfigureDebugOutputIdx, DynamicConfigureModDelay, DynamicDatagram, DynamicDatagramPack,
+    DynamicDatagramPack2,
 };
 pub use dynamic_link::DynamicLinkBuilder;
 pub use libc::c_void;
@@ -130,6 +131,9 @@ pub struct GainCalcDrivesMapPtr(pub ConstPtr);
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct GeometryPtr(pub ConstPtr);
+
+unsafe impl Send for GeometryPtr {}
+unsafe impl Sync for GeometryPtr {}
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]

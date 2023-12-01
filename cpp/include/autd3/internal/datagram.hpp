@@ -70,16 +70,6 @@ class Silencer final {
 };
 
 /**
- * @brief Datagram to set modulation delay
- */
-class ConfigureModDelay final {
- public:
-  ConfigureModDelay() = default;
-
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const Geometry&) { return native_methods::AUTDDatagramConfigureModDelay(); }
-};
-
-/**
  * @brief Datagram for clear all data in devices
  */
 class Clear final {

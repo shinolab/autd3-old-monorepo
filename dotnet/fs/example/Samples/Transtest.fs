@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,5 +20,8 @@ module TransTest =
         (new Silencer()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         let m = new Sine(150);
-        let g = (new TransducerTest()).Set(autd.Geometry[0][0], 0, EmitIntensity.Max).Set(autd.Geometry[0][248], 0, EmitIntensity.Max);
+        let g = new TransducerTest(fun dev tr -> match (dev.Idx, tr.Idx) with
+                                                    | (0, 0) -> System.Nullable(new Drive(0, EmitIntensity.Max))
+                                                    | (0, 248) -> System.Nullable(new Drive(0, EmitIntensity.Max))
+                                                    | _ ->  System.Nullable());
         (m, g) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;

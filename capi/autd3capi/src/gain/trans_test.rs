@@ -4,67 +4,46 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3capi_def::{autd3::gain::TransducerTest, driver::geometry::Transducer, *};
+use autd3capi_def::{autd3::gain::TransducerTest, *};
+use driver::common::EmitIntensity;
+
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct ContextPtr(pub ConstPtr);
+
+unsafe impl Send for ContextPtr {}
+unsafe impl Sync for ContextPtr {}
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainTransducerTest() -> GainPtr {
-    GainPtr::new(TransducerTest::new())
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDGainTransducerTestSet(
-    trans_test: GainPtr,
-    tr: TransducerPtr,
-    phase: float,
-    intensity: u8,
+pub unsafe extern "C" fn AUTDGainTransducerTest(
+    f: ConstPtr,
+    context: ContextPtr,
+    geometry: GeometryPtr,
 ) -> GainPtr {
-    GainPtr::new(take_gain!(trans_test, TransducerTest).set(
-        cast!(tr.0, Transducer),
-        phase,
-        intensity,
-    ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::{
-        gain::*,
-        geometry::{device::AUTDDevice, transducer::AUTDTransducer, AUTDGeometry},
-        tests::*,
-        *,
-    };
-
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
-
-    #[test]
-    fn test_trans_test() {
-        unsafe {
-            let cnt = create_controller();
-
-            let geo = AUTDGeometry(cnt);
-            let dev = AUTDDevice(geo, 0);
-            let tr = AUTDTransducer(dev, 0);
-
-            let g = AUTDGainTransducerTest();
-            let g = AUTDGainTransducerTestSet(g, tr, 1., 0xFF);
-
-            let g = AUTDGainIntoDatagram(g);
-
-            let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            AUTDControllerDelete(cnt);
-        }
-    }
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ContextPtr, GeometryPtr, u32, u8, *mut Drive),
+    >(f);
+    GainPtr::new(TransducerTest::new(move |dev, tr| {
+        let mut d = driver::common::Drive {
+            phase: 0.,
+            intensity: EmitIntensity::new(0),
+        };
+        f(
+            context,
+            geometry,
+            dev.idx() as u32,
+            tr.idx() as u8,
+            &mut d as *mut _ as *mut _,
+        );
+        Some(d)
+    }))
 }

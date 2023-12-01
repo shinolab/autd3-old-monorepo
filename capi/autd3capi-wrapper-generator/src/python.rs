@@ -225,6 +225,8 @@ impl Generator for PythonGenerator {
                     | "DynamicLinkBuilder"
                     | "DynamicConfigureDebugOutputIdx"
                     | "DynamicDebugOutIdxOp"
+                    | "DynamicConfigureModDelay"
+                    | "DynamicConfigureModDelayOp"
             )
         }));
         self

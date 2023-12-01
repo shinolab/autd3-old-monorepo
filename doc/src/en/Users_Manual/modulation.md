@@ -83,7 +83,7 @@ To compensate for this, each transducer has a function to delay the sampling ind
 
 The following example shows how to set the delay of the $0$-th transducer of $0$-th device to $1$.
 
-```rust,should_panic,edition2021
+```rust,edition2021
 {{#include ../../codes/Users_Manual/modulation_2.rs}}
 ```
 

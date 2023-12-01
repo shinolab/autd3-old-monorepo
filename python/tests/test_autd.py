@@ -403,11 +403,7 @@ async def test_configure_mod_delay():
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 0)
 
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.mod_delay = 1
-
-    assert await autd.send_async(ConfigureModDelay())
+    assert await autd.send_async(ConfigureModDelay(lambda _dev, _tr: 1))
 
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 1)

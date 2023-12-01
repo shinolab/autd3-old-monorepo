@@ -17,11 +17,13 @@ import asyncio
 from samples import runner
 
 from pyautd3 import AUTD3, Controller
-from pyautd3.link.twincat import TwinCAT
+
+# from pyautd3.link.twincat import TwinCAT
+from pyautd3.link.nop import Nop
 
 
 async def main() -> None:
-    with await Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(TwinCAT.builder()) as autd:
+    with await Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Nop.builder()) as autd:
         await runner.run(autd)
 
 

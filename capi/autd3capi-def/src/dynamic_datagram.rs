@@ -148,16 +148,73 @@ impl DynamicDatagram for Clear {
     }
 }
 
-impl DynamicDatagram for ConfigureModDelay {
+pub struct DynamicConfigureModDelay {
+    map: HashMap<(usize, usize), u16>,
+}
+
+impl DynamicConfigureModDelay {
+    pub fn new(map: HashMap<(usize, usize), u16>) -> Self {
+        Self { map }
+    }
+}
+
+pub struct DynamicConfigureModDelayOp {
+    remains: HashMap<usize, usize>,
+    map: HashMap<(usize, usize), u16>,
+}
+
+impl Operation for DynamicConfigureModDelayOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
+
+        assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
+
+        tx[0] = TypeTag::ConfigureModDelay as u8;
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut u16,
+                device.num_transducers(),
+            );
+            dst.iter_mut()
+                .zip(device.iter())
+                .for_each(|(d, s)| *d = *self.map.get(&(device.idx(), s.idx())).unwrap());
+        }
+
+        Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
+    }
+
+    fn required_size(&self, device: &Device) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
+    }
+
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device) {
+        self.remains.insert(device.idx(), 0);
+    }
+}
+
+impl DynamicDatagram for DynamicConfigureModDelay {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::<autd3_driver::operation::ConfigureModDelayOp>::default(),
+            Box::new(DynamicConfigureModDelayOp {
+                remains: Default::default(),
+                map: self.map.clone(),
+            }),
             Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram>::timeout(self)
+        None
     }
 }
 

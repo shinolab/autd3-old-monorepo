@@ -23,7 +23,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class TwinCAT
     {
-        public sealed class TwinCATBuilder : Internal.ILinkBuilder<TwinCAT>
+        public sealed class TwinCATBuilder : ILinkBuilder<TwinCAT>
         {
             private LinkTwinCATBuilderPtr _ptr;
 
@@ -45,7 +45,7 @@ namespace AUTD3Sharp.Link
 
             TwinCAT ILinkBuilder<TwinCAT>.ResolveLink(LinkPtr ptr)
             {
-                return new TwinCAT { };
+                return new TwinCAT ();
             }
         }
 
@@ -60,7 +60,7 @@ namespace AUTD3Sharp.Link
     /// </summary>
     public sealed class RemoteTwinCAT
     {
-        public sealed class RemoteTwinCATBuilder : Internal.ILinkBuilder<RemoteTwinCAT>
+        public sealed class RemoteTwinCATBuilder : ILinkBuilder<RemoteTwinCAT>
         {
             private LinkRemoteTwinCATBuilderPtr _ptr;
 
@@ -135,7 +135,7 @@ namespace AUTD3Sharp.Link
 
             RemoteTwinCAT ILinkBuilder<RemoteTwinCAT>.ResolveLink(LinkPtr ptr)
             {
-                return new RemoteTwinCAT { };
+                return new RemoteTwinCAT ();
             }
         }
 

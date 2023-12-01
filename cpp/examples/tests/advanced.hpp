@@ -48,10 +48,6 @@ inline void advanced_test(autd3::Controller<L>& autd) {
   auto config = autd3::Silencer::disable();
   autd.send_async(config).get();
 
-  autd.geometry()[0][0].set_mod_delay(0);
-  autd.geometry()[0][17].set_mod_delay(1);
-  autd.send_async(autd3::ConfigureModDelay()).get();
-
   MyUniformGain g;
   BurstModulation m;
 

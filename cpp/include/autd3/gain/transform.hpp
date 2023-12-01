@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ class Transform final : public internal::Gain,
               static_cast<uint32_t>(dev.idx()));
           std::for_each(dev.cbegin(), dev.cend(),
                         [this, &d, &dev](const internal::Transducer& tr) {
-                          d[tr.tr_idx()] = _f(dev, tr, d[tr.tr_idx()]);
+                          d[tr.idx()] = _f(dev, tr, d[tr.idx()]);
                         });
           drives.emplace(dev.idx(), std::move(d));
         });

@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,11 +38,11 @@ TEST(Gain, Group) {
         autd.link().intensities_and_phases(dev.idx(), 0);
     for (auto& tr : dev) {
       if (tr.position().x() < cx) {
-        ASSERT_EQ(0x80, intensities[tr.tr_idx()]);
-        ASSERT_EQ(128, phases[tr.tr_idx()]);
+        ASSERT_EQ(0x80, intensities[tr.idx()]);
+        ASSERT_EQ(128, phases[tr.idx()]);
       } else {
-        ASSERT_EQ(0, intensities[tr.tr_idx()]);
-        ASSERT_EQ(0, phases[tr.tr_idx()]);
+        ASSERT_EQ(0, intensities[tr.idx()]);
+        ASSERT_EQ(0, phases[tr.idx()]);
       }
     }
   }
