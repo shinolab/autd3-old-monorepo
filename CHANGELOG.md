@@ -2,6 +2,7 @@
 
 - Update firmware to v4.0.1
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+- Fix [#235](https://github.com/shinolab/autd3/issues/235): [C++] missing EnumerateAdapters methods for link::SOEM
 
 # 17.0.3
 
