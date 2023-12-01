@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ mod update_flag;
 mod with_timeout;
 
 pub use clear::Clear;
-pub use debug::ConfigureDebugOutoutIdx;
+pub use debug::ConfigureDebugOutputIdx;
 pub use gain::{Gain, GainAsAny, GainFilter};
 pub use mod_delay::ConfigureModDelay;
 pub use modulation::{Modulation, ModulationProperty};

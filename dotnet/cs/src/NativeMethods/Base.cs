@@ -203,11 +203,8 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureModDelay", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramConfigureModDelay();
 
-        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
-
-        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutoutIdxSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutputIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureDebugOutputIdx(IntPtr f, IntPtr context, GeometryPtr geometry);
 
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
@@ -302,6 +299,9 @@ namespace AUTD3Sharp.NativeMethods
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaSilencerStepPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ushort AUTDLinkAuditFpgaSilencerStepPhase(LinkPtr audit, uint idx);
+
+        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaDebugOutputIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern byte AUTDLinkAuditFpgaDebugOutputIdx(LinkPtr audit, uint idx);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaModDelays", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint idx, ushort* delay);

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,9 @@ pub use autd3_driver::{
 };
 pub use custom::{CustomGain, CustomModulation};
 pub use drive::*;
-pub use dynamic_datagram::{DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2};
+pub use dynamic_datagram::{
+    DynamicConfigureDebugOutputIdx, DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2,
+};
 pub use dynamic_link::DynamicLinkBuilder;
 pub use libc::c_void;
 pub use result::*;

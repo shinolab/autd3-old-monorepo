@@ -19,6 +19,7 @@ import pytest
 from pyautd3 import (
     AUTD3,
     Clear,
+    ConfigureDebugOutputIdx,
     ConfigureModDelay,
     Controller,
     Device,
@@ -66,6 +67,24 @@ async def test_silencer():
 
 
 @pytest.mark.asyncio()
+async def test_debug_output_idx():
+    autd = await create_controller()
+
+    for dev in autd.geometry:
+        assert autd.link.debug_output_idx(dev.idx) == 0xFF
+
+    await autd.send_async(ConfigureDebugOutputIdx(lambda dev: dev[0]))
+
+    for dev in autd.geometry:
+        assert autd.link.debug_output_idx(dev.idx) == 0
+
+    await autd.send_async(ConfigureDebugOutputIdx(lambda dev: dev[10] if dev.idx == 0 else None))
+
+    assert autd.link.debug_output_idx(0) == 10
+    assert autd.link.debug_output_idx(1) == 0xFF
+
+
+@pytest.mark.asyncio()
 async def test_fpga_info_async():
     autd = await create_controller()
 
@@ -105,10 +124,10 @@ async def test_fpga_info_async():
 async def test_firmware_info():
     autd = await create_controller()
 
-    assert FirmwareInfo.latest_version() == "v4.0.0"
+    assert FirmwareInfo.latest_version() == "v4.0.1"
 
     for i, firm in enumerate(await autd.firmware_info_list_async()):
-        assert firm.info == f"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]"
+        assert firm.info == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:

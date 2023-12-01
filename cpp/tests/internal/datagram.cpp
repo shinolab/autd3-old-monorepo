@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include <autd3/datagram/debug.hpp>
 #include <autd3/gain/uniform.hpp>
 #include <autd3/internal/datagram.hpp>
 
@@ -41,6 +42,25 @@ TEST(Internal, Silencer) {
     ASSERT_EQ(256, autd.link().silencer_step_intensity(dev.idx()));
     ASSERT_EQ(256, autd.link().silencer_step_phase(dev.idx()));
   }
+}
+
+TEST(Internal, ConfigureDebugOutputIdx) {
+  auto autd = create_controller();
+
+  for (auto& dev : autd.geometry()) {
+    ASSERT_EQ(0xFF, autd.link().debug_output_idx(dev.idx()));
+  }
+
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureDebugOutputIdx([](const autd3::internal::Device& dev) { return &dev[0]; })).get());
+  for (auto& dev : autd.geometry()) {
+    ASSERT_EQ(0, autd.link().debug_output_idx(dev.idx()));
+  }
+
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureDebugOutputIdx(
+                                  [](const autd3::internal::Device& dev) { return dev.idx() == 0 ? &dev[10] : nullptr; }))
+                  .get());
+  ASSERT_EQ(10, autd.link().debug_output_idx(0));
+  ASSERT_EQ(0xFF, autd.link().debug_output_idx(1));
 }
 
 TEST(Internal, Clear) {

@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -219,6 +219,14 @@ impl CPUEmulator {
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_SILENT_STEP_PHASE,
             step_phase,
+        );
+    }
+
+    fn config_debug(&mut self, data: &[u8]) {
+        self.bram_write(
+            BRAM_SELECT_CONTROLLER,
+            BRAM_ADDR_DEBUG_OUT_IDX,
+            data[0] as u16,
         );
     }
 
@@ -570,6 +578,8 @@ impl CPUEmulator {
             0x0000,
             self.num_transducers,
         );
+
+        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_DEBUG_OUT_IDX, 0xFF);
     }
 
     fn handle_payload(&mut self, tag: u8, data: &[u8]) {
@@ -616,7 +626,7 @@ impl CPUEmulator {
             TAG_GAIN => self.write_gain(data),
             TAG_FOCUS_STM => self.write_focus_stm(data),
             TAG_GAIN_STM => self.write_gain_stm(data),
-            TAG_DEBUG => {}
+            TAG_DEBUG => self.config_debug(&data[2..]),
             _ => {
                 unimplemented!("Unsupported tag")
             }

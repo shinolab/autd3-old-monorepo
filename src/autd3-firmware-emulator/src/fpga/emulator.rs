@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -239,6 +239,15 @@ impl FPGAEmulator {
             }
         } else {
             self.normal_intensities_and_phases()
+        }
+    }
+
+    pub fn debug_output_idx(&self) -> Option<u8> {
+        let idx = self.controller_bram[BRAM_ADDR_DEBUG_OUT_IDX];
+        if idx == 0xFF {
+            None
+        } else {
+            Some(idx as u8)
         }
     }
 
