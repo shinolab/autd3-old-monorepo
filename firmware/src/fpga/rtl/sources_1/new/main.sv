@@ -4,7 +4,7 @@
  * Created Date: 18/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -235,7 +235,7 @@ module main #(
 
   always_ff @(posedge CLK) begin
     gpio_out_0 <= time_cnt < 9'd256;
-    gpio_out_1 <= PWM_OUT[debug_output_idx];
+    gpio_out_1 <= debug_output_idx == 8'hFF ? 1'b0 : PWM_OUT[debug_output_idx];
   end
 
 endmodule
