@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,17 @@ class ControllerBuilder;
 namespace autd3::link {
 
 using internal::native_methods::SyncMode;
+
+class EtherCATAdapter {
+  std::string _desc;
+  std::string _name;
+
+ public:
+  EtherCATAdapter(const std::string& desc, const std::string& name) : _desc(desc), _name(name) {}
+
+  [[nodiscard]] const std::string& desc() const { return _desc; }
+  [[nodiscard]] const std::string& name() const { return _name; }
+};
 
 using OnErrCallback = void (*)(const char* msg);
 
@@ -161,6 +172,20 @@ class SOEM {
   };
 
   static Builder builder() { return {}; }
+
+  static std::vector<EtherCATAdapter> enumerate_adapters() {
+    const auto handle = internal::native_methods::AUTDAdapterPointer();
+    const auto len = internal::native_methods::AUTDAdapterGetSize(handle);
+    std::vector<EtherCATAdapter> adapters;
+    for (uint32_t i = 0; i < len; i++) {
+      char sb_desc[128];
+      char sb_name[128];
+      internal::native_methods::AUTDAdapterGetAdapter(handle, i, sb_desc, sb_name);
+      adapters.emplace_back(std::string(sb_desc), std::string(sb_name));
+    }
+    internal::native_methods::AUTDAdapterPointerDelete(handle);
+    return adapters;
+  }
 };
 
 /**
