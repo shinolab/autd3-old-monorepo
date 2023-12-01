@@ -48,7 +48,7 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
 
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
     return AUTDGainTransducerTest(const_cast<void*>(reinterpret_cast<const void*>(_f_native)),
-                                  internal::native_methods::ContextPtr(const_cast<void*>(static_cast<const void*>(this))), geometry.ptr());
+                                  internal::native_methods::ContextPtr{const_cast<void*>(static_cast<const void*>(this))}, geometry.ptr());
   }
 
  private:
