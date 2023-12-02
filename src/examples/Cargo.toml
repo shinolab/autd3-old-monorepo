@@ -6,10 +6,6 @@ edition = "2021"
 license = "MIT"
 
 [[bin]]
-name = "group_gain"
-path = "src/group_gain.rs"
-
-[[bin]]
 name = "soem"
 path = "src/soem.rs"
 required-features = ["soem"]

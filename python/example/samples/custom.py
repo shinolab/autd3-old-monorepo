@@ -14,7 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 
-from pyautd3 import Controller, Drive, EmitIntensity, Geometry, SamplingConfiguration, Silencer
+from pyautd3 import Controller, Drive, EmitIntensity, Geometry, Phase, SamplingConfiguration, Silencer
 from pyautd3.gain import Gain
 from pyautd3.modulation import Modulation
 
@@ -27,7 +27,7 @@ class Focus(Gain):
         return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
-                np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed),
+                Phase.from_rad(np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed)),
                 EmitIntensity.maximum(),
             ),
         )

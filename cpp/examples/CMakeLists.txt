@@ -62,7 +62,3 @@ target_link_libraries(remote_soem PRIVATE autd3-example)
 add_executable(simulator simulator.cpp)
 autd3_target_link_library(simulator PRIVATE)
 target_link_libraries(simulator PRIVATE autd3-example)
-
-add_executable(group_gain group_gain.cpp)
-autd3_target_link_library(group_gain PRIVATE)
-target_link_libraries(group_gain PRIVATE autd3-example)
