@@ -65,6 +65,8 @@ mod tests {
 
     #[test]
     fn phase_from() {
+        assert_eq!(Phase::from(0x90).value, 0x90);
+
         assert_eq!(Phase::from_rad(0.).value, 0);
         assert_eq!(Phase::from_rad(PI).value, 128);
         assert_eq!(Phase::from_rad(PI * 510.0 / 256.0).value, 255);
