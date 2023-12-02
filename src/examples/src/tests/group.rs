@@ -22,7 +22,7 @@ pub async fn group_by_device<L: Link>(autd: &mut Controller<L>) -> anyhow::Resul
         _ => None,
     })
     .set("null", (Static::new(), Null::new()))?
-    .set("focus", (Sine::new(150), Focus::new(center)))?
+    .set("focus", (Sine::new(150.), Focus::new(center)))?
     .send()
     .await?;
 
@@ -43,7 +43,7 @@ pub async fn group_by_transducer<L: Link>(autd: &mut Controller<L>) -> anyhow::R
     .set("focus", g1)
     .set("null", g2);
 
-    let m = Sine::new(150);
+    let m = Sine::new(150.);
     autd.send((m, g)).await?;
 
     Ok(true)

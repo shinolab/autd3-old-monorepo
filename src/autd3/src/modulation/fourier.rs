@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -147,11 +147,11 @@ mod tests {
 
     #[test]
     fn test_fourier() {
-        let f0 = Sine::new(50).with_phase(PI / 2.0);
-        let f1 = Sine::new(100).with_phase(PI / 3.0);
-        let f2 = Sine::new(150).with_phase(PI / 4.0);
-        let f3 = Sine::new(200);
-        let f4 = Sine::new(250);
+        let f0 = Sine::new(50.).with_phase(PI / 2.0);
+        let f1 = Sine::new(100.).with_phase(PI / 3.0);
+        let f2 = Sine::new(150.).with_phase(PI / 4.0);
+        let f3 = Sine::new(200.);
+        let f4 = Sine::new(250.);
 
         let f0_buf = f0.calc().unwrap();
         let f1_buf = f1.calc().unwrap();

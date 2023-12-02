@@ -21,12 +21,12 @@ from pyautd3.native_methods.autd3capi_def import ModulationPtr
 class Square(IModulationWithSamplingConfig):
     """Square wave modulation."""
 
-    _freq: int
+    _freq: float
     _low: EmitIntensity | None
     _high: EmitIntensity | None
     _duty: float | None
 
-    def __init__(self: "Square", freq: int) -> None:
+    def __init__(self: "Square", freq: float) -> None:
         """Constructor.
 
         Arguments:

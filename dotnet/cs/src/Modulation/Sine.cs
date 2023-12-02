@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ namespace AUTD3Sharp.Modulation
     /// </summary>
     public sealed class Sine : Internal.ModulationWithSamplingConfig<Sine>
     {
-        private readonly int _freq;
+        private readonly float_t _freq;
         private EmitIntensity? _intensity;
         private EmitIntensity? _offset;
         private float_t? _phase;
@@ -44,7 +44,7 @@ namespace AUTD3Sharp.Modulation
         /// </summary>
         /// <param name="freq">Frequency of sine wave</param>
         /// <remarks>The sine wave is defined as `amp / 2 * sin(2π * freq * t) + offset`, where `t` is time, and `amp = EmitIntensity.Max`, `offset = EmitIntensity.Max/2` by default.</remarks>
-        public Sine(int freq)
+        public Sine(float_t freq)
         {
             _freq = freq;
             _intensity = null;
@@ -113,7 +113,7 @@ namespace AUTD3Sharp.Modulation
 
         internal override ModulationPtr ModulationPtr()
         {
-            var ptr = NativeMethodsBase.AUTDModulationSine((uint)_freq);
+            var ptr = NativeMethodsBase.AUTDModulationSine(_freq);
             if (_intensity != null)
                 ptr = NativeMethodsBase.AUTDModulationSineWithIntensity(ptr, _intensity.Value.Value);
             if (_offset != null)

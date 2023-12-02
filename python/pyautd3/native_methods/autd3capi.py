@@ -394,7 +394,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWithRadiationPressure.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationWithRadiationPressure.restype = ModulationPtr
 
-        self.dll.AUTDModulationSine.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSine.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSine.restype = ModulationPtr
 
         self.dll.AUTDModulationSineWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
@@ -409,7 +409,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
-        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSquare.restype = ModulationPtr
 
         self.dll.AUTDModulationSquareWithLow.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
@@ -817,7 +817,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_with_radiation_pressure(self, m: ModulationPtr) -> ModulationPtr:
         return self.dll.AUTDModulationWithRadiationPressure(m)
 
-    def modulation_sine(self, freq: int) -> ModulationPtr:
+    def modulation_sine(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSine(freq)
 
     def modulation_sine_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
@@ -832,7 +832,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_offset(self, m: ModulationPtr, offset: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
 
-    def modulation_square(self, freq: int) -> ModulationPtr:
+    def modulation_square(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSquare(freq)
 
     def modulation_square_with_low(self, m: ModulationPtr, low: int) -> ModulationPtr:
