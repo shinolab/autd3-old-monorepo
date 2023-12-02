@@ -51,7 +51,7 @@ class Gain(IGain, metaclass=ABCMeta):
     def _transform(geometry: Geometry, f: Callable[[Device, Transducer], Drive]) -> dict[int, np.ndarray]:
         return {
             dev.idx: np.fromiter(
-                (np.void(_Drive(d.phase, d.intensity._value)) for d in (f(dev, tr) for tr in dev)),  # type: ignore[call-overload]
+                (np.void(_Drive(d.phase._value, d.intensity._value)) for d in (f(dev, tr) for tr in dev)),  # type: ignore[call-overload]
                 dtype=_Drive,
             )
             for dev in geometry.devices()

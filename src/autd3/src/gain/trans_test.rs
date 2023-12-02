@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ impl<F: Fn(&Device, &Transducer) -> Option<Drive> + Sync + 'static> Gain for Tra
                 d
             } else {
                 Drive {
-                    phase: 0.0,
+                    phase: Phase::new(0),
                     intensity: EmitIntensity::MIN,
                 }
             }
@@ -70,7 +70,7 @@ mod tests {
 
         let mut rng = rand::thread_rng();
         let test_id = rng.gen_range(0..geometry.num_transducers());
-        let test_phase = rng.gen_range(-1.0..1.0);
+        let test_phase = Phase::new(rng.gen_range(0x00..=0xFF));
         let test_intensity = EmitIntensity::new(rng.gen::<u8>());
         let transducer_test = TransducerTest::new(move |dev, tr| {
             if (dev.idx() == 0) && (tr.idx() == test_id) {
@@ -90,7 +90,7 @@ mod tests {
                 assert_eq!(drive.phase, test_phase);
                 assert_eq!(drive.intensity, test_intensity);
             } else {
-                assert_eq!(drive.phase, 0.0);
+                assert_eq!(drive.phase.value(), 0);
                 assert_eq!(drive.intensity.value(), 0);
             }
         });

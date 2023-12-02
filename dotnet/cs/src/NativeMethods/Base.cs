@@ -71,7 +71,7 @@ namespace AUTD3Sharp.NativeMethods
         public static extern GainPtr AUTDGainUniform(byte intensity);
 
         [DllImport(__DllName, EntryPoint = "AUTDGainUniformWithPhase", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
+        public static extern GainPtr AUTDGainUniformWithPhase(GainPtr uniform, byte phase);
 
         [DllImport(__DllName, EntryPoint = "AUTDDevice", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DevicePtr AUTDDevice(GeometryPtr geo, uint dev_idx);

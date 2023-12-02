@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ class SDP final : public Holo<SDP<B>>, public IntoCache<SDP<B>>, public IntoTran
   AUTD3_DEF_PARAM(SDP, uint32_t, repeat)
   AUTD3_DEF_PARAM(SDP, double, lambda)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = this->_backend->sdp(reinterpret_cast<const double*>(this->_foci.data()), reinterpret_cast<const double*>(this->_amps.data()),
                                    this->_amps.size());
     if (_alpha.has_value()) ptr = this->_backend->sdp_with_alpha(ptr, _alpha.value());

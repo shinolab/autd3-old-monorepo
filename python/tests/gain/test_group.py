@@ -15,7 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 import pytest
 
-from pyautd3 import Device, Transducer
+from pyautd3 import Device, Phase, Transducer
 from pyautd3.autd_error import AUTDError
 from pyautd3.gain import Group, Null, Uniform
 from tests.test_autd import create_controller
@@ -29,7 +29,7 @@ async def test_group():
 
     assert await autd.send_async(
         Group(lambda _, tr: "uniform" if tr.position[0] < cx else "null")
-        .set_gain("uniform", Uniform(0x80).with_phase(np.pi))
+        .set_gain("uniform", Uniform(0x80).with_phase(Phase(0x90)))
         .set_gain("null", Null()),
     )
 
@@ -38,7 +38,7 @@ async def test_group():
         for tr in dev:
             if tr.position[0] < cx:
                 assert np.all(intensities[tr.idx] == 0x80)
-                assert np.all(phases[tr.idx] == 128)
+                assert np.all(phases[tr.idx] == 0x90)
             else:
                 assert np.all(intensities[tr.idx] == 0)
                 assert np.all(phases[tr.idx] == 0)
@@ -49,7 +49,7 @@ async def test_group_unknown_key():
     autd = await create_controller()
 
     with pytest.raises(AUTDError, match="Unknown group key"):
-        await autd.send_async(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0x80).with_phase(np.pi)).set_gain("null", Null()))
+        await autd.send_async(Group(lambda _, _tr: "null").set_gain("uniform", Uniform(0x80).with_phase(Phase(0x90))).set_gain("null", Null()))
 
 
 @pytest.mark.asyncio()
@@ -71,7 +71,7 @@ async def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    assert await autd.send_async(Group(f).set_gain(0, Uniform(0x80).with_phase(np.pi)))
+    assert await autd.send_async(Group(f).set_gain(0, Uniform(0x80).with_phase(Phase(0x90))))
 
     assert not check[0]
     assert check[1]
@@ -82,4 +82,4 @@ async def test_group_check_only_for_enabled():
 
     intensities, phases = autd.link.intensities_and_phases(1, 0)
     assert np.all(intensities == 0x80)
-    assert np.all(phases == 128)
+    assert np.all(phases == 0x90)

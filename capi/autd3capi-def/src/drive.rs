@@ -4,14 +4,14 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::defined::float;
+use autd3_driver::{common::Phase, defined::float};
 
 pub const DEFAULT_CORRECTED_ALPHA: float = 0.803;
 
@@ -21,10 +21,16 @@ pub unsafe extern "C" fn AUTDEmitIntensityWithCorrectionAlpha(value: u8, alpha: 
     autd3_driver::common::EmitIntensity::with_correction_alpha(value, alpha).value()
 }
 
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDPhaseFromRad(value: float) -> u8 {
+    Phase::from_rad(value).value()
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Drive {
-    pub phase: float,
+    pub phase: u8,
     pub intensity: u8,
 }
 

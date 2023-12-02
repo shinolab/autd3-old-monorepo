@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class Bessel final : public internal::Gain, public IntoCache<Bessel>, public Int
 
   AUTD3_DEF_PARAM_INTENSITY(Bessel, intensity)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainBessel(_p.x(), _p.y(), _p.z(), _d.x(), _d.y(), _d.z(), _theta);
     if (_intensity.has_value()) ptr = AUTDGainBesselWithIntensity(ptr, _intensity.value().value());
     return ptr;

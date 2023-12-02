@@ -97,7 +97,7 @@ class GroupGainMapPtr(ctypes.Structure):
 
 
 class Drive(ctypes.Structure):
-    _fields_ = [("phase", ctypes.c_double), ("intensity", ctypes.c_uint8)]
+    _fields_ = [("phase", ctypes.c_uint8), ("intensity", ctypes.c_uint8)]
 
 
 class ResultI32(ctypes.Structure):
@@ -168,6 +168,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDEmitIntensityWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
         self.dll.AUTDEmitIntensityWithCorrectionAlpha.restype = ctypes.c_uint8
 
+        self.dll.AUTDPhaseFromRad.argtypes = [ctypes.c_double] 
+        self.dll.AUTDPhaseFromRad.restype = ctypes.c_uint8
+
         self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
         self.dll.AUTDGetErr.restype = None
 
@@ -191,6 +194,9 @@ class NativeMethods(metaclass=Singleton):
 
     def emit_intensity_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
         return self.dll.AUTDEmitIntensityWithCorrectionAlpha(value, alpha)
+
+    def phase_from_rad(self, value: float) -> ctypes.c_uint8:
+        return self.dll.AUTDPhaseFromRad(value)
 
     def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDGetErr(src, dst)

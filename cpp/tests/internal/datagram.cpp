@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,13 +52,13 @@ TEST(Internal, ConfigureDebugOutputIdx) {
     ASSERT_EQ(0xFF, autd.link().debug_output_idx(dev.idx()));
   }
 
-  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureDebugOutputIdx([](const autd3::internal::Device& dev) { return &dev[0]; })).get());
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureDebugOutputIdx([](const autd3::internal::geometry::Device& dev) { return &dev[0]; })).get());
   for (auto& dev : autd.geometry()) {
     ASSERT_EQ(0, autd.link().debug_output_idx(dev.idx()));
   }
 
   ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureDebugOutputIdx(
-                                  [](const autd3::internal::Device& dev) { return dev.idx() == 0 ? &dev[10] : nullptr; }))
+                                  [](const autd3::internal::geometry::Device& dev) { return dev.idx() == 0 ? &dev[10] : nullptr; }))
                   .get());
   ASSERT_EQ(10, autd.link().debug_output_idx(0));
   ASSERT_EQ(0xFF, autd.link().debug_output_idx(1));
@@ -67,13 +67,13 @@ TEST(Internal, ConfigureDebugOutputIdx) {
 TEST(Internal, Clear) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80).with_phase(autd3::internal::pi)).get());
+  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80).with_phase(autd3::internal::Phase(0x90))).get());
   for (auto& dev : autd.geometry()) {
     auto m = autd.link().modulation(dev.idx());
     ASSERT_TRUE(std::ranges::all_of(m, [](auto d) { return d == 0xFF; }));
     auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0x90; }));
   }
 
   ASSERT_TRUE(autd.send_async(autd3::internal::Clear()).get());
@@ -102,8 +102,8 @@ TEST(Internal, UpdateFlags) {
 
 TEST(Internal, Synchronize) {
   auto autd = autd3::internal::ControllerBuilder()
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                  .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
+                  .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
                   .open_with_async(autd3::link::Audit::builder())
                   .get();
 
@@ -117,8 +117,8 @@ TEST(Internal, ConfigureModDelay) {
     ASSERT_TRUE(std::ranges::all_of(autd.link().mod_delays(dev.idx()), [](auto d) { return d == 0; }));
   }
 
-  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureModDelay(
-                                  [](const autd3::internal::Device& dev, const autd3::internal::Transducer& tr) -> uint16_t { return 1; }))
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureModDelay([](const autd3::internal::geometry::Device& dev,
+                                                                    const autd3::internal::geometry::Transducer& tr) -> uint16_t { return 1; }))
                   .get());
   for (auto& dev : autd.geometry()) {
     ASSERT_TRUE(std::ranges::all_of(autd.link().mod_delays(dev.idx()), [](auto d) { return d == 1; }));

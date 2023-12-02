@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ namespace AUTD3Sharp.Gain
     public sealed class Uniform : Internal.Gain
     {
         private readonly EmitIntensity _intensity;
-        private float_t? _phase;
+        private Phase? _phase;
 
         public Uniform(byte intensity)
         {
@@ -52,9 +52,9 @@ namespace AUTD3Sharp.Gain
         /// <summary>
         /// Set phase
         /// </summary>
-        /// <param name="phase">phase (from 0 to 2pi)</param>
+        /// <param name="phase">phase</param>
         /// <returns></returns>
-        public Uniform WithPhase(float_t phase)
+        public Uniform WithPhase(Phase phase)
         {
             _phase = phase;
             return this;
@@ -64,7 +64,7 @@ namespace AUTD3Sharp.Gain
         {
             var ptr = NativeMethodsBase.AUTDGainUniform(_intensity.Value);
             if (_phase != null)
-                ptr = NativeMethodsBase.AUTDGainUniformWithPhase(ptr, _phase.Value);
+                ptr = NativeMethodsBase.AUTDGainUniformWithPhase(ptr, _phase.Value.Value);
             return ptr;
         }
     }

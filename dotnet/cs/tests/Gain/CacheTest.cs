@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,13 +20,13 @@ public class CacheTest
     {
         var autd = await AUTDTest.CreateController();
 
-        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI).WithCache()));
+        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90)).WithCache()));
 
         foreach (var dev in autd.Geometry)
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 
@@ -37,7 +37,7 @@ public class CacheTest
         public override Dictionary<int, Drive[]> Calc(Geometry geometry)
         {
             CalcCnt++;
-            return Transform(geometry, (_, _) => new Drive { Phase = Math.PI, Intensity = new EmitIntensity(0x80) });
+            return Transform(geometry, (_, _) => new Drive { Phase = new Phase(0x90), Intensity = new EmitIntensity(0x80) });
         }
     }
 
@@ -84,7 +84,7 @@ public class CacheTest
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 }

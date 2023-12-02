@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -64,13 +64,13 @@ public class AUTDTest
             Assert.Equal(0xFF, autd.Link.DebugOutputIdx(dev.Idx));
         }
 
-        Assert.True(await autd.SendAsync(new ConfigureDebugOutputIdx((device) => device[0])));
+        Assert.True(await autd.SendAsync(new ConfigureDebugOutputIdx(device => device[0])));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(0, autd.Link.DebugOutputIdx(dev.Idx));
         }
 
-        Assert.True(await autd.SendAsync(new ConfigureDebugOutputIdx((device) => device.Idx == 0 ? device[10] : null)));
+        Assert.True(await autd.SendAsync(new ConfigureDebugOutputIdx(device => device.Idx == 0 ? device[10] : null)));
         Assert.Equal(10, autd.Link.DebugOutputIdx(0));
         Assert.Equal(0xFF, autd.Link.DebugOutputIdx(1));
     }
@@ -333,7 +333,7 @@ public class AUTDTest
             check[dev.Idx] = true;
             return "0";
         })
-                 .Set("0", new Sine(150), new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI))
+                 .Set("0", new Sine(150), new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90)))
                  .SendAsync();
 
         Assert.False(check[0]);
@@ -347,7 +347,7 @@ public class AUTDTest
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 
@@ -355,14 +355,14 @@ public class AUTDTest
     public async Task TestClear()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(new Phase(0x90))));
         foreach (var dev in autd.Geometry)
         {
             var m = autd.Link.Modulation(dev.Idx);
             Assert.All(m, d => Assert.Equal(0xFF, d));
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
             Assert.All(intensities, d => Assert.Equal(0xFF, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
 
         Assert.True(await autd.SendAsync(new Clear()));
@@ -380,12 +380,12 @@ public class AUTDTest
     public async Task TestStop()
     {
         var autd = await CreateController();
-        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(Math.PI)));
+        Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(new Phase(0x90))));
         foreach (var dev in autd.Geometry)
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
             Assert.All(intensities, d => Assert.Equal(0xFF, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
 
         Assert.True(await autd.SendAsync(new Stop()));
@@ -432,7 +432,7 @@ public class AUTDTest
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(0, d));
         }
 
-        Assert.True(await autd.SendAsync(new ConfigureModDelay((dev, tr) => 1)));
+        Assert.True(await autd.SendAsync(new ConfigureModDelay((_, _) => 1)));
         foreach (var dev in autd.Geometry)
         {
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(1, d));

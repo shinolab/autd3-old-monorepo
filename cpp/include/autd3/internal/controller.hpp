@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ namespace autd3::internal {
 class ControllerBuilder;
 
 template <class F>
-concept group_f = requires(F f, const Device& dev) { typename std::invoke_result_t<F, const Device&>::value_type; };
+concept group_f = requires(F f, const geometry::Device& dev) { typename std::invoke_result_t<F, const geometry::Device&>::value_type; };
 
 /**
  * @brief Controller class for AUTD3
@@ -64,8 +64,8 @@ class Controller {
     }
   }
 
-  [[nodiscard]] const Geometry& geometry() const { return _geometry; }
-  [[nodiscard]] Geometry& geometry() { return _geometry; }
+  [[nodiscard]] const geometry::Geometry& geometry() const { return _geometry; }
+  [[nodiscard]] geometry::Geometry& geometry() { return _geometry; }
 
   [[nodiscard]] L& link() { return _link; }
   [[nodiscard]] const L& link() const { return _link; }
@@ -345,7 +345,7 @@ class Controller {
   template <group_f F>
   class GroupGuard {
    public:
-    using key_type = typename std::invoke_result_t<F, const Device&>::value_type;
+    using key_type = typename std::invoke_result_t<F, const geometry::Device&>::value_type;
 
     explicit GroupGuard(const F& map, Controller& controller)
         : _controller(controller), _map(map), _kv_map(native_methods::AUTDControllerGroupCreateKVMap()) {}
@@ -399,7 +399,7 @@ class Controller {
     bool send() {
       std::vector<int32_t> map;
       map.reserve(_controller.geometry().num_devices());
-      std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const Device& d) {
+      std::transform(_controller.geometry().cbegin(), _controller.geometry().cend(), std::back_inserter(map), [this](const geometry::Device& d) {
         if (!d.enable()) return -1;
         const auto k = _map(d);
         return k.has_value() ? _keymap[k.value()] : -1;
@@ -425,10 +425,10 @@ class Controller {
   }
 
  private:
-  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, L link)
+  Controller(geometry::Geometry geometry, const native_methods::ControllerPtr ptr, L link)
       : _geometry(std::move(geometry)), _ptr(ptr), _link(std::move(link)) {}
 
-  Geometry _geometry;
+  geometry::Geometry _geometry;
   native_methods::ControllerPtr _ptr;
   L _link;
 };
@@ -444,7 +444,7 @@ class ControllerBuilder {
    * @param device AUTD3 device
    * @return Builder
    */
-  ControllerBuilder add_device(const AUTD3& device) {
+  ControllerBuilder add_device(const geometry::AUTD3& device) {
     const auto rot = device.rotation().has_value() ? device.rotation().value() : Quaternion::Identity();
     _ptr =
         AUTDControllerBuilderAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), rot.w(), rot.x(), rot.y(), rot.z());
@@ -461,7 +461,7 @@ class ControllerBuilder {
   template <link_builder B>
   [[nodiscard]] Controller<typename B::Link> open_with(B&& link_builder) {
     auto ptr = validate(AUTDControllerOpenWith(_ptr, link_builder.ptr()));
-    Geometry geometry(AUTDGeometry(ptr));
+    geometry::Geometry geometry(AUTDGeometry(ptr));
     return Controller<typename B::Link>{std::move(geometry), ptr, link_builder.resolve_link(native_methods::AUTDLinkGet(ptr))};
   }
 
@@ -476,7 +476,7 @@ class ControllerBuilder {
   [[nodiscard]] std::future<Controller<typename B::Link>> open_with_async(B&& link_builder) {
     return std::async(std::launch::deferred, [this, builder = std::forward<B>(link_builder)]() -> Controller<typename B::Link> {
       auto ptr = validate(AUTDControllerOpenWith(_ptr, builder.ptr()));
-      Geometry geometry(AUTDGeometry(ptr));
+      geometry::Geometry geometry(AUTDGeometry(ptr));
       return Controller<typename B::Link>{std::move(geometry), ptr, builder.resolve_link(native_methods::AUTDLinkGet(ptr))};
     });
   }

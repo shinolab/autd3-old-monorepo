@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@
 namespace autd3::gain {
 
 template <class F>
-concept transducer_test_f = requires(F f, const internal::Device& d, const internal::Transducer& tr) {
+concept transducer_test_f = requires(F f, const internal::geometry::Device& d, const internal::geometry::Transducer& tr) {
   { f(d, tr) } -> std::same_as<std::optional<internal::Drive>>;
 };
 
@@ -37,16 +37,16 @@ class TransducerTest final : public internal::Gain, public IntoCache<TransducerT
   explicit TransducerTest(const F& f) : _f(f) {
     _f_native = +[](const void* context, const internal::native_methods::GeometryPtr geometry_ptr, const uint32_t dev_idx, const uint8_t tr_idx,
                     internal::native_methods::Drive* raw) {
-      const internal::Device dev(dev_idx, AUTDDevice(geometry_ptr, dev_idx));
-      const internal::Transducer tr(static_cast<size_t>(tr_idx), dev.ptr());
+      const internal::geometry::Device dev(dev_idx, AUTDDevice(geometry_ptr, dev_idx));
+      const internal::geometry::Transducer tr(static_cast<size_t>(tr_idx), dev.ptr());
       if (const auto d = static_cast<const TransducerTest*>(context)->_f(dev, tr); d.has_value()) {
-        raw->phase = d.value().phase;
+        raw->phase = d.value().phase.value();
         raw->intensity = d.value().intensity.value();
       }
     };
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry& geometry) const override {
     return AUTDGainTransducerTest(const_cast<void*>(reinterpret_cast<const void*>(_f_native)),
                                   internal::native_methods::ContextPtr{const_cast<void*>(static_cast<const void*>(this))}, geometry.ptr());
   }

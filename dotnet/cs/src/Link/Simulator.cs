@@ -78,7 +78,7 @@ namespace AUTD3Sharp.Link
             {
                 return new Simulator
                 {
-                    _ptr = ptr,
+                    _ptr = ptr
                 };
             }
         }

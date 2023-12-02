@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ class Greedy final : public Holo<Greedy>, public IntoCache<Greedy>, public IntoT
 
   AUTD3_DEF_PARAM(Greedy, uint32_t, phase_div)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(this->_foci.data()),
                                                             reinterpret_cast<const double*>(this->_amps.data()), this->_amps.size());
     if (_phase_div.has_value()) ptr = AUTDGainHoloGreedyWithPhaseDiv(ptr, _phase_div.value());

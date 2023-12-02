@@ -13,7 +13,7 @@
 
 namespace tests;
 
-using static AUTD3Sharp.Angle.Units;
+using static Angle.Units;
 
 public class RotationTest
 {
@@ -31,46 +31,47 @@ public class RotationTest
     [Fact]
     public async Task WithRotation()
     {
-        var open = async (Quaterniond q) =>
+        {
+            var autd = await Open(EulerAngles.FromZYZ(90 * Deg, 0 * Deg, 0 * Deg));
+            AssertNearVec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            AssertNearVec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            AssertNearVec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
+        }
+        {
+            var autd = await Open(EulerAngles.FromZYZ(0 * Deg, 90 * Deg, 0 * Deg));
+            AssertNearVec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
+            AssertNearVec3(Vector3d.UnitY, autd.Geometry[0][0].YDirection);
+            AssertNearVec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
+        }
+        {
+            var autd = await Open(EulerAngles.FromZYZ(0 * Deg, 0 * Deg, 90 * Deg));
+            AssertNearVec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            AssertNearVec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            AssertNearVec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
+        }
+        {
+            var autd = await Open(EulerAngles.FromZYZ(0 * Deg, 90 * Deg, 90 * Deg));
+            AssertNearVec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
+            AssertNearVec3(Vector3d.UnitZ, autd.Geometry[0][0].YDirection);
+            AssertNearVec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
+        }
+        {
+            var autd = await Open(EulerAngles.FromZYZ(90 * Deg, 90 * Deg, 0 * Deg));
+            AssertNearVec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
+            AssertNearVec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
+            AssertNearVec3(Vector3d.UnitY, autd.Geometry[0][0].ZDirection);
+        }
+        return;
+
+        async Task<Controller<Audit>> Open(Quaterniond q) =>
             await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero).WithRotation(q))
                 .OpenWithAsync(Audit.Builder());
 
-        var assert_near_vec3 = (Vector3d expected, Vector3d x) =>
+        void AssertNearVec3(Vector3d expected, Vector3d x)
         {
             Assert.True(Math.Abs(expected.x - x.x) < 1e-6);
             Assert.True(Math.Abs(expected.y - x.y) < 1e-6);
             Assert.True(Math.Abs(expected.z - x.z) < 1e-6);
-        };
-
-        {
-            var autd = await open(EulerAngles.FromZYZ(90 * Deg, 0 * Deg, 0 * Deg));
-            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
-        }
-        {
-            var autd = await open(EulerAngles.FromZYZ(0 * Deg, 90 * Deg, 0 * Deg));
-            assert_near_vec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
-            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].YDirection);
-            assert_near_vec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
-        }
-        {
-            var autd = await open(EulerAngles.FromZYZ(0 * Deg, 0 * Deg, 90 * Deg));
-            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].ZDirection);
-        }
-        {
-            var autd = await open(EulerAngles.FromZYZ(0 * Deg, 90 * Deg, 90 * Deg));
-            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].XDirection);
-            assert_near_vec3(Vector3d.UnitZ, autd.Geometry[0][0].YDirection);
-            assert_near_vec3(Vector3d.UnitX, autd.Geometry[0][0].ZDirection);
-        }
-        {
-            var autd = await open(EulerAngles.FromZYZ(90 * Deg, 90 * Deg, 0 * Deg));
-            assert_near_vec3(-Vector3d.UnitZ, autd.Geometry[0][0].XDirection);
-            assert_near_vec3(-Vector3d.UnitX, autd.Geometry[0][0].YDirection);
-            assert_near_vec3(Vector3d.UnitY, autd.Geometry[0][0].ZDirection);
         }
     }
 }
