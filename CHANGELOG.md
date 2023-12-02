@@ -4,8 +4,10 @@
   - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
 - Rename `SamplingConfiguration::new_with_*` to `SamplingConfiguration::from_*`
 - Rename `EmitIntensity::new_with_*` to `EmitIntensity::with_*`
+- Change type of phase member of Drive struct from `float` to `Phase`
 - Change `ConfigureDebugOutputIdx` API
   - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
+- Change `ConfigureModDelay` API
 - Change type of frequency of `modulation::Sine` and `Square` to float.
   - Note that the actual output frequency is limited to an integer.
 - Fix [#234](https://github.com/shinolab/autd3/issues/234): cannot use autd3-link-soem with Utf8Error
