@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,14 +45,14 @@ impl STMSamplingConfiguration {
     pub fn sampling(&self, size: usize) -> Result<SamplingConfiguration, AUTDInternalError> {
         match self {
             Self::Frequency(f) => {
-                let min = SamplingConfiguration::MIN.frequency() * size as float;
-                let max = SamplingConfiguration::MAX.frequency() * size as float;
+                let min = SamplingConfiguration::FREQ_MIN / size as float;
+                let max = SamplingConfiguration::FREQ_MAX / size as float;
                 SamplingConfiguration::from_frequency(f * size as float)
                     .map_err(|_| AUTDInternalError::STMFreqOutOfRange(size, *f, min, max))
             }
             Self::Period(p) => {
-                let min = SamplingConfiguration::MIN.period().as_nanos() as usize / size;
-                let max = SamplingConfiguration::MAX.period().as_nanos() as usize / size;
+                let min = SamplingConfiguration::PERIOD_MIN as usize / size;
+                let max = SamplingConfiguration::PERIOD_MAX as usize / size;
                 SamplingConfiguration::from_period(std::time::Duration::from_nanos(
                     (p.as_nanos() as usize / size) as _,
                 ))
@@ -64,8 +64,6 @@ impl STMSamplingConfiguration {
 }
 
 #[doc(hidden)]
-/// This is used only for internal.
-// #[derive(Clone, Copy)]
 pub struct STMProps {
     sampling: STMSamplingConfiguration,
     start_idx: Option<u16>,
@@ -151,6 +149,14 @@ mod tests {
             config.sampling(2).unwrap(),
             SamplingConfiguration::from_frequency(8e3).unwrap()
         );
+
+        let config = STMSamplingConfiguration::Frequency(0.1);
+        assert_eq!(config.frequency(65536), 0.1);
+        assert_eq!(config.period(65536), std::time::Duration::from_secs(10));
+        assert_eq!(
+            config.sampling(65536).unwrap(),
+            SamplingConfiguration::from_frequency(0.1 * 65536.0).unwrap()
+        );
     }
 
     #[test]
@@ -167,6 +173,17 @@ mod tests {
         assert_eq!(
             config.sampling(2).unwrap(),
             SamplingConfiguration::from_frequency(8e3).unwrap()
+        );
+
+        let config = STMSamplingConfiguration::Period(std::time::Duration::from_secs(10));
+        assert_eq!(config.frequency(65536), 0.1);
+        assert_eq!(config.period(65536), std::time::Duration::from_secs(10));
+        assert_eq!(
+            config.sampling(65536).unwrap(),
+            SamplingConfiguration::from_period(std::time::Duration::from_nanos(
+                10 * 1000 * 1000 * 1000 / 65536
+            ))
+            .unwrap()
         );
     }
 
@@ -201,8 +218,8 @@ mod tests {
             Err(AUTDInternalError::STMFreqOutOfRange(
                 2,
                 40e3,
-                SamplingConfiguration::MIN.frequency() * 2.,
-                SamplingConfiguration::MAX.frequency() * 2.,
+                SamplingConfiguration::FREQ_MIN / 2.,
+                SamplingConfiguration::FREQ_MAX / 2.,
             ))
         );
     }
@@ -219,8 +236,8 @@ mod tests {
             Err(AUTDInternalError::STMPeriodOutOfRange(
                 2,
                 25000,
-                SamplingConfiguration::MIN.period().as_nanos() as usize / 2,
-                SamplingConfiguration::MAX.period().as_nanos() as usize / 2,
+                SamplingConfiguration::PERIOD_MIN as usize / 2,
+                SamplingConfiguration::PERIOD_MAX as usize / 2,
             ))
         );
     }
