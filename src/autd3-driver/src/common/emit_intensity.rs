@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,6 +103,26 @@ mod tests {
                     .round() as u8
             );
         }
+    }
+
+    #[test]
+    fn test_div() {
+        let intensity = EmitIntensity::new(0xFF);
+        assert_eq!(intensity / 2, EmitIntensity::new(0x7F));
+    }
+
+    #[test]
+    fn test_add() {
+        let intensity1 = EmitIntensity::new(0x01);
+        let intensity2 = EmitIntensity::new(0x02);
+        assert_eq!(intensity1 + intensity2, EmitIntensity::new(0x03));
+    }
+
+    #[test]
+    fn test_sub() {
+        let intensity1 = EmitIntensity::new(0x03);
+        let intensity2 = EmitIntensity::new(0x01);
+        assert_eq!(intensity1 - intensity2, EmitIntensity::new(0x02));
     }
 
     #[test]

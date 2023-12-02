@@ -4,14 +4,14 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 
 use crate::defined::{float, METER};
 
@@ -131,27 +131,12 @@ impl Deref for Device {
     }
 }
 
-impl DerefMut for Device {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.transducers
-    }
-}
-
 impl<'a> IntoIterator for &'a Device {
     type Item = &'a Transducer;
     type IntoIter = std::slice::Iter<'a, Transducer>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.transducers.iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut Device {
-    type Item = &'a mut Transducer;
-    type IntoIter = std::slice::IterMut<'a, Transducer>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.transducers.iter_mut()
     }
 }
 
@@ -528,26 +513,6 @@ pub mod tests {
         let device = Device::new(0, transducers);
 
         for tr in &device {
-            let _ = tr.idx();
-        }
-    }
-
-    #[test]
-    fn into_iter_mut() {
-        let transducers = itertools::iproduct!((0..18), (0..14))
-            .enumerate()
-            .map(|(i, (y, x))| {
-                Transducer::new(
-                    i,
-                    10.16 * Vector3::new(x as float, y as float, 0.),
-                    UnitQuaternion::identity(),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        let mut device = Device::new(0, transducers);
-
-        for tr in &mut device {
             let _ = tr.idx();
         }
     }

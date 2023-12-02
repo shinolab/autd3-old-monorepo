@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,16 +37,21 @@ impl<F: Fn(&Device, &Transducer) -> u16> Datagram for ConfigureModDelay<F> {
 mod tests {
     use super::*;
 
+    #[cfg_attr(coverage_nightly, coverage(off))]
+    fn f(_dev: &Device, _tr: &Transducer) -> u16 {
+        0
+    }
+
     #[test]
     fn test_mod_delay_timeout() {
-        let delay = ConfigureModDelay::new(|_dev, _tr| 0);
+        let delay = ConfigureModDelay::new(f);
         let timeout = delay.timeout();
         assert!(timeout.is_none());
     }
 
     #[test]
     fn test_mod_delay_operation() {
-        let delay = ConfigureModDelay::new(|_dev, _tr| 0);
+        let delay = ConfigureModDelay::new(f);
         let r = delay.operation();
         assert!(r.is_ok());
     }

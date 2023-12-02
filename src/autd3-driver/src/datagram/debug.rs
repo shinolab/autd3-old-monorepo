@@ -4,7 +4,7 @@
  * Created Date: 21/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,9 +44,14 @@ impl<F: Fn(&Device) -> Option<&Transducer>> Datagram for ConfigureDebugOutputIdx
 mod tests {
     use super::*;
 
+    #[cfg_attr(coverage_nightly, coverage(off))]
+    fn f(dev: &Device) -> Option<&Transducer> {
+        Some(&dev[0])
+    }
+
     #[test]
     fn test_debug_output_idx_timeout() {
-        let debug_output_idx = ConfigureDebugOutputIdx::new(|dev| Some(&dev[0]));
+        let debug_output_idx = ConfigureDebugOutputIdx::new(f);
         let timeout = debug_output_idx.timeout();
         assert!(timeout.is_some());
         assert!(timeout.unwrap() > Duration::ZERO);
@@ -54,7 +59,7 @@ mod tests {
 
     #[test]
     fn test_debug_output_idx_operation() {
-        let debug_output_idx = ConfigureDebugOutputIdx::new(|dev| Some(&dev[0]));
+        let debug_output_idx = ConfigureDebugOutputIdx::new(f);
         let r = debug_output_idx.operation();
         assert!(r.is_ok());
         let _ = r.unwrap();
