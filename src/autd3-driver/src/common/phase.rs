@@ -34,6 +34,10 @@ impl Phase {
     pub fn value(&self) -> u8 {
         self.value
     }
+
+    pub fn radian(&self) -> float {
+        self.value as float / 256.0 * 2.0 * PI
+    }
 }
 
 impl From<u8> for Phase {
@@ -71,6 +75,17 @@ mod tests {
         assert_eq!(Phase::from_rad(PI).value, 128);
         assert_eq!(Phase::from_rad(PI * 510.0 / 256.0).value, 255);
         assert_eq!(Phase::from_rad(2. * PI).value, 0);
+    }
+
+    #[test]
+    fn phase_radian() {
+        assert_eq!(Phase::from_rad(0.).radian(), 0.);
+        assert_eq!(Phase::from_rad(PI).radian(), PI);
+        assert_eq!(
+            Phase::from_rad(PI * 510.0 / 256.0).radian(),
+            PI * 510.0 / 256.0
+        );
+        assert_eq!(Phase::from_rad(2. * PI).radian(), 0.);
     }
 
     #[test]

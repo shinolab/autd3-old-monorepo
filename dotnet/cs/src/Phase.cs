@@ -37,6 +37,8 @@ namespace AUTD3Sharp
             Value = value;
         }
 
+        public float_t Radian => NativeMethodsDef.AUTDPhaseToRad(Value);
+
         public static Phase FromRad(float_t value) => new Phase(NativeMethodsDef.AUTDPhaseFromRad(value));
     }
 }

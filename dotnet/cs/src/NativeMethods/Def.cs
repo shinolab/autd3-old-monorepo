@@ -33,6 +33,9 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDPhaseFromRad", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern byte AUTDPhaseFromRad(double value);
 
+        [DllImport(__DllName, EntryPoint = "AUTDPhaseToRad", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern double AUTDPhaseToRad(byte value);
+
         [DllImport(__DllName, EntryPoint = "AUTDGetErr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDGetErr(IntPtr src, byte* dst);
 

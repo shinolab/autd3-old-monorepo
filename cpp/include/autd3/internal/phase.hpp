@@ -27,7 +27,13 @@ class Phase final {
  public:
   explicit Phase(const uint8_t value) : _value(value) {}
 
-  [[nodiscard]] static Phase from_rad(const double value) { return Phase(native_methods::AUTDPhaseFromRad(value)); }
+  [[nodiscard]] static Phase from_rad(const double value) {
+    return Phase(native_methods::AUTDPhaseFromRad(value));
+  }
+
+  [[nodiscard]] double radian() {
+    return native_methods::AUTDPhaseToRad(_value);
+  }
 
   [[nodiscard]] uint8_t value() const noexcept { return _value; }
 

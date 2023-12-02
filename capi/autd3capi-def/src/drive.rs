@@ -27,6 +27,12 @@ pub unsafe extern "C" fn AUTDPhaseFromRad(value: float) -> u8 {
     Phase::from_rad(value).value()
 }
 
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDPhaseToRad(value: u8) -> float {
+    Phase::new(value).radian()
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Drive {

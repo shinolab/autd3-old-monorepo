@@ -171,6 +171,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDPhaseFromRad.argtypes = [ctypes.c_double] 
         self.dll.AUTDPhaseFromRad.restype = ctypes.c_uint8
 
+        self.dll.AUTDPhaseToRad.argtypes = [ctypes.c_uint8] 
+        self.dll.AUTDPhaseToRad.restype = ctypes.c_double
+
         self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
         self.dll.AUTDGetErr.restype = None
 
@@ -197,6 +200,9 @@ class NativeMethods(metaclass=Singleton):
 
     def phase_from_rad(self, value: float) -> ctypes.c_uint8:
         return self.dll.AUTDPhaseFromRad(value)
+
+    def phase_to_rad(self, value: int) -> ctypes.c_double:
+        return self.dll.AUTDPhaseToRad(value)
 
     def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDGetErr(src, dst)
