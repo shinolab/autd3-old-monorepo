@@ -35,6 +35,11 @@ class Phase:
         """Phase."""
         return self._value.value
 
+    @property
+    def radian(self: "Phase") -> float:
+        """Radian."""
+        return float(Def().phase_to_rad(self.value))
+
     class _UnitRad:
         def __new__(cls: type["Phase._UnitRad"]) -> "Phase._UnitRad":
             """DO NOT USE THIS CONSTRUCTOR."""

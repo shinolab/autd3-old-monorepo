@@ -171,6 +171,8 @@ extern "C" {
 
 [[nodiscard]] uint8_t AUTDPhaseFromRad(double value);
 
+[[nodiscard]] double AUTDPhaseToRad(uint8_t value);
+
 void AUTDGetErr(void* src, char *dst);
 
 [[nodiscard]] ResultSamplingConfig AUTDSamplingConfigFromFrequencyDivision(uint32_t div);
