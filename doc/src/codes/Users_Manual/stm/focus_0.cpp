@@ -4,7 +4,8 @@
 
 using namespace std::ranges::views;
 
-const auto center = autd.geometry().center() + autd3::Vector3(0, 0, 150);
+const autd3::Vector3 center =
+    autd.geometry().center() + autd3::Vector3(0, 0, 150);
 const auto points_num = 200;
 const auto radius = 30.0;
 auto stm = autd3::FocusSTM(1).add_foci_from_iter(

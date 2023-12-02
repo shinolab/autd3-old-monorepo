@@ -14,7 +14,7 @@ public class FocalPoint : Gain
             var tp = tr.Position;
             var dist = (tp - _point).L2Norm;
             var phase = dist * tr.Wavenumber(dev.SoundSpeed);
-            return new Drive { Phase = phase, Intensity = EmitIntensity.Max };
+            return new Drive { Phase = Phase.FromRad(phase), Intensity = EmitIntensity.Max };
         });
     }
 }

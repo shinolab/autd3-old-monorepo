@@ -5,6 +5,6 @@ use autd3::prelude::*;
 # fn main() {
 let g = Uniform::new(EmitIntensity::MAX).with_transform(|dev, tr, d| Drive {
     intensity: EmitIntensity::new(d.intensity.value() / 2),
-    phase: d.phase + PI,
+    phase: Phase::from_rad(d.phase.radian() + PI),
 });
 # }
