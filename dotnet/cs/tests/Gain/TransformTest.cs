@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ public class TransformTest
     {
         var autd = await AUTDTest.CreateController();
 
-        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI).WithTransform((dev, _, d) =>
-            dev.Idx == 0 ? d with { Phase = d.Phase + Math.PI / 4 } : d with { Phase = d.Phase - Math.PI / 4 })));
+        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(128)).WithTransform((dev, _, d) =>
+            dev.Idx == 0 ? d with { Phase = new Phase((byte)(d.Phase.Value + 32)) } : d with { Phase = new Phase((byte)(d.Phase.Value - 32)) })));
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(0, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
@@ -42,7 +42,7 @@ public class TransformTest
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI)
+        Assert.True(await autd.SendAsync(new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90))
         .WithTransform((dev, _, d) =>
         {
             check[dev.Idx] = true;
@@ -60,7 +60,7 @@ public class TransformTest
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 }

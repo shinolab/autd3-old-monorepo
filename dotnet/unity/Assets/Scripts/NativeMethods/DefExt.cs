@@ -71,7 +71,7 @@ namespace AUTD3Sharp
         [StructLayout(LayoutKind.Sequential)]
         public struct DriveRaw
         {
-            public float_t Phase;
+            public byte Phase;
             public byte intensity;
         }
 

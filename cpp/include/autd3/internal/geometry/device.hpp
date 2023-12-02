@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #include "autd3/internal/geometry/transducer.hpp"
 #include "autd3/internal/native_methods.hpp"
 
-namespace autd3::internal {
+namespace autd3::internal::geometry {
 
 class Device {
   class DeviceView : public std::ranges::view_interface<DeviceView> {
@@ -147,4 +147,4 @@ class Device {
   std::vector<Transducer> _transducers{};
 };
 
-}  // namespace autd3::internal
+}  // namespace autd3::internal::geometry

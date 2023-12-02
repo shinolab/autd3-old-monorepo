@@ -103,7 +103,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainUniform.argtypes = [ctypes.c_uint8] 
         self.dll.AUTDGainUniform.restype = GainPtr
 
-        self.dll.AUTDGainUniformWithPhase.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainUniformWithPhase.argtypes = [GainPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDGainUniformWithPhase.restype = GainPtr
 
         self.dll.AUTDDevice.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
@@ -526,7 +526,7 @@ class NativeMethods(metaclass=Singleton):
     def gain_uniform(self, intensity: int) -> GainPtr:
         return self.dll.AUTDGainUniform(intensity)
 
-    def gain_uniform_with_phase(self, uniform: GainPtr, phase: float) -> GainPtr:
+    def gain_uniform_with_phase(self, uniform: GainPtr, phase: int) -> GainPtr:
         return self.dll.AUTDGainUniformWithPhase(uniform, phase)
 
     def device(self, geo: GeometryPtr, dev_idx: int) -> DevicePtr:

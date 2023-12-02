@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,10 @@
 
 use super::{Matrix4, Quaternion, UnitQuaternion, Vector3, Vector4};
 
-use crate::defined::{float, PI, ULTRASOUND_FREQUENCY};
+use crate::{
+    common::Phase,
+    defined::{float, PI, ULTRASOUND_FREQUENCY},
+};
 
 pub struct Transducer {
     idx: u8,
@@ -43,8 +46,8 @@ impl Transducer {
     }
 
     /// Calculate the phase of the transducer to align the phase at the specified position
-    pub fn align_phase_at(&self, pos: Vector3, sound_speed: float) -> float {
-        (pos - self.position()).norm() * self.wavenumber(sound_speed)
+    pub fn align_phase_at(&self, pos: Vector3, sound_speed: float) -> Phase {
+        Phase::from_rad((pos - self.position()).norm() * self.wavenumber(sound_speed))
     }
 
     /// Get the position of the transducer
@@ -157,12 +160,15 @@ mod tests {
         let wavelength = tr.wavelength(c);
 
         let p = Vector3::zeros();
-        assert_approx_eq!(0., tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
 
         let p = Vector3::new(wavelength, 0., 0.);
-        assert_approx_eq!(2. * PI, tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
 
         let p = Vector3::new(0., -wavelength, 0.);
-        assert_approx_eq!(2. * PI, tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
+
+        let p = Vector3::new(0., 0., wavelength / 2.);
+        assert_eq!(128, tr.align_phase_at(p, c).value());
     }
 }

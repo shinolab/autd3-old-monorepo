@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@ class Cache final : public internal::Gain {
  public:
   explicit Cache(G g) : _g(std::move(g)), _cache(std::make_shared<std::unordered_map<size_t, std::vector<internal::native_methods::Drive>>>()) {}
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
-    auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry& geometry) const override {
+    auto view = geometry.devices() | std::views::transform([](const internal::geometry::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
 
     if (std::vector<uint32_t> device_indices(view.begin(), view.end());
         _cache->size() != device_indices.size() ||
@@ -49,7 +49,7 @@ class Cache final : public internal::Gain {
     }
 
     return std::accumulate(geometry.devices().begin(), geometry.devices().end(), internal::native_methods::AUTDGainCustom(),
-                           [this](const internal::native_methods::GainPtr acc, const internal::Device& dev) {
+                           [this](const internal::native_methods::GainPtr acc, const internal::geometry::Device& dev) {
                              return AUTDGainCustomSet(acc, static_cast<uint32_t>(dev.idx()), _cache->at(dev.idx()).data(),
                                                       _cache->at(dev.idx()).size());
                            });

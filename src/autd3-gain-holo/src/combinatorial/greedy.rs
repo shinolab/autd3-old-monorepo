@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use autd3_derive::Gain;
 
 use autd3_driver::{
     acoustics::{directivity::Sphere, propagate},
-    common::EmitIntensity,
+    common::{EmitIntensity, Phase},
     defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
@@ -95,7 +95,7 @@ impl Gain for Greedy {
                     vec![
                         Drive {
                             intensity,
-                            phase: 0.0
+                            phase: Phase::new(0),
                         };
                         dev.num_transducers()
                     ],
@@ -153,7 +153,7 @@ impl Gain for Greedy {
             cache.iter_mut().zip(tmp.iter()).for_each(|(c, a)| {
                 *c += a * phase;
             });
-            res.get_mut(&dev_idx).unwrap()[idx].phase = phase.argument() + PI;
+            res.get_mut(&dev_idx).unwrap()[idx].phase = Phase::from_rad(phase.argument() + PI);
         });
         Ok(res)
     }

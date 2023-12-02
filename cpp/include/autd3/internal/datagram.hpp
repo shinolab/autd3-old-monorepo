@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ concept special_datagram = requires(S s) {
 };
 
 template <class D>
-concept datagram = requires(D d, const Geometry& g) {
+concept datagram = requires(D d, const geometry::Geometry& g) {
   { d.ptr(g) } -> std::same_as<native_methods::DatagramPtr>;
 };
 
@@ -36,7 +36,7 @@ class NullDatagram final {
   NullDatagram(NullDatagram&& obj) = default;
   NullDatagram& operator=(NullDatagram&& obj) = default;
 
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const Geometry&) { return native_methods::DatagramPtr{nullptr}; }
+  [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::DatagramPtr{nullptr}; }
 };
 
 /**
@@ -60,7 +60,7 @@ class Silencer final {
    */
   static Silencer disable() noexcept { return Silencer(0xFFFF, 0xFFFF); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const {
+  [[nodiscard]] native_methods::DatagramPtr ptr(const geometry::Geometry&) const {
     return validate(native_methods::AUTDDatagramSilencer(_step_intensity, _step_phase));
   }
 
@@ -76,7 +76,7 @@ class Clear final {
  public:
   Clear() = default;
 
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const Geometry&) { return native_methods::AUTDDatagramClear(); }
+  [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::AUTDDatagramClear(); }
 };
 
 /**
@@ -86,7 +86,7 @@ class UpdateFlags final {
  public:
   UpdateFlags() = default;
 
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const Geometry&) { return native_methods::AUTDDatagramUpdateFlags(); }
+  [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::AUTDDatagramUpdateFlags(); }
 };
 
 /**
@@ -96,7 +96,7 @@ class Synchronize final {
  public:
   Synchronize() = default;
 
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const Geometry&) { return native_methods::AUTDDatagramSynchronize(); }
+  [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::AUTDDatagramSynchronize(); }
 };
 
 }  // namespace autd3::internal

@@ -44,7 +44,7 @@ public class CacheTest
         public override EmitIntensity[] Calc()
         {
             CalcCnt++;
-            return new EmitIntensity[] { EmitIntensity.Max, EmitIntensity.Max, };
+            return new[] { EmitIntensity.Max, EmitIntensity.Max };
         }
     }
 

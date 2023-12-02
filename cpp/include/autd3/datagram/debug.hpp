@@ -3,7 +3,7 @@
 // Created Date: 01/12/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@
 namespace autd3::datagram {
 
 template <class F>
-concept configure_debug_output_idx_f = requires(F f, const internal::Device& d) {
-  { f(d) } -> std::same_as<const internal::Transducer*>;
+concept configure_debug_output_idx_f = requires(F f, const internal::geometry::Device& d) {
+  { f(d) } -> std::same_as<const internal::geometry::Transducer*>;
 };
 
 /**
@@ -35,13 +35,13 @@ class ConfigureDebugOutputIdx final {
  public:
   explicit ConfigureDebugOutputIdx(const F& f) : _f(f) {
     _f_native = +[](const void* context, const internal::native_methods::GeometryPtr geometry_ptr, const uint32_t dev_idx) -> uint8_t {
-      const internal::Device dev(dev_idx, AUTDDevice(geometry_ptr, dev_idx));
+      const internal::geometry::Device dev(dev_idx, AUTDDevice(geometry_ptr, dev_idx));
       const auto* tr = static_cast<const ConfigureDebugOutputIdx*>(context)->_f(dev);
       return tr != nullptr ? static_cast<uint8_t>(tr->idx()) : 0xFF;
     };
   }
 
-  [[nodiscard]] internal::native_methods::DatagramPtr ptr(const internal::Geometry& geometry) const {
+  [[nodiscard]] internal::native_methods::DatagramPtr ptr(const internal::geometry::Geometry& geometry) const {
     return AUTDDatagramConfigureDebugOutputIdx(const_cast<void*>(reinterpret_cast<const void*>(_f_native)),
                                                const_cast<void*>(static_cast<const void*>(this)), geometry.ptr());
   }

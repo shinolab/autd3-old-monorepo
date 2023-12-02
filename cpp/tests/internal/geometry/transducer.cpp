@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,10 +26,10 @@ TEST(Internal_Geometry, TransducerPosition) {
   auto autd = create_controller();
 
   ASSERT_EQ(autd.geometry()[0][0].position(), autd3::internal::Vector3(0, 0, 0));
-  ASSERT_EQ(autd.geometry()[0][autd3::internal::AUTD3::NUM_TRANS_IN_UNIT - 1].position(), autd3::internal::Vector3(172.72, 132.08, 0));
+  ASSERT_EQ(autd.geometry()[0][autd3::internal::geometry::AUTD3::NUM_TRANS_IN_UNIT - 1].position(), autd3::internal::Vector3(172.72, 132.08, 0));
 
   ASSERT_EQ(autd.geometry()[1][0].position(), autd3::internal::Vector3(0, 0, 0));
-  ASSERT_EQ(autd.geometry()[1][autd3::internal::AUTD3::NUM_TRANS_IN_UNIT - 1].position(), autd3::internal::Vector3(172.72, 132.08, 0));
+  ASSERT_EQ(autd.geometry()[1][autd3::internal::geometry::AUTD3::NUM_TRANS_IN_UNIT - 1].position(), autd3::internal::Vector3(172.72, 132.08, 0));
 }
 
 TEST(Internal_Geometry, TransducerRotation) {

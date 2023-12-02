@@ -4,7 +4,7 @@
  * Created Date: 30/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,11 +19,11 @@ pub async fn transtest<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool
     let m = Static::new();
     let g = TransducerTest::new(|dev, tr| match (dev.idx(), tr.idx()) {
         (0, 0) => Some(Drive {
-            phase: 0.,
+            phase: Phase::new(0),
             intensity: EmitIntensity::new(0xFF),
         }),
         (0, 248) => Some(Drive {
-            phase: 0.,
+            phase: Phase::new(0),
             intensity: EmitIntensity::new(0xFF),
         }),
         _ => None,

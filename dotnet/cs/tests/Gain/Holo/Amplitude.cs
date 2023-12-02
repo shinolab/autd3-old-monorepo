@@ -11,7 +11,6 @@
  *
  */
 
-using AUTD3Sharp.Gain.Holo;
 using static AUTD3Sharp.Gain.Holo.Amplitude.Units;
 
 namespace tests.Gain.Holo;

@@ -24,6 +24,7 @@ from pyautd3 import (
     Controller,
     Device,
     FirmwareInfo,
+    Phase,
     Silencer,
     Stop,
     Synchronize,
@@ -319,7 +320,7 @@ async def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    await autd.group(f).set_data(0, Sine(150), Uniform(0x80).with_phase(np.pi)).send_async()
+    await autd.group(f).set_data(0, Sine(150), Uniform(0x80).with_phase(Phase(0x90))).send_async()
 
     assert not check[0]
     assert check[1]
@@ -333,20 +334,20 @@ async def test_group_check_only_for_enabled():
     assert len(mod) == 80
     intensities, phases = autd.link.intensities_and_phases(1, 0)
     assert np.all(intensities == 0x80)
-    assert np.all(phases == 128)
+    assert np.all(phases == 0x90)
 
 
 @pytest.mark.asyncio()
 async def test_clear():
     autd = await create_controller()
 
-    assert await autd.send_async((Static(), Uniform(0xFF).with_phase(np.pi)))
+    assert await autd.send_async((Static(), Uniform(0xFF).with_phase(Phase(0x90))))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0xFF)
-        assert np.all(phases == 128)
+        assert np.all(phases == 0x90)
 
     await autd.send_async(Clear())
 

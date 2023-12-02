@@ -42,12 +42,12 @@ namespace AUTD3Sharp
         public class UnitRadian
         {
             internal UnitRadian() { }
-            public static Angle operator *(float_t a, UnitRadian b) => Angle.FromRadian(a);
+            public static Angle operator *(float_t a, UnitRadian b) => FromRadian(a);
         }
         public class UnitDegree
         {
             internal UnitDegree() { }
-            public static Angle operator *(float_t a, UnitDegree b) => Angle.FromDegree(a);
+            public static Angle operator *(float_t a, UnitDegree b) => FromDegree(a);
         }
 
         public static class Units

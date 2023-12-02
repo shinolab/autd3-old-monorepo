@@ -16,6 +16,7 @@ import numpy as np
 import pytest
 
 from pyautd3.gain import Uniform
+from pyautd3.phase import Phase
 from tests.test_autd import create_controller
 
 
@@ -23,9 +24,9 @@ from tests.test_autd import create_controller
 async def test_uniform():
     autd = await create_controller()
 
-    assert await autd.send_async(Uniform(0x80).with_phase(np.pi))
+    assert await autd.send_async(Uniform(0x80).with_phase(Phase(0x90)))
 
     for dev in autd.geometry:
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0x80)
-        assert np.all(phases == 128)
+        assert np.all(phases == 0x90)

@@ -174,7 +174,7 @@ GainPtr AUTDGainGroup(GroupGainMapPtr map,
 
 [[nodiscard]] GainPtr AUTDGainUniform(uint8_t intensity);
 
-[[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
+[[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, uint8_t phase);
 
 [[nodiscard]] GeometryPtr AUTDGeometry(ControllerPtr cnt);
 

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3capi_def::{autd3::gain::TransducerTest, *};
-use driver::common::EmitIntensity;
+use driver::common::{EmitIntensity, Phase};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -34,7 +34,7 @@ pub unsafe extern "C" fn AUTDGainTransducerTest(
     >(f);
     GainPtr::new(TransducerTest::new(move |dev, tr| {
         let mut d = driver::common::Drive {
-            phase: 0.,
+            phase: Phase::new(0),
             intensity: EmitIntensity::new(0),
         };
         f(

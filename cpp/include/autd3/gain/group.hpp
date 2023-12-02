@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,14 +26,14 @@
 namespace autd3::gain {
 
 template <class F>
-concept gain_group_f = requires(F f, const internal::Device& dev, const internal::Transducer& tr) {
-  typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
+concept gain_group_f = requires(F f, const internal::geometry::Device& dev, const internal::geometry::Transducer& tr) {
+  typename std::invoke_result_t<F, const internal::geometry::Device&, const internal::geometry::Transducer&>::value_type;
 };
 
 template <gain_group_f F>
 class Group final : public internal::Gain, public IntoCache<Group<F>>, public IntoTransform<Group<F>> {
  public:
-  using key_type = typename std::invoke_result_t<F, const internal::Device&, const internal::Transducer&>::value_type;
+  using key_type = typename std::invoke_result_t<F, const internal::geometry::Device&, const internal::geometry::Transducer&>::value_type;
 
   explicit Group(const F& f) : _f(f) {}
 
@@ -62,10 +62,10 @@ class Group final : public internal::Gain, public IntoCache<Group<F>>, public In
     return std::move(*this);
   }
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry& geometry) const override {
     std::unordered_map<key_type, int32_t> keymap;
 
-    auto view = geometry.devices() | std::views::transform([](const internal::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
+    auto view = geometry.devices() | std::views::transform([](const internal::geometry::Device& dev) { return static_cast<uint32_t>(dev.idx()); });
     const std::vector<uint32_t> device_indices(view.begin(), view.end());
 
     auto map = internal::native_methods::AUTDGainGroupCreateMap(device_indices.data(), static_cast<uint32_t>(device_indices.size()));

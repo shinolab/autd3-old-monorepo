@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,22 +33,13 @@ class Modulation {
    * [autd3::internal::native_methods::FPGA_CLK_FREQ] / (sampling frequency
    * division).
    */
-  [[nodiscard]] SamplingConfiguration sampling_config() const {
-    return SamplingConfiguration(
-        AUTDModulationSamplingConfig(modulation_ptr()));
-  }
+  [[nodiscard]] SamplingConfiguration sampling_config() const { return SamplingConfiguration(AUTDModulationSamplingConfig(modulation_ptr())); }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const {
-    return AUTDModulationIntoDatagram(modulation_ptr());
-  }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const geometry::Geometry&) const { return AUTDModulationIntoDatagram(modulation_ptr()); }
 
-  [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr()
-      const = 0;
+  [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 
-  [[nodiscard]] size_t size() const {
-    return native_methods::validate<size_t>(
-        AUTDModulationSize(modulation_ptr()));
-  }
+  [[nodiscard]] size_t size() const { return native_methods::validate<size_t>(AUTDModulationSize(modulation_ptr())); }
 };
 
 template <class M>
@@ -57,11 +48,8 @@ class ModulationWithSamplingConfig : public Modulation {
   std::optional<SamplingConfiguration> _config;
 
  public:
-  void with_sampling_config(const SamplingConfiguration config) & {
-    _config = config;
-  }
-  [[nodiscard]] M&& with_sampling_config(
-      const SamplingConfiguration config) && {
+  void with_sampling_config(const SamplingConfiguration config) & { _config = config; }
+  [[nodiscard]] M&& with_sampling_config(const SamplingConfiguration config) && {
     _config = config;
     return std::move(*static_cast<M*>(this));
   }

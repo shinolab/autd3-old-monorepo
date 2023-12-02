@@ -151,7 +151,7 @@ struct ResultDatagram {
 };
 
 struct Drive {
-  double phase;
+  uint8_t phase;
   uint8_t intensity;
 };
 
@@ -168,6 +168,8 @@ constexpr const double DEFAULT_CORRECTED_ALPHA = 0.803;
 extern "C" {
 
 [[nodiscard]] uint8_t AUTDEmitIntensityWithCorrectionAlpha(uint8_t value, double alpha);
+
+[[nodiscard]] uint8_t AUTDPhaseFromRad(double value);
 
 void AUTDGetErr(void* src, char *dst);
 

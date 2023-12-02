@@ -508,7 +508,7 @@ def cpp_test(args):
                 for cmd in config.cmake_extra:
                     command.append(cmd)
             subprocess.run(command).check_returncode()
-            command = ["cmake", "--build", "."]
+            command = ["cmake", "--build", ".", "--parallel", "8"]
             if config.release:
                 command.append("--config")
                 command.append("Release")

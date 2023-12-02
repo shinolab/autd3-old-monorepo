@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,8 +40,8 @@ TEST(Internal, ControllerClose) {
 TEST(Internal, ControllerSendTimeout) {
   {
     auto autd = autd3::internal::ControllerBuilder()
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(0)))
                     .get();
 
@@ -60,8 +60,8 @@ TEST(Internal, ControllerSendTimeout) {
 
   {
     auto autd = autd3::internal::ControllerBuilder()
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
-                    .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
+                    .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(10)))
                     .get();
 
@@ -121,10 +121,10 @@ TEST(Internal, ControllerSendDouble) {
   }
 
   autd.link().down();
-  ASSERT_FALSE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1.0)).get());
+  ASSERT_FALSE(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1)).get());
 
   autd.link().break_down();
-  ASSERT_THROW(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1.0)).get(), autd3::internal::AUTDException);
+  ASSERT_THROW(autd.send_async(autd3::modulation::Static(), autd3::gain::Uniform(1)).get(), autd3::internal::AUTDException);
 }
 
 TEST(Internal, ControllerSendSpecial) {
@@ -203,7 +203,7 @@ TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
         check[dev.idx()] = true;
         return 0;
       })
-      .set(0, autd3::modulation::Sine(150), autd3::gain::Uniform(0x80).with_phase(autd3::internal::pi))
+      .set(0, autd3::modulation::Sine(150), autd3::gain::Uniform(0x80).with_phase(autd3::internal::Phase(0x90)))
       .send_async()
       .get();
 
@@ -220,6 +220,6 @@ TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
     ASSERT_EQ(80, m.size());
     auto [intensities, phases] = autd.link().intensities_and_phases(1, 0);
     ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
-    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 128; }));
+    ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0x90; }));
   }
 }

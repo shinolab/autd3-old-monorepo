@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -96,7 +96,7 @@ impl Gain for Bessel {
             let r = tr.position() - self.pos;
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-            let phase = dist * tr.wavenumber(dev.sound_speed);
+            let phase = dist * tr.wavenumber(dev.sound_speed) * Rad;
             Drive {
                 phase,
                 intensity: self.intensity,
@@ -144,9 +144,9 @@ mod tests {
                 let r = tr.position() - f;
                 let r = rot * r;
                 let dist = theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - theta.cos() * r.z;
-                dist * tr.wavenumber(geometry[0].sound_speed)
+                dist * tr.wavenumber(geometry[0].sound_speed) * Rad
             };
-            assert_approx_eq::assert_approx_eq!(b.phase, expected_phase);
+            assert_eq!(b.phase, expected_phase);
         });
 
         let f = random_vector3(-500.0..500.0, -500.0..500.0, 50.0..500.0);
@@ -174,9 +174,9 @@ mod tests {
                 let r = tr.position() - f;
                 let r = rot * r;
                 let dist = theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - theta.cos() * r.z;
-                dist * tr.wavenumber(geometry[0].sound_speed)
+                dist * tr.wavenumber(geometry[0].sound_speed) * Rad
             };
-            assert_approx_eq::assert_approx_eq!(b.phase, expected_phase);
+            assert_eq!(b.phase, expected_phase);
         });
     }
 }

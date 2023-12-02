@@ -35,7 +35,7 @@ class TransducerTest(IGain):
             tr = Transducer(tr_idx, dev._ptr)
             d = f(dev, tr)
             if d is not None:
-                raw[0] = _Drive(d.phase, d.intensity.value)
+                raw[0] = _Drive(d.phase.value, d.intensity.value)
 
         self._f_native = ctypes.CFUNCTYPE(None, ContextPtr, GeometryPtr, ctypes.c_uint32, ctypes.c_uint8, ctypes.POINTER(_Drive))(f_native)
 

@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -208,7 +208,7 @@ impl<
                     } else {
                         d[tr.idx()] = Drive {
                             intensity: EmitIntensity::MIN,
-                            phase: 0.0,
+                            phase: Phase::new(0),
                         }
                     }
                 }
@@ -254,34 +254,34 @@ mod tests {
 
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
             i if i <= 199 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0xFF);
             }
             _ => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
             _ => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0x1F);
             }
         });
         drives[&2].iter().for_each(|d| {
-            assert_eq!(d.phase, 0.0);
+            assert_eq!(d.phase.value(), 0);
             assert_eq!(d.intensity.value(), 0);
         });
         drives[&3].iter().for_each(|d| {
-            assert_eq!(d.phase, 0.0);
+            assert_eq!(d.phase.value(), 0);
             assert_eq!(d.intensity.value(), 0);
         });
     }

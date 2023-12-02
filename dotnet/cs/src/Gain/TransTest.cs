@@ -45,7 +45,7 @@ namespace AUTD3Sharp.Gain
                     var tr = new Transducer(trIdx, dev.Ptr);
                     var d = f(dev, tr);
                     if (d == null) return;
-                    raw->Phase = d?.Phase ?? 0;
+                    raw->Phase = d?.Phase.Value ?? 0;
                     raw->intensity = d?.Intensity.Value ?? 0;
                 };
             }
