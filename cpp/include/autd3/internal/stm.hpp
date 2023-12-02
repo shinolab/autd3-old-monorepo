@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,8 +26,7 @@ namespace autd3::internal {
 
 class STM {
  public:
-  explicit STM(const std::optional<double> freq,
-               const std::optional<std::chrono::nanoseconds> period,
+  explicit STM(const std::optional<double> freq, const std::optional<std::chrono::nanoseconds> period,
                const std::optional<SamplingConfiguration> config)
       : _freq(freq), _period(period), _config(config) {}
 
@@ -51,30 +50,21 @@ class STM {
   [[nodiscard]] native_methods::STMPropsPtr props() const {
     native_methods::STMPropsPtr ptr{nullptr};
     if (_freq.has_value()) ptr = native_methods::AUTDSTMPropsNew(_freq.value());
-    if (_period.has_value())
-      ptr = native_methods::AUTDSTMPropsNewWithPeriod(
-          static_cast<uint64_t>(_period.value().count()));
-    if (_config.has_value())
-      ptr = AUTDSTMPropsNewWithSamplingConfig(
-          static_cast<native_methods::SamplingConfiguration>(_config.value()));
+    if (_period.has_value()) ptr = native_methods::AUTDSTMPropsFromPeriod(static_cast<uint64_t>(_period.value().count()));
+    if (_config.has_value()) ptr = AUTDSTMPropsFromSamplingConfig(static_cast<native_methods::SamplingConfiguration>(_config.value()));
     if (ptr._0 == nullptr) throw std::runtime_error("unreachable!");
     ptr = AUTDSTMPropsWithStartIdx(ptr, _start_idx);
     ptr = AUTDSTMPropsWithFinishIdx(ptr, _finish_idx);
     return ptr;
   }
 
-  [[nodiscard]] double frequency_from_size(const size_t size) const {
-    return AUTDSTMPropsFrequency(props(), size);
+  [[nodiscard]] double frequency_from_size(const size_t size) const { return AUTDSTMPropsFrequency(props(), size); }
+
+  [[nodiscard]] SamplingConfiguration sampling_config_from_size(const size_t size) const {
+    return SamplingConfiguration(validate(AUTDSTMPropsSamplingConfig(props(), size)));
   }
 
-  [[nodiscard]] SamplingConfiguration sampling_config_from_size(
-      const size_t size) const {
-    return SamplingConfiguration(
-        validate(AUTDSTMPropsSamplingConfig(props(), size)));
-  }
-
-  [[nodiscard]] std::chrono::nanoseconds period_from_size(
-      const size_t size) const {
+  [[nodiscard]] std::chrono::nanoseconds period_from_size(const size_t size) const {
     return std::chrono::nanoseconds(AUTDSTMPropsPeriod(props(), size));
   }
 
@@ -103,13 +93,10 @@ struct ControlPoint {
 };
 
 template <class R>
-concept focus_range_v = std::ranges::viewable_range<R> &&
-                        std::same_as<std::ranges::range_value_t<R>, Vector3>;
+concept focus_range_v = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, Vector3>;
 
 template <class R>
-concept focus_range_c =
-    std::ranges::viewable_range<R> &&
-    std::same_as<std::ranges::range_value_t<R>, ControlPoint>;
+concept focus_range_c = std::ranges::viewable_range<R> && std::same_as<std::ranges::range_value_t<R>, ControlPoint>;
 
 /**
  * @brief FocusSTM is an STM for moving Gain.
@@ -122,8 +109,7 @@ concept focus_range_c =
  */
 class FocusSTM final : public STM {
  public:
-  explicit FocusSTM(const double freq)
-      : STM(freq, std::nullopt, std::nullopt) {}
+  explicit FocusSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
 
   FocusSTM(const FocusSTM& obj) = default;
   FocusSTM& operator=(const FocusSTM& obj) = default;
@@ -131,24 +117,16 @@ class FocusSTM final : public STM {
   FocusSTM& operator=(FocusSTM&& obj) = default;
   ~FocusSTM() override = default;
 
-  static FocusSTM new_with_sampling_config(const SamplingConfiguration config) {
-    return FocusSTM(std::nullopt, std::nullopt, config);
-  }
+  static FocusSTM from_sampling_config(const SamplingConfiguration config) { return FocusSTM(std::nullopt, std::nullopt, config); }
 
   template <typename Rep, typename Period>
-  static FocusSTM new_with_period(
-      const std::chrono::duration<Rep, Period> period) {
-    return FocusSTM(
-        std::nullopt,
-        std::chrono::duration_cast<std::chrono::nanoseconds>(period),
-        std::nullopt);
+  static FocusSTM from_period(const std::chrono::duration<Rep, Period> period) {
+    return FocusSTM(std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period), std::nullopt);
   }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry&) const {
-    return validate(
-        AUTDSTMFocus(props(), reinterpret_cast<const double*>(_points.data()),
-                     reinterpret_cast<const uint8_t*>(_intensities.data()),
-                     _intensities.size()));
+  [[nodiscard]] native_methods::DatagramPtr ptr(const geometry::Geometry&) const {
+    return validate(AUTDSTMFocus(props(), reinterpret_cast<const double*>(_points.data()), reinterpret_cast<const uint8_t*>(_intensities.data()),
+                                 _intensities.size()));
   }
 
   /**
@@ -158,8 +136,7 @@ class FocusSTM final : public STM {
    * @param intensity Emission intensity
    * @return FocusSTM
    */
-  void add_focus(Vector3 point,
-                 const EmitIntensity intensity = EmitIntensity::maximum()) & {
+  void add_focus(Vector3 point, const EmitIntensity intensity = EmitIntensity::maximum()) & {
     _points.emplace_back(std::move(point));
     _intensities.emplace_back(intensity);
   }
@@ -171,9 +148,7 @@ class FocusSTM final : public STM {
    * @param intensity Emission intensity
    * @return FocusSTM
    */
-  [[nodiscard]] FocusSTM&& add_focus(
-      Vector3 point,
-      const EmitIntensity intensity = EmitIntensity::maximum()) && {
+  [[nodiscard]] FocusSTM&& add_focus(Vector3 point, const EmitIntensity intensity = EmitIntensity::maximum()) && {
     _points.emplace_back(std::move(point));
     _intensities.emplace_back(intensity);
     return std::move(*this);
@@ -260,43 +235,30 @@ class FocusSTM final : public STM {
     return std::move(*this);
   }
 
-  [[nodiscard]] double frequency() const {
-    return frequency_from_size(_points.size());
-  }
-  [[nodiscard]] std::chrono::nanoseconds period() const {
-    return period_from_size(_points.size());
-  }
-  [[nodiscard]] SamplingConfiguration sampling_config() const {
-    return sampling_config_from_size(_points.size());
-  }
+  [[nodiscard]] double frequency() const { return frequency_from_size(_points.size()); }
+  [[nodiscard]] std::chrono::nanoseconds period() const { return period_from_size(_points.size()); }
+  [[nodiscard]] SamplingConfiguration sampling_config() const { return sampling_config_from_size(_points.size()); }
 
   void with_start_idx(const std::optional<uint16_t> start_idx) & {
-    _start_idx =
-        start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
   }
 
-  [[nodiscard]] FocusSTM&& with_start_idx(
-      const std::optional<uint16_t> start_idx) && {
-    _start_idx =
-        start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+  [[nodiscard]] FocusSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
     return std::move(*this);
   }
 
   void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
-    _finish_idx =
-        finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
   }
 
-  [[nodiscard]] FocusSTM&& with_finish_idx(
-      const std::optional<uint16_t> finish_idx) && {
-    _finish_idx =
-        finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+  [[nodiscard]] FocusSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
   }
 
  private:
-  explicit FocusSTM(const std::optional<double> freq,
-                    const std::optional<std::chrono::nanoseconds> period,
+  explicit FocusSTM(const std::optional<double> freq, const std::optional<std::chrono::nanoseconds> period,
                     const std::optional<SamplingConfiguration> config)
       : STM(freq, period, config) {}
 
@@ -305,8 +267,7 @@ class FocusSTM final : public STM {
 };
 
 template <class R>
-concept gain_range =
-    std::ranges::viewable_range<R> && gain<std::ranges::range_value_t<R>>;
+concept gain_range = std::ranges::viewable_range<R> && gain<std::ranges::range_value_t<R>>;
 
 /**
  * @brief GainSTM is an STM for moving Gain.
@@ -337,30 +298,19 @@ class GainSTM final : public STM {
    * @param config Sampling configuration
    * @return GainSTM
    */
-  static GainSTM new_with_sampling_config(const SamplingConfiguration config) {
-    return GainSTM(std::nullopt, std::nullopt, config);
-  }
+  static GainSTM from_sampling_config(const SamplingConfiguration config) { return GainSTM(std::nullopt, std::nullopt, config); }
 
   template <typename Rep, typename Period>
-  static GainSTM new_with_period(
-      const std::chrono::duration<Rep, Period> period) {
-    return GainSTM(
-        std::nullopt, std::nullopt, std::nullopt,
-        std::chrono::duration_cast<std::chrono::nanoseconds>(period));
+  static GainSTM from_period(const std::chrono::duration<Rep, Period> period) {
+    return GainSTM(std::nullopt, std::nullopt, std::nullopt, std::chrono::duration_cast<std::chrono::nanoseconds>(period));
   }
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(
-      const Geometry& geometry) const {
-    const auto mode = _mode.has_value()
-                          ? _mode.value()
-                          : native_methods::GainSTMMode::PhaseIntensityFull;
+  [[nodiscard]] native_methods::DatagramPtr ptr(const geometry::Geometry& geometry) const {
+    const auto mode = _mode.has_value() ? _mode.value() : native_methods::GainSTMMode::PhaseIntensityFull;
     std::vector<native_methods::GainPtr> gains;
     gains.reserve(_gains.size());
-    std::ranges::transform(
-        _gains, std::back_inserter(gains),
-        [&](const auto& gain) { return gain->gain_ptr(geometry); });
-    return validate(AUTDSTMGain(props(), gains.data(),
-                                static_cast<uint32_t>(gains.size()), mode));
+    std::ranges::transform(_gains, std::back_inserter(gains), [&](const auto& gain) { return gain->gain_ptr(geometry); });
+    return validate(AUTDSTMGain(props(), gains.data(), static_cast<uint32_t>(gains.size()), mode));
   }
 
   /**
@@ -372,8 +322,7 @@ class GainSTM final : public STM {
    */
   template <gain G>
   void add_gain(G&& gain) & {
-    _gains.emplace_back(
-        std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
   /**
@@ -385,8 +334,7 @@ class GainSTM final : public STM {
    */
   template <gain G>
   [[nodiscard]] GainSTM&& add_gain(G&& gain) && {
-    _gains.emplace_back(
-        std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
     return std::move(*this);
   }
 
@@ -399,10 +347,7 @@ class GainSTM final : public STM {
   template <gain_range R>
   void add_gains_from_iter(R&& iter) & {
     for (auto e : iter)
-      _gains.emplace_back(
-          std::make_shared<
-              std::remove_reference_t<std::ranges::range_value_t<R>>>(
-              std::forward<std::ranges::range_value_t<R>>(e)));
+      _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
   }
 
   /**
@@ -415,22 +360,13 @@ class GainSTM final : public STM {
   template <gain_range R>
   GainSTM add_gains_from_iter(R&& iter) && {
     for (auto e : iter)
-      _gains.emplace_back(
-          std::make_shared<
-              std::remove_reference_t<std::ranges::range_value_t<R>>>(
-              std::forward<std::ranges::range_value_t<R>>(e)));
+      _gains.emplace_back(std::make_shared<std::remove_reference_t<std::ranges::range_value_t<R>>>(std::forward<std::ranges::range_value_t<R>>(e)));
     return std::move(*this);
   }
 
-  [[nodiscard]] double frequency() const {
-    return frequency_from_size(_gains.size());
-  }
-  [[nodiscard]] std::chrono::nanoseconds period() const {
-    return period_from_size(_gains.size());
-  }
-  [[nodiscard]] SamplingConfiguration sampling_config() const {
-    return sampling_config_from_size(_gains.size());
-  }
+  [[nodiscard]] double frequency() const { return frequency_from_size(_gains.size()); }
+  [[nodiscard]] std::chrono::nanoseconds period() const { return period_from_size(_gains.size()); }
+  [[nodiscard]] SamplingConfiguration sampling_config() const { return sampling_config_from_size(_gains.size()); }
 
   void with_mode(const native_methods::GainSTMMode mode) & { _mode = mode; }
   [[nodiscard]] GainSTM&& with_mode(const native_methods::GainSTMMode mode) && {
@@ -439,32 +375,25 @@ class GainSTM final : public STM {
   }
 
   void with_start_idx(const std::optional<uint16_t> start_idx) & {
-    _start_idx =
-        start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
   }
 
-  [[nodiscard]] GainSTM&& with_start_idx(
-      const std::optional<uint16_t> start_idx) && {
-    _start_idx =
-        start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+  [[nodiscard]] GainSTM&& with_start_idx(const std::optional<uint16_t> start_idx) && {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
     return std::move(*this);
   }
 
   void with_finish_idx(const std::optional<uint16_t> finish_idx) & {
-    _finish_idx =
-        finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
   }
 
-  [[nodiscard]] GainSTM&& with_finish_idx(
-      const std::optional<uint16_t> finish_idx) && {
-    _finish_idx =
-        finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+  [[nodiscard]] GainSTM&& with_finish_idx(const std::optional<uint16_t> finish_idx) && {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
     return std::move(*this);
   }
 
  private:
-  explicit GainSTM(const std::optional<double> freq,
-                   const std::optional<std::chrono::nanoseconds> period,
+  explicit GainSTM(const std::optional<double> freq, const std::optional<std::chrono::nanoseconds> period,
                    const std::optional<SamplingConfiguration> config)
       : STM(freq, period, config) {}
 

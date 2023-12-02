@@ -180,24 +180,17 @@ class AUTD3:
 class Transducer:
     """Transducer."""
 
-    _dev_idx: int
-    _tr_idx: int
+    _idx: int
     _ptr: TransducerPtr
 
-    def __init__(self: "Transducer", dev_idx: int, tr_idx: int, ptr: DevicePtr) -> None:
-        self._dev_idx = dev_idx
-        self._tr_idx = tr_idx
-        self._ptr = Base().transducer(ptr, tr_idx)
+    def __init__(self: "Transducer", idx: int, ptr: DevicePtr) -> None:
+        self._idx = idx
+        self._ptr = Base().transducer(ptr, idx)
 
     @property
-    def tr_idx(self: "Transducer") -> int:
+    def idx(self: "Transducer") -> int:
         """Get the local index of the transducer."""
-        return self._tr_idx
-
-    @property
-    def dev_idx(self: "Transducer") -> int:
-        """Get the device index of the transducer."""
-        return self._dev_idx
+        return self._idx
 
     @property
     def position(self: "Transducer") -> np.ndarray:
@@ -239,16 +232,6 @@ class Transducer:
         Base().transducer_direction_z(self._ptr, vp)
         return v
 
-    @property
-    def mod_delay(self: "Transducer") -> int:
-        """Get the modulation delay of the transducer."""
-        return int(Base().transducer_mod_delay_get(self._ptr))
-
-    @mod_delay.setter
-    def mod_delay(self: "Transducer", delay: int) -> None:
-        """Set the modulation delay of the transducer."""
-        return Base().transducer_mod_delay_set(self._ptr, delay)
-
     def wavelength(self: "Transducer", sound_speed: float) -> float:
         """Get the wavelength of the transducer.
 
@@ -278,7 +261,7 @@ class Device:
     def __init__(self: "Device", idx: int, ptr: DevicePtr) -> None:
         self._idx = idx
         self._ptr = ptr
-        self._transducers = [Transducer(idx, i, self._ptr) for i in range(int(Base().device_num_transducers(self._ptr)))]
+        self._transducers = [Transducer(i, self._ptr) for i in range(int(Base().device_num_transducers(self._ptr)))]
 
     @property
     def idx(self: "Device") -> int:

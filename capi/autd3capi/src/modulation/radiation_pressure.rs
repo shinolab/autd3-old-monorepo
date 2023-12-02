@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ mod tests {
         unsafe {
             let cnt = create_controller();
 
-            let m = AUTDModulationSine(150);
+            let m = AUTDModulationSine(150.);
             let m = AUTDModulationWithRadiationPressure(m);
             let m = AUTDModulationIntoDatagram(m);
 

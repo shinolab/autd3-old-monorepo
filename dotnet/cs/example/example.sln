@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoveTwinCAT", "RemoveTwin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteSOEM", "RemoteSOEM\RemoteSOEM.csproj", "{55F1A21E-45F4-4AEA-BE2D-A57E77D2892A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupGain", "GroupGain\GroupGain.csproj", "{C0C3B26E-1352-4C2D-9577-D791B2D2097E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,10 +45,6 @@ Global
 		{55F1A21E-45F4-4AEA-BE2D-A57E77D2892A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55F1A21E-45F4-4AEA-BE2D-A57E77D2892A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55F1A21E-45F4-4AEA-BE2D-A57E77D2892A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C0C3B26E-1352-4C2D-9577-D791B2D2097E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C0C3B26E-1352-4C2D-9577-D791B2D2097E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C0C3B26E-1352-4C2D-9577-D791B2D2097E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C0C3B26E-1352-4C2D-9577-D791B2D2097E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

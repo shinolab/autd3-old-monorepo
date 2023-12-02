@@ -48,12 +48,12 @@ namespace AUTD3Sharp.Gain.Holo
         public class UnitPascal
         {
             internal UnitPascal() { }
-            public static Amplitude operator *(float_t a, UnitPascal b) => Amplitude.NewPascal(a);
+            public static Amplitude operator *(float_t a, UnitPascal _) => NewPascal(a);
         }
         public class UnitSPL
         {
             internal UnitSPL() { }
-            public static Amplitude operator *(float_t a, UnitSPL b) => Amplitude.NewSPL(a);
+            public static Amplitude operator *(float_t a, UnitSPL _) => NewSPL(a);
         }
 
         public static class Units

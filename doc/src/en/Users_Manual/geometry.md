@@ -208,8 +208,7 @@ Or, you can use an iterator.
 
 Following methods are available for `Transducer`.
 
-- `tr_idx`: Get the local index of the transducer.
-- `dev_idx`: Get the index of the device to which the transducer belongs.
+- `idx`: Get the local index of the transducer.
 - `position`: Get the position of the transducer.
 - `rotation`: Get the rotation of the transducer. The rotation is represented by a quaternion.
 - `x_direction`: Get the x direction vector of the transducer.

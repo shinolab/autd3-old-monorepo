@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -128,9 +128,7 @@ impl IntoDevice for AUTD3 {
                 })
                 .map(|p| trans_mat * p)
                 .zip(0..)
-                .map(|(p, i)| {
-                    Transducer::new(dev_idx, i, Vector3::new(p.x, p.y, p.z), self.rotation)
-                })
+                .map(|(p, i)| Transducer::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
                 .collect(),
         )
     }

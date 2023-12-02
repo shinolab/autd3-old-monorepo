@@ -35,21 +35,21 @@ class SamplingConfiguration:
         return ins
 
     @staticmethod
-    def new_with_frequency_division(value: int) -> "SamplingConfiguration":
+    def from_frequency_division(value: int) -> "SamplingConfiguration":
         """Create by sampling frequency division."""
-        return SamplingConfiguration.__private_new__(_validate_sampling_config(Def().sampling_config_new_with_frequency_division(value)))
+        return SamplingConfiguration.__private_new__(_validate_sampling_config(Def().sampling_config_from_frequency_division(value)))
 
     @staticmethod
-    def new_with_frequency(f: float) -> "SamplingConfiguration":
+    def from_frequency(f: float) -> "SamplingConfiguration":
         """Create by sampling frequency."""
-        return SamplingConfiguration.__private_new__(_validate_sampling_config(Def().sampling_config_new_with_frequency(f)))
+        return SamplingConfiguration.__private_new__(_validate_sampling_config(Def().sampling_config_from_frequency(f)))
 
     @staticmethod
-    def new_with_period(p: timedelta) -> "SamplingConfiguration":
+    def from_period(p: timedelta) -> "SamplingConfiguration":
         """Create by sampling period."""
         return SamplingConfiguration.__private_new__(
             _validate_sampling_config(
-                Def().sampling_config_new_with_period(int(p.total_seconds() * 1000.0 * 1000.0 * 1000.0)),
+                Def().sampling_config_from_period(int(p.total_seconds() * 1000.0 * 1000.0 * 1000.0)),
             ),
         )
 

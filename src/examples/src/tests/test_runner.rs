@@ -4,7 +4,7 @@
  * Created Date: 27/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,9 +50,14 @@ pub async fn run<L: Link>(mut autd: Controller<L>) -> anyhow::Result<()> {
         }),
         ("Flag test", |autd| Box::pin(flag(autd))),
         ("TransducerTest test", |autd| Box::pin(transtest(autd))),
+        ("Group (by Transducer) test", |autd| {
+            Box::pin(group_by_transducer(autd))
+        }),
     ];
     if autd.geometry.num_devices() >= 2 {
-        examples.push(("Group test", |autd| Box::pin(group(autd))));
+        examples.push(("Group (by Device) test", |autd| {
+            Box::pin(group_by_device(autd))
+        }));
     }
 
     loop {

@@ -7,7 +7,7 @@ class Burst(Modulation):
     _length: int
 
     def __init__(self, length: int = 4000):
-        super().__init__(SamplingConfiguration.new_with_frequency(4e3))
+        super().__init__(SamplingConfiguration.from_frequency(4e3))
         self._length = length
 
     def calc(self):

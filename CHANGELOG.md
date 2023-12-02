@@ -1,3 +1,19 @@
+# 18.0.0
+
+- Update firmware to v4.0.1
+  - Fix [#228](https://github.com/shinolab/autd3/issues/228): Debug output index is not cleared by Clear
+- Rename `SamplingConfiguration::new_with_*` to `SamplingConfiguration::from_*`
+- Rename `EmitIntensity::new_with_*` to `EmitIntensity::with_*`
+- Change type of phase member of Drive struct from `float` to `Phase`
+- Change `ConfigureDebugOutputIdx` API
+  - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
+- Change `ConfigureModDelay` API
+- Change type of frequency of `modulation::Sine` and `Square` to float.
+  - Note that the actual output frequency is limited to an integer.
+- Fix [#234](https://github.com/shinolab/autd3/issues/234): cannot use autd3-link-soem with Utf8Error
+- Fix [#235](https://github.com/shinolab/autd3/issues/235): [C++] missing EnumerateAdapters methods for link::SOEM
+- Fix [#236](https://github.com/shinolab/autd3/issues/236): [C++] Invalid error message for out of range STM
+
 # 17.0.3
 
 - Fix [#224](https://github.com/shinolab/autd3/issues/224): add py.typed for pyautd3

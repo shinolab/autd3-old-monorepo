@@ -4,7 +4,7 @@
  * Created Date: 04/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ impl<G: Gain> GainSTM<G> {
     /// * `freq` - Frequency of STM. The frequency closest to `freq` from the possible frequencies is set.
     ///
     pub fn new(freq: float) -> Self {
-        Self::new_with_props_mode(STMProps::new(freq), GainSTMMode::PhaseIntensityFull)
+        Self::from_props_mode(STMProps::new(freq), GainSTMMode::PhaseIntensityFull)
     }
 
     /// constructor
@@ -49,9 +49,9 @@ impl<G: Gain> GainSTM<G> {
     ///
     /// * `period` - Period. The period closest to `period` from the possible periods is set.
     ///
-    pub fn new_with_period(period: std::time::Duration) -> Self {
-        Self::new_with_props_mode(
-            STMProps::new_with_period(period),
+    pub fn from_period(period: std::time::Duration) -> Self {
+        Self::from_props_mode(
+            STMProps::from_period(period),
             GainSTMMode::PhaseIntensityFull,
         )
     }
@@ -62,9 +62,9 @@ impl<G: Gain> GainSTM<G> {
     ///
     /// * `freq_div` - Sampling frequency division of STM. The sampling frequency is [crate::FPGA_CLK_FREQ]/`freq_div`.
     ///
-    pub fn new_with_sampling_config(config: SamplingConfiguration) -> Self {
-        Self::new_with_props_mode(
-            STMProps::new_with_sampling_config(config),
+    pub fn from_sampling_config(config: SamplingConfiguration) -> Self {
+        Self::from_props_mode(
+            STMProps::from_sampling_config(config),
             GainSTMMode::PhaseIntensityFull,
         )
     }
@@ -137,7 +137,7 @@ impl<G: Gain> GainSTM<G> {
     ///
     /// * `props` - STMProps
     /// * `mode` - GainSTMMode
-    pub fn new_with_props_mode(props: STMProps, mode: GainSTMMode) -> Self {
+    pub fn from_props_mode(props: STMProps, mode: GainSTMMode) -> Self {
         Self {
             gains: Vec::new(),
             mode,
@@ -221,8 +221,8 @@ mod tests {
     }
 
     #[test]
-    fn new_with_period() {
-        let stm = GainSTM::<NullGain>::new_with_period(std::time::Duration::from_micros(250))
+    fn from_period() {
+        let stm = GainSTM::<NullGain>::from_period(std::time::Duration::from_micros(250))
             .add_gains_from_iter((0..10).map(|_| NullGain {}))
             .unwrap();
 
@@ -234,9 +234,9 @@ mod tests {
     }
 
     #[test]
-    fn new_with_sampling_config() {
-        let stm = GainSTM::<NullGain>::new_with_sampling_config(
-            SamplingConfiguration::new_with_period(std::time::Duration::from_micros(25)).unwrap(),
+    fn from_sampling_config() {
+        let stm = GainSTM::<NullGain>::from_sampling_config(
+            SamplingConfiguration::from_period(std::time::Duration::from_micros(25)).unwrap(),
         )
         .add_gains_from_iter((0..10).map(|_| NullGain {}))
         .unwrap();

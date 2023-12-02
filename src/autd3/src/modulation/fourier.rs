@@ -4,7 +4,7 @@
  * Created Date: 28/07/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,7 +46,7 @@ impl Fourier {
             mut components,
             config,
         } = self;
-        let config = SamplingConfiguration::new_with_frequency_division(
+        let config = SamplingConfiguration::from_frequency_division(
             config
                 .frequency_division()
                 .min(sine.sampling_config().frequency_division()),
@@ -73,7 +73,7 @@ impl Fourier {
         let freq_div = append.iter().fold(config.frequency_division(), |acc, m| {
             acc.min(m.sampling_config().frequency_division())
         });
-        let config = SamplingConfiguration::new_with_frequency_division(freq_div).unwrap();
+        let config = SamplingConfiguration::from_frequency_division(freq_div).unwrap();
         components.extend(append.iter().map(|m| m.with_sampling_config(config)));
         Self { components, config }
     }
@@ -147,11 +147,11 @@ mod tests {
 
     #[test]
     fn test_fourier() {
-        let f0 = Sine::new(50).with_phase(PI / 2.0);
-        let f1 = Sine::new(100).with_phase(PI / 3.0);
-        let f2 = Sine::new(150).with_phase(PI / 4.0);
-        let f3 = Sine::new(200);
-        let f4 = Sine::new(250);
+        let f0 = Sine::new(50.).with_phase(PI / 2.0);
+        let f1 = Sine::new(100.).with_phase(PI / 3.0);
+        let f2 = Sine::new(150.).with_phase(PI / 4.0);
+        let f3 = Sine::new(200.);
+        let f4 = Sine::new(250.);
 
         let f0_buf = f0.calc().unwrap();
         let f1_buf = f1.calc().unwrap();

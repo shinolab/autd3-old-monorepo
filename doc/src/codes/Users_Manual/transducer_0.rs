@@ -8,8 +8,7 @@
 #     .add_device(AUTD3::new(Vector3::zeros()))
 #    .open_with(autd3::link::Nop::builder()).await?;
 let tr = &autd.geometry[0][0];
-let tr_idx = tr.tr_idx();
-let dev_idx = tr.dev_idx();
+let idx = tr.idx();
 let position = tr.position();
 let rotation = tr.rotation();
 let x_dir = tr.x_direction();

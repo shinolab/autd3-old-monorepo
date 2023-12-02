@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,8 +62,7 @@ mod tests {
     fn propagate() {
         let mut rng = rand::thread_rng();
 
-        let tr =
-            crate::geometry::Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = crate::geometry::Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let atten = rng.gen_range(0.0..1.0);
         let c = rng.gen_range(300e3..400e3);

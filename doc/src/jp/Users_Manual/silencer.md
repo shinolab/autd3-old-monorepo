@@ -22,6 +22,11 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 Silencerの設定には`Silencer`を送信する.
 
+`Silencer`には`step`を設定できる.
+詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
+
+Silencerはデフォルトで適当な値に設定されている.
+Silencerを無効化する場合は, `disable`を送信する.
 
 ```rust,edition2021
 {{#include ../../codes/Users_Manual/silencer_0.rs}}
@@ -39,11 +44,6 @@ Silencerの設定には`Silencer`を送信する.
 {{#include ../../codes/Users_Manual/silencer_0.py}}
 ```
 
-`Silencer`には`step`を設定できる.
-詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
-
-Silencerはデフォルトで適当な値に設定されている.
-Silencerを無効化する場合は, 以下を送信する.
 
 ## Silencerによる位相の変化
 

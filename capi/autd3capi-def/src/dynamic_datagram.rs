@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,11 +13,14 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use autd3::prelude::*;
 use autd3_driver::{
-    datagram::Datagram, error::AUTDInternalError, fpga::SILENCER_STEP_DEFAULT, operation::Operation,
+    datagram::Datagram,
+    error::AUTDInternalError,
+    fpga::SILENCER_STEP_DEFAULT,
+    operation::{Operation, TypeTag},
 };
 
 use crate::{G, M};
@@ -145,31 +148,130 @@ impl DynamicDatagram for Clear {
     }
 }
 
-impl DynamicDatagram for ConfigureModDelay {
-    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        Ok((
-            Box::<autd3_driver::operation::ConfigureModDelayOp>::default(),
-            Box::<autd3_driver::operation::NullOp>::default(),
-        ))
-    }
+pub struct DynamicConfigureModDelay {
+    map: HashMap<(usize, usize), u16>,
+}
 
-    fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram>::timeout(self)
+impl DynamicConfigureModDelay {
+    pub fn new(map: HashMap<(usize, usize), u16>) -> Self {
+        Self { map }
     }
 }
 
-impl DynamicDatagram for ConfigureDebugOutoutIdx {
+pub struct DynamicConfigureModDelayOp {
+    remains: HashMap<usize, usize>,
+    map: HashMap<(usize, usize), u16>,
+}
+
+impl Operation for DynamicConfigureModDelayOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
+
+        assert!(tx.len() >= 2 + device.num_transducers() * std::mem::size_of::<u16>());
+
+        tx[0] = TypeTag::ConfigureModDelay as u8;
+
+        unsafe {
+            let dst = std::slice::from_raw_parts_mut(
+                tx[2..].as_mut_ptr() as *mut u16,
+                device.num_transducers(),
+            );
+            dst.iter_mut()
+                .zip(device.iter())
+                .for_each(|(d, s)| *d = *self.map.get(&(device.idx(), s.idx())).unwrap());
+        }
+
+        Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
+    }
+
+    fn required_size(&self, device: &Device) -> usize {
+        2 + device.num_transducers() * std::mem::size_of::<u16>()
+    }
+
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device) {
+        self.remains.insert(device.idx(), 0);
+    }
+}
+
+impl DynamicDatagram for DynamicConfigureModDelay {
     fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
         Ok((
-            Box::new(autd3_driver::operation::DebugOutIdxOp::new(
-                self.idx().clone(),
-            )),
+            Box::new(DynamicConfigureModDelayOp {
+                remains: Default::default(),
+                map: self.map.clone(),
+            }),
             Box::<autd3_driver::operation::NullOp>::default(),
         ))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Datagram>::timeout(self)
+        None
+    }
+}
+
+pub struct DynamicConfigureDebugOutputIdx {
+    idx_map: HashMap<usize, u8>,
+}
+
+impl DynamicConfigureDebugOutputIdx {
+    pub fn new(idx_map: HashMap<usize, u8>) -> Self {
+        Self { idx_map }
+    }
+}
+
+pub struct DynamicDebugOutIdxOp {
+    remains: HashMap<usize, usize>,
+    idx_map: HashMap<usize, u8>,
+}
+
+impl Operation for DynamicDebugOutIdxOp {
+    fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
+        assert_eq!(self.remains[&device.idx()], 1);
+        tx[0] = TypeTag::Debug as u8;
+        tx[2] = self.idx_map.get(&device.idx()).cloned().unwrap_or(0xFF);
+        Ok(4)
+    }
+
+    fn required_size(&self, _: &Device) -> usize {
+        4
+    }
+
+    fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
+        self.remains = geometry.devices().map(|device| (device.idx(), 1)).collect();
+        Ok(())
+    }
+
+    fn remains(&self, device: &Device) -> usize {
+        self.remains[&device.idx()]
+    }
+
+    fn commit(&mut self, device: &Device) {
+        self.remains.insert(device.idx(), 0);
+    }
+}
+
+impl DynamicDatagram for DynamicConfigureDebugOutputIdx {
+    fn operation(&mut self) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
+        Ok((
+            Box::new(DynamicDebugOutIdxOp {
+                remains: Default::default(),
+                idx_map: self.idx_map.clone(),
+            }),
+            Box::<autd3_driver::operation::NullOp>::default(),
+        ))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        Some(Duration::from_millis(200))
     }
 }
 

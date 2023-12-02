@@ -3,7 +3,7 @@
 // Created Date: 15/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #include "autd3.hpp"
 
 template <typename T>
-inline void group_test(autd3::Controller<T>& autd) {
+inline void group_by_device_test(autd3::Controller<T>& autd) {
   autd3::Silencer silencer;
   autd.send_async(silencer).get();
 
@@ -33,4 +33,26 @@ inline void group_test(autd3::Controller<T>& autd) {
       .set("focus", autd3::modulation::Sine(150), autd3::gain::Focus(center))
       .send_async()
       .get();
+}
+
+template <typename T>
+inline void group_by_transducer_test(autd3::Controller<T>& autd) {
+  autd3::Silencer silencer;
+  autd.send_async(silencer).get();
+
+  const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+
+  const auto cx = autd.geometry().center().x();
+  autd3::gain::Focus g1(autd.geometry().center() + autd3::Vector3(0, 0, 150));
+  autd3::gain::Null g2;
+
+  const auto g = autd3::gain::Group([&cx](const autd3::Device&, const autd3::Transducer& tr) -> std::optional<const char*> {
+                   if (tr.position().x() < cx) return "focus";
+                   return "null";
+                 })
+                     .set("focus", g1)
+                     .set("null", g2);
+
+  autd3::modulation::Sine m(150);
+  autd.send_async(m, g).get();
 }

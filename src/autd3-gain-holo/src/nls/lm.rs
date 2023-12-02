@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use crate::{
 use autd3_derive::Gain;
 
 use autd3_driver::{
-    common::EmitIntensity,
+    common::{EmitIntensity, Phase},
     defined::{PI, T4010A1_AMPLITUDE},
     derive::prelude::*,
     geometry::{Geometry, Vector3},
@@ -316,7 +316,7 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                         dev.idx(),
                         dev.iter()
                             .map(|_| {
-                                let phase = x[idx].rem_euclid(2.0 * PI);
+                                let phase = Phase::from_rad(x[idx].rem_euclid(2.0 * PI));
                                 let amp = self.constraint.convert(1.0, 1.0);
                                 idx += 1;
                                 Drive {
@@ -335,9 +335,9 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                         (
                             dev.idx(),
                             dev.iter()
-                                .filter(|tr| filter[tr.tr_idx()])
+                                .filter(|tr| filter[tr.idx()])
                                 .map(|_| {
-                                    let phase = x[idx].rem_euclid(2.0 * PI);
+                                    let phase = Phase::from_rad(x[idx].rem_euclid(2.0 * PI));
                                     let amp = self.constraint.convert(1.0, 1.0);
                                     idx += 1;
                                     Drive {
@@ -352,7 +352,7 @@ impl<B: LinAlgBackend> Gain for LM<B> {
                             dev.idx(),
                             dev.iter()
                                 .map(|_| Drive {
-                                    phase: 0.,
+                                    phase: Phase::new(0),
                                     intensity: EmitIntensity::MIN,
                                 })
                                 .collect(),

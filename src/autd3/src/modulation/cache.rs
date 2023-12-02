@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -115,7 +115,7 @@ mod tests {
 
         let modulation = TestModulation {
             calc_cnt: calc_cnt.clone(),
-            config: SamplingConfiguration::new_with_period(std::time::Duration::from_micros(250))
+            config: SamplingConfiguration::from_period(std::time::Duration::from_micros(250))
                 .unwrap(),
         }
         .with_cache()

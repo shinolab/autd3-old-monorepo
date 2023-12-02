@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,14 @@ internal static class TransTest
         await autd.SendAsync(config);
 
         var m = new Sine(150);
-        var g = new TransducerTest().Set(autd.Geometry[0][0], 0, EmitIntensity.Max).Set(autd.Geometry[0][248], 0, EmitIntensity.Max);
+        var g = new TransducerTest(
+            (dev, tr) => (dev.Idx, tr.Idx) switch
+            {
+                (0, 0) => new Drive(new Phase(0), EmitIntensity.Max),
+                (0, 248) => new Drive(new Phase(0), EmitIntensity.Max),
+                _ => null
+            }
+        );
         await autd.SendAsync((m, g));
     }
 }

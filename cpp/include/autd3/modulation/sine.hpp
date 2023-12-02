@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,12 +32,12 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
  public:
   /**
    * @brief Constructor.
-   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t + phase) + offset`, where `t` is time, and `amp = 1`, `offset
-   * = 0.5` by default.
+   * @details The sine wave is defined as `amp / 2 * sin(2π * freq * t + phase)
+   * + offset`, where `t` is time, and `amp = 1`, `offset = 0.5` by default.
    *
    * @param freq Frequency of sine wave
    */
-  explicit Sine(const int32_t freq) : _freq(freq) {}
+  explicit Sine(const double freq) : _freq(freq) {}
 
   AUTD3_DEF_PARAM_INTENSITY(Sine, intensity)
   AUTD3_DEF_PARAM_INTENSITY(Sine, offset)
@@ -56,7 +56,7 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
   }
 
  private:
-  int32_t _freq;
+  double _freq;
   std::optional<internal::EmitIntensity> _intensity;
   std::optional<double> _phase;
   std::optional<internal::EmitIntensity> _offset;

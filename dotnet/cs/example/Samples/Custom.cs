@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ internal static class CustomTest
             {
                 var tp = tr.Position;
                 var dist = (tp - _point).L2Norm;
-                var phase = dist * tr.Wavenumber(dev.SoundSpeed);
+                var phase = Phase.FromRad(dist * tr.Wavenumber(dev.SoundSpeed));
                 return new Drive { Phase = phase, Intensity = EmitIntensity.Max };
             });
         }

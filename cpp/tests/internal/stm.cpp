@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ TEST(STMTest, FocusSTM) {
     ASSERT_EQ(0, autd.link().stm_finish_idx(dev.idx()));
   }
 
-  stm = autd3::internal::FocusSTM::new_with_sampling_config(autd3::internal::SamplingConfiguration::new_with_frequency_division(512))
+  stm = autd3::internal::FocusSTM::from_sampling_config(autd3::internal::SamplingConfiguration::from_frequency_division(512))
             .add_focus(center)
             .add_focus(center);
   ASSERT_TRUE(autd.send_async(stm).get());
@@ -95,8 +95,8 @@ TEST(STMTest, FocusSTM) {
 
 TEST(STMTest, GainSTM) {
   auto autd = autd3::internal::ControllerBuilder()
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
-                  .add_device(autd3::internal::AUTD3(autd3::internal::Vector3::Zero()))
+                  .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
+                  .add_device(autd3::internal::geometry::AUTD3(autd3::internal::Vector3::Zero()))
                   .open_with_async(autd3::link::Audit::builder())
                   .get();
 
@@ -147,7 +147,7 @@ TEST(STMTest, GainSTM) {
     ASSERT_EQ(0, autd.link().stm_finish_idx(dev.idx()));
   }
 
-  stm = autd3::internal::GainSTM::new_with_sampling_config(autd3::internal::SamplingConfiguration::new_with_frequency_division(512))
+  stm = autd3::internal::GainSTM::from_sampling_config(autd3::internal::SamplingConfiguration::from_frequency_division(512))
             .add_gain(autd3::gain::Uniform(0x80))
             .add_gain(autd3::gain::Uniform(0x80));
   ASSERT_TRUE(autd.send_async(stm).get());

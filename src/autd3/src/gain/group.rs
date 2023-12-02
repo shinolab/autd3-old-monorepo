@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ impl<K: Hash + Eq + Clone, F: Fn(&Device, &Transducer) -> Option<K>> Group<K, Bo
     /// ```
     /// # use autd3::prelude::*;
     /// # let gain : autd3::gain::Group<_, _, _> =
-    /// Group::new(|dev, tr| match tr.tr_idx() {
+    /// Group::new(|dev, tr| match tr.idx() {
     ///                 0..=100 => Some("null"),
     ///                 101.. => Some("focus"),
     ///                 _ => None,
@@ -151,7 +151,7 @@ impl<
                         .unwrap()
                         .get_mut(&dev.idx())
                         .unwrap()
-                        .set(tr.tr_idx(), true);
+                        .set(tr.idx(), true);
                 }
             })
         });
@@ -204,11 +204,11 @@ impl<
                                 "Unspecified group key".to_owned(),
                             ));
                         };
-                        d[tr.tr_idx()] = g[&dev.idx()][tr.tr_idx()];
+                        d[tr.idx()] = g[&dev.idx()][tr.idx()];
                     } else {
-                        d[tr.tr_idx()] = Drive {
+                        d[tr.idx()] = Drive {
                             intensity: EmitIntensity::MIN,
-                            phase: 0.0,
+                            phase: Phase::new(0),
                         }
                     }
                 }
@@ -238,7 +238,7 @@ mod tests {
             AUTD3::new(Vector3::zeros()).into_device(3),
         ]);
 
-        let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.tr_idx()) {
+        let gain = Group::new(|dev, tr: &Transducer| match (dev.idx(), tr.idx()) {
             (0, 0..=99) => Some("null"),
             (0, 100..=199) => Some("plane"),
             (1, 200..) => Some("plane2"),
@@ -254,34 +254,34 @@ mod tests {
 
         drives[&0].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 99 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
             i if i <= 199 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0xFF);
             }
             _ => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
         });
         drives[&1].iter().enumerate().for_each(|(i, d)| match i {
             i if i <= 199 => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0);
             }
             _ => {
-                assert_eq!(d.phase, 0.0);
+                assert_eq!(d.phase.value(), 0);
                 assert_eq!(d.intensity.value(), 0x1F);
             }
         });
         drives[&2].iter().for_each(|d| {
-            assert_eq!(d.phase, 0.0);
+            assert_eq!(d.phase.value(), 0);
             assert_eq!(d.intensity.value(), 0);
         });
         drives[&3].iter().for_each(|d| {
-            assert_eq!(d.phase, 0.0);
+            assert_eq!(d.phase.value(), 0);
             assert_eq!(d.intensity.value(), 0);
         });
     }
@@ -293,7 +293,7 @@ mod tests {
             AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,
@@ -316,7 +316,7 @@ mod tests {
             AUTD3::new(Vector3::zeros()).into_device(1),
         ]);
 
-        let gain = Group::new(|_dev, tr: &Transducer| match tr.tr_idx() {
+        let gain = Group::new(|_dev, tr: &Transducer| match tr.idx() {
             0..=99 => Some("plane"),
             100..=199 => Some("null"),
             _ => None,

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,9 +25,9 @@ class Gain {
   Gain& operator=(Gain&& obj) = default;
   virtual ~Gain() = default;
 
-  [[nodiscard]] native_methods::DatagramPtr ptr(const Geometry& geometry) const { return AUTDGainIntoDatagram(gain_ptr(geometry)); }
+  [[nodiscard]] native_methods::DatagramPtr ptr(const geometry::Geometry& geometry) const { return AUTDGainIntoDatagram(gain_ptr(geometry)); }
 
-  [[nodiscard]] virtual native_methods::GainPtr gain_ptr(const Geometry& geometry) const = 0;
+  [[nodiscard]] virtual native_methods::GainPtr gain_ptr(const geometry::Geometry& geometry) const = 0;
 };
 
 template <class G>

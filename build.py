@@ -191,6 +191,8 @@ class Config:
             command.append("--all")
         command.append("--features")
         command.append(features)
+        command.append("--exclude")
+        command.append("examples")
         return command
 
     def cargo_test_command(self):
@@ -343,7 +345,6 @@ def rust_test(args):
 
 def rust_run(args):
     examples = [
-        "group_gain",
         "soem",
         "remote_soem",
         "twincat",
@@ -506,7 +507,7 @@ def cpp_test(args):
                 for cmd in config.cmake_extra:
                     command.append(cmd)
             subprocess.run(command).check_returncode()
-            command = ["cmake", "--build", "."]
+            command = ["cmake", "--build", ".", "--parallel", "8"]
             if config.release:
                 command.append("--config")
                 command.append("Release")
@@ -1161,6 +1162,12 @@ def util_update_ver(args):
                 content = re.sub(
                     r'^version = "(.*?)"',
                     f'version = "{version}"',
+                    content,
+                    flags=re.MULTILINE,
+                )
+                content = re.sub(
+                    r'^autd3(.*)version = "(.*?)"',
+                    f'autd3\\1version = "{version}"',
                     content,
                     flags=re.MULTILINE,
                 )

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ public class GroupTest
         {
             var x when x < cx => "uniform",
             _ => "null"
-        }).Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI)).Set("null", new Null())));
+        }).Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90))).Set("null", new Null())));
 
         foreach (var dev in autd.Geometry)
         {
@@ -35,13 +35,13 @@ public class GroupTest
             {
                 if (tr.Position.x < cx)
                 {
-                    Assert.Equal(0x80, intensities[tr.TrIdx]);
-                    Assert.Equal(128, phases[tr.TrIdx]);
+                    Assert.Equal(0x80, intensities[tr.Idx]);
+                    Assert.Equal(0x90, phases[tr.Idx]);
                 }
                 else
                 {
-                    Assert.Equal(0, intensities[tr.TrIdx]);
-                    Assert.Equal(0, phases[tr.TrIdx]);
+                    Assert.Equal(0, intensities[tr.Idx]);
+                    Assert.Equal(0, phases[tr.Idx]);
                 }
             }
         }
@@ -54,7 +54,7 @@ public class GroupTest
 
         var exception = await Record.ExceptionAsync(async () =>
         {
-            await autd.SendAsync(new Group((_, _) => "null").Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI)).Set("null", new Null()));
+            await autd.SendAsync(new Group((_, _) => "null").Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90))).Set("null", new Null()));
         });
 
         if (exception == null) Assert.Fail("Exception is expected");
@@ -88,7 +88,7 @@ public class GroupTest
         {
             check[dev.Idx] = true;
             return "uniform";
-        }).Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(Math.PI))));
+        }).Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90)))));
 
         Assert.False(check[0]);
         Assert.True(check[1]);
@@ -101,7 +101,7 @@ public class GroupTest
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 }

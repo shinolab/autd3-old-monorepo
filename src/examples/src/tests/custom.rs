@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ impl Gain for MyUniform {
         filter: GainFilter,
     ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
         Ok(Self::transform(geometry, filter, |_dev, _tr| Drive {
-            phase: 0.0,
+            phase: Phase::new(0),
             intensity: EmitIntensity::MAX,
         }))
     }
@@ -49,7 +49,7 @@ pub struct Burst {
 impl Burst {
     pub fn new() -> Self {
         Self {
-            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            config: SamplingConfiguration::from_frequency(4e3).unwrap(),
         }
     }
 }

@@ -5,6 +5,10 @@ import os
 from pyautd3.native_methods.autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
 
 
+class ContextPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 class ControllerBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
@@ -93,16 +97,13 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainPlaneWithIntensity.argtypes = [GainPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDGainPlaneWithIntensity.restype = GainPtr
 
-        self.dll.AUTDGainTransducerTest.argtypes = [] 
+        self.dll.AUTDGainTransducerTest.argtypes = [ctypes.c_void_p, ContextPtr, GeometryPtr]  # type: ignore 
         self.dll.AUTDGainTransducerTest.restype = GainPtr
-
-        self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, TransducerPtr, ctypes.c_double, ctypes.c_uint8]  # type: ignore 
-        self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
         self.dll.AUTDGainUniform.argtypes = [ctypes.c_uint8] 
         self.dll.AUTDGainUniform.restype = GainPtr
 
-        self.dll.AUTDGainUniformWithPhase.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainUniformWithPhase.argtypes = [GainPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDGainUniformWithPhase.restype = GainPtr
 
         self.dll.AUTDDevice.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
@@ -180,12 +181,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDTransducerWavelength.argtypes = [TransducerPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDTransducerWavelength.restype = ctypes.c_double
 
-        self.dll.AUTDTransducerModDelayGet.argtypes = [TransducerPtr]  # type: ignore 
-        self.dll.AUTDTransducerModDelayGet.restype = ctypes.c_uint16
-
-        self.dll.AUTDTransducerModDelaySet.argtypes = [TransducerPtr, ctypes.c_uint16]  # type: ignore 
-        self.dll.AUTDTransducerModDelaySet.restype = None
-
         self.dll.AUTDControllerBuilder.argtypes = [] 
         self.dll.AUTDControllerBuilder.restype = ControllerBuilderPtr
 
@@ -228,14 +223,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramStop.argtypes = [] 
         self.dll.AUTDDatagramStop.restype = DatagramSpecialPtr
 
-        self.dll.AUTDDatagramConfigureModDelay.argtypes = [] 
+        self.dll.AUTDDatagramConfigureModDelay.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
         self.dll.AUTDDatagramConfigureModDelay.restype = DatagramPtr
 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdx.argtypes = [] 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdx.restype = DatagramPtr
-
-        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.argtypes = [DatagramPtr, TransducerPtr]  # type: ignore 
-        self.dll.AUTDDatagramConfigureDebugOutoutIdxSet.restype = DatagramPtr
+        self.dll.AUTDDatagramConfigureDebugOutputIdx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureDebugOutputIdx.restype = DatagramPtr
 
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = ResultDatagram
@@ -327,6 +319,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkAuditFpgaSilencerStepPhase.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaSilencerStepPhase.restype = ctypes.c_uint16
 
+        self.dll.AUTDLinkAuditFpgaDebugOutputIdx.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDLinkAuditFpgaDebugOutputIdx.restype = ctypes.c_uint8
+
         self.dll.AUTDLinkAuditFpgaModDelays.argtypes = [LinkPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint16)]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaModDelays.restype = None
 
@@ -399,7 +394,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationWithRadiationPressure.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationWithRadiationPressure.restype = ModulationPtr
 
-        self.dll.AUTDModulationSine.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSine.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSine.restype = ModulationPtr
 
         self.dll.AUTDModulationSineWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
@@ -414,7 +409,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
-        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSquare.restype = ModulationPtr
 
         self.dll.AUTDModulationSquareWithLow.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
@@ -450,11 +445,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSTMPropsNew.argtypes = [ctypes.c_double] 
         self.dll.AUTDSTMPropsNew.restype = STMPropsPtr
 
-        self.dll.AUTDSTMPropsNewWithPeriod.argtypes = [ctypes.c_uint64] 
-        self.dll.AUTDSTMPropsNewWithPeriod.restype = STMPropsPtr
+        self.dll.AUTDSTMPropsFromPeriod.argtypes = [ctypes.c_uint64] 
+        self.dll.AUTDSTMPropsFromPeriod.restype = STMPropsPtr
 
-        self.dll.AUTDSTMPropsNewWithSamplingConfig.argtypes = [SamplingConfiguration]  # type: ignore 
-        self.dll.AUTDSTMPropsNewWithSamplingConfig.restype = STMPropsPtr
+        self.dll.AUTDSTMPropsFromSamplingConfig.argtypes = [SamplingConfiguration]  # type: ignore 
+        self.dll.AUTDSTMPropsFromSamplingConfig.restype = STMPropsPtr
 
         self.dll.AUTDSTMPropsWithStartIdx.argtypes = [STMPropsPtr, ctypes.c_int32]  # type: ignore 
         self.dll.AUTDSTMPropsWithStartIdx.restype = STMPropsPtr
@@ -525,16 +520,13 @@ class NativeMethods(metaclass=Singleton):
     def gain_plane_with_intensity(self, plane: GainPtr, intensity: int) -> GainPtr:
         return self.dll.AUTDGainPlaneWithIntensity(plane, intensity)
 
-    def gain_transducer_test(self) -> GainPtr:
-        return self.dll.AUTDGainTransducerTest()
-
-    def gain_transducer_test_set(self, trans_test: GainPtr, tr: TransducerPtr, phase: float, intensity: int) -> GainPtr:
-        return self.dll.AUTDGainTransducerTestSet(trans_test, tr, phase, intensity)
+    def gain_transducer_test(self, f: ctypes.c_void_p | None, context: ContextPtr, geometry: GeometryPtr) -> GainPtr:
+        return self.dll.AUTDGainTransducerTest(f, context, geometry)
 
     def gain_uniform(self, intensity: int) -> GainPtr:
         return self.dll.AUTDGainUniform(intensity)
 
-    def gain_uniform_with_phase(self, uniform: GainPtr, phase: float) -> GainPtr:
+    def gain_uniform_with_phase(self, uniform: GainPtr, phase: int) -> GainPtr:
         return self.dll.AUTDGainUniformWithPhase(uniform, phase)
 
     def device(self, geo: GeometryPtr, dev_idx: int) -> DevicePtr:
@@ -591,8 +583,8 @@ class NativeMethods(metaclass=Singleton):
     def rotation_from_euler_zyz(self, x: float, y: float, z: float, rot: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDRotationFromEulerZYZ(x, y, z, rot)
 
-    def transducer(self, dev: DevicePtr, tr_idx: int) -> TransducerPtr:
-        return self.dll.AUTDTransducer(dev, tr_idx)
+    def transducer(self, dev: DevicePtr, idx: int) -> TransducerPtr:
+        return self.dll.AUTDTransducer(dev, idx)
 
     def transducer_position(self, tr: TransducerPtr, pos: ctypes.Array[ctypes.c_double] | None) -> None:
         return self.dll.AUTDTransducerPosition(tr, pos)
@@ -611,12 +603,6 @@ class NativeMethods(metaclass=Singleton):
 
     def transducer_wavelength(self, tr: TransducerPtr, sound_speed: float) -> ctypes.c_double:
         return self.dll.AUTDTransducerWavelength(tr, sound_speed)
-
-    def transducer_mod_delay_get(self, tr: TransducerPtr) -> ctypes.c_uint16:
-        return self.dll.AUTDTransducerModDelayGet(tr)
-
-    def transducer_mod_delay_set(self, tr: TransducerPtr, delay: int) -> None:
-        return self.dll.AUTDTransducerModDelaySet(tr, delay)
 
     def controller_builder(self) -> ControllerBuilderPtr:
         return self.dll.AUTDControllerBuilder()
@@ -660,14 +646,11 @@ class NativeMethods(metaclass=Singleton):
     def datagram_stop(self) -> DatagramSpecialPtr:
         return self.dll.AUTDDatagramStop()
 
-    def datagram_configure_mod_delay(self) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureModDelay()
+    def datagram_configure_mod_delay(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureModDelay(f, context, geometry)
 
-    def datagram_configure_debug_outout_idx(self) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureDebugOutoutIdx()
-
-    def datagram_configure_debug_outout_idx_set(self, dbg: DatagramPtr, tr: TransducerPtr) -> DatagramPtr:
-        return self.dll.AUTDDatagramConfigureDebugOutoutIdxSet(dbg, tr)
+    def datagram_configure_debug_output_idx(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureDebugOutputIdx(f, context, geometry)
 
     def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
@@ -759,6 +742,9 @@ class NativeMethods(metaclass=Singleton):
     def link_audit_fpga_silencer_step_phase(self, audit: LinkPtr, idx: int) -> ctypes.c_uint16:
         return self.dll.AUTDLinkAuditFpgaSilencerStepPhase(audit, idx)
 
+    def link_audit_fpga_debug_output_idx(self, audit: LinkPtr, idx: int) -> ctypes.c_uint8:
+        return self.dll.AUTDLinkAuditFpgaDebugOutputIdx(audit, idx)
+
     def link_audit_fpga_mod_delays(self, audit: LinkPtr, idx: int, delay: ctypes.Array[ctypes.c_uint16] | None) -> None:
         return self.dll.AUTDLinkAuditFpgaModDelays(audit, idx, delay)
 
@@ -831,7 +817,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_with_radiation_pressure(self, m: ModulationPtr) -> ModulationPtr:
         return self.dll.AUTDModulationWithRadiationPressure(m)
 
-    def modulation_sine(self, freq: int) -> ModulationPtr:
+    def modulation_sine(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSine(freq)
 
     def modulation_sine_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
@@ -846,7 +832,7 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_offset(self, m: ModulationPtr, offset: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
 
-    def modulation_square(self, freq: int) -> ModulationPtr:
+    def modulation_square(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSquare(freq)
 
     def modulation_square_with_low(self, m: ModulationPtr, low: int) -> ModulationPtr:
@@ -882,11 +868,11 @@ class NativeMethods(metaclass=Singleton):
     def stm_props_new(self, freq: float) -> STMPropsPtr:
         return self.dll.AUTDSTMPropsNew(freq)
 
-    def stm_props_new_with_period(self, p: int) -> STMPropsPtr:
-        return self.dll.AUTDSTMPropsNewWithPeriod(p)
+    def stm_props_from_period(self, p: int) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsFromPeriod(p)
 
-    def stm_props_new_with_sampling_config(self, config: SamplingConfiguration) -> STMPropsPtr:
-        return self.dll.AUTDSTMPropsNewWithSamplingConfig(config)
+    def stm_props_from_sampling_config(self, config: SamplingConfiguration) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsFromSamplingConfig(config)
 
     def stm_props_with_start_idx(self, props: STMPropsPtr, idx: int) -> STMPropsPtr:
         return self.dll.AUTDSTMPropsWithStartIdx(props, idx)

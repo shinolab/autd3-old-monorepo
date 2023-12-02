@@ -4,7 +4,7 @@
  * Created Date: 11/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,11 +28,11 @@ impl EmitIntensity {
         Self { value }
     }
 
-    pub fn new_with_correction(value: u8) -> Self {
-        Self::new_with_correction_alpha(value, Self::DEFAULT_CORRECTED_ALPHA)
+    pub fn with_correction(value: u8) -> Self {
+        Self::with_correction_alpha(value, Self::DEFAULT_CORRECTED_ALPHA)
     }
 
-    pub fn new_with_correction_alpha(value: u8, alpha: float) -> Self {
+    pub fn with_correction_alpha(value: u8, alpha: float) -> Self {
         Self {
             value: ((value as float / 255.).powf(1. / alpha).asin() / PI * 510.0).round() as u8,
         }
@@ -90,9 +90,9 @@ mod tests {
     }
 
     #[test]
-    fn test_new_with_correction() {
+    fn test_with_correction() {
         for i in 0..=0xFF {
-            let intensity = EmitIntensity::new_with_correction(i);
+            let intensity = EmitIntensity::with_correction(i);
             assert_eq!(
                 intensity.value(),
                 ((i as float / 255.)
@@ -103,6 +103,26 @@ mod tests {
                     .round() as u8
             );
         }
+    }
+
+    #[test]
+    fn test_div() {
+        let intensity = EmitIntensity::new(0xFF);
+        assert_eq!(intensity / 2, EmitIntensity::new(0x7F));
+    }
+
+    #[test]
+    fn test_add() {
+        let intensity1 = EmitIntensity::new(0x01);
+        let intensity2 = EmitIntensity::new(0x02);
+        assert_eq!(intensity1 + intensity2, EmitIntensity::new(0x03));
+    }
+
+    #[test]
+    fn test_sub() {
+        let intensity1 = EmitIntensity::new(0x03);
+        let intensity2 = EmitIntensity::new(0x01);
+        assert_eq!(intensity1 - intensity2, EmitIntensity::new(0x02));
     }
 
     #[test]

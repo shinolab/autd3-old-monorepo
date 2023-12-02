@@ -2,7 +2,7 @@ const auto g =
     autd3::gain::Group(
         [](const autd3::Device& dev,
            const autd3::Transducer& tr) -> std::optional<const char*> {
-          if (tr.tr_idx() <= 100) return "null";
+          if (tr.idx() <= 100) return "null";
           return "focus";
         })
         .set("null", autd3::gain::Null())

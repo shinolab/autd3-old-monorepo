@@ -11,16 +11,6 @@
  *
  */
 
-#if UNITY_2018_3_OR_NEWER
-#define USE_SINGLE
-#endif
-
-#if USE_SINGLE
-using float_t = System.Single;
-#else
-using float_t = System.Double;
-#endif
-
 using System.Runtime.InteropServices;
 
 namespace AUTD3Sharp
@@ -28,10 +18,10 @@ namespace AUTD3Sharp
     [StructLayout(LayoutKind.Sequential)]
     public struct Drive
     {
-        public float_t Phase { get; set; }
+        public Phase Phase { get; set; }
         public EmitIntensity Intensity { get; set; }
 
-        public Drive(float_t phase, EmitIntensity intensity)
+        public Drive(Phase phase, EmitIntensity intensity)
         {
             Phase = phase;
             Intensity = intensity;

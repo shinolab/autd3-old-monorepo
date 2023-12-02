@@ -3,7 +3,7 @@
 // Created Date: 12/11/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::internal {
+
 class EmitIntensity final {
  public:
   static EmitIntensity maximum() { return EmitIntensity{255}; }
@@ -21,12 +22,12 @@ class EmitIntensity final {
 
   explicit EmitIntensity(const uint8_t value) : _value(value) {}
 
-  [[nodiscard]] static EmitIntensity new_with_correction_alpha(const uint8_t value, const double alpha) {
-    return EmitIntensity(native_methods::AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha));
+  [[nodiscard]] static EmitIntensity with_correction_alpha(const uint8_t value, const double alpha) {
+    return EmitIntensity(native_methods::AUTDEmitIntensityWithCorrectionAlpha(value, alpha));
   }
 
-  [[nodiscard]] static EmitIntensity new_with_correction(const uint8_t value) {
-    return new_with_correction_alpha(value, native_methods::DEFAULT_CORRECTED_ALPHA);
+  [[nodiscard]] static EmitIntensity with_correction(const uint8_t value) {
+    return with_correction_alpha(value, native_methods::DEFAULT_CORRECTED_ALPHA);
   }
 
   [[nodiscard]] uint8_t value() const noexcept { return _value; }

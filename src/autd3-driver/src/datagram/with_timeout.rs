@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,13 +52,13 @@ impl<D: Datagram> DatagramT<D> for D {
 
 #[cfg(test)]
 mod tests {
-    use crate::operation::{ConfigureModDelayOp, NullOp};
+    use crate::operation::{ClearOp, NullOp};
 
     use super::*;
 
     struct TestDatagram {}
     impl Datagram for TestDatagram {
-        type O1 = ConfigureModDelayOp;
+        type O1 = ClearOp;
         type O2 = NullOp;
 
         fn operation(self) -> Result<(Self::O1, Self::O2), AUTDInternalError> {
@@ -75,7 +75,7 @@ mod tests {
         assert!(timeout.is_some());
         assert_eq!(timeout.unwrap(), Duration::from_millis(100));
 
-        let _: (ConfigureModDelayOp, NullOp) =
+        let _: (ClearOp, NullOp) =
             <DatagramWithTimeout<TestDatagram> as Datagram>::operation(d).unwrap();
     }
 }

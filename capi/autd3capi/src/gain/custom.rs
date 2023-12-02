@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,7 +62,7 @@ mod tests {
             let drives = vec![
                 Drive {
                     intensity: 0xFF,
-                    phase: 0.
+                    phase: 0
                 };
                 num_transducers as _
             ];
@@ -72,7 +72,7 @@ mod tests {
             let drives = vec![
                 Drive {
                     intensity: 0xFF,
-                    phase: 0.
+                    phase: 0
                 };
                 num_transducers as _
             ];

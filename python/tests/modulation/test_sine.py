@@ -117,7 +117,7 @@ async def test_sine():
 
     assert await autd.send_async(
         Sine(150).with_sampling_config(
-            SamplingConfiguration.new_with_frequency_division(512),
+            SamplingConfiguration.from_frequency_division(512),
         ),
     )
     for dev in autd.geometry:

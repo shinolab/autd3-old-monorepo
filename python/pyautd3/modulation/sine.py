@@ -20,12 +20,12 @@ from pyautd3.native_methods.autd3capi_def import ModulationPtr
 class Sine(IModulationWithSamplingConfig):
     """Sine wave modulation."""
 
-    _freq: int
+    _freq: float
     _intensity: EmitIntensity | None
     _offset: EmitIntensity | None
     _phase: float | None
 
-    def __init__(self: "Sine", freq: int) -> None:
+    def __init__(self: "Sine", freq: float) -> None:
         """Constructor.
 
         The sine wave is defined as `amp/2 * sin(2π * freq * t + phase) + offset`,

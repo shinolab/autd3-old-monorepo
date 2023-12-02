@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -70,7 +70,7 @@ pub unsafe extern "C" fn AUTDGainGroup(
     std::ptr::copy_nonoverlapping(values_ptr, values.as_mut_ptr(), kv_len as usize);
     GainPtr::new(keys.iter().zip(values.iter()).fold(
         Group::new(move |dev, tr| {
-            let key = map[&dev.idx()][tr.tr_idx()];
+            let key = map[&dev.idx()][tr.idx()];
             if key < 0 {
                 None
             } else {

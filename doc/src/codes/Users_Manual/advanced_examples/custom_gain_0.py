@@ -1,5 +1,5 @@
 import numpy as np
-from pyautd3 import Drive, EmitIntensity, Geometry
+from pyautd3 import Drive, EmitIntensity, Geometry, Phase
 from pyautd3.gain import Gain
 
 
@@ -11,8 +11,10 @@ class Focus(Gain):
         return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
-                np.linalg.norm(tr.position - self.point)
-                * tr.wavenumber(dev.sound_speed),
+                Phase.from_rad(
+                    np.linalg.norm(tr.position - self.point)
+                    * tr.wavenumber(dev.sound_speed)
+                ),
                 EmitIntensity.maximum(),
             ),
         )
