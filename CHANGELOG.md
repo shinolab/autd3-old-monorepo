@@ -8,6 +8,7 @@
   - Fix [#229](https://github.com/shinolab/autd3/issues/229): Add tests for ConfigureDebugOutoutIdx
 - Fix [#234](https://github.com/shinolab/autd3/issues/234): cannot use autd3-link-soem with Utf8Error
 - Fix [#235](https://github.com/shinolab/autd3/issues/235): [C++] missing EnumerateAdapters methods for link::SOEM
+- Fix [#236](https://github.com/shinolab/autd3/issues/236): [C++] Invalid error message for out of range STM
 
 # 17.0.3
 
