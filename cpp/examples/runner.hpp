@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,14 +34,19 @@
 template <typename L>
 inline int run(autd3::Controller<L>& autd) {
   using F = std::function<void(autd3::Controller<L>&)>;
-  std::vector<std::pair<F, std::string>> tests = {
-      std::pair(F{focus_test<L>}, "Single focus test"), std::pair(F{bessel_test<L>}, "Bessel beam test"),
-      std::pair(F{plane_test<L>}, "Plane wave test"),   std::pair(F{mod_audio_file_test<L>}, "Wav modulation test"),
-      std::pair(F{focus_stm<L>}, "FocusSTM test"),      std::pair(F{gain_stm<L>}, "GainSTM test"),
-      std::pair(F{holo_test<L>}, "Multiple foci test"), std::pair(F{advanced_test<L>}, "Custom Gain & Modulation test"),
-      std::pair(F{flag_test<L>}, "Flag test"),          std::pair(F{tran_test<L>}, "TransducerTest test")};
+  std::vector<std::pair<F, std::string>> tests = {std::pair(F{focus_test<L>}, "Single focus test"),
+                                                  std::pair(F{bessel_test<L>}, "Bessel beam test"),
+                                                  std::pair(F{plane_test<L>}, "Plane wave test"),
+                                                  std::pair(F{mod_audio_file_test<L>}, "Wav modulation test"),
+                                                  std::pair(F{focus_stm<L>}, "FocusSTM test"),
+                                                  std::pair(F{gain_stm<L>}, "GainSTM test"),
+                                                  std::pair(F{holo_test<L>}, "Multiple foci test"),
+                                                  std::pair(F{advanced_test<L>}, "Custom Gain & Modulation test"),
+                                                  std::pair(F{flag_test<L>}, "Flag test"),
+                                                  std::pair(F{tran_test<L>}, "TransducerTest test"),
+                                                  std::pair(F{group_by_transducer_test<L>}, "Group (by Transducer) test")};
 
-  if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_test<L>}, "Group test");
+  if (autd.geometry().num_devices() >= 2) tests.emplace_back(F{group_by_device_test<L>}, "Group (by Device) test");
 
   const auto firm_infos = autd.firmware_infos_async().get();
   std::cout << "======== AUTD3 firmware information ========" << std::endl;

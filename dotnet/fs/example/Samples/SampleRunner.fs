@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,10 +25,11 @@ module SampleRunner =
                 (GainHoloTest.Test, "Multiple foci test");
                 (CustomTest.Test, "Custom Gain & Modulation test");
                 (FlagTest.Test, "Flag test");
-                (TransTest.Test, "TransducerTest test")];
+                (TransTest.Test, "TransducerTest test");
+                (GroupByTransducerTest.Test, "Group (by Transducer) test")];
 
         let examples = 
-            if autd.Geometry.NumDevices >= 2 then examples @ [(GroupTest.Test, "Group test")] else examples;
+            if autd.Geometry.NumDevices >= 2 then examples @ [(GroupByDeviceTest.Test, "Group (by Device) test")] else examples;
 
 
         printfn "======== AUTD3 firmware information ========"

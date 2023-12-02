@@ -15,11 +15,11 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 import numpy as np
 
 from pyautd3 import Controller, Device, Silencer
-from pyautd3.gain import Focus, Null
+from pyautd3.gain import Focus, Group, Null
 from pyautd3.modulation import Sine, Static
 
 
-async def group(autd: Controller) -> None:
+async def group_by_device(autd: Controller) -> None:
     config = Silencer()
     await autd.send_async(config)
 
@@ -42,3 +42,18 @@ async def group(autd: Controller) -> None:
         )
         .send_async()
     )
+
+
+async def group_by_transducer(autd: Controller) -> None:
+    config = Silencer()
+    await autd.send_async(config)
+
+    cx = autd.geometry.center[0]
+    g1 = Focus(autd.geometry.center + np.array([0, 0, 150]))
+    g2 = Null()
+
+    g = Group(lambda _, tr: "focus" if tr.position[0] < cx else "null").set_gain("focus", g1).set_gain("null", g2)
+
+    m = Sine(150)
+
+    await autd.send_async((m, g))

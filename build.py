@@ -345,7 +345,6 @@ def rust_test(args):
 
 def rust_run(args):
     examples = [
-        "group_gain",
         "soem",
         "remote_soem",
         "twincat",
