@@ -4,5 +4,5 @@ use autd3::modulation::Fourier;
 
 # #[allow(unused_variables)]
 # fn main()  {
-let m: Fourier = Sine::new(100) + Sine::new(150) + Sine::new(200);
+let m: Fourier = Sine::new(100.) + Sine::new(150.) + Sine::new(200.);
 # }

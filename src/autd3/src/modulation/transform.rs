@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_transform_impl() {
-        let m = Sine::new(100);
+        let m = Sine::new(100.);
         let m_transformed = m.with_transform(|_, x| EmitIntensity::new(x.value() / 2));
 
         let vec = m.calc().unwrap();

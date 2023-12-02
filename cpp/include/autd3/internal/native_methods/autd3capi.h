@@ -340,7 +340,7 @@ ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
 
 [[nodiscard]] ModulationPtr AUTDModulationWithRadiationPressure(ModulationPtr m);
 
-[[nodiscard]] ModulationPtr AUTDModulationSine(uint32_t freq);
+[[nodiscard]] ModulationPtr AUTDModulationSine(double freq);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
@@ -352,7 +352,7 @@ ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, uint8_t offset);
 
-[[nodiscard]] ModulationPtr AUTDModulationSquare(uint32_t freq);
+[[nodiscard]] ModulationPtr AUTDModulationSquare(double freq);
 
 [[nodiscard]] ModulationPtr AUTDModulationSquareWithLow(ModulationPtr m, uint8_t low);
 
