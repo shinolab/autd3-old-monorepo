@@ -4,7 +4,7 @@
  * Created Date: 03/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -144,7 +144,8 @@ pub fn generate_result(
                     dev.idx(),
                     dev.iter()
                         .map(|_| {
-                            let phase = q[idx].argument() + PI;
+                            let phase =
+                                autd3_driver::common::Phase::from_rad(q[idx].argument() + PI);
                             let amp = constraint.convert(q[idx].abs(), max_coefficient);
                             idx += 1;
                             Drive {
@@ -163,9 +164,10 @@ pub fn generate_result(
                     (
                         dev.idx(),
                         dev.iter()
-                            .filter(|tr| filter[tr.tr_idx()])
+                            .filter(|tr| filter[tr.idx()])
                             .map(|_| {
-                                let phase = q[idx].argument() + PI;
+                                let phase =
+                                    autd3_driver::common::Phase::from_rad(q[idx].argument() + PI);
                                 let amp = constraint.convert(q[idx].abs(), max_coefficient);
                                 idx += 1;
                                 Drive {
@@ -180,7 +182,7 @@ pub fn generate_result(
                         dev.idx(),
                         dev.iter()
                             .map(|_| Drive {
-                                phase: 0.,
+                                phase: autd3_driver::common::Phase::new(0),
                                 intensity: EmitIntensity::MIN,
                             })
                             .collect(),

@@ -18,10 +18,10 @@ public class GainTest
     public class MyUniform : AUTD3Sharp.Gain.Gain
     {
         private readonly EmitIntensity _intensity;
-        private readonly double _phase;
+        private readonly Phase _phase;
         public bool[] Check;
 
-        public MyUniform(EmitIntensity intensity, double phase, bool[] check)
+        public MyUniform(EmitIntensity intensity, Phase phase, bool[] check)
         {
             _intensity = intensity;
             _phase = phase;
@@ -44,13 +44,13 @@ public class GainTest
         var autd = await AUTDTest.CreateController();
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(await autd.SendAsync(new MyUniform(new EmitIntensity(0x80), Math.PI, check)));
+        Assert.True(await autd.SendAsync(new MyUniform(new EmitIntensity(0x80), new Phase(0x90), check)));
 
         foreach (var dev in autd.Geometry)
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 
@@ -61,7 +61,7 @@ public class GainTest
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
-        Assert.True(await autd.SendAsync(new MyUniform(new EmitIntensity(0x80), Math.PI, check)));
+        Assert.True(await autd.SendAsync(new MyUniform(new EmitIntensity(0x80), new Phase(0x90), check)));
 
         Assert.False(check[0]);
         Assert.True(check[1]);
@@ -74,7 +74,7 @@ public class GainTest
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(1, 0);
             Assert.All(intensities, d => Assert.Equal(0x80, d));
-            Assert.All(phases, p => Assert.Equal(128, p));
+            Assert.All(phases, p => Assert.Equal(0x90, p));
         }
     }
 }

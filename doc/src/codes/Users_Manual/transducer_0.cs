@@ -1,6 +1,5 @@
 var tr = autd.Geometry[0][0];
-var trIdx = tr.TrIdx;
-var devIdx = tr.DevIdx;
+var trIdx = tr.Idx;
 var position = tr.Position;
 var rotation = tr.Rotation;
 var xDir = tr.XDirection;

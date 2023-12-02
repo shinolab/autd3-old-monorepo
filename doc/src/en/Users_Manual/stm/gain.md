@@ -27,7 +27,7 @@ This is a sample that rotates the focus on a circle with a radius of $\SI{30}{mm
 
 ## Specify the sampling configuration
 
-You can specify the sampling frequency by `new_with_sampling_config` instead of frequency.
+You can specify the sampling frequency by `from_sampling_config` instead of frequency.
 
 ```rust,edition2021
 {{#include ../../../codes/Users_Manual/stm/gain_1.rs}}

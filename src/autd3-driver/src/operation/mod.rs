@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -182,7 +182,7 @@ pub mod tests {
     use std::collections::HashMap;
 
     use crate::{
-        common::EmitIntensity,
+        common::{EmitIntensity, Phase},
         cpu::{Header, EC_OUTPUT_FRAME_SIZE},
         derive::prelude::{Drive, Gain, GainAsAny, GainFilter},
         geometry::{Transducer, UnitQuaternion, Vector3},
@@ -239,7 +239,7 @@ pub mod tests {
         ) -> Result<HashMap<usize, Vec<Drive>>, AUTDInternalError> {
             Ok(Self::transform(geometry, filter, |_, _| Drive {
                 intensity: EmitIntensity::MAX,
-                phase: 2.,
+                phase: Phase::new(2),
             }))
         }
     }
@@ -317,7 +317,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -398,7 +397,6 @@ pub mod tests {
             0,
             vec![Transducer::new(
                 0,
-                0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
             )],
@@ -448,7 +446,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -500,7 +497,6 @@ pub mod tests {
             0,
             vec![Transducer::new(
                 0,
-                0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
             )],
@@ -547,7 +543,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),
@@ -618,7 +613,6 @@ pub mod tests {
         let geometry = Geometry::new(vec![Device::new(
             0,
             vec![Transducer::new(
-                0,
                 0,
                 Vector3::zeros(),
                 UnitQuaternion::identity(),

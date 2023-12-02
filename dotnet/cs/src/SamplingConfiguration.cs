@@ -4,7 +4,7 @@
  * Created Date: 24/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,19 +36,19 @@ namespace AUTD3Sharp
             Internal = @internal;
         }
 
-        public static SamplingConfiguration NewWithFrequencyDivision(uint div)
+        public static SamplingConfiguration FromFrequencyDivision(uint div)
         {
-            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigNewWithFrequencyDivision(div).Validate());
+            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigFromFrequencyDivision(div).Validate());
         }
 
-        public static SamplingConfiguration NewWithFrequency(float_t f)
+        public static SamplingConfiguration FromFrequency(float_t f)
         {
-            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigNewWithFrequency(f).Validate());
+            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigFromFrequency(f).Validate());
         }
 
-        public static SamplingConfiguration NewWithPeriod(TimeSpan p)
+        public static SamplingConfiguration FromPeriod(TimeSpan p)
         {
-            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigNewWithPeriod((ulong)(p.TotalSeconds * 1000 *
+            return new SamplingConfiguration(NativeMethodsDef.AUTDSamplingConfigFromPeriod((ulong)(p.TotalSeconds * 1000 *
                 1000 * 1000)).Validate());
         }
 

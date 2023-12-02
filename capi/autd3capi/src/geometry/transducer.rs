@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@ use autd3capi_def::{driver::geometry::Transducer, *};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDTransducer(dev: DevicePtr, tr_idx: u32) -> TransducerPtr {
-    TransducerPtr(&cast!(dev.0, Device)[tr_idx as usize] as *const _ as _)
+pub unsafe extern "C" fn AUTDTransducer(dev: DevicePtr, idx: u32) -> TransducerPtr {
+    TransducerPtr(&cast!(dev.0, Device)[idx as usize] as *const _ as _)
 }
 
 #[no_mangle]
@@ -66,17 +66,6 @@ pub unsafe extern "C" fn AUTDTransducerDirectionZ(tr: TransducerPtr, dir: *mut f
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerWavelength(tr: TransducerPtr, sound_speed: float) -> float {
     cast!(tr.0, Transducer).wavelength(sound_speed)
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDTransducerModDelayGet(tr: TransducerPtr) -> u16 {
-    cast!(tr.0, Transducer).mod_delay
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDTransducerModDelaySet(tr: TransducerPtr, delay: u16) {
-    cast_mut!(tr.0, Transducer).mod_delay = delay;
 }
 
 #[cfg(test)]
@@ -127,10 +116,6 @@ mod tests {
             assert_approx_eq::assert_approx_eq!(v[0], 0.);
             assert_approx_eq::assert_approx_eq!(v[1], 0.);
             assert_approx_eq::assert_approx_eq!(v[2], 1.);
-
-            let delay = 0xFFFF;
-            AUTDTransducerModDelaySet(tr, delay);
-            assert_eq!(delay, AUTDTransducerModDelayGet(tr));
 
             AUTDControllerDelete(cnt);
         }

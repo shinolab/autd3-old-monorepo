@@ -19,6 +19,13 @@ As a rough outline,
 
 To configure the silencer, send `Silencer` to the controller.
 
+You can set `step` to `Silencer`.
+Refer to the followwing for details.
+Roughly, the smaller the `step`, the quieter it becomes.
+
+The silencer is enabled by default.
+To disable the silencer, send `Silencer::disable`.
+
 ```rust,edition2021
 {{#include ../../codes/Users_Manual/silencer_0.rs}}
 ```
@@ -35,12 +42,6 @@ To configure the silencer, send `Silencer` to the controller.
 {{#include ../../codes/Users_Manual/silencer_0.py}}
 ```
 
-You can set `step` to `Silencer`.
-Refer to the followwing for details.
-Roughly, the smaller the `step`, the quieter it becomes.
-
-The silencer is enabled by default.
-To disable the silencer, send `Silencer::disable`.
 
 ## Phase change by Silencer
 

@@ -12,7 +12,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, EmitIntensity, Silencer
+from pyautd3 import Controller, Device, Drive, EmitIntensity, Phase, Silencer, Transducer
 from pyautd3.gain import TransducerTest
 from pyautd3.modulation import Sine
 
@@ -21,7 +21,14 @@ async def transtest(autd: Controller) -> None:
     config = Silencer()
     await autd.send_async(config)
 
-    f = TransducerTest().set_drive(autd.geometry[0][0], 0.0, EmitIntensity.maximum()).set_drive(autd.geometry[0][248], 0.0, EmitIntensity.maximum())
+    def f(dev: Device, tr: Transducer) -> Drive | None:
+        match (dev.idx, tr.idx):
+            case (0, 0):
+                Drive(Phase(0), EmitIntensity.maximum())
+            case (0, 248):
+                Drive(Phase(0), EmitIntensity.maximum())
+
+    g = TransducerTest(f)
     m = Sine(150)
 
-    await autd.send_async(m, f)
+    await autd.send_async(m, g)

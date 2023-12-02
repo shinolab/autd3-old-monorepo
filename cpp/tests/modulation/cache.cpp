@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ class ForModulationCacheTest final : public autd3::modulation::Modulation, publi
   }
 
   explicit ForModulationCacheTest(size_t* cnt) noexcept
-      : Modulation(autd3::internal::SamplingConfiguration::new_with_frequency_division(5120)), _cnt(cnt) {}
+      : Modulation(autd3::internal::SamplingConfiguration::from_frequency_division(5120)), _cnt(cnt) {}
 
  private:
   size_t* _cnt;

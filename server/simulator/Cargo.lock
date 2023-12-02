@@ -231,7 +231,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "async-trait",
  "autd3-derive",
@@ -244,7 +244,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "quote",
  "syn 2.0.39",
@@ -252,7 +252,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "async-trait",
  "bitflags 2.4.1",
@@ -265,7 +265,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "autd3-driver",
  "h2 0.4.0",
@@ -2443,7 +2443,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simulator"
-version = "17.0.3"
+version = "18.0.0"
 dependencies = [
  "anyhow",
  "autd3",

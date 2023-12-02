@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,14 +24,11 @@ pub unsafe extern "C" fn AUTDSTMGain(
     size: u32,
     mode: GainSTMMode,
 ) -> ResultDatagram {
-    GainSTM::<Box<dyn Gain>>::new_with_props_mode(
-        *Box::from_raw(props.0 as *mut STMProps),
-        mode.into(),
-    )
-    .add_gains_from_iter(
-        (0..size as usize).map(|i| *Box::from_raw(gains.add(i).read().0 as *mut Box<G>)),
-    )
-    .into()
+    GainSTM::<Box<dyn Gain>>::from_props_mode(*Box::from_raw(props.0 as *mut STMProps), mode.into())
+        .add_gains_from_iter(
+            (0..size as usize).map(|i| *Box::from_raw(gains.add(i).read().0 as *mut Box<G>)),
+        )
+        .into()
 }
 
 #[no_mangle]

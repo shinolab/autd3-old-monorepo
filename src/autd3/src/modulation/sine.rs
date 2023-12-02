@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use num::integer::gcd;
 /// Sine wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Sine {
-    freq: usize,
+    freq: float,
     intensity: EmitIntensity,
     phase: float,
     offset: EmitIntensity,
@@ -35,13 +35,13 @@ impl Sine {
     ///
     /// * `freq` - Frequency of the sine wave [Hz]
     ///
-    pub fn new(freq: usize) -> Self {
+    pub fn new(freq: float) -> Self {
         Self {
             freq,
             intensity: EmitIntensity::MAX,
             phase: 0.0,
             offset: EmitIntensity::MAX / 2,
-            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            config: SamplingConfiguration::from_frequency(4e3).unwrap(),
         }
     }
 
@@ -81,7 +81,7 @@ impl Sine {
         Self { phase, ..self }
     }
 
-    pub fn freq(&self) -> usize {
+    pub fn freq(&self) -> float {
         self.freq
     }
 
@@ -101,7 +101,7 @@ impl Sine {
 impl Modulation for Sine {
     fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
         let sf = self.sampling_config().frequency() as usize;
-        let freq = self.freq.clamp(1, sf / 2);
+        let freq = (self.freq as usize).clamp(1, sf / 2);
         let d = gcd(sf, freq);
         let n = sf / d;
         let rep = freq / d;
@@ -131,7 +131,7 @@ mod tests {
             224, 240, 250, 254, 250, 240, 224, 202, 176, 147, 117, 88, 61, 37, 19, 6, 0, 2, 10, 24,
             45, 69, 97,
         ];
-        let m = Sine::new(150);
+        let m = Sine::new(150.);
         for d in m.calc().unwrap().iter() {
             print!("{}, ", d.value());
         }
@@ -147,8 +147,8 @@ mod tests {
 
     #[test]
     fn test_sine_new() {
-        let m = Sine::new(100);
-        assert_eq!(m.freq(), 100);
+        let m = Sine::new(100.);
+        assert_eq!(m.freq(), 100.);
         assert_eq!(m.intensity(), EmitIntensity::MAX);
         assert_eq!(m.offset(), EmitIntensity::MAX / 2);
         assert_eq!(m.phase(), 0.0);
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_sine_with_intensity() {
-        let m = Sine::new(100).with_intensity(EmitIntensity::MAX / 2);
+        let m = Sine::new(100.).with_intensity(EmitIntensity::MAX / 2);
         assert_eq!(m.intensity, EmitIntensity::MAX / 2);
 
         let vec = m.calc().unwrap();
@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn test_sine_with_offset() {
-        let m = Sine::new(100)
+        let m = Sine::new(100.)
             .with_offset(EmitIntensity::MAX / 4)
             .with_intensity(EmitIntensity::MAX / 2);
         assert_eq!(m.offset, EmitIntensity::MAX / 4);
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn test_sine_with_phase() {
-        let m = Sine::new(100).with_phase(PI / 4.0);
+        let m = Sine::new(100.).with_phase(PI / 4.0);
         assert_eq!(m.phase, PI / 4.0);
 
         let vec = m.calc().unwrap();

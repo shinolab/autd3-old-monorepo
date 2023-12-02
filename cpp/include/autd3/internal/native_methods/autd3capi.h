@@ -22,6 +22,10 @@ struct ResultGroupKVMap {
   void* err;
 };
 
+struct ContextPtr {
+  void* _0;
+};
+
 struct LinkAuditBuilderPtr {
   void* _0;
 };
@@ -71,11 +75,15 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramSpecialPtr AUTDDatagramStop();
 
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureModDelay();
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureModDelay(void* f,
+                                          void* context,
+                                          GeometryPtr geometry);
 
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdx();
-
-[[nodiscard]] DatagramPtr AUTDDatagramConfigureDebugOutoutIdxSet(DatagramPtr dbg, TransducerPtr tr);
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureDebugOutputIdx(void* f,
+                                                void* context,
+                                                GeometryPtr geometry);
 
 [[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
@@ -162,17 +170,11 @@ GainPtr AUTDGainGroup(GroupGainMapPtr map,
 
 [[nodiscard]] GainPtr AUTDGainPlaneWithIntensity(GainPtr plane, uint8_t intensity);
 
-[[nodiscard]] GainPtr AUTDGainTransducerTest();
-
-[[nodiscard]]
-GainPtr AUTDGainTransducerTestSet(GainPtr trans_test,
-                                  TransducerPtr tr,
-                                  double phase,
-                                  uint8_t intensity);
+[[nodiscard]] GainPtr AUTDGainTransducerTest(void* f, ContextPtr context, GeometryPtr geometry);
 
 [[nodiscard]] GainPtr AUTDGainUniform(uint8_t intensity);
 
-[[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, double phase);
+[[nodiscard]] GainPtr AUTDGainUniformWithPhase(GainPtr uniform, uint8_t phase);
 
 [[nodiscard]] GeometryPtr AUTDGeometry(ControllerPtr cnt);
 
@@ -217,7 +219,7 @@ void AUTDDeviceEnableSet(DevicePtr dev, bool value);
 
 void AUTDRotationFromEulerZYZ(double x, double y, double z, double *rot);
 
-[[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t tr_idx);
+[[nodiscard]] TransducerPtr AUTDTransducer(DevicePtr dev, uint32_t idx);
 
 void AUTDTransducerPosition(TransducerPtr tr, double *pos);
 
@@ -230,10 +232,6 @@ void AUTDTransducerDirectionY(TransducerPtr tr, double *dir);
 void AUTDTransducerDirectionZ(TransducerPtr tr, double *dir);
 
 [[nodiscard]] double AUTDTransducerWavelength(TransducerPtr tr, double sound_speed);
-
-[[nodiscard]] uint16_t AUTDTransducerModDelayGet(TransducerPtr tr);
-
-void AUTDTransducerModDelaySet(TransducerPtr tr, uint16_t delay);
 
 [[nodiscard]] LinkPtr AUTDLinkGet(ControllerPtr cnt);
 
@@ -284,6 +282,8 @@ void AUTDLinkAuditFpgaDeassertThermalSensor(LinkPtr audit, uint32_t idx);
 [[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStepIntensity(LinkPtr audit, uint32_t idx);
 
 [[nodiscard]] uint16_t AUTDLinkAuditFpgaSilencerStepPhase(LinkPtr audit, uint32_t idx);
+
+[[nodiscard]] uint8_t AUTDLinkAuditFpgaDebugOutputIdx(LinkPtr audit, uint32_t idx);
 
 void AUTDLinkAuditFpgaModDelays(LinkPtr audit, uint32_t idx, uint16_t *delay);
 
@@ -340,7 +340,7 @@ ModulationPtr AUTDModulationFourierAddComponent(ModulationPtr fourier,
 
 [[nodiscard]] ModulationPtr AUTDModulationWithRadiationPressure(ModulationPtr m);
 
-[[nodiscard]] ModulationPtr AUTDModulationSine(uint32_t freq);
+[[nodiscard]] ModulationPtr AUTDModulationSine(double freq);
 
 [[nodiscard]]
 ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
@@ -352,7 +352,7 @@ ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, uint8_t offset);
 
-[[nodiscard]] ModulationPtr AUTDModulationSquare(uint32_t freq);
+[[nodiscard]] ModulationPtr AUTDModulationSquare(double freq);
 
 [[nodiscard]] ModulationPtr AUTDModulationSquareWithLow(ModulationPtr m, uint8_t low);
 
@@ -372,9 +372,9 @@ ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsNew(double freq);
 
-[[nodiscard]] STMPropsPtr AUTDSTMPropsNewWithPeriod(uint64_t p);
+[[nodiscard]] STMPropsPtr AUTDSTMPropsFromPeriod(uint64_t p);
 
-[[nodiscard]] STMPropsPtr AUTDSTMPropsNewWithSamplingConfig(SamplingConfiguration config);
+[[nodiscard]] STMPropsPtr AUTDSTMPropsFromSamplingConfig(SamplingConfiguration config);
 
 [[nodiscard]] STMPropsPtr AUTDSTMPropsWithStartIdx(STMPropsPtr props, int32_t idx);
 

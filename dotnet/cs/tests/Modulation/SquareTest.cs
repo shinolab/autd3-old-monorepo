@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ public class SquareTest
             Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
 
-        Assert.True(await autd.SendAsync(new Square(150).WithSamplingConfig(SamplingConfiguration.NewWithFrequencyDivision(512))));
+        Assert.True(await autd.SendAsync(new Square(150).WithSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512))));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link.ModulationFrequencyDivision(dev.Idx));

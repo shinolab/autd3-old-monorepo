@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,17 +14,27 @@
 use std::collections::HashMap;
 
 use crate::{
+    derive::prelude::Transducer,
     error::AUTDInternalError,
     geometry::{Device, Geometry},
     operation::{Operation, TypeTag},
 };
 
-#[derive(Default)]
-pub struct ConfigureModDelayOp {
+pub struct ConfigureModDelayOp<F: Fn(&Device, &Transducer) -> u16> {
     remains: HashMap<usize, usize>,
+    f: F,
 }
 
-impl Operation for ConfigureModDelayOp {
+impl<F: Fn(&Device, &Transducer) -> u16> ConfigureModDelayOp<F> {
+    pub fn new(f: F) -> Self {
+        Self {
+            remains: Default::default(),
+            f,
+        }
+    }
+}
+
+impl<F: Fn(&Device, &Transducer) -> u16> Operation for ConfigureModDelayOp<F> {
     fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
 
@@ -39,7 +49,7 @@ impl Operation for ConfigureModDelayOp {
             );
             dst.iter_mut()
                 .zip(device.iter())
-                .for_each(|(d, s)| *d = s.mod_delay);
+                .for_each(|(d, s)| *d = (self.f)(device, s));
         }
 
         Ok(2 + device.num_transducers() * std::mem::size_of::<u16>())
@@ -75,19 +85,22 @@ mod tests {
 
     #[test]
     fn mod_delay_op() {
-        let mut geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
+        let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
         let mut tx =
             vec![0x00u8; (2 + NUM_TRANS_IN_UNIT * std::mem::size_of::<u16>()) * NUM_DEVICE];
 
-        let mut rng = rand::thread_rng();
-        geometry.devices_mut().for_each(|dev| {
-            dev.iter_mut().for_each(|tr| {
-                tr.mod_delay = rng.gen_range(0x0000..0xFFFFu16);
+        let map = geometry
+            .devices()
+            .flat_map(|dev| {
+                let mut rng = rand::thread_rng();
+                dev.iter()
+                    .map(move |tr| ((dev.idx(), tr.idx()), rng.gen_range(0x0000..0xFFFFu16)))
             })
-        });
+            .collect::<HashMap<_, _>>();
 
-        let mut op = ConfigureModDelayOp::default();
+        let map2 = map.clone();
+        let mut op = ConfigureModDelayOp::new(move |dev, tr| map2[&(dev.idx(), tr.idx())]);
 
         assert!(op.init(&geometry).is_ok());
 
@@ -126,7 +139,7 @@ mod tests {
                 .skip(1)
                 .zip(dev.iter())
                 .for_each(|(d, tr)| {
-                    let delay = tr.mod_delay;
+                    let delay = map[&(dev.idx(), tr.idx())];
                     assert_eq!(d[0], (delay & 0xFF) as u8);
                     assert_eq!(d[1], (delay >> 8) as u8);
                 })

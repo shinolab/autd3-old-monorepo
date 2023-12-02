@@ -3,7 +3,7 @@
 // Created Date: 27/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,9 +71,9 @@ class Simulator final {
 
   static Builder builder(const uint16_t port) { return Builder(port); }
 
-  void update_geometry(const internal::Geometry& geometry) const { validate(AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr())); }
+  void update_geometry(const internal::geometry::Geometry& geometry) const { validate(AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.ptr())); }
 
-  [[nodiscard]] std::future<void> update_geometry_async(const internal::Geometry& geometry) const {
+  [[nodiscard]] std::future<void> update_geometry_async(const internal::geometry::Geometry& geometry) const {
     return std::async(std::launch::async, [this, geometry] { return update_geometry(geometry); });
   }
 };

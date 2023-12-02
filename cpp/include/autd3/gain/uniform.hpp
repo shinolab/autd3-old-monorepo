@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,16 +32,16 @@ class Uniform final : public internal::Gain, public IntoCache<Uniform>, public I
   explicit Uniform(const uint8_t intensity) : _intensity(internal::EmitIntensity(intensity)) {}
   explicit Uniform(const internal::EmitIntensity intensity) : _intensity(intensity) {}
 
-  AUTD3_DEF_PARAM(Uniform, double, phase)
+  AUTD3_DEF_PARAM(Uniform, internal::Phase, phase)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainUniform(_intensity.value());
-    if (_phase.has_value()) ptr = AUTDGainUniformWithPhase(ptr, _phase.value());
+    if (_phase.has_value()) ptr = AUTDGainUniformWithPhase(ptr, _phase.value().value());
     return ptr;
   }
 
  private:
   internal::EmitIntensity _intensity;
-  std::optional<double> _phase;
+  std::optional<internal::Phase> _phase;
 };
 }  // namespace autd3::gain

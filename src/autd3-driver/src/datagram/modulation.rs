@@ -4,7 +4,7 @@
  * Created Date: 29/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn test_modulation_property() {
         let m = NullModulation {
-            config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
+            config: SamplingConfiguration::from_frequency_division(512).unwrap(),
             buf: vec![],
         };
         assert_eq!(m.sampling_config().frequency_division(), 512);
@@ -88,7 +88,7 @@ mod tests {
     fn test_modulation_len() {
         assert_eq!(
             NullModulation {
-                config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
+                config: SamplingConfiguration::from_frequency_division(512).unwrap(),
                 buf: vec![],
             }
             .len()
@@ -98,7 +98,7 @@ mod tests {
 
         assert_eq!(
             NullModulation {
-                config: SamplingConfiguration::new_with_frequency_division(512).unwrap(),
+                config: SamplingConfiguration::from_frequency_division(512).unwrap(),
                 buf: vec![EmitIntensity::new(0); 100],
             }
             .len()

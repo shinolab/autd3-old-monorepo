@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,27 +13,25 @@
 
 use super::{Matrix4, Quaternion, UnitQuaternion, Vector3, Vector4};
 
-use crate::defined::{float, PI, ULTRASOUND_FREQUENCY};
+use crate::{
+    common::Phase,
+    defined::{float, PI, ULTRASOUND_FREQUENCY},
+};
 
 pub struct Transducer {
-    tr_idx: u8,
-    dev_idx: u16,
+    idx: u8,
     pos: Vector3,
     rot: UnitQuaternion,
-    pub mod_delay: u16,
 }
 
 impl Transducer {
     /// Create transducer
-    pub const fn new(dev_idx: usize, tr_idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
-        assert!(tr_idx < 256);
-        assert!(dev_idx < 65536);
+    pub const fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+        assert!(idx < 256);
         Self {
-            tr_idx: tr_idx as u8,
-            dev_idx: dev_idx as u16,
+            idx: idx as u8,
             pos,
             rot,
-            mod_delay: 0,
         }
     }
 
@@ -48,8 +46,8 @@ impl Transducer {
     }
 
     /// Calculate the phase of the transducer to align the phase at the specified position
-    pub fn align_phase_at(&self, pos: Vector3, sound_speed: float) -> float {
-        (pos - self.position()).norm() * self.wavenumber(sound_speed)
+    pub fn align_phase_at(&self, pos: Vector3, sound_speed: float) -> Phase {
+        Phase::from_rad((pos - self.position()).norm() * self.wavenumber(sound_speed))
     }
 
     /// Get the position of the transducer
@@ -81,25 +79,8 @@ impl Transducer {
     }
 
     /// Get the local transducer index
-    pub const fn tr_idx(&self) -> usize {
-        self.tr_idx as usize
-    }
-
-    /// Get the device index
-    pub const fn dev_idx(&self) -> usize {
-        self.dev_idx as usize
-    }
-
-    /// Get the modulation delay of the transducer
-    #[deprecated(since = "17.0.3", note = "use mod_delay directly")]
-    pub const fn mod_delay(&self) -> u16 {
-        self.mod_delay
-    }
-
-    /// Set the modulation delay of the transducer
-    #[deprecated(since = "17.0.3", note = "use mod_delay directly")]
-    pub fn set_mod_delay(&mut self, delay: u16) {
-        self.mod_delay = delay;
+    pub const fn idx(&self) -> usize {
+        self.idx as usize
     }
 
     /// Get the wavelength of the transducer
@@ -128,19 +109,17 @@ mod tests {
     }
 
     #[test]
-    fn tr_idx() {
-        let tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(0, tr.dev_idx());
-        assert_eq!(0, tr.tr_idx());
+    fn idx() {
+        let tr = Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(0, tr.idx());
 
-        let tr = Transducer::new(1, 2, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(1, tr.dev_idx());
-        assert_eq!(2, tr.tr_idx());
+        let tr = Transducer::new(1, Vector3::zeros(), UnitQuaternion::identity());
+        assert_eq!(1, tr.idx());
     }
 
     #[test]
     fn affine() {
-        let mut tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let mut tr = Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let t = Vector3::new(40., 50., 60.);
         let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
@@ -160,41 +139,36 @@ mod tests {
     }
 
     #[test]
-    fn mod_delay() {
-        let mut tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
-        assert_eq!(0, tr.mod_delay);
-        tr.mod_delay = 1;
-        assert_eq!(1, tr.mod_delay);
-    }
-
-    #[test]
     fn wavelength() {
-        let tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
         let c = 340e3;
         assert_approx_eq!(c / ULTRASOUND_FREQUENCY, tr.wavelength(c));
     }
 
     #[test]
     fn wavenumber() {
-        let tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
         let c = 340e3;
         assert_approx_eq!(2. * PI * ULTRASOUND_FREQUENCY / c, tr.wavenumber(c));
     }
 
     #[test]
     fn align_phase_at() {
-        let tr = Transducer::new(0, 0, Vector3::zeros(), UnitQuaternion::identity());
+        let tr = Transducer::new(0, Vector3::zeros(), UnitQuaternion::identity());
 
         let c = 340e3;
         let wavelength = tr.wavelength(c);
 
         let p = Vector3::zeros();
-        assert_approx_eq!(0., tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
 
         let p = Vector3::new(wavelength, 0., 0.);
-        assert_approx_eq!(2. * PI, tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
 
         let p = Vector3::new(0., -wavelength, 0.);
-        assert_approx_eq!(2. * PI, tr.align_phase_at(p, c));
+        assert_eq!(0, tr.align_phase_at(p, c).value());
+
+        let p = Vector3::new(0., 0., wavelength / 2.);
+        assert_eq!(128, tr.align_phase_at(p, c).value());
     }
 }

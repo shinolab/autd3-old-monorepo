@@ -4,7 +4,7 @@
  * Created Date: 04/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,6 @@ mod tests {
         let mut rng = rand::thread_rng();
 
         let tr = crate::geometry::Transducer::new(
-            rng.gen::<u16>() as usize,
             rng.gen::<u8>() as usize,
             Vector3::new(rng.gen(), rng.gen(), rng.gen()),
             UnitQuaternion::from_quaternion(Quaternion::new(

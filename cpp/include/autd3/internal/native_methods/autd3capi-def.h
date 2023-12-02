@@ -151,7 +151,7 @@ struct ResultDatagram {
 };
 
 struct Drive {
-  double phase;
+  uint8_t phase;
   uint8_t intensity;
 };
 
@@ -167,15 +167,19 @@ constexpr const double DEFAULT_CORRECTED_ALPHA = 0.803;
 
 extern "C" {
 
-[[nodiscard]] uint8_t AUTDEmitIntensityNewWithCorrectionAlpha(uint8_t value, double alpha);
+[[nodiscard]] uint8_t AUTDEmitIntensityWithCorrectionAlpha(uint8_t value, double alpha);
+
+[[nodiscard]] uint8_t AUTDPhaseFromRad(double value);
+
+[[nodiscard]] double AUTDPhaseToRad(uint8_t value);
 
 void AUTDGetErr(void* src, char *dst);
 
-[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequencyDivision(uint32_t div);
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigFromFrequencyDivision(uint32_t div);
 
-[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithFrequency(double f);
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigFromFrequency(double f);
 
-[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigNewWithPeriod(uint64_t p);
+[[nodiscard]] ResultSamplingConfig AUTDSamplingConfigFromPeriod(uint64_t p);
 
 [[nodiscard]] uint32_t AUTDSamplingConfigFrequencyDivision(SamplingConfiguration config);
 

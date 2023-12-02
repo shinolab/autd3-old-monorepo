@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -137,7 +137,7 @@ mod tests {
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
-            assert_eq!(drive.phase, 0.0);
+            assert_eq!(drive.phase.value(), 0);
             assert_eq!(drive.intensity.value(), 0xFF);
         });
 
@@ -146,13 +146,13 @@ mod tests {
             .unwrap()
             .iter_mut()
             .for_each(|drive| {
-                drive.phase = 1.0;
+                drive.phase = Phase::new(1);
                 drive.intensity = EmitIntensity::new(0x1F);
             });
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
-            assert_eq!(drive.phase, 1.0);
+            assert_eq!(drive.phase.value(), 1);
             assert_eq!(drive.intensity.value(), 0x1F);
         });
     }
@@ -171,7 +171,7 @@ mod tests {
             self.calc_cnt.fetch_add(1, Ordering::Relaxed);
             Ok(Self::transform(geometry, filter, |_, _| Drive {
                 intensity: EmitIntensity::MIN,
-                phase: 0.0,
+                phase: Phase::new(0),
             }))
         }
     }

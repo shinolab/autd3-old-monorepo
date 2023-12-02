@@ -28,10 +28,11 @@ async def run(autd: Controller) -> None:
         (custom.custom, "Custom Gain & Modulation test"),
         (flag.flag, "Flag test"),
         (transtest.transtest, "TransducerTest test"),
+        (group.group_by_transducer, "Group (by Transducer) test"),
     ]
 
     if autd.geometry.num_devices >= 2:
-        samples.append((group.group, "Group test"))
+        samples.append((group.group_by_device, "Group (by Device) test"))
 
     print("======== AUTD3 firmware information ========")
     print("\n".join([str(firm) for firm in await autd.firmware_info_list_async()]))

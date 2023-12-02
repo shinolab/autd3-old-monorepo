@@ -78,9 +78,9 @@ class STM(Datagram, metaclass=ABCMeta):
         if self._freq is not None:
             ptr = Base().stm_props_new(self._freq)
         if self._period is not None:
-            ptr = Base().stm_props_new_with_period(int(self._period.total_seconds() * 1000 * 1000 * 1000))
+            ptr = Base().stm_props_from_period(int(self._period.total_seconds() * 1000 * 1000 * 1000))
         if self._sampling_config is not None:
-            ptr = Base().stm_props_new_with_sampling_config(self._sampling_config._internal)
+            ptr = Base().stm_props_from_sampling_config(self._sampling_config._internal)
         ptr = Base().stm_props_with_start_idx(ptr, self._start_idx)
         return Base().stm_props_with_finish_idx(ptr, self._finish_idx)
 
@@ -139,7 +139,7 @@ class FocusSTM(STM):
         )
 
     @staticmethod
-    def new_with_period(period: timedelta) -> "FocusSTM":
+    def from_period(period: timedelta) -> "FocusSTM":
         """Constructor.
 
         Arguments:
@@ -149,7 +149,7 @@ class FocusSTM(STM):
         return FocusSTM(None, period=period)
 
     @staticmethod
-    def new_with_sampling_config(config: SamplingConfiguration) -> "FocusSTM":
+    def from_sampling_config(config: SamplingConfiguration) -> "FocusSTM":
         """Constructor.
 
         Arguments:
@@ -263,7 +263,7 @@ class GainSTM(STM):
         )
 
     @staticmethod
-    def new_with_sampling_config(config: SamplingConfiguration) -> "GainSTM":
+    def from_sampling_config(config: SamplingConfiguration) -> "GainSTM":
         """Constructor.
 
         Arguments:
@@ -273,7 +273,7 @@ class GainSTM(STM):
         return GainSTM(None, sampling_config=config)
 
     @staticmethod
-    def new_with_period(period: timedelta) -> "GainSTM":
+    def from_period(period: timedelta) -> "GainSTM":
         """Constructor.
 
         Arguments:

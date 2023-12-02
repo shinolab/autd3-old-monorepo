@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ class Plane final : public internal::Gain, public IntoCache<Plane>, public IntoT
 
   AUTD3_DEF_PARAM_INTENSITY(Plane, intensity)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainPlane(_d.x(), _d.y(), _d.z());
     if (_intensity.has_value()) ptr = AUTDGainPlaneWithIntensity(ptr, _intensity.value().value());
     return ptr;

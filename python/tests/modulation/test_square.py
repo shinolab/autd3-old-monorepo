@@ -34,7 +34,7 @@ async def test_square():
 
     assert await autd.send_async(
         Square(150).with_sampling_config(
-            SamplingConfiguration.new_with_frequency_division(512),
+            SamplingConfiguration.from_frequency_division(512),
         ),
     )
     for dev in autd.geometry:

@@ -4,7 +4,7 @@
  * Created Date: 15/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ impl RawPCM {
         Ok(Self {
             sample_rate,
             raw_buffer,
-            config: SamplingConfiguration::new_with_frequency(4e3).unwrap(),
+            config: SamplingConfiguration::from_frequency(4e3).unwrap(),
         })
     }
 }

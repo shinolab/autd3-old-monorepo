@@ -13,7 +13,7 @@ pub struct Burst {
 
 impl Burst {
     pub fn new() -> Self {
-        Self { config: SamplingConfiguration::new_with_frequency(4e3).unwrap() }
+        Self { config: SamplingConfiguration::from_frequency(4e3).unwrap() }
     }
 }
 

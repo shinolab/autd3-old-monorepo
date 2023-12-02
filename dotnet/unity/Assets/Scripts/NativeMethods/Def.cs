@@ -27,20 +27,26 @@ namespace AUTD3Sharp.NativeMethods
         public const int AUTD3_FALSE = 0;
 
 
-        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityNewWithCorrectionAlpha", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern byte AUTDEmitIntensityNewWithCorrectionAlpha(byte value, float alpha);
+        [DllImport(__DllName, EntryPoint = "AUTDEmitIntensityWithCorrectionAlpha", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern byte AUTDEmitIntensityWithCorrectionAlpha(byte value, float alpha);
+
+        [DllImport(__DllName, EntryPoint = "AUTDPhaseFromRad", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern byte AUTDPhaseFromRad(float value);
+
+        [DllImport(__DllName, EntryPoint = "AUTDPhaseToRad", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern float AUTDPhaseToRad(byte value);
 
         [DllImport(__DllName, EntryPoint = "AUTDGetErr", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDGetErr(IntPtr src, byte* dst);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithFrequencyDivision(uint div);
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFromFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigFromFrequencyDivision(uint div);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithFrequency(float f);
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFromFrequency", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigFromFrequency(float f);
 
-        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigNewWithPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern ResultSamplingConfig AUTDSamplingConfigNewWithPeriod(ulong p);
+        [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFromPeriod", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ResultSamplingConfig AUTDSamplingConfigFromPeriod(ulong p);
 
         [DllImport(__DllName, EntryPoint = "AUTDSamplingConfigFrequencyDivision", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern uint AUTDSamplingConfigFrequencyDivision(SamplingConfigurationRaw config);

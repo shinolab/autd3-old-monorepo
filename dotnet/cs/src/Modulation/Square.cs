@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,12 +34,12 @@ namespace AUTD3Sharp.Modulation
     /// </summary>
     public sealed class Square : Internal.ModulationWithSamplingConfig<Square>
     {
-        private readonly int _freq;
+        private readonly float_t _freq;
         private EmitIntensity? _low;
         private EmitIntensity? _high;
         private float_t? _duty;
 
-        public Square(int freq)
+        public Square(float_t freq)
         {
             _freq = freq;
             _low = null;
@@ -105,7 +105,7 @@ namespace AUTD3Sharp.Modulation
 
         internal override ModulationPtr ModulationPtr()
         {
-            var ptr = NativeMethodsBase.AUTDModulationSquare((uint)_freq);
+            var ptr = NativeMethodsBase.AUTDModulationSquare(_freq);
             if (_low != null)
                 ptr = NativeMethodsBase.AUTDModulationSquareWithLow(ptr, _low.Value.Value);
             if (_high != null)

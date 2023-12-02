@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 01/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,20 +21,23 @@
 TEST(Internal, FirmwareInfo) {
   auto autd = create_controller();
 
-  ASSERT_EQ("v4.0.0", autd3::internal::FirmwareInfo::latest_version());
+  ASSERT_EQ("v4.0.1", autd3::internal::FirmwareInfo::latest_version());
 
   {
     const auto infos = autd.firmware_infos_async().get();
-    std::ranges::for_each(std::ranges::views::iota(0) | std::ranges::views::take(infos.size()), [&](auto i) {
-      std::stringstream ss;
-      ss << i;
-      ss << ": CPU = v4.0.0, FPGA = v4.0.0 [Emulator]";
-      ASSERT_EQ(ss.str(), infos[i].info());
-    });
+    std::ranges::for_each(
+        std::ranges::views::iota(0) | std::ranges::views::take(infos.size()),
+        [&](auto i) {
+          std::stringstream ss;
+          ss << i;
+          ss << ": CPU = v4.0.1, FPGA = v4.0.1 [Emulator]";
+          ASSERT_EQ(ss.str(), infos[i].info());
+        });
   }
 
   {
     autd.link().break_down();
-    ASSERT_THROW((void)autd.firmware_infos_async().get(), autd3::internal::AUTDException);
+    ASSERT_THROW((void)autd.firmware_infos_async().get(),
+                 autd3::internal::AUTDException);
   }
 }

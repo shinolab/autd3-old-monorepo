@@ -19,10 +19,12 @@ import pytest
 from pyautd3 import (
     AUTD3,
     Clear,
+    ConfigureDebugOutputIdx,
     ConfigureModDelay,
     Controller,
     Device,
     FirmwareInfo,
+    Phase,
     Silencer,
     Stop,
     Synchronize,
@@ -66,6 +68,24 @@ async def test_silencer():
 
 
 @pytest.mark.asyncio()
+async def test_debug_output_idx():
+    autd = await create_controller()
+
+    for dev in autd.geometry:
+        assert autd.link.debug_output_idx(dev.idx) == 0xFF
+
+    await autd.send_async(ConfigureDebugOutputIdx(lambda dev: dev[0]))
+
+    for dev in autd.geometry:
+        assert autd.link.debug_output_idx(dev.idx) == 0
+
+    await autd.send_async(ConfigureDebugOutputIdx(lambda dev: dev[10] if dev.idx == 0 else None))
+
+    assert autd.link.debug_output_idx(0) == 10
+    assert autd.link.debug_output_idx(1) == 0xFF
+
+
+@pytest.mark.asyncio()
 async def test_fpga_info_async():
     autd = await create_controller()
 
@@ -105,10 +125,10 @@ async def test_fpga_info_async():
 async def test_firmware_info():
     autd = await create_controller()
 
-    assert FirmwareInfo.latest_version() == "v4.0.0"
+    assert FirmwareInfo.latest_version() == "v4.0.1"
 
     for i, firm in enumerate(await autd.firmware_info_list_async()):
-        assert firm.info == f"{i}: CPU = v4.0.0, FPGA = v4.0.0 [Emulator]"
+        assert firm.info == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
 
     autd.link.break_down()
     with pytest.raises(AUTDError) as e:
@@ -300,7 +320,7 @@ async def test_group_check_only_for_enabled():
         check[dev.idx] = True
         return 0
 
-    await autd.group(f).set_data(0, Sine(150), Uniform(0x80).with_phase(np.pi)).send_async()
+    await autd.group(f).set_data(0, Sine(150), Uniform(0x80).with_phase(Phase(0x90))).send_async()
 
     assert not check[0]
     assert check[1]
@@ -314,20 +334,20 @@ async def test_group_check_only_for_enabled():
     assert len(mod) == 80
     intensities, phases = autd.link.intensities_and_phases(1, 0)
     assert np.all(intensities == 0x80)
-    assert np.all(phases == 128)
+    assert np.all(phases == 0x90)
 
 
 @pytest.mark.asyncio()
 async def test_clear():
     autd = await create_controller()
 
-    assert await autd.send_async((Static(), Uniform(0xFF).with_phase(np.pi)))
+    assert await autd.send_async((Static(), Uniform(0xFF).with_phase(Phase(0x90))))
 
     for dev in autd.geometry:
         assert np.all(autd.link.modulation(dev.idx) == 0xFF)
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0xFF)
-        assert np.all(phases == 128)
+        assert np.all(phases == 0x90)
 
     await autd.send_async(Clear())
 
@@ -384,11 +404,7 @@ async def test_configure_mod_delay():
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 0)
 
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.mod_delay = 1
-
-    assert await autd.send_async(ConfigureModDelay())
+    assert await autd.send_async(ConfigureModDelay(lambda _dev, _tr: 1))
 
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 1)

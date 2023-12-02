@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use std::io::{self, Write};
 pub async fn holo<L: Link>(autd: &mut Controller<L>) -> anyhow::Result<bool> {
     autd.send(Silencer::default()).await?;
 
-    let m = Sine::new(150);
+    let m = Sine::new(150.);
 
     let center = autd.geometry.center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
     let p = Vector3::new(30. * MILLIMETER, 0., 0.);

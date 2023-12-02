@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,15 +15,14 @@
 #define USE_SINGLE
 #endif
 
-using System.Collections.Generic;
-using System.Linq;
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
+using System;
+using System.Runtime.InteropServices;
 using AUTD3Sharp.NativeMethods;
 
-#if USE_SINGLE
-using float_t = System.Single;
-#else
-using float_t = System.Double;
-#endif
 
 namespace AUTD3Sharp.Gain
 {
@@ -32,30 +31,32 @@ namespace AUTD3Sharp.Gain
     /// </summary>
     public sealed class TransducerTest : Internal.Gain
     {
-        internal struct Prop
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public unsafe delegate void TransducerTestDelegate(ContextPtr context, GeometryPtr geometryPtr, uint devIdx, byte trIdx, DriveRaw* raw);
+
+        private readonly TransducerTestDelegate _f;
+
+        public TransducerTest(Func<Device, Transducer, Drive?> f)
         {
-            internal Transducer Tr;
-            internal float_t Phase;
-            internal EmitIntensity Intensity;
+            unsafe
+            {
+                _f = (context, geometryPtr, devIdx, trIdx, raw) =>
+                {
+                    var dev = new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx));
+                    var tr = new Transducer(trIdx, dev.Ptr);
+                    var d = f(dev, tr);
+                    if (d == null) return;
+                    raw->Phase = d?.Phase.Value ?? 0;
+                    raw->intensity = d?.Intensity.Value ?? 0;
+                };
+            }
         }
-
-        private readonly List<Prop> _props = new List<Prop>();
-
-        public TransducerTest Set(Transducer tr, float_t phase, byte intensity)
-        {
-            _props.Add(new Prop { Tr = tr, Phase = phase, Intensity = new EmitIntensity(intensity) });
-            return this;
-        }
-
-        public TransducerTest Set(Transducer tr, float_t phase, EmitIntensity intensity)
-        {
-            _props.Add(new Prop { Tr = tr, Phase = phase, Intensity = intensity });
-            return this;
-        }
-
         internal override GainPtr GainPtr(Geometry geometry)
         {
-            return _props.Aggregate(NativeMethodsBase.AUTDGainTransducerTest(), (gainPtr, prop) => NativeMethodsBase.AUTDGainTransducerTestSet(gainPtr, prop.Tr.Ptr, prop.Phase, prop.Intensity.Value));
+            return NativeMethodsBase.AUTDGainTransducerTest(Marshal.GetFunctionPointerForDelegate(_f), new ContextPtr { Item1 = IntPtr.Zero }, geometry.Ptr);
         }
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable restore
+#endif

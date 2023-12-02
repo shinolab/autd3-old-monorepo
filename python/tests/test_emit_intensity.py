@@ -26,5 +26,5 @@ def test_emit_intensity():
 
 def test_emit_intensity_with_correction():
     for i in range(256):
-        intensity = EmitIntensity.new_with_correction(i)
+        intensity = EmitIntensity.with_correction(i)
         assert intensity.value == int(np.round(np.arcsin(pow(i / 255, 1 / DEFAULT_CORRECTED_ALPHA)) / np.pi * 510))

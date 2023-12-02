@@ -3,7 +3,7 @@
 // Created Date: 29/08/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@
 namespace autd3::gain {
 
 template <class F>
-concept gain_transform = requires(F f, const internal::Device& dev, const internal::Transducer& tr) {
+concept gain_transform = requires(F f, const internal::geometry::Device& dev, const internal::geometry::Transducer& tr) {
   { f(dev, tr) } -> std::same_as<internal::Drive>;
 };
 
@@ -33,9 +33,9 @@ class Gain : public internal::Gain {
  public:
   Gain() = default;
 
-  [[nodiscard]] virtual std::unordered_map<size_t, std::vector<internal::Drive>> calc(const internal::Geometry& geometry) const = 0;
+  [[nodiscard]] virtual std::unordered_map<size_t, std::vector<internal::Drive>> calc(const internal::geometry::Geometry& geometry) const = 0;
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry& geometry) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry& geometry) const override {
     const auto drives = calc(geometry);
     return std::accumulate(drives.begin(), drives.end(), internal::native_methods::AUTDGainCustom(),
                            [](const internal::native_methods::GainPtr acc, const std::pair<size_t, std::vector<internal::Drive>>& kv) {
@@ -46,13 +46,13 @@ class Gain : public internal::Gain {
   }
 
   template <gain_transform Fn>
-  [[nodiscard]] static std::unordered_map<size_t, std::vector<internal::Drive>> transform(const internal::Geometry& geometry, Fn func) {
+  [[nodiscard]] static std::unordered_map<size_t, std::vector<internal::Drive>> transform(const internal::geometry::Geometry& geometry, Fn func) {
     std::unordered_map<size_t, std::vector<internal::Drive>> drives_map;
-    std::for_each(geometry.devices().begin(), geometry.devices().end(), [&drives_map, &func](const internal::Device& dev) {
+    std::for_each(geometry.devices().begin(), geometry.devices().end(), [&drives_map, &func](const internal::geometry::Device& dev) {
       std::vector<internal::Drive> drives;
       drives.reserve(dev.num_transducers());
       std::transform(dev.cbegin(), dev.cend(), std::back_inserter(drives),
-                     [&dev, &drives_map, &func](const internal::Transducer& tr) { return func(dev, tr); });
+                     [&dev, &drives_map, &func](const internal::geometry::Transducer& tr) { return func(dev, tr); });
       drives_map[dev.idx()] = std::move(drives);
     });
     return drives_map;

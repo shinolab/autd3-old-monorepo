@@ -4,7 +4,7 @@
  * Created Date: 12/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,9 +43,9 @@ namespace AUTD3Sharp
             Value = value;
         }
 
-        public static EmitIntensity NewWithCorrectionAlpha(byte value, float_t alpha) => new EmitIntensity(NativeMethodsDef.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha));
+        public static EmitIntensity WithCorrectionAlpha(byte value, float_t alpha) => new EmitIntensity(NativeMethodsDef.AUTDEmitIntensityWithCorrectionAlpha(value, alpha));
 
-        public static EmitIntensity NewWithCorrection(byte value) => NewWithCorrectionAlpha(value, NativeMethodsDef.DEFAULT_CORRECTED_ALPHA);
+        public static EmitIntensity WithCorrection(byte value) => WithCorrectionAlpha(value, NativeMethodsDef.DEFAULT_CORRECTED_ALPHA);
 
         public static EmitIntensity operator /(EmitIntensity a, int b)
         {

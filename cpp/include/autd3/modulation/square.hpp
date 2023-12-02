@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ class Square final : public internal::ModulationWithSamplingConfig<Square>,
    *
    * @param freq Frequency of square wave
    */
-  explicit Square(const int32_t freq) : _freq(freq) {}
+  explicit Square(const double freq) : _freq(freq) {}
 
   AUTD3_DEF_PARAM_INTENSITY(Square, low)
   AUTD3_DEF_PARAM_INTENSITY(Square, high)
@@ -50,7 +50,7 @@ class Square final : public internal::ModulationWithSamplingConfig<Square>,
   }
 
  private:
-  int32_t _freq;
+  double _freq;
   std::optional<internal::EmitIntensity> _low;
   std::optional<internal::EmitIntensity> _high;
   std::optional<double> _duty;

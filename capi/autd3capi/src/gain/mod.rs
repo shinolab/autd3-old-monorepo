@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -79,14 +79,14 @@ mod tests {
             let dev1 = AUTDDevice(geo, 1);
 
             let g = AUTDGainUniform(0xFE);
-            let g = AUTDGainUniformWithPhase(g, 0.8);
+            let g = AUTDGainUniformWithPhase(g, 8);
 
             let mut drives0 = {
                 let num_trans = AUTDDeviceNumTransducers(dev0);
                 vec![
                     autd3capi_def::Drive {
                         intensity: 0,
-                        phase: 0.
+                        phase: 0
                     };
                     num_trans as _
                 ]
@@ -96,7 +96,7 @@ mod tests {
                 vec![
                     autd3capi_def::Drive {
                         intensity: 0,
-                        phase: 0.
+                        phase: 0
                     };
                     num_trans as _
                 ]
@@ -113,11 +113,11 @@ mod tests {
 
             drives0.iter().for_each(|d| {
                 assert_eq!(d.intensity, 0xFE);
-                assert_eq!(d.phase, 0.8);
+                assert_eq!(d.phase, 8);
             });
             drives1.iter().for_each(|d| {
                 assert_eq!(d.intensity, 0xFE);
-                assert_eq!(d.phase, 0.8);
+                assert_eq!(d.phase, 8);
             });
 
             AUTDControllerDelete(cnt);

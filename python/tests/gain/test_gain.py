@@ -18,15 +18,16 @@ import pytest
 from pyautd3 import Device, Drive, Geometry, Transducer
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain import Gain
+from pyautd3.phase import Phase
 from tests.test_autd import create_controller
 
 
 class Uniform(Gain):
     _intensity: EmitIntensity
-    _phase: float
+    _phase: Phase
     check: np.ndarray
 
-    def __init__(self: "Uniform", intensity: int, phase: float, check: np.ndarray) -> None:
+    def __init__(self: "Uniform", intensity: int, phase: Phase, check: np.ndarray) -> None:
         self._intensity = EmitIntensity(intensity)
         self._phase = phase
         self.check = check
@@ -47,12 +48,12 @@ async def test_gain():
     autd = await create_controller()
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    assert await autd.send_async(Uniform(0x80, np.pi, check))
+    assert await autd.send_async(Uniform(0x80, Phase(0x90), check))
 
     for dev in autd.geometry:
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0x80)
-        assert np.all(phases == 128)
+        assert np.all(phases == 0x90)
 
 
 @pytest.mark.asyncio()
@@ -61,7 +62,7 @@ async def test_gain_check_only_for_enabled():
     autd.geometry[0].enable = False
 
     check = np.zeros(autd.geometry.num_devices, dtype=bool)
-    g = Uniform(0x80, np.pi, check)
+    g = Uniform(0x80, Phase(0x90), check)
     assert await autd.send_async(g)
 
     assert not g.check[0]
@@ -73,4 +74,4 @@ async def test_gain_check_only_for_enabled():
 
     intensities, phases = autd.link.intensities_and_phases(1, 0)
     assert np.all(intensities == 0x80)
-    assert np.all(phases == 128)
+    assert np.all(phases == 0x90)

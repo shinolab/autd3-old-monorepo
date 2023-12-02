@@ -4,7 +4,7 @@
  * Created Date: 18/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -173,6 +173,15 @@ pub unsafe extern "C" fn AUTDLinkAuditFpgaSilencerStepPhase(audit: LinkPtr, idx:
     cast!(audit.0, Box<Audit>)[idx as usize]
         .fpga()
         .silencer_step_phase()
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDLinkAuditFpgaDebugOutputIdx(audit: LinkPtr, idx: u32) -> u8 {
+    cast!(audit.0, Box<Audit>)[idx as usize]
+        .fpga()
+        .debug_output_idx()
+        .unwrap_or(0xFF)
 }
 
 #[no_mangle]

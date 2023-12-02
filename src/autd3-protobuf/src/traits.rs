@@ -4,7 +4,7 @@
  * Created Date: 30/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 01/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,7 +62,7 @@ impl ToMessage for autd3_driver::geometry::Geometry {
                     transducers: dev
                         .iter()
                         .map(|t| geometry::Transducer {
-                            idx: t.tr_idx() as _,
+                            idx: t.idx() as _,
                             pos: Some(t.position().to_msg()),
                             rot: Some(t.rotation().to_msg()),
                         })
@@ -87,7 +87,7 @@ impl ToMessage for &[autd3_driver::geometry::Device] {
                     transducers: dev
                         .iter()
                         .map(|t| geometry::Transducer {
-                            idx: t.tr_idx() as _,
+                            idx: t.idx() as _,
                             pos: Some(t.position().to_msg()),
                             rot: Some(t.rotation().to_msg()),
                         })
@@ -168,7 +168,6 @@ impl FromMessage<Geometry> for autd3_driver::geometry::Geometry {
                         .iter()
                         .map(|tr| {
                             autd3_driver::geometry::Transducer::new(
-                                dev.idx as _,
                                 tr.idx as _,
                                 autd3_driver::geometry::Vector3::from_msg(tr.pos.as_ref().unwrap()),
                                 autd3_driver::geometry::UnitQuaternion::from_msg(

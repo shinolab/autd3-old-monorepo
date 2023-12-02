@@ -4,7 +4,7 @@
  * Created Date: 18/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 02/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_driver::{common::EmitIntensity, derive::prelude::*, geometry::Geometry
 #[derive(Gain, Clone, Copy)]
 pub struct Uniform {
     intensity: EmitIntensity,
-    phase: float,
+    phase: Phase,
 }
 
 impl Uniform {
@@ -34,7 +34,7 @@ impl Uniform {
     pub fn new<A: Into<EmitIntensity>>(intensity: A) -> Self {
         Self {
             intensity: intensity.into(),
-            phase: 0.,
+            phase: Phase::new(0),
         }
     }
 
@@ -42,9 +42,9 @@ impl Uniform {
     ///
     /// # Arguments
     ///
-    /// * `phase` - phase (from 0 to 2π)
+    /// * `phase` - phase
     ///
-    pub fn with_phase(self, phase: float) -> Self {
+    pub fn with_phase(self, phase: Phase) -> Self {
         Self { phase, ..self }
     }
 }
@@ -79,15 +79,15 @@ mod tests {
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
-            assert_eq!(drive.phase, 0.0);
+            assert_eq!(drive.phase.value(), 0);
             assert_eq!(drive.intensity.value(), 0x1F);
         });
 
-        let gain = gain.with_phase(0.2);
+        let gain = gain.with_phase(Phase::new(1));
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
-            assert_eq!(drive.phase, 0.2);
+            assert_eq!(drive.phase.value(), 1);
             assert_eq!(drive.intensity.value(), 0x1F);
         });
     }

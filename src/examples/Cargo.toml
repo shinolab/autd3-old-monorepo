@@ -1,13 +1,9 @@
 [package]
 name = "examples"
-version = "17.0.3"
+version = "18.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"
-
-[[bin]]
-name = "group_gain"
-path = "src/group_gain.rs"
 
 [[bin]]
 name = "soem"

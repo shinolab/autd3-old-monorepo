@@ -3,7 +3,7 @@
 // Created Date: 26/11/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,8 @@
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/native_methods.hpp"
 
-namespace autd3::internal {
+namespace autd3::internal::geometry {
+
 class Angle;
 
 class UnitRad {
@@ -54,4 +55,4 @@ class EulerAngles {
   }
 };
 
-}  // namespace autd3::internal
+}  // namespace autd3::internal::geometry

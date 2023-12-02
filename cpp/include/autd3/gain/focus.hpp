@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 02/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class Focus final : public internal::Gain, public IntoCache<Focus>, public IntoT
 
   AUTD3_DEF_PARAM_INTENSITY(Focus, intensity)
 
-  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::geometry::Geometry&) const override {
     auto ptr = internal::native_methods::AUTDGainFocus(_p.x(), _p.y(), _p.z());
     if (_intensity.has_value()) ptr = AUTDGainFocusWithIntensity(ptr, _intensity.value().value());
     return ptr;

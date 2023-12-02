@@ -97,7 +97,7 @@ class GroupGainMapPtr(ctypes.Structure):
 
 
 class Drive(ctypes.Structure):
-    _fields_ = [("phase", ctypes.c_double), ("intensity", ctypes.c_uint8)]
+    _fields_ = [("phase", ctypes.c_uint8), ("intensity", ctypes.c_uint8)]
 
 
 class ResultI32(ctypes.Structure):
@@ -165,20 +165,26 @@ class NativeMethods(metaclass=Singleton):
         except Exception:
             return
 
-        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
-        self.dll.AUTDEmitIntensityNewWithCorrectionAlpha.restype = ctypes.c_uint8
+        self.dll.AUTDEmitIntensityWithCorrectionAlpha.argtypes = [ctypes.c_uint8, ctypes.c_double] 
+        self.dll.AUTDEmitIntensityWithCorrectionAlpha.restype = ctypes.c_uint8
+
+        self.dll.AUTDPhaseFromRad.argtypes = [ctypes.c_double] 
+        self.dll.AUTDPhaseFromRad.restype = ctypes.c_uint8
+
+        self.dll.AUTDPhaseToRad.argtypes = [ctypes.c_uint8] 
+        self.dll.AUTDPhaseToRad.restype = ctypes.c_double
 
         self.dll.AUTDGetErr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
         self.dll.AUTDGetErr.restype = None
 
-        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.argtypes = [ctypes.c_uint32] 
-        self.dll.AUTDSamplingConfigNewWithFrequencyDivision.restype = ResultSamplingConfig
+        self.dll.AUTDSamplingConfigFromFrequencyDivision.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDSamplingConfigFromFrequencyDivision.restype = ResultSamplingConfig
 
-        self.dll.AUTDSamplingConfigNewWithFrequency.argtypes = [ctypes.c_double] 
-        self.dll.AUTDSamplingConfigNewWithFrequency.restype = ResultSamplingConfig
+        self.dll.AUTDSamplingConfigFromFrequency.argtypes = [ctypes.c_double] 
+        self.dll.AUTDSamplingConfigFromFrequency.restype = ResultSamplingConfig
 
-        self.dll.AUTDSamplingConfigNewWithPeriod.argtypes = [ctypes.c_uint64] 
-        self.dll.AUTDSamplingConfigNewWithPeriod.restype = ResultSamplingConfig
+        self.dll.AUTDSamplingConfigFromPeriod.argtypes = [ctypes.c_uint64] 
+        self.dll.AUTDSamplingConfigFromPeriod.restype = ResultSamplingConfig
 
         self.dll.AUTDSamplingConfigFrequencyDivision.argtypes = [SamplingConfiguration]  # type: ignore 
         self.dll.AUTDSamplingConfigFrequencyDivision.restype = ctypes.c_uint32
@@ -189,20 +195,26 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSamplingConfigPeriod.argtypes = [SamplingConfiguration]  # type: ignore 
         self.dll.AUTDSamplingConfigPeriod.restype = ctypes.c_uint64
 
-    def emit_intensity_new_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
-        return self.dll.AUTDEmitIntensityNewWithCorrectionAlpha(value, alpha)
+    def emit_intensity_with_correction_alpha(self, value: int, alpha: float) -> ctypes.c_uint8:
+        return self.dll.AUTDEmitIntensityWithCorrectionAlpha(value, alpha)
+
+    def phase_from_rad(self, value: float) -> ctypes.c_uint8:
+        return self.dll.AUTDPhaseFromRad(value)
+
+    def phase_to_rad(self, value: int) -> ctypes.c_double:
+        return self.dll.AUTDPhaseToRad(value)
 
     def get_err(self, src: ctypes.c_void_p | None, dst: ctypes.Array[ctypes.c_char] | None) -> None:
         return self.dll.AUTDGetErr(src, dst)
 
-    def sampling_config_new_with_frequency_division(self, div: int) -> ResultSamplingConfig:
-        return self.dll.AUTDSamplingConfigNewWithFrequencyDivision(div)
+    def sampling_config_from_frequency_division(self, div: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigFromFrequencyDivision(div)
 
-    def sampling_config_new_with_frequency(self, f: float) -> ResultSamplingConfig:
-        return self.dll.AUTDSamplingConfigNewWithFrequency(f)
+    def sampling_config_from_frequency(self, f: float) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigFromFrequency(f)
 
-    def sampling_config_new_with_period(self, p: int) -> ResultSamplingConfig:
-        return self.dll.AUTDSamplingConfigNewWithPeriod(p)
+    def sampling_config_from_period(self, p: int) -> ResultSamplingConfig:
+        return self.dll.AUTDSamplingConfigFromPeriod(p)
 
     def sampling_config_frequency_division(self, config: SamplingConfiguration) -> ctypes.c_uint32:
         return self.dll.AUTDSamplingConfigFrequencyDivision(config)
