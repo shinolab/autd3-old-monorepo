@@ -6,7 +6,7 @@ on:
       - 'develop'
 
 jobs:
-  check-src:
+  check-src-rust:
     runs-on: ubuntu-latest
     name: check if src files changed
     outputs:
@@ -19,26 +19,39 @@ jobs:
           files: |
             .github/actions/setup-build/action.yml
             .github/workflows/coverage.yml
+            codecov.yml
             src/**/*.rs
             src/*.toml
             src/**/*.toml
             src/**/*.proto
+
+  check-src-py:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            codecov.yml
             python/pyautd3/*.py
             python/pyautd3/**/*.py
             python/tests/*.py
             python/tests/**/*.py
 
-  coverage:
-    needs: check-src
-    if: needs.check-src.outputs.status
+  coverage-rust:
+    needs: check-src-rust
+    if: needs.check-src-rust.outputs.status
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v4
       
       - name: Setup
-        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +62,6 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Rust cache
-        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
@@ -57,6 +69,33 @@ jobs:
       - name: Generate code coverage for rust
         run: |
           python3 build.py cov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: src/lcov.info
+          flags: rust
+          fail_ci_if_error: true
+
+  coverage-py:
+    needs: check-src-py
+    if: needs.check-src-py.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          shaderc: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
 
       - name: Generate code coverage for python
         run: |
@@ -68,5 +107,6 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: src/lcov.info,python/coverage.xml
+          files: python/coverage.xml
+          flags: python
           fail_ci_if_error: true
