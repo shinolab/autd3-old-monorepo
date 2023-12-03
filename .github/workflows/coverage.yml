@@ -23,6 +23,10 @@ jobs:
             src/*.toml
             src/**/*.toml
             src/**/*.proto
+            python/pyautd3/*.py
+            python/pyautd3/**/*.py
+            python/tests/*.py
+            python/tests/**/*.py
 
   coverage:
     needs: check-src
@@ -50,12 +54,19 @@ jobs:
         with:
           workspaces: './src -> target'
 
-      - name: Generate code coverage
+      - name: Generate code coverage for rust
         run: |
-          python build.py cov
+          python3 build.py cov
+
+      - name: Generate code coverage for python
+        run: |
+          python3 -m pip install -U pytest pytest-asyncio pytest-cov
+          python3 -m pip install -U numpy
+          python3 build.py python cov --cov_report=xml
+      
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: src/lcov.info
+          files: src/lcov.info,python/coverage.xml
           fail_ci_if_error: true
