@@ -903,9 +903,7 @@ def build_wheel(config: Config):
             subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
 
 
-def py_build(args):
-    config = Config(args)
-
+def py_copy_dll(config: Config):
     with working_dir("capi"):
         config.setup_linker()
         for command in config.cargo_build_capi_command():
@@ -915,6 +913,12 @@ def py_build(args):
     copy_dll(config, "python/pyautd3/bin")
     shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
     shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
+
+
+def py_build(args):
+    config = Config(args)
+
+    py_copy_dll(config)
 
     build_wheel(config)
 
@@ -961,15 +965,7 @@ def py_build(args):
 def py_test(args):
     config = Config(args)
 
-    with working_dir("capi"):
-        config.setup_linker()
-        for command in config.cargo_build_capi_command():
-            subprocess.run(command).check_returncode()
-
-    os.makedirs("python/pyautd3/bin", exist_ok=True)
-    copy_dll(config, "python/pyautd3/bin")
-    shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
-    shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
+    py_copy_dll(config)
 
     with working_dir("python"):
         command = []
@@ -989,6 +985,25 @@ def py_test(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        subprocess.run(command).check_returncode()
+
+
+def py_cov(args):
+    config = Config(args)
+
+    py_copy_dll(config)
+
+    with working_dir("python"):
+        command = []
+        if config.is_windows():
+            command.append("python")
+        else:
+            command.append("python3")
+        command.append("-m")
+        command.append("pytest")
+        command.append("--cov=pyautd3")
+        command.append("--cov-branch")
+        command.append(f"--cov-report={args.cov_report}")
         subprocess.run(command).check_returncode()
 
 
@@ -1735,6 +1750,16 @@ if __name__ == "__main__":
             "--release", action="store_true", help="release build"
         )
         parser_py_test.set_defaults(handler=py_test)
+
+        # python cov
+        parser_py_cov = subparsers_py.add_parser("cov", help="see `python cov -h`")
+        parser_py_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_py_cov.add_argument(
+            "--cov_report", help="coverage report type [term|xml|html]", default="term"
+        )
+        parser_py_cov.set_defaults(handler=py_cov)
 
         # python clear
         parser_py_clear = subparsers_py.add_parser(
