@@ -3,6 +3,10 @@ flags:
     paths:
       - src/
     carryforward: false
+  cs:
+    paths:
+      - dotnet/cs/
+    carryforward: false
   python:
     paths:
       - python/

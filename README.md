@@ -13,8 +13,9 @@ AUTD3: Airborne Ultrasound Tactile Display 3
 
 <div align="center">
 
-[![codecov-rust](https://img.shields.io/codecov/c/gh/shinolab/autd3?flag=rust&logo=codecov&label=coverage-rust)](https://codecov.io/gh/shinolab/autd3?flags=rust)
-[![codecov-python](https://img.shields.io/codecov/c/gh/shinolab/autd3?flag=python&logo=codecov&label=coverage-python)](https://codecov.io/gh/shinolab/autd3?flags=python)
+[![codecov-rust](https://img.shields.io/codecov/c/gh/shinolab/autd3?flag=rust&logo=codecov&label=coverage-rust)](https://codecov.io/gh/shinolab/autd3)
+[![codecov-cs](https://img.shields.io/codecov/c/gh/shinolab/autd3?flag=cs&logo=codecov&label=coverage-cs)](https://codecov.io/gh/shinolab/autd3)
+[![codecov-python](https://img.shields.io/codecov/c/gh/shinolab/autd3?flag=python&logo=codecov&label=coverage-python)](https://codecov.io/gh/shinolab/autd3)
 
 </div>
 

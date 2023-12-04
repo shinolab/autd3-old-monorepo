@@ -628,6 +628,32 @@ def cs_test(args):
         subprocess.run(command).check_returncode()
 
 
+def cs_cov(args):
+    config = Config(args)
+
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    copy_dll(config, "dotnet/cs/tests")
+
+    shutil.copyfile("LICENSE", "dotnet/cs/src/LICENSE.txt")
+
+    with working_dir("dotnet/cs/src"):
+        command = ["dotnet", "build"]
+        command.append("-c:Release")
+        subprocess.run(command).check_returncode()
+
+    with working_dir("dotnet/cs/tests"):
+        command = [
+            "dotnet",
+            "test",
+            '--collect:"XPlat Code Coverage"',
+        ]
+        subprocess.run(command).check_returncode()
+
+
 def cs_run(args):
     args.no_examples = False
     cs_build(args)
@@ -1660,6 +1686,13 @@ if __name__ == "__main__":
             help="build universal binary (for macOS)",
         )
         parser_cs_test.set_defaults(handler=cs_test)
+
+        # cs test
+        parser_cs_cov = subparsers_cs.add_parser("cov", help="see `cs cov -h`")
+        parser_cs_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_cs_cov.set_defaults(handler=cs_cov)
 
         # cs run
         parser_cs_run = subparsers_cs.add_parser("run", help="see `cs run -h`")

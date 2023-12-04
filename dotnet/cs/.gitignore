@@ -432,3 +432,5 @@ $RECYCLE.BIN/
 
 !native/
 nuget.ps1
+
+coverage.cobertura.xml
