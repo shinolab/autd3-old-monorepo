@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
@@ -29,7 +30,7 @@ class Bessel(IGain):
     _theta: float
     _intensity: EmitIntensity | None
 
-    def __init__(self: "Bessel", pos: np.ndarray, direction: np.ndarray, theta_z: float) -> None:
+    def __init__(self: "Bessel", pos: ArrayLike, direction: ArrayLike, theta_z: float) -> None:
         """Constructor.
 
         Arguments:
@@ -39,8 +40,8 @@ class Bessel(IGain):
             theta_z: Angle between the conical wavefront of the beam and the plane normal to `dir`
         """
         super().__init__()
-        self._p = pos
-        self._d = direction
+        self._p = np.array(pos)
+        self._d = np.array(direction)
         self._theta = theta_z
         self._intensity = None
 

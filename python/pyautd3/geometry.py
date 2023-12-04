@@ -17,6 +17,7 @@ from ctypes import c_double
 from functools import reduce
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .native_methods.autd3capi import NativeMethods as Base
 from .native_methods.autd3capi_def import (
@@ -121,24 +122,24 @@ class AUTD3:
     _pos: np.ndarray
     _rot: np.ndarray | None
 
-    def __init__(self: "AUTD3", pos: np.ndarray) -> None:
+    def __init__(self: "AUTD3", pos: ArrayLike) -> None:
         """Constructor.
 
         Arguments:
         ---------
             pos: Position of the device
         """
-        self._pos = pos
+        self._pos = np.array(pos)
         self._rot = None
 
-    def with_rotation(self: "AUTD3", rot: np.ndarray) -> "AUTD3":
+    def with_rotation(self: "AUTD3", rot: ArrayLike) -> "AUTD3":
         """Set device rotation.
 
         Arguments:
         ---------
             rot: Rotation of the device in quaternion
         """
-        self._rot = rot
+        self._rot = np.array(rot)
         return self
 
     @staticmethod
@@ -336,25 +337,27 @@ class Device:
 
     reads_fpga_info = property(None, _reads_fpga_info)
 
-    def translate(self: "Device", t: np.ndarray) -> None:
+    def translate(self: "Device", t: ArrayLike) -> None:
         """Translate all transducers in the device.
 
         Arguments:
         ---------
             t: Translation vector
         """
+        t = np.array(t)
         Base().device_translate(self._ptr, t[0], t[1], t[2])
 
-    def rotate(self: "Device", r: np.ndarray) -> None:
+    def rotate(self: "Device", r: ArrayLike) -> None:
         """Rotate all transducers in the device.
 
         Arguments:
         ---------
             r: Rotation quaternion
         """
+        r = np.array(r)
         Base().device_rotate(self._ptr, r[0], r[1], r[2], r[3])
 
-    def affine(self: "Device", t: np.ndarray, r: np.ndarray) -> None:
+    def affine(self: "Device", t: ArrayLike, r: ArrayLike) -> None:
         """Affine transform.
 
         Arguments:
@@ -362,6 +365,8 @@ class Device:
             t: Translation vector
             r: Rotation quaternion
         """
+        t = np.array(t)
+        r = np.array(r)
         Base().device_affine(self._ptr, t[0], t[1], t[2], r[0], r[1], r[2], r[3])
 
     def __getitem__(self: "Device", key: int) -> Transducer:
@@ -369,9 +374,6 @@ class Device:
 
     def __iter__(self: "Device") -> Iterator[Transducer]:
         return iter(self._transducers)
-
-    def _device_ptr(self: "Device") -> DevicePtr:
-        return self._ptr
 
 
 class Geometry:

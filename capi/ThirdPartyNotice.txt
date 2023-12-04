@@ -46,31 +46,31 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 18.0.0 (MIT)
+autd3 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 18.0.0 (MIT)
+autd3-derive 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 18.0.0 (MIT)
+autd3-driver 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 18.0.0 (MIT)
+autd3-firmware-emulator 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 18.0.0 (MIT)
+autd3-gain-holo 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 18.0.0 (MIT)
+autd3-link-simulator 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 18.0.0
+autd3-link-soem 18.0.1
 https://github.com/shinolab/autd3
 
 ---
@@ -136,7 +136,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 18.0.0
+autd3-link-twincat 18.0.1
 https://github.com/shinolab/autd3
 
 ---
@@ -188,37 +188,37 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 18.0.0 (MIT)
+autd3-modulation-audio-file 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 18.0.0 (MIT)
+autd3-protobuf 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 18.0.0 (MIT)
+autd3capi 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 18.0.0 (MIT)
+autd3capi-def 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi-gain-holo 18.0.0 (MIT)
+autd3capi-gain-holo 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 18.0.0 (MIT)
+autd3capi-link-simulator 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 18.0.0 (MIT)
+autd3capi-link-soem 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 18.0.0 (MIT)
+autd3capi-link-twincat 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 18.0.0 (MIT)
+autd3capi-modulation-audio-file 18.0.1 (MIT)
 ---------------------------------------------------------
 
-autd3capi-wrapper-generator 18.0.0 (MIT)
+autd3capi-wrapper-generator 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -310,7 +310,7 @@ csbindgen 1.8.3 (MIT)
 https://github.com/Cysharp/csbindgen/
 ---------------------------------------------------------
 
-deranged 0.3.9 (Apache-2.0 OR MIT)
+deranged 0.3.10 (Apache-2.0 OR MIT)
 https://github.com/jhpratt/deranged
 ---------------------------------------------------------
 
@@ -470,7 +470,7 @@ libloading 0.8.1 (ISC)
 https://github.com/nagisa/rust_libloading/
 ---------------------------------------------------------
 
-linux-raw-sys 0.4.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+linux-raw-sys 0.4.12 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
@@ -662,7 +662,7 @@ rustc-demangle 0.1.23 (Apache-2.0 OR MIT)
 https://github.com/alexcrichton/rustc-demangle
 ---------------------------------------------------------
 
-rustix 0.38.25 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+rustix 0.38.26 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 

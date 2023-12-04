@@ -24,9 +24,11 @@ async def transtest(autd: Controller) -> None:
     def f(dev: Device, tr: Transducer) -> Drive | None:
         match (dev.idx, tr.idx):
             case (0, 0):
-                Drive(Phase(0), EmitIntensity.maximum())
+                return Drive(Phase(0), EmitIntensity.maximum())
             case (0, 248):
-                Drive(Phase(0), EmitIntensity.maximum())
+                return Drive(Phase(0), EmitIntensity.maximum())
+            case _:
+                return None
 
     g = TransducerTest(f)
     m = Sine(150)

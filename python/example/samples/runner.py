@@ -42,9 +42,9 @@ async def run(autd: Controller) -> None:
         print("\n".join([f"[{i}]: {name}" for i, (_, name) in enumerate(samples)]))
         print("[Other]: finish")
 
-        idx = input("choose number: ")
-        idx = int(idx) if idx.isdigit() else None
-        if idx is None or idx >= len(samples):
+        input_str = input("choose number: ")
+        idx = int(input_str) if input_str.isdigit() else len(samples)
+        if idx >= len(samples):
             break
 
         (fn, _) = samples[idx]

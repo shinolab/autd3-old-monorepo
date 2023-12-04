@@ -19,6 +19,7 @@ from ctypes import c_uint8
 from datetime import timedelta
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.gain.gain import IGain
@@ -161,7 +162,7 @@ class FocusSTM(STM):
             sampling_config=config,
         )
 
-    def add_focus(self: "FocusSTM", point: np.ndarray, intensity: EmitIntensity | None = None) -> "FocusSTM":
+    def add_focus(self: "FocusSTM", point: ArrayLike, intensity: EmitIntensity | None = None) -> "FocusSTM":
         """Add focus.
 
         Arguments:
@@ -169,6 +170,7 @@ class FocusSTM(STM):
             point: Focal point
             intensity: Emission intensity
         """
+        point = np.array(point)
         self._points.append(point[0])
         self._points.append(point[1])
         self._points.append(point[2])

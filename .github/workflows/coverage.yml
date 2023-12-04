@@ -6,7 +6,7 @@ on:
       - 'develop'
 
 jobs:
-  check-src:
+  check-src-rust:
     runs-on: ubuntu-latest
     name: check if src files changed
     outputs:
@@ -19,22 +19,77 @@ jobs:
           files: |
             .github/actions/setup-build/action.yml
             .github/workflows/coverage.yml
+            codecov.yml
             src/**/*.rs
             src/*.toml
             src/**/*.toml
             src/**/*.proto
 
-  coverage:
-    needs: check-src
-    if: needs.check-src.outputs.status
+  check-src-cpp:
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            codecov.yml
+            cpp/CMakeLists.txt
+            cpp/**/CMakeLists.txt
+            cpp/**/*.hpp
+            cpp/**/*.cpp
+
+  check-src-cs:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            codecov.yml
+            dotnet/cs/src/AUTD3Sharp.csproj
+            dotnet/cs/src/AUTD3Sharp.nuspec
+            dotnet/cs/*.cs
+            dotnet/cs/**/*.cs
+
+  check-src-py:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            codecov.yml
+            python/pyautd3/*.py
+            python/pyautd3/**/*.py
+            python/tests/*.py
+            python/tests/**/*.py
+
+  coverage-rust:
+    needs: check-src-rust
+    if: needs.check-src-rust.outputs.status
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       
       - name: Setup
-        if: needs.check-src.outputs.status
         uses: ./.github/actions/setup-build
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,17 +100,128 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Rust cache
-        if: needs.check-src.outputs.status
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src -> target'
 
-      - name: Generate code coverage
+      - name: Generate code coverage for rust
         run: |
-          python build.py cov
+          python3 build.py cov
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: src/lcov.info
+          flags: rust
+          fail_ci_if_error: true
+
+  coverage-cpp:
+    needs: check-src-cpp
+    if: needs.check-src-cpp.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          shaderc: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Install lcov
+        run: |
+          sudo apt update && sudo apt -y install lcov
+
+      - name: Generate code coverage for c++
+        run: |
+          sudo rm /usr/bin/gcov
+          sudo ln -s /usr/bin/gcov-12 /usr/bin/gcov
+          python3 build.py cpp cov --release --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: cpp/tests/build/CMakeFiles/test_autd3.dir/coverage.info
+          flags: cpp
+          fail_ci_if_error: true
+
+  coverage-cs:
+    needs: check-src-cs
+    if: needs.check-src-cs.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          shaderc: false
+      - name: Setup .NET Core
+        if: needs.check.outputs.status
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Generate code coverage for csharp
+        run: |
+          python build.py cs cov --release
+
+      - name: Copy coverage to cs directory
+        run: |
+          cp $(find dotnet/cs/tests -name "coverage.cobertura.xml") dotnet/cs/
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: dotnet/cs/coverage.cobertura.xml
+          flags: cs
+          fail_ci_if_error: true
+
+  coverage-py:
+    needs: check-src-py
+    if: needs.check-src-py.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          shaderc: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Generate code coverage for python
+        run: |
+          python3 -m pip install -U pytest pytest-asyncio pytest-cov
+          python3 -m pip install -U numpy
+          python3 build.py python cov --cov_report=xml
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: python/coverage.xml
+          flags: python
           fail_ci_if_error: true

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/11/2023
+ * Last Modified: 04/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -845,7 +845,19 @@ impl ImGuiRenderer {
                     ui.checkbox("Auto play", &mut settings.auto_play);
 
                     ui.text(format!("System time: {} [ns]", self.real_time));
-                    if !settings.auto_play {
+                    if settings.auto_play {
+                        unsafe {
+                            igDragFloat(
+                                CString::new("Time scale").unwrap().as_c_str().as_ptr(),
+                                &mut settings.time_scale as _,
+                                0.1,
+                                0.,
+                                std::f32::MAX,
+                                std::ptr::null(),
+                                0,
+                            );
+                        }
+                    } else {
                         ui.same_line();
                         if ui.button("+") {
                             self.real_time =
@@ -898,7 +910,7 @@ impl ImGuiRenderer {
 
         if settings.auto_play {
             update_flag.set(UpdateFlag::UPDATE_SOURCE_DRIVE, true);
-            self.real_time = get_current_ec_time();
+            self.real_time = (get_current_ec_time() as f64 * settings.time_scale as f64) as _;
         }
 
         self.font_size = font_size;

@@ -107,7 +107,7 @@ class FirmwareInfo:
         Base().firmware_latest(sb)
         return sb.value.decode("utf-8")
 
-    def __repr__(self: "FirmwareInfo") -> str:
+    def __str__(self: "FirmwareInfo") -> str:
         return self._info
 
 

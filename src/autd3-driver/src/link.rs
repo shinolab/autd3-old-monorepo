@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2023
+ * Last Modified: 04/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -208,7 +208,6 @@ mod tests {
 
     #[async_trait]
     impl Link for MockLink {
-        #[cfg_attr(coverage_nightly, coverage(off))]
         async fn close(&mut self) -> Result<(), AUTDInternalError> {
             self.is_open = false;
             Ok(())
@@ -339,6 +338,144 @@ mod tests {
         assert_eq!(
             link.wait_msg_processed(&tx, &mut rx, Duration::from_secs(10))
                 .await,
+            Err(AUTDInternalError::LinkError("too many".to_owned()))
+        );
+    }
+
+    struct MockLinkSync {
+        pub is_open: bool,
+        pub timeout: Duration,
+        pub send_cnt: usize,
+        pub recv_cnt: usize,
+        pub down: bool,
+    }
+
+    impl LinkSync for MockLinkSync {
+        fn close(&mut self) -> Result<(), AUTDInternalError> {
+            self.is_open = false;
+            Ok(())
+        }
+
+        fn send(&mut self, _: &TxDatagram) -> Result<bool, AUTDInternalError> {
+            if !self.is_open {
+                return Err(AUTDInternalError::LinkClosed);
+            }
+
+            self.send_cnt += 1;
+            Ok(!self.down)
+        }
+
+        fn receive(&mut self, rx: &mut [RxMessage]) -> Result<bool, AUTDInternalError> {
+            if !self.is_open {
+                return Err(AUTDInternalError::LinkClosed);
+            }
+
+            if self.recv_cnt > 10 {
+                return Err(AUTDInternalError::LinkError("too many".to_owned()));
+            }
+
+            self.recv_cnt += 1;
+            rx.iter_mut().for_each(|r| r.ack = self.recv_cnt as u8);
+
+            Ok(!self.down)
+        }
+
+        #[cfg_attr(coverage_nightly, coverage(off))]
+        fn is_open(&self) -> bool {
+            self.is_open
+        }
+
+        fn timeout(&self) -> Duration {
+            self.timeout
+        }
+    }
+
+    #[test]
+    fn close_sync() {
+        let mut link = MockLinkSync {
+            is_open: true,
+            timeout: Duration::from_millis(0),
+            send_cnt: 0,
+            recv_cnt: 0,
+            down: false,
+        };
+
+        assert!(link.is_open());
+
+        link.close().unwrap();
+
+        assert!(!link.is_open());
+    }
+
+    #[test]
+    fn send_receive_sync() {
+        let mut link = MockLinkSync {
+            is_open: true,
+            timeout: Duration::from_millis(0),
+            send_cnt: 0,
+            recv_cnt: 0,
+            down: false,
+        };
+
+        let tx = TxDatagram::new(0);
+        let mut rx = Vec::new();
+        assert_eq!(link.send_receive(&tx, &mut rx, None), Ok(true));
+
+        link.is_open = false;
+        assert_eq!(
+            link.send_receive(&tx, &mut rx, None),
+            Err(AUTDInternalError::LinkClosed)
+        );
+
+        link.is_open = true;
+        link.down = true;
+        assert_eq!(link.send_receive(&tx, &mut rx, None), Ok(false));
+
+        link.down = false;
+        assert_eq!(
+            link.send_receive(&tx, &mut rx, Some(Duration::from_millis(1))),
+            Ok(true)
+        );
+    }
+
+    #[test]
+    fn wait_msg_processed_sync() {
+        let mut link = MockLinkSync {
+            is_open: true,
+            timeout: Duration::from_millis(0),
+            send_cnt: 0,
+            recv_cnt: 0,
+            down: false,
+        };
+
+        let mut tx = TxDatagram::new(1);
+        tx.header_mut(0).msg_id = 2;
+        let mut rx = vec![RxMessage { ack: 0, data: 0 }];
+        assert_eq!(
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            Ok(true)
+        );
+
+        link.recv_cnt = 0;
+        link.is_open = false;
+        assert_eq!(
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            Err(AUTDInternalError::LinkClosed)
+        );
+
+        link.recv_cnt = 0;
+        link.is_open = true;
+        link.down = true;
+        assert_eq!(
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_millis(10)),
+            Ok(false)
+        );
+
+        link.down = false;
+        link.recv_cnt = 0;
+        tx.header_mut(0).msg_id = 20;
+        assert_eq!(
+            link.wait_msg_processed(&tx, &mut rx, Duration::from_secs(10)),
             Err(AUTDInternalError::LinkError("too many".to_owned()))
         );
     }
