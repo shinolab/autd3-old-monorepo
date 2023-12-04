@@ -25,6 +25,25 @@ jobs:
             src/**/*.toml
             src/**/*.proto
 
+  check-src-cpp:
+    runs-on: ubuntu-latest
+    name: check if src files changed
+    outputs:
+      status: ${{ steps.changed-files.outputs.modified_files }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tj-actions/changed-files@v40
+        id: changed-files
+        with:
+          files: |
+            .github/actions/setup-build/action.yml
+            .github/workflows/coverage.yml
+            codecov.yml
+            cpp/CMakeLists.txt
+            cpp/**/CMakeLists.txt
+            cpp/**/*.hpp
+            cpp/**/*.cpp
+
   check-src-cs:
     runs-on: ubuntu-latest
     name: check if src files changed
@@ -97,6 +116,43 @@ jobs:
           flags: rust
           fail_ci_if_error: true
 
+  coverage-cpp:
+    needs: check-src-cpp
+    if: needs.check-src-cpp.outputs.status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ubuntu-latest
+          shaderc: false
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './capi -> target'
+
+      - name: Install lcov
+        run: |
+          sudo apt update && sudo apt -y install lcov
+
+      - name: Generate code coverage for c++
+        run: |
+          sudo rm /usr/bin/gcov
+          sudo ln -s /usr/bin/gcov-12 /usr/bin/gcov
+          python3 build.py cpp cov --release --cmake-extra="-DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: cpp/tests/build/CMakeFiles/test_autd3.dir/coverage.info
+          flags: cpp
+          fail_ci_if_error: true
+
   coverage-cs:
     needs: check-src-cs
     if: needs.check-src-cs.outputs.status
@@ -121,7 +177,7 @@ jobs:
         with:
           workspaces: './capi -> target'
 
-      - name: Generate code coverage for python
+      - name: Generate code coverage for csharp
         run: |
           python build.py cs cov --release
 

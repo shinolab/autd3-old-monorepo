@@ -3,6 +3,10 @@ flags:
     paths:
       - src/
     carryforward: false
+  cpp:
+    paths:
+      - cpp/
+    carryforward: false
   cs:
     paths:
       - dotnet/cs/
