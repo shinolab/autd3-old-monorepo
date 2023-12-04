@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-gain-holo"
-version = "18.0.0"
+version = "18.0.1"
 edition = "2021"
 license = "MIT"
 
