@@ -300,6 +300,18 @@ class Config:
                 return True
         return False
 
+    def is_pcap_available(self):
+        if not self.is_windows():
+            return True
+        wpcap_exists = os.path.isfile(
+            "C:\\Windows\\System32\\wpcap.dll"
+        ) and os.path.isfile("C:\\Windows\\System32\\Npcap\\wpcap.dll")
+        packet_exists = os.path.isfile(
+            "C:\\Windows\\System32\\Packet.dll"
+        ) and os.path.isfile("C:\\Windows\\System32\\Npcap\\Packet.dll")
+
+        return wpcap_exists and packet_exists
+
     def setup_linker(self):
         if not self.is_linux() or self.target is None:
             return
@@ -1065,6 +1077,8 @@ def py_test(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        if config.is_pcap_available():
+            command.append("--soem")
         subprocess.run(command).check_returncode()
 
 
@@ -1081,6 +1095,8 @@ def py_cov(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        if config.is_pcap_available():
+            command.append("--soem")
         command.append("--cov-config=.coveragerc")
         command.append("--cov=pyautd3")
         command.append("--cov-branch")
