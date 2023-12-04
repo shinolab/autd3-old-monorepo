@@ -563,8 +563,16 @@ def cpp_cov(args):
                 ]
                 subprocess.run(command).check_returncode()
                 if args.html:
-                    command = ["genhtml", "-o", "html", "--num-spaces", "4", "coverage.info"]
+                    command = [
+                        "genhtml",
+                        "-o",
+                        "html",
+                        "--num-spaces",
+                        "4",
+                        "coverage.info",
+                    ]
                     subprocess.run(command).check_returncode()
+
 
 def cpp_run(args):
     args.no_examples = False
@@ -1073,6 +1081,7 @@ def py_cov(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        command.append("--cov-config=.coveragerc")
         command.append("--cov=pyautd3")
         command.append("--cov-branch")
         command.append(f"--cov-report={args.cov_report}")

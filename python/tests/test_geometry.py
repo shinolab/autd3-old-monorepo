@@ -17,7 +17,7 @@ import pytest
 from numpy.typing import ArrayLike
 
 from pyautd3 import AUTD3, Controller, UpdateFlags
-from pyautd3.geometry import EulerAngles, deg, rad
+from pyautd3.geometry import Angle, EulerAngles, deg, rad
 from pyautd3.link.audit import Audit
 
 from .test_autd import create_controller
@@ -26,6 +26,20 @@ from .test_autd import create_controller
 def test_angle():
     assert (np.pi / 2 * rad).radian == np.pi / 2
     assert (90 * deg).radian == np.pi / 2
+
+
+def test_angle_ctr():
+    with pytest.raises(NotImplementedError):
+        _ = Angle()
+
+    with pytest.raises(NotImplementedError):
+        _ = Angle._UnitDegree()
+
+    with pytest.raises(NotImplementedError):
+        _ = Angle._UnitRad()
+
+    with pytest.raises(NotImplementedError):
+        _ = EulerAngles()
 
 
 @pytest.mark.asyncio()
@@ -108,6 +122,14 @@ async def test_device_set_sound_speed_from_temp():
         dev.set_sound_speed_from_temp(15)
         assert dev.sound_speed == 340.2952640537549e3
 
+    autd.geometry.set_sound_speed(350e3)
+    for dev in autd.geometry:
+        assert dev.sound_speed == 350e3
+
+    autd.geometry.set_sound_speed_from_temp(15)
+    for dev in autd.geometry:
+        assert dev.sound_speed == 340.2952640537549e3
+
 
 @pytest.mark.asyncio()
 async def test_device_attenuation():
@@ -130,6 +152,7 @@ async def test_device_enable():
 @pytest.mark.asyncio()
 async def test_device_num_transducers():
     autd = await create_controller()
+    assert autd.geometry.num_transducers == 249 * autd.geometry.num_devices
     for dev in autd.geometry:
         assert dev.num_transducers == 249
 

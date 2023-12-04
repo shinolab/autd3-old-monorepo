@@ -1,0 +1,21 @@
+[report]
+exclude_lines =
+    @abstractmethod
+    @abc.abstractmethod
+
+    def __repr__
+    if TYPE_CHECKING:
+
+    pragma: no cover
+
+    def with_cache
+    def with_transform
+    def with_radiation_pressure
+
+    def _resolve_link
+    def update_geometry
+    async def update_geometry_async
+
+[run]
+omit =
+    */native_methods/*
