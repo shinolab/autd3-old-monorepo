@@ -1,6 +1,6 @@
 [package]
 name = "autd3capi-def"
-version = "18.0.0"
+version = "18.0.1"
 edition = "2021"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 
@@ -14,14 +14,14 @@ keywords = ["autd"]
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-autd3 = { path = "../../src/autd3", default-features = false, features = ["sync"], version = "18.0.0" }
-autd3-driver = { path = "../../src/autd3-driver", features = ["sync"], version = "18.0.0" }
-autd3-gain-holo = { path = "../../src/autd3-gain-holo", version = "18.0.0" }
-autd3-derive = { path = "../../src/autd3-derive", version = "18.0.0" }
+autd3 = { path = "../../src/autd3", default-features = false, features = ["sync"], version = "18.0.1" }
+autd3-driver = { path = "../../src/autd3-driver", features = ["sync"], version = "18.0.1" }
+autd3-gain-holo = { path = "../../src/autd3-gain-holo", version = "18.0.1" }
+autd3-derive = { path = "../../src/autd3-derive", version = "18.0.1" }
 libc = "0.2.144"
 
 [build-dependencies]
-autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator", version = "18.0.0" }
+autd3capi-wrapper-generator = { path = "../autd3capi-wrapper-generator", version = "18.0.1" }
 
 [features]
 single_float = ["autd3/single_float", "autd3-driver/single_float", "autd3-gain-holo/single_float"]
