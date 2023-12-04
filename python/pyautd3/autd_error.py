@@ -36,13 +36,6 @@ class UnknownGroupKeyError(AUTDError):
         super().__init__("Unknown group key")
 
 
-class InvalidPlotConfigError(AUTDError):
-    """Exception class for invalid plot config."""
-
-    def __init__(self: "InvalidPlotConfigError") -> None:
-        super().__init__("Invalid plot config type")
-
-
 class KeyAlreadyExistsError(AUTDError):
     """Exception class for key already exists."""
 

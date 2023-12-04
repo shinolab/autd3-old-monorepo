@@ -67,7 +67,7 @@ class Simulator(Link):
             return Simulator(Base().link_get(ptr))
 
     def __init__(self: "Simulator", ptr: LinkPtr) -> None:
-        super().__init__(ptr)
+        super().__init__(ptr)  # pragma: no cover
 
     @staticmethod
     def builder(port: int) -> _Builder:

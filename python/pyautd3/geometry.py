@@ -375,9 +375,6 @@ class Device:
     def __iter__(self: "Device") -> Iterator[Transducer]:
         return iter(self._transducers)
 
-    def _device_ptr(self: "Device") -> DevicePtr:
-        return self._ptr
-
 
 class Geometry:
     """Geometry."""

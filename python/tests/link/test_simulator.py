@@ -17,15 +17,14 @@ from datetime import timedelta
 import pytest
 
 from pyautd3 import AUTD3, Controller
+from pyautd3.autd_error import AUTDError
 from pyautd3.link.simulator import Simulator
 
 
-@pytest.mark.simulator()
 def test_simulator():
-    autd = (
-        Controller.builder()
-        .add_device(AUTD3([0.0, 0.0, 0.0]))
-        .open_with_async(Simulator.builder(8080).with_server_ip("127.0.0.1").with_timeout(timedelta(milliseconds=200)))
-    )
-
-    autd.close_async()
+    with pytest.raises(AUTDError):
+        _ = (
+            Controller.builder()
+            .add_device(AUTD3([0.0, 0.0, 0.0]))
+            .open_with(Simulator.builder(8080).with_server_ip("127.0.0.1").with_timeout(timedelta(milliseconds=200)))
+        )
