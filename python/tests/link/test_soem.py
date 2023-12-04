@@ -23,6 +23,7 @@ from pyautd3.autd_error import AUTDError
 from pyautd3.link.soem import SOEM, OnErrFunc, RemoteSOEM, SyncMode
 
 
+@pytest.mark.soem()
 def test_soem_adapers():
     adapters = SOEM.enumerate_adapters()
     for adapter in adapters:
@@ -38,6 +39,7 @@ def on_err_f(msg: ctypes.c_char_p):
     print(msg.value.decode("utf-8"), end="")
 
 
+@pytest.mark.soem()
 def test_soem():
     on_lost = OnErrFunc(on_lost_f)
     on_err = OnErrFunc(on_err_f)
@@ -61,6 +63,7 @@ def test_soem():
         )
 
 
+@pytest.mark.soem()
 def test_remote_soem():
     with pytest.raises(AUTDError):
         _ = (
