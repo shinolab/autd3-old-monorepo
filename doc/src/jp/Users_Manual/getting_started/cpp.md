@@ -54,3 +54,8 @@ cmake --build . --config Release
 ```shell,filename=Linux/macOS
 sudo ./main
 ```
+
+# Troubleshooting
+
+- anaconda (miniconda) がactivateされている場合に, ビルドエラーになる可能性がある.
+  - この場合, `build`ディレクトリを削除し, `conda deactivate`を実行したのち再び`cmake`を実行する.
