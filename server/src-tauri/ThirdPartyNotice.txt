@@ -70,7 +70,7 @@ async-lock 2.8.0 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/async-lock
 ---------------------------------------------------------
 
-async-lock 3.1.2 (Apache-2.0 OR MIT)
+async-lock 3.2.0 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/async-lock
 ---------------------------------------------------------
 
@@ -106,11 +106,11 @@ atomic-waker 1.1.2 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/atomic-waker
 ---------------------------------------------------------
 
-autd3-driver 18.0.0 (MIT)
+autd3-driver 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-server 18.0.0 (MIT)
+autd3-server 18.0.1 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -238,7 +238,7 @@ combine 4.6.6 (MIT)
 https://github.com/Marwes/combine
 ---------------------------------------------------------
 
-concurrent-queue 2.3.0 (Apache-2.0 OR MIT)
+concurrent-queue 2.4.0 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/concurrent-queue
 ---------------------------------------------------------
 
@@ -246,11 +246,11 @@ convert_case 0.4.0 (MIT)
 https://github.com/rutrum/convert-case
 ---------------------------------------------------------
 
-core-foundation 0.9.3 (Apache-2.0 OR MIT)
+core-foundation 0.9.4 (Apache-2.0 OR MIT)
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-core-foundation-sys 0.8.4 (Apache-2.0 OR MIT)
+core-foundation-sys 0.8.6 (Apache-2.0 OR MIT)
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
@@ -258,7 +258,7 @@ core-graphics 0.22.3 (Apache-2.0 OR MIT)
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
-core-graphics-types 0.1.2 (Apache-2.0 OR MIT)
+core-graphics-types 0.1.3 (Apache-2.0 OR MIT)
 https://github.com/servo/core-foundation-rs
 ---------------------------------------------------------
 
@@ -298,7 +298,7 @@ cssparser-macros 0.6.1 (MPL-2.0)
 https://github.com/servo/rust-cssparser
 ---------------------------------------------------------
 
-ctor 0.1.26 (Apache-2.0 OR MIT)
+ctor 0.2.5 (Apache-2.0 OR MIT)
 https://github.com/mmastrac/rust-ctor
 ---------------------------------------------------------
 
@@ -314,7 +314,7 @@ darling_macro 0.20.3 (MIT)
 https://github.com/TedDriggs/darling
 ---------------------------------------------------------
 
-deranged 0.3.9 (Apache-2.0 OR MIT)
+deranged 0.3.10 (Apache-2.0 OR MIT)
 https://github.com/jhpratt/deranged
 ---------------------------------------------------------
 
@@ -466,7 +466,7 @@ futures-lite 1.13.0 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/futures-lite
 ---------------------------------------------------------
 
-futures-lite 2.0.1 (Apache-2.0 OR MIT)
+futures-lite 2.1.0 (Apache-2.0 OR MIT)
 https://github.com/smol-rs/futures-lite
 ---------------------------------------------------------
 
@@ -654,7 +654,7 @@ indexmap 2.1.0 (Apache-2.0 OR MIT)
 https://github.com/bluss/indexmap
 ---------------------------------------------------------
 
-infer 0.12.0 (MIT)
+infer 0.13.0 (MIT)
 https://github.com/bojand/infer
 ---------------------------------------------------------
 
@@ -730,7 +730,7 @@ linux-raw-sys 0.3.8 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
-linux-raw-sys 0.4.11 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+linux-raw-sys 0.4.12 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/sunfishcode/linux-raw-sys
 ---------------------------------------------------------
 
@@ -938,6 +938,10 @@ phf 0.10.1 (MIT)
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
+phf 0.11.2 (MIT)
+https://github.com/rust-phf/rust-phf
+---------------------------------------------------------
+
 phf_codegen 0.8.0 (MIT)
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
@@ -954,12 +958,16 @@ phf_generator 0.10.0 (MIT)
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
+phf_generator 0.11.2 (MIT)
+https://github.com/rust-phf/rust-phf
+---------------------------------------------------------
+
 phf_macros 0.8.0 (MIT)
 https://github.com/sfackler/rust-phf
 ---------------------------------------------------------
 
-phf_macros 0.10.0 (MIT)
-https://github.com/sfackler/rust-phf
+phf_macros 0.11.2 (MIT)
+https://github.com/rust-phf/rust-phf
 ---------------------------------------------------------
 
 phf_shared 0.8.0 (MIT)
@@ -968,6 +976,10 @@ https://github.com/sfackler/rust-phf
 
 phf_shared 0.10.0 (MIT)
 https://github.com/sfackler/rust-phf
+---------------------------------------------------------
+
+phf_shared 0.11.2 (MIT)
+https://github.com/rust-phf/rust-phf
 ---------------------------------------------------------
 
 pin-project-lite 0.2.13 (Apache-2.0 OR MIT)
@@ -1138,7 +1150,7 @@ rustix 0.37.27 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
-rustix 0.38.25 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
+rustix 0.38.26 (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT)
 https://github.com/bytecodealliance/rustix
 ---------------------------------------------------------
 
@@ -1332,7 +1344,7 @@ target-lexicon 0.12.12 (Apache-2.0 WITH LLVM-exception)
 https://github.com/bytecodealliance/target-lexicon
 ---------------------------------------------------------
 
-tauri 1.5.2 (Apache-2.0 OR MIT)
+tauri 1.5.3 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
@@ -1344,7 +1356,7 @@ tauri-codegen 1.4.1 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri/tree/dev/core/tauri-codegen
 ---------------------------------------------------------
 
-tauri-macros 1.4.1 (Apache-2.0 OR MIT)
+tauri-macros 1.4.2 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
@@ -1352,11 +1364,11 @@ tauri-runtime 0.14.1 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
-tauri-runtime-wry 0.14.1 (Apache-2.0 OR MIT)
+tauri-runtime-wry 0.14.2 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
-tauri-utils 1.5.0 (Apache-2.0 OR MIT)
+tauri-utils 1.5.1 (Apache-2.0 OR MIT)
 https://github.com/tauri-apps/tauri
 ---------------------------------------------------------
 
@@ -1677,6 +1689,10 @@ https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 
 windows-tokens 0.39.0 (Apache-2.0 OR MIT)
+https://github.com/microsoft/windows-rs
+---------------------------------------------------------
+
+windows-version 0.1.0 (Apache-2.0 OR MIT)
 https://github.com/microsoft/windows-rs
 ---------------------------------------------------------
 

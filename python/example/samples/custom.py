@@ -13,6 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3 import Controller, Drive, EmitIntensity, Geometry, Phase, SamplingConfiguration, Silencer
 from pyautd3.gain import Gain
@@ -20,14 +21,14 @@ from pyautd3.modulation import Modulation
 
 
 class Focus(Gain):
-    def __init__(self: "Focus", point: np.ndarray) -> None:
+    def __init__(self: "Focus", point: ArrayLike) -> None:
         self.point = np.array(point)
 
     def calc(self: "Focus", geometry: Geometry) -> dict[int, np.ndarray]:
         return Gain._transform(
             geometry,
             lambda dev, tr: Drive(
-                Phase.from_rad(np.linalg.norm(tr.position - self.point) * tr.wavenumber(dev.sound_speed)),
+                Phase.from_rad(float(np.linalg.norm(tr.position - self.point)) * tr.wavenumber(dev.sound_speed)),
                 EmitIntensity.maximum(),
             ),
         )
@@ -36,7 +37,7 @@ class Focus(Gain):
 class Burst(Modulation):
     _length: int
 
-    def __init__(self: "Burst", length: int, config: SamplingConfiguration = None) -> None:
+    def __init__(self: "Burst", length: int, config: SamplingConfiguration | None = None) -> None:
         super().__init__(config if config is not None else SamplingConfiguration.from_frequency(4e3))
         self._length = length
 

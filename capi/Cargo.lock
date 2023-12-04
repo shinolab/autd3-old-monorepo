@@ -93,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "async-trait",
  "autd3-derive",
@@ -107,7 +107,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-derive"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "quote",
  "syn 2.0.39",
@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "async-trait",
  "bitflags 2.4.1",
@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-driver",
  "num-integer",
@@ -137,7 +137,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-simulator"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "async-trait",
  "autd3-derive",
@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "async-trait",
  "autd3-derive",
@@ -179,7 +179,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "async-trait",
  "autd3-derive",
@@ -192,7 +192,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-modulation-audio-file"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-derive",
  "autd3-driver",
@@ -203,7 +203,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-protobuf"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-driver",
  "h2 0.4.0",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "assert_approx_eq",
  "autd3-driver",
@@ -225,7 +225,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-def"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "assert_approx_eq",
  "autd3",
@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-gain-holo"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3capi-def",
  "autd3capi-wrapper-generator",
@@ -247,7 +247,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-simulator"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-link-simulator",
  "autd3capi-def",
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-soem"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-link-soem",
  "autd3capi-def",
@@ -266,7 +266,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-link-twincat"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-link-twincat",
  "autd3capi-def",
@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-modulation-audio-file"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "autd3-modulation-audio-file",
  "autd3capi-def",
@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "autd3capi-wrapper-generator"
-version = "18.0.0"
+version = "18.0.1"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -536,9 +536,9 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.3.9"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f32d04922c60427da6f9fef14d042d9edddef64cb9d4ce0d64d0685fbeb1fd3"
+checksum = "8eb30d70a07a3b04884d2677f06bec33509dc67ca60d92949e5535352d3191dc"
 dependencies = [
  "powerfmt",
 ]
@@ -889,9 +889,9 @@ dependencies = [
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.11"
+version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "969488b55f8ac402214f3f5fd243ebb7206cf82de60d3172994707a4bcc2b829"
+checksum = "c4cd1a83af159aa67994778be9070f0ae1bd732942279cabb14f86f986a21456"
 
 [[package]]
 name = "log"
@@ -1320,15 +1320,15 @@ checksum = "d626bb9dae77e28219937af045c257c28bfd3f69333c512553507f5f9798cb76"
 
 [[package]]
 name = "rustix"
-version = "0.38.25"
+version = "0.38.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc99bc2d4f1fed22595588a013687477aedf3cdcfb26558c559edb67b4d9b22e"
+checksum = "9470c4bf8246c8daf25f9598dca807fb6510347b1e1cfa55749113850c79d88a"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]

@@ -23,8 +23,13 @@ from tests.test_autd import create_controller
 async def test_focus():
     autd = await create_controller()
 
-    assert await autd.send_async(Focus(autd.geometry.center).with_intensity(0x80))
+    assert await autd.send_async(Focus(autd.geometry.center))
+    for dev in autd.geometry:
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert np.all(intensities == 0xFF)
+        assert not np.all(phases == 0)
 
+    assert await autd.send_async(Focus(autd.geometry.center).with_intensity(0x80))
     for dev in autd.geometry:
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0x80)

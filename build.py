@@ -300,6 +300,18 @@ class Config:
                 return True
         return False
 
+    def is_pcap_available(self):
+        if not self.is_windows():
+            return True
+        wpcap_exists = os.path.isfile(
+            "C:\\Windows\\System32\\wpcap.dll"
+        ) and os.path.isfile("C:\\Windows\\System32\\Npcap\\wpcap.dll")
+        packet_exists = os.path.isfile(
+            "C:\\Windows\\System32\\Packet.dll"
+        ) and os.path.isfile("C:\\Windows\\System32\\Npcap\\Packet.dll")
+
+        return wpcap_exists and packet_exists
+
     def setup_linker(self):
         if not self.is_linux() or self.target is None:
             return
@@ -521,6 +533,59 @@ def cpp_test(args):
             ).check_returncode()
 
 
+def cpp_cov(args):
+    args.no_examples = True
+    cpp_build(args)
+
+    config = Config(args)
+    with working_dir("cpp/tests"):
+        os.makedirs("build", exist_ok=True)
+        with working_dir("build"):
+            command = ["cmake", "..", "-DCOVERAGE=ON"]
+            if config.cmake_extra is not None:
+                for cmd in config.cmake_extra:
+                    command.append(cmd)
+            subprocess.run(command).check_returncode()
+            command = ["cmake", "--build", ".", "--parallel", "8"]
+            if config.release:
+                command.append("--config")
+                command.append("Release")
+            subprocess.run(command).check_returncode()
+
+            target_dir = "."
+            if config.is_windows():
+                target_dir = "Release" if config.release else "Debug"
+            subprocess.run(
+                [f"{target_dir}/test_autd3{config.exe_ext()}"]
+            ).check_returncode()
+
+            with working_dir("CMakeFiles/test_autd3.dir"):
+                command = ["lcov", "-d", ".", "-c", "-o", "coverage.raw.info"]
+                subprocess.run(command).check_returncode()
+                command = [
+                    "lcov",
+                    "-r",
+                    "coverage.raw.info",
+                    "*/googletest/*",
+                    "*/tests/*",
+                    "*/c++/*",
+                    "*/gcc/*",
+                    "-o",
+                    "coverage.info",
+                ]
+                subprocess.run(command).check_returncode()
+                if args.html:
+                    command = [
+                        "genhtml",
+                        "-o",
+                        "html",
+                        "--num-spaces",
+                        "4",
+                        "coverage.info",
+                    ]
+                    subprocess.run(command).check_returncode()
+
+
 def cpp_run(args):
     args.no_examples = False
     cpp_build(args)
@@ -625,6 +690,32 @@ def cs_test(args):
 
     with working_dir("dotnet/cs/tests"):
         command = ["dotnet", "test"]
+        subprocess.run(command).check_returncode()
+
+
+def cs_cov(args):
+    config = Config(args)
+
+    with working_dir("capi"):
+        config.setup_linker()
+        for command in config.cargo_build_capi_command():
+            subprocess.run(command).check_returncode()
+
+    copy_dll(config, "dotnet/cs/tests")
+
+    shutil.copyfile("LICENSE", "dotnet/cs/src/LICENSE.txt")
+
+    with working_dir("dotnet/cs/src"):
+        command = ["dotnet", "build"]
+        command.append("-c:Release")
+        subprocess.run(command).check_returncode()
+
+    with working_dir("dotnet/cs/tests"):
+        command = [
+            "dotnet",
+            "test",
+            '--collect:"XPlat Code Coverage"',
+        ]
         subprocess.run(command).check_returncode()
 
 
@@ -903,9 +994,7 @@ def build_wheel(config: Config):
             subprocess.run(["python3", "-m", "build", "-w"]).check_returncode()
 
 
-def py_build(args):
-    config = Config(args)
-
+def py_copy_dll(config: Config):
     with working_dir("capi"):
         config.setup_linker()
         for command in config.cargo_build_capi_command():
@@ -915,6 +1004,12 @@ def py_build(args):
     copy_dll(config, "python/pyautd3/bin")
     shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
     shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
+
+
+def py_build(args):
+    config = Config(args)
+
+    py_copy_dll(config)
 
     build_wheel(config)
 
@@ -961,15 +1056,7 @@ def py_build(args):
 def py_test(args):
     config = Config(args)
 
-    with working_dir("capi"):
-        config.setup_linker()
-        for command in config.cargo_build_capi_command():
-            subprocess.run(command).check_returncode()
-
-    os.makedirs("python/pyautd3/bin", exist_ok=True)
-    copy_dll(config, "python/pyautd3/bin")
-    shutil.copyfile("LICENSE", "python/pyautd3/LICENSE.txt")
-    shutil.copyfile("capi/ThirdPartyNotice.txt", "python/pyautd3/ThirdPartyNotice.txt")
+    py_copy_dll(config)
 
     with working_dir("python"):
         command = []
@@ -980,6 +1067,7 @@ def py_test(args):
         command.append("-m")
         command.append("mypy")
         command.append("pyautd3")
+        command.append("example")
         subprocess.run(command).check_returncode()
 
         command = []
@@ -989,6 +1077,30 @@ def py_test(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        if config.is_pcap_available():
+            command.append("--soem")
+        subprocess.run(command).check_returncode()
+
+
+def py_cov(args):
+    config = Config(args)
+
+    py_copy_dll(config)
+
+    with working_dir("python"):
+        command = []
+        if config.is_windows():
+            command.append("python")
+        else:
+            command.append("python3")
+        command.append("-m")
+        command.append("pytest")
+        if config.is_pcap_available():
+            command.append("--soem")
+        command.append("--cov-config=.coveragerc")
+        command.append("--cov=pyautd3")
+        command.append("--cov-branch")
+        command.append(f"--cov-report={args.cov_report}")
         subprocess.run(command).check_returncode()
 
 
@@ -1599,6 +1711,17 @@ if __name__ == "__main__":
         parser_cpp_test.add_argument("--cmake-extra", help="cmake extra args")
         parser_cpp_test.set_defaults(handler=cpp_test)
 
+        # cpp cov
+        parser_cpp_cov = subparsers_cpp.add_parser("cov", help="see `cpp cov -h`")
+        parser_cpp_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_cpp_cov.add_argument(
+            "--html", action="store_true", help="generate html report", default=False
+        )
+        parser_cpp_cov.add_argument("--cmake-extra", help="cmake extra args")
+        parser_cpp_cov.set_defaults(handler=cpp_cov)
+
         # cpp run
         parser_cpp_run = subparsers_cpp.add_parser("run", help="see `cpp run -h`")
         parser_cpp_run.add_argument("target", help="binary target")
@@ -1644,6 +1767,13 @@ if __name__ == "__main__":
             help="build universal binary (for macOS)",
         )
         parser_cs_test.set_defaults(handler=cs_test)
+
+        # cs test
+        parser_cs_cov = subparsers_cs.add_parser("cov", help="see `cs cov -h`")
+        parser_cs_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_cs_cov.set_defaults(handler=cs_cov)
 
         # cs run
         parser_cs_run = subparsers_cs.add_parser("run", help="see `cs run -h`")
@@ -1735,6 +1865,16 @@ if __name__ == "__main__":
             "--release", action="store_true", help="release build"
         )
         parser_py_test.set_defaults(handler=py_test)
+
+        # python cov
+        parser_py_cov = subparsers_py.add_parser("cov", help="see `python cov -h`")
+        parser_py_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_py_cov.add_argument(
+            "--cov_report", help="coverage report type [term|xml|html]", default="term"
+        )
+        parser_py_cov.set_defaults(handler=py_cov)
 
         # python clear
         parser_py_clear = subparsers_py.add_parser(

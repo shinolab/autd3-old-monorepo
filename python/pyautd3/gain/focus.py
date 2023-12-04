@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
@@ -27,7 +28,7 @@ class Focus(IGain):
     _p: np.ndarray
     _intensity: EmitIntensity | None
 
-    def __init__(self: "Focus", pos: np.ndarray) -> None:
+    def __init__(self: "Focus", pos: ArrayLike) -> None:
         """Constructor.
 
         Arguments:
@@ -35,7 +36,7 @@ class Focus(IGain):
             pos: Position of the focal point
         """
         super().__init__()
-        self._p = pos
+        self._p = np.array(pos)
         self._intensity = None
 
     def with_intensity(self: "Focus", intensity: int | EmitIntensity) -> "Focus":

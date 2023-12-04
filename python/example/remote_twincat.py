@@ -14,10 +14,10 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import asyncio
 
-from samples import runner
-
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.twincat import RemoteTwinCAT
+
+from .samples import runner
 
 
 async def main() -> None:
@@ -29,7 +29,7 @@ async def main() -> None:
         await Controller.builder()
         .add_device(AUTD3([0.0, 0.0, 0.0]))
         .open_with_async(RemoteTwinCAT.builder(remore_ams_net_id).with_server_ip(remote_ip_addr).with_client_ams_net_id(local_ams_net_id))
-    ) as autd:
+    ) as autd:  # type: Controller
         await runner.run(autd)
 
 
