@@ -49,7 +49,7 @@ class TwinCAT(Link):
             return TwinCAT(Base().link_get(_ptr))
 
     def __init__(self: "TwinCAT", ptr: LinkPtr) -> None:
-        super().__init__(ptr)
+        super().__init__(ptr)  # pragma: no cover
 
     @staticmethod
     def builder() -> _Builder:
@@ -103,7 +103,7 @@ class RemoteTwinCAT(Link):
             return RemoteTwinCAT(Base().link_get(_ptr))
 
     def __init__(self: "RemoteTwinCAT", ptr: LinkPtr) -> None:
-        super().__init__(ptr)
+        super().__init__(ptr)  # pragma: no cover
 
     @staticmethod
     def builder(server_ams_net_id: str) -> _Builder:

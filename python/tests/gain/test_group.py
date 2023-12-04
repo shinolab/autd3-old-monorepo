@@ -32,7 +32,19 @@ async def test_group():
         .set_gain("uniform", Uniform(0x80).with_phase(Phase(0x90)))
         .set_gain("null", Null()),
     )
+    for dev in autd.geometry:
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        for tr in dev:
+            if tr.position[0] < cx:
+                assert np.all(intensities[tr.idx] == 0x80)
+                assert np.all(phases[tr.idx] == 0x90)
+            else:
+                assert np.all(intensities[tr.idx] == 0)
+                assert np.all(phases[tr.idx] == 0)
 
+    assert await autd.send_async(
+        Group(lambda _, tr: "uniform" if tr.position[0] < cx else None).set_gain("uniform", Uniform(0x80).with_phase(Phase(0x90)))
+    )
     for dev in autd.geometry:
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         for tr in dev:

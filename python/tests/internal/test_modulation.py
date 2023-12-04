@@ -37,6 +37,14 @@ async def test_cache():
         assert np.array_equal(mod, mod_expect)
         assert autd2.link.modulation_frequency_division(dev.idx) == 5120
 
+    mod_expect = autd1.link.modulation(0)
+    buf = m2.buffer
+    assert np.array_equal(buf, mod_expect)
+    for i, m in enumerate(m2):
+        assert m == mod_expect[i]
+    for i in range(len(buf)):
+        assert m2[i] == mod_expect[i]
+
 
 class CacheTest(Modulation):
     calc_cnt: int

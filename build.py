@@ -548,11 +548,20 @@ def cpp_cov(args):
             ).check_returncode()
 
             with working_dir("CMakeFiles/test_autd3.dir"):
-                command = ["lcov", "-d", "." , "-c" , "-o", "coverage.raw.info"]
+                command = ["lcov", "-d", ".", "-c", "-o", "coverage.raw.info"]
                 subprocess.run(command).check_returncode()
-                command = ["lcov", "-r", "coverage.raw.info", "*/googletest/*", "test/*", "*/c++/*", "-o", "coverage.info"]
+                command = [
+                    "lcov",
+                    "-r",
+                    "coverage.raw.info",
+                    "*/googletest/*",
+                    "test/*",
+                    "*/c++/*",
+                    "-o",
+                    "coverage.info",
+                ]
                 subprocess.run(command).check_returncode()
-                
+
 
 def cpp_run(args):
     args.no_examples = False
@@ -1061,6 +1070,7 @@ def py_cov(args):
             command.append("python3")
         command.append("-m")
         command.append("pytest")
+        command.append("--cov-config=.coveragerc")
         command.append("--cov=pyautd3")
         command.append("--cov-branch")
         command.append(f"--cov-report={args.cov_report}")

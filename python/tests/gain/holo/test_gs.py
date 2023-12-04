@@ -29,11 +29,21 @@ async def test_gs():
         GS(backend)
         .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
         .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
+    )
+    assert await autd.send_async(g)
+    for dev in autd.geometry:
+        intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
+        assert not np.all(intensities == 0)
+        assert not np.all(phases == 0)
+
+    g = (
+        GS(backend)
+        .add_focus(autd.geometry.center + np.array([30, 0, 150]), 5e3 * pascal)
+        .add_foci_from_iter((autd.geometry.center + np.array([0, x, 150]), 5e3 * pascal) for x in [-30])
         .with_repeat(100)
         .with_constraint(EmissionConstraint.uniform(0x80))
     )
     assert await autd.send_async(g)
-
     for dev in autd.geometry:
         intensities, phases = autd.link.intensities_and_phases(dev.idx, 0)
         assert np.all(intensities == 0x80)

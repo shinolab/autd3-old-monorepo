@@ -180,7 +180,7 @@ class SOEM(Link):
         return res
 
     def __init__(self: "SOEM", ptr: LinkPtr) -> None:
-        super().__init__(ptr)
+        super().__init__(ptr)  # pragma: no cover
 
     @staticmethod
     def builder() -> _Builder:
@@ -214,7 +214,7 @@ class RemoteSOEM(Link):
             return RemoteSOEM(Base().link_get(_ptr))
 
     def __init__(self: "RemoteSOEM", ptr: LinkPtr) -> None:
-        super().__init__(ptr)
+        super().__init__(ptr)  # pragma: no cover
 
     @staticmethod
     def builder(addr: str) -> _Builder:
