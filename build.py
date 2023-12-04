@@ -548,11 +548,23 @@ def cpp_cov(args):
             ).check_returncode()
 
             with working_dir("CMakeFiles/test_autd3.dir"):
-                command = ["lcov", "-d", "." , "-c" , "-o", "coverage.raw.info"]
+                command = ["lcov", "-d", ".", "-c", "-o", "coverage.raw.info"]
                 subprocess.run(command).check_returncode()
-                command = ["lcov", "-r", "coverage.raw.info", "*/googletest/*", "test/*", "*/c++/*", "-o", "coverage.info"]
+                command = [
+                    "lcov",
+                    "-r",
+                    "coverage.raw.info",
+                    "*/googletest/*",
+                    "*/tests/*",
+                    "*/c++/*",
+                    "*/gcc/*",
+                    "-o",
+                    "coverage.info",
+                ]
                 subprocess.run(command).check_returncode()
-                
+                if args.html:
+                    command = ["genhtml", "-o", "html", "--num-spaces", "4", "coverage.info"]
+                    subprocess.run(command).check_returncode()
 
 def cpp_run(args):
     args.no_examples = False
@@ -1678,6 +1690,9 @@ if __name__ == "__main__":
         parser_cpp_cov = subparsers_cpp.add_parser("cov", help="see `cpp cov -h`")
         parser_cpp_cov.add_argument(
             "--release", action="store_true", help="release build"
+        )
+        parser_cpp_cov.add_argument(
+            "--html", action="store_true", help="generate html report", default=False
         )
         parser_cpp_cov.add_argument("--cmake-extra", help="cmake extra args")
         parser_cpp_cov.set_defaults(handler=cpp_cov)
