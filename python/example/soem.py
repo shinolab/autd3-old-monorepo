@@ -16,19 +16,21 @@ import ctypes
 import os
 from typing import NoReturn
 
-from samples import runner
-
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.soem import SOEM, OnErrFunc
 
+from .samples import runner
+
 
 def on_lost(msg: ctypes.c_char_p) -> NoReturn:
-    print(msg.decode("utf-8"), end="")
+    if msg.value is not None:
+        print(msg.value.decode("utf-8"), end="")
     os._exit(-1)
 
 
 def on_err(msg: ctypes.c_char_p) -> None:
-    print(msg.decode("utf-8"), end="")
+    if msg.value is not None:
+        print(msg.value.decode("utf-8"), end="")
 
 
 async def main() -> None:
@@ -40,7 +42,7 @@ async def main() -> None:
         .open_with_async(
             SOEM.builder().with_on_lost(on_lost_func).with_on_err(on_err_func),
         )
-    ) as autd:
+    ) as autd:  # type: Controller
         await runner.run(autd)
 
 

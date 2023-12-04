@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 import pytest
+from numpy.typing import ArrayLike
 
 from pyautd3 import Device, Drive, Geometry, Transducer
 from pyautd3.emit_intensity import EmitIntensity
@@ -27,10 +28,10 @@ class Uniform(Gain):
     _phase: Phase
     check: np.ndarray
 
-    def __init__(self: "Uniform", intensity: int, phase: Phase, check: np.ndarray) -> None:
+    def __init__(self: "Uniform", intensity: int, phase: Phase, check: ArrayLike) -> None:
         self._intensity = EmitIntensity(intensity)
         self._phase = phase
-        self.check = check
+        self.check = np.array(check)
 
     def calc(self: "Uniform", geometry: Geometry) -> dict[int, np.ndarray]:
         def f(dev: Device, _tr: Transducer) -> Drive:

@@ -976,6 +976,7 @@ def py_test(args):
         command.append("-m")
         command.append("mypy")
         command.append("pyautd3")
+        command.append("example")
         subprocess.run(command).check_returncode()
 
         command = []
