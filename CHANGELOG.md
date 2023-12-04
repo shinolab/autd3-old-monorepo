@@ -1,3 +1,7 @@
+# 18.0.1
+
+- Fix [#237](https://github.com/shinolab/autd3/issues/237): [C++] USE_SYSTEM_EIGEN option does not work
+
 # 18.0.0
 
 - Update firmware to v4.0.1

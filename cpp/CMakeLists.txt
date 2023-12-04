@@ -17,7 +17,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 option(USE_SYSTEM_EIGEN OFF)
 
 if(USE_SYSTEM_EIGEN)
-  find_package(Eigen REQUIRED)
+  find_package(Eigen3 REQUIRED)
 else()
   include(FetchContent)
   set(EIGEN_BUILD_DOC OFF)
